@@ -1,11 +1,11 @@
-// The palette (docs/specs/012-collaboration/workshop-mode.md "The palette"): which categories Workshop's palette
+// The palette (docs/specs/012-collaboration/workshop-mode.md "The palette"): which categories the meeting palette
 // offers, in order, what each is called there, and which tiles it holds. A category's identity (its glyph, and the
 // label, blurb and band it wears by default) lives in PALETTE_CATEGORIES; a tile's identity in PALETTE_TILES. The
 // layout only arranges them.
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so the layout spells out only where it
-// differs. The catalogue categories (My shapes, Icons, Stickers) are bodies with their own content and take no tile
-// list. The palette lands on Popular, a fixed pick of tiles from across its categories.
+// differs. The catalogue categories (Icons, Stickers) are bodies with their own content and take no tile list. The
+// palette lands on Popular, a fixed pick of tiles from across its categories.
 import type { EditorMode } from '@livehuddle/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
@@ -39,125 +39,84 @@ export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
   'stickers',
 ]);
 
-/** A category's own tile ids, less the named ones: for a layout that drops a tile or two. A dropped tile that ends a
- *  group (`dividerAfter`) leaves its divider after the tile kept before it, so the group still ends there. */
-function tilesExcept(categoryId: string, ...drop: string[]): readonly string[] {
-  const out: string[] = [];
-  for (const tile of tilesForCategory(categoryId)) {
-    if (!drop.includes(tile.id)) out.push(tile.id);
-    else if (tile.dividerAfter && out.length > 0 && out.at(-1) !== DIVIDE) out.push(DIVIDE);
-  }
-  return out;
-}
+// The tiles no strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every element
+// type"). The meeting palette has none: the Search finds only what the palette offers
+// (docs/specs/012-collaboration/workshop-mode.md "The palette").
+export const SEARCH_ONLY_TILE_IDS: readonly string[] = [];
 
-// Media's embed providers (the Embed group).
-const EMBED_TILES = [
-  'media:embed-youtube',
-  'media:embed-vimeo',
-  'media:embed-loom',
-  'media:embed-figma',
-  'media:embed-gdocs',
-  'media:embed-website',
+// The pieces a meeting place is built from (docs/specs/009-elements/office.md), after a divider wherever they follow
+// the furniture.
+const OFFICE_TILES = [
+  'tools:room',
+  'tools:meeting-table',
+  'tools:plant',
+  'tools:bookshelf',
+  'tools:water-cooler',
+  'tools:coffee-machine',
+  'tools:rug',
 ];
 
-// Layout: the containers a board is arranged in, then the parts that label it, the Card, Badge and Step number
-// borrowed from Components.
-const LAYOUT_TILES = [
-  'tools:lane',
-  'tools:frame',
-  'tools:stack',
-  'tools:boundary',
-  DIVIDE,
-  'tools:diagram-key',
-  'components:card',
-  'components:badge',
-  'components:step',
-];
-
-// Workshop's Layout: the same, with the Timeline (docs/specs/009-elements/timeline.md) after the containers, as a
-// session plans along one as often.
-const WORKSHOP_LAYOUT_TILES = [
-  ...LAYOUT_TILES.slice(0, LAYOUT_TILES.indexOf(DIVIDE)),
-  'tools:timeline',
-  ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE)),
-];
-
-// Image and Avatar; no embedded pages.
-const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
-
-// The tiles no mode's strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every
-// element type"): the Code block, the embeds and the page blocks (Hero, Header, Banner, Stat row, Process). They
-// still work, so the strip's Search lists them, as the search panel's Add to canvas does.
-export const SEARCH_ONLY_TILE_IDS: readonly string[] = [
-  'tools:code-block',
-  ...EMBED_TILES,
-  'components:hero',
-  'components:header',
-  'components:banner',
-  'components:stat',
-  'components:process',
-];
-
-// Workshop (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session with a team. Popular, the
-// drawing basics a session uses (no Page or Annotation, no Shape Pen or Polygon), the Layout, the Collaborate
-// elements as six categories, one per group, ahead of the decorations a room reaches for and the charts.
-const WORKSHOP: PaletteLayout = {
+// The meeting palette (docs/specs/012-collaboration/workshop-mode.md "The palette"): livehuddle's one palette, for
+// meeting in a Space. Light content to write on and group a room's notes with, the places and furniture a Space is
+// built from, the Reaction Pads and the Selection Mode buttons, then the decorations. No diagram tools and no
+// Collaborate elements: those are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
+const MEETING: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // What a session is most often run with: a square, notes and words, a frame and an arrow to arrange them,
-      // then, behind a divider, the session kit as four openers (palette-openers), each its Collaborate category in
-      // a popover.
+      // What a Space is most often furnished with: a note, words, a frame round a room's notes, a picture and a
+      // link, then, behind a divider, the pieces a meeting place is built from.
       id: 'popular',
+      description: 'What a Space is most often furnished with, from across the palette.',
       tiles: [
-        'shapes:square',
         'tools:sticky',
         'tools:text',
         'tools:frame',
-        'tools:arrow',
         'tools:image',
+        'tools:link-card',
         DIVIDE,
-        'open:collab-ask',
-        'open:collab-tools',
-        'open:collab-record',
-        'open:collab-react',
+        'tools:room',
+        'tools:meeting-table',
+        'tools:chair',
+        'tools:focus-button',
+        'tools:avatar-pad',
       ],
     },
-    { id: 'shapes' },
-    { id: 'my-shapes' },
-    // Words and notes, then a table and a checklist to keep them in. No Page or Annotation.
+    // Words and notes. No Pointer note, Table, Checklist, Page or Annotation.
+    { id: 'write', description: 'Text and sticky notes.', tiles: ['tools:text', 'tools:sticky'] },
+    // The frame alone, to group a room's notes. No lane, stack, boundary, timeline, key, card, badge or step.
+    { id: 'frame', tiles: ['tools:frame'] },
+    // Places to go and things to sit at, then the office pieces.
     {
-      id: 'write',
-      description: 'Text, sticky notes, tables and checklists.',
+      id: 'collab-navigate',
       tiles: [
-        ...tilesExcept('write', 'tools:page', 'tools:annotation'),
+        'tools:door',
+        'tools:focus-button',
+        'tools:chair',
+        'tools:desk',
+        'tools:sofa',
+        'tools:fence',
+        'tools:avatar-pad',
+        'tools:link-card',
         DIVIDE,
-        'tools:table',
-        'tools:checklist',
+        ...OFFICE_TILES,
       ],
     },
-    { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
-    // The Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its notes
-    // labelled with badges and step numbers, with the Timeline.
-    { id: 'layout', tiles: WORKSHOP_LAYOUT_TILES },
-    // The session kit next, before the decorations: running the room is what the mode is for, so Ask and Session
-    // (the other five, gathered on the bar) come right after the board's structure.
-    { id: 'collab-ask' },
-    { id: 'collab-tools' },
-    { id: 'collab-record' },
     { id: 'collab-react' },
     { id: 'collab-mode' },
-    { id: 'collab-navigate' },
     { id: 'icons' },
     { id: 'stickers' },
-    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
-    // The charts and meters: a session reads results and sets targets as often as a page reports them.
-    { id: 'data' },
+    // A picture (upload, the gallery, image search) and a link card. No avatar, no video or website embeds.
+    {
+      id: 'media',
+      description: 'A picture, uploaded or found, and a link card.',
+      tiles: ['tools:image', 'tools:link-card'],
+    },
   ],
 };
 
 export const PALETTE_LAYOUTS: Record<EditorMode, PaletteLayout> = {
-  workshop: WORKSHOP,
+  workshop: MEETING,
 };
 
 function paletteLayoutFor(mode: EditorMode): PaletteLayout {

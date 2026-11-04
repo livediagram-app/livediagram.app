@@ -56,10 +56,10 @@ describe('featureIcon / featureColour', () => {
   });
 
   it('reads a NESTED category slug down to its first segment', () => {
-    expect(featureIcon('no-such-feature', 'palette/tools/data-elements')).toBe(
+    expect(featureIcon('no-such-feature', 'palette/tools/images')).toBe(
       FEATURE_CATEGORY_ICONS['palette'],
     );
-    expect(featureColour('no-such-feature', 'palette/tools/data-elements')).toBe(
+    expect(featureColour('no-such-feature', 'palette/tools/images')).toBe(
       FEATURE_CATEGORY_HEX['palette'],
     );
   });

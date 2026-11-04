@@ -635,14 +635,16 @@ describe('DocumentRoom op-role enforcement', () => {
   // loop automatically instead of shipping untested. `avatar-push` is the one
   // exclusion: it is ADDRESSED rather than broadcast (see its own tests just
   // below), so "a peer received it" is not the right assertion for it.
-  const ADDRESSED_PRESENCE_KINDS = ['avatar-push'];
+  // A let-speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand") is addressed too.
+  const ADDRESSED_PRESENCE_KINDS = ['avatar-push', 'avatar-let-speak'];
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
   // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
-  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow'];
+  // `calls-check` is the room's too: never relayed, it reads the calls kill switch (document-room-fanout.test.ts).
+  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow', 'calls-check'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
   // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
   const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];
@@ -663,7 +665,22 @@ describe('DocumentRoom op-role enforcement', () => {
   // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so its
   // talking level and microphone locator are dropped; a Participant's are relayed. The level is a tab-scoped sample,
   // pinned in document-room-fanout.test.ts.
-  const CALL_PRESENCE_KINDS = ['avatar-voice', 'call-track'];
+  // A raised hand is taking part too (meeting-rooms-and-stage.md "Share roles"), pinned just below.
+  const CALL_PRESENCE_KINDS = ['avatar-voice', 'call-track', 'avatar-hand'];
+  it("drops a Viewer's raised hand and relays a Participant's to everyone", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const other = connect(room, 'other', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const participant = connect(room, 'participant', 'participate');
+    for (const c of [editor, other]) c.ws.sent.length = 0;
+    const op = { kind: 'avatar-hand', tabId: 't', raised: true };
+    sendFrame(room, viewer.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(0);
+    sendFrame(room, participant.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(1);
+    expect(opsReceived(other.ws)).toHaveLength(1);
+  });
   it("drops a Viewer's call-track and relays a Participant's", () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
@@ -735,6 +752,25 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(opsReceived(target.ws)).toHaveLength(1);
     expect(opsReceived(bystander.ws)).toHaveLength(0);
     expect(opsReceived(pusher.ws)).toHaveLength(0);
+  });
+
+  it('delivers a let-speak only to the hand’s owner, and never a Viewer’s', () => {
+    const { room } = newRoom();
+    const speaker = connect(room, 'speaker', 'participate');
+    const target = connect(room, 'target', 'participate');
+    const bystander = connect(room, 'bystander', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    for (const c of [speaker, target, bystander]) c.ws.sent.length = 0;
+
+    const targetId = storedPresence(target.ws)?.id;
+    const op = { kind: 'avatar-let-speak', tabId: 't', targetId, on: true };
+    sendFrame(room, viewer.ws, { kind: 'op', op });
+    expect(opsReceived(target.ws)).toHaveLength(0);
+    sendFrame(room, speaker.ws, { kind: 'op', op });
+
+    expect(opsReceived(target.ws)).toHaveLength(1);
+    expect(opsReceived(bystander.ws)).toHaveLength(0);
+    expect(opsReceived(speaker.ws)).toHaveLength(0);
   });
 
   it('drops an avatar-push aimed at nobody rather than broadcasting it', () => {

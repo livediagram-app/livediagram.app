@@ -336,7 +336,8 @@ Home's hero pictures the kinds of work the filtered app makes (`WorkKinds`, `src
 (`BRAND_APPS[app].ramp` from `@liveworkspace/brand`, set as `--wk-*` on the tile and mapped onto `--color-brand-*` by
 `.lw-work-art` in `explorer.css`, which also turns the pictures' paper and ink for dark), so the colours are right on
 any host and under All. The layout is the same for every app: two by two in the hero's right column from `lg`, four
-across under the search field below that, a phone included. The rules are in
+across under the search field below that, a phone included. All's five tiles (one per app) keep the tile and spacing:
+one row of five below `lg`, three over two (the two centred) from `lg`. The rules are in
 [one-explorer.md](../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero".
 
 ## The sidebar

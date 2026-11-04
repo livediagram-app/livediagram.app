@@ -237,7 +237,7 @@ export function useCanvasChromePanels({
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, [avatarOpen, closeDockPanel]);
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
@@ -447,7 +447,6 @@ export function useCanvasChromePanels({
     laser: laserEl,
     spotlight: spotlightEl,
     eraser: eraserEl,
-    'slide-deck': slideDeckEl,
     format: formatEl,
   };
   return {

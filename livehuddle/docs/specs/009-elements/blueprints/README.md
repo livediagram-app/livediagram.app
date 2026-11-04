@@ -17,7 +17,7 @@ Follow the references below only as needed; never upfront.
 - ./lane.md - when implementing or changing the lane, its gutter, the seam drag or lane stacking
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
 - ./mode-button.md - when implementing or changing the Selection Mode button, its press, Leave or its palette tiles
-- ./page-element.md - when implementing or changing the Page element, its masthead, body or corner fold
+- ./page-element.md - (Gone from livehuddle's palette, Work Tracker #423 part 2) when implementing or changing the Page element, its masthead, body or corner fold
 - ./portal-element.md - when implementing or changing portals, their links, names or travel
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu
 - ./rating.md - when implementing or changing the star rating, its animations or its picker

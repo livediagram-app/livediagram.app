@@ -27,7 +27,6 @@ export * from './feature-art/embeds-timeline';
 // presenting is yours alone.
 export * from './feature-art/present';
 export * from './feature-art/room';
-export * from './feature-art/workshop';
 // The presenter's clock beside them.
 export * from './feature-art/present-timing';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultTextColor, REVEAL_COVER_BASE } from './colors';
-import { ROOM_FLOOR, RUG_FILL } from './office';
+import { ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, STAGE_FLOOR_DARK, STAGE_FRONT } from './office';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import type { ShapeKind } from './index';
@@ -66,6 +66,21 @@ describe('svgBoxed on dark paper', () => {
     const rug = svgBoxed(createShape('rug', 0, 0), { surface: 'dark' });
     expect(rug).toContain('fill="#713f12"');
     expect(rug).not.toContain(`fill="${RUG_FILL}"`);
+  });
+
+  // docs/specs/009-elements/office.md "Stage": drawn to its size from its parts, its top lighter than a room's floor.
+  it('draws a stage at its own size, in its fill, a little lighter than a room on each paper', () => {
+    const stage = createShape('stage', 40, 60);
+    const light = svgBoxed(stage, { surface: 'light' });
+    expect(light).toContain('transform="translate(40 60)"');
+    expect(light).toContain(`fill="${STAGE_FLOOR}"`);
+    expect(light).toContain(`y="${140 - STAGE_FRONT}"`);
+    expect(light).toContain('>Stage<');
+    const dark = svgBoxed(stage, { surface: 'dark' });
+    expect(dark).toContain(`fill="${STAGE_FLOOR_DARK}"`);
+    expect(svgBoxed({ ...stage, fillColor: '#123456' }, { surface: 'light' })).toContain(
+      'fill="#123456"',
+    );
   });
 });
 

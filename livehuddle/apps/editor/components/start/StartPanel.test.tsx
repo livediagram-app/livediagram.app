@@ -23,15 +23,15 @@ describe('a start search, best match first', () => {
 
   it('leads with the template whose name is what was typed, and lists it once', () => {
     const { search } = workshop();
-    fireEvent.change(search, { target: { value: 'sailboat' } });
+    fireEvent.change(search, { target: { value: 'team pod' } });
     const best = screen.getByRole('region', { name: 'Best Match' });
     const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
-    expect(first).toBe('sailboat');
-    expect(document.querySelectorAll('[data-start-card="sailboat"]')).toHaveLength(1);
+    expect(first).toBe('team-pod');
+    expect(document.querySelectorAll('[data-start-card="team-pod"]')).toHaveLength(1);
     // Before the groups.
     expect(sections()[0]).toBe('Best Match');
     fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(document.activeElement?.getAttribute('data-start-card')).toBe('sailboat');
+    expect(document.activeElement?.getAttribute('data-start-card')).toBe('team-pod');
   });
 
   it('has no Best Match when no name begins with the words', () => {
@@ -42,7 +42,7 @@ describe('a start search, best match first', () => {
 
   it('moves between the cards with the arrow keys, Up from the first back to the search', () => {
     const { search } = workshop();
-    fireEvent.change(search, { target: { value: 'retro' } });
+    fireEvent.change(search, { target: { value: 'office' } });
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     const all = [...document.querySelectorAll<HTMLElement>('[data-start-card]')];
     expect(all.length).toBeGreaterThan(2);

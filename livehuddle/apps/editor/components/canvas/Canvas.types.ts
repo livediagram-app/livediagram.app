@@ -228,12 +228,6 @@ export type CanvasProps = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the deck builder, present only while its tool
-  // is picked. The deck itself rides `slideDeck`.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -274,6 +268,9 @@ export type CanvasProps = {
   // Opening walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"): where the character starts on a tab
   // whose way in is a Walk In button, sequenced so each opening is a fresh request. Null until a tab opens walking.
   walkIn?: import('@/app/document/[id]/useOpenWalking').WalkIn | null;
+  // A Viewer's Walk button (docs/specs/008-canvas/avatar-mode.md "The Walk button"): on where the surface walks, off
+  // in an embed. Shown only to a session with no palette strip (lib/walk-button.ts).
+  walkButton?: boolean;
   // Laser-pointer trails for the LaserOverlay — local user first
   // followed by any peers laser-pointing on the active tab. The
   // overlay handles fading and cleanup; Canvas just renders.

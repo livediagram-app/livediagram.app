@@ -10,7 +10,7 @@ and from [Avatar tour](../avatar-tour.md).
 | `../packages/api-schema/src/avatar-say.ts`                   | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
 | `packages/api-schema/src/room-messages.ts`                   | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
 | `apps/api/src/room-op-gate.ts`                               | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
-| `../packages/avatar/src/speech.ts`                           | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`                           |
+| `../packages/avatar/src/speech.ts`                           | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`, `speechLift`             |
 | `../packages/avatar/src/speech-store.ts`                     | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |
 | `../packages/avatar/src/hooks/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
 | `../packages/avatar/src/components/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region                    |
@@ -169,6 +169,8 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 
 - Worst case on screen: 3 bubbles × peers; the room caps at its participant limit. Per frame the loop does one
   `bubbleMotion` and two style writes per bubble: O(bubbles), no layout reads, no React render.
+- With `obstacles`, each frame adds one `speechLift` per bubble: a filter and sort of the obstacles (at most 9 in
+  livehuddle) and one pass. Nothing without it (livediagram).
 - The loop is off whenever there are no bubbles. Removal timers are cleared on unmount.
 - The op is at most ~400 bytes.
 
@@ -183,6 +185,15 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
   `zoom * (x + offsetX) + width / 2 * (1 - zoom)` (the layer scales about its centre); its card width is measured once when it mounts (a composer is a fixed 240px), so each frame is
   arithmetic only: `edgeShift(centre, width, viewWidth)` (pure, in `speech.ts`) answers the sideways shift in reading px,
   added to the card's translate. No layout reads per frame.
+- Clear of other things (livehuddle's camera and screen bubbles, docs/specs/012-collaboration/
+  video-and-screen-bubbles.md "Close together"): the layer takes an optional `obstacles` ref of canvas rects
+  (`SpeechObstacle`, `{ left, top, right, bottom }`), read by the flight loop each frame. `speechLift` (pure,
+  `speech.ts`, taking `from`, `halfWidth`, `reach` and the obstacles) answers the canvas px a bubble starting at `from` must start higher by: the
+  obstacles across its width (centre `x + shift / zoom`, half width `(width / 2 + SPEECH_SWAY_PX) / zoom`), nearest
+  first, each one still in its path (`reach`: the whole flight's rise plus the card's height, over the zoom) lifts
+  its start to `SPEECH_CLEAR_GAP` over that obstacle's top. The loop keeps the largest target so far per bubble and
+  eases toward it (`1 - exp(-dt / SPEECH_LIFT_EASE_MS)`, at once on the first frame and under reduced motion), added
+  to the rise. The card's height is measured with its width when it mounts. The composer is not lifted.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say
   something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
   button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under

@@ -266,10 +266,8 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md). True once a run has ended
-  // (completed or skipped; written as a run starts too). While true the footer's Start Tour button
-  // does not offer the tour; Settings' Tours › "Workshop Tour" row (inverted) clears it, and turning
-  // it on and closing Settings reruns the tour when it could run. Missing / undefined === not seen.
+  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md). The tour left livehuddle
+  // (Work Tracker #423, part 3): the field is kept as stored data, never read or rewritten, with no migration.
   workshopTourSeen?: boolean;
   // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
@@ -280,8 +278,8 @@ type UserPreferences = {
   // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
-  // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
-  // browser kept before they followed the account, else the defaults.
+  // livediagram's to read and write (Settings › Editor › Presenting there). livehuddle has no presenting since Work
+  // Tracker #423 part 2: it never reads or writes the key, and the blob carries it through untouched.
   presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
@@ -480,9 +478,8 @@ and the dialog stays as the one complete, browsable index of them.
   (`MovablePanel`'s `onReset`, shown once the panel has left its default
   corner), which is the only non-preference thing the popovers held.
 
-  The **Slide Deck** popover stays: its contents (auto-advance, speed,
-  transition, slide size, loop, hide pointer) are deck state rather than user
-  preferences, so they have no home in Settings and should not get one.
+  livehuddle has no Slide Deck popover since Work Tracker #423 part 2
+  ([Presentation mode](../012-collaboration/presentation-mode.md)).
 
 - **Settings dialog**: `apps/editor/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
@@ -557,9 +554,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
-  readout nested under it while the mode is on; with the sub-category
-  **Presenting** (the presenter settings: Slides, Playback and While Presenting,
-  [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
+  readout nested under it while the mode is on; no Presenting sub-category since Work Tracker #423 part 2), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
@@ -591,7 +586,7 @@ and the dialog stays as the one complete, browsable index of them.
   would otherwise carry in a gear popover live here, and only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** holds **Presenting**; a category with no rows is never
+  spec); a category with no rows is never
   shown. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
@@ -638,7 +633,7 @@ and the dialog stays as the one complete, browsable index of them.
   toolbar button, take Lucide map and Lucide palette; Notifications and
   API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers", "in Editor › Presenting", "in Account ›
+  it by path ("in Panels › Layers", "in Account ›
   API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
@@ -722,8 +717,7 @@ and the dialog stays as the one complete, browsable index of them.
   PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
   meaning.
 
-  **Workshop Tour** is inverted against `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md))
-  and **Avatar Tour** against `avatarTourSeen` ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
+  **Avatar Tour** is inverted against `avatarTourSeen` ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with it turned on from off reruns it when it is on offer where you are. There is no Workshop Tour row: the tour left livehuddle ([Workshop tour](../012-collaboration/workshop-tour.md)).
 
   Below those tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built

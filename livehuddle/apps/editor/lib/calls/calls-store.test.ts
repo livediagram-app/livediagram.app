@@ -2,13 +2,23 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  callHands,
+  callLetByMe,
+  HANDS_MAX,
+  noteLetSpeak,
+  onCallHands,
+  onLetSpeak,
+  receiveLetSpeak,
+  useCallHands,
   callActions,
+  callLevels,
   callMaximised,
   callMedia,
   callPeers,
   callSelf,
   forgetCallPeer,
   levelNow,
+  onCallLevels,
   onCallMaximised,
   onCallsMode,
   onCallTracks,
@@ -19,6 +29,7 @@ import {
   resetCallPeers,
   resetCallSelf,
   setCallActions,
+  setCallLevels,
   setCallMaximised,
   setCallMedia,
   setCallSelf,
@@ -115,6 +126,8 @@ describe('calls store self', () => {
       toggleMute: vi.fn(),
       toggleCamera: vi.fn(),
       toggleScreen: vi.fn(),
+      raiseHand: vi.fn(),
+      lowerHand: vi.fn(),
     };
     act(() => setCallActions(actions));
     setCallActions(actions);
@@ -200,5 +213,113 @@ describe('calls store bubbles', () => {
     expect(callMaximised()).toBeNull();
     // Nothing to empty: still fine.
     resetCallMedia();
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles": whose level lets them speak from a stage.
+describe('calls store levels', () => {
+  it('keeps each peer’s stamped level, an unknown or missing one a Viewer’s, and tells only of a change', () => {
+    const heard = vi.fn();
+    const off = onCallLevels(heard);
+    setCallLevels([
+      { id: 'a', role: 'edit' },
+      { id: 'b', role: 'participate' },
+      { id: 'c', role: 'admin' },
+      { id: 'd' },
+    ]);
+    expect([...callLevels()]).toEqual([
+      ['a', 'edit'],
+      ['b', 'participate'],
+      ['c', 'view'],
+      ['d', 'view'],
+    ]);
+    expect(heard).toHaveBeenCalledTimes(1);
+    setCallLevels([
+      { id: 'a', role: 'edit' },
+      { id: 'b', role: 'participate' },
+      { id: 'c' },
+      { id: 'd', role: 'view' },
+    ]);
+    expect(heard).toHaveBeenCalledTimes(1);
+    setCallLevels([{ id: 'a', role: 'participate' }]);
+    expect(heard).toHaveBeenCalledTimes(2);
+    // The room closing forgets them.
+    resetCallPeers();
+    expect(callLevels().size).toBe(0);
+    expect(heard).toHaveBeenCalledTimes(3);
+    off();
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand"
+describe('calls store hands', () => {
+  afterEach(() => resetCallPeers());
+  const hand = (raised: boolean, letSpeak?: string | null) => ({
+    kind: 'avatar-hand',
+    tabId: 't1',
+    raised,
+    ...(letSpeak === undefined ? {} : { letSpeak }),
+  });
+
+  it('keeps hands in the order they went up, with who let them speak, and lowers them', () => {
+    const changed = vi.fn();
+    const off = onCallHands(changed);
+    const { result } = renderHook(() => useCallHands());
+    act(() => receiveCallOp('a', hand(true)));
+    vi.advanceTimersByTime(10);
+    act(() => receiveCallOp('b', hand(true)));
+    act(() => receiveCallOp('a', hand(true, 'ed')));
+    // The same again changes nothing.
+    receiveCallOp('a', hand(true, 'ed'));
+    expect(changed).toHaveBeenCalledTimes(3);
+    const a = callHands().get('a')!;
+    expect(a.letSpeak).toBe('ed');
+    expect(a.at).toBeLessThan(callHands().get('b')!.at);
+    expect(result.current.hands.size).toBe(2);
+    act(() => receiveCallOp('a', hand(false)));
+    receiveCallOp('zz', hand(false));
+    receiveCallOp('b', { kind: 'avatar-hand', tabId: 't1', raised: 'yes' });
+    expect([...callHands().keys()]).toEqual(['b']);
+    off();
+  });
+
+  it('holds at most one hand a connection', () => {
+    for (let i = 0; i < HANDS_MAX + 5; i++) receiveCallOp(`p${i}`, hand(true));
+    expect(callHands().size).toBe(HANDS_MAX);
+    // A hand already up still changes.
+    receiveCallOp('p0', hand(true, 'ed'));
+    expect(callHands().get('p0')?.letSpeak).toBe('ed');
+  });
+
+  it('lowers a hand whose owner leaves the mode or the room, and every hand when the room closes', () => {
+    for (const id of ['a', 'b', 'c']) receiveCallOp(id, hand(true));
+    noteLetSpeak('a', true);
+    forgetCallPeer('a');
+    expect(callLetByMe().has('a')).toBe(false);
+    pruneCallPeers(new Set(['c']));
+    expect([...callHands().keys()]).toEqual(['c']);
+    pruneCallPeers(new Set(['c']));
+    resetCallPeers();
+    expect(callHands().size).toBe(0);
+  });
+
+  it('remembers whom you let speak, until Done', () => {
+    noteLetSpeak('a', true);
+    noteLetSpeak('a', true);
+    expect([...callLetByMe()]).toEqual(['a']);
+    noteLetSpeak('a', false);
+    noteLetSpeak('a', false);
+    expect(callLetByMe().size).toBe(0);
+  });
+
+  it('hands an addressed let-speak to the running call, and ignores a malformed one', () => {
+    const heard = vi.fn();
+    const off = onLetSpeak(heard);
+    receiveLetSpeak('ed', { kind: 'avatar-let-speak', tabId: 't1', targetId: 'me', on: true });
+    receiveLetSpeak('ed', { kind: 'avatar-let-speak', tabId: 't1', targetId: 'me' });
+    expect(heard.mock.calls).toEqual([['ed', true]]);
+    off();
+    receiveLetSpeak('ed', { kind: 'avatar-let-speak', tabId: 't1', targetId: 'me', on: false });
+    expect(heard).toHaveBeenCalledTimes(1);
   });
 });

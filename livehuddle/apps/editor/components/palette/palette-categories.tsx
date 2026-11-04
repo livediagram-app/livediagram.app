@@ -20,7 +20,10 @@ import {
   StickersTabIcon,
   WriteTabIcon,
   ParticipateTabIcon,
+  Glyph,
+  Prims,
 } from '@livehuddle/ui';
+import { lucidePanelTop } from '@liveworkspace/icons/lucide';
 import {
   AskGroupIcon,
   WorkshopGroupIcon,
@@ -93,6 +96,19 @@ export const PALETTE_CATEGORIES: {
     group: 0,
     description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
+  },
+  {
+    // Frame (docs/specs/012-collaboration/workshop-mode.md "The palette"): the meeting palette's frame alone, to group
+    // a room's notes, wearing the Frame tile's own glyph.
+    id: 'frame',
+    label: 'Frame',
+    group: 0,
+    description: 'A titled box to group a room’s notes.',
+    icon: (
+      <Glyph size={18} units={24}>
+        <Prims prims={lucidePanelTop} />
+      </Glyph>
+    ),
   },
 
   {

@@ -41,7 +41,7 @@ import './globals.css';
 const TRUSTED_TYPES_BOOT = trustedTypesBootScript('/live');
 
 const TITLE = 'livehuddle';
-const DESCRIPTION = 'Meet and run workshops together in shared spaces.';
+const DESCRIPTION = 'Meet together in shared Spaces: walk in, talk and leave a note.';
 
 export const metadata: Metadata = {
   title: TITLE,

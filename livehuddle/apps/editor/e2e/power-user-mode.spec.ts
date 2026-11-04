@@ -68,7 +68,7 @@ test.describe('Role pill', () => {
     await openEditor(page);
     const pill = header(page).getByRole('button', { name: 'Editing. Owned by you' });
     await expect(pill).toBeVisible();
-    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toBeVisible();
+    await expect(page.locator('[data-category-bar-button][aria-label="Write"]')).toBeVisible();
 
     await pill.hover();
     await expect(page.locator(TOOLTIP)).toHaveText('Owned by you', { timeout: 2_000 });
@@ -105,7 +105,7 @@ test.describe('Power user mode', () => {
     );
     await expect(
       children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
-    ).toHaveCount(5);
+    ).toHaveCount(4);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
@@ -132,24 +132,29 @@ test.describe('Power user mode', () => {
     ).toBeVisible();
     await tabBar(page).getByRole('button', { name: 'Viewing (read-only)', exact: true }).click();
 
-    // Palette tile, in Shapes' flyout: no caption; the name comes back on keyboard focus.
-    const square = await paletteTile(page, 'Add Square');
-    // The tile's shortcut key cap is a kept hint; the caption is gone.
-    await expect(square).not.toContainText('Square');
+    // A captioned palette tile, in the strip's Search (the flyouts list theirs as rows that keep their words): no
+    // caption; the name comes back on keyboard focus.
+    await page.getByRole('button', { name: 'Search elements' }).click();
+    const search = page.locator('[data-toolbar-search]');
+    await search.getByRole('textbox', { name: 'Search elements' }).fill('sticky');
+    const found = search.getByRole('button', { name: 'Add Sticky Note', exact: true });
+    await expect(found).not.toContainText('Sticky Note');
     await page.mouse.move(700, 500);
-    await keyboardFocus(page, square);
-    await expect(page.locator(TOOLTIP)).toHaveText('Add Square', { timeout: 300 });
+    await keyboardFocus(page, found);
+    await expect(page.locator(TOOLTIP)).toHaveText('Add Sticky Note', { timeout: 300 });
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
 
     // Selection: no caption, no desktop bin, no More; the keys still delete.
-    await square.click();
+    await (await paletteTile(page, 'Add Sticky Note')).click();
     await page.mouse.click(640, 420);
     const shape = page.locator('[data-element-id]').first();
     await expect(shape).toBeVisible();
-    // Placing selects the square; a click on it now would deselect it
+    // Placing selects the sticky note; a click on it now would deselect it
     // (docs/specs/008-canvas/canvas-and-palette.md "Click the selected element again").
-    const toolbar = page.getByRole('toolbar', { name: 'Selected Square' });
+    const toolbar = page.getByRole('toolbar', { name: 'Selected Sticky' });
     await expect(toolbar).toBeVisible();
-    await expect(page.getByText('Selected Square', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Selected Sticky', { exact: true })).toHaveCount(0);
     await expect(toolbar.getByRole('button', { name: 'Delete' })).toHaveCount(0);
     await expect(toolbar.getByRole('button', { name: 'More actions' })).toHaveCount(0);
     await page.keyboard.press('Backspace');

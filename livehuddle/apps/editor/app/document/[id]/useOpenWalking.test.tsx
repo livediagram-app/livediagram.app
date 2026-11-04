@@ -41,7 +41,7 @@ describe('useOpenWalking', () => {
     const { result, openWalking } = setup();
     expect(openWalking).toHaveBeenCalledOnce();
     expect(result.current.walkIn).toMatchObject({ seq: 1 });
-    expect(result.current.walkIn?.feet.y).toBeGreaterThan(100);
+    expect(result.current.walkIn?.button).toMatchObject({ x: 100, y: 100 });
   });
 
   it('opens a tab with a pad walking, leaving the start to the pad', () => {

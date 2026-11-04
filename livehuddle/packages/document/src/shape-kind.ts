@@ -102,7 +102,8 @@ export type ShapeKind =
   | 'sofa'
   // The virtual office (docs/specs/009-elements/office.md): a room (walls, a doorway, `roomDoor`), a meeting table
   // with six seats, scenery that blocks (plant, bookshelf), machines that give a character a drink (water
-  // cooler, coffee machine), and a rug on the floor.
+  // cooler, coffee machine), a rug on the floor, and a stage whoever stands on is heard by the whole tab
+  // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage").
   | 'room'
   | 'meeting-table'
   | 'plant'
@@ -110,6 +111,7 @@ export type ShapeKind =
   | 'water-cooler'
   | 'coffee-machine'
   | 'rug'
+  | 'stage'
   // The collaboration family — elements that record what the ROOM thinks
   // rather than what one author drew.
   //

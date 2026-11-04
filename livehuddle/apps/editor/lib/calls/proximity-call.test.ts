@@ -4,21 +4,31 @@ import { CallsApiError } from '@/lib/api/calls';
 import {
   callMedia,
   callSelf,
+  noteLetSpeak,
   receiveCallOp,
+  receiveLetSpeak,
   receiveCallsMode,
   resetCallMedia,
   resetCallPeers,
   resetCallSelf,
+  setCallLevels,
   setCallMaximised,
   setCallsMode,
 } from './calls-store';
 import {
+  CALLS_CHECK_MS,
   CAMERA_ENCODINGS,
+  LOCATOR_RESEND_MS,
   MIC_IDLE_CLOSE_MS,
   ProximityCall,
   SCREEN_CONSTRAINTS,
   type CallSignal,
 } from './proximity-call';
+import { callStages } from './stage';
+import { roomZones } from './zones';
+
+const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
+vi.mock('@/lib/telemetry', () => telemetry);
 
 const sfu = vi.hoisted(() => ({
   instances: [] as {
@@ -633,5 +643,363 @@ describe('ProximityCall video and screens', () => {
     expect(callSelf().camera).toBe('off');
     setCallsMode('on');
     call.stop();
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls" (Work Tracker #319, #436).
+describe('ProximityCall in rooms', () => {
+  const loc = (id: string, trackName: string) => ({ sessionId: `${id}s`, trackName, token: 't' });
+  // A 600 × 400 room at the origin; the corridor runs below it.
+  const zones = roomZones([
+    { id: 'meeting', type: 'shape', shape: 'room', x: 0, y: 0, width: 600, height: 400 },
+  ]);
+  const roomScene = (self: { x: number; y: number }, walkers: [string, number, number][]) => ({
+    tabId: 't1',
+    self,
+    walkers: new Map(walkers.map(([id, x, y]) => [id, { x, y }])),
+    zones,
+  });
+
+  it('hears and sees the whole room at full volume, and nobody outside it, however close', async () => {
+    const { call } = makeCall();
+    await call.start();
+    for (const id of ['far', 'outside']) {
+      receiveCallOp(id, {
+        kind: 'call-track',
+        tabId: 't1',
+        track: loc(id, 'mic'),
+        video: loc(id, 'cam'),
+      });
+    }
+    // You in one corner, a colleague in the opposite one, somebody just past the front wall in the corridor.
+    call.update(
+      roomScene({ x: 20, y: 380 }, [
+        ['far', 580, 50],
+        ['outside', 20, 420],
+      ]),
+    );
+    const s = sfu.instances[0]!;
+    expect(callSelf().heard).toEqual(new Set(['far']));
+    expect(callSelf().someoneNear).toBe(true);
+    expect(s.want).toHaveBeenLastCalledWith([loc('far', 'mic'), loc('far', 'cam')]);
+    s.events.onTrack('fars', 'mic', {});
+    expect(graph.place).toHaveBeenLastCalledWith('far', 1, expect.any(Number));
+
+    // Stepping out into the corridor: the room goes, the neighbour comes, by distance.
+    call.update(
+      roomScene({ x: 60, y: 420 }, [
+        ['far', 580, 50],
+        ['outside', 20, 420],
+      ]),
+    );
+    expect(callSelf().heard).toEqual(new Set(['outside']));
+    expect(s.want).toHaveBeenLastCalledWith([loc('outside', 'mic'), loc('outside', 'cam')]);
+    s.events.onTrack('outsides', 'mic', {});
+    expect(graph.place).toHaveBeenLastCalledWith('outside', 1, expect.any(Number));
+    call.stop();
+  });
+
+  it('reads Nobody Near when the only walker is through a wall, and keeps the zoning for a late locator', async () => {
+    const { call } = makeCall();
+    await call.start();
+    call.update(roomScene({ x: 300, y: 380 }, [['corridor', 300, 420]]));
+    expect(callSelf().someoneNear).toBe(false);
+    expect(callSelf().heard).toEqual(new Set());
+    // Their microphone's locator arrives after the scene: still not heard.
+    receiveCallOp('corridor', { kind: 'call-track', tabId: 't1', track: loc('corridor', 'mic') });
+    expect(callSelf().heard).toEqual(new Set());
+    // Without your character, nobody is near.
+    call.update({ ...roomScene({ x: 0, y: 0 }, [['corridor', 300, 420]]), self: null });
+    expect(callSelf().someoneNear).toBe(false);
+    call.stop();
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage" (Work Tracker #319 part 2): a hall with a stage
+// along its back, and a meeting room beside it.
+describe('ProximityCall with a stage', () => {
+  const loc = (id: string, trackName: string) => ({ sessionId: `${id}s`, trackName, token: 't' });
+  const elements = [
+    { id: 'hall', type: 'shape', shape: 'room', x: 0, y: 0, width: 1200, height: 800 },
+    { id: 'meeting', type: 'shape', shape: 'room', x: 1300, y: 0, width: 400, height: 300 },
+  ];
+  const zones = roomZones(elements);
+  const stageAt = (over: Record<string, unknown> = {}) =>
+    callStages(
+      [
+        {
+          id: 'stage',
+          type: 'shape',
+          shape: 'stage',
+          x: 420,
+          y: 40,
+          width: 360,
+          height: 140,
+          ...over,
+        },
+      ],
+      zones,
+    );
+  const hallScene = (
+    self: { x: number; y: number },
+    walkers: [string, number, number][],
+    stages = stageAt(),
+  ) => ({
+    tabId: 't1',
+    self,
+    walkers: new Map(walkers.map(([id, x, y]) => [id, { x, y }])),
+    zones,
+    stages,
+  });
+  const publish = (id: string) =>
+    receiveCallOp(id, {
+      kind: 'call-track',
+      tabId: 't1',
+      track: loc(id, 'mic'),
+      video: loc(id, 'cam'),
+    });
+
+  it('hears an Editor on the stage from the meeting room, full and centred, and not their camera', async () => {
+    setCallLevels([
+      { id: 'speaker', role: 'edit' },
+      { id: 'colleague', role: 'participate' },
+    ]);
+    const { call } = makeCall();
+    await call.start();
+    publish('speaker');
+    publish('colleague');
+    call.update(
+      hallScene({ x: 1320, y: 50 }, [
+        ['speaker', 600, 120],
+        ['colleague', 1680, 280],
+      ]),
+    );
+    const s = sfu.instances[0]!;
+    expect(callSelf().heard).toEqual(new Set(['speaker', 'colleague']));
+    // The stage's camera stays with the stage; the meeting room's colleague is seen as before.
+    expect(s.want).toHaveBeenLastCalledWith([
+      loc('speaker', 'mic'),
+      loc('colleague', 'mic'),
+      loc('colleague', 'cam'),
+    ]);
+    s.events.onTrack('speakers', 'mic', {});
+    expect(graph.place).toHaveBeenCalledWith('speaker', 1, 0);
+    // Show Cameras: the stage's camera reaches the tab too.
+    call.update(
+      hallScene(
+        { x: 1320, y: 50 },
+        [
+          ['speaker', 600, 120],
+          ['colleague', 1680, 280],
+        ],
+        stageAt({ stageCameras: true }),
+      ),
+    );
+    const wanted = s.want.mock.calls.at(-1)![0] as unknown[];
+    expect(wanted).toHaveLength(4);
+    expect(wanted).toEqual(
+      expect.arrayContaining([loc('speaker', 'cam'), loc('colleague', 'cam')]),
+    );
+    call.stop();
+  });
+
+  it('follows the room’s levels: a Participant speaks only once the stage, or their level, allows it', async () => {
+    setCallLevels([{ id: 'p', role: 'participate' }]);
+    const { call } = makeCall();
+    await call.start();
+    publish('p');
+    const corridor = { x: 100, y: 900 };
+    call.update(hallScene(corridor, [['p', 600, 120]]));
+    expect(callSelf().heard).toEqual(new Set());
+    // Their level rises (a new grant): the call re-stages the scene it holds.
+    setCallLevels([{ id: 'p', role: 'edit' }]);
+    expect(callSelf().heard).toEqual(new Set(['p']));
+    // The same presence list again changes nothing.
+    setCallLevels([{ id: 'p', role: 'edit' }]);
+    expect(callSelf().heard).toEqual(new Set(['p']));
+    call.stop();
+  });
+
+  it('on the stage: Live to the whole tab, deaf to the audience, and StageSpeak once per stepping on', async () => {
+    setCallLevels([{ id: 'audience', role: 'participate' }]);
+    const { call } = makeCall({ canShare: true });
+    await call.start();
+    publish('audience');
+    const walkers: [string, number, number][] = [['audience', 640, 300]];
+    call.update(hallScene({ x: 600, y: 120 }, walkers));
+    expect(callSelf()).toMatchObject({ someoneNear: true, heard: new Set() });
+    call.update(hallScene({ x: 610, y: 120 }, walkers));
+    expect(telemetry.track).toHaveBeenCalledTimes(1);
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'StageSpeak');
+    // Off the stage, in the hall: back to the room, the audience heard again.
+    call.update(hallScene({ x: 600, y: 400 }, walkers));
+    expect(callSelf().heard).toEqual(new Set(['audience']));
+    call.update(hallScene({ x: 600, y: 120 }, walkers));
+    expect(telemetry.track).toHaveBeenCalledTimes(2);
+    call.stop();
+  });
+  // meeting-rooms-and-stage.md "Raise hand" and "The stage line" (Work Tracker #319 part 3).
+  const letSpeak = (from: string, on: boolean) =>
+    receiveLetSpeak(from, { kind: 'avatar-let-speak', tabId: 't1', targetId: 'me', on });
+  const hands = (sent: CallSignal[]) => sent.filter((x) => x.kind === 'avatar-hand');
+
+  it('raises a hand as the audience, is let speak by the stage, heard by the tab, and Done lowers it', async () => {
+    setCallLevels([
+      { id: 'speaker', role: 'edit' },
+      { id: 'floor', role: 'participate' },
+      { id: 'out', role: 'participate' },
+    ]);
+    const { call, sent } = makeCall();
+    await call.start();
+    publish('speaker');
+    publish('floor');
+    const walkers: [string, number, number][] = [
+      ['speaker', 600, 120],
+      ['floor', 300, 600],
+    ];
+    const hall = { x: 320, y: 600 };
+    // No stage live yet: Raise Hand is refused.
+    call.update(hallScene(hall, [['floor', 300, 600]]));
+    expect(callSelf()).toMatchObject({ stage: 'none', hand: 'down' });
+    call.raiseHand();
+    expect(hands(sent)).toEqual([]);
+    call.update(hallScene(hall, walkers));
+    expect(callSelf()).toMatchObject({ stage: 'audience', hand: 'down', barredBy: null });
+    call.raiseHand();
+    expect(callSelf().hand).toBe('raised');
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'RaiseHand');
+    // A Participant on the floor may not let you speak.
+    letSpeak('floor', true);
+    expect(callSelf().hand).toBe('raised');
+    letSpeak('speaker', true);
+    expect(callSelf()).toMatchObject({ hand: 'speaking', stage: 'speaker' });
+    expect(hands(sent).at(-1)).toEqual({ kind: 'avatar-hand', raised: true, letSpeak: 'speaker' });
+    // As a speaker you hear the stage, not your neighbour on the floor.
+    expect(callSelf().heard).toEqual(new Set(['speaker']));
+    // A newcomer is told the hand is up.
+    call.update(hallScene(hall, [...walkers, ['out', 100, 900]]));
+    expect(hands(sent).at(-1)).toEqual({ kind: 'avatar-hand', raised: true, letSpeak: 'speaker' });
+    letSpeak('speaker', false);
+    expect(callSelf().hand).toBe('down');
+    expect(hands(sent).at(-1)).toEqual({ kind: 'avatar-hand', raised: false });
+    call.stop();
+  });
+
+  it('lowers a hand on walking out of the room, on Lower Hand, and on leaving', async () => {
+    setCallLevels([{ id: 'speaker', role: 'edit' }]);
+    const { call, sent } = makeCall();
+    await call.start();
+    const walkers: [string, number, number][] = [['speaker', 600, 120]];
+    call.update(hallScene({ x: 320, y: 600 }, walkers));
+    call.raiseHand();
+    call.update(hallScene({ x: 100, y: 900 }, walkers));
+    expect(callSelf().hand).toBe('down');
+    call.update(hallScene({ x: 320, y: 600 }, walkers));
+    call.raiseHand();
+    call.lowerHand();
+    expect(callSelf().hand).toBe('down');
+    call.raiseHand();
+    call.stop();
+    expect(hands(sent).at(-1)).toEqual({ kind: 'avatar-hand', raised: false });
+    expect(callSelf()).toMatchObject({ hand: 'down', stage: 'none', handsUp: 0 });
+  });
+
+  it('counts the raised hands for a speaker, and hears a hand it let speak', async () => {
+    setCallLevels([
+      { id: 'a', role: 'participate' },
+      { id: 'b', role: 'participate' },
+    ]);
+    const { call } = makeCall({ canShare: true });
+    await call.start();
+    publish('a');
+    publish('b');
+    const walkers: [string, number, number][] = [
+      ['a', 300, 600],
+      ['b', 900, 600],
+    ];
+    call.update(hallScene({ x: 600, y: 120 }, walkers));
+    expect(callSelf()).toMatchObject({ stage: 'speaker', handsUp: 0, heard: new Set() });
+    receiveCallOp('a', { kind: 'avatar-hand', tabId: 't1', raised: true });
+    receiveCallOp('b', { kind: 'avatar-hand', tabId: 't1', raised: true });
+    expect(callSelf().handsUp).toBe(2);
+    // You let a speak (your own id never comes back to you): a joins the stage.
+    noteLetSpeak('a', true);
+    receiveCallOp('a', { kind: 'avatar-hand', tabId: 't1', raised: true, letSpeak: 'p-me' });
+    expect(callSelf()).toMatchObject({ handsUp: 1, heard: new Set(['a']) });
+    call.stop();
+  });
+
+  it('says which stage bars you while you stand on it', async () => {
+    const { call } = makeCall();
+    await call.start();
+    call.update(hallScene({ x: 600, y: 120 }, []));
+    expect(callSelf()).toMatchObject({ stage: 'barred', barredBy: 'edit' });
+    call.update(hallScene({ x: 600, y: 120 }, [], stageAt({ stageSpeakers: 'take-part' })));
+    expect(callSelf()).toMatchObject({ stage: 'speaker', barredBy: null });
+    call.stop();
+  });
+
+  // meeting-rooms-and-stage.md "Do Not Disturb".
+  it('hears nobody under Do Not Disturb, the stage included, and keeps publishing', async () => {
+    setCallLevels([{ id: 'speaker', role: 'edit' }]);
+    const { call, sent } = makeCall();
+    await call.start();
+    publish('speaker');
+    call.update(hallScene({ x: 320, y: 600 }, [['speaker', 600, 120]]));
+    expect(callSelf().heard).toEqual(new Set(['speaker']));
+    call.setDoNotDisturb(true);
+    call.setDoNotDisturb(true);
+    expect(callSelf().heard).toEqual(new Set());
+    expect(sfu.instances[0]!.want).toHaveBeenLastCalledWith([]);
+    expect(sent.some((x) => x.kind === 'call-track')).toBe(true);
+    call.setDoNotDisturb(false);
+    expect(callSelf().heard).toEqual(new Set(['speaker']));
+    call.stop();
+  });
+});
+
+// docs/specs/016-platform/calls-kill-switch.md "The room tells its clients" (Work Tracker #463).
+describe('ProximityCall in a silent room', () => {
+  afterEach(() => graph.micLevel.mockReturnValue(0.05));
+
+  it('asks the room to read the switch every 5 s of silence, and a flip lands within one check', async () => {
+    // Nobody talks: the microphone hears nothing, so no level goes to the room.
+    graph.micLevel.mockReturnValue(0);
+    const { call, sent } = makeCall();
+    await call.start();
+    call.update(scene([['p1', 100]]));
+    // The locator goes out again for the new walker, a second after the first.
+    vi.advanceTimersByTime(LOCATOR_RESEND_MS);
+    expect(sent.at(-1)?.kind).toBe('call-track');
+    sent.length = 0;
+    vi.advanceTimersByTime(CALLS_CHECK_MS - 1);
+    expect(sent).toEqual([]);
+    vi.advanceTimersByTime(1);
+    expect(sent).toEqual([{ kind: 'calls-check' }]);
+    vi.advanceTimersByTime(CALLS_CHECK_MS);
+    expect(sent).toEqual([{ kind: 'calls-check' }, { kind: 'calls-check' }]);
+    // The room read the switch on that check and pushed the flip: the call ends into Calls Paused.
+    receiveCallsMode('system', { kind: 'calls-mode', mode: 'off' });
+    expect(callSelf()).toMatchObject({ phase: 'off', mode: 'off' });
+    sent.length = 0;
+    vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
+    expect(sent).toEqual([]);
+  });
+
+  it('sends no check while its levels reach the room, and none from a listener', async () => {
+    graph.micLevel.mockReturnValue(0.05);
+    const { call, sent } = makeCall();
+    await call.start();
+    // Talking: a level goes at least every few seconds, and each one lets the room read the switch on its own.
+    vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
+    expect(sent.some((s) => s.kind === 'avatar-voice')).toBe(true);
+    expect(sent.filter((s) => s.kind === 'calls-check')).toEqual([]);
+    call.stop();
+
+    const listener = makeCall({ canSpeak: false });
+    await listener.call.start();
+    vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
+    expect(listener.sent).toEqual([]);
+    listener.call.stop();
   });
 });

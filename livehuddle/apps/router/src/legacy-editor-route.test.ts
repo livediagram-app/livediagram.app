@@ -104,14 +104,14 @@ describe('legacyHelpRedirect', () => {
         '/help/developers/working-with-documents/plan-sheets-images/',
         '/help/developers/working-with-documents/images-and-copies/',
       ],
-      // Facilitate mode became Workshop mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-      ['/help/canvas/facilitate-mode/', '/help/canvas/workshop-mode/'],
+      // Facilitate mode became Workshop mode, which then left livehuddle with the Highlighter (Work Tracker #423):
+      // the old names land where Workshop mode's and the Highlighter's articles do now.
+      ['/help/canvas/facilitate-mode/', '/help/collaboration/session-tools/'],
       [
         '/help/canvas/facilitate-mode/facilitate-tour/',
-        '/help/canvas/workshop-mode/workshop-tour/',
+        '/help/selection-modes/avatar-mode/avatar-tour/',
       ],
-      // The Highlighter became a Draw tile again (docs/specs/008-canvas/highlighter.md "History").
-      ['/help/selection-modes/highlighter/', '/help/palette/tools/highlighter/'],
+      ['/help/selection-modes/highlighter/', '/help/palette/tools/'],
       // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
       ['/help/activity-panel/', '/help/canvas/undo/'],
       ['/help/activity-panel/undo/', '/help/canvas/undo/'],
@@ -135,6 +135,47 @@ describe('legacyHelpRedirect', () => {
       ['/help/explorer/tags/', '/help/explorer/folders/'],
       ['/help/tools/ai/', '/help/account-and-data/connect-ai-mcp/'],
       ['/help/tools/ai/ai-tools/', '/help/account-and-data/connect-ai-mcp/'],
+      // Slide decks, presenting and the Page element left livehuddle (Work Tracker #423): the deck's articles land
+      // on Following Someone, and Pages on Write Elements.
+      ['/help/selection-modes/slide-deck/', '/help/canvas/follow-along/'],
+      ['/help/selection-modes/slide-deck', '/help/canvas/follow-along'],
+      ['/help/selection-modes/slide-deck/building-a-deck/', '/help/canvas/follow-along/'],
+      ['/help/selection-modes/slide-deck/presenting/', '/help/canvas/follow-along/'],
+      ['/help/selection-modes/slide-deck/presenter-controls/', '/help/canvas/follow-along/'],
+      ['/help/tips-and-tricks/presenting-well/', '/help/canvas/follow-along/'],
+      ['/help/palette/tools/pages/', '/help/palette/write/'],
+      // Workshop mode, the Collaborate elements, polls and the diagram tools left livehuddle (Work Tracker #423
+      // part 3): each lands on the nearest article that stays.
+      ['/help/canvas/workshop-mode/', '/help/collaboration/session-tools/'],
+      ['/help/canvas/workshop-mode', '/help/collaboration/session-tools'],
+      [
+        '/help/canvas/workshop-mode/workshop-tour/',
+        '/help/selection-modes/avatar-mode/avatar-tour/',
+      ],
+      ['/help/collaboration/session-tools/polls/', '/help/collaboration/session-tools/'],
+      ['/help/palette/behaviour/session-buttons/', '/help/palette/behaviour/'],
+      ['/help/palette/behaviour/reveal-zones/', '/help/palette/behaviour/'],
+      ['/help/palette/collaborate/', '/help/collaboration/session-tools/'],
+      ['/help/palette/collaborate/quizzes/', '/help/collaboration/session-tools/'],
+      ['/help/palette/collaborate/comment-panels/', '/help/collaboration/comments/'],
+      ['/help/palette/collaborate/action-panels/', '/help/collaboration/assigned-actions/'],
+      ['/help/palette/shapes/', '/help/canvas/the-canvas/adding-elements/'],
+      ['/help/palette/shapes/style-presets/', '/help/canvas/the-canvas/adding-elements/'],
+      ['/help/palette/arrows/', '/help/palette/tools/'],
+      ['/help/palette/arrows/arrow-styles/', '/help/palette/tools/'],
+      ['/help/palette/auto-attach-arrows/', '/help/palette/tools/'],
+      ['/help/palette/lanes/', '/help/palette/build/frames/'],
+      ['/help/palette/timeline-rail/', '/help/palette/build/frames/'],
+      ['/help/palette/pointer-notes/', '/help/palette/write/'],
+      ['/help/palette/embed-elements/website/', '/help/palette/tools/images/'],
+      ['/help/palette/tools/tables/', '/help/palette/write/'],
+      ['/help/palette/tools/drawing/shape-recognition/', '/help/palette/tools/'],
+      ['/help/palette/tools/data-elements/pie-chart/', '/help/palette/tools/'],
+      ['/help/canvas/annotations/', '/help/canvas/notes/'],
+      [
+        '/help/getting-started/adding-shapes-and-arrows/',
+        '/help/canvas/the-canvas/adding-elements/',
+      ],
       // A retired category's link that lost its `/help` prefix lands on the help centre home too.
       ['/self-hosting', '/help/'],
       ['/self-hosting/', '/help/'],
@@ -156,6 +197,10 @@ describe('legacyHelpRedirect', () => {
       '/help/canvas/draw-mode/',
       '/help/canvas/themes/',
       '/help/explorer/folders/',
+      '/help/palette/tools/',
+      '/help/palette/behaviour/',
+      '/help/palette/build/frames/',
+      '/help/collaboration/session-tools/',
       '/self-hostingx/',
       '/help/self-hostingx/',
     ]) {

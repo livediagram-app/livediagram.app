@@ -33,43 +33,49 @@ export function CanvasOverview() {
   );
 }
 
-/** Dropping a shape from a category's flyout onto the canvas (a curved drag trail from the Square tile in Shapes'
- *  flyout to a freshly placed, still-selected shape). */
+/** Dropping a sticky note from a category's flyout onto the canvas (a curved drag trail from the Sticky note tile in
+ *  Write's flyout to a freshly placed, still-selected note). */
 export function AddingElements() {
-  const shapes = stripCategory(58, 'Shapes');
-  const px = Math.round(shapes.left + shapes.w / 2 - 60);
+  const write = stripCategory(58, 'Write');
+  const px = Math.round(write.left + write.w / 2 - 41);
   return (
     <Scene w={420} h={200}>
-      <Strip x={58} y={16} open="Shapes" />
-      <Panel x={px} y={56} w={120} h={58}>
+      <Strip x={58} y={16} open="Write" />
+      <Panel x={px} y={56} w={82} h={58}>
         <Tile x={px + 8} y={64} size={30}>
-          <rect
-            x={-6}
-            y={-6}
-            width={12}
-            height={12}
-            rx={1.5}
-            className="stroke-brand-500"
-            strokeWidth={1.8}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={px + 45} y={64} size={30}>
-          <circle r={6.5} className="stroke-slate-500" strokeWidth={1.6} fill="none" />
-        </Tile>
-        <Tile x={px + 82} y={64} size={30}>
           <path
-            d="M0 -7 L7 0 L0 7 L-7 0 Z"
+            d="M-5 -6 H5 M0 -6 V7"
             className="stroke-slate-500"
             strokeWidth={1.6}
             fill="none"
+            strokeLinecap="round"
+          />
+        </Tile>
+        <Tile x={px + 45} y={64} size={30}>
+          <rect
+            x={-7}
+            y={-7}
+            width={14}
+            height={14}
+            rx={1.5}
+            className="fill-amber-100 stroke-amber-400"
+            strokeWidth={1.6}
           />
         </Tile>
       </Panel>
-      <Arrow from={[px + 23, 98]} to={[250, 120]} kind="curved" tone="muted" dashed />
-      <Shape x={250} y={120} w={96} h={56} kind="rect" />
-      <SelectionBox x={250} y={120} w={96} h={56} />
-      <Cursor x={300} y={148} colour="brand" />
+      <Arrow from={[px + 60, 98]} to={[250, 120]} kind="curved" tone="muted" dashed />
+      <Shape
+        x={250}
+        y={110}
+        w={76}
+        h={76}
+        fill="fill-amber-100"
+        stroke="stroke-amber-400"
+        label="Ideas"
+        labelTone="body"
+      />
+      <SelectionBox x={250} y={110} w={76} h={76} />
+      <Cursor x={300} y={160} colour="brand" />
     </Scene>
   );
 }

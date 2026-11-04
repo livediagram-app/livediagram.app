@@ -26,7 +26,6 @@ import {
   TemplatesArt,
   TimelineFeedArt,
   UndoRedoArt,
-  WorkshopModeArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -172,28 +171,28 @@ export const LANDING_SECTIONS: LandingSection[] = [
   },
   {
     id: 'workshops',
-    label: 'Workshops',
+    label: 'Meetings',
     scene: 'townhall',
-    cta: 'Explore workshops',
-    title: 'Run the session from the board',
+    cta: 'Explore meetings',
+    title: 'Run the meeting from the room',
     description:
-      'Everything a facilitator reaches for is on the board: a timer the room can see, dot votes, polls and quizzes, a baton so one person runs it, and templates for retros, town halls and Lean Coffee.',
+      'What a meeting needs is in the room: a timer everyone sees, a quick vote on the notes, a baton so one person runs it, and a way to ask everyone to look at the same thing.',
     metaDescription:
-      'Run retros, town halls and workshops on the board: timers, dot votes, polls, quizzes and a facilitator baton, with a template for every session.',
+      'Run stand-ups and all-hands in a Space: a shared timer, a quick dot vote, a facilitator baton, Bring Focus, the laser and the spotlight.',
     highlights: [
-      'Timer, vote and poll',
+      'Timer and vote',
       'One person runs the room',
-      'Quizzes, polls and estimates',
-      'A template for every session',
+      'Ask the room to look here',
+      'A Space for every meeting',
     ],
     items: [
       {
         art: <SessionToolsArt />,
         href: '/help/collaboration/session-tools/',
         group: 'Run the room',
-        title: 'Timer, vote and poll',
+        title: 'Timer and vote',
         description:
-          'Timer, Vote and Poll sit in the Session strip at the foot of every board. Start a countdown or a stopwatch the whole room sees, open a dot vote with a budget of dots, or ask a quick poll. Results tally live, and revealing a vote walks the room through the top picks one at a time.',
+          'Timer and Vote sit in the Session strip at the foot of every board. Start a countdown the whole room sees, or open a dot vote with a budget of dots on the notes in a room. Results tally live, and revealing a vote walks the room through the top picks one at a time.',
       },
       {
         art: <FacilitatorArt />,
@@ -201,7 +200,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Run the room',
         title: 'One person runs the room',
         description:
-          'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
+          'Hand someone the facilitator baton and the tools that run the meeting answer to them alone: the timer and the votes. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
       },
       {
         art: <BringFocusArt />,
@@ -228,60 +227,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Switch to the laser and your cursor leaves a glowing trail on everyone’s screen. Point at the thing you mean while you talk it through, and the trail fades on its own.',
       },
       {
-        art: <SessionToolsArt />,
-        href: '/help/palette/collaborate/quizzes/',
-        group: 'Ask the room',
-        title: 'Quizzes, polls and estimates',
-        description:
-          'Run a quiz with a countdown and a reveal of who got it right, a live poll, a temperature check, or planning poker on an estimate scale. Everyone answers from their own screen, and the board shows the room’s answer as it comes in.',
-      },
-      {
-        art: <CommentsArt />,
-        href: '/help/palette/collaborate/qa-boards/',
-        group: 'Ask the room',
-        title: 'Questions and ideas from the floor',
-        description:
-          'A Q&A board collects questions the room can upvote, so the one most people want answered rises to the top. An idea box takes suggestions anonymously, for the thought nobody wants their name on.',
-      },
-      {
-        art: <SessionToolsArt />,
-        href: '/help/palette/behaviour/done-checks/',
-        group: 'Ask the room',
-        title: 'Ask the room if they are done',
-        description:
-          'Drop a Done check and everyone marks themselves finished. The card shows who has and who it is still waiting on, built from whoever is actually in the room, and flashes when the last person marks.',
-      },
-      {
-        art: <SpotlightArt />,
-        href: '/help/palette/behaviour/reveal-zones/',
-        group: 'Ask the room',
-        title: 'Reveal it when the room is ready',
-        description:
-          'Hide the answers, the next exercise or the vote’s result under a reveal zone, then lift it for everyone at once. A picker chooses someone at random, so nobody has to volunteer.',
-      },
-      {
-        art: <FacilitatorArt />,
-        href: '/help/palette/collaborate/agendas/',
-        group: 'Keep the record',
-        title: 'Keep the record of the meeting',
-        description:
-          'An agenda holds the run of the session, and pressing a segment starts the timer for it. A roll call freezes who was in the room, and a decision record keeps what was decided, why and when, beside the thing it decided.',
-      },
-      {
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
-        group: 'Keep the record',
-        title: 'A template for every session',
+        group: 'Run the room',
+        title: 'A Space for every meeting',
         description:
-          'Start from five retro formats, a town hall, Lean Coffee, Crazy Eights, a meeting agenda, a brainstorm or a workshop board, with the timer and the votes already in place. For a break, a pub quiz, icebreakers and party games are ready too.',
-      },
-      {
-        art: <WorkshopModeArt />,
-        href: '/help/canvas/workshop-mode/',
-        group: 'Keep the record',
-        title: 'Every tool on one palette',
-        description:
-          'Stickies, writing, pens, shapes, icons, stickers, media, charts and every session element sit on one palette built for running a room. There is no mode to switch: every board in livehuddle is a workshop board.',
+          'Start from a Team Pod for the stand-up, an All-Hands Hall with a stage, a Coworking Space to work side by side or a whole Virtual Office, or from a blank Space you furnish yourself.',
       },
     ],
   },

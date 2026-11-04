@@ -61,8 +61,8 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   // (docs/specs/004-interface-design/canvas-accessibility.md), so the placed square is addressable without reaching
   // into canvas internals.
   const canvas = page.locator('[data-canvas-a11y-root]');
-  const square = page.getByRole('img', { name: 'Square', exact: true });
-  await (await paletteTile(page, 'Add Square')).click();
+  const square = page.getByRole('img', { name: 'Sticky note', exact: true });
+  await (await paletteTile(page, 'Add Sticky Note')).click();
   await canvas.click({ position: { x: 420, y: 300 } });
   await expect(square).toHaveCount(1);
 

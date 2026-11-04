@@ -164,6 +164,9 @@ who is free to talk, who is heads-down, who has stepped away.
 
 - **Set from the panel**: a **Status** row, closed until opened like the rest, with the five choices (**None** and
   the four), its current value in the collapsed header. Every role may set it: it is presence, like the character.
+  The shared status list (`@liveworkspace/avatar`) also knows livehuddle's call status, **Do Not Disturb** (`dnd`,
+  a red dot with a white bar): this product has no calls, so its panel does not offer it, though one on the wire
+  still parses and draws.
 - **Peers see it**: the status rides the avatar presence (`status`), parsed field by field; anything else is no
   status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
 - **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
@@ -220,7 +223,7 @@ The pop on opening, the sway and the rise are decoration. Under **reduced motion
 
 ## Entering from a button
 
-A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. A pad on the tab beats it ([Entering on a pad](#entering-on-a-pad)). The spawn point is one-shot: a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
+A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. The whole figure stands below the button, its head a small gap under the button's bottom edge at whatever Size you chose, so it never hides the button's label (`avatarSpawnBelow`). A pad on the tab beats it ([Entering on a pad](#entering-on-a-pad)). The spawn point is one-shot: a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
 
 ## Entering on a pad
 

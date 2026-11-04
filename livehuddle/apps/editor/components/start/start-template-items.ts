@@ -42,7 +42,7 @@ type TemplateStart = {
 };
 
 const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
-  workshop: 'The quickest ways to run a session, picked for most teams.',
+  workshop: 'The quickest ways to meet, picked for most teams.',
 };
 
 // The group the start leads with and opens on (docs/specs/007-editor/start-diagramming.md "The Spaces lead"):

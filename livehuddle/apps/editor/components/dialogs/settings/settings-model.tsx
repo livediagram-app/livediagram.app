@@ -41,8 +41,7 @@ import { SettingsTrashRow } from './SettingsTrashRow';
 // Whether a row's setting is one every liveworkspace app shares (ALL_SETTING_KEYS): changed here,
 // it changes in each of them (docs/specs/007-editor/user-preferences.md "Shared with every app").
 // A row's key is its preference's key, except a UI Scale part's (`uiScale-panels` is
-// `uiScalePanels`) and a Presenting option's (`presentation-loop` is a field of `presentation`):
-// settingKeyOfRow.
+// `uiScalePanels`): settingKeyOfRow.
 export function rowSharedByAllApps(rowKey: string): boolean {
   return isAllSettingRow(rowKey);
 }

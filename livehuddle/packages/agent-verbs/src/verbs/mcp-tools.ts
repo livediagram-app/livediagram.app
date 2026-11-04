@@ -40,7 +40,7 @@ export const mcpFindDocuments = mcpTool('find_documents', {
   behaviour: 'read',
   title: 'Find Spaces',
   description:
-    'Search the user’s livehuddle Spaces (the boards they meet and run workshops on) by name: ' +
+    'Search the user’s livehuddle Spaces (the places they meet in) by name: ' +
     'their personal library AND the shared libraries of every team they belong to. Returns a ' +
     'compact list (id, name, updated time, which library it lives in, and a link to open it), ' +
     'image-free, so many results cost little; read_document reads one.',
@@ -64,8 +64,8 @@ export const mcpListTemplates = mcpTool('list_templates', {
   behaviour: 'read',
   title: 'List templates',
   description:
-    'Browse the template library: the same hand-tuned session boards the editor\u2019s Quick ' +
-    'Start offers (retrospective, meeting-agenda, town-hall, icebreaker-questions, ...). Returns categories ' +
+    'Browse the template library: the same Spaces the editor\u2019s Start a Space offers (blank-session, ' +
+    'virtual-office, coworking-space, team-pod, all-hands-hall). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
     'on create_document / add_tab to start from it, then personalise the labels with ' +
     'update_document.',
@@ -89,9 +89,9 @@ export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a Space',
   description:
-    'Create a new livehuddle Space: a board for a meeting or a workshop (a retrospective, a stand-up, ' +
-    'a planning session). Each tab takes a "template" (a kind from list_templates, a hand-tuned ' +
-    'session board), a "graph" (nodes and edges, laid out in the template look: sizes, elbows, side ' +
+    'Create a new livehuddle Space: a place a team meets in (an office, a team pod, a stand-up, ' +
+    'an all-hands). Each tab takes a "template" (a kind from list_templates, a ready-furnished ' +
+    'Space), a "graph" (nodes and edges, laid out in the template look: sizes, elbows, side ' +
     'exits, loops round the outside, title and key), "mermaid" or raw "elements" (the full format is ' +
     'documented inline on the "tabs" argument below). One tab, or several for a multi-tab Space in ' +
     'one call (an agenda plus a tab per breakout). The server validates, lays ' +
@@ -108,7 +108,7 @@ export const mcpAddTab = mcpTool('add_tab', {
   title: 'Add a tab to a Space',
   description:
     'Add a NEW tab (its own canvas) to an existing Space, e.g. a breakout board or the next ' +
-    'part of a workshop. It takes elements, a graph or a "template" as a create_document tab ' +
+    'room of a meeting. It takes elements, a graph or a "template" as a create_document tab ' +
     'does; the server validates, lays out per the layout arg, appends the tab, and returns an ' +
     'inline PNG. read_document lists the Space\u2019s existing tabs.',
   inputSchema: addTabShape,

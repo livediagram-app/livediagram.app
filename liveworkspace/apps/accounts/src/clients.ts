@@ -117,9 +117,29 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
         { status: 400 },
       );
     }
-    await env.AUTH_DB.prepare('INSERT INTO oauth_client_app (clientId, app) VALUES (?, ?)')
+    const recorded = await env.AUTH_DB.prepare(
+      'INSERT INTO oauth_client_app (clientId, app) VALUES (?, ?)',
+    )
       .bind(client.client_id, app)
-      .run();
+      .run()
+      .then(
+        () => true,
+        () => false,
+      );
+    if (!recorded) {
+      // The table's CHECK doesn't take this app: a database behind on its migrations (a local one built before
+      // 0018_livehuddle.sql). Take the client back, so nothing is left half-registered, and say what to do.
+      await env.AUTH_DB.prepare('DELETE FROM oauthClient WHERE clientId = ?')
+        .bind(client.client_id)
+        .run();
+      return Response.json(
+        {
+          error: 'client_app_refused',
+          message: `This database doesn't take ${app} yet: its migrations are behind. Apply them (corepack pnpm db:migrate:local in liveworkspace/apps/accounts, or restart its dev script) and register again.`,
+        },
+        { status: 500 },
+      );
+    }
     return Response.json({
       client_id: client.client_id,
       client_secret: client.client_secret,

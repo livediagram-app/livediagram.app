@@ -148,6 +148,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   sofa: ['chairFacing'],
   // docs/specs/009-elements/office.md: which wall a room's doorway is in.
   room: ['roomDoor'],
+  // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
+  stage: ['stageSpeakers', 'stageCameras'],
   portal: ['portalTarget'],
 };
 

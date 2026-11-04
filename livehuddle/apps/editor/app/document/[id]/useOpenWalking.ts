@@ -3,12 +3,11 @@
 // leaving the mode is yours to keep. Its own slice, composed into useEditorState.
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { Element, Layer } from '@livehuddle/document';
-import type { AvatarPoint } from '@liveworkspace/avatar/walk';
-import { walkEntrance } from '@/lib/walk-entrance';
+import { walkEntrance, type WalkInButton } from '@/lib/walk-entrance';
 
-// Where the canvas starts the character (just below the tab's Walk In button), with a sequence number so the same
-// spot asked for twice is still a fresh request. A pad needs none: the walk's own entry starts it on the pad.
-export type WalkIn = { feet: AvatarPoint; seq: number };
+// The Walk In button the canvas starts the character below, with a sequence number so the same button asked for twice
+// is still a fresh request. A pad needs none: the walk's own entry starts it on the pad.
+export type WalkIn = { button: WalkInButton; seq: number };
 
 export function useOpenWalking({
   enabled,
@@ -40,7 +39,7 @@ export function useOpenWalking({
     if (!entrance) return;
     if (entrance.kind === 'button') {
       seq.current += 1;
-      setWalkIn({ feet: entrance.feet, seq: seq.current });
+      setWalkIn({ button: entrance.button, seq: seq.current });
     }
     openWalking();
   });

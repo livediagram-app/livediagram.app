@@ -2,8 +2,9 @@
 
 > **Refocus pending** (Work Tracker #423): each build part removes the help articles for what it takes out of
 > livehuddle, with their help registry entries, figures and links, and redirects their addresses to the nearest article
-> that stays ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Part 5 rewrites the About and Getting
-> Started articles for meeting in Spaces.
+> that stays ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), listed with the other retired articles
+> under [Renamed articles](#renamed-articles). Part 2 has removed the slide deck, presenting and Page articles. Part 5
+> rewrites the About and Getting Started articles for meeting in Spaces.
 
 A standalone help centre at `/help`, modelled on the Manager Toolkit help centre but with livehuddle's information architecture, content, and brand.
 
@@ -273,10 +274,18 @@ live. The pitch it opens with is the product's, "Meet and run workshops together
   Diagram window, Diagram's category bar) right.
 - **The rule for an article.** An article stays while livehuddle's editor offers what it documents, reachable from the
   palette, the search panel's Add to Canvas, a menu, a dialog or the Explorer, because help never leaves a visible
-  control undocumented. So a few articles stay for features v1's scope lists as non-goals but the editor still shows
-  (the Slide Deck and its sub-articles, the Page element, which only the search panel still adds); they leave with the
-  code that cuts them. Diagram vocabulary stays where it names a real canvas thing (a diagram key, a Mermaid diagram,
+  control undocumented. So an article stays for a feature v1's scope lists as a non-goal while the editor still shows
+  it, and leaves with the code that cuts it; the Slide Deck, its sub-articles and the Page element went that way in
+  Work Tracker #423 part 2. Diagram vocabulary stays where it names a real canvas thing (a diagram key, a Mermaid diagram,
   a swimlane, a draw.io import), never as the name of what a person makes.
+- **Calls** have two articles under Collaboration, each describing what the editor does today: **Proximity Audio**
+  (`/help/collaboration/proximity-audio/`: Join Audio and Listen In, earshot, the microphone's states, the talking
+  bars and walking over, who may speak) and **Cameras and Screen Sharing**
+  (`/help/collaboration/cameras-and-screen-sharing/`: the camera, an Editor's screen share, the bubbles, maximising,
+  Video Paused), linked both ways. Calls run only where they are switched on
+  ([Proximity audio](../012-collaboration/proximity-audio.md#turning-calls-on)), so both say that where they are off
+  there is no Join Audio button, and neither promises when they come on. Calls cannot run locally without the
+  Realtime secrets, so their figures are drawn from the call components' own labels and states rather than shot.
 - **The palette's groups** follow Workshop's palette: Everyday Elements, **Layout Kits** (lanes, frames, stacks,
   boundaries, keys, cards and callouts, pointer notes, the timeline), Workshop Kits and Palette Settings.
 
@@ -310,15 +319,21 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/canvas/facilitate-mode/`                        | `/help/canvas/workshop-mode/`                           |
 | `/help/canvas/facilitate-mode/facilitate-tour/`        | `/help/canvas/workshop-mode/workshop-tour/`             |
 
-Three features left livehuddle on purpose, and their articles with them; each old address answers a `308` to the nearest live article, so a shared link still lands somewhere useful:
+These features left livehuddle on purpose, and their articles with them; each old address answers a `308` to the nearest live article, so a shared link still lands somewhere useful:
 
-| Old address                          | New address                              | Why                                                             |
-| ------------------------------------ | ---------------------------------------- | --------------------------------------------------------------- |
-| `/help/canvas/themes/custom-themes/` | `/help/canvas/themes/`                   | Custom themes were deleted; the built-in themes stay            |
-| `/help/explorer/themes-library/`     | `/help/canvas/themes/`                   | The Explorer's Themes page went with custom themes              |
-| `/help/explorer/tags/`               | `/help/explorer/folders/`                | Tags were removed; folders are how documents are grouped now    |
-| `/help/tools/ai/`                    | `/help/account-and-data/connect-ai-mcp/` | The in-editor AI assistant was removed; connected AI tools stay |
-| `/help/tools/ai/ai-tools/`           | `/help/account-and-data/connect-ai-mcp/` | The same                                                        |
+| Old address                                            | New address                              | Why                                                                                 |
+| ------------------------------------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| `/help/canvas/themes/custom-themes/`                   | `/help/canvas/themes/`                   | Custom themes were deleted; the built-in themes stay                                |
+| `/help/explorer/themes-library/`                       | `/help/canvas/themes/`                   | The Explorer's Themes page went with custom themes                                  |
+| `/help/explorer/tags/`                                 | `/help/explorer/folders/`                | Tags were removed; folders are how documents are grouped now                        |
+| `/help/tools/ai/`                                      | `/help/account-and-data/connect-ai-mcp/` | The in-editor AI assistant was removed; connected AI tools stay                     |
+| `/help/tools/ai/ai-tools/`                             | `/help/account-and-data/connect-ai-mcp/` | The same                                                                            |
+| `/help/selection-modes/slide-deck/`                    | `/help/canvas/follow-along/`             | Slide decks and presenting left livehuddle (Work Tracker #423); Follow-me stays     |
+| `/help/selection-modes/slide-deck/building-a-deck/`    | `/help/canvas/follow-along/`             | The same                                                                            |
+| `/help/selection-modes/slide-deck/presenting/`         | `/help/canvas/follow-along/`             | The same                                                                            |
+| `/help/selection-modes/slide-deck/presenter-controls/` | `/help/canvas/follow-along/`             | The same                                                                            |
+| `/help/tips-and-tricks/presenting-well/`               | `/help/canvas/follow-along/`             | The same                                                                            |
+| `/help/palette/tools/pages/`                           | `/help/palette/write/`                   | The Page element left livehuddle (Work Tracker #423); the other Write elements stay |
 
 The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`, and so does a bare `/self-hosting/…` that lost its `/help` prefix.
 

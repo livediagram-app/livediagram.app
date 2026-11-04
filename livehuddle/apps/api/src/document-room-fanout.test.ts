@@ -240,6 +240,27 @@ describe('the avatar relay in the room', () => {
     resetCallsModeCache();
   });
 
+  // Work Tracker #463: a room where nobody talks still reads the switch, from a silent publisher's check.
+  it('reads the switch on a silent call’s check, tells every socket, and relays the check to nobody', async () => {
+    resetCallsModeCache();
+    const CALLS_SWITCH = fakeKv({ 'calls-mode': 'off' });
+    const { room, join, sockets } = newRoom({ CALLS_SWITCH });
+    const speaker = join('p0', 't1', true, 'participate');
+    join('p1', 't1');
+    for (const s of sockets) s.sent.length = 0;
+    say(room, speaker, { kind: 'calls-check', tabId: 't1' });
+    await vi.waitFor(() => expect(sockets[1]!.sent.length).toBeGreaterThan(0));
+    for (const s of sockets) {
+      const ops = s.sent.flatMap(opsIn);
+      expect(ops.some((f) => f.op?.kind === 'calls-check')).toBe(false);
+      expect(ops.filter((f) => f.op?.kind === 'calls-mode')).toEqual([
+        { kind: 'op', from: 'system', op: { kind: 'calls-mode', mode: 'off' } },
+      ]);
+    }
+    expect(CALLS_SWITCH.gets).toBe(1);
+    resetCallsModeCache();
+  });
+
   it('forgets a walker whose socket closed', () => {
     const { room, join } = newRoom();
     const walker = join('p0', 't1');

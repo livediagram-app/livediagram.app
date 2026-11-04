@@ -4,8 +4,11 @@ import {
   isParticipationOp,
   isPresenceOpKind,
   isSystemOpKind,
+  parseAvatarHand,
+  parseAvatarLetSpeak,
   parseAvatarSay,
   parseAvatarVoice,
+  parseCallsCheck,
   parseCallTrack,
   parseStoredLevel,
 } from '@livehuddle/api-schema';
@@ -87,6 +90,13 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // So is talking (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so it shows no
   // equaliser and publishes no microphone, and a malformed level or locator reaches nobody.
   if (opKind === 'avatar-voice' && (level === 'view' || !parseAvatarVoice(op))) return DROP;
+  // A silent call's nudge to read the kill switch (docs/specs/016-platform/calls-kill-switch.md "The room tells its
+  // clients"): a publisher's, so never a Viewer's; the room consumes it.
+  if (opKind === 'calls-check' && (level === 'view' || !parseCallsCheck(op))) return DROP;
+  // Raising a hand and letting one speak are taking part (docs/specs/012-collaboration/meeting-rooms-and-stage.md
+  // "Share roles"): a Viewer listens. Whether a let-speak's sender stands on a stage is the browsers' to check.
+  if (opKind === 'avatar-hand' && (level === 'view' || !parseAvatarHand(op))) return DROP;
+  if (opKind === 'avatar-let-speak' && (level === 'view' || !parseAvatarLetSpeak(op))) return DROP;
   if (opKind === 'call-track') {
     const track = level === 'view' ? null : parseCallTrack(op);
     if (!track) return DROP;

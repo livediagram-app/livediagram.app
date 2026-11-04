@@ -6,9 +6,10 @@
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 // The floor pieces: placed behind everything, never blocking, never a destination. An Avatar Pad
-// (docs/specs/009-elements/avatar-pad.md) lies on the floor too: characters stand on it, furniture over it.
-export function isFloorShape(kind: string): kind is 'room' | 'rug' | 'avatar-pad' {
-  return kind === 'room' || kind === 'rug' || kind === 'avatar-pad';
+// (docs/specs/009-elements/avatar-pad.md) lies on the floor too: characters stand on it, furniture over it. So does
+// livehuddle's Stage (its docs/specs/012-collaboration/meeting-rooms-and-stage.md): a platform people stand on.
+export function isFloorShape(kind: string): kind is 'room' | 'rug' | 'avatar-pad' | 'stage' {
+  return kind === 'room' || kind === 'rug' || kind === 'avatar-pad' || kind === 'stage';
 }
 
 // The furniture a character sits down in (docs/specs/009-elements/chair.md "Desk and sofa").
@@ -107,6 +108,22 @@ export function roomWalls(el: Rect & { roomDoor?: RoomDoor }): WallSegment[] {
   along(door === 'w' ? roomDoorSpan(h, 'w') : null, (t) => ({ x: left, y: y + t }), h);
   along(door === 'e' ? roomDoorSpan(h, 'e') : null, (t) => ({ x: right, y: y + t }), h);
   return out;
+}
+
+/**
+ * The floor inside a room's walls, bounded by the same centre lines `roomWalls` draws (and the doorway's threshold
+ * on that line): where a character counts as in the room (livehuddle's docs/specs/012-collaboration/
+ * meeting-rooms-and-stage.md "Rooms are calls"). Empty (zero or negative size) for a room too small to stand in.
+ */
+export function roomInterior(el: Rect): Rect {
+  const half = ROOM_WALL / 2;
+  const top = el.y + ROOM_BACK_FACE - half;
+  return {
+    x: el.x + half,
+    y: top,
+    width: el.width - ROOM_WALL,
+    height: el.y + el.height - half - top,
+  };
 }
 
 /** The four edges of a box as wall segments (a footprint's outline). */

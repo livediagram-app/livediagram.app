@@ -6,8 +6,10 @@
 import { type App } from '@liveworkspace/index-client';
 import { APP_NAMES } from '@liveworkspace/sites';
 import {
+  MiniAllHands,
   MiniArticle,
   MiniBoard,
+  MiniCoworking,
   MiniDashboard,
   MiniFlowchart,
   MiniForm,
@@ -18,6 +20,8 @@ import {
   MiniPoster,
   MiniSheet,
   MiniSlide,
+  MiniTeamPod,
+  MiniVirtualOffice,
   MiniWebsite,
   MiniWhiteboard,
   MiniWireframe,
@@ -127,16 +131,41 @@ export const WORK_KINDS: Record<App, readonly WorkKind[]> = {
     },
     { id: 'photo', label: 'Photo', template: 'photo-edit', draw: (b) => <MiniPhoto {...b} /> },
   ],
-  // Launched without pictures of its own yet: its hero shows none, and All leaves it out until its kinds (the Spaces
-  // templates) are drawn (a follow-up to Work Tracker #189).
-  livehuddle: [],
+  // Its Spaces, in Popular's order: with Blank Space (the hero's New Space) they are its whole catalogue
+  // (livehuddle/docs/specs/007-editor/templates-by-mode.md).
+  livehuddle: [
+    {
+      id: 'virtual-office',
+      label: 'Virtual Office',
+      template: 'virtual-office',
+      draw: (b) => <MiniVirtualOffice {...b} />,
+    },
+    {
+      id: 'team-pod',
+      label: 'Team Pod',
+      template: 'team-pod',
+      draw: (b) => <MiniTeamPod {...b} />,
+    },
+    {
+      id: 'coworking-space',
+      label: 'Coworking Space',
+      template: 'coworking-space',
+      draw: (b) => <MiniCoworking {...b} />,
+    },
+    {
+      id: 'all-hands-hall',
+      label: 'All-Hands Hall',
+      template: 'all-hands-hall',
+      draw: (b) => <MiniAllHands {...b} />,
+    },
+  ],
 };
 
 /** One tile of the hero's set: an app's kind of work. */
 export type WorkTile = { app: App; kind: WorkKind; label: string };
 
 /** The tiles the hero shows: the app's kinds, or under All one per listed app (its first kind, named by the app's kind:
- *  Canvas, Plan, Document, Design), so either way the set holds the same number of tiles. */
+ *  Canvas, Plan, Document, Design, Space). */
 export function workTiles(app: App, all: boolean): WorkTile[] {
   if (!all) return WORK_KINDS[app].map((kind) => ({ app, kind, label: kind.label }));
   return APP_NAMES.flatMap((a) => {

@@ -15,7 +15,7 @@ describe('LockBadge', () => {
     expect(container.querySelector('svg')).not.toBeNull();
   });
 
-  it('hides while the surface suppresses indicators (presenting, an embed)', () => {
+  it('hides while the surface suppresses indicators (an embed)', () => {
     const { container } = render(
       <SuppressElementIndicators when>
         <LockBadge />

@@ -117,10 +117,13 @@ registers it in the index in one step, then opens it.
 Home's hero shows **what the app makes**: four small pictures, one per kind of work, each drawn in its app's brand
 colour with its name under it (`WorkKinds` in `@liveworkspace/explorer`, fed per app from its `WORK_KINDS`; the
 pictures are `@liveworkspace/ui/work-art`, the same miniatures every help centre draws a product's work with). Filtered
-to an app it shows that app's four. Under All Apps it shows one per app, that app's first kind in that app's colour,
-named by the app's kind (Canvas, Plan, Document, Design). Every set has the same layout, size and spacing: from `lg`
-up the tiles stand two by two in the hero's right column; below `lg` they sit under the search field, four across, a
-phone included (smaller there, so the hero stays short), inside the page's 16 px gutter. The same set shows on a first run, in the welcome's hero.
+to an app it shows that app's four. Under All Apps it shows one per app, five tiles, that app's first kind in that
+app's colour, named by the app's kind (Canvas, Plan, Document, Design, Space). Every app's set has the same layout,
+size and spacing: from `lg` up the tiles stand two by two in the hero's right column; below `lg` they sit under the
+search field, four across, a phone included (smaller there, so the hero stays short), inside the page's 16 px gutter.
+All's five keep the same tile: below `lg` one row of five (so the hero is no taller than an app's, and no tile wraps to
+a row of its own), a tighter 4 px gap and 11 px names below `sm` so the longest, Document, holds one line on a 390 px
+phone; from `lg` three over two in the right column, the two centred under the three, each tile the same size. The same set shows on a first run, in the welcome's hero.
 
 Each tile starts that kind of work: it is a link to the app's own New route with the template that makes it
 (`/new?template=<template>`, the address the app's welcome uses), on the app's address (the host's `templateHref`;
@@ -130,12 +133,21 @@ is fetched to draw them. They took the place of each app's fan of template previ
 manifests), which differed in number and kind from app to app, showed only on a wide screen, and showed nothing under
 All Apps.
 
-| App           | Its kinds, and the template each starts                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| livediagram   | Flowchart (`flowchart`), Mind Map (`mindmap`), Whiteboard (`whiteboard`), Workshop (`blank-session`)                          |
-| liveplanner   | Board (`kanban`), Sheet (`blank-spreadsheet`), Dashboard (`project-planner`, whose Overview tab is one), Form (`blank-form`)  |
-| livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)        |
-| livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`) |
+| App           | Its kinds, and the template each starts                                                                                          |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| livediagram   | Flowchart (`flowchart`), Mind Map (`mindmap`), Whiteboard (`whiteboard`), Workshop (`blank-session`)                             |
+| liveplanner   | Board (`kanban`), Sheet (`blank-spreadsheet`), Dashboard (`project-planner`, whose Overview tab is one), Form (`blank-form`)     |
+| livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)           |
+| livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`)    |
+| livehuddle    | Virtual Office (`virtual-office`), Team Pod (`team-pod`), Coworking Space (`coworking-space`), All-Hands Hall (`all-hands-hall`) |
+
+livehuddle's kinds are its four Spaces, in Popular's order: with Blank Space they are its whole catalogue
+([templates by mode](../../../../livehuddle/docs/specs/007-editor/templates-by-mode.md)), and Blank Space is what the
+hero's New Space makes. Each is drawn as its floor plan seen from above, its rooms and furniture as the template lays
+them out, with a few people's avatars in it (an office of rooms either side of a corridor, a pod's desks beside its
+team board, an open floor with phone booths, a hall's rows facing a stage). livehuddle's editor tests that each of
+its kinds names a template its `/new` opens (`apps/editor/lib/explorer-work-kinds.test.ts`), so a kind never falls
+through to a Blank Space.
 
 #### Each app's backdrop, on Home's hero
 

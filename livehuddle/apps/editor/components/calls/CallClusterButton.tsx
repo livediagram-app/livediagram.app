@@ -6,8 +6,10 @@
 // you, and Leave Audio. While the calls kill switch pauses calls: Calls Paused, calm, never an error, and a press tries
 // again (docs/specs/016-platform/calls-kill-switch.md "Calls Paused"). Nothing at all while calls are off or there is
 // nobody to talk to. Once in, the camera and Share Screen sit beside the microphone (docs/specs/012-collaboration/
-// video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone.
-import type { ReactNode } from 'react';
+// video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone. In every state the strip
+// ends in a `?` to the calls article (docs/specs/018-help/contextual-help-links.md). A stage adds Raise Hand (or the
+// count of raised hands for its speakers) and, on a stage you may not speak from, a line above the strip; Do Not
+// Disturb adds a segment that clears it (meeting-rooms-and-stage.md "Raise hand", "The stage line", "Do Not Disturb").
 import {
   lucideHeadphoneOff,
   lucideHeadphones,
@@ -20,17 +22,18 @@ import {
   lucideVideoOff,
 } from '@liveworkspace/icons/lucide';
 import { callsModeAllows } from '@livehuddle/api-schema';
-import { HoverCard, lucideGlyph } from '@livehuddle/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import { ClusterStrip } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
-import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
-import { useDockNames } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import {
   useCallActions,
   useCallSelf,
   type CallActions,
   type CallSelf,
 } from '@/lib/calls/calls-store';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ScreenShareBar } from './ScreenShareBar';
+import { Segment } from './CallSegment';
+import { DoNotDisturbSegment, HandSegment, StageLine } from './StageSegments';
 
 const MicIcon = lucideGlyph(lucideMic, 16);
 const MicOffIcon = lucideGlyph(lucideMicOff, 16);
@@ -79,46 +82,15 @@ const INDICATOR_TEXT: Record<MicIndicator, { title: string; description: string 
   },
 };
 
-function Segment(props: {
-  label: string;
-  name: string;
-  title: string;
-  description: string;
-  icon: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  pressed?: boolean;
-  divided?: boolean;
-  tone?: 'rest' | 'live' | 'warn' | 'muted';
-  children?: ReactNode;
-}) {
-  const named = useDockNames();
-  const tone =
-    props.tone === 'live'
-      ? 'text-brand-700 hover:bg-brand-50 dark:text-brand-200 dark:hover:bg-brand-500/15'
-      : props.tone === 'warn'
-        ? 'text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-500/10'
-        : props.tone === 'muted'
-          ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10'
-          : CLUSTER_CONTROL_REST;
+// The strip's last segment: the calls article (docs/specs/018-help/contextual-help-links.md), the one help link a
+// control with no panel or popover of its own can carry. The shared `?`, sized to the strip's height and parted from
+// the button before it by the strip's hairline.
+function CallHelpLink() {
   return (
-    <HoverCard title={props.title} description={props.description}>
-      <button
-        type="button"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={props.onClick}
-        disabled={props.disabled}
-        aria-label={props.label}
-        aria-pressed={props.pressed}
-        className={`relative flex h-11 items-center ${props.onClick ? 'cursor-pointer' : 'cursor-default'} justify-center transition disabled:cursor-wait disabled:opacity-60 ${
-          named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
-        } ${props.divided ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${tone}`}
-      >
-        {props.children}
-        {props.icon}
-        {named ? <span aria-hidden>{props.name}</span> : null}
-      </button>
-    </HoverCard>
+    <HelpArticleLink
+      article="proximityAudio"
+      className="!h-11 !w-9 !rounded-none border-l border-slate-100 !text-[15px] dark:border-slate-800"
+    />
   );
 }
 
@@ -133,14 +105,27 @@ function LiveRing({ level }: { level: number }) {
   );
 }
 
-export function CallClusterButton() {
+export function CallClusterButton({
+  doNotDisturb = false,
+  onClearDoNotDisturb,
+}: {
+  // Your status is Do Not Disturb, and how to clear it (the Avatar panel's status setter).
+  doNotDisturb?: boolean;
+  onClearDoNotDisturb?: () => void;
+} = {}) {
   const self = useCallSelf();
   const actions = useCallActions();
   if (!self.available || !actions) return null;
   const paused = self.mode === 'off' && self.phase !== 'live';
   return (
     <>
-      <CallControl self={self} actions={actions} paused={paused} />
+      <CallControl
+        self={self}
+        actions={actions}
+        paused={paused}
+        doNotDisturb={doNotDisturb}
+        onClearDoNotDisturb={onClearDoNotDisturb}
+      />
       <ScreenShareBar />
       {/* Polite, and always present, so the change to paused is read out when it happens. */}
       <span className="sr-only" aria-live="polite">
@@ -154,10 +139,14 @@ function CallControl({
   self,
   actions,
   paused,
+  doNotDisturb,
+  onClearDoNotDisturb,
 }: {
   self: CallSelf;
   actions: CallActions;
   paused: boolean;
+  doNotDisturb: boolean;
+  onClearDoNotDisturb?: () => void;
 }) {
   if (paused) {
     const trying = self.phase === 'joining';
@@ -172,6 +161,7 @@ function CallControl({
           onClick={actions.join}
           disabled={trying}
         />
+        <CallHelpLink />
       </ClusterStrip>
     );
   }
@@ -197,6 +187,7 @@ function CallControl({
           disabled={joining}
           tone={self.phase === 'error' ? 'warn' : 'rest'}
         />
+        <CallHelpLink />
       </ClusterStrip>
     );
   }
@@ -205,46 +196,52 @@ function CallControl({
   const text = INDICATOR_TEXT[indicator];
   const mutable = indicator !== 'listening' && indicator !== 'blocked';
   return (
-    <ClusterStrip dataTourId="call-button">
-      <Segment
-        label={self.muted ? 'Unmute' : indicator === 'listening' ? 'Listening' : 'Mute'}
-        name={text.title}
-        title={text.title}
-        description={text.description}
-        icon={
-          indicator === 'listening' ? (
-            <HeadphonesIcon />
-          ) : indicator === 'muted' || indicator === 'blocked' ? (
-            <MicOffIcon />
-          ) : (
-            <MicIcon />
-          )
-        }
-        onClick={mutable ? actions.toggleMute : undefined}
-        pressed={mutable ? self.muted : undefined}
-        tone={
-          indicator === 'live'
-            ? 'live'
-            : indicator === 'blocked'
-              ? 'warn'
-              : indicator === 'muted'
-                ? 'muted'
-                : 'rest'
-        }
-      >
-        {indicator === 'live' ? <LiveRing level={self.level} /> : null}
-      </Segment>
-      <MediaSegments self={self} actions={actions} />
-      <Segment
-        label="Leave Audio"
-        name="Leave"
-        title="Leave Audio"
-        description="Stop hearing and being heard. Your microphone is released."
-        icon={<LeaveIcon />}
-        onClick={actions.leave}
-        divided
-      />
-    </ClusterStrip>
+    <div className="relative flex">
+      <StageLine barredBy={self.barredBy} />
+      <ClusterStrip dataTourId="call-button">
+        <Segment
+          label={self.muted ? 'Unmute' : indicator === 'listening' ? 'Listening' : 'Mute'}
+          name={text.title}
+          title={text.title}
+          description={text.description}
+          icon={
+            indicator === 'listening' ? (
+              <HeadphonesIcon />
+            ) : indicator === 'muted' || indicator === 'blocked' ? (
+              <MicOffIcon />
+            ) : (
+              <MicIcon />
+            )
+          }
+          onClick={mutable ? actions.toggleMute : undefined}
+          pressed={mutable ? self.muted : undefined}
+          tone={
+            indicator === 'live'
+              ? 'live'
+              : indicator === 'blocked'
+                ? 'warn'
+                : indicator === 'muted'
+                  ? 'muted'
+                  : 'rest'
+          }
+        >
+          {indicator === 'live' ? <LiveRing level={self.level} /> : null}
+        </Segment>
+        {doNotDisturb ? <DoNotDisturbSegment onClear={onClearDoNotDisturb} /> : null}
+        <HandSegment self={self} actions={actions} />
+        <MediaSegments self={self} actions={actions} />
+        <Segment
+          label="Leave Audio"
+          name="Leave"
+          title="Leave Audio"
+          description="Stop hearing and being heard. Your microphone is released."
+          icon={<LeaveIcon />}
+          onClick={actions.leave}
+          divided
+        />
+        <CallHelpLink />
+      </ClusterStrip>
+    </div>
   );
 }
 

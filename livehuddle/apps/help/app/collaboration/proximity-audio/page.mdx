@@ -1,0 +1,133 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { CallStrip, Earshot, MicStates } from '@/components/illustrations/calls';
+
+export const metadata = helpMetadata({
+  title: 'Proximity Audio',
+  description:
+    'Talk in a livehuddle Space by walking up to people: join audio, hear whoever is near your character, see who is talking further off, and walk over to them.',
+  path: '/help/collaboration/proximity-audio/',
+});
+
+<ArticleLayout
+  title="Proximity Audio"
+  description="Talk with the people your character is standing near, the way you would in a real room."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+>
+
+In a Space you talk by walking up to people. You hear the characters near yours and nobody else: a voice fades as its person walks away, and sits to your left or right as they stand. Someone too far away to hear still shows that they are talking, so you can choose to walk over and join in.
+
+Audio rides [Avatar mode](/help/selection-modes/avatar-mode/): only a walking character has a place on the board, so only someone walking hears or is heard. People in a Space can also turn on a camera or share a screen; see [Cameras and Screen Sharing](/help/collaboration/cameras-and-screen-sharing/).
+
+<Note>
+  Calls are not switched on everywhere yet. Where they are off, there is no **Join Audio** button,
+  and everything else in the Space works as usual.
+</Note>
+
+## Join Audio
+
+<Step n={1}>
+  Walk into the Space: press the board's **Walk In** button, or `W`. The call's controls sit in the
+  bottom-right corner, beside the **Avatar** button.
+</Step>
+
+<Step n={2}>
+  Press **Join Audio**. Your browser asks for your microphone the first time (allow it to be heard).
+  If your link lets you listen but not speak, the button says **Listen In** instead and asks for
+  nothing.
+</Step>
+
+<Step n={3}>
+  You now hear the people near you. Once you are in, the strip shows your microphone, **Camera**,
+  **Share** (for Editors) and **Leave**. Press **Leave** to stop hearing and being heard: your
+  microphone is released straight away.
+</Step>
+
+<Figure caption="The call strip beside Avatar: Join Audio before you join, then your microphone, Camera, Share and Leave. The ? opens this article.">
+  <CallStrip />
+</Figure>
+
+Audio only works on a Space other people can reach. A Space saved in this browser alone has nobody to talk to, so it shows no audio controls. Leaving Avatar mode, switching to another tab or closing the page also leaves the call.
+
+## Who you hear
+
+You hear the people whose characters stand within earshot of yours, on the same tab, and only while you both walk. Somebody sitting in a chair is heard from where the chair is.
+
+- **Closer is louder.** A voice is full volume when you are right next to its person, and fades smoothly to silence as they walk out of range. There is a little give at the edge, so somebody standing on the boundary does not flicker in and out.
+- **Left is left.** A person standing to your left is heard more in your left ear, which helps when a few people talk at once.
+- **Walking away leaves a conversation.** There is nothing to hang up: walk over to another group to join theirs.
+
+## Your microphone
+
+Once you are in, the first button in the strip is your microphone. Press it to mute, and again to unmute. When muted, nothing is sent at all. Its look tells you at a glance whether anyone hears you, and hovering it names the state in words:
+
+<Figure caption="The microphone's states, as the strip shows them.">
+  <MicStates />
+</Figure>
+
+- **Live**: somebody is in earshot and hears you. A soft ring round the button breathes with your voice.
+- **Nobody Near**: your microphone is on, but nobody is close enough to hear you. People further off still see that you are talking.
+- **Muted**: nobody hears you. Press to unmute.
+- **Mic Blocked**: your browser refused the microphone. Allow it from the address bar, then join again. You still hear everyone.
+- **Mic Off**: nobody else is on this tab, so your microphone has closed (your browser's recording light goes out). It opens again the moment somebody arrives. This happens after you have been alone on the tab for 15 seconds.
+
+## Seeing who is talking
+
+When someone talks, three small bars in their colour bounce above their name. You see them for everyone on your tab, not just the people in earshot:
+
+- **Out of earshot** the bars are calm and faint, fading further with distance, so the nearest conversations stand out.
+- **In earshot** they are brighter, so you can see who you are hearing.
+- **Your own bars** show above your own head while you talk, so you can tell you are coming through.
+
+Hover or tap someone's bars to see "Sam is talking, walk over". Press them and your character walks towards Sam, stopping a short way off so you do not bump into them. This works while you are walking; otherwise the bars only show.
+
+<Figure caption="Sam is in earshot and heard. Priya is further off: her bars are faint, and pressing them walks you over.">
+  <Earshot />
+</Figure>
+
+Only a rough level of each person's voice is sent to show the bars, never the sound itself: nobody out of earshot receives any audio. Nothing said in a call is recorded or stored anywhere.
+
+## Raise your hand
+
+When someone speaks from a stage, the whole Space hears them, and everyone else in the room is the audience: the stage does not hear you, but you can ask to speak.
+
+- **Raise Hand** appears in the call strip while you are in a stage's audience. Press it and a small amber hand shows beside your character, where everyone can see it. Press **Lower Hand** to put it down.
+- **The people on the stage see how many hands are up**, as a count in their call strip. They, and any Editor, can press the hand beside your character to **Let Speak**.
+- **Once you are let speak**, the hand turns into a green microphone and your strip reads **Speaking**: everyone in the Space hears you, as if you were on the stage. Your camera stays with the people who would see you anyway.
+- **Your turn ends** when you press **Lower Hand**, when the stage presses your microphone again (**Done**), or when you walk out of the room. Leaving audio or the Space puts your hand down too.
+
+If you stand on a stage that only lets Editors speak, a short line above the call strip says so: you are heard as the audience is, and you can raise your hand like anyone else.
+
+## Do Not Disturb
+
+Need to concentrate? Open the **Avatar** panel and set your **Status** to **Do Not Disturb**. A red dot with a white bar shows above your character, so people know not to expect an answer.
+
+- **No voice reaches you**, not even from a stage, and no one's camera or screen. Other people's talking bars disappear for you.
+- **You can still be heard** if you speak, so turning to a neighbour does not need the status cleared. Your microphone keeps its own mute.
+- While you are in a call, the strip shows **Do Not Disturb**; press it to turn it off. It lasts for this visit only, like every status.
+
+## Who can speak
+
+| What you can do                   | Editor | Participant  | Viewer |
+| --------------------------------- | ------ | ------------ | ------ |
+| Join and hear the people near you | Yes    | Yes          | Yes    |
+| Speak, mute and unmute            | Yes    | Yes          | No     |
+| Show your talking bars to others  | Yes    | Yes          | No     |
+| See who is talking, and walk over | Yes    | Yes          | Yes    |
+| Raise and lower a hand            | Yes    | Yes          | No     |
+| Let a raised hand speak           | Yes    | From a stage | No     |
+| Set Do Not Disturb                | Yes    | Yes          | Yes    |
+
+Guests speak too, wherever their [share link](/help/collaboration/sharing/) is an Editor or Participant one: audio needs no sign-in. A Viewer link listens: its button says **Listen In**, and the strip shows **Listening** rather than a microphone.
+
+## When calls are paused
+
+Calls can be paused for a while across livehuddle. The button then reads **Calls Paused**, calmly rather than as an error, and everything else in the Space carries on. Press it to try again. If it says **Audio Unavailable**, audio could not start; press it to try again.
+
+<Tip>
+  Wear headphones if you can: hearing a voice on your left or right works best with one ear on each
+  side.
+</Tip>
+
+</ArticleLayout>

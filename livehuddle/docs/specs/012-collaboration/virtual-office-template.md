@@ -37,7 +37,7 @@ Three siblings, built the same way (`template-office-parts.ts`: rooms first, rug
   machine, a plant and a bookshelf, and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
   Questions).
 - **All-Hands Hall**: one big room with a **Stage** (a rug, with a "Stage" text over it: a rug has nothing to write
-  on) and a [Bring Focus](bring-focus.md) button
+  on; it becomes a real [Stage](meeting-rooms-and-stage.md#the-stage-part-2-planned) element in #319's later parts) and a [Bring Focus](bring-focus.md) button
   for the presenter, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants and a
   water cooler.
 

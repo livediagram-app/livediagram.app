@@ -87,6 +87,8 @@ export const ELEMENT_FIELD_NAMES = {
     'pickerResult',
     'chairFacing',
     'roomDoor',
+    'stageSpeakers',
+    'stageCameras',
     'responses',
     'responsesRevealed',
     'estimateScale',

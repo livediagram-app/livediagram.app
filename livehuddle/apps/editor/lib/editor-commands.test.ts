@@ -328,7 +328,6 @@ describe('canvas tool commands', () => {
       'tool:format',
       'tool:laser',
       'tool:spotlight',
-      'tool:slide-deck',
       'tool:isometric',
     ]);
     // Select is the current tool, so it is not offered.
@@ -357,9 +356,9 @@ describe('canvas tool commands', () => {
     expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
   });
 
-  it('withholds Slide Deck on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
-    expect(ids(base)).toContain('tool:slide-deck');
+  // livehuddle has no Slide Deck (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2).
+  it('offers no Slide Deck command', () => {
+    expect(ids(base)).not.toContain('tool:slide-deck');
   });
 
   it('gives a read-only visitor the presenting tools but not the editing ones', () => {

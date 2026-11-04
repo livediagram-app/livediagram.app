@@ -4,7 +4,8 @@ import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livehuddle/docum
 import type { ParticipantPresence } from './index';
 import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
-import type { AvatarVoiceOp, CallTrackOp } from './call-voice';
+import type { AvatarVoiceOp, CallsCheckOp, CallTrackOp } from './call-voice';
+import type { AvatarHandOp, AvatarLetSpeakOp } from './call-hand';
 import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { LivePoll } from './poll';
@@ -61,6 +62,14 @@ export const PRESENCE_OP_KINDS = [
   // and the room relays both from an Editor or a Participant only.
   'avatar-voice',
   'call-track',
+  // A silent publishing call's nudge for the room to read the calls kill switch (docs/specs/016-platform/
+  // calls-kill-switch.md "The room tells its clients"): consumed by the room, never relayed, never logged.
+  'calls-check',
+  // Raise hand (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand"): a stage's audience asking to
+  // speak, and a speaker letting them, both about a moment, so never ordered, logged or replayed. From an Editor or
+  // a Participant only; a let-speak is ADDRESSED to the hand's owner, as a shove is.
+  'avatar-hand',
+  'avatar-let-speak',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
@@ -504,6 +513,10 @@ export type RoomOp =
   // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire").
   | AvatarVoiceOp
   | CallTrackOp
+  | CallsCheckOp
+  // Raise hand and Let Speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand").
+  | AvatarHandOp
+  | AvatarLetSpeakOp
   // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md): system only, from the room.
   | CallsModeOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor

@@ -1,0 +1,85 @@
+name: Deploy a group of Workers
+
+# One group's deploy for deploy.yml (docs/ci.md "Deploys", "Jobs"): the services and apis, one
+# product's sites, or the routers. It checks out and installs once, then deploy-group.mjs deploys the
+# group's Workers one after another, each with the steps it needs: its build when it serves one (a
+# static site's `out/`), its D1 migrations when it has a database, and `wrangler deploy` to the
+# environment, with a product api's hosted vars (each product's docs/specs/016-platform/deployment.md
+# "Hosted profile"). A failed Worker doesn't stop the rest of its group; the job fails at the end, and
+# the job summary lists every Worker's result. Re-running it redeploys the whole group, which is safe.
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      ref:
+        type: string
+        required: true
+      workers:
+        description: >-
+          The tier's plan entries as JSON (ci-plan.mjs `deploys<tier>`): name, dir, product, tier,
+          group, d1 (the database's binding, when it has migrations), build (a static site), history
+          (builds from full history), hosted (the product whose api hosted-vars to apply).
+        type: string
+        required: true
+      group:
+        description: The group to deploy (ci-plan.mjs `groups<tier>`); the entries above in it.
+        type: string
+        required: true
+      label:
+        description: The group's name in the summary.
+        type: string
+        required: true
+      history:
+        description: A Worker in the group builds from full history (a help site).
+        type: boolean
+        default: false
+      timeout:
+        description: The job's limit in minutes, sized by the plan from the group's Workers.
+        type: number
+        required: true
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Workers
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout }}
+    env:
+      TURBO_TELEMETRY_DISABLED: '1'
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      # A help site's sitemap dates each article by its last commit, which a shallow clone can't tell
+      # (it then leaves the dates out). Commits and trees only, without file contents.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: ${{ inputs.history && '0' || '1' }}
+          filter: ${{ inputs.history && 'blob:none' || '' }}
+
+      - name: Set up
+        uses: ./.github/actions/setup
+
+      - name: Deploy
+        env:
+          WORKERS: ${{ inputs.workers }}
+          GROUP: ${{ inputs.group }}
+          LABEL: ${{ inputs.label }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          REF: ${{ inputs.ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        # This workflow's own script, as in deploy.yml's plan: its inputs are this workflow's contract.
+        run: |
+          set -euo pipefail
+          scripts="${RUNNER_TEMP}/workflow-scripts"
+          mkdir -p "${scripts}"
+          git cat-file -e "${WORKFLOW_SHA}^{commit}" 2>/dev/null || git fetch -q --depth=1 origin "${WORKFLOW_SHA}"
+          git archive "${WORKFLOW_SHA}" .github/scripts | tar -x -C "${scripts}"
+          node "${scripts}/.github/scripts/deploy-group.mjs"

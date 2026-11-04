@@ -1576,7 +1576,9 @@ export class DocumentRoom extends DurableObject<Env> {
             .catch(() => {});
           return;
         }
-        if (opKind === 'avatar-push') {
+        // A let-speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand") is addressed the same
+        // way: only the hand's owner acts on it, and it cannot recognise its own id in a broadcast.
+        if (opKind === 'avatar-push' || opKind === 'avatar-let-speak') {
           const targetId = (msg.op as { targetId?: unknown }).targetId;
           if (typeof targetId === 'string') {
             this.sendToPresence(targetId, { kind: 'op', from: sender.id, op: msg.op }, ws);
@@ -1584,6 +1586,12 @@ export class DocumentRoom extends DurableObject<Env> {
           return;
         }
         if (opKind === 'avatar-voice' || opKind === 'call-track') void this.callsWatch.note();
+        // A silent publishing call asks the room to read the kill switch (docs/specs/016-platform/
+        // calls-kill-switch.md "The room tells its clients"): noted, never relayed.
+        if (opKind === 'calls-check') {
+          void this.callsWatch.note();
+          return;
+        }
         if (this.presenceRelay.relay(ws, sender.id, msg.op)) return;
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
       } else {

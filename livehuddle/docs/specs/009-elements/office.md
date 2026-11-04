@@ -1,7 +1,8 @@
 # Office
 
-Seven pieces that turn a canvas into a **virtual office** people walk around in [Avatar mode](../008-canvas/avatar-mode.md):
-a **Room**, a **Meeting Table**, a **Plant**, a **Bookshelf**, a **Water Cooler**, a **Coffee Machine** and a **Rug**.
+Eight pieces that turn a canvas into a **virtual office** people walk around in [Avatar mode](../008-canvas/avatar-mode.md):
+a **Room**, a **Meeting Table**, a **Plant**, a **Bookshelf**, a **Water Cooler**, a **Coffee Machine**, a **Rug** and
+a **Stage**.
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
 
@@ -16,9 +17,11 @@ places, so an office is drawn with the same tools as a diagram.
 
 Shape kinds in the palette's **Collaborate** category under **Navigate**, after the chair, desk, sofa and fence:
 `room`, `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine`,
-`rug`. Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
+`rug`, and (from Work Tracker #319 part 4; until then it arrives only from an agent, the API or a paste) `stage`.
+Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
 pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, lock, copy,
-theme, export. None has a settings `…`; a room's one setting and a table's are in the element menu.
+theme, export. None has a settings `…`; a room's one setting and a table's are in the element menu (a stage's two come with its
+tile, in part 4).
 
 ## Room
 
@@ -36,6 +39,9 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   room is called **Room**.
 - **The walls block** walking exactly as a [Fence](fence.md#blocking) does: same reach, same slide along them, from
   either side; the doorway does not. A character inside a closed room stays inside until it takes a portal.
+- **It is a call of its own** while calls are on: everyone inside hears everyone else inside at full volume, and
+  nobody outside hears them; the walls block sound as they block walking, and the doorway's threshold is the line
+  of the walls ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)).
 - **It is the floor, not a destination**: standing in a room never rings it as the element you are on, and it is
   placed **behind everything** on the tab, so furniture dropped in it stands on its floor. Not aspect locked: a
   room is any shape of rectangle. Default 480 × 320.
@@ -89,6 +95,22 @@ placed **behind everything** like a room, so it lies on the floor under the furn
 backdrops, the larger first, however they arrive (placed, drawn to size, pasted, written by an agent): a rug lies on its
 room's floor, and a room never covers what stands in it. Default 200 × 120.
 
+## Stage
+
+A raised platform for an all-hands: whoever stands on it is heard by the whole tab
+([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#the-stage-part-2-built)).
+
+- **Drawn from the room's camera**: its top in the element's fill (a floor a little lighter than a room's), with two
+  faint plank lines, and a front edge 24 px tall you see the face of, shaded with the stroke.
+- **The name** is the element's label, on a plate centred on the front edge. A new stage is called **Stage**.
+- **A floor piece** like a rug: placed behind everything, never blocks, never a destination; a stage on a room's
+  floor paints over the floor and under the furniture. Not aspect locked. Default 360 × 140.
+- **Standing on it** is having your feet on its top; the front edge is off it.
+- **Two settings**, stored on the element: **Who Can Speak** (`stageSpeakers`: `'edit'`, Editors, the default; or
+  `'take-part'`, Editors and Participants) and **Show Cameras** (`stageCameras`, off by default). Absent reads as
+  the default; anything else makes the element invalid. Set from the element menu once the stage has its tile
+  (part 4).
+
 ## Share roles
 
 - **Editor**: places, moves, renames, recolours and deletes every piece; sets a room's doorway.
@@ -98,7 +120,7 @@ room's floor, and a room never covers what stands in it. Default 200 × 120.
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - Placing one: `Element · Added · <Kind>` (`Room`, `Meeting-table`, `Plant`, `Bookshelf`, `Water-cooler`,
-  `Coffee-machine`, `Rug`: a hyphenated kind keeps its hyphen, as every element's token does).
+  `Coffee-machine`, `Rug`, `Stage`: a hyphenated kind keeps its hyphen, as every element's token does).
 - A room's doorway changed: `Element · Changed · Room`.
 - Getting a drink: `Canvas · Used · WaterCooler` or `CoffeeMachine`. Never who, never how often in a session.
 

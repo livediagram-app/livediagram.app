@@ -13,9 +13,8 @@ import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } fr
 import type { ViewRect } from './bubbles';
 import type { Point } from './hearing';
 import type { CallScene, CallSignal, ProximityCall } from './proximity-call';
-
-// Do Not Disturb (Work Tracker #319) hides other people's bars from you; until it lands, nobody is in it.
-export const DO_NOT_DISTURB = false;
+import type { CallStage } from './stage';
+import type { CallZone } from './zones';
 
 /** The call's code, loaded on the first Join press (blueprint "Performance and limits"). */
 export const loadProximityCall = () => import('./proximity-call');
@@ -37,7 +36,16 @@ export type ProximityCallDeps = {
   walkers: readonly { id: string; at: Point }[];
   // The canvas area on screen, in canvas px: a bubble off it is not received.
   view?: ViewRect | null;
+  // The tab's visible Office rooms, each one call (meeting-rooms-and-stage.md "Rooms are calls").
+  zones?: readonly CallZone[];
+  // The tab's visible stages, each heard by the whole tab (meeting-rooms-and-stage.md "The stage").
+  stages?: readonly CallStage[];
+  // Your status is Do Not Disturb: nobody's voice or bubbles reach you (meeting-rooms-and-stage.md).
+  doNotDisturb?: boolean;
 };
+
+const NO_ZONES: readonly CallZone[] = [];
+const NO_STAGES: readonly CallStage[] = [];
 
 // Whether this deployment has calls, paused or not; the kill switch's mode goes to the store (Calls Paused).
 function useCallsEnabled(wanted: boolean): boolean {
@@ -71,8 +79,10 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       self: deps.self,
       walkers: new Map(deps.walkers.map((w) => [w.id, w.at])),
       view: deps.view ?? null,
+      zones: deps.zones ?? NO_ZONES,
+      stages: deps.stages ?? NO_STAGES,
     }),
-    [deps.tabId, deps.self, deps.walkers, deps.view],
+    [deps.tabId, deps.self, deps.walkers, deps.view, deps.zones, deps.stages],
   );
   const sceneRef = useRef(scene);
   // The buttons read the latest props and positions through these, so their actions stay stable.
@@ -116,6 +126,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
               send: (signal) => latest.current.send?.(signal),
             });
             callRef.current = call;
+            call.setDoNotDisturb(latest.current.doNotDisturb === true);
             call.update(sceneRef.current);
             return call.start();
           })
@@ -142,6 +153,8 @@ export function useProximityCall(deps: ProximityCallDeps): void {
         if (callSelf().screen !== 'on') track('Canvas', 'Used', 'ScreenShare');
         void call.toggleScreen();
       },
+      raiseHand: () => callRef.current?.raiseHand(),
+      lowerHand: () => callRef.current?.lowerHand(),
     });
     return () => {
       stop();
@@ -166,4 +179,9 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   useEffect(() => {
     callRef.current?.update(scene);
   }, [scene]);
+
+  const doNotDisturb = deps.doNotDisturb === true;
+  useEffect(() => {
+    callRef.current?.setDoNotDisturb(doNotDisturb);
+  }, [doNotDisturb]);
 }

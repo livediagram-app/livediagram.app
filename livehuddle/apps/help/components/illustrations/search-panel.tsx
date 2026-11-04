@@ -392,15 +392,15 @@ export function SearchTabsAndElements() {
 export function SearchAddToCanvas() {
   return (
     <SearchOverlay
-      query="cylinder"
+      query="coffee"
       groups={[
         {
           title: 'Spaces',
-          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo', active: true }],
+          rows: [{ icon: <DocumentIcon />, label: 'Coffee chat space', active: true }],
         },
         {
           title: 'Add to canvas',
-          rows: [{ icon: <AddIcon />, label: 'Cylinder' }],
+          rows: [{ icon: <AddIcon />, label: 'Coffee Machine' }],
         },
       ]}
     />

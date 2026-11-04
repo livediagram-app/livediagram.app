@@ -4,25 +4,36 @@
 // tab. Loaded only when somebody presses Join Audio; the canvas feeds it positions through `update`. The calls kill
 // switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused") ends it quietly, from the room's push or a
 // refused mint. The camera and a shared screen ride the same session (docs/specs/012-collaboration/
-// video-and-screen-bubbles.md): published on demand, received as bubbles from the people heard and on screen.
+// video-and-screen-bubbles.md): published on demand, received as bubbles from the people heard and on screen. A
+// stage (meeting-rooms-and-stage.md "The stage") reaches the whole tab; a silent call that publishes nudges the room
+// to read the kill switch (calls-kill-switch.md "The room tells its clients"). The stage's audience raises a hand
+// and may be let speak, and Do Not Disturb hears nobody (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb").
 import {
   CALL_SCREEN_TRACK_NAME,
   CALL_VIDEO_TRACK_NAME,
   callsModeAllows,
+  type AccessLevel,
   type CallTrackLocator,
   type VoiceLevel,
 } from '@livehuddle/api-schema';
 import { apiCallSession, CallsApiError, type CallsCaller } from '@/lib/api/calls';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { track } from '@/lib/telemetry';
 import { AudioGraph } from './audio-graph';
 import { pickSeen, type ViewRect } from './bubbles';
 import {
+  callHands,
+  callLetByMe,
+  callLevels,
   callMaximised,
   callPeers,
   callSelf,
+  onCallHands,
+  onCallLevels,
   onCallMaximised,
   onCallsMode,
   onCallTracks,
+  onLetSpeak,
   resetCallMedia,
   SELF_MEDIA_ID,
   setCallMedia,
@@ -30,12 +41,23 @@ import {
   setCallsMode,
   type CallMedia,
 } from './calls-store';
-import { distance, gainAt, HEARING_RADIUS_PX, nextHeard, panAt, type Point } from './hearing';
+import { nextHeard, placeFor, someoneHears, togetherWith, type Point } from './hearing';
 import { SfuSession, type SfuWant } from './sfu-session';
+import { RaisedHand, stagePlace, type HandSignal } from './raised-hand';
+import {
+  barringStage,
+  letSpeakers,
+  mayLetSpeak,
+  mayLetSpeakSelf,
+  staging,
+  type CallStage,
+} from './stage';
+import { zoning, type CallZone, type CallZoning } from './zones';
 import {
   silenceVoice,
   SILENT,
   stepVoice,
+  VOICE_REFRESH_MS,
   VOICE_SAMPLE_MS,
   type VoiceState,
 } from './voice-detector';
@@ -44,6 +66,11 @@ import {
 export const MIC_IDLE_CLOSE_MS = 15_000;
 /** A speaker's locator goes out again for a new walker at most this often. */
 export const LOCATOR_RESEND_MS = 1000;
+/**
+ * A publishing call that has sent the room nothing this long asks it to read the kill switch (#463): just past a
+ * talking speaker's level refresh, so a speaker who is talking never sends one.
+ */
+export const CALLS_CHECK_MS = VOICE_REFRESH_MS + 2 * VOICE_SAMPLE_MS;
 
 /** The camera's source: the large layer's size (video-and-screen-bubbles.md "Two layers"). */
 export const CAMERA_CONSTRAINTS: MediaStreamConstraints = {
@@ -73,19 +100,30 @@ const SCREEN_ENCODINGS: RTCRtpEncodingParameters[] = [
 /** What a call sends over the room: the editor adds the tab. */
 export type CallSignal =
   | { kind: 'avatar-voice'; level: VoiceLevel }
+  | { kind: 'calls-check' }
   | {
       kind: 'call-track';
       track: CallTrackLocator | null;
       video?: CallTrackLocator | null;
       screen?: CallTrackLocator | null;
-    };
+    }
+  | HandSignal
+  | { kind: 'avatar-let-speak'; targetId: string; on: boolean };
 
-/** Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, and the visible area. */
+const NOBODY: ReadonlySet<string> = new Set();
+
+/**
+ * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, the
+ * tab's visible Office rooms, each one call (meeting-rooms-and-stage.md "Rooms are calls"), and its visible stages
+ * (the same spec's "The stage").
+ */
 export type CallScene = {
   tabId: string;
   self: Point | null;
   walkers: ReadonlyMap<string, Point>;
   view?: ViewRect | null;
+  zones?: readonly CallZone[];
+  stages?: readonly CallStage[];
 };
 
 export type ProximityCallInput = {
@@ -112,6 +150,9 @@ const MEDIA_OF: Readonly<Record<string, CallMedia | undefined>> = {
   [CALL_SCREEN_TRACK_NAME]: 'screen',
 };
 
+// Out of the call: off every stage, hand down.
+const LEFT_STAGE = { stage: 'none', barredBy: null, hand: 'down', handsUp: 0 } as const;
+
 const documentVisible = () =>
   typeof document === 'undefined' || document.visibilityState !== 'hidden';
 
@@ -134,6 +175,13 @@ export class ProximityCall {
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
   private heard: ReadonlySet<string> = new Set();
   private scene: CallScene = { tabId: '', self: null, walkers: new Map() };
+  // Everyone's room, and who speaks from a stage, worked out once per scene and read by hearing, placing and the mic
+  // indicator.
+  private zoning: CallZoning = { self: null, of: new Map() };
+  // Whether you spoke from a stage at the last scene, so stepping on is counted once.
+  private onStage = false;
+  // When this call last sent the room anything, and the nudge due after a quiet CALLS_CHECK_MS.
+  private checkDue: ReturnType<typeof setTimeout> | null = null;
   private knownWalkers = new Set<string>();
   private locatorSentAt = -Infinity;
   private locatorDue: ReturnType<typeof setTimeout> | null = null;
@@ -144,7 +192,13 @@ export class ProximityCall {
   private readonly unsubscribeTracks: () => void;
   private readonly unsubscribeMode: () => void;
   private readonly unsubscribeMaximised: () => void;
+  private readonly unsubscribeLevels: () => void;
+  private readonly unsubscribeHands: () => void;
+  private readonly unsubscribeLetSpeak: () => void;
   private readonly onVisibility = () => this.hear();
+  // Your raised hand (meeting-rooms-and-stage.md "Raise hand"), and Do Not Disturb (the same spec's).
+  private readonly hand: RaisedHand;
+  private dnd = false;
 
   constructor(input: ProximityCallInput) {
     this.input = input;
@@ -152,9 +206,21 @@ export class ProximityCall {
     this.unsubscribeTracks = onCallTracks(() => this.hear());
     this.unsubscribeMode = onCallsMode(() => this.applyMode());
     this.unsubscribeMaximised = onCallMaximised(() => this.hear());
+    // A peer's level changing may let them speak from the stage they stand on, or stop them.
+    this.unsubscribeLevels = onCallLevels(() => this.update(this.scene));
+    this.hand = new RaisedHand((signal) => this.send(signal));
+    // A hand going up, down or let speak changes who speaks and the count a speaker sees.
+    this.unsubscribeHands = onCallHands(() => this.update(this.scene));
+    this.unsubscribeLetSpeak = onLetSpeak((from, on) => this.onLetSpeak(from, on));
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', this.onVisibility);
     }
+  }
+
+  /** Your level: an Editor may share a screen, a Participant may speak, a Viewer listens. */
+  private get level(): AccessLevel {
+    if (this.input.canShare) return 'edit';
+    return this.input.canSpeak ? 'participate' : 'view';
   }
 
   /** Whether this call has stopped (left, failed or paused); a stopped call never starts again. */
@@ -222,6 +288,7 @@ export class ProximityCall {
       level: 0,
       camera: 'off',
       screen: 'off',
+      ...LEFT_STAGE,
     });
   }
 
@@ -385,7 +452,7 @@ export class ProximityCall {
   private applyVoice(step: { state: VoiceState; send?: VoiceLevel }): void {
     this.voice = step.state;
     if (step.send === undefined) return;
-    this.input.send({ kind: 'avatar-voice', level: step.send });
+    this.send({ kind: 'avatar-voice', level: step.send });
     setCallSelf({ level: step.send });
   }
 
@@ -427,23 +494,95 @@ export class ProximityCall {
       return;
     }
     this.locatorSentAt = performance.now();
+    this.send(signal);
+  }
+
+  // Everything this call tells the room goes through here, so a quiet spell is measured from the last of it.
+  private send(signal: CallSignal): void {
     this.input.send(signal);
+    if (this.checkDue) clearTimeout(this.checkDue);
+    this.checkDue = setTimeout(() => this.check(), CALLS_CHECK_MS);
+  }
+
+  // A publishing call that has said nothing for CALLS_CHECK_MS asks the room to read the kill switch, so a silent
+  // room still hears of a flip within about that long (calls-kill-switch.md "The room tells its clients"). The room
+  // reads at most once per CALLS_CHECK_MS whoever asks; a listener asks nothing, as nothing it hears costs without a
+  // publisher.
+  private check(): void {
+    this.checkDue = null;
+    if (this.stopped || (!this.published && !this.camera && !this.screen)) return;
+    this.send({ kind: 'calls-check' });
+  }
+
+  // --- Raise hand and Do Not Disturb (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb") ------------------
+
+  /** Raise your hand: a speaking level only, and only as a live stage's audience. */
+  raiseHand(): void {
+    if (this.stopped || !this.input.canSpeak || callSelf().stage !== 'audience') return;
+    if (this.hand.raise(this.zoning.self)) track('Canvas', 'Used', 'RaiseHand');
+    this.update(this.scene);
+  }
+
+  /** Lower your hand (it also ends being let speak). */
+  lowerHand(): void {
+    this.hand.lower();
+    this.update(this.scene);
+  }
+
+  // Someone let your hand speak, or pressed Done: honoured only from an Editor or someone speaking from a stage.
+  private onLetSpeak(from: string, on: boolean): void {
+    if (this.stopped) return;
+    const { walkers, stages = [] } = this.scene;
+    this.hand.letSpeak(from, on, mayLetSpeak(from, walkers, callLevels(), stages));
+    this.update(this.scene);
+  }
+
+  /** Do Not Disturb: nobody's voice or bubbles reach you; you are still heard. */
+  setDoNotDisturb(on: boolean): void {
+    if (this.dnd === on) return;
+    this.dnd = on;
+    this.hear();
   }
 
   /** The canvas moved: re-decide who is heard, how loudly, and whether the microphone stays open. */
   update(scene: CallScene): void {
     if (this.stopped) return;
     this.scene = scene;
+    const zoned = zoning(scene.self, scene.walkers, scene.zones ?? []);
+    const levels = callLevels();
+    const stages = scene.stages ?? [];
+    // Walking out of the room you raised it in lowers your hand.
+    this.hand.keepIn(zoned.self);
+    const selfMay = mayLetSpeakSelf(scene.self, this.level, stages);
+    const letter = this.hand.letSpeakBy;
+    const hands = {
+      let: letSpeakers(callHands(), scene.walkers, levels, stages, callLetByMe(), selfMay),
+      self: letter !== null && mayLetSpeak(letter, scene.walkers, levels, stages),
+    };
+    const stage = staging(scene.self, this.level, scene.walkers, levels, stages, hands);
+    this.zoning = stage ? { ...zoned, stage } : zoned;
+    const onStage = stage?.self === true;
+    if (onStage && !this.onStage) track('Canvas', 'Used', 'StageSpeak');
+    this.onStage = onStage;
     // A walker new to the tab learns where this microphone is.
     let arrived = false;
     for (const id of scene.walkers.keys()) if (!this.knownWalkers.has(id)) arrived = true;
     this.knownWalkers = new Set(scene.walkers.keys());
-    if (arrived) this.sendLocator();
+    if (arrived) {
+      this.sendLocator();
+      this.hand.resend();
+    }
     this.keepMicFor(scene.walkers.size > 0);
-    const near = scene.self
-      ? [...scene.walkers.values()].some((at) => distance(scene.self!, at) <= HEARING_RADIUS_PX)
-      : false;
-    setCallSelf({ someoneNear: near });
+    const barredBy = hands.self ? null : barringStage(scene.self, this.level, stages);
+    let handsUp = 0;
+    for (const id of callHands().keys()) if (scene.walkers.has(id) && !hands.let.has(id)) handsUp++;
+    setCallSelf({
+      someoneNear: someoneHears(scene.self, scene.walkers, this.zoning),
+      stage: stagePlace(stage ?? undefined, barredBy !== null),
+      barredBy,
+      hand: this.hand.state(hands.self),
+      handsUp,
+    });
     this.hear();
   }
 
@@ -473,7 +612,14 @@ export class ProximityCall {
         candidates.set(id, at);
       }
     }
-    this.heard = nextHeard(this.heard, this.scene.self, candidates);
+    // Do Not Disturb hears nobody: every subscription closes, bubbles too.
+    if (this.dnd) {
+      this.heard = NOBODY;
+      setCallSelf({ heard: this.heard });
+      this.sfu.want([]);
+      return;
+    }
+    this.heard = nextHeard(this.heard, this.scene.self, candidates, this.zoning);
     setCallSelf({ heard: this.heard });
     const wants: SfuWant[] = [];
     for (const id of this.heard) {
@@ -484,7 +630,7 @@ export class ProximityCall {
     const maximised = callMaximised();
     const seen = pickSeen({
       self: this.scene.self,
-      heard: this.heard,
+      heard: this.seeable(),
       walkers: this.scene.walkers,
       peers,
       view: this.scene.view ?? null,
@@ -506,12 +652,22 @@ export class ProximityCall {
     this.place();
   }
 
+  // Whose bubbles may be received: everyone heard but a speaker on a stage that does not show its cameras, unless you
+  // speak from a stage too (speakers see each other as one room).
+  private seeable(): ReadonlySet<string> {
+    const stage = this.zoning.stage;
+    if (!stage || stage.self || stage.unseen.size === 0) return this.heard;
+    return new Set([...this.heard].filter((id) => !stage.unseen.has(id)));
+  }
+
   private place(): void {
     const self = this.scene.self;
     if (!self) return;
     for (const id of this.heard) {
       const at = this.scene.walkers.get(id);
-      if (at) this.graph.place(id, gainAt(distance(self, at)), panAt(at.x - self.x));
+      if (!at) continue;
+      const { gain, pan } = placeFor(self, at, togetherWith(id, this.zoning));
+      this.graph.place(id, gain, pan);
     }
   }
 
@@ -552,12 +708,19 @@ export class ProximityCall {
   }
 
   private teardown(): void {
+    // Leaving the call lowers your hand, said while the room still listens.
+    this.hand.lower();
     this.stopped = true;
     if (this.idleTimer) clearTimeout(this.idleTimer);
     if (this.locatorDue) clearTimeout(this.locatorDue);
+    if (this.checkDue) clearTimeout(this.checkDue);
+    this.checkDue = null;
     this.unsubscribeTracks();
     this.unsubscribeMode();
     this.unsubscribeMaximised();
+    this.unsubscribeLevels();
+    this.unsubscribeHands();
+    this.unsubscribeLetSpeak();
     if (typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.onVisibility);
     }
@@ -597,6 +760,7 @@ export class ProximityCall {
       someoneNear: false,
       camera: 'off',
       screen: 'off',
+      ...LEFT_STAGE,
     });
   }
 }

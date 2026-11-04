@@ -55,9 +55,11 @@ import { receivePeerSay, resetSpeechBubbles } from '@liveworkspace/avatar/speech
 import {
   forgetCallPeer,
   pruneCallPeers,
+  receiveLetSpeak,
   receiveCallOp,
   receiveCallsMode,
   resetCallPeers,
+  setCallLevels,
 } from '@/lib/calls/calls-store';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
@@ -284,6 +286,8 @@ export function useRoomConnection(opts: {
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
+      // And who may speak from a stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles").
+      setCallLevels(participants);
       nameByPresenceRef.current = new Map(participants.map((p) => [p.id, p.name] as const));
       setLivePresence(
         participants.map((p) => ({
@@ -494,6 +498,14 @@ export function useRoomConnection(opts: {
         // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire"): a talking level for the
         // equaliser, or where a speaker's microphone is. Parsed by the store, never written.
         receiveCallOp(from, op);
+      } else if (op.kind === 'avatar-hand') {
+        // A raised hand (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand"): parsed and kept by
+        // the calls store until it goes down or its owner leaves, never written.
+        receiveCallOp(from, op);
+      } else if (op.kind === 'avatar-let-speak') {
+        // ADDRESSED like a shove: the room delivers it to the hand's owner alone, so it is ours. The running call
+        // checks the sender may let us speak.
+        receiveLetSpeak(from, op);
       } else if (op.kind === 'avatar-say') {
         // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
         // drawn by the speech layer, never written.

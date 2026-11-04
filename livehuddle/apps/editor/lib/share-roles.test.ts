@@ -15,6 +15,7 @@ import {
 import { buildCanvasToolOptions } from '@/components/palette/canvas-tool-options';
 import { tilesForCategory } from '@/components/palette/palette-tile-defs';
 import { avatarTourSteps } from '@/components/tour/avatar-tour-steps';
+import { walkButtonShown } from '@/lib/walk-button';
 
 // docs/specs/013-workspace/share-roles.md "Feature by feature (v1)", as the editor renders it: one block per row of
 // the table, one case per level. The room's half is apps/api/src/share-roles.test.ts. Each level's session is what
@@ -78,6 +79,23 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     'Walk, hop, Behaviours, Reactions, Status',
     (level) => toolsFor(level).includes('avatar'),
     { edit: true, participate: true, view: true },
+  );
+
+  // Every role enters and leaves Avatar mode on any board, a board with no Walk In button, pad or opening walk too: an
+  // Editor and a Participant through the picker on their palette strip, a Viewer (no strip) through the cluster's
+  // Walk button (docs/specs/008-canvas/avatar-mode.md "The Walk button"). Work Tracker #361.
+  expectPerLevel(
+    'Enter and leave Avatar mode on any board',
+    (level) => {
+      const readOnly = level !== 'edit';
+      const participantPalette = level === 'participate' && canFor(level).addContent;
+      const picker = (!readOnly || participantPalette) && toolsFor(level).includes('avatar');
+      if (picker) return 'picker';
+      return walkButtonShown({ offered: true, readOnly, participantPalette })
+        ? 'walk button'
+        : 'none';
+    },
+    { edit: 'picker', participate: 'picker', view: 'walk button' },
   );
 
   // useCanvasAvatar's `canSpeak` and the Avatar tour's Say Something step both read `can.takePart`.

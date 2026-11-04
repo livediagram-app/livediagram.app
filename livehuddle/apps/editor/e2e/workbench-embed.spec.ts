@@ -81,11 +81,9 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   // Drawing saves through the session.
   const viewport = page.viewportSize()!;
   await page.mouse.click(viewport.width / 2 + 200, viewport.height / 2);
-  await page.keyboard.press('r');
-  await page.mouse.move(viewport.width / 2 + 150, viewport.height / 2 - 40);
-  await page.mouse.down();
-  await page.mouse.move(viewport.width / 2 + 300, viewport.height / 2 + 40, { steps: 6 });
-  await page.mouse.up();
+  // A sticky note from its key (livehuddle's palette draws no shapes, Work Tracker #423).
+  await page.keyboard.press('n');
+  await page.mouse.click(viewport.width / 2 + 220, viewport.height / 2);
   await page.keyboard.type('Scores');
   await page.keyboard.press('Escape');
   await expect

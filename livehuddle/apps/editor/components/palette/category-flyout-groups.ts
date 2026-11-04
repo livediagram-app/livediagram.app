@@ -14,6 +14,8 @@ export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['workshop'])
 const BAR_LABELS: Readonly<Record<string, string>> = {
   write: 'Write',
   'my-shapes': 'Library',
+  // Selection Mode: its buttons hand everyone a selection mode.
+  'collab-mode': 'Modes',
 };
 
 export function barLabel(categoryId: string, label: string): string {
@@ -50,10 +52,11 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // The line under a flyout's name: what the category is for, short enough for one line at 26rem. A category not
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
-  popular: 'The tiles a diagram is most often built from.',
+  popular: 'What a Space is most often furnished with.',
   shapes: 'The basics, the flowchart vocabulary and more.',
   'my-shapes': 'Shapes from your imported libraries.',
-  write: 'Words on the canvas: text, notes and comments.',
+  write: 'Words on the canvas: text and sticky notes.',
+  frame: 'A titled box to group a room’s notes.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Structures that grow as you type.',
   diagrams: 'Structures that grow as you type.',
@@ -61,7 +64,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
   concepts: 'Ideas laid out as one element that arranges itself.',
   icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
-  media: 'Pictures and people.',
+  media: 'A picture, uploaded or found, and a link card.',
   stickers: 'Colour emoji to react, mark status and celebrate.',
   data: 'Charts and meters that read at a glance.',
   'collab-ask': 'Put a question to the room.',
@@ -69,7 +72,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
   'collab-record': 'Keep what happened: comments, actions, decisions.',
   'collab-react': 'Celebrate on the canvas.',
   'collab-mode': 'Buttons that switch how everyone points.',
-  'collab-navigate': 'Places to go, and things to sit at.',
+  'collab-navigate': 'Places to go, things to sit at, and the office.',
   logo: 'The tools a logo is made with.',
   components: 'Ready-made blocks that follow the theme.',
   devices: 'Frames to set a screen design in.',
@@ -77,7 +80,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
 
 // Where a mode fills a category differently enough that its default line would mislead.
 const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  workshop: { write: 'Words, notes, tables and checklists.' },
+  workshop: {},
 };
 
 export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
@@ -92,7 +95,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:square': 'Basics',
   'shapes:cylinder': 'Flowchart',
   'shapes:cloud': 'More Shapes',
-  'tools:page': 'Text',
   'tools:text': 'Text',
   'tools:sticky': 'Notes',
   'tools:pencil': 'Pens',
@@ -115,6 +117,9 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'devices:browser': 'Desktop',
   'devices:phone': 'Mobile',
   'tools:image': 'Pictures',
+  // The meeting palette's Navigate (palette-layouts): what takes you somewhere or seats you, then the office.
+  'tools:door': 'Around the Space',
+  'tools:room': 'Office Pieces',
   'media:embed-youtube': 'Embeds',
   'tools:avatar': 'People',
   'data:pie': 'Charts',

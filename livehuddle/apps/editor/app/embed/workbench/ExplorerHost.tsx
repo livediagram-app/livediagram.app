@@ -20,7 +20,7 @@ import {
   type TimelineTelemetry,
   type HomeTelemetry,
 } from '@liveworkspace/explorer';
-import { DEFAULT_FOLDER_OPTIONS, LENS_MODES } from '@livehuddle/api-schema';
+import { DEFAULT_FOLDER_OPTIONS } from '@livehuddle/api-schema';
 import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
@@ -174,7 +174,6 @@ export function ExplorerHost({
         onHome={trackHome}
         onOrganise={trackOrganise}
         lensTemplates={CANVAS_TEMPLATE_FAMILIES}
-        lensModes={LENS_MODES}
         defaultFolderOptions={DEFAULT_FOLDER_OPTIONS}
         onFolderShown={onFolderShown}
         gallery={library.gallery}

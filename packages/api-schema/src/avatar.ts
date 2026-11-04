@@ -72,8 +72,9 @@ export type AvatarConfig = {
 
 // The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
 // ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
-// receiver's type does not name.
-export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
+// receiver's type does not name. `dnd` (Do Not Disturb) is livehuddle's call status (its
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md): every product parses and draws it, only livehuddle offers it.
+export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away', 'dnd'] as const;
 export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
 
 export type AvatarPresence = {

@@ -45,6 +45,9 @@ import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-it
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { AvatarClusterButton } from '@liveworkspace/avatar/components/AvatarClusterButton';
+import { WalkClusterButton } from '@liveworkspace/avatar/components/WalkClusterButton';
+import { AvatarModeIcon } from '@/components/palette/palette-icons';
+import { walkButtonShown } from '@/lib/walk-button';
 import { CallClusterButton } from '@/components/calls/CallClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -144,11 +147,6 @@ type ChromeExtras = {
   eraserPanelPosition?: { x: number; y: number } | null;
   onMoveEraserPanel?: (x: number, y: number) => void;
   onResetEraserPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the sixth tool panel.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
@@ -486,7 +484,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.spotlight}
           {panelEls.eraser}
           {panelEls.format}
-          {panelEls['slide-deck']}
         </>
       )}
 
@@ -496,9 +493,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
       <div
-        // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
-        // as its one way back out, and a deck has its own way out plus no
-        // zoom to offer.
+        // Zen keeps the zoom controls as its one way back out.
         data-zoom-cluster=""
         data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
@@ -531,13 +526,33 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
+            {/* Walk (docs/specs/008-canvas/avatar-mode.md "The Walk button"): a Viewer has no picker, so this is its
+                way in to Avatar mode and back out, first in the cluster where its Avatar button follows. */}
+            {walkButtonShown({
+              offered: !!props.walkButton,
+              readOnly: !!readOnly,
+              participantPalette: !!props.participantPalette,
+            }) ? (
+              <WalkClusterButton
+                walking={props.canvasTool === 'avatar'}
+                onToggle={() =>
+                  props.canvasTool === 'avatar'
+                    ? props.onExitAvatarMode?.()
+                    : props.onSetCanvasTool('avatar')
+                }
+                icon={<AvatarModeIcon size={16} />}
+              />
+            ) : null}
             {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
                 is on, for every role, Zen included: it is the mode's one piece of chrome. */}
             {props.canvasTool === 'avatar' ? (
               <>
                 {/* Proximity audio (docs/specs/012-collaboration/proximity-audio.md): Join Audio, then the
                     microphone and Leave, left of Avatar. Draws nothing while calls are off. */}
-                <CallClusterButton />
+                <CallClusterButton
+                  doNotDisturb={props.avatarStatus === 'dnd'}
+                  onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
+                />
                 <AvatarClusterButton
                   popoverOpen={activeDockPanel === 'avatar'}
                   onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}

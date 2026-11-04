@@ -287,6 +287,7 @@ export * from './page-views';
 export * from './poll';
 export * from './room-messages';
 export * from './call-voice';
+export * from './call-hand';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';
@@ -317,8 +318,6 @@ export {
 // Default folders: their entries and the creation intent a create carries
 // (docs/specs/013-workspace/default-folders.md).
 export * from './placement-defaults';
-// The Explorer filter lens's Mode values (docs/specs/013-workspace/explorer-filters.md).
-export * from './lens-modes';
 // Explorer Home: the open marker and the use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';

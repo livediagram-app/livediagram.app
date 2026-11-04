@@ -71,7 +71,6 @@ export function SplitViewFrame({
     zenMode,
     embedMode,
     appChrome,
-    slideDeck,
     viewport,
     canvasMainRef,
     skipTabFitRef,
@@ -90,7 +89,7 @@ export function SplitViewFrame({
     loadedTabIds,
     loadTabs: loadAllTabs,
     // Embeds and the workbench frame (no app chrome) keep one tab, like a phone.
-    suspended: isMobile || zenMode || embedMode || !appChrome || slideDeck.presentingAt !== null,
+    suspended: isMobile || zenMode || embedMode || !appChrome,
   });
   const { pair, editorSide } = split;
   const staticId = pair ? (editorSide === 'left' ? pair.rightId : pair.leftId) : null;

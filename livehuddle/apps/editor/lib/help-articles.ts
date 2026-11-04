@@ -25,12 +25,11 @@ export const HELP_ARTICLES = {
   // The Community's own help map holds the path (the public sites link it too).
   community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
-  autoAttachArrows: 'palette/auto-attach-arrows',
-  // Of the elements added in docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/lane.md and
-  // docs/specs/009-elements/embed-providers.md, only the embed has a surface that links its article (the link picker,
-  // when it is restricted to a URL). Lanes had a key here and no placement, so it was removed; its element tour
-  // brought it back, below.
-  embedElements: 'palette/embed-elements',
+  // The diagram tools left livehuddle (Work Tracker #423 part 3, docs/specs/002-project-scope/not-in-livehuddle.md):
+  // their articles went, but a stored element of a leaving kind still draws and its surfaces still link, so these keys
+  // land on the nearest article that stays (the router redirects the old addresses the same way).
+  autoAttachArrows: 'palette/tools',
+  embedElements: 'palette/tools/images',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
@@ -43,7 +42,6 @@ export const HELP_ARTICLES = {
   spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  slideDeck: 'selection-modes/slide-deck',
   // AI
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
@@ -62,11 +60,12 @@ export const HELP_ARTICLES = {
   choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
-  workshopTour: 'canvas/workshop-mode/workshop-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
+  // The call strip's `?` (CallClusterButton); the article links on to Cameras and Screen Sharing.
+  proximityAudio: 'collaboration/proximity-audio',
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   // Standing panels.
@@ -75,7 +74,7 @@ export const HELP_ARTICLES = {
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionPolls: 'collaboration/session-tools/polls',
+  sessionPolls: 'collaboration/session-tools',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
@@ -93,14 +92,15 @@ export const HELP_ARTICLES = {
   recent: 'explorer/recent',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
-  dataElements: 'palette/tools/data-elements',
-  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
-  stacks: 'palette/stacks',
-  lanes: 'palette/lanes',
-  boundaries: 'palette/boundaries',
-  diagramKeys: 'palette/diagram-keys',
+  dataElements: 'palette/tools',
+  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md). All but the portal's are
+  // leaving kinds, so they land on Frames, the one container that stays.
+  stacks: 'palette/build/frames',
+  lanes: 'palette/build/frames',
+  boundaries: 'palette/build/frames',
+  diagramKeys: 'palette/build/frames',
   portals: 'palette/tools/portals',
-  timelineRail: 'palette/timeline-rail',
+  timelineRail: 'palette/build/frames',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
@@ -124,10 +124,6 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  workshopTour: {
-    title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   avatarTour: {
     title: 'Learn about the Avatar Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -149,12 +145,12 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Sharing a space publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
-    title: 'Learn about auto-attach arrows',
-    description: 'How arrows re-pin to shapes as they move.',
+    title: 'Learn about the palette',
+    description: 'Where each element lives, category by category.',
   },
   embedElements: {
-    title: 'Learn about embeds',
-    description: 'Which services can be embedded, and how they load.',
+    title: 'Learn about images',
+    description: 'Uploading, searching for and reusing pictures.',
   },
   alignmentGuides: {
     title: 'Learn about alignment guides',
@@ -191,10 +187,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  slideDeck: {
-    title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your canvas.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
@@ -282,8 +274,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Tips for finding your way around a big canvas.',
   },
   sessionPolls: {
-    title: 'Learn about polls',
-    description: 'Tips for asking the room a question and sharing the results.',
+    title: 'Learn about session tools',
+    description: 'The timer and the quick vote, and who can run them.',
   },
   sessionVoting: {
     title: 'Learn about voting',
@@ -342,32 +334,32 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
-    title: 'Learn about data elements',
-    description: 'Charts and data-driven elements, and how to edit their data.',
+    title: 'Learn about the palette',
+    description: 'Where each element lives, category by category.',
   },
   stacks: {
-    title: 'Learn about stacks',
-    description: 'Rows, columns and grids that lay out what you drop in them.',
+    title: 'Learn about frames',
+    description: 'Labelled sections that carry what sits inside them.',
   },
   lanes: {
-    title: 'Learn about lanes',
-    description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
+    title: 'Learn about frames',
+    description: 'Labelled sections that carry what sits inside them.',
   },
   boundaries: {
-    title: 'Learn about boundaries',
-    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
+    title: 'Learn about frames',
+    description: 'Labelled sections that carry what sits inside them.',
   },
   diagramKeys: {
-    title: 'Learn about diagram keys',
-    description: 'A legend that lists the line styles and tag colours you use.',
+    title: 'Learn about frames',
+    description: 'Labelled sections that carry what sits inside them.',
   },
   portals: {
     title: 'Learn about portals',
     description: 'Linked rings that take you across the canvas or to another tab.',
   },
   timelineRail: {
-    title: 'Learn about timelines',
-    description: 'Milestones along a line, each with when and what, and editing its rows.',
+    title: 'Learn about frames',
+    description: 'Labelled sections that carry what sits inside them.',
   },
   palette: {
     title: 'Learn about the Palette',
@@ -396,6 +388,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   livePresence: {
     title: 'Learn about live presence',
     description: 'Who is in the canvas, where they are, and following them.',
+  },
+  proximityAudio: {
+    title: 'Learn about calls',
+    description: 'Talking with the people near you, your microphone, cameras and screen sharing.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',

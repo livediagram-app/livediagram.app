@@ -1,22 +1,25 @@
-import { openerById } from './palette-openers';
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,
   DIVIDE,
   PALETTE_LAYOUTS,
+  SEARCH_ONLY_TILE_IDS,
   paletteCategoriesFor,
+  paletteCategoryOffered,
   paletteLandingCategory,
   participantTiles,
 } from './palette-layouts';
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
-// The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'workshop') => paletteCategoriesFor(mode).map((c) => c.id);
-const tileIds = (mode: 'workshop', category: string) =>
-  paletteCategoriesFor(mode)
+// The meeting palette (docs/specs/012-collaboration/workshop-mode.md "The palette"), livehuddle's one palette.
+const ids = () => paletteCategoriesFor('workshop').map((c) => c.id);
+const tileIds = (category: string) =>
+  paletteCategoriesFor('workshop')
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
+const allTiles = () =>
+  paletteCategoriesFor('workshop').flatMap((c) => (c.tiles ?? []).map((t) => t.id));
 
 describe('palette layouts', () => {
   it('name only known categories, once each, and only known tiles', () => {
@@ -27,108 +30,125 @@ describe('palette layouts', () => {
       for (const e of layout.categories) {
         expect(known.has(e.id), `${mode}: ${e.id}`).toBe(true);
         for (const t of e.tiles ?? [])
-          if (t !== DIVIDE) expect(tileById(t) ?? openerById(t), `${mode}: ${t}`).toBeDefined();
+          if (t !== DIVIDE) expect(tileById(t), `${mode}: ${t}`).toBeDefined();
         if (CATALOGUE_CATEGORIES.has(e.id)) expect(e.tiles, `${mode}: ${e.id}`).toBeUndefined();
       }
       expect(seen, `${mode} lands on one of its own`).toContain(layout.landing);
     }
   });
 
-  it('offers every Data tile in Workshop', () => {
-    const data = tilesForCategory('data').map((t) => t.id);
-    expect(tileIds('workshop', 'data')).toEqual(data);
-  });
-
-  // Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette").
-  it('gives Workshop Popular, the drawing basics, Layout, the six Collaborate categories, the decorations and the charts', () => {
-    expect(ids('workshop')).toEqual([
+  it('is Popular; Write, Frame; Navigate, React, Selection Mode; Icons, Stickers, Media', () => {
+    expect(ids()).toEqual([
       'popular',
-      'shapes',
-      'my-shapes',
       'write',
-      'draw',
-      'layout',
-      'collab-ask',
-      'collab-tools',
-      'collab-record',
+      'frame',
+      'collab-navigate',
       'collab-react',
       'collab-mode',
-      'collab-navigate',
       'icons',
       'stickers',
       'media',
-      'data',
     ]);
     expect(paletteLandingCategory('workshop')).toBe('popular');
+    // No opener anywhere: every category is one level deep.
+    for (const c of paletteCategoriesFor('workshop'))
+      for (const t of c.tiles ?? []) expect(t.action.type, t.id).not.toBe('open');
   });
 
-  it("puts the session kit on Workshop's Popular as four openers", () => {
-    const popular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!;
-    expect(popular.tiles!.map((t) => t.id)).toEqual([
-      'shapes:square',
+  it('lands on Popular: the light content, then the pieces a meeting place is built from', () => {
+    expect(tileIds('popular')).toEqual([
       'tools:sticky',
       'tools:text',
       'tools:frame',
-      'tools:arrow',
       'tools:image',
-      'open:collab-ask',
-      'open:collab-tools',
-      'open:collab-record',
-      'open:collab-react',
+      'tools:link-card',
+      'tools:room',
+      'tools:meeting-table',
+      'tools:chair',
+      'tools:focus-button',
+      'tools:avatar-pad',
     ]);
-    // A divider of its own between the tiles and the openers, here only.
-    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toContain('tools:image');
-    // Each opens a category Workshop offers.
-    const offered = new Set(paletteCategoriesFor('workshop').map((c) => c.id));
-    for (const t of popular.tiles!)
-      if (t.action.type === 'open') expect(offered.has(t.action.category), t.id).toBe(true);
+    const popular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!;
+    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
+      'tools:link-card',
+    ]);
   });
 
-  it('holds every Collaborate tile in Workshop, across its six categories', () => {
-    const held = paletteCategoriesFor('workshop')
-      .filter((c) => c.id.startsWith('collab-'))
-      .flatMap((c) => c.tiles!.map((t) => t.id));
-    expect(held.sort()).toEqual(
-      tilesForCategory('behaviour')
-        .map((t) => t.id)
-        .sort(),
-    );
+  it('holds only light content in Write, Frame and Media', () => {
+    expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky']);
+    expect(tileIds('frame')).toEqual(['tools:frame']);
+    expect(tileIds('media')).toEqual(['tools:image', 'tools:link-card']);
   });
 
-  it("leaves Page, Annotation, Shape Pen and Polygon out of Workshop's Write and Draw, and puts the Timeline in Layout", () => {
-    const tilesOf = (id: string) =>
-      paletteCategoriesFor('workshop')
-        .find((c) => c.id === id)!
-        .tiles!.map((t) => t.id);
-    const write = paletteCategoriesFor('workshop').find((c) => c.id === 'write')!;
-    expect(write.label).toBe('Write');
-    expect(tilesOf('write')).toEqual([
-      'tools:text',
-      'tools:sticky',
+  it('puts the places, the furniture and then the office pieces in Navigate', () => {
+    expect(tileIds('collab-navigate')).toEqual([
+      'tools:door',
+      'tools:focus-button',
+      'tools:chair',
+      'tools:desk',
+      'tools:sofa',
+      'tools:fence',
+      'tools:avatar-pad',
+      'tools:link-card',
+      'tools:room',
+      'tools:meeting-table',
+      'tools:plant',
+      'tools:bookshelf',
+      'tools:water-cooler',
+      'tools:coffee-machine',
+      'tools:rug',
+    ]);
+  });
+
+  it('keeps the five Reaction Pads and every Selection Mode button', () => {
+    expect(tileIds('collab-react')).toEqual(tilesForCategory('collab-react').map((t) => t.id));
+    expect(tileIds('collab-react')).toHaveLength(5);
+    expect(tileIds('collab-mode')).toEqual(tilesForCategory('collab-mode').map((t) => t.id));
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "What leaves": offered from nowhere.
+  it('offers no diagram tool, no Collaborate element and no Session button', () => {
+    const offered = new Set(allTiles());
+    for (const leaving of [
+      'shapes:square',
+      'tools:arrow',
+      'tools:line',
+      'tools:pencil',
+      'tools:highlighter',
       'tools:pointer-note',
       'tools:table',
       'tools:checklist',
-    ]);
-    // The Timeline after the containers.
-    const layout = tilesOf('layout');
-    expect(layout.indexOf('tools:timeline')).toBe(layout.indexOf('tools:boundary') + 1);
-    expect(tilesOf('draw')).toEqual([
-      'tools:pencil',
-      'tools:highlighter',
-      'tools:arrow',
-      'tools:line',
-    ]);
+      'tools:lane',
+      'tools:timeline',
+      'tools:session-timer',
+      'tools:session-vote',
+      'tools:session-poll',
+      'tools:reveal',
+      'collab:agenda',
+      'collab:qa-board',
+      'collab:temperature',
+      'collab:idea-box',
+    ])
+      expect(offered.has(leaving), leaving).toBe(false);
+    for (const gone of [
+      'shapes',
+      'my-shapes',
+      'draw',
+      'layout',
+      'data',
+      'collab-ask',
+      'collab-tools',
+      'collab-record',
+    ])
+      expect(paletteCategoryOffered('workshop', gone), gone).toBe(false);
+    expect(SEARCH_ONLY_TILE_IDS).toEqual([]);
   });
 
-  it('gives a Workshop Participant Sticky and Text, and an image', () => {
+  it('gives a Participant Sticky and Text, and an image', () => {
     expect(participantTiles().map((t) => t.id)).toEqual([
       'tools:sticky',
       'tools:text',
       'tools:image',
     ]);
-  });
-
-  it('defaults a category to its own tiles', () => {
-    expect(tileIds('workshop', 'shapes')).toEqual(tilesForCategory('shapes').map((t) => t.id));
   });
 });

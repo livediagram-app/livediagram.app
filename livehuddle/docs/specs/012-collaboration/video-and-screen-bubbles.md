@@ -11,7 +11,8 @@ again. Both kinds share one bubble.
 ## Who sees what
 
 Video and screens ride the call exactly as voices do: you see the bubbles of the people you hear
-([Hearing](proximity-audio.md#hearing): within 260 canvas px, let go beyond 300), and nobody else. Nothing is sent to
+([Hearing](proximity-audio.md#hearing): everyone in your [room](meeting-rooms-and-stage.md#rooms-are-calls-part-1-built),
+or in the open within 260 canvas px, let go beyond 300), and nobody else. A room's cameras and screens stay in it. Nothing is sent to
 someone out of earshot, so a bubble costs nothing until somebody walks up.
 
 On top of earshot, a bubble is received only while it can be seen:
@@ -75,6 +76,28 @@ One bubble for both kinds, drawn in the canvas layer so it zooms and slides with
 - While the stream is arriving, the tile shows the person's colour softly with no spinner; a video that stalls keeps
   its last frame.
 - Under reduced motion the bubble does not slide or scale; it appears in place.
+
+### Close together (#468)
+
+People talking stand close, so their bubbles would cover each other. They never do:
+
+- **Bubbles slide apart sideways.** Bubbles at about the same height (their tops and bottoms within 8 canvas px of
+  meeting) are laid out in one row, in their people's left-to-right order, 8 canvas px apart. A crowded row is
+  centred on its people, each bubble moved as little as the others; a bubble with room to spare stays exactly above
+  its head. A person's camera and screen move together.
+- **A small tail** in the person's colour under each bubble points down at its own head, so a bubble nudged aside
+  still says whose it is. It slides along the bubble's lower edge with the nudge, never past its rounded corners.
+- **No jitter when people walk past each other.** Two bubbles swap sides only once their people have crossed by 24
+  canvas px, and the swap is a short slide (220 ms), never a jump. Walking side by side, the bubbles glide with the
+  characters as before.
+- Under reduced motion the nudge and the swap are not animated.
+
+**Speech bubbles stay clear.** A speech bubble ([Avatar mode](../008-canvas/avatar-mode.md#speech-bubbles)) floats
+up from a head, and a camera or screen bubble sits right there. Wherever a speech bubble's path up would cross a
+camera or screen bubble, its own speaker's or anyone's, it starts 8 canvas px above that bubble instead, so it reads
+as rising from the video. If a bubble moves into its path while it flies (someone walks up), it eases up out of the
+way (about 150 ms) and is never pushed down again during its flight. The composer you type in stays at your head:
+it is yours, open only while you type, and drawn over your own camera.
 
 ### Maximised
 

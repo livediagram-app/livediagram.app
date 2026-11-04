@@ -1,6 +1,6 @@
 ---
 name: dev-loop
-description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (up to six agents at a time, related cards grouped into one agent and one PR, small cards on a lighter model), moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
+description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (up to six agents at a time, cards grouped by area into one agent and one PR, small cards on a lighter model), moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
 ---
 
 # Dev loop: one pass
@@ -125,11 +125,14 @@ Then, in one `change_items` batch and one `change_threads` batch:
 
 **Group first.** Cluster the ready cards by the files they would touch (step 2's file lists): cards in the same
 area (the editor chrome in every app, one board view, the Explorer, the card modal) go to **one agent**, so no two
-agents ever edit the same files. Inside a group, **closely related cards share one branch and one PR**
-(`work/<n1>-<n2>-<short-slug>`, naming every card: "Work Tracker #98, #110"): the same feature, the same component
-or the same small fix in the same place. Cards in a group that aren't closely related keep their own branch and
-PR. Fewer PRs mean fewer CI runs and fewer reviews; never fold in a card that would make the PR hard to read or
-riskier than its own.
+agents ever edit the same files. **A group is one branch and one PR** (`work/<n1>-<n2>-<short-slug>`, naming every
+card: "Work Tracker #98, #110"), so each pass opens about as many PRs as it has groups, not as cards. Every PR runs
+the whole of CI for what it reaches, and CI is the bottleneck: on 2026-11-04 PR jobs waited a median 19 minutes for
+a runner, and a dozen small PRs from one pass queued behind each other all afternoon. So fold every card in a group
+into its PR, and split a card out to its own PR only when it would make the PR hard to review in one sitting or
+riskier to merge than the cards would be apart (a D1 migration, an auth change, a change a person must check on
+staging before it merges, with its `not-ready` label). Say in the PR description which cards it carries, each under
+its own heading, so a reviewer can follow them one at a time.
 
 Work through the groups in the Priority order of their highest card, with **at most six agents running at once**.
 When one finishes, start the next. Two groups whose file lists overlap never run at the same time: hold the later

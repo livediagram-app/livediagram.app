@@ -155,6 +155,7 @@ export const SHAPE_KINDS = new Set<string>([
   'water-cooler',
   'coffee-machine',
   'rug',
+  'stage',
   // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
   'estimate',
   'temperature',

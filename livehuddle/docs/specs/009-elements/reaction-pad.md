@@ -1,6 +1,6 @@
 # The Reaction Pad
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/reaction-pad.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Stays in livehuddle** (Work Tracker #423, owner, 2026-11-04): Reaction Pads are a light meeting tool, kept when the other Collaborate elements left ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md) "What stays"). In livehuddle the five pads are the meeting palette's **React** category ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)), which part 3 builds. A change to them lands in livediagram too ([AGENTS.md](../../../AGENTS.md) "Workshop features shared with livediagram").
 
 A **Behaviour** element ([Selection Mode button](mode-button.md) to [Picker](../012-collaboration/picker.md)'s family). Press it, or walk an
 Avatar-mode character onto it, and a burst of reaction plays over the pad for
