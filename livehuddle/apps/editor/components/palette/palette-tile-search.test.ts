@@ -24,7 +24,9 @@ describe('elementTileSections', () => {
   // is not, and the Search never offers it.
   it('holds the meeting palette here, and no leaving tile', () => {
     const { here } = elementTileSections({ mode: 'workshop', hasImage: true });
-    expect(ids(here)).toEqual(expect.arrayContaining(['tools:sticky', 'tools:room', 'tools:frame']));
+    expect(ids(here)).toEqual(
+      expect.arrayContaining(['tools:sticky', 'tools:room', 'tools:frame']),
+    );
     expect(ids(here)).not.toContain('data:pie');
     expect(ids(here)).not.toContain('tools:arrow');
   });

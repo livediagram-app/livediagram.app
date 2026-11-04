@@ -197,7 +197,12 @@ describe('stripSegmentGone', () => {
         false,
       );
     expect(
-      stripSegmentGone({ segment: 'session-poll', tools: workshop, readOnly: false, running: idle }),
+      stripSegmentGone({
+        segment: 'session-poll',
+        tools: workshop,
+        readOnly: false,
+        running: idle,
+      }),
     ).toBe(true);
   });
 

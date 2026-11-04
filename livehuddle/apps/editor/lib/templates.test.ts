@@ -67,7 +67,12 @@ describe('TEMPLATES catalogue', () => {
 
 describe('templateCanvasOverrides', () => {
   it('lays every Space on the dot grid at full strength', () => {
-    for (const kind of ['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall'] as const) {
+    for (const kind of [
+      'virtual-office',
+      'coworking-space',
+      'team-pod',
+      'all-hands-hall',
+    ] as const) {
       expect(templateCanvasOverrides(kind), kind).toEqual({
         backgroundPattern: 'grid',
         opensIn: 'workshop',

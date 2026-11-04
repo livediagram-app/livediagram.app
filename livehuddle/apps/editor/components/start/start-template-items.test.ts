@@ -93,7 +93,9 @@ describe('Start a Space', () => {
   });
 
   it('lists a search match once, under its primary category', () => {
-    expect(TEMPLATE_STARTS.workshop.search('pod')).toEqual([{ group: 'spaces', kinds: ['team-pod'] }]);
+    expect(TEMPLATE_STARTS.workshop.search('pod')).toEqual([
+      { group: 'spaces', kinds: ['team-pod'] },
+    ]);
     // A template that left (Work Tracker #423) is found nowhere.
     expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([]);
   });

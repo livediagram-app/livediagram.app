@@ -45,7 +45,6 @@ function show({ minimal = false }: { minimal?: boolean } = {}) {
 
 const button = (name: string) => screen.getByRole('button', { name });
 const flyout = () => document.querySelector<HTMLElement>('[data-category-flyout]');
-const side = () => document.querySelector<HTMLElement>('[data-category-flyout-side]');
 const heading = () => flyout()?.querySelector('h3')?.textContent;
 const mouse = { pointerType: 'mouse' };
 const wait = (ms: number) =>

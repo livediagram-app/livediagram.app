@@ -131,7 +131,11 @@ describe('SettingsCategoryPane tours', () => {
   it('turns the Avatar tour back on, the one guided tour of a Space', () => {
     const onChange = vi.fn();
     render(
-      <SettingsCategoryPane category={TOURS} settings={{ avatarTourSeen: true }} onChange={onChange} />,
+      <SettingsCategoryPane
+        category={TOURS}
+        settings={{ avatarTourSeen: true }}
+        onChange={onChange}
+      />,
     );
     const avatar = screen.getByRole('switch', { name: 'Avatar Tour' });
     expect(avatar.getAttribute('aria-checked')).toBe('false');

@@ -99,7 +99,11 @@ describe('create_document intent', () => {
 describe('create_document tab names', () => {
   it('names an unnamed template tab after its template, and an unnamed other tab "Tab n"', async () => {
     const { run, posted } = harness(undefined);
-    await run([{ template: 'team-pod' }, { elements: [] }, { name: 'Mine', template: 'virtual-office' }]);
+    await run([
+      { template: 'team-pod' },
+      { elements: [] },
+      { name: 'Mine', template: 'virtual-office' },
+    ]);
     const tabs = posted[0]!.tabs as { name: string }[];
     expect(tabs.map((t) => t.name)).toEqual(['Team Pod', 'Tab 2', 'Mine']);
   });

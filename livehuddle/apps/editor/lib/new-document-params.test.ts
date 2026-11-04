@@ -35,7 +35,9 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
   });
 
   it('reads back the link the templates package builds for the gallery', () => {
-    expect(wizardBypassKind(templateCreateHref('all-hands-hall').slice('/new'.length))).toBe('all-hands-hall');
+    expect(wizardBypassKind(templateCreateHref('all-hands-hall').slice('/new'.length))).toBe(
+      'all-hands-hall',
+    );
   });
 });
 

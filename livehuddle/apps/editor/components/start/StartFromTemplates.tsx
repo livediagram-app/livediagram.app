@@ -6,10 +6,7 @@
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livehuddle/ui';
-import {
-  lucideBuilding2,
-  lucideStar,
-} from '@liveworkspace/icons/lucide';
+import { lucideBuilding2, lucideStar } from '@liveworkspace/icons/lucide';
 import type { TemplateCategory, TemplateKind } from '@livehuddle/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';

@@ -192,7 +192,9 @@ describe('SERVER_INSTRUCTIONS on Spaces', () => {
   it('talks about Spaces and maps them to the document tools', () => {
     expect(SERVER_INSTRUCTIONS).toMatch(/livehuddle Spaces/);
     expect(SERVER_INSTRUCTIONS).toMatch(/call a Space a document/);
-    expect(SERVER_INSTRUCTIONS).not.toMatch(/storm|esKind|Draw mode|whiteboard|org chart|workshop/i);
+    expect(SERVER_INSTRUCTIONS).not.toMatch(
+      /storm|esKind|Draw mode|whiteboard|org chart|workshop/i,
+    );
   });
 });
 

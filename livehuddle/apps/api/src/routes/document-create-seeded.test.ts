@@ -64,7 +64,9 @@ describe('seeded tabs compiled on create', () => {
     expect((await create([{ id: 't1', name: 'Pod', template: 'team-pod' }])).status).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
     expect(seedIntentOf([{ id: 't1', name: 'Pod', template: 'team-pod' }])).toBeNull();
-    expect(compileSeededTabs([{ id: 't1', name: 'Pod', template: 'team-pod' }], 'd1')).toMatchObject({
+    expect(
+      compileSeededTabs([{ id: 't1', name: 'Pod', template: 'team-pod' }], 'd1'),
+    ).toMatchObject({
       intent: { mode: 'workshop', tabKind: 'diagram' },
     });
   });

@@ -622,8 +622,8 @@ The catalogue is browsed by **what a person is using it for**. livehuddle has on
 `packages/templates/src/template-categories.ts` and read by every template start, the marketing gallery and the
 agents' template catalogue:
 
-| Category       | Id       | Description                                   | Templates                                            |
-| -------------- | -------- | --------------------------------------------- | ---------------------------------------------------- |
+| Category       | Id       | Description                                   | Templates                                                 |
+| -------------- | -------- | --------------------------------------------- | --------------------------------------------------------- |
 | Virtual Spaces | `spaces` | Offices and halls to walk round as an avatar. | Virtual Office, Coworking Space, Team Pod, All-Hands Hall |
 
 - Blank Space is in no category: it is the start's own first card.

@@ -21,7 +21,6 @@ import type { TemplateKind } from './templates';
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';
 export const TEMPLATE_CONTENT_LAYER_ID = 'layer:template:content';
 
-
 // The layers a template ships with, or undefined for a template without a meaningful scaffold / content split. None of
 // the catalogue's is layered (docs/specs/007-editor/templates-by-mode.md "The catalogue"): the Spaces are one floor of
 // rooms and furniture, and Blank Space is empty. The layered boards (the retrospectives, the matrices and the rest)

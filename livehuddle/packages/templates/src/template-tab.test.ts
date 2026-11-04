@@ -66,6 +66,8 @@ describe('closestTemplateKinds', () => {
   });
 
   it('offers at most CLOSEST_TEMPLATES_MAX', () => {
-    expect(closestTemplateKinds('blank virtual coworking team hall extra')).toHaveLength(CLOSEST_TEMPLATES_MAX);
+    expect(closestTemplateKinds('blank virtual coworking team hall extra')).toHaveLength(
+      CLOSEST_TEMPLATES_MAX,
+    );
   });
 });
