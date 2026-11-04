@@ -78,8 +78,14 @@ describe("a document's images", () => {
     await upsertTab(db.env, 'D', tabWith('t1', 'img-1'), 0);
     db.env.MEDIA_KEY = 'wrong';
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    await expect(push('D')).rejects.toThrow(/media/);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await push('D');
     expect(pending()).toEqual(['D']);
+    // Counted, and tried again after a wait rather than on every drain.
+    expect(warn).toHaveBeenCalledWith(
+      '[outbox] push failed',
+      expect.objectContaining({ itemId: 'D', keys: 1 }),
+    );
   });
 
   it('drops its key without a media service', async () => {

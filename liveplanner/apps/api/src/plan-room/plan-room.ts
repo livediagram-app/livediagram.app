@@ -6,11 +6,13 @@ import {
   type ItemHeadSync,
   earliestRoomGrantDue,
   openRoomSockets,
-  nextFlushAt,
+  flushAfterWrite,
+  nextOutboxFlushAt,
+  outboxDueAt,
   recordItemEditor,
   renewRoomGrant,
   roomGrantStep,
-  owesShares,
+  sharesDueAt,
   ShareSchedule,
   type ExportCommentsResult,
   type ExportQuery,
@@ -263,8 +265,8 @@ export class PlanRoom extends DurableObject<Env> {
   private flushAt: number | null = null;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's once a
   // minute, since it is a call to another plan rather than a push.
-  private readonly shares = new ShareSchedule(
-    () => this.schemaReady && owesShares(this.state.storage.sql),
+  private readonly shares = new ShareSchedule(() =>
+    this.schemaReady ? sharesDueAt(this.state.storage.sql) : null,
   );
   private lastFlushAt = 0;
   private draining = false;
@@ -397,7 +399,9 @@ export class PlanRoom extends DurableObject<Env> {
     this.ensureSchema();
     const row = sql.exec('SELECT id FROM plan LIMIT 1').toArray()[0];
     if (typeof row?.id === 'string' && this.planId === null) this.planId = row.id;
-    if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
+    // Anything owed goes now, or when its wait after a failure is over (index-app outbox.ts).
+    const due = outboxDueAt(sql);
+    if (due !== null) this.flushAt = Math.max(Date.now(), due);
     this.shares.restore();
     this.repeats.restore(Date.now());
   }
@@ -441,10 +445,10 @@ export class PlanRoom extends DurableObject<Env> {
     if (this.shares.noteWrite()) this.armAlarm();
     // A rule set, changed or stopped, or its card trashed or restored, is settled on the next wake.
     if (this.repeats.noteWrite(Date.now())) this.armAlarm();
-    if (this.flushAt !== null) return;
-    if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
-    const now = Date.now();
-    this.flushAt = nextFlushAt(now, this.lastFlushAt);
+    // A drain set far off, for a key in backoff, gives way to the key just written.
+    const at = flushAfterWrite(this.state.storage.sql, this.flushAt, Date.now(), this.lastFlushAt);
+    if (at === null) return;
+    this.flushAt = at;
     this.armAlarm();
   }
 
@@ -490,18 +494,15 @@ export class PlanRoom extends DurableObject<Env> {
       // A big import's tabs go a batch at a time, back to back, not a minute apart.
       if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
     } catch (error) {
+      // The drain itself failed (a read, say): a push that fails is counted on its keys instead.
       console.warn('[plan-outbox] push failed', { planId, error: String(error) });
       this.flushAt = Date.now() + FLUSH_RETRY_MS;
     } finally {
       this.draining = false;
     }
-    // Anything written while the push was in flight goes next time.
-    if (
-      this.flushAt === null &&
-      this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0
-    ) {
-      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
-    }
+    // Anything written while the push was in flight goes next time; a key that failed, when its wait is over.
+    if (this.flushAt === null)
+      this.flushAt = nextOutboxFlushAt(this.state.storage.sql, Date.now(), this.lastFlushAt);
   }
 
   // The copies of the plan's repeating cards that are due (card-repeats.ts), each relayed as an ordered `items` op. A

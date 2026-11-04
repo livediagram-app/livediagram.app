@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { recordItemEditor } from '@liveworkspace/index-app';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { FLUSH_RETRY_MS, recordItemEditor } from '@liveworkspace/index-app';
 import type { Element } from '@livedesign/design';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -91,6 +91,11 @@ function fakeIndex(fail: (kind: string) => Error | null = () => null) {
 }
 
 describe('the outbox', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   it('keeps one edit key per person at their latest write, and reports them all in one batch', async () => {
     const db = design();
     await drainOutbox(db.env, 'P', fakeIndex().client);
@@ -107,7 +112,11 @@ describe('the outbox', () => {
     ]);
 
     const failing = fakeIndex((kind) => (kind === 'events' ? new Error('down') : null));
-    await expect(drainOutbox(db.env, 'P', failing.client)).rejects.toThrow('down');
+    // A failed push keeps its keys, each waiting a minute for its next try.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await drainOutbox(db.env, 'P', failing.client);
+    vi.setSystemTime(Date.now() + FLUSH_RETRY_MS);
     expect(keys(db)).toHaveLength(3);
 
     const index = fakeIndex();
@@ -182,14 +191,16 @@ describe('the outbox', () => {
   it('keeps the keys of a failed push for the next drain, and drops those the index does not hold', async () => {
     const db = design();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Board', elements: [actionOn('a')] }, 0);
-    await expect(
-      drainOutbox(
-        db.env,
-        'P',
-        fakeIndex((k) => (k === 'summary' ? new Error('down') : null)).client,
-      ),
-    ).rejects.toThrow('down');
+    // A failed push keeps its keys, each waiting a minute for its next try.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await drainOutbox(
+      db.env,
+      'P',
+      fakeIndex((k) => (k === 'summary' ? new Error('down') : null)).client,
+    );
     expect(keys(db)).toEqual(['summary:']);
+    vi.setSystemTime(Date.now() + FLUSH_RETRY_MS);
     const gone = fakeIndex(() => new IndexError(404, 'not_found'));
     await drainOutbox(db.env, 'P', gone.client);
     expect(keys(db)).toEqual([]);

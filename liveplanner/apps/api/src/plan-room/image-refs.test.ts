@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
+import { FLUSH_RETRY_MS } from '@liveworkspace/index-app';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -43,6 +44,8 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 const pic = (id: string, cover = false) => ({
@@ -167,10 +170,21 @@ describe('the pictures a plan reports', () => {
     const p = plan();
     p.card('a', { attachments: [pic('one')] });
     refuse = true;
-    await expect(p.flush()).rejects.toThrow('media refs sync failed');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await p.flush();
+    expect(warn).toHaveBeenCalledWith(
+      '[outbox] push failed',
+      expect.objectContaining({ itemId: PLAN, keys: 1 }),
+    );
     expect(p.queued()).toBe(true);
     refuse = false;
+    // Not before its wait is over (index-app outbox.ts retryDelayMs), then on the next drain.
     await p.flush();
+    expect(synced).toHaveLength(0);
+    vi.setSystemTime(Date.now() + FLUSH_RETRY_MS);
+    await p.flush();
+    vi.useRealTimers();
     expect(synced).toHaveLength(1);
     expect(p.queued()).toBe(false);
   });
