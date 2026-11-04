@@ -16,8 +16,8 @@ export function Hero() {
   return (
     // On a wide screen its height is its content's, with room to breathe; on a phone it fills the
     // screen under the header, the fan along its foot.
-    <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col xl:min-h-[47.5rem]">
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44 xl:pt-32">
+    <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col xl:min-h-[52rem]">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-40 lg:pt-52 xl:pt-36">
         {/* An arrow drawn on load from the end of the question down onto the search; the wall has none. */}
         <HeroConnectors wide={false} />
         {/* Two promises, each its own badge and each true today (free with no trackers, no account needed). A

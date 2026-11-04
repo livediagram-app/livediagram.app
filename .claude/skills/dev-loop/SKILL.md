@@ -248,20 +248,28 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **One PR, at most two pushes** (above). (On rework, push to the open PR instead, gated as above.) The PR is
   ready (never draft), against `main`. Once verified, keep `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
   permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
-  data shows people), and say why. Use `not-ready` for only two things: a PR that isn't ready yet and that you will un-label yourself (the browser check above), or a risk that really is high. Judge the real risk, not the category: if the PR can't do harm once merged, it gets no label. So a stored-shape change that only adds and still reads old data needs none, and nor does a workflow that only runs when a person starts it. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
+  data shows people), and say why. Use `not-ready` for only three things: a PR that isn't ready yet and that you will un-label yourself (the browser check above), a risk that really is high, or a step only the owner can take (below). Judge the real risk, not the category: if the PR can't do harm once merged, it gets no label. So a stored-shape change that only adds and still reads old data needs none, and nor does a workflow that only runs when a person starts it. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
   to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. Use this blob form, not
   `raw.githubusercontent.com` links. The description: one calm paragraph of context, then what it solves, then what was done, then
   **Answers** (one line per question: "<thread title>: <the answer, short> → <how it was built>"), Decisions, Performance
   and the screenshots. It names the card ("Work Tracker #12") and ends with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+- **Owner-only steps live on the PR, never on the board.** Anything only the owner can do (secrets, keys, KV
+  namespaces, DNS, dashboard settings, Google Cloud, legal wording, a check on a real device or on staging, a
+  look at a change to what existing data shows) goes in an **Owner** section at the top of the description as a
+  checklist (`- [ ] Set WEBHOOK_KEY on liveworkspace-api and liveworkspace-api-staging`), each line saying exactly
+  what to do and where. Split it into **Before merging** and **After merging**. Any Before merging line means the
+  PR keeps `not-ready` with "Owner steps below" as the reason; the owner ticks the boxes, removes the label and
+  merges. After merging lines don't block, they stay on the PR as the record. First do whatever you can yourself
+  (an emulated phone shot, a local check) and only leave the owner what truly needs them.
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
   close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
 - **Clean up:** remove your build output and stop only the PIDs you started.
 - **Report:** `DONE <PR url>` or `FAILED`, then each answer and how it was built, a few lines on what was
-  built, the decisions, and a **Follow-ups** list: every risk to address, deferred piece, owner-only action
-  (secrets, keys, DNS, manual checks on real devices), suspected bug and missing test or help article, each with
-  why, what to do (files, PRs) and when it's done.
+  built, the decisions, the PR's Owner checklist (or "none"), and a **Follow-ups** list: every risk to address,
+  deferred piece, suspected bug and missing test or help article, each with why, what to do (files, PRs) and when
+  it's done. Owner-only steps go on the PR's checklist, not on this list.
 
 Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
 and so on up to the sixth at 3700 to 3719; the next agent reuses a finished one's block) and its own **scratch
@@ -300,8 +308,10 @@ missing, send the agent back to build it (SendMessage) before you touch the card
   that needs doing later, into its own **new Work Item in Under Review**, in one `change_items` batch:
   `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
 "Bug", "App": [...], "description": "Why / What / Done when", "Related Work Item": "#12"}}`. Plain Title Case
-  titles; an owner-only action says so in its title ("Owner: set WEBHOOK_KEY before deploying #1163").
-  Check the board first and skip one an existing card already covers.
+  titles. Check the board first and skip one an existing card already covers.
+- **Never file an owner-only step as a Work Item** (no "Owner: ..." cards). It belongs on the PR's Owner
+  checklist, with `not-ready` if it must happen before merging. If the agent put one on its Follow-ups list,
+  add it to the PR's checklist yourself (`gh pr edit`) and set the label when needed.
 - **FAILED:** move the card to **Development Failure** and start one thread on it, in review-loop's format: what blocked it, what was tried, and lettered options for how to unblock it, with a recommendation.
 
 Then remove that agent's worktree (`git worktree remove`), and its local branch on FAILED.
@@ -334,6 +344,7 @@ End each pass with a short table, plus one line on anything that went wrong:
 | #16 "Organise in Tab Folder" label | Low      | Development Failure, 1 question  |
 | #13 Flash Cards Feature            | High     | Part 1 of 4, PR #130             |
 
-After the table, list what needs the owner's attention first, one line each: high-risk PRs (`not-ready`),
+After the table, list what needs the owner's attention first, one line each: high-risk PRs (`not-ready`), PRs
+waiting on Owner steps (with the steps),
 decisions an agent took that a person might want to change, stale In Progress cards with no PR, and the
 follow-up Work Items this pass added (number and title).

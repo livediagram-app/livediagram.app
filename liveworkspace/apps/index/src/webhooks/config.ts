@@ -16,6 +16,9 @@ export const RETRY_DELAYS_MS: readonly number[] = [
 // One alarm sends at most this many deliveries, this many webhooks at once; more due, it runs again at once.
 export const DISPATCH_BATCH = 50;
 export const DISPATCH_CONCURRENCY = 6;
+// The next run is never set sooner than this when it waits on a retry, so a row that can't be sent (one the due read
+// skips) can never spin the alarm.
+export const DISPATCH_MIN_GAP_MS = 1_000;
 // Deliveries given up in a row before a webhook pauses itself.
 export const FAILING_PAUSE_AFTER = 20;
 // When accounts can't say whether a team webhook's creator is still an admin: held, not counted as a try.

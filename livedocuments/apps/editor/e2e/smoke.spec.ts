@@ -42,17 +42,18 @@ test('/new makes a guest’s document in This Browser and opens it on its start'
   expectNoPageErrors(pageErrors);
 });
 
-// The editor header carries no apps menu (docs/specs/007-editor/editor-app.md "Header"): its logo switches between
-// liveworkspace's sites (the Switch site button, SiteSwitcher), and the product's own links (Home, Explorer, Help) live
-// in the Explorer panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout"), never in the header.
-test('the editor header switches sites from its logo, with no apps menu', async ({
+// The editor header carries no apps menu (docs/specs/007-editor/editor-app.md "Header"): its logo is a plain link with
+// no site switcher (that stays on the Explorer and landing pages), and the product's own links (Home, Explorer, Help)
+// live in the Explorer panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout"), never in the header.
+test('the editor header has a plain logo, with no site switcher or apps menu', async ({
   page,
   pageErrors,
 }) => {
   await openStartBlank(page);
   const header = page.locator('header[data-region="header"]');
   await expect(header).toBeVisible();
-  await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(1);
+  await expect(header.getByRole('link', { name: 'livedocuments' })).toBeVisible();
+  await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(0);
   // The product's links (ProductNavLinks, a "Go to" navigation) are the Explorer panel's, not the header's.
   await expect(header.getByRole('navigation', { name: 'Go to' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);

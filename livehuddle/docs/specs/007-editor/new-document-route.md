@@ -113,8 +113,9 @@ ids it first tried: a create that reached the server but whose answer was lost
 is then taken as the re-commit of an id the caller already owns, never a second
 document. The same holds one step earlier: the index makes the item before the api
 makes its content, so when the content's create is what failed, the Retry finds the
-item already there (`409 item_exists`). `apiCreateDocument` then asks for the item's
-grant and, when it is an edit grant (the caller's own item), carries the create on
+item already there (`409 item_exists`). `apiCreateDocument` makes the item through
+`createOrResumeItem` (`@liveworkspace/index-client`, shared by every editor since Work Tracker #397), which then
+asks for the item's grant and, when it is an edit grant (the caller's own item), carries the create on
 with it; any other answer fails as before (issue #330: Retry used to fail every time).
 
 The distinction is made at every call site that can fail this way:
@@ -230,7 +231,7 @@ reports `UI` · `Closed` · `NewDocument` ([Telemetry](../017-telemetry/telemetr
 
 The New Space wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 36rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
 
-The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's menus (the logo's site switcher, the account menu) open in front of the card rather than behind it.
+The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's account menu opens in front of the card rather than behind it.
 
 This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer, see [07-live-app](editor-app.md)). Those are addressed separately.
 

@@ -43,6 +43,10 @@ export const DRIVE_CHECK_MIN_GAP_MS = 30 * SECOND;
 export const DRIVE_PASS_MAX_WRITES = 40;
 // How soon the next batch of a pass that stopped at DRIVE_PASS_MAX_WRITES runs.
 export const DRIVE_PASS_CONTINUE_MS = 1 * SECOND;
+// Passes in a row that stop short with nothing moved on (no row, change or file written, the page token and the root
+// where they were) before the next waits the write interval instead of DRIVE_PASS_CONTINUE_MS: a pass that can't get
+// past the same work within its budget would otherwise repeat it every second. Safe range: 2 to 5.
+export const DRIVE_PASS_STALLS_MAX = 3;
 // Drive-side changes a pass applies to liveworkspace before it hands over to the next alarm (DRIVE_PASS_CONTINUE_MS).
 // Only changes with an effect count (an echo or an ignored change costs no call); most cost one or two index calls.
 // Safe range: 50 to 300, so a full batch's index calls stay well inside DRIVE_PASS_SUBREQUEST_BUDGET.

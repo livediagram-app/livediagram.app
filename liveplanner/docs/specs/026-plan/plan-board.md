@@ -331,6 +331,12 @@ Where each is set, so a setting lives with what it changes, never in one central
   width, so a wide column suits a busy stage.
 - **Column heads stand clear of the board's header**: 12 px of the board's surface sits between the header and the
   row of column heads (not on a slot board), so they read as separate things.
+- **Column heads stick flush**: scrolling down a board, its column heads (a collapsed column's too) stay at the top
+  of the board's body. The 12 px that stands them clear at rest scrolls away with the cards, so a stuck head sits
+  flush under the board's header with no strip of cards showing above it, and there is no jump between the two: the
+  gap simply scrolls out. A head is solid: its colour (85%, as a cell's) is laid on the board's own paper rather than
+  over what is behind it, so a card scrolling under a stuck head never shows through it, in any theme or finish,
+  light or dark. A slot board's heads already rest flush and are solid.
 - **Column heads**: a column's head reads count first: its count badge (the count, or "3 / 4" against a WIP limit,
   amber when over), then its name, then Collapse Column and its cog at the right.
 - **Column hover**: the column under the pointer says so, barely: its head and cells (a collapsed column's strip
@@ -709,6 +715,55 @@ In Plan mode:
   (it is under the pointer); a change moving more than 40 cards at once (a filter, a swimlane change) snaps.
 - Positions are read within the board (layout units), so panning or zooming the canvas never reads as a move.
   Reduced motion snaps. The measuring runs only when the board's arrangement of cards changes.
+
+### Drag a column
+
+<a id="drag-a-column"></a>An Editor reorders a board's columns by dragging a column's head left or right, as cards are
+dragged, on a desktop (a mouse, pen or trackpad).
+
+- **What moves**: the order of **this board's** columns, its set-up, nothing else. A column is a status shown on
+  this board, so the statuses themselves, their cards and every other board's columns stay as they are (as
+  Move Left and Move Right in a column's settings, which this is the drag of). No column is fixed: a
+  [done column](#done-columns) may go anywhere, and a board that ends with its done columns keeps them there only
+  while nobody moves them.
+- **Where it starts**: pressing a column's head (its colour bar, count or name, anywhere but its buttons) and moving
+  4 px (`COLUMN_DRAG_START_PX`) picks the column up; a press that moves less is still a press, so the head's
+  buttons (Collapse Column, the cog) and a phone's tap keep working exactly as before. On hover the head shows the
+  open hand (`grab`); while carried, the closed hand (`grabbing`) shows wherever the pointer goes. A collapsed
+  column's strip is not picked up (a press on it expands it), but it moves aside like any column.
+- **While carried**: the whole column, its head and every swimlane's cell, lifts (a soft shadow, raised 2 px and
+  2% wider) and follows the pointer sideways only. The other columns slide aside to open the gap where it will land,
+  each over the column move's 240 ms and easing (`COLUMN_MOVE_MS`), so the gap opens smoothly as the pointer
+  crosses each neighbour's middle. Near the board's left or right edge the columns scroll sideways, as they do for a
+  card. Nothing else on the board changes or re-renders while it is carried: the column's position is written
+  straight to it at most once a frame.
+- **Letting go** over the board puts the column where the gap is: one change to the board's set-up, so one undo
+  step, sent live to everyone on the plan, the column settling from where it was let go into its place (the column
+  move's glide, its shadow fading). Letting go where it started changes nothing (no write, no undo step).
+  It is announced: "Moved In Progress to position 3 of 5".
+- **Cancelling**: **Escape**, letting go outside the board, or the pointer being lost (a cancelled pointer, the
+  window losing focus) puts every column back where it was, gliding, with no write. Escape while a column is
+  carried does nothing else (it does not also close a popover or leave a maximised board).
+- **The keyboard**: an Editor's column head is focusable (a tab stop, after the board's cards, named "{Name}
+  column, position 2 of 5"); with it focused (or one of its buttons), **Alt+Shift+Left** and **Alt+Shift+Right**
+  move the column one place, as Move Left and Move Right do, the move gliding, focus staying on the head and the move
+  announced as a drag's is. At the first or last place the move is refused and said so ("In Progress is already the
+  first column"). Move Left and Move Right in the column's settings name the keys in their tooltips and announce
+  the same way.
+- **Everywhere a board is worked**: on a board with swimlanes the column moves across every swimlane; collapsed
+  columns slide aside like the rest; a sorted board's columns move as any board's (sorting orders cards, never
+  columns); with a header band, and under every theme and finish: a multi-colour theme's column colours go by place
+  ([Columns in the theme's colours](#column-colours)), so a column takes the colour of the place it lands in unless
+  it has one of its own, while under Marker each column keeps its own hand-drawn ink, which is seeded by the column,
+  not its place. A board maximised or filling its tab works the same.
+- **Not here**: a phone, or any press by a finger (touch screens keep today's behaviour: a tap on a head frames the
+  column), where columns are reordered in a column's settings (Move Left and Move Right) or Setup Board's Columns
+  step; and a Dashboard slot's compact board, on which nothing sets the board up (it is reordered on its tab, or
+  maximised from the slot).
+- **Share roles**: an **Editor** drags and moves columns. A **Participant** and a **Viewer** may not change the
+  board's set-up: their column heads show no hand, are not tab stops, never pick up and take no Alt+Shift+Arrows;
+  the server refuses a Participant's set-up change in any case.
+- **Telemetry**: `Plan / Changed / ColumnReordered`, as Move Left and Move Right.
 
 ### Keyboard
 
@@ -1217,7 +1272,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
     Square under the Professional finish. Where the browser has no such styling (Firefox), a thin bar in the same
     colours.
   - **See-through surface**: the board's own surface (the room round its columns and under its header) is 80% solid
-    and its columns' heads and cells 85%, so the tab's canvas, its colour or pattern, shows faintly through both. The
+    and its columns' cells 85%, so the tab's canvas, its colour or pattern, shows faintly through both (a column's
+    head is solid, "Column heads stick flush", so a card under a stuck head never shows through). The
     cards stay solid, so their text reads exactly as on a solid board. A board in a Dashboard slot keeps a solid
     surface. What shows through is the tab's canvas alone: a board filling its Board tab hides the canvas's
     elements behind it (its own copy there), and a maximised one hides the selection box drawn behind it.
@@ -1236,6 +1292,29 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 - A selected board or Plan card has no quick-connect pluses: its cards are its content, not nodes to chain from.
   With no plus to clear, its selection toolbar sits close above it (the 16 px gap read-only views use, not 48 px).
   Only boxed elements close the gap this way: an arrow keeps 48 px, as its move frame sits in that gap.
+
+## A busy board
+
+<a id="busy-board"></a>A board showing more than 100 cards is **busy**. A Tab Style pick (a look, a theme, a finish, a
+typeface, a size, a canvas setting) on a busy board applies at once: on a 2,000-card board the pick paints within
+about a tenth of a second for a finish, a typeface, a size or the canvas, and within about a fifth of a second for a
+theme, with the page answering throughout.
+
+- **Cards redraw only for what they show.** A pick that changes nothing on a card (a finish, a typeface, a size, the
+  canvas) redraws no card: the finish's shadows and the lettering reach the cards from the board's own styling. A
+  theme or the canvas turning light or dark redraws each card once. An edit anywhere else in the plan (a save, a
+  peer's change to another tab) redraws no card either.
+- **Its parts snap rather than ease.** The colour ease ([Eased changes](../011-theme/canvas-and-theme-dialog.md#eased-changes))
+  is skipped inside a busy board: easing every chip of hundreds of cards held the page for seconds a pick. The board's
+  own surface and the rest of the canvas still ease. A board of 100 cards or fewer eases as before.
+- **Cards out of view wait.** A busy board's cards out of view are not styled or laid out until they come near the
+  view, and each keeps its last drawn height meanwhile (one never drawn takes the usual height of its size), so the
+  board scrolls as before. Where a browser cannot draw a card's shadow, ring and hover glow past its own box while
+  doing so, it draws every card as before.
+- **Marker draws what is in view.** Marker's hand-drawn parts on a busy board are drawn on the cards in view, up to the
+  usual limit; a card scrolled into view takes them the next time the board settles after a change.
+- **Sketch keeps the board.** Picking Sketch, or leaving it, keeps the board as it is (its scroll, its collapsed
+  columns): only its drawing changes.
 
 ## Both elements everywhere
 

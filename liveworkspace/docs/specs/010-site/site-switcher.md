@@ -1,7 +1,7 @@
 # The site switcher
 
-Every app's headers carry one way to move between liveworkspace's sites: **hover the logo** (on a
-touch screen, tap it). A card
+Every app's public and Explorer headers carry one way to move between liveworkspace's sites: **hover the
+logo** (on a touch screen, tap it). A card
 drops down from it, with **liveworkspace** at the top and one row for each app below it
 (livediagram, liveplanner, livedocuments, livedesign). Each row names the site without ".app", with
 its one-line pitch under it, and is one click to that site. The app you're on is marked.
@@ -13,8 +13,15 @@ action, the footer, and the Explorer's footer row.
 ## Where it shows
 
 The header of every public page (`SiteHeader`: marketing, help, community, licences), the
-Explorer's header and the editor's header in each app, and the telemetry dashboard on
-liveworkspace.app.
+Explorer's header (on liveworkspace.app and on each app's own `/explorer`), and the telemetry
+dashboard on liveworkspace.app.
+
+**Not in an editor.** The editor's header in each app (a diagram, plan, document, design or space,
+and its `/new` start) has a plain logo: no card on hover, no chevron, and a tap follows the link.
+The logo there still goes up one level, to the app's Explorer, with the same name, focus ring and
+pointer cursor. In an editor the logo should stay out of the way of the work: a card dropping over
+the canvas whenever the pointer passes the corner gets in the way, and moving to another site is a
+step for the Explorer or a landing page, one click away through the logo (November 2026).
 
 ## How it behaves
 
@@ -24,7 +31,7 @@ liveworkspace.app.
   A tap on the logo or the app's name opens the card too, rather than going home: the logo is the
   biggest thing in the corner, and the 20px chevron beside it was hard to hit. Going home is then
   two taps: the card marks the site you're on, and once a tap on the logo has opened the card, that
-  row leads where the logo does (the editor's to its Explorer, the Explorer's to liveworkspace.app's home). A second
+  row leads where the logo does (the Explorer's to liveworkspace.app's home). A second
   tap on the logo while the card is open follows the logo. A tap outside closes it. A tap is a
   touch pointer; when the browser doesn't say which pointer clicked, a screen whose main pointer
   is coarse counts as touch. A mouse or trackpad on a touch screen keeps the pointer behaviour.

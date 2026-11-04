@@ -392,8 +392,7 @@ Explorer's thumbnails and counts), each changed tab's comment threads and action
 (`PUT /app/items/:id/collab/:tabId`), who edited it for the Timeline and Most Used (`PUT /app/items/:id/events`), all
 with this app's key ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "What an
 item pushes"); the images it places to the media service (`pushDesignMediaRefs`); and the owner's newest save to the
-liveworkspace accounts Worker for its onboarding emails. A drain that fails keeps every key it did not push and
-retries a minute later, so the Explorer and the Inbox lag a write by up to about a minute.
+liveworkspace accounts Worker for its onboarding emails. A key whose push fails stays and is tried again after a wait that starts at a minute and doubles, at most an hour; one the index refuses for good (400, 403, 413, 422), or one that failed 12 times, is parked until the next write to the same thing ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#when-a-push-fails)), so the Explorer and the Inbox lag a write by up to about a minute while they answer.
 
 **Upkeep.** Each object runs its own daily upkeep from its alarm (`maintain`, every `MAINTENANCE_EVERY_MS`): photo
 blob refs past their grace go, with their markers and any blob no design holds any more

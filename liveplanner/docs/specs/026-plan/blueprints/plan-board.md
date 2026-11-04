@@ -56,7 +56,13 @@ editor views.
 PlanContext.tsx          context: items, types, item types slice, status, self, people, canEdit,
                          canEditCards, canVote, presence, actions
 PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, themed palette, radius and font,
-                         columns and rows grid, cards, keyboard, Add card per cell, the card menu
+                         columns and rows grid, cards, keyboard, Add card per cell, the card menu. The scroll body
+                         has no top padding (a scroll box's padding insets where `sticky top-0` sticks); the grid
+                         carries the heads' 12 px rest gap as `pt-3` (not in a slot), so it scrolls away and a stuck
+                         head sits flush (spec "Column heads stick flush"); pure CSS, no scroll listener
+column-part.ts           `columnPartStyle` (`--plan-col-bg`, `--plan-col-ink`) for a cell; `columnHeadStyle` adds
+                         `--plan-col-under: palette.surface`, so `.plan-col` (globals.css) mixes the 85% colour onto
+                         the board's solid paper rather than `transparent`: PlanColumnHeader and CollapsedColumnHead
 edge-auto-scroll.ts      (hooks/plan) `edgeScrollStep` (quadratic ramp in the edge zone, constant under reduced
                          motion) and `clampScrollStep`; `useEdgeAutoScroll(bodyRef, (maximised || filled) && (drag ||
                          incoming))` follows window pointermove and steps `scrollLeft` once a frame while in a zone
@@ -177,7 +183,45 @@ column-move-flip.ts      a column moved left or right glides (FLIP): `captureCol
                          Focus follows a toggle to the other chevron (`data-column-toggle`), without scrolling
                          PlanColumnPopover follows: when its column's index changes it re-places itself under the cog
                          each animation frame (style written directly) for COLUMN_MOVE_MS + 40 ms, then setPos; not on a
-                         phone
+                         phone. `beforeMoveFrom(columnId, at)` is `beforeMove` from positions given (a drag let go:
+                         each part's offsetLeft plus the translate it was seen at), so the drop settles from there
+column-drag.ts           Drag a column (spec "Drag a column"), pure: `COLUMN_DRAG_START_PX` (4), `COLUMN_DRAG_RISE_PX` (2),
+                         `COLUMN_DRAG_SCALE` (1.02, sideways only); `pastColumnDragStart(dx, dy)`; `clampColumnOffset(dx,
+                         spans, from, gridWidth)` keeps the carried column inside the grid; `columnDropIndex(spans, from,
+                         dx)` is the place whose middle the carried column's middle has passed; `columnShift(j, from, to,
+                         room)` is ±(width + column gap) for the columns between; `columnMoveKey(e)` reads Alt+Shift+
+                         Left/Right (no Ctrl or Meta) as −1/1; `columnMovedMessage` ("Moved {Name} to position n of N")
+                         and `columnEdgeMessage` ("{Name} is already the first|last column"); `COLUMN_HEAD_ATTR`
+                         (`data-plan-column-head`) and the `ColumnReorder` prop type
+useColumnDrag.ts         the drag: `onHeadPointerDown(columnId, e)` ignores anything but a primary mouse or pen press,
+                         a press on a button, link, field, dialog or the cog, and a press while one is held; it
+                         preventDefaults (no text selected) and listens on the window (pointermove, pointerup,
+                         pointercancel, blur, keydown capture) and on the scroller's scroll. Past the threshold
+                         `pickUp` reads once: every `[data-plan-column]` part grouped by column in board order, each
+                         column's span from its head (offsetLeft, offsetWidth), the grid's computed column-gap and
+                         offsetWidth, the zoom (rect width / offsetWidth), the scroller's scrollLeft; it lifts the
+                         column's parts with one `el.animate([f, f], { duration: 1, fill: 'forwards' })` each (f =
+                         translate3d(dx, −2px, 0) scale(1.02, 1), LIFT_SHADOW, background var(--plan-col-bg), z 3) and
+                         raises the shield (a fixed, clear `[data-column-drag-shield]` div, cursor grabbing, the top
+                         z-index). Each pointer move is folded into one rAF: the edge step (`edgeScrollStep`,
+                         `clampScrollStep` on the body), dx = clamp((x − startX) / zoom + scrolled), the lifted
+                         effects' `setKeyframes`, and only when `columnDropIndex` changes, each other part whose
+                         shift changed glides from its drawn translateX (computed transform m41) to the new shift over
+                         COLUMN_MOVE_MS on COLUMN_MOVE_EASING (0 under reduced motion), `fill: 'forwards'`. No React
+                         state, no style attribute: nothing renders and Marker's settle watcher sees no mutation.
+                         `finish(restore)` reads where each part is seen, cancels every drag animation, drops the
+                         shield and the listeners, swallows the next click (capture, once, cleared on the next
+                         task), then calls `onDrop(columnId, to, at)` when not restoring and `to !== from`, else
+                         `playColumnMove(at, columnId)` (not under reduced motion). Pointerup outside the board's
+                         rect, Escape (stopped, default prevented), pointercancel and blur restore; unmount restores
+useColumnReorder.ts      every reorder of the board's columns: `reorderFor(columnId, position)` gives the head its
+                         `ColumnReorder` only when `enabled` (PlanBoardView: `setUpHere && interactive && !phone`, so
+                         an Editor, never in a slot or on a phone); `reordered(next, columnId, at?)` notes the glide
+                         (`beforeMoveFrom` with `at`, else `beforeMove`), writes (`plan.updateBoard`), tracks
+                         `ColumnReordered` and announces `columnMovedMessage`. Alt+Shift+Arrows use `moveColumn`; at
+                         an end they announce `columnEdgeMessage` and write nothing; focus returns to the head
+                         (`[data-plan-column-head]`, preventScroll) after the move lays out. PlanBoardView routes the
+                         popover's `ColumnReordered` changes through `reordered` too, so they announce
 BoardColumnsSection.tsx  the board's Columns section (cog and element menu): InfoNote, "On This Board" + count, an `ol`
                          option list of the columns (number, StatusSwatch, name, WIP n / Done pills, chevron), each row
                          a button "Open {Name} settings" that calls onClose then requestColumnSettings(id); then the
@@ -677,13 +721,34 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   card's own type always first among them in catalogue order; one choice draws the plain label, as a Viewer's), title
   input, field rows in the type's order, description textarea, checklist, footer "Created by (disc) X" and "Edited by (disc) Y, 2m", the disc `PersonDisc`.
 
+- A busy board (spec "A busy board"; `PlanBoardView` `PLAN_BUSY_CARDS`): the board root carries
+  `data-plan-busy` (its card size, `detailed` when unset) past that many shown cards (`projection.total`).
+  `app/globals.css` then gives each `[data-plan-card]` `content-visibility: auto`, `contain-intrinsic-size: auto 132px`
+  (`44px` under `minimal`) and `overflow-clip-margin: 24px`, inside `@supports (overflow-clip-margin: 1px)` so a
+  browser that would clip the card's shadow, presence ring and hover glow at its box draws every card as before; and
+  `:root.lvd-style-transition [data-plan-busy] *` turns every transition off for the moment of a Tab Style change.
+- Card redraws: `PlanBoardCard` is `memo`; `PlanBoardView` hands it a `palette` kept by value (`useMemo` on the
+  surface and the element's `fillColor` / `strokeColor` / `textColor` / `colorPreset`) and `cardHandlers` of one
+  identity (`useLatest` of `onCardPress`, `onCardKey`, the plan and `drag.cancelPress`; `onOpen(id)` takes the card's
+  id). `PlanCardFace` reads no finish: `--card-shadow` and `--card-hover-shadow` are always set, and
+  `app/face-finish.css` empties both on `.plan-card` under `[data-face-finish]` Professional and Marker. The
+  `PlanContextValue` keeps its identity across editor renders: `useFormActions` `newFormFor` reads its inputs
+  through `useLatest` and `useLinkedActionCards` `showOnCanvas` is a `useStableCallbacks` wrapper, since every card
+  reads the context.
+  `accentOn` and `chipInkOn` (`@liveplanner/project` `plan-palette.ts`) remember their answers by colour
+  (`PLAN_INK_MEMO_MAX` entries, emptied when full).
+- `BoxedElementView` renders a `plan-board` element's `SketchFace` with `keepTree`, so a finish change never
+  remounts the board.
+
 ## Accessibility
 
 - Board is a `region` named by its title; each column a `list` labelled "In Progress, 3 items, WIP limit 4";
   each card a `listitem` containing a `button` named "#12 Fix login, Bug, assigned to Sam, high priority".
 - Keyboard per spec (`planBoardKey` in `plan-board-keys.ts`, read by `PlanBoardView`); moves announced in a polite
   live region.
-- Drag has the keyboard equivalent (Shift+arrows). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
+- Drag has the keyboard equivalent (Shift+arrows); a column's drag has Alt+Shift+Left/Right on its head (an Editor's
+  head is `role="group"`, `tabIndex 0`, named "{Name} column, position n of N", `aria-keyshortcuts`, a 2 px focus
+  outline in the palette's focus colour), and Move Left and Move Right name the keys ("Move Left (Alt+Shift+Left)"). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
   type colour key fill (the #key text meets 4.5:1 on it).
 - Reduced motion: no placeholder animation, no card lift shadow transition; a column collapses and expands at once.
 - Collapse Column name fit: the cell's button is a wrapping flex column (`STRIP_BUTTON_CLASS`) of two full-width
@@ -755,6 +820,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Rule                                                           | Test                                                                                                                                                           |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Done columns: names, flags, older boards, settling             | `packages/items/src/done-columns.test.ts`                                                                                                                      |
+| Column heads stick flush, solid on the board's paper           | `apps/editor/components/plan/PlanBoardView.sticky-heads.test.tsx`                                                                                              |
 | Set-up edits                                                   | `apps/editor/components/plan/board-setup-edits.test.ts`                                                                                                        |
 | Sort Cards: levels, kinds, no value last, rank ties, read back | `packages/items/src/board-sort.test.ts`, `board.test.ts`                                                                                                       |
 | Sort Cards: 1,000 cards a column within budget                 | `packages/items/src/board-sort.test.ts`                                                                                                                        |
@@ -774,6 +840,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Five slots across a maximised board                            | `apps/editor/components/plan/plan-board-columns.test.ts`                                                                                                       |
 | Collapse Column: strip, roles, cog, drops, lanes, keys, phone  | `PlanBoardView.collapse.test.tsx`, `CollapsedColumn.test.tsx`, `board-collapse.test.ts`, `hooks/plan/useBoardCollapsed.test.tsx`, `plan-board-columns.test.ts` |
 | A column collapsing or expanding glides                        | `apps/editor/components/plan/column-move-flip.test.tsx`                                                                                                        |
+| Drag a column: geometry, threshold, keys, messages             | `apps/editor/components/plan/column-drag.test.ts`, `board-setup-edits.test.ts` (`moveColumnTo`)                                                                |
+| Drag a column: drop, animation only, cancel, keys, roles, slot | `apps/editor/components/plan/PlanBoardView.column-drag.test.tsx`                                                                                               |
 | Option list roles, keys, menu items                            | `apps/editor/components/plan/OptionRows.test.tsx`                                                                                                              |
 | Custom assignee: offered when editable, made, reused, roles    | `apps/editor/components/plan/PersonPicker.test.tsx`, `packages/items/src/plan-people.test.ts`                                                                  |
 | Cards push skips custom assignees                              | `apps/api/src/plan-room/plan-outbox.test.ts`                                                                                                                   |
@@ -843,6 +911,9 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `SWIPE_FLICK_PX_PER_MS`    | 0.45               | DEFAULTS D62; a flick's speed at release; 0.3-0.8                           |
 | `SWIPE_FLICK_MIN_PX`       | 24                 | DEFAULTS D62; a flick's least travel; 16-40                                 |
 | `EDGE_SCROLL_ZONE_PX`      | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                        |
+| `COLUMN_DRAG_START_PX`     | 4                  | DEFAULTS D80; a column head's press before it is carried; 3-8               |
+| `COLUMN_DRAG_RISE_PX`      | 2                  | DEFAULTS D80; how far a carried column rises; 0-4                           |
+| `COLUMN_DRAG_SCALE`        | 1.02               | DEFAULTS D80; a carried column's width, sideways only; 1-1.04               |
 | `EDGE_SCROLL_MAX_PX`       | 18                 | DEFAULTS; px per frame at the edge; 8-30                                    |
 | `EDGE_SCROLL_REDUCED_PX`   | 6                  | DEFAULTS; constant under reduced motion; 3-10                               |
 | `WIDE_PANEL_SHARE`         | 0.6                | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8            |
@@ -865,6 +936,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                       |
 | `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`                  |
 | `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                            |
+| `PLAN_BUSY_CARDS`          | 100                | Spec "A busy board"; the ease cost ~6 ms a card a pick past it; 50-200      |
+| `PLAN_INK_MEMO_MAX`        | 2048               | Bounds the card ink memo; a board asks for tens; 256-8192                   |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to

@@ -376,4 +376,27 @@ describe('testing one and its deliveries', () => {
       at: 5,
     });
   });
+
+  it('writes no ping when a pause lands between reading the webhook and queuing it', async () => {
+    const ada = await person('user_wt2');
+    const { webhook } = await addWebhook(ada.auth, { name: 'Ops' });
+    const db = h.db.env.INDEX_DB;
+    // The pause lands just before the insert runs.
+    const racing = new Proxy(db, {
+      get(target, key) {
+        if (key !== 'prepare') return Reflect.get(target, key);
+        return (sql: string) => {
+          if (sql.includes("'ping'")) {
+            h.db.sql.prepare('UPDATE webhooks SET paused_at = 1 WHERE id = ?').run(webhook.id);
+          }
+          return target.prepare(sql);
+        };
+      },
+    });
+    const env = { ...h.db.env, INDEX_DB: racing };
+    const res = await call(`/webhooks/${webhook.id}/test`, { method: 'POST', auth: ada.auth, env });
+    expect(res.status).toBe(409);
+    expect(await body(res)).toMatchObject({ error: 'webhook_paused' });
+    expect(deliveries()).toEqual([]);
+  });
 });

@@ -1,7 +1,8 @@
 // One pass (liveworkspace/docs/specs/005-drive/drive.md "The service", "Cadence"), run by the object's alarm: a token, the root, the
 // push channel, the person's whole picture from the index, the gate (changes.getStartPageToken) and inbound, then
-// outbound in batches of DRIVE_PASS_MAX_WRITES, and the next alarm: the next batch straight away, else the soonest of
-// the next content write that falls due, the fallback check and the channel's renewal.
+// outbound in batches of DRIVE_PASS_MAX_WRITES, and the next alarm: the next batch straight away (after the write
+// interval once DRIVE_PASS_STALLS_MAX passes in a row moved nothing on), else the soonest of the next content write
+// that falls due, the fallback check and the channel's renewal.
 
 import {
   backoffHit,
@@ -11,6 +12,7 @@ import {
   DRIVE_FALLBACK_CHECK_WATCHED_MS,
   DRIVE_PASS_CONTINUE_MS,
   DRIVE_PASS_MAX_WRITES,
+  DRIVE_PASS_STALLS_MAX,
   DRIVE_PROP_ROOT,
   fallbackCheckMs,
   planOutbound,
@@ -28,8 +30,8 @@ import type { Connection, StoredRow } from './store';
 import { NeedsReconnect } from './tokens';
 
 export type PassOutcome =
-  // Finished, or stopped at the batch limit (`more`).
-  | { kind: 'done'; more: boolean; nextDueAt: number | null }
+  // Finished, or stopped at the batch limit (`more`); `stalled` when it stopped short with nothing moved on.
+  | { kind: 'done'; more: boolean; nextDueAt: number | null; stalled?: true }
   // Failed; the next pass tries again after `retryAt`.
   | { kind: 'failed'; retryAt: number }
   // Nothing to schedule: disconnected meanwhile, or the grant needs a new consent.
@@ -98,19 +100,38 @@ async function inbound(state: PassState): Promise<InboundRun | 'root-gone'> {
   return run;
 }
 
+// A pass that stops short moved something on when it wrote or dropped a row, or moved the page token or the root.
+// One that didn't would repeat the same work next time (a budget the picture alone spends, say).
+function movedOn(rt: Runtime, before: Connection, state: PassState | null): boolean {
+  const after = rt.deps.store.connection();
+  return (
+    (state?.writes ?? 0) > 0 ||
+    after?.pageToken !== before.pageToken ||
+    after?.rootId !== before.rootId
+  );
+}
+
+// More to do: continue, marked stalled when nothing moved on.
+function more(moved: boolean): PassOutcome {
+  return moved
+    ? { kind: 'done', more: true, nextDueAt: null }
+    : { kind: 'done', more: true, nextDueAt: null, stalled: true };
+}
+
 export async function runPass(rt: Runtime): Promise<PassOutcome> {
   const { store, now: clock } = rt.deps;
   const connection = store.connection();
   if (!connection || connection.status === 'needs_reconnect') return { kind: 'stopped' };
   store.updateConnection({ syncing: true });
   const flush = connection.flushNext;
+  let state: PassState | null = null;
   try {
     await rt.tokens.get();
     const root = await ensureRoot(rt, connection);
     await maintainChannel(rt);
     const { index } = rt;
     let picture = await index.picture();
-    const state = PassState.build(rt, index, root.rootId, picture);
+    state = PassState.build(rt, index, root.rootId, picture);
     let adopted = root.fresh ? await adoptExisting(state) : 0;
     const read = await inbound(state);
     if (read === 'root-gone') {
@@ -128,7 +149,7 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
         more: true,
         used: rt.meter.used,
       });
-      return { kind: 'done', more: true, nextDueAt: null };
+      return more(applied > 0 || movedOn(rt, connection, state));
     }
     adopted += applied;
     if (adopted > 0) picture = await state.reread();
@@ -163,13 +184,16 @@ export async function runPass(rt: Runtime): Promise<PassOutcome> {
       more: run.more,
       used: rt.meter.used,
     });
-    return { kind: 'done', more: run.more, nextDueAt: plan.nextDueAt };
+    const outcome: PassOutcome = { kind: 'done', more: run.more, nextDueAt: plan.nextDueAt };
+    if (run.more && run.written === 0 && applied === 0 && !movedOn(rt, connection, state))
+      outcome.stalled = true;
+    return outcome;
   } catch (err) {
-    return failed(rt, err);
+    return failed(rt, err, () => movedOn(rt, connection, state));
   }
 }
 
-function failed(rt: Runtime, err: unknown): PassOutcome {
+function failed(rt: Runtime, err: unknown, moved: () => boolean): PassOutcome {
   const { store, now: clock } = rt.deps;
   if (err instanceof PassAborted) return { kind: 'stopped' };
   if (err instanceof BudgetSpent) {
@@ -177,7 +201,7 @@ function failed(rt: Runtime, err: unknown): PassOutcome {
     // inbound finished.
     driveLog('budget-spent', { person: rt.personId, used: rt.meter.used });
     store.updateConnection({ syncing: true, status: 'ok', lastPassAt: clock() });
-    return { kind: 'done', more: true, nextDueAt: null };
+    return more(moved());
   }
   if (err instanceof NeedsReconnect) {
     store.updateConnection({ syncing: false, progress: null });
@@ -204,11 +228,13 @@ function failed(rt: Runtime, err: unknown): PassOutcome {
   };
 }
 
-/** When the next pass runs, or null for none. An earlier alarm already set (a signal during the pass) stands. */
+/** When the next pass runs, or null for none. An earlier alarm already set (a signal during the pass) stands. `stalls`
+ *  counts the passes in a row, this one included, that stopped short with nothing moved on. */
 export function nextPassAt(
   connection: Connection | null,
   outcome: PassOutcome,
   now: number,
+  stalls = 0,
 ): number | null {
   if (!connection || outcome.kind === 'stopped' || connection.status === 'needs_reconnect')
     return null;
@@ -218,7 +244,14 @@ export function nextPassAt(
     (connection.lastPassAt ?? now) + fallbackCheckMs(connection.backoff, now, base),
   ];
   if (outcome.kind === 'failed') candidates.push(outcome.retryAt);
-  if (outcome.kind === 'done' && outcome.more) candidates.push(now + DRIVE_PASS_CONTINUE_MS);
+  if (outcome.kind === 'done' && outcome.more) {
+    candidates.push(
+      now +
+        (stalls >= DRIVE_PASS_STALLS_MAX
+          ? writeIntervalMs(connection.backoff, now)
+          : DRIVE_PASS_CONTINUE_MS),
+    );
+  }
   if (outcome.kind === 'done' && outcome.nextDueAt !== null) candidates.push(outcome.nextDueAt);
   // A renewal already due was tried this pass (and is retried with the fallback check), never in a loop.
   const renewAt = (connection.channelExpiresAt ?? 0) - DRIVE_CHANNEL_RENEW_BEFORE_MS;

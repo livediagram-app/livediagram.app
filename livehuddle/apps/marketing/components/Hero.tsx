@@ -1,12 +1,13 @@
 import { ctaHref } from '@livehuddle/api-schema';
 import { ChevronRightIcon } from '@livehuddle/ui';
-import { HeroSpaceStage } from './HeroSpaceStage';
+import { HeroSpacePhone, HeroSpaceStage } from './HeroSpaceStage';
 
-// The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), a Space filling up: a band in the
-// brand mark's colours (@livehuddle/ui hero-band.css, shared with the help centre) under the canvas's dot grid,
-// the promise badges, the pitch, its two calls to action, then the stage overlapping the band's foot: the real
-// Team Pod with the team walking in (HeroSpaceStage). Everything here is server-rendered and the stage moves on
-// CSS alone, so the hero ships no JavaScript.
+// The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), and the hero is a Space: a band in
+// the brand mark's colours (@livehuddle/ui hero-band.css, shared with the help centre) whose dot grid is the floor,
+// the promise badges, the pitch and its two calls to action standing on it, and round them the office furniture and
+// the team walking about and talking (HeroSpaceStage: a wide stage on the band's foot from `sm`, a phone's own under
+// the calls to action). Everything here is server-rendered and the stage moves on CSS alone, so the hero ships no
+// JavaScript.
 const BADGE =
   'inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3.5 py-1.5 text-sm font-medium text-(--hero-chip-text)';
 
@@ -15,15 +16,15 @@ const PRIMARY =
 const SECONDARY =
   'inline-flex h-12 items-center rounded-xl border border-(--hero-chip-border) bg-(--hero-chip-bg) px-5 text-base font-semibold text-(--hero-chip-text) transition-colors hover:border-(--hero-chip-border-hover) focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-(--hero-ring-focus)';
 
+// The wide stage's floor under the calls to action (hero-space-floor-cast.ts: the stage's foot less its keep-clear
+// column), so the floor is never under the copy.
+const FLOOR_ROOM = 'h-[316px]';
+
 export function Hero() {
   return (
     <section className="hero-band relative overflow-hidden bg-(--hero-bg) text-(--hero-ink)">
-      <div aria-hidden className="hero-band-dots pointer-events-none absolute inset-0" />
-      {/* The page's own ground under the stage's lower half, so the window stands across the band's foot. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-slate-50 dark:bg-slate-950"
-      />
+      <div aria-hidden className="hero-band-dots hsf-dots pointer-events-none absolute inset-0" />
+      <HeroSpaceStage />
       <div className="relative mx-auto w-full max-w-6xl px-4 pt-12 text-center sm:px-6 sm:pt-16 lg:pt-20">
         {/* Two promises, each its own badge and each true today. A phone keeps the first, so the row stays one line. */}
         <ul aria-label="Our promises" className="flex justify-center gap-2.5">
@@ -52,17 +53,10 @@ export function Hero() {
             Browse Templates
           </a>
         </div>
-        <div className="relative mx-auto mt-10 max-w-6xl pb-10 text-left sm:mt-12 sm:pb-16">
-          {/* A soft emerald light under the window, as the brand's prism glows. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-[8%] top-[6%] bottom-[12%] rounded-[40%] bg-[radial-gradient(closest-side,rgb(16_185_129/0.28),transparent)] dark:bg-[radial-gradient(closest-side,rgb(16_185_129/0.16),transparent)]"
-          />
-          <div className="relative">
-            <HeroSpaceStage />
-          </div>
-        </div>
+        {/* The floor under the calls to action, where the wide stage's table and walkers are. */}
+        <div aria-hidden className={`max-sm:hidden ${FLOOR_ROOM}`} />
       </div>
+      <HeroSpacePhone />
     </section>
   );
 }

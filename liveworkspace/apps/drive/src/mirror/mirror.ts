@@ -44,6 +44,9 @@ export class Mirror {
   private readonly deps: MirrorDeps;
   private readonly tokens: TokenSource;
   private epoch = 0;
+  // Passes in a row that stopped short with nothing moved on (pass.ts `stalled`). In memory: a fresh object starts
+  // again at 0, so at worst DRIVE_PASS_STALLS_MAX quick passes per write interval.
+  private stalls = 0;
 
   constructor(deps: MirrorDeps) {
     this.deps = deps;
@@ -262,9 +265,12 @@ export class Mirror {
       driveWarn('alarm-failed', { person: connection.personId, error: errorKind(err) });
       outcome = { kind: 'failed' as const, retryAt: this.deps.now() + DRIVE_CHECK_MIN_GAP_MS };
     }
+    this.stalls = outcome.kind === 'done' && outcome.stalled ? this.stalls + 1 : 0;
+    if (this.stalls > 0)
+      driveWarn('pass-stalled', { person: connection.personId, stalls: this.stalls });
     const after = this.deps.store.connection();
     if (!after) return;
-    const next = nextPassAt(after, outcome, this.deps.now());
+    const next = nextPassAt(after, outcome, this.deps.now(), this.stalls);
     const existing = await this.deps.scheduler.getAlarm();
     if (next === null) {
       // Needs reconnecting: nothing runs until a new consent. (A pass stopped by an account switch leaves the

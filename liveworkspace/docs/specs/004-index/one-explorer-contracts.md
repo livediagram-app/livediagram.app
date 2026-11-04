@@ -187,6 +187,15 @@ matches no mode), each value matching `INTENT_WORD`; and `space`, `mine`, `share
 `team:<id>` of a joined team (403 otherwise). A filter's values are a comma list of at most 8, combined with or;
 filters combine with and. Anything else is 400 `invalid_query`.
 
+**A create that resumes.** An editor makes a new item in two steps under ids it minted: `POST /items` here, then
+the content in its own api with the grant that answered. When the second step fails, the editor's Retry sends the
+same ids again, so the index answers 409 `item_exists` for an item that is the caller's own. Every editor makes the
+item through `createOrResumeItem` (`@liveworkspace/index-client`): on that one answer it asks for the item's grant
+(`POST /items/:id/grant`, through the app's held grants) and, when it is an `edit` grant, hands it back with the
+title the create asked for, so the content's create carries on. Any other refusal, a grant below `edit` or no grant
+at all, throws the index's error as before. The index itself changes nothing: an id taken by someone else still
+never gives its taker a way in.
+
 **Purging.** A permanent delete, the daily sweep of items in the Trash for 30 days, or closing an account
 (below) removes the index rows and asks the app to drop the content (`DELETE <app>/api/internal/items/:id`,
 app key). Each purged item leaves a tombstone until its app confirms: the index tells the app at once for
@@ -372,7 +381,7 @@ is read whole, as before.
 ## What an item pushes
 
 Items push only what is derived from their content, from their Durable Object, on idle, at most once a
-minute, with retries:
+minute, with retries ([When a push fails](#when-a-push-fails)):
 
 - `PUT /app/items/:id/summary`: `{summary, updatedAt}`. An `updatedAt` more than five minutes ahead is taken as
   now, as an event's `at` is: a clock running fast can't pin the item to the top of every list, where a later push
@@ -423,6 +432,32 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
   plan's cards that changed status (liveplanner), for its scope's webhooks only (`card_moved`,
   [webhooks.md](webhooks.md)); nothing goes on the Timeline. Each is one delivery per webhook however often it is
   sent (its id is made from the item, card and time). 204; 400 `invalid_moves`.
+
+### When a push fails
+
+The item keeps a key per thing it owes in its outbox (`@liveworkspace/index-app` `outbox.ts`), and each key counts
+its failed pushes (`attempts`) and when it may go again (`retry_at`). A row stored before they existed reads as 0,
+never tried.
+
+- **Done.** A push that succeeds, and a 404 (the index does not hold the item, never made there or purged), deletes
+  its keys.
+- **Final.** 400, 403, 413 and 422 say the push itself is wrong (malformed, not this app's to write, too large,
+  unprocessable): sending it again changes nothing, so its keys are parked at once.
+- **Tried again.** Anything else (401, 408, 429, 5xx, a network failure, and a media push that fails) keeps its keys
+  and counts the attempt. A key waits a minute after its first failure, doubling each time, at most an hour
+  (`retryDelayMs`). The index's client keeps no `Retry-After`, so a 429 waits its turn like any other failure.
+- **Parked.** A key that failed 12 times (`OUTBOX_MAX_ATTEMPTS`, about six hours of trying) is parked too. A parked
+  key stays stored and is never sent again, with a log line (`[outbox] parked`, its reason, kinds and count). The
+  next write to the same thing (a save for the summary, an edit for its tab, a person's next write, an image placed)
+  deletes it and writes a fresh key, which starts again at 0; nothing else retries it.
+- **The room's alarm** drains on idle and at most once a minute, and never before the earliest key's wait is over;
+  a drain sends only the keys whose wait is over, so a key in backoff never holds back a fresh one. With nothing
+  owed but parked keys, the alarm is not set for the outbox at all.
+
+A tab shared between items (each app's `tab-<item>-many-to-many.md`) keeps the same count on `share_outbox`: a
+send the other holder fails waits a minute, doubling, at most an hour, and is parked after 12 failures
+(`[tab-shares] parked`); the next write to the tab replaces it. The other holder is called only when a key is due,
+never every minute.
 
 ## The migration's handoff
 

@@ -11,7 +11,7 @@
 // Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
-import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
+import { migrationSchema, outboxRetrySchema, tabSharesSchema } from '@liveworkspace/index-app';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -263,7 +263,12 @@ const V2 = tabSharesSchema();
 // own step, appended: every statement is IF NOT EXISTS.
 const V3 = migrationSchema();
 
-const STEPS: readonly string[] = [V1, V2, V3];
+// Each outbox key's failed pushes and next try, on `outbox` and `share_outbox` (@liveworkspace/index-app outbox.ts
+// outboxRetrySchema; liveworkspace/docs/specs/004-index/one-explorer-contracts.md "When a push fails"). Plain ALTERs,
+// run once by the version row; every key already there reads as never tried.
+const V4 = outboxRetrySchema();
+
+const STEPS: readonly string[] = [V1, V2, V3, V4];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

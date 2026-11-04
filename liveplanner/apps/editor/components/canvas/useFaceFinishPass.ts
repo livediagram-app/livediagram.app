@@ -131,7 +131,9 @@ export function drawMarkerFace(
   let drawn = 0;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
     acceptNode: (n) =>
-      (n as Element).matches(SKIP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+      (n as Element).matches(SKIP) || offScreenCard(n as Element)
+        ? NodeFilter.FILTER_REJECT
+        : NodeFilter.FILTER_ACCEPT,
   });
   const parts: Element[] = [root];
   for (let n = walker.nextNode(); n; n = walker.nextNode()) parts.push(n as Element);
@@ -145,6 +147,14 @@ export function drawMarkerFace(
     for (const live of measured) live.removeAttribute(MEASURE_ATTR);
   }
   return drawn;
+}
+
+// A busy board's card the browser is not drawing (content-visibility: auto, app/globals.css): reading it would lay it
+// out after all, card by card (docs/specs/026-plan/plan-board.md "A busy board").
+function offScreenCard(el: Element): boolean {
+  if (!el.hasAttribute('data-plan-card')) return false;
+  const inner = el.firstElementChild;
+  return !!inner?.checkVisibility && !inner.checkVisibility({ contentVisibilityAuto: true });
 }
 
 function drawParts(

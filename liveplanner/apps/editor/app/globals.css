@@ -848,6 +848,12 @@ body:has([data-mode-message]) [data-yields-to-mode] {
   transition-duration: 250ms;
   transition-timing-function: ease-out;
 }
+/* A busy board's parts snap instead (PlanBoardView `data-plan-busy`, docs/specs/026-plan/plan-board.md "A busy
+   board"): a transition on every chip of hundreds of cards held the page for seconds a pick. The board's own surface
+   still eases; every transition inside it is off for the moment of the change, its cards' own too. */
+:root.lvd-style-transition [data-plan-busy] * {
+  transition: none;
+}
 
 /* View Transitions (docs/specs/004-interface-design/motion.md "View Transitions"). The document root takes no part,
    so only a named surface is captured: the rest of the page neither cross-fades nor freezes into a picture. Reduced
@@ -876,14 +882,16 @@ html {
  * colour (--plan-col-bg, set on each part), shifting 2.5% toward the board's ink (--plan-col-ink) while the column is
  * under the pointer (useColumnHover), easing in and out. */
 @utility plan-col {
-  /* 85% solid, so the tab's canvas shows faintly through the column too (plan-board.md "See-through surface"). */
-  background-color: color-mix(in srgb, var(--plan-col-bg) 85%, transparent);
+  /* 85% solid, so the tab's canvas shows faintly through the column too (plan-board.md "See-through surface"). A head
+   * mixes into the board's solid paper instead (--plan-col-under, columnHeadStyle), so stuck over the cards it hides
+   * them (plan-board.md "Column heads stick flush"). */
+  background-color: color-mix(in srgb, var(--plan-col-bg) 85%, var(--plan-col-under, transparent));
   transition: background-color 250ms ease-out;
   &[data-column-hover] {
     background-color: color-mix(
       in srgb,
       color-mix(in srgb, var(--plan-col-ink) 1.5%, var(--plan-col-bg)) 85%,
-      transparent
+      var(--plan-col-under, transparent)
     );
   }
   @media (prefers-reduced-motion: reduce) {
@@ -895,6 +903,22 @@ html {
  * the pointer lays the same 2.5% wash over the drawing from its live face. */
 [data-sketch-words]:not([data-sketch-measure]) .plan-col[data-column-hover] {
   background-color: color-mix(in srgb, var(--plan-col-ink) 1.5%, transparent) !important;
+}
+
+/* A busy board's cards out of view are skipped (PlanBoardView `data-plan-busy`, docs/specs/026-plan/plan-board.md
+ * "A busy board"): no styling, layout or painting until they come near the view, so a Tab Style change restyles
+ * the cards on screen, not two thousand. Each holds its last drawn height (`auto`), a card never drawn the usual
+ * height of its size. Only where the clip can reach past the card (`overflow-clip-margin`), so its shadows, its
+ * presence ring and its hover glow are never cut: elsewhere the board draws every card as before. */
+@supports (overflow-clip-margin: 1px) {
+  [data-plan-busy] [data-plan-card] {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 132px;
+    overflow-clip-margin: 24px;
+  }
+  [data-plan-busy='minimal'] [data-plan-card] {
+    contain-intrinsic-size: auto 44px;
+  }
 }
 
 /* A Plan card's frame (PlanCardFace; docs/specs/026-plan/plan-board.md "Card hover"): its face, edge and shadow from

@@ -8,7 +8,7 @@ import { AVATAR_DEFAULTS, configureAvatar } from '@liveworkspace/avatar/bindings
 import { AvatarSprite } from '@liveworkspace/avatar/components/avatar-sprite';
 import { reactionPose } from '@liveworkspace/avatar/reactions';
 import { avatarBox, type AvatarFacing } from '@liveworkspace/avatar/walk';
-import { Hero } from '@/components/Hero';
+import { SpaceScene } from '@/components/hero-space-scene';
 import {
   CAST,
   CAST_SHEET_HREF,
@@ -23,7 +23,7 @@ import {
   type StillKey,
 } from '@/components/hero-space-cast';
 
-// The landing hero's art (docs/specs/019-marketing/marketing-site.md "Hero"), written to public/hero/: the room is
+// The Space feature scene's art (docs/specs/019-marketing/marketing-site.md "Feature scenes"), written to public/hero/: the room is
 // the real Team Pod, the template's own elements drawn by the editor's own SVG renderer once per appearance, and the
 // cast is a sprite sheet of every still the scene shows, drawn by Avatar mode's own sprite. This test is both the
 // generator and the guard: it fails when a committed file drifts from what the template, the renderer and the sprite
@@ -114,11 +114,13 @@ describe('the hero Space cast', () => {
     expect(readFileSync(path, 'utf8')).toBe(sheet);
   });
 
-  it('holds every still the hero shows, and nothing it does not', () => {
+  it('holds every still the scene shows, and nothing it does not', () => {
     const sheet = readFileSync(publicPath(CAST_SHEET_HREF), 'utf8');
     const held = [...sheet.matchAll(/<symbol id="([^"]+)"/g)].map((m) => m[1]);
     const used = new Set(
-      [...renderToStaticMarkup(<Hero />).matchAll(/team-cast\.svg#([^"]+)"/g)].map((m) => m[1]),
+      [...renderToStaticMarkup(<SpaceScene />).matchAll(/team-cast\.svg#([^"]+)"/g)].map(
+        (m) => m[1],
+      ),
     );
     expect([...used].sort()).toEqual([...held].sort());
   });

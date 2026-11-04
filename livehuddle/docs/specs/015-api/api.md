@@ -393,8 +393,7 @@ thumbnails and counts), each changed tab's comment threads and actions for the I
 all with this app's key ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md)
 "What an item pushes"); the document's whole set of placed images to the media service (`MEDIA_KEY`), with the
 placement grants that set earns; and the owner's newest save to the accounts Worker for its onboarding emails.
-A drain that fails keeps every key it did not push and retries a minute later, so the Explorer, the Inbox and the
-media service lag a write by up to about a minute. A tab that has gone also drops its tab-scoped share links.
+A key whose push fails stays and is tried again after a wait that starts at a minute and doubles, at most an hour; one the index refuses for good (400, 403, 413, 422), or one that failed 12 times, is parked until the next write to the same thing ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#when-a-push-fails)), so the Explorer, the Inbox and the media service lag a write by up to about a minute while they answer. A tab that has gone also drops its tab-scoped share links.
 
 **Upkeep.** Each object runs its own daily upkeep from its alarm: changesets past their retention go, and a
 document with a Community post asks the index where it stands (`COMMUNITY_CHECK_MS`, every 10 minutes). The worker

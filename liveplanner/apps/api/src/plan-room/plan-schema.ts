@@ -10,7 +10,7 @@
 // Made on first use, never on construction (plan-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
-import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
+import { migrationSchema, outboxRetrySchema, tabSharesSchema } from '@liveworkspace/index-app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
@@ -397,6 +397,16 @@ const V12 = CARD_REPEATS_SCHEMA;
 // import"). Its own step, appended.
 const V13 = ITEM_IMPORTS_SCHEMA;
 
+// Each outbox key's failed pushes and next try, on `outbox` and `share_outbox` (@liveworkspace/index-app outbox.ts
+// outboxRetrySchema; liveworkspace/docs/specs/004-index/one-explorer-contracts.md "When a push fails"). Asks first,
+// as V10 does, so it runs again harmlessly; every key already there reads as never tried.
+const V14 = (exec: Exec) => {
+  for (const table of ['outbox', 'share_outbox']) {
+    const columns = exec(`PRAGMA table_info(${table})`).toArray();
+    if (!columns.some((c) => c.name === 'attempts')) exec(outboxRetrySchema([table]));
+  }
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -411,6 +421,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V11,
   V12,
   V13,
+  V14,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;
