@@ -14,9 +14,13 @@ open, from the [Timeline](timeline.md)). The view, its states and its telemetry 
 - **Its words.** On livehuddle's address the hero greets by the reader's local hour, then asks "what are you
   drawing today?" (`heroWords` for the Canvas kind), its status pill counts canvases in every space the person is in (My Work and each team, each canvas once), and its search field's button
   is **New Space**, the `/new` flow ([Explorer structure](explorer-structure.md#what-livehuddle-lends-it)).
-- **What it makes.** The hero shows livehuddle's four kinds of work, a **Flowchart**, a **Mind Map**, a
-  **Whiteboard** and a **Workshop**, each a small picture in livehuddle's blue that starts one (`/new?template=`
-  `flowchart`, `mindmap`, `whiteboard`, `blank-session`), laid out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
+- **What it makes.** The hero shows livehuddle's four Spaces, a **Virtual Office**, a **Team Pod**, a **Coworking
+  Space** and an **All-Hands Hall**, each its floor plan with a few avatars in it, drawn in livehuddle's green, that
+  starts one (`/new?template=` `virtual-office`, `team-pod`, `coworking-space`, `all-hands-hall`), laid out as every
+  app's are ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on
+  Home's hero"). Blank Space, the catalogue's fifth template, is the hero's New Space. Under All Apps livehuddle's
+  tile is the Virtual Office, named **Space**. `apps/editor/lib/explorer-work-kinds.test.ts` holds every kind to a
+  template `/new` opens ([Templates by mode](../007-editor/templates-by-mode.md)).
 - **The first run.** When Home finds nothing yet, the shared Explorer shows its welcome in place of empty lists, from
   livehuddle's welcome manifest (`packages/templates/welcome.json`, the package's `./welcome.json` export: the blanks and Popular templates it offers
   to start from), loaded once, only then. The manifest is written beside the template catalogue by
