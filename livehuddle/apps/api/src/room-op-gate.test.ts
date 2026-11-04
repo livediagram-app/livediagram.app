@@ -62,6 +62,20 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ ...track, track: { sessionId: 's' } }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles": a Viewer never raises a hand or lets one
+  // speak; an Editor and a Participant may, and only well formed.
+  it('relays a hand and a let-speak from an Editor or a Participant only, and only well formed', () => {
+    const hand = { kind: 'avatar-hand', tabId: 't', raised: true };
+    const letSpeak = { kind: 'avatar-let-speak', tabId: 't', targetId: 'p2', on: true };
+    for (const op of [hand, letSpeak]) {
+      expect(gateClientOp(op, as('view'))).toEqual(DROP);
+      expect(gateClientOp(op, as('participate'))).toEqual(relay(true));
+      expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+    }
+    expect(gateClientOp({ ...hand, raised: 'yes' }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...letSpeak, targetId: '' }, as('edit'))).toEqual(DROP);
+  });
+
   // docs/specs/016-platform/calls-kill-switch.md "The room tells its clients": a silent publisher's nudge.
   it('lets a calls-check through from a speaker only, and only well formed', () => {
     const check = { kind: 'calls-check', tabId: 't' };

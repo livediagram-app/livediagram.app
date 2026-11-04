@@ -3,12 +3,14 @@
 // The Avatar Panel (docs/specs/008-canvas/avatar-mode.md): the character sheet for Avatar mode. Present
 // only while the mode is active: like the Poll / Vote panels, it joins and leaves its corner stack rather than
 // sitting there. Same width as the Palette it stacks under. Its body (the portrait, the choices, the action rows
-// and Send a Message) is @liveworkspace/avatar's; this editor wraps it in its own mode-panel chrome.
+// and Send a Message) is @liveworkspace/avatar's; this editor wraps it in its own mode-panel chrome. A Space has
+// calls, so its Status row offers Do Not Disturb too (docs/specs/012-collaboration/meeting-rooms-and-stage.md).
 
 import {
   AvatarPanelBody,
   type AvatarPanelBodyProps,
 } from '@liveworkspace/avatar/components/AvatarPanelBody';
+import { AVATAR_CALL_STATUSES } from '@liveworkspace/avatar/status';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 export function AvatarPanel({
@@ -37,6 +39,7 @@ export function AvatarPanel({
         speechCooling={speechCooling}
         status={status}
         onSetStatus={onSetStatus}
+        statuses={AVATAR_CALL_STATUSES}
       />
     </ModePanel>
   );

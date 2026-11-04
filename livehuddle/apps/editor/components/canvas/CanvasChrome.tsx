@@ -549,7 +549,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
               <>
                 {/* Proximity audio (docs/specs/012-collaboration/proximity-audio.md): Join Audio, then the
                     microphone and Leave, left of Avatar. Draws nothing while calls are off. */}
-                <CallClusterButton />
+                <CallClusterButton
+                  doNotDisturb={props.avatarStatus === 'dnd'}
+                  onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
+                />
                 <AvatarClusterButton
                   popoverOpen={activeDockPanel === 'avatar'}
                   onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}

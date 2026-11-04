@@ -16,6 +16,9 @@ const calls = vi.hoisted(() => ({
     toggleMute: ReturnType<typeof vi.fn>;
     toggleCamera: ReturnType<typeof vi.fn>;
     toggleScreen: ReturnType<typeof vi.fn>;
+    raiseHand: ReturnType<typeof vi.fn>;
+    lowerHand: ReturnType<typeof vi.fn>;
+    setDoNotDisturb: ReturnType<typeof vi.fn>;
     ended: boolean;
   }[],
   fail: false,
@@ -28,6 +31,9 @@ vi.mock('./proximity-call', () => ({
     toggleMute = vi.fn();
     toggleCamera = vi.fn(async () => {});
     toggleScreen = vi.fn(async () => {});
+    raiseHand = vi.fn();
+    lowerHand = vi.fn();
+    setDoNotDisturb = vi.fn();
     ended = false;
     constructor() {
       if (calls.fail) throw new Error('chunk');
@@ -183,5 +189,23 @@ describe('useProximityCall', () => {
     act(() => callActions()!.toggleCamera());
     act(() => callActions()!.toggleScreen());
     expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand" and "Do Not Disturb".
+  it('raises and lowers the hand, and tells the call of Do Not Disturb from the start and on a change', async () => {
+    const hook = mount({ doNotDisturb: true });
+    await waitFor(() => expect(callSelf().available).toBe(true));
+    // Nothing to raise before joining.
+    act(() => callActions()!.raiseHand());
+    act(() => callActions()!.join());
+    await waitFor(() => expect(calls.made).toHaveLength(1));
+    const call = calls.made[0]!;
+    expect(call.setDoNotDisturb).toHaveBeenCalledWith(true);
+    act(() => callActions()!.raiseHand());
+    act(() => callActions()!.lowerHand());
+    expect(call.raiseHand).toHaveBeenCalledTimes(1);
+    expect(call.lowerHand).toHaveBeenCalledTimes(1);
+    hook.rerender({ ...base, doNotDisturb: false });
+    expect(call.setDoNotDisturb).toHaveBeenLastCalledWith(false);
   });
 });

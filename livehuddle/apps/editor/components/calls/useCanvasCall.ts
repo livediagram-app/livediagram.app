@@ -3,6 +3,8 @@
 // The canvas's side of proximity audio (docs/specs/012-collaboration/proximity-audio.md): where everyone stands, as
 // the call needs it, and the equaliser's placement and walk-over. The bubbles (docs/specs/012-collaboration/
 // video-and-screen-bubbles.md) sit above the same characters, and the visible area decides which are received.
+// Raised hands sit beside them, each a Let Speak button for whoever may press it, and Do Not Disturb hides others'
+// bars (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb").
 import { useMemo } from 'react';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
 import { visibleLayerElements } from '@livehuddle/document';
@@ -10,8 +12,9 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
-import { DO_NOT_DISTURB, useProximityCall } from '@/lib/calls/useProximityCall';
-import { callStages } from '@/lib/calls/stage';
+import { useProximityCall } from '@/lib/calls/useProximityCall';
+import { callStages, mayLetSpeakSelf } from '@/lib/calls/stage';
+import { noteLetSpeak } from '@/lib/calls/calls-store';
 import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import type { TalkingBarsPeer } from './TalkingBars';
@@ -28,6 +31,8 @@ export function useCanvasCall(deps: {
   avatarScale: number;
   // The canvas transform (`scale(zoom) translate(offset)`) and the canvas's size on screen.
   viewport?: { offset: Point; zoom: number; width: number; height: number };
+  // Your status is Do Not Disturb (meeting-rooms-and-stage.md "Do Not Disturb").
+  doNotDisturb?: boolean;
 }) {
   const { props, canvasTool, avatar } = deps;
   const inMode = canvasTool === 'avatar';
@@ -78,7 +83,14 @@ export function useCanvasCall(deps: {
     walkers: peers,
     zones,
     stages,
+    doNotDisturb: deps.doNotDisturb,
   });
+
+  // Let Speak (meeting-rooms-and-stage.md "Raise hand"): an Editor anywhere, or whoever speaks from a stage.
+  const level = props.canShareScreen ? 'edit' : props.takePart ? 'participate' : 'view';
+  const send = props.onCallSignal;
+  const mayLetSpeak = inMode && !!send && mayLetSpeakSelf(self, level, stages);
+  const selfBadge = self ? { at: self, scale: deps.avatarScale } : null;
 
   return {
     bubbles: {
@@ -88,13 +100,25 @@ export function useCanvasCall(deps: {
     bars: {
       peers,
       self: self ? { at: self, scale: deps.avatarScale, color: props.selfParticipant.color } : null,
-      hidePeers: DO_NOT_DISTURB,
+      hidePeers: deps.doNotDisturb === true,
       onWalkTo: self
         ? (_id: string, at: Point) => {
             track('Canvas', 'Used', 'WalkToTalker');
             avatar.walkTo(walkTowards(self, at));
           }
         : undefined,
+    },
+    hands: {
+      peers,
+      self: selfBadge,
+      onLetSpeak:
+        mayLetSpeak && send
+          ? (peerId: string, on: boolean) => {
+              if (on) track('Canvas', 'Used', 'LetSpeak');
+              noteLetSpeak(peerId, on);
+              send({ kind: 'avatar-let-speak', targetId: peerId, on });
+            }
+          : undefined,
     },
   };
 }

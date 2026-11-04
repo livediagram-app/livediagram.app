@@ -16,6 +16,8 @@ const actions = {
   toggleMute: vi.fn(),
   toggleCamera: vi.fn(),
   toggleScreen: vi.fn(),
+  raiseHand: vi.fn(),
+  lowerHand: vi.fn(),
 };
 
 function show(patch: Partial<CallSelf>) {
@@ -181,6 +183,66 @@ describe('CallClusterButton', () => {
       expect(button('Share Screen')).toBeNull();
       // The microphone carries on.
       expect(button('Mute')).not.toBeNull();
+    });
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand", "The stage line" and "Do Not Disturb".
+  describe('the stage and Do Not Disturb', () => {
+    const live = { phase: 'live', mic: 'open', someoneNear: true } as const;
+
+    it('offers Raise Hand to the audience who may speak, never to a Viewer or with no stage live', () => {
+      render(<CallClusterButton />);
+      show({ ...live, stage: 'none' });
+      expect(screen.queryByRole('button', { name: 'Raise Hand' })).toBeNull();
+      show({ ...live, stage: 'audience' });
+      fireEvent.click(screen.getByRole('button', { name: 'Raise Hand' }));
+      expect(actions.raiseHand).toHaveBeenCalledTimes(1);
+      show({ ...live, stage: 'audience', canSpeak: false });
+      expect(screen.queryByRole('button', { name: 'Raise Hand' })).toBeNull();
+    });
+
+    it('reads Lower Hand while raised, and Speaking once let speak', () => {
+      render(<CallClusterButton />);
+      show({ ...live, stage: 'audience', hand: 'raised' });
+      const lower = screen.getByRole('button', { name: 'Lower Hand' });
+      expect(lower.getAttribute('aria-pressed')).toBe('true');
+      fireEvent.click(lower);
+      expect(actions.lowerHand).toHaveBeenCalledTimes(1);
+      show({ ...live, stage: 'speaker', hand: 'speaking' });
+      // In the brand's live tone, not the raised hand's amber.
+      expect(screen.getByRole('button', { name: 'Lower Hand' }).className).toContain(
+        'text-brand-700',
+      );
+    });
+
+    it('shows a speaker how many hands are up', () => {
+      render(<CallClusterButton />);
+      show({ ...live, stage: 'speaker', handsUp: 0 });
+      expect(screen.queryByRole('button', { name: /raised hand/ })).toBeNull();
+      show({ ...live, stage: 'speaker', handsUp: 1 });
+      expect(screen.getByRole('button', { name: '1 raised hand' })).toBeTruthy();
+      show({ ...live, stage: 'speaker', handsUp: 120 });
+      expect(screen.getByRole('button', { name: '120 raised hands' }).textContent).toContain('99+');
+    });
+
+    it('says which stage bars you, above the strip', () => {
+      const { container } = render(<CallClusterButton />);
+      const line = () => container.querySelector('[data-stage-line]')!;
+      show({ ...live, barredBy: 'edit' });
+      expect(line().textContent).toBe('Only Editors speak from this stage');
+      show({ ...live, barredBy: 'take-part' });
+      expect(line().textContent).toBe('Only Editors and Participants speak from this stage');
+      show({ ...live, barredBy: null });
+      expect(line().textContent).toBe('');
+      expect(line().getAttribute('aria-live')).toBe('polite');
+    });
+
+    it('shows Do Not Disturb in the strip, and a press clears it', () => {
+      const clear = vi.fn();
+      render(<CallClusterButton doNotDisturb onClearDoNotDisturb={clear} />);
+      show(live);
+      fireEvent.click(screen.getByRole('button', { name: 'Turn Off Do Not Disturb' }));
+      expect(clear).toHaveBeenCalledTimes(1);
     });
   });
 });
