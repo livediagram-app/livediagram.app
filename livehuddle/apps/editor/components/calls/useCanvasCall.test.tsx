@@ -2,7 +2,12 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { callLetByMe, resetCallPeers } from '@/lib/calls/calls-store';
+import {
+  callLetByMe,
+  callMaximised,
+  resetCallPeers,
+  setCallMaximised,
+} from '@/lib/calls/calls-store';
 import { useCanvasCall } from './useCanvasCall';
 
 const hook = vi.hoisted(() => ({ useProximityCall: vi.fn() }));
@@ -97,6 +102,8 @@ describe('useCanvasCall', () => {
       }),
     );
     expect(result.current.bubbles.self).toMatchObject({ at: { x: 0, y: 0 }, color: '#00f' });
+    // The bubbles wrap inside what is surely on screen: half a snap step in from each edge (#487).
+    expect(result.current.bubbles.view).toEqual({ left: 1056, width: 576 });
     // Not measured yet: no view.
     run({ offset: { x: 0, y: 0 }, zoom: 1, width: 0, height: 0 });
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
@@ -193,5 +200,31 @@ describe('useCanvasCall', () => {
     );
     expect(result.current.hands.onLetSpeak).toBeUndefined();
     expect(result.current.bars.hidePeers).toBe(false);
+  });
+
+  // video-and-screen-bubbles.md "Share roles" (#469).
+  it('lets an Editor stop someone else’s share, and nobody else', () => {
+    const send = vi.fn();
+    const run = (extra: Partial<CanvasProps>, canvasTool: 'avatar' | 'select' = 'avatar') =>
+      renderHook(() =>
+        useCanvasCall({
+          props: { ...props, onCallSignal: send, ...extra },
+          canvasTool,
+          avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+          avatarScale: 1,
+        }),
+      ).result.current.bubbles.onStopShare;
+    const stop = run({ canShareScreen: true })!;
+    setCallMaximised({ id: 'p1', media: 'screen' });
+    stop('p2');
+    expect(callMaximised()).toEqual({ id: 'p1', media: 'screen' });
+    stop('p1');
+    expect(callMaximised()).toBeNull();
+    expect(send).toHaveBeenLastCalledWith({ kind: 'call-stop-share', targetId: 'p1' });
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'StopOthersShare');
+    // A Participant, a Viewer, an Editor out of the mode: none.
+    expect(run({})).toBeUndefined();
+    expect(run({ takePart: false })).toBeUndefined();
+    expect(run({ canShareScreen: true }, 'select')).toBeUndefined();
   });
 });

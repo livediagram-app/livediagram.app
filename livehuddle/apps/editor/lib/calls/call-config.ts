@@ -20,6 +20,8 @@ import type { CallZone } from './zones';
 export const MIC_IDLE_CLOSE_MS = 15_000;
 /** A speaker's locator goes out again for a new walker at most this often. */
 export const LOCATOR_RESEND_MS = 1000;
+/** The call proves its session to the room again, on a `not_heard`, at most this often (sfu-session.ts retries). */
+export const REPROVE_MS = 2000;
 /**
  * A publishing call that has sent the room nothing this long asks it to read the kill switch (#463): just past a
  * talking speaker's level refresh, so a speaker who is talking never sends one.
@@ -73,7 +75,11 @@ export type CallSignal =
       screen?: CallTrackLocator | null;
     }
   | HandSignal
-  | { kind: 'avatar-let-speak'; targetId: string; on: boolean };
+  | { kind: 'avatar-let-speak'; targetId: string; on: boolean }
+  // Proves this browser's Realtime session to the room, which then answers the mint route for it (#483).
+  | { kind: 'call-session'; sessionId: string; sessionToken: string }
+  // An Editor stopping someone else's screen share (#469).
+  | { kind: 'call-stop-share'; targetId: string };
 
 /**
  * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, the

@@ -17,9 +17,14 @@ export type BubbleBox = { id: string; x: number; bottom: number; width: number; 
 /** A laid-out row of one person's bubbles, in canvas px. */
 export type BubbleRect = { left: number; top: number; right: number; bottom: number };
 
+/** The visible canvas's span across, in canvas px: a row wider than it wraps. */
+export type BubbleView = { left: number; width: number };
+
 export type BubbleLayout = {
   // How far each person's bubbles moved sideways from above their head.
   dx: ReadonlyMap<string, number>;
+  // How far each person's bubbles were lifted onto a wrapped row (negative: up); absent for none.
+  dy: ReadonlyMap<string, number>;
   // Where each one ended up, for whatever must keep clear of them (speech bubbles).
   rects: BubbleRect[];
   // The left-to-right order used, row by row: the next layout's `prevOrder`.
@@ -116,29 +121,70 @@ function pack(order: readonly BubbleBox[]): number[] {
   return lefts;
 }
 
-/** Lays out every person's bubbles so none covers another; `prevOrder` is the last layout's `order`. */
+// An ordered row broken, in order, into runs that each fit `width` (a box wider than it alone gets a run of its own).
+function wrap(order: readonly BubbleBox[], width: number): BubbleBox[][] {
+  const runs: BubbleBox[][] = [];
+  let used = Infinity;
+  for (const box of order) {
+    if (used + BUBBLE_GAP_PX + box.width > width) {
+      runs.push([box]);
+      used = box.width;
+    } else {
+      runs.at(-1)!.push(box);
+      used += BUBBLE_GAP_PX + box.width;
+    }
+  }
+  return runs;
+}
+
+// Moves a run's lefts sideways as little as keeps the run inside the view (its left end first, if it cannot fit).
+function keepInside(lefts: number[], run: readonly BubbleBox[], view: BubbleView): number[] {
+  const left = lefts[0]!;
+  const right = lefts.at(-1)! + run.at(-1)!.width;
+  const shift =
+    left < view.left
+      ? view.left - left
+      : right > view.left + view.width
+        ? Math.max(view.left - left, view.left + view.width - right)
+        : 0;
+  return lefts.map((l) => l + shift);
+}
+
+/**
+ * Lays out every person's bubbles so none covers another; `prevOrder` is the last layout's `order`. With a `view`, a
+ * row wider than it wraps (video-and-screen-bubbles.md "A row wider than the view wraps"): in its order, into runs
+ * that fit, each further run BUBBLE_GAP_PX above the one before, and every run of it kept inside the view.
+ */
 export function layoutBubbles(
   boxes: readonly BubbleBox[],
   prevOrder: readonly string[],
+  view?: BubbleView | null,
 ): BubbleLayout {
   const rank = new Map(prevOrder.map((id, i) => [id, i]));
   const dx = new Map<string, number>();
+  const dy = new Map<string, number>();
   const rects: BubbleRect[] = [];
   const order: string[] = [];
   for (const row of rowsOf(boxes)) {
     const ordered = orderOf(row, rank);
-    const lefts = pack(ordered);
-    ordered.forEach((box, i) => {
-      const left = lefts[i]!;
-      dx.set(box.id, left + box.width / 2 - box.x);
-      rects.push({
-        left,
-        top: box.bottom - box.height,
-        right: left + box.width,
-        bottom: box.bottom,
+    const runs = view && view.width > 0 ? wrap(ordered, view.width) : [ordered];
+    let lift = 0;
+    runs.forEach((run) => {
+      const lefts = runs.length > 1 && view ? keepInside(pack(run), run, view) : pack(run);
+      run.forEach((box, i) => {
+        const left = lefts[i]!;
+        dx.set(box.id, left + box.width / 2 - box.x);
+        if (lift !== 0) dy.set(box.id, lift);
+        rects.push({
+          left,
+          top: box.bottom - box.height + lift,
+          right: left + box.width,
+          bottom: box.bottom + lift,
+        });
+        order.push(box.id);
       });
-      order.push(box.id);
+      lift -= Math.max(...run.map((b) => b.height)) + BUBBLE_GAP_PX;
     });
   }
-  return { dx, rects, order };
+  return { dx, dy, rects, order };
 }

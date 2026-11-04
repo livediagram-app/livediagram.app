@@ -2,6 +2,7 @@
 // "Maximised"): what each person's camera and screen bubble draws, your own under SELF_MEDIA_ID, and the bubble this
 // viewer opened large. Part of the calls store (calls-store.ts), which re-exports it; memory only.
 import { useSyncExternalStore } from 'react';
+import { parseCallStopShare } from '@livehuddle/api-schema';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 /** What a bubble shows. */
@@ -13,6 +14,7 @@ export type CallMaximised = { id: string; media: CallMedia };
 export type CallMediaStreams = { readonly video?: MediaStream; readonly screen?: MediaStream };
 
 const mediaListeners = createListeners();
+const stopShareListeners = new Set<(from: string) => void>();
 const maximisedListeners = createListeners();
 let media: ReadonlyMap<string, CallMediaStreams> = new Map();
 let maximised: CallMaximised | null = null;
@@ -69,4 +71,19 @@ export function resetCallMedia(): void {
   if (media.size === 0) return;
   media = new Map();
   mediaListeners.notify();
+}
+
+/**
+ * An addressed `call-stop-share` reached this browser: an Editor asked you to stop sharing (video-and-screen-bubbles.md
+ * "Share roles"). Handed to the running call, which checks the sender is an Editor; malformed, it is ignored.
+ */
+export function receiveStopShare(from: string, op: unknown): void {
+  if (!parseCallStopShare(op)) return;
+  for (const listener of stopShareListeners) listener(from);
+}
+
+/** Subscribe to stop-shares addressed to you (the running call). */
+export function onStopShare(listener: (from: string) => void): () => void {
+  stopShareListeners.add(listener);
+  return () => stopShareListeners.delete(listener);
 }

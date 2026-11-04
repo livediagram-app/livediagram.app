@@ -92,7 +92,7 @@ People talking stand close, so their bubbles would cover each other. They never 
   characters as before.
 - **A row wider than the view wraps** (#487). When a row of bubbles is wider than the visible canvas (three people
   and a share in a 450 px window), it breaks, in its left-to-right order, into rows that each fit; each further row
-  sits 8 canvas px above the one before, and a wrapped row is kept inside the view. A person's camera and screen
+  sits 8 canvas px above the one before, and every row of a wrap is kept inside the view. A person's camera and screen
   never split. The order stays the one above, so wrapping adds no jitter; a wrapped bubble's tail is hidden, since
   its head is under another row.
 - Under reduced motion the nudge and the swap are not animated.

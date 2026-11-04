@@ -39,6 +39,8 @@ export {
   callMaximised,
   callMedia,
   onCallMaximised,
+  onStopShare,
+  receiveStopShare,
   resetCallMedia,
   SELF_MEDIA_ID,
   setCallMaximised,
@@ -60,6 +62,9 @@ export type CallPeer = {
   tabId: string | null;
   level: VoiceLevel;
   levelAt: number;
+  // When they last showed a talking level (performance.now ms); absent for never. A big room receives its talkers
+  // (meeting-rooms-and-stage.md "A big room hears its talkers").
+  talkedAt?: number;
   // The microphone's locator; null while it is not published.
   track: CallTrackLocator | null;
   // The camera's and the shared screen's, null while off.
@@ -144,6 +149,7 @@ let actions: CallActions | null = null;
 const peerListeners = createListeners();
 const selfListeners = createListeners();
 const trackListeners = createListeners();
+const talkListeners = createListeners();
 const modeListeners = createListeners();
 let peerNotifyDue: ReturnType<typeof setTimeout> | null = null;
 
@@ -183,8 +189,19 @@ export function receiveCallOp(from: string, op: unknown): void {
   }
   const voice = parseAvatarVoice(op);
   if (voice) {
-    peers.set(from, { ...peerOf(from), tabId: voice.tabId, level: voice.level, levelAt: now() });
+    const prev = peerOf(from);
+    const at = now();
+    const talking = voice.level > 0;
+    peers.set(from, {
+      ...prev,
+      tabId: voice.tabId,
+      level: voice.level,
+      levelAt: at,
+      ...(talking ? { talkedAt: at } : {}),
+    });
     notifyPeers();
+    // Someone starting to talk may need receiving in a big room.
+    if (talking && levelNow(prev, at) === 0) talkListeners.notify();
     return;
   }
   const track = parseCallTrack(op);
@@ -265,6 +282,11 @@ export function useCallPeers(): ReadonlyMap<string, CallPeer> {
 /** Subscribe to locator changes alone (a speaker publishing or stopping), for the subscription manager. */
 export function onCallTracks(listener: () => void): () => void {
   return trackListeners.subscribe(listener);
+}
+
+/** Subscribe to a peer starting to talk, for a big room's subscriptions. */
+export function onCallTalkStart(listener: () => void): () => void {
+  return talkListeners.subscribe(listener);
 }
 
 export function callSelf(): CallSelf {

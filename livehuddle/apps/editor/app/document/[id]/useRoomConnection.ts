@@ -56,6 +56,7 @@ import {
   forgetCallPeer,
   pruneCallPeers,
   receiveLetSpeak,
+  receiveStopShare,
   receiveCallOp,
   receiveCallsMode,
   resetCallPeers,
@@ -506,6 +507,10 @@ export function useRoomConnection(opts: {
         // ADDRESSED like a shove: the room delivers it to the hand's owner alone, so it is ours. The running call
         // checks the sender may let us speak.
         receiveLetSpeak(from, op);
+      } else if (op.kind === 'call-stop-share') {
+        // ADDRESSED too: an Editor asked us to stop sharing our screen (video-and-screen-bubbles.md "Share roles").
+        // The room delivers it only from an Editor; the running call checks again.
+        receiveStopShare(from, op);
       } else if (op.kind === 'avatar-say') {
         // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
         // drawn by the speech layer, never written.

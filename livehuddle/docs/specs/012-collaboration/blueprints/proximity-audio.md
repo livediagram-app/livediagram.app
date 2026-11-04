@@ -101,6 +101,10 @@ held frames for one step. The editor's store is memory only and empties on leavi
 
 ## Errors and edge cases
 
+- **`not_heard`** (the server hearing check, meeting-rooms-and-stage blueprint "Security and trust"): a subscribed
+  track the room refuses is not a dead locator; `SfuSession` holds it back 2 s (doubling to 16 s) and asks again, and
+  the call re-sends `call-session`. Every other `errorCode` is still a refusal never asked for again.
+
 - Calls off, or no shared room: no controls; the store stays `off`.
 - Session refused (`calls_off` after capabilities said on): phase `error`, the button reads **Audio Unavailable**;
   with reason `paused` it is no error: phase `off`, mode `off`, the button reads **Calls Paused**.

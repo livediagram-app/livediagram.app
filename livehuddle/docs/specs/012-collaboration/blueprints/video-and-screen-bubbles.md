@@ -66,6 +66,14 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 
 ## Security and trust
 
+- **Stopping someone else's share** (#469). `call-stop-share {targetId}` passes the room's gate from an Editor only
+  and is addressed to the target. The room records the target's current screen token (from their last `call-track`)
+  as stopped, and the mint route answers `stopped` (as `not_heard`) to a new subscription to that screen until the
+  sharer's `call-track` names no screen or a new one. The sharer's call stops its screen unless the room stamped the
+  sender something other than an Editor. UI: an Editor-only **Stop Sharing** on someone else's screen bubble (a
+  sibling of the maximise button, top left, on hover, focus or always on a touch screen) and in the maximised panel's
+  bar (focus then goes to the panel, never to Stop). Counted `StopOthersShare`.
+
 - A screen publish is checked against the grant's level at the time (`edit`), and the session must be a speaker's.
 - The room drops a `call-track` op carrying a `screen` locator from anyone but an Editor (`room-op-gate.ts`).
 - Track tokens are per publishing session, as before: a locator from another Space is refused before Realtime.
@@ -82,6 +90,13 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   canvas chunk until a call starts except the bubble layer and the media store.
 
 ## Presentation and UX
+
+- **Wrapping** (#487). `layoutBubbles(boxes, prevOrder, view)` takes the visible canvas across (`BubbleView`, from
+  the call's snapped view rect, half a snap step in from each edge). A row wider than it is cut, in its stable order,
+  into runs that fit (a person's group never splits; one wider than the view gets a run alone); each further run is
+  lifted its height plus `BUBBLE_GAP_PX`, every run of a wrapped row is moved as little as keeps it inside the view,
+  and a lifted group's tail is hidden. `dy` comes back beside `dx`, and the rects handed to the speech layer include
+  the lift.
 
 - `components/calls/MediaBubble.tsx`: the one bubble (camera or screen), and `CallBubbles.tsx`, the layer that places
   them above characters (above the talking bars, `BUBBLE_LIFT_PX`), side by side when a person has both.

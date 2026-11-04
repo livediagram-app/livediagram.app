@@ -14,7 +14,7 @@ import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
 import { useProximityCall } from '@/lib/calls/useProximityCall';
 import { callStages, mayLetSpeakSelf } from '@/lib/calls/stage';
-import { noteLetSpeak } from '@/lib/calls/calls-store';
+import { callMaximised, noteLetSpeak, setCallMaximised } from '@/lib/calls/calls-store';
 import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import type { TalkingBarsPeer } from './TalkingBars';
@@ -96,6 +96,17 @@ export function useCanvasCall(deps: {
     bubbles: {
       peers,
       self: self ? { at: self, scale: deps.avatarScale, color: props.selfParticipant.color } : null,
+      // The snapped area can reach half a step past each edge: the bubbles wrap inside what is surely on screen.
+      view: view ? { left: view.x + VIEW_SNAP_PX / 2, width: view.width - VIEW_SNAP_PX } : null,
+      // An Editor stops someone else's share (video-and-screen-bubbles.md "Share roles"); the room checks it too.
+      onStopShare:
+        inMode && props.canShareScreen && send
+          ? (peerId: string) => {
+              track('Canvas', 'Used', 'StopOthersShare');
+              if (callMaximised()?.id === peerId) setCallMaximised(null);
+              send({ kind: 'call-stop-share', targetId: peerId });
+            }
+          : undefined,
     },
     bars: {
       peers,

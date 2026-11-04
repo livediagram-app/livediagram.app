@@ -8,6 +8,7 @@ import {
   callsModeAllows,
   type CallsMode,
 } from '@livehuddle/api-schema';
+import { capBigRoom } from './big-room';
 import { pickSeen } from './bubbles';
 import type { CallScene } from './call-config';
 import type { CallMaximised, CallPeer } from './calls-store';
@@ -28,6 +29,8 @@ export type SubscriptionInput = {
   maximised: CallMaximised | null;
   // Whether the page is visible; a hidden tab receives no bubbles.
   visible: boolean;
+  // performance.now(), for a big room's recent talkers.
+  now: number;
 };
 
 export type Subscriptions = { heard: ReadonlySet<string>; wants: SfuWant[] };
@@ -54,7 +57,16 @@ export function chooseSubscriptions(input: SubscriptionInput): Subscriptions {
       candidates.set(id, at);
     }
   }
-  const heard = nextHeard(input.prevHeard, scene.self, candidates, zoning);
+  // A big room receives its nearest and its talkers, not everyone (meeting-rooms-and-stage.md "A big room").
+  const heard = capBigRoom({
+    heard: nextHeard(input.prevHeard, scene.self, candidates, zoning),
+    prev: input.prevHeard,
+    self: scene.self,
+    walkers: candidates,
+    zoning,
+    talkedAt: (id) => peers.get(id)?.talkedAt,
+    now: input.now,
+  });
   const wants: SfuWant[] = [];
   for (const id of heard) {
     const track = peers.get(id)?.track;

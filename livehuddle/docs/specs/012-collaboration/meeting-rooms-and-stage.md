@@ -47,8 +47,9 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
 - **A big room hears its talkers** (#482). In a room where you would hear more than 8 people, you receive the 3
   nearest of them and anyone in the room who talked in the last 30 seconds (at most the 8 who talked last), rather
   than everyone. Somebody quiet who starts talking from across the room is heard within about half a second, so the
-  first word or two may be lost; the people beside you are always heard from the first word. Rooms of 9 or fewer
-  are unchanged. See [Cost](#cost).
+  first word or two may be lost; the people beside you are always heard from the first word. One of the nearest
+  stays received until two others are nearer, so walking past nobody makes them flicker. Rooms of 9 or fewer are
+  unchanged. See [Cost](#cost).
 
 ## The stage (part 2, built)
 
@@ -187,7 +188,8 @@ A room is one call, so everyone in it receives everyone else's microphone: a roo
 streams, about 0.018 GB per stream-hour. Four in a meeting room is 12 streams, about 0.2 GB an hour ($0.01). Without a
 cap, the Coworking Space's open floor with 30 people would be 870 streams, about 16 GB an hour, about $0.78 an hour
 once past the free 1,000 GB a month. A big room hears its talkers (#482), so the same 30 with two people talking is
-at most about 150 streams (each listener's 3 nearest and the 2 talkers), about 2.7 GB an hour, about $0.14 an hour,
+at most about 150 streams (each listener's 3 nearest and the 2 talkers; 143 measured), about 2.7 GB an hour, about
+$0.14 an hour,
 close to the 30 spread round the floor in the open hearing only their neighbours.
 
 A stage (part 2) is one speaker to everyone: about 0.018 GB per listener-hour, so a hall of 100 is about $0.09 an

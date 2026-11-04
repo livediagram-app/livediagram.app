@@ -13,7 +13,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { AudioGraph } from './audio-graph';
 import { CallBeacon, trackSignalOf } from './call-beacon';
-import type { CallScene, ProximityCallInput } from './call-config';
+import { REPROVE_MS, type CallScene, type ProximityCallInput } from './call-config';
 import { CallMic } from './call-mic';
 import { stageScene } from './call-staging';
 import { CallReceiver } from './call-receiver';
@@ -28,8 +28,10 @@ import {
   onCallLevels,
   onCallMaximised,
   onCallsMode,
+  onCallTalkStart,
   onCallTracks,
   onLetSpeak,
+  onStopShare,
   resetCallMedia,
   setCallSelf,
   setCallsMode,
@@ -46,6 +48,7 @@ export {
   CAMERA_ENCODINGS,
   LOCATOR_RESEND_MS,
   MIC_IDLE_CLOSE_MS,
+  REPROVE_MS,
   SCREEN_CONSTRAINTS,
   SCREEN_MAX_BITRATE,
   SCREEN_MAX_FPS,
@@ -69,6 +72,8 @@ export class ProximityCall {
   private readonly video: CallVideo;
   private readonly beacon: CallBeacon;
   private heard: ReadonlySet<string> = new Set();
+  private session: { sessionId: string; sessionToken: string } | null = null;
+  private provedAt = 0;
   private scene: CallScene = { tabId: '', self: null, walkers: new Map() };
   // Everyone's room, and who speaks from a stage, worked out once per scene and read by hearing, placing and the mic
   // indicator.
@@ -118,6 +123,7 @@ export class ProximityCall {
     this.hand = new RaisedHand((signal) => this.beacon.send(signal));
     this.unsubscribe = [
       onCallTracks(() => this.hear()),
+      onCallTalkStart(() => this.hear()),
       onCallsMode(() => this.applyMode()),
       onCallMaximised(() => this.hear()),
       // A peer's level changing may let them speak from the stage they stand on, or stop them.
@@ -125,6 +131,7 @@ export class ProximityCall {
       // A hand going up, down or let speak changes who speaks and the count a speaker sees.
       onCallHands(() => this.update(this.scene)),
       onLetSpeak((from, on) => this.onLetSpeak(from, on)),
+      onStopShare((from) => this.onStopShare(from)),
     ];
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', this.onVisibility);
@@ -152,6 +159,7 @@ export class ProximityCall {
       // The session says what the switch allows (an older api says nothing: on).
       setCallsMode(session.mode === 'audio-only' ? 'audio-only' : 'on');
       this.trackToken = session.trackToken ?? null;
+      this.session = { sessionId: session.sessionId, sessionToken: session.sessionToken };
       this.sfu = new SfuSession(this.input.caller, session, {
         onTrack: (publisher, trackName, stream) => {
           if (this.receiver.onTrack(publisher, trackName, stream)) this.place();
@@ -160,7 +168,9 @@ export class ProximityCall {
         onFailed: () => this.fail('connection'),
         onPaused: () => this.pause(),
         onAudioOnly: () => setCallsMode('audio-only'),
+        onNotHeard: () => this.notHeard(),
       });
+      this.proveSession();
       if (this.input.canSpeak && session.canSpeak) await this.mic.open();
       if (this.stopped) return;
       setCallSelf({ phase: 'live' });
@@ -246,6 +256,14 @@ export class ProximityCall {
     this.update(this.scene);
   }
 
+  // An Editor asked you to stop sharing: honoured unless the room stamped them something else (it checks too).
+  private onStopShare(from: string): void {
+    if (this.stopped) return;
+    const level = callLevels().get(from);
+    if (level !== undefined && level !== 'edit') return;
+    this.video.stopScreen();
+  }
+
   /** Do Not Disturb: nobody's voice or bubbles reach you; you are still heard. */
   setDoNotDisturb(on: boolean): void {
     if (this.dnd === on) return;
@@ -284,6 +302,19 @@ export class ProximityCall {
     this.hear();
   }
 
+  // Tell the room which Realtime session is this browser's, so it can answer the mint route's hearing check
+  // (meeting-rooms-and-stage.md "Trust"). Said again when the room says no, in case it restarted or the socket did.
+  private proveSession(): void {
+    if (!this.session) return;
+    this.provedAt = performance.now();
+    this.beacon.send({ kind: 'call-session', ...this.session });
+  }
+
+  private notHeard(): void {
+    track('Canvas', 'Used', 'CallNotHeard');
+    if (performance.now() - this.provedAt >= REPROVE_MS) this.proveSession();
+  }
+
   private hear(): void {
     if (!this.sfu || this.stopped) return;
     const chosen = chooseSubscriptions({
@@ -295,6 +326,7 @@ export class ProximityCall {
       mode: callSelf().mode,
       maximised: callMaximised(),
       visible: (this.input.pageVisible ?? documentVisible)(),
+      now: performance.now(),
     });
     this.heard = chosen.heard;
     setCallSelf({ heard: this.heard });

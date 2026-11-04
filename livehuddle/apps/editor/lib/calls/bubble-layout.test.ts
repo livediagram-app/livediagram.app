@@ -110,6 +110,51 @@ describe('layoutBubbles', () => {
   });
 });
 
+// "A row wider than the view wraps" (#487).
+describe('layoutBubbles in a narrow view', () => {
+  // Three people close together, the first sharing a screen beside their camera, in a 450 px window at 100%.
+  const cluster = [box('a', 200, 200, groupWidth(2, 120)), box('b', 230), box('c', 260)];
+  const narrow = { left: 0, width: 450 };
+  const inView = (r: BubbleRect) => r.left >= narrow.left && r.right <= narrow.left + narrow.width;
+
+  it('shows every bubble inside a 450 px window, in rows, none covering another', () => {
+    const { rects, dy, order } = layoutBubbles(cluster, [], narrow);
+    expect(order).toEqual(['a', 'b', 'c']);
+    expectApart(rects);
+    for (const r of rects) expect(inView(r)).toBe(true);
+    // The camera and screen stay together on the first row; the third person's bubble rides a row above.
+    expect(dy.get('a')).toBeUndefined();
+    expect(dy.get('b')).toBeUndefined();
+    expect(dy.get('c')).toBe(-(H + BUBBLE_GAP_PX));
+    // Without a view the row stays one and runs off the window.
+    expect(layoutBubbles(cluster, []).rects.every(inView)).toBe(false);
+  });
+
+  it('keeps the order through a wrap, so a row does not jitter as people shuffle', () => {
+    const first = layoutBubbles(cluster, [], narrow);
+    const shuffled = [box('a', 210, 200, groupWidth(2, 120)), box('b', 225), box('c', 255)];
+    const next = layoutBubbles(shuffled, first.order, narrow);
+    expect(next.order).toEqual(first.order);
+    expect(next.dy).toEqual(first.dy);
+  });
+
+  it('leaves a row that fits alone, and gives a bubble wider than the view a row of its own', () => {
+    const fits = layoutBubbles([box('a', 200), box('b', 230)], [], narrow);
+    expect(fits.dy.size).toBe(0);
+    const tiny = layoutBubbles(cluster, [], { left: 100, width: 100 });
+    expect(new Set(tiny.rects.map((r) => r.top)).size).toBe(3);
+    // Too wide to fit: held to the view's left edge.
+    expect(tiny.rects[1]!.left).toBe(100);
+    expect(layoutBubbles(cluster, [], { left: 0, width: 0 }).dy.size).toBe(0);
+  });
+
+  it('pulls a wrapped row back from the right edge', () => {
+    const atEdge = [box('a', 400), box('b', 430), box('c', 460)];
+    const { rects } = layoutBubbles(atEdge, [], { left: 0, width: 260 });
+    expect(rects[2]!.right).toBe(260);
+  });
+});
+
 describe('groupWidth', () => {
   it('is the bubbles and the gaps between them', () => {
     expect(groupWidth(1, 120)).toBe(120);
