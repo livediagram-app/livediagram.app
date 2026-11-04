@@ -69,7 +69,9 @@ describe('the hero', () => {
   // Work Tracker #438: a hidden image is still fetched unless it is lazy, so every drawing is, and only the one
   // shown loads.
   it('fetches only the furniture drawing shown', () => {
-    const drawings = [...html.matchAll(/<img [^>]*src="\/hero\/floor-[^"]+"[^>]*>/g)].map((m) => m[0]);
+    const drawings = [...html.matchAll(/<img [^>]*src="\/hero\/floor-[^"]+"[^>]*>/g)].map(
+      (m) => m[0],
+    );
     expect(drawings).toHaveLength(FLOOR_STAGES.length * 2);
     for (const img of drawings) expect(img).toContain('loading="lazy"');
   });

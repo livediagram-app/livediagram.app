@@ -166,7 +166,10 @@ describe('the hero floor between sm and lg', () => {
   });
 
   it('clips the stage on the same line the paths keep to', () => {
-    const css = readFileSync(new URL('../app/hero-scenes/space-floor.css', import.meta.url), 'utf8');
+    const css = readFileSync(
+      new URL('../app/hero-scenes/space-floor.css', import.meta.url),
+      'utf8',
+    );
     expect(css).toContain(`clip-path: inset(${FLOOR_CLIP_Y}px 0 0 0);`);
   });
 });
