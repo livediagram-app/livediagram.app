@@ -5,6 +5,8 @@
 //
 // PROBE_EVERY: the client's send interval in ms, or `auto` for the editors' stepped cadence (default 33).
 // PROBE_BATCHES=0: clients that do not take batched frames. PROBE_TABS: how many tabs the walkers spread over.
+// PROBE_TALK=1: every walker also talks the whole time, a new `avatar-voice` level every 250 ms, proximity audio's
+// ceiling (docs/specs/012-collaboration/proximity-audio.md "The wire").
 // The sockets are spread over PROBE_THREADS threads (default 6), so the driver keeps up with what the room sends.
 import { execFileSync } from 'node:child_process';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
@@ -26,6 +28,7 @@ if (isMainThread) {
     every,
     batches: process.env.PROBE_BATCHES !== '0',
     tabs: Number(process.env.PROBE_TABS ?? 1),
+    talk: process.env.PROBE_TALK === '1',
   };
   // The workerd process's CPU time so far (user + system), in seconds.
   const cpuSeconds = () => {
@@ -60,6 +63,7 @@ if (isMainThread) {
       everyMs: every,
       tabs: shared.tabs,
       batches: shared.batches,
+      talking: shared.talk,
       sentPerSecond: Math.round((walkers * 1000) / every),
       framesPerSecond: Math.round(sum('frames') / elapsed),
       opsPerSecond: Math.round(sum('ops') / elapsed),
@@ -69,7 +73,7 @@ if (isMainThread) {
   );
   for (const w of workers) await w.terminate();
 } else {
-  const { port, room, every, batches, tabs, ids } = workerData;
+  const { port, room, every, batches, tabs, talk, ids } = workerData;
   const counts = { frames: 0, ops: 0, bytes: 0 };
   let counting = false;
   const sockets = [];
@@ -89,7 +93,8 @@ if (isMainThread) {
   const open = () =>
     Promise.all(
       ids.map((i) => {
-        const ws = new WebSocket(`ws://127.0.0.1:${port}/?room=${room}`);
+        const role = talk ? '&role=participate' : '';
+        const ws = new WebSocket(`ws://127.0.0.1:${port}/?room=${room}${role}`);
         sockets.push([i, ws]);
         ws.addEventListener('message', (e) => {
           if (!counting || typeof e.data !== 'string') return;
@@ -148,6 +153,20 @@ if (isMainThread) {
               );
             }, every),
           );
+          if (talk) {
+            let level = 0;
+            timers.push(
+              setInterval(() => {
+                level = (level % 4) + 1;
+                ws.send(
+                  JSON.stringify({
+                    kind: 'op',
+                    op: { kind: 'avatar-voice', tabId: `t${i % tabs}`, level },
+                  }),
+                );
+              }, 250),
+            );
+          }
         }, Math.random() * every),
       );
     }

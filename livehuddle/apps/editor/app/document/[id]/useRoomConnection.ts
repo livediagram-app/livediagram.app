@@ -52,6 +52,12 @@ import {
 } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 import { receivePeerSay, resetSpeechBubbles } from '@liveworkspace/avatar/speech-store';
+import {
+  forgetCallPeer,
+  pruneCallPeers,
+  receiveCallOp,
+  resetCallPeers,
+} from '@/lib/calls/calls-store';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
 // Realtime room: one WebSocket per document, opened for every document saved on
@@ -365,6 +371,8 @@ export function useRoomConnection(opts: {
       // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
       // so a closed tab can't leave someone standing on the canvas forever.
       setRemoteAvatars((prev) => pruneMapToPresent(prev, present));
+      // Their talking level and microphone go too (docs/specs/012-collaboration/proximity-audio.md).
+      pruneCallPeers(present);
       // Same for the lastSeen idle tracker (a plain ref, not state):
       // drop departed peers so it can't grow unbounded over a
       // long-lived room with people joining / leaving via share links.
@@ -460,6 +468,8 @@ export function useRoomConnection(opts: {
         // Latest-wins per peer (no accumulation, unlike laser points): the
         // character has one position at a time.
         presence.avatar(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
+        // Leaving the mode takes the character's voice with it (docs/specs/012-collaboration/proximity-audio.md).
+        if (!op.avatar) forgetCallPeer(from);
       } else if (op.kind === 'viewport') {
         // Latest-wins per peer, like the avatar: a camera has one position.
         // Applied straight through rather than batched with the presence
@@ -479,6 +489,10 @@ export function useRoomConnection(opts: {
         // written to the document either way: our client decides what to do
         // with the request, and does nothing if we've left the mode.
         receiveAvatarPush(op.dx, op.dy);
+      } else if (op.kind === 'avatar-voice' || op.kind === 'call-track') {
+        // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire"): a talking level for the
+        // equaliser, or where a speaker's microphone is. Parsed by the store, never written.
+        receiveCallOp(from, op);
       } else if (op.kind === 'avatar-say') {
         // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
         // drawn by the speech layer, never written.
@@ -682,6 +696,8 @@ export function useRoomConnection(opts: {
       presence.cancel();
       // Nobody's words outlive the room they were said in.
       resetSpeechBubbles();
+      // Nobody's level or microphone outlives the room either.
+      resetCallPeers();
       openedRoom.close();
       roomRef.current = null;
     };

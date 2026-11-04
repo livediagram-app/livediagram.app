@@ -181,6 +181,10 @@
   /* An Away Avatar-mode character's Zz (docs/specs/008-canvas/avatar-mode.md "Status"): rising and fading.
      Looping; reduced motion stops it. */
   --animate-avatar-zz: avatar-zz 3s ease-out infinite;
+  /* A talking character's equaliser bar (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"):
+     each bar bobs between a third and all of its level's height, out of step with its neighbours. Looping; reduced
+     motion holds it at its level. */
+  --animate-talking-bar: talking-bar 0.6s ease-in-out infinite alternate;
   /* An Avatar-mode speech bubble opening above a character's head (docs/specs/008-canvas/avatar-mode.md "Speech
      bubbles"): it pops, growing from 60% with a little overshoot. Long motion token. */
   --animate-speech-pop: speech-pop var(--transition-duration-long) cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -308,6 +312,15 @@
   }
   to {
     transform: scale(1);
+  }
+}
+
+@keyframes talking-bar {
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1);
   }
 }
 
@@ -584,14 +597,16 @@
   [class*='animate-nudge-'],
   .animate-avatar-sip,
   .animate-avatar-steam,
-  .animate-avatar-zz {
+  .animate-avatar-zz,
+  .animate-talking-bar {
     animation: none !important;
   }
 }
 :root.reduce-motion [class*='animate-nudge-'],
 :root.reduce-motion .animate-avatar-sip,
 :root.reduce-motion .animate-avatar-steam,
-:root.reduce-motion .animate-avatar-zz {
+:root.reduce-motion .animate-avatar-zz,
+:root.reduce-motion .animate-talking-bar {
   animation: none !important;
 }
 

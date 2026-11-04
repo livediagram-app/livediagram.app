@@ -139,6 +139,14 @@ export type Env = {
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The mint route"): the Cloudflare Realtime SFU
+  // app this Worker mints sessions and tracks on, and the TURN key it mints short-lived ICE credentials from. All
+  // four are secrets (wrangler secret put), the owner's to create; with any unset, calls are off (calls/calls-gate.ts).
+  // REALTIME_APP_TOKEN also keys the calls' session and track tokens (calls/call-tokens.ts).
+  REALTIME_APP_ID?: string;
+  REALTIME_APP_TOKEN?: string;
+  TURN_KEY_ID?: string;
+  TURN_KEY_API_TOKEN?: string;
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): the KV namespace holding `calls-mode`
   // (on, audio-only, off) and the budget poll's trip record. Absent, calls read as on and the poll does nothing.
   CALLS_SWITCH?: KVNamespace;

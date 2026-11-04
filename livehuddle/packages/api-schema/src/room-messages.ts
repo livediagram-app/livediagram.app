@@ -4,6 +4,7 @@ import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livehuddle/docum
 import type { ParticipantPresence } from './index';
 import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
+import type { AvatarVoiceOp, CallTrackOp } from './call-voice';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
@@ -54,6 +55,11 @@ export const PRESENCE_OP_KINDS = [
   // A character saying something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): a message that floats
   // away in seconds, so nothing to order, log or replay. The room relays it from an Editor or a Participant only.
   'avatar-say',
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire"): how loudly a walker is talking, a
+  // sample like `avatar`, and where to ask for their microphone. Neither carries audio, neither is worth replaying,
+  // and the room relays both from an Editor or a Participant only.
+  'avatar-voice',
+  'call-track',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
@@ -490,6 +496,9 @@ export type RoomOp =
   | AvatarOp
   | AvatarPushOp
   | AvatarSayOp
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire").
+  | AvatarVoiceOp
+  | CallTrackOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
   // / laser / avatar: never logged, never ordered, never replayed to a
   // reconnecting client — a burst you missed is a burst that is over.

@@ -660,6 +660,26 @@ describe('DocumentRoom op-role enforcement', () => {
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
   }
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so its
+  // talking level and microphone locator are dropped; a Participant's are relayed. The level is a tab-scoped sample,
+  // pinned in document-room-fanout.test.ts.
+  const CALL_PRESENCE_KINDS = ['avatar-voice', 'call-track'];
+  it("drops a Viewer's call-track and relays a Participant's", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const participant = connect(room, 'participant', 'participate');
+    editor.ws.sent.length = 0;
+    const op = {
+      kind: 'call-track',
+      tabId: 't',
+      track: { sessionId: 's1', trackName: 'mic', token: 'tok' },
+    };
+    sendFrame(room, viewer.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(0);
+    sendFrame(room, participant.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(1);
+  });
   it('drops a malformed avatar-say even from an editor', () => {
     const { room } = newRoom();
     const speaker = connect(room, 'speaker', 'edit');
@@ -678,7 +698,8 @@ describe('DocumentRoom op-role enforcement', () => {
       !ADDRESSED_PRESENCE_KINDS.includes(k) &&
       !EDITOR_ONLY_PRESENCE_KINDS.includes(k) &&
       !ROOM_DECIDED_PRESENCE_KINDS.includes(k) &&
-      !PARTICIPANT_PRESENCE_KINDS.includes(k),
+      !PARTICIPANT_PRESENCE_KINDS.includes(k) &&
+      !CALL_PRESENCE_KINDS.includes(k),
   )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();

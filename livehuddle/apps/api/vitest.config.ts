@@ -25,6 +25,10 @@ const GATE_KEEPERS = [
   'src/db/image-refs.ts',
   // Which documents may serve an image they don't own ("Placement grants").
   'src/db/image-grants.ts',
+  // Proximity audio's mint route: who may mint a Realtime session, publish a microphone or subscribe to one
+  // (docs/specs/012-collaboration/proximity-audio.md "The mint route").
+  'src/calls/**',
+  'src/routes/calls.ts',
 ];
 
 export default defineProject({

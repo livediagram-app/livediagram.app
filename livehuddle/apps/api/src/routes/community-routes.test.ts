@@ -635,7 +635,7 @@ describe('switched off', () => {
     const post = await publish();
     env.COMMUNITY_ENABLED = 'false';
 
-    const capabilities = handleCapabilities(
+    const capabilities = await handleCapabilities(
       makeTestRouteContext('GET', '/api/capabilities', { env }),
     );
     expect(await capabilities.json()).toMatchObject({ communityEnabled: false });

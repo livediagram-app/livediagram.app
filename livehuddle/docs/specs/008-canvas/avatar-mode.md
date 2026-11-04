@@ -118,7 +118,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - Peers' characters are **scoped to the tab** they were published on and are drawn with **their own presence colour on the shirt plus a small name chip** above the head, so a room of walkers stays legible. Your own character has no chip (you know who you are).
 - Peer characters render **whether or not you are in Avatar mode yourself**: someone else walking you through their canvas is worth seeing from the Select tool.
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction, so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample.
-- A **hide-cursors vote ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) hides avatars too**, on both the outbound and render halves. A walking character is a position on the canvas, so showing it while cursors are hidden would leak exactly what the vote exists to hide.
+- A **hide-cursors vote ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) hides cursors only** (owner, 2026-11-03): characters keep walking, and are sent and drawn, through a vote, so [Proximity audio](../012-collaboration/proximity-audio.md) keeps working while a room votes. A presenter still sees nobody else's character ([Presentation mode](../012-collaboration/presentation-mode.md)).
 
 ### A busy room
 
@@ -213,7 +213,7 @@ The panel's **Send a Message** opens a popover over the Avatar button with a tex
 
 - An `avatar-say` presence op: `{ kind: 'avatar-say', tabId, id, text, x, y }`, where `id` is the bubble's random id, `text` the message and `x, y` the canvas point the bubble starts from (the speaker's head). It is **presence**: unordered, never logged, never replayed to a late joiner (a message is about the moment), never written to the document or D1.
 - The room relays it from an Editor or a Participant only, and drops one whose `text` is not a string of at most 300 characters. A receiver parses it field by field, re-applies the 50-word and 300-character limits, ignores one for another tab, ignores repeats of an id it has seen, and draws the text as **plain text**, never markup.
-- A **hide-cursors vote** hides bubbles too, on both halves, as it hides characters.
+- A **hide-cursors vote** leaves bubbles alone, as it leaves characters alone.
 - A screen reader hears a peer's message through a polite live region ("Sam says: hello!"); your own is not repeated back to you.
 
 ### Motion
