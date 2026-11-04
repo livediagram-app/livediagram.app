@@ -40,7 +40,7 @@ export function PageLockButton({
         onClick={onToggle}
         className={`relative touch-target-y ${
           locked
-            ? `${titleBarButtonClass(false, locked && labelled)} !bg-amber-100 !text-amber-800 hover:!bg-amber-200 dark:!bg-amber-500/20 dark:!text-amber-200`
+            ? `${titleBarButtonClass(false, labelled)} !bg-amber-100 !text-amber-800 hover:!bg-amber-200 dark:!bg-amber-500/20 dark:!text-amber-200`
             : titleBarButtonClass(false, false)
         }`}
       >
