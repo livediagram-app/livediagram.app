@@ -61,10 +61,13 @@ export type Walker = {
   holding?: 'coffee';
   // Sitting on the sofa the whole loop (the sprite's seated pose).
   seated?: true;
+  // Below lg, where the wide stage shows its floor alone (FLOOR_CLIP_Y), the path walked instead, for a walker whose
+  // own path crosses the clip line: so nobody vanishes mid-walk at tablet widths (FLOOR_ONLY).
+  floorBeats?: Beat[];
 };
 
 export type FloorStage = {
-  key: 'wide' | 'phone';
+  key: 'wide' | 'floor' | 'phone';
   width: number;
   height: number;
   // Where the copy stands over the stage, in stage px: nothing here enters it.
@@ -174,6 +177,16 @@ const WIDE: FloorStage = {
         { to: { x: 322, y: 720 } },
         { stay: 3, face: 'up' },
       ],
+      // Below lg the coffee corner is clipped away, so Leo stays on the floor: he joins the table as Sam heads off
+      // to stand-up, and goes back to his desk.
+      floorBeats: [
+        { stay: 14.5, face: 'up' },
+        { to: { x: 590, y: 720 } },
+        { stay: 6.4, face: 'right' },
+        { stay: 3, face: 'right', say: 'Right behind you' },
+        { to: { x: 322, y: 720 } },
+        { stay: 0.1, face: 'up' },
+      ],
     },
     // On the sofa: Priya and Kit, sitting and catching up.
     {
@@ -280,6 +293,26 @@ const PHONE: FloorStage = {
 };
 
 export const FLOOR_STAGES: readonly FloorStage[] = [WIDE, PHONE];
+
+// Below lg the copy spans the window, so the wide stage shows its floor alone, clipped above this line (stage px, the
+// calls to action's foot; app/hero-scenes/space-floor.css `.hsf-floor-only`).
+export const FLOOR_CLIP_Y = 490;
+
+// The wide stage below lg: not a stage of its own (it draws on the wide stage, over its floor), only the walkers whose
+// own path crosses the clip line, each on its floor path. Above the line is all copy to them.
+export const FLOOR_ONLY: FloorStage = {
+  key: 'floor',
+  width: WIDE.width,
+  height: WIDE.height,
+  clear: { x: 0, y: 0, width: WIDE.width, height: FLOOR_CLIP_Y },
+  furniture: [],
+  cast: WIDE.cast.flatMap((walker) =>
+    walker.floorBeats ? [{ ...walker, beats: walker.floorBeats }] : [],
+  ),
+};
+
+// Every set of walkers the hero moves: its keyframes and sprite sheet cover them all.
+export const FLOOR_MOTION: readonly FloorStage[] = [WIDE, FLOOR_ONLY, PHONE];
 
 // The drawings, one per stage and appearance, and the characters' sprite sheet, from the app's public/ folder.
 export const floorArtHref = (stage: FloorStage['key'], scheme: 'light' | 'dark') =>

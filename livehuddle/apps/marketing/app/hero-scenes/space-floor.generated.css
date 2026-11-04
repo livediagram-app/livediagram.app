@@ -879,6 +879,146 @@
   }
 }
 
+.hsf-floor-leo {
+  transform: translate(322px, 720px);
+  animation: hsf-floor-leo 30s linear infinite;
+}
+
+@keyframes hsf-floor-leo {
+  0% {
+    transform: translate(322px, 720px);
+  }
+  48.333% {
+    transform: translate(322px, 720px);
+  }
+  58.259% {
+    transform: translate(590px, 720px);
+  }
+  79.593% {
+    transform: translate(590px, 720px);
+  }
+  89.593% {
+    transform: translate(590px, 720px);
+  }
+  99.519% {
+    transform: translate(322px, 720px);
+  }
+  100% {
+    transform: translate(322px, 720px);
+  }
+}
+
+.hsf-floor-leo-strip {
+  transform: translateX(0px);
+  animation: hsf-floor-leo-strip 30s step-end infinite;
+}
+
+@keyframes hsf-floor-leo-strip {
+  0% {
+    transform: translateX(0px);
+  }
+  48.333% {
+    transform: translateX(-78px);
+  }
+  49.333% {
+    transform: translateX(-156px);
+  }
+  50.333% {
+    transform: translateX(-78px);
+  }
+  51.333% {
+    transform: translateX(-156px);
+  }
+  52.333% {
+    transform: translateX(-78px);
+  }
+  53.333% {
+    transform: translateX(-156px);
+  }
+  54.333% {
+    transform: translateX(-78px);
+  }
+  55.333% {
+    transform: translateX(-156px);
+  }
+  56.333% {
+    transform: translateX(-78px);
+  }
+  57.333% {
+    transform: translateX(-156px);
+  }
+  58.259% {
+    transform: translateX(-234px);
+  }
+  89.593% {
+    transform: translateX(-312px);
+  }
+  90.593% {
+    transform: translateX(-390px);
+  }
+  91.593% {
+    transform: translateX(-312px);
+  }
+  92.593% {
+    transform: translateX(-390px);
+  }
+  93.593% {
+    transform: translateX(-312px);
+  }
+  94.593% {
+    transform: translateX(-390px);
+  }
+  95.593% {
+    transform: translateX(-312px);
+  }
+  96.593% {
+    transform: translateX(-390px);
+  }
+  97.593% {
+    transform: translateX(-312px);
+  }
+  98.593% {
+    transform: translateX(-390px);
+  }
+  99.519% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(0px);
+  }
+}
+
+.hsf-floor-leo-say-0 {
+  animation: hsf-floor-leo-say-0 30s linear infinite;
+}
+
+@keyframes hsf-floor-leo-say-0 {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  79.593% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  80.426% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  88.759% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  89.593% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
 .hsf-phone-maya {
   transform: translate(206px, 178px);
 }
@@ -1272,6 +1412,19 @@
     transform: translateX(-546px);
   }
   .hsf-wide-jo-say-0 {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+  .hsf-floor-leo {
+    animation: none;
+    transform: translate(322px, 720px);
+  }
+  .hsf-floor-leo-strip {
+    animation: none;
+    transform: translateX(0px);
+  }
+  .hsf-floor-leo-say-0 {
     animation: none;
     opacity: 0;
     transform: none;

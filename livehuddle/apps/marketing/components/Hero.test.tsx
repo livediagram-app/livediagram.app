@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Hero } from './Hero';
-import { FLOOR_STAGES, floorArtHref } from './hero-space-floor-cast';
+import { FLOOR_ONLY, FLOOR_STAGES, floorArtHref } from './hero-space-floor-cast';
 import { timelineOf } from './hero-space-floor-motion';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the pitch and its two calls to action standing on a Space's
@@ -53,5 +53,24 @@ describe('the hero', () => {
   it('shows the wide stage from sm and the phone’s below it, never both', () => {
     expect(html).toMatch(/class="hsf-stage pointer-events-none select-none [^"]*max-sm:hidden"/);
     expect(html).toMatch(/class="relative mt-6 overflow-hidden sm:hidden"/);
+  });
+
+  // Work Tracker #440: below lg a walker with a floor path walks it in place of its wide path, never both shown.
+  it('swaps each walker with a floor path for it below lg', () => {
+    expect(FLOOR_ONLY.cast.length).toBeGreaterThan(0);
+    for (const walker of FLOOR_ONLY.cast) {
+      const name = walker.name.toLowerCase();
+      expect(html).toContain(`class="hsf-walker hsf-wide-${name} hsf-lg-only"`);
+      expect(html).toContain(`class="hsf-walker hsf-floor-${name} hsf-below-lg"`);
+    }
+    expect(html).toMatch(/class="hsf-say hsf-floor-leo-say-0 hsf-below-lg"/);
+  });
+
+  // Work Tracker #438: a hidden image is still fetched unless it is lazy, so every drawing is, and only the one
+  // shown loads.
+  it('fetches only the furniture drawing shown', () => {
+    const drawings = [...html.matchAll(/<img [^>]*src="\/hero\/floor-[^"]+"[^>]*>/g)].map((m) => m[0]);
+    expect(drawings).toHaveLength(FLOOR_STAGES.length * 2);
+    for (const img of drawings) expect(img).toContain('loading="lazy"');
   });
 });

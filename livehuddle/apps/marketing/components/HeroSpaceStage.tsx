@@ -9,6 +9,7 @@ import '../app/hero-scenes/space-floor.css';
 import '../app/hero-scenes/space-floor.generated.css';
 import {
   FLOOR_CAST_HREF,
+  FLOOR_ONLY,
   FLOOR_STAGES,
   floorArtHref,
   type FloorStage,
@@ -26,11 +27,16 @@ import {
 
 const stageOf = (key: FloorStage['key']) => FLOOR_STAGES.find((s) => s.key === key)!;
 
+// Which widths a walker shows at: a wide-stage walker with a floor path of its own walks it below lg instead
+// (FLOOR_ONLY, space-floor.css), so the two are never both shown.
+type Shown = 'hsf-lg-only' | 'hsf-below-lg' | '';
+type Placed = { stage: FloorStage; walker: Walker; shown: Shown };
+
 /** One character: its film strip in a one-still window, its feet on the box's origin, its name chip under it. */
-function Character({ stage, walker }: { stage: FloorStage; walker: Walker }) {
+function Character({ stage, walker, shown }: Placed) {
   const keys = stillKeysOf(walker);
   return (
-    <div className={`hsf-walker ${floorClass(stage, walker)}`}>
+    <div className={`hsf-walker ${floorClass(stage, walker)} ${shown}`.trimEnd()}>
       <div
         className="hsf-frame"
         style={{ left: -FRAME.feetX, top: -FRAME.feetY, width: FRAME.width, height: FRAME.height }}
@@ -61,7 +67,7 @@ function Character({ stage, walker }: { stage: FloorStage; walker: Walker }) {
 }
 
 /** Each line the character says, in the editor's bubble look, over where it stands as it says it. */
-function Bubbles({ stage, walker }: { stage: FloorStage; walker: Walker }) {
+function Bubbles({ stage, walker, shown }: Placed) {
   return timelineOf(walker)
     .filter((seg) => seg.say)
     .map((seg, i) => {
@@ -69,7 +75,7 @@ function Bubbles({ stage, walker }: { stage: FloorStage; walker: Walker }) {
       return (
         <div
           key={seg.say}
-          className={`hsf-say ${floorClass(stage, walker, `say-${i}`)}`}
+          className={`hsf-say ${floorClass(stage, walker, `say-${i}`)} ${shown}`.trimEnd()}
           style={
             {
               left: seg.to.x + box.left,
@@ -90,27 +96,42 @@ function Bubbles({ stage, walker }: { stage: FloorStage; walker: Walker }) {
     });
 }
 
-/** A stage, 1:1 in px: the furniture, the characters further back first, then every bubble over them all. */
+/**
+ * A stage, 1:1 in px: the furniture, the characters further back first, then every bubble over them all. The wide
+ * stage also holds its floor paths (FLOOR_ONLY), shown below lg in place of the walkers they stand in for.
+ */
 export function HeroSpaceFloor({
   stage: key,
   className,
 }: {
-  stage: FloorStage['key'];
+  stage: Exclude<FloorStage['key'], 'floor'>;
   className: string;
 }) {
   const stage = stageOf(key);
-  const cast = [...stage.cast].sort((a, b) => a.from.y - b.from.y);
+  const twins = key === 'wide' ? FLOOR_ONLY.cast : [];
+  const cast: Placed[] = [
+    ...stage.cast.map((walker) => ({
+      stage,
+      walker,
+      shown: (walker.floorBeats ? 'hsf-lg-only' : '') as Shown,
+    })),
+    ...twins.map((walker) => ({ stage: FLOOR_ONLY, walker, shown: 'hsf-below-lg' as Shown })),
+  ].sort((a, b) => a.walker.from.y - b.walker.from.y);
   return (
     <div
       aria-hidden
       className={`hsf-stage pointer-events-none select-none ${className}`}
       style={{ width: stage.width, height: stage.height }}
     >
+      {/* Lazy, so only the drawing shown is fetched: a browser never fetches a lazy image that isn't rendered, and
+          the other appearance's (display: none) and the other stage's (under a hidden parent) never are. */}
       <img
         src={floorArtHref(key, 'light')}
         alt=""
         width={stage.width}
         height={stage.height}
+        loading="lazy"
+        decoding="async"
         className="hsf-art dark:hidden"
       />
       <img
@@ -118,13 +139,15 @@ export function HeroSpaceFloor({
         alt=""
         width={stage.width}
         height={stage.height}
+        loading="lazy"
+        decoding="async"
         className="hsf-art hidden dark:block"
       />
-      {cast.map((walker) => (
-        <Character key={walker.name} stage={stage} walker={walker} />
+      {cast.map((placed) => (
+        <Character key={`${placed.stage.key}-${placed.walker.name}`} {...placed} />
       ))}
-      {cast.map((walker) => (
-        <Bubbles key={walker.name} stage={stage} walker={walker} />
+      {cast.map((placed) => (
+        <Bubbles key={`${placed.stage.key}-${placed.walker.name}`} {...placed} />
       ))}
     </div>
   );
