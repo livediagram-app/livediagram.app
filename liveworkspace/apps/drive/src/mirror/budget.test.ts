@@ -2,7 +2,13 @@
 // applied in batches of DRIVE_PASS_MAX_INBOUND over several alarms, each change exactly once, and no alarm makes more
 // subrequests than its budget, whichever half spends it.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DRIVE_PASS_MAX_INBOUND, DRIVE_PASS_SUBREQUEST_BUDGET } from '@liveworkspace/drive';
+import {
+  DRIVE_ITEM_MIN_WRITE_INTERVAL_MS,
+  DRIVE_PASS_CONTINUE_MS,
+  DRIVE_PASS_MAX_INBOUND,
+  DRIVE_PASS_STALLS_MAX,
+  DRIVE_PASS_SUBREQUEST_BUDGET,
+} from '@liveworkspace/drive';
 import { GOOGLE_USER, harness, PERSON, type Harness } from '../test-support';
 
 // What a meter doesn't count: an access-token refresh (once an hour) per alarm.
@@ -93,5 +99,83 @@ describe('the meter', () => {
     expect(Math.max(...h.meters.map((m) => m.peak))).toBeGreaterThan(0);
     expectWithinBudget(h, DRIVE_PASS_SUBREQUEST_BUDGET);
     expect(h.google.appFiles(GOOGLE_USER).length).toBeGreaterThan(100);
+  });
+});
+
+describe('a pass that makes no progress', () => {
+  // What a pass with nothing new costs: the picture and the gate.
+  async function idleCost(h: Harness) {
+    await h.pass();
+    return h.meters.at(-1)!.used;
+  }
+
+  // The next pass waits, at most the write interval (sooner when a content write falls due first).
+  function expectWaiting(h: Harness) {
+    expect(h.alarm.at).toBeGreaterThan(h.clock.now() + DRIVE_PASS_CONTINUE_MS);
+    expect(h.alarm.at).toBeLessThanOrEqual(h.clock.now() + DRIVE_ITEM_MIN_WRITE_INTERVAL_MS);
+  }
+
+  // Runs the alarms due straight away, and expects them to slow to the write interval after DRIVE_PASS_STALLS_MAX.
+  async function expectSlowed(h: Harness) {
+    h.resetAlarmStats();
+    await h.pass();
+    expect(h.alarmStats().alarms).toBe(DRIVE_PASS_STALLS_MAX);
+    expectWaiting(h);
+    expect(h.mirror.connectionSummary(PERSON)).toMatchObject({ syncing: true, status: 'ok' });
+    // Still no progress: one pass per wait, never back to every second.
+    h.resetAlarmStats();
+    h.clock.advance(h.alarm.at! - h.clock.now());
+    await h.runDue();
+    expect(h.alarmStats().alarms).toBe(1);
+    expectWaiting(h);
+    // With room again it finishes, and the count starts over.
+    h.setBudget(undefined);
+    h.clock.advance(DRIVE_ITEM_MIN_WRITE_INTERVAL_MS);
+    await h.runDue();
+    expect(h.mirror.connectionSummary(PERSON)).toMatchObject({ syncing: false, status: 'ok' });
+  }
+
+  it('slows to the write interval when the budget runs out before anything is applied', async () => {
+    const h = harness();
+    await mirrored(h, 3);
+    // Not even the picture fits.
+    h.setBudget(1);
+    await expectSlowed(h);
+  });
+
+  it('slows when inbound can read the changes but apply none of them', async () => {
+    const h = harness();
+    await mirrored(h, 3);
+    const idle = await idleCost(h);
+    const [id] = [...h.index.items.keys()];
+    h.google.userRename(h.fileOf(id!)!.id, 'Renamed.livediagram');
+    // The gate and one page of changes fit; a change's 4 do not.
+    h.setBudget(idle + 2);
+    await expectSlowed(h);
+    expect(h.index.items.get(id!)!.name).toBe('Renamed');
+  });
+
+  it('slows when outbound can afford no write', async () => {
+    const h = harness();
+    await mirrored(h, 3);
+    const idle = await idleCost(h);
+    const [id] = [...h.index.items.keys()];
+    h.index.edit(id!, { name: 'Local' });
+    // Inbound finishes; a write's 6 do not fit.
+    h.setBudget(idle + 3);
+    await expectSlowed(h);
+    expect(h.fileOf(id!)!.name).toBe('Local.livediagram');
+  });
+
+  it('keeps continuing every second while each pass moves something on', async () => {
+    const h = harness({ budget: 45 });
+    await mirrored(h, 120);
+    for (const id of h.index.items.keys()) h.index.edit(id, { name: `Again ${id}` });
+    h.resetAlarmStats();
+    h.alarm.at = h.clock.now();
+    await h.runDue(100);
+    // Every batch wrote something, so none slowed: all done within the alarms run straight away.
+    expect(h.alarmStats().alarms).toBeGreaterThan(DRIVE_PASS_STALLS_MAX);
+    expect(h.mirror.connectionSummary(PERSON)).toMatchObject({ syncing: false });
   });
 });

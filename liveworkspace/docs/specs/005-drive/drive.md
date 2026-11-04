@@ -200,6 +200,12 @@ Named constants in `@liveworkspace/drive` (`constants.ts`):
   effect (echoes and ignored changes don't count). When it stops short, the page token stays where it was and the
   next alarm, `DRIVE_PASS_CONTINUE_MS` later, reads the same changes again. The ones already applied read as echoes,
   because each recorded its row. Outbound waits until every change is in, so it never writes over one not yet read.
+- **No progress, no hurry.** A pass that stops short (a batch limit or the subrequest budget) but moved nothing on (no
+  row written or dropped, no change applied, no file written, the page token and the root where they were) would only
+  repeat the same work a second later. After `DRIVE_PASS_STALLS_MAX` (3) such passes in a row, the next one waits the
+  write interval (5 minutes, longer under back-off) instead of `DRIVE_PASS_CONTINUE_MS`; any pass that makes progress
+  goes back to continuing straight away. The count lives in the object's memory, so an object woken afresh starts it
+  again: at worst three quick passes per interval.
 - **Back-off.** On `403 userRateLimitExceeded` or `429`, the person's intervals double (up to 60 minutes), returning
   to normal after an hour without errors.
 
@@ -476,7 +482,8 @@ app name them from one place. The service makes these calls, and where an item o
   over 5 MB uses a resumable upload.
 - **A very large library** (tens of thousands of items) spends much of the budget reading the index's picture, up to
   3 lists × `DRIVE_LIST_PAGES_MAX` pages. At the extreme, the picture alone could take the whole budget and a pass
-  would make no progress.
+  would make no progress; such passes slow to one per write interval (Cadence, "No progress, no hurry") rather than
+  one a second.
 - **Thumbnails** load the 3 MB renderer on first use in an isolate, as the share card does.
 - **No one connected costs nothing:** the index sends no signal and no object exists.
 

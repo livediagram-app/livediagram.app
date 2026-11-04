@@ -10,7 +10,7 @@ import {
 import { createHmac } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { call, h, makeItem, person, useHarness } from '../test-support';
-import { RETRY_DELAYS_MS } from './config';
+import { DISPATCH_MIN_GAP_MS, RETRY_DELAYS_MS } from './config';
 import { dispatch, type DispatchDeps } from './dispatch';
 import { WebhookDispatcher } from './durable-object';
 import {
@@ -327,6 +327,33 @@ describe('a run', () => {
       )
       .get(webhook.id);
     expect(kept).toEqual({ n: 20 });
+  });
+
+  it("never schedules a run for a paused webhook's pending row, and never sooner than a second away", async () => {
+    const { ada, webhook } = await personWithHook('user_wb3');
+    await makeItem(ada.auth);
+    // A row left pending on a paused webhook (Send Test racing a pause, before the insert was guarded).
+    h.db.sql.prepare('UPDATE webhooks SET paused_at = 1 WHERE id = ?').run(webhook.id);
+    expect(await run()).toEqual({ delivered: 0, failed: 0, retrying: 0, nextAt: null });
+    expect(sent).toEqual([]);
+    expect(states()).toEqual(['created:pending:0']);
+    // Another webhook's row waits behind it in the due index: it alone schedules the next run.
+    const bo = await personWithHook('user_wb4');
+    await makeItem(bo.ada.auth);
+    sync();
+    const at = clock;
+    const later = (next: number) =>
+      h.db.sql
+        .prepare('UPDATE webhook_deliveries SET next_at = ? WHERE webhook_id = ?')
+        .run(next, bo.webhook.id);
+    later(at + 120_000);
+    expect(await run({ now: () => at })).toMatchObject({ delivered: 0, nextAt: at + 120_000 });
+    // One due within the gap (written mid-run, say) still waits DISPATCH_MIN_GAP_MS.
+    later(at + 10);
+    expect(await run({ now: () => at })).toMatchObject({
+      delivered: 0,
+      nextAt: at + DISPATCH_MIN_GAP_MS,
+    });
   });
 });
 

@@ -19,6 +19,8 @@ export class PassState {
   readonly rt: Runtime;
   readonly index: PersonIndex;
   snapshot: MirrorSnapshot;
+  // Rows recorded or dropped this pass: progress that stands even when the pass stops short.
+  writes = 0;
 
   constructor(rt: Runtime, index: PersonIndex, snapshot: MirrorSnapshot) {
     this.rt = rt;
@@ -41,12 +43,14 @@ export class PassState {
     this.rt.guard();
     putSnapshotRow(this.snapshot, row);
     this.rt.deps.store.putRow(row);
+    this.writes += 1;
   }
 
   drop(kind: DriveRowKind, id: string): void {
     this.rt.guard();
     dropSnapshotRow(this.snapshot, kind, id);
     this.rt.deps.store.deleteRow(kind, id);
+    this.writes += 1;
   }
 
   folderProperties(folderId: string): Record<string, string> {

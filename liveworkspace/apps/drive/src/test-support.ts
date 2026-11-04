@@ -274,6 +274,8 @@ export function harness(options: { budget?: number } = {}) {
     return google.fetch(input, init);
   };
   const meters: SubrequestMeter[] = [];
+  // Each new meter's budget; a test can change it between passes.
+  let budget = options.budget;
   const index = new FakeIndex(clock);
   const doors = new FakeDoors(index);
   const alarm = new FakeAlarm();
@@ -298,7 +300,7 @@ export function harness(options: { budget?: number } = {}) {
     now: clock.now,
     newId: () => `id${++ids}`,
     newMeter: () => {
-      const meter = new SubrequestMeter(options.budget);
+      const meter = new SubrequestMeter(budget);
       meters.push(meter);
       return meter;
     },
@@ -347,6 +349,9 @@ export function harness(options: { budget?: number } = {}) {
     store,
     mirror,
     meters,
+    setBudget: (next: number | undefined) => {
+      budget = next;
+    },
     alarmStats: () => ({ alarms, peak: alarmPeak }),
     resetAlarmStats: () => {
       alarms = 0;
