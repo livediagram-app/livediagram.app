@@ -262,6 +262,9 @@ export type CapabilitiesResponse = {
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"): true only while the calls
+  // gate is open (never on production until the kill switch, and only with the Realtime secrets set). Absent is off.
+  callsEnabled?: boolean;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is
@@ -280,6 +283,7 @@ export * from './cta-sources';
 export * from './page-views';
 export * from './poll';
 export * from './room-messages';
+export * from './call-voice';
 export * from './changesets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

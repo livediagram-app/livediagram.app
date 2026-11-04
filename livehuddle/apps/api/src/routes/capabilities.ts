@@ -1,4 +1,5 @@
 import { DOCUMENT_FORMAT } from '@livehuddle/api-schema';
+import { callsGate } from '../calls/calls-gate';
 import { communityEnabled } from '../community-enabled';
 import { communityServiceConfigured } from '../community-service';
 import { emailEnabled } from '../email/client';
@@ -34,7 +35,7 @@ function cliCapabilities({ env, url }: RouteContext) {
 // editor app can hide UI surfaces for features the operator hasn't
 // provisioned. Fail-closed by design: an absent / misconfigured
 // binding returns false, never true.
-export function handleCapabilities(ctx: RouteContext): Response {
+export async function handleCapabilities(ctx: RouteContext): Promise<Response> {
   const { env, request, segments } = ctx;
   if (segments.length !== 2) return notFound();
   if (request.method !== 'GET') {
@@ -47,6 +48,9 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every app. A
     // deploy without the liveworkspace Community service's key has none to show (by default).
     communityEnabled: communityEnabled(env) && communityServiceConfigured(env),
+    // docs/specs/012-collaboration/proximity-audio.md "Turning calls on": the calls gate the mint route asks, so the
+    // editor shows audio controls exactly when a session would be minted.
+    callsEnabled: (await callsGate(env)).open,
     ...cliCapabilities(ctx),
   });
 }

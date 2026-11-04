@@ -7,22 +7,22 @@ import { makeTestRouteContext } from './test-route-context';
 // configured, so the app can hide the rest.
 
 async function capabilities(env: Partial<Env>) {
-  const res = handleCapabilities(
+  const res = await handleCapabilities(
     makeTestRouteContext('GET', '/api/capabilities', { env: env as Env }),
   );
   return await res.json<Record<string, unknown>>();
 }
 
 describe('the route', () => {
-  it('is only GET', () => {
-    const res = handleCapabilities(
+  it('is only GET', async () => {
+    const res = await handleCapabilities(
       makeTestRouteContext('POST', '/api/capabilities', { env: {} as Env }),
     );
     expect(res.status).toBe(405);
   });
 
-  it('has nothing beneath it', () => {
-    const res = handleCapabilities(
+  it('has nothing beneath it', async () => {
+    const res = await handleCapabilities(
       makeTestRouteContext('GET', '/api/capabilities/extra', { env: {} as Env }),
     );
     expect(res.status).toBe(404);
@@ -62,5 +62,25 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
       );
     }
     expect(await capabilities({ CLI_MIN_VERSION: 'v1' })).not.toHaveProperty('cli');
+  });
+});
+
+describe('calls (docs/specs/012-collaboration/proximity-audio.md "Turning calls on")', () => {
+  const secrets = {
+    REALTIME_APP_ID: 'app',
+    REALTIME_APP_TOKEN: 'secret',
+    TURN_KEY_ID: 'turn',
+    TURN_KEY_API_TOKEN: 'turn-secret',
+  };
+
+  it('are off with no secrets, on with them, and off on production whatever is set', async () => {
+    expect(await capabilities({})).toMatchObject({ callsEnabled: false });
+    expect(await capabilities(secrets)).toMatchObject({ callsEnabled: true });
+    expect(
+      await capabilities({ ...secrets, APP_BASE_URL: 'https://staging.livehuddle.app' }),
+    ).toMatchObject({ callsEnabled: true });
+    expect(
+      await capabilities({ ...secrets, APP_BASE_URL: 'https://www.livehuddle.app' }),
+    ).toMatchObject({ callsEnabled: false });
   });
 });

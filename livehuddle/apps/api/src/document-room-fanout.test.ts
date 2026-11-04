@@ -27,10 +27,10 @@ function newRoom() {
     waitUntil: () => {},
   };
   const room = new DocumentRoom(state as unknown as DurableObjectState, {} as never);
-  const join = (id: string, tabId: string, batches = true) => {
+  const join = (id: string, tabId: string, batches = true, role = 'view') => {
     const s: Socket = {
       sent: [],
-      attachment: { presenceId: id, verifiedRole: 'view', presence: null },
+      attachment: { presenceId: id, verifiedRole: role, presence: null },
     };
     sockets.push(s);
     room.webSocketMessage(
@@ -88,15 +88,29 @@ const opsIn = (raw: string): Frame[] => {
   return msg.kind === 'op' ? [msg] : [];
 };
 
-// Everyone walking on one tab for one simulated second: what each socket was sent, and the room's CPU time.
-function walkOneSecond(walkers: number) {
+// A talking level (docs/specs/012-collaboration/proximity-audio.md "The wire"), at its ceiling of 4 a second.
+const voiceOp = (tabId: string, step: number) => ({
+  kind: 'avatar-voice',
+  tabId,
+  level: (step % 4) + 1,
+});
+const VOICE_EVERY_MS = 250;
+
+// Everyone walking on one tab for one simulated second: what each socket was sent, and the room's CPU time. With
+// `talking`, everyone also talks the whole second, a new level every 250 ms (proximity audio's worst case).
+function walkOneSecond(walkers: number, talking = false) {
   const { room, join, sockets } = newRoom();
-  for (let i = 0; i < walkers; i++) join(`p${i}`, 't1');
+  for (let i = 0; i < walkers; i++) join(`p${i}`, 't1', true, talking ? 'participate' : 'view');
   for (const s of sockets) s.sent.length = 0;
   const every = presenceStepMs(walkers);
   const cpu = cpuMsOf(() => {
+    let nextVoice = 0;
     for (let t = 0, step = 0; t < 1000; t += every, step++) {
       for (const s of sockets) say(room, s, avatarOp('t1', step));
+      if (talking && t >= nextVoice) {
+        nextVoice += VOICE_EVERY_MS;
+        for (const s of sockets) say(room, s, voiceOp('t1', step));
+      }
       vi.advanceTimersByTime(every);
     }
     vi.advanceTimersByTime(every);
@@ -129,6 +143,23 @@ describe('the avatar fan-out bound', () => {
     expect(Math.max(...frames)).toBeLessThanOrEqual(steps);
     // Every walker still reaches every other socket once a step.
     expect(delivered).toBeGreaterThanOrEqual(walkers * (walkers - 1) * (steps - 2));
+  });
+
+  // docs/specs/012-collaboration/proximity-audio.md "The wire": the avatar fan-out probe's budget with a full Space
+  // talking. A level rides the walkers' frames, so the frames each socket is sent stay one a step.
+  it.each([32, 100])('adds no frames when %i walkers all talk', (walkers) => {
+    const { every, frames, delivered } = walkOneSecond(walkers, true);
+    const steps = Math.ceil(1000 / every) + 1;
+    expect(Math.max(...frames)).toBeLessThanOrEqual(steps);
+    // Every level still reaches everyone else: walking packets plus four levels a second each.
+    expect(delivered).toBeGreaterThanOrEqual(walkers * (walkers - 1) * (steps - 2 + 3));
+  });
+
+  it('relays 100 walkers within its CPU budget, talking or not', () => {
+    walkOneSecond(32, true);
+    // The talking second, measured at about the walking one's cost plus a quarter.
+    const talking = Math.min(walkOneSecond(100, true).cpu, walkOneSecond(100, true).cpu);
+    expect(talking).toBeLessThan(cpuBudgetMs(200));
   });
 
   it('relays 100 walkers within its CPU budget', () => {
@@ -168,6 +199,18 @@ describe('the avatar relay in the room', () => {
     expect(sockets[2]!.sent).toEqual([]);
     vi.advanceTimersByTime(presenceStepMs(12));
     expect((JSON.parse(sockets[2]!.sent[0]!) as Frame).kind).toBe('batch');
+  });
+
+  it('sends a talking level only to its tab, and drops a Viewer’s', () => {
+    const { room, join } = newRoom();
+    const talker = join('p0', 't1', true, 'participate');
+    const sameTab = join('p1', 't1');
+    const otherTab = join('p2', 't2');
+    say(room, talker, voiceOp('t1', 0));
+    expect(sameTab.sent.flatMap(opsIn).map((f) => f.op?.kind)).toContain('avatar-voice');
+    expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar-voice')).toBe(false);
+    say(room, sameTab, voiceOp('t1', 0));
+    expect(talker.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar-voice')).toBe(false);
   });
 
   it('forgets a walker whose socket closed', () => {

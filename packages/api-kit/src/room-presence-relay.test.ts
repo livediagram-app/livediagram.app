@@ -14,6 +14,7 @@ type Sock = { id: string; sent: string[]; session: RelaySession | null; scoped?:
 function room(
   count: number,
   session: (i: number) => RelaySession | null = () => ({ tabId: 't1', batches: true }),
+  sampleKinds?: ReadonlySet<string>,
 ) {
   const sockets: Sock[] = Array.from({ length: count }, (_, i) => ({
     id: `p${i}`,
@@ -32,6 +33,7 @@ function room(
     frameFor: (s, _payload: RelayedOp, serialized) => (s.scoped ? null : serialized),
     send: (s, frame) => void s.sent.push(frame),
     schedule: (fn, ms) => void timers.push({ fn, ms }),
+    ...(sampleKinds ? { sampleKinds } : {}),
   });
   const runTimers = () => {
     for (const t of timers.splice(0)) t.fn();
@@ -193,5 +195,36 @@ describe('PresenceRelay catch-up on a tab switch', () => {
     relay.catchUp(sockets[1]!, 'p1');
     expect(sockets[1]!.sent).toHaveLength(REMEMBERED_WALKERS);
     expect(parsed(sockets[1]!.sent[0]!).from).toBe('w1');
+  });
+});
+
+describe('PresenceRelay with a product’s own sample kinds', () => {
+  const kinds = new Set(['avatar', 'cursor', 'avatar-voice']);
+  const voice = (tabId: string, level: number) => ({ kind: 'avatar-voice', tabId, level });
+
+  it('leaves a kind it was not given to the room', () => {
+    const { relay, sockets } = room(3);
+    expect(relay.relay(sockets[0]!, 'p0', voice('t1', 2))).toBe(false);
+    expect(sockets[1]!.sent).toEqual([]);
+  });
+
+  it('sends a talking level to its tab only, at once in a small room', () => {
+    const { relay, sockets } = room(3, (i) => ({ tabId: i === 2 ? 't2' : 't1' }), kinds);
+    expect(relay.relay(sockets[0]!, 'p0', voice('t1', 2))).toBe(true);
+    expect(sockets[1]!.sent.map((f) => parsed(f).kind)).toEqual(['op']);
+    expect(sockets[2]!.sent).toEqual([]);
+  });
+
+  it('coalesces it per sender per step in a busy room, the stop winning over the level before it', () => {
+    const { relay, sockets, runTimers } = room(12, undefined, kinds);
+    relay.relay(sockets[0]!, 'p0', avatar('t1', 1));
+    relay.relay(sockets[0]!, 'p0', voice('t1', 3));
+    relay.relay(sockets[0]!, 'p0', voice('t1', 0));
+    runTimers();
+    expect(sockets[5]!.sent).toHaveLength(1);
+    expect(parsed(sockets[5]!.sent[0]!).frames).toEqual([
+      { kind: 'op', from: 'p0', op: avatar('t1', 1) },
+      { kind: 'op', from: 'p0', op: voice('t1', 0) },
+    ]);
   });
 });

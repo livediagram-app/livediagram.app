@@ -260,6 +260,9 @@ export type CanvasProps = {
   // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
   // Optional: with no room the bubble is still drawn for you.
   onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): sends a talking level or this browser's
+  // microphone locator to the room. Absent without a room, which keeps the audio controls away.
+  onCallSignal?: (signal: import('@/lib/calls/proximity-call').CallSignal) => void;
   // A shove somebody sent US, as a direction plus a sequence number so the same
   // push isn't replayed on every render. Null until someone pushes.
   avatarShove?: { dx: number; dy: number; seq: number } | null;

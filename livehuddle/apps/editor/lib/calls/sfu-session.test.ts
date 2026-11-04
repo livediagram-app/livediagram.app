@@ -1,0 +1,204 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { SfuSession, SUBSCRIBE_BATCH } from './sfu-session';
+
+const api = vi.hoisted(() => ({
+  apiCallTracks:
+    vi.fn<(caller: unknown, body: { subscribe?: { sessionId: string }[] }) => Promise<unknown>>(),
+  apiCallRenegotiate: vi.fn(),
+  apiCallClose: vi.fn(),
+}));
+vi.mock('@/lib/api/calls', () => api);
+
+type Listener = (e: unknown) => void;
+class FakePc {
+  static last: FakePc;
+  listeners = new Map<string, Listener>();
+  transceivers: {
+    mid: string | null;
+    sender: { replaceTrack: ReturnType<typeof vi.fn> };
+    stop: ReturnType<typeof vi.fn>;
+  }[] = [];
+  localDescription: { sdp: string } | null = null;
+  iceConnectionState = 'new';
+  remote: unknown[] = [];
+  closed = false;
+  constructor() {
+    FakePc.last = this;
+  }
+  addEventListener(name: string, fn: Listener) {
+    this.listeners.set(name, fn);
+  }
+  addTransceiver() {
+    const t = { mid: '0', sender: { replaceTrack: vi.fn(async () => {}) }, stop: vi.fn() };
+    this.transceivers.push(t);
+    return t;
+  }
+  getTransceivers() {
+    return this.transceivers;
+  }
+  async createOffer() {
+    return { type: 'offer', sdp: 'offer' };
+  }
+  async createAnswer() {
+    return { type: 'answer', sdp: 'answer' };
+  }
+  async setLocalDescription(d: { sdp: string }) {
+    this.localDescription = d;
+  }
+  async setRemoteDescription(d: unknown) {
+    this.remote.push(d);
+  }
+  close() {
+    this.closed = true;
+  }
+}
+
+const caller = { ownerId: 'o', documentId: 'd', shareCode: null };
+const session = { sessionId: 'me', sessionToken: 'tok', iceServers: [], canSpeak: true };
+const loc = (id: string) => ({ sessionId: id, trackName: 'mic', token: 't' });
+const settle = () => new Promise((r) => setTimeout(r, 0));
+
+beforeEach(() => {
+  vi.stubGlobal('RTCPeerConnection', FakePc);
+  vi.stubGlobal('MediaStream', class {});
+  api.apiCallTracks.mockImplementation(
+    async (_c, body: { subscribe?: { sessionId: string }[] }) => ({
+      requiresImmediateRenegotiation: !!body.subscribe,
+      sessionDescription: body.subscribe
+        ? { type: 'offer', sdp: 'sfu-offer' }
+        : { type: 'answer', sdp: 'sfu-answer' },
+      tracks: (body.subscribe ?? [{}]).map((_, i) => ({ mid: String(i + 1) })),
+    }),
+  );
+  api.apiCallRenegotiate.mockResolvedValue({ ok: true });
+  api.apiCallClose.mockResolvedValue({
+    requiresImmediateRenegotiation: false,
+    tracks: [],
+    sessionDescription: { type: 'answer', sdp: 'x' },
+  });
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.clearAllMocks();
+});
+
+function open() {
+  const events = { onTrack: vi.fn(), onTrackEnded: vi.fn(), onFailed: vi.fn() };
+  const sfu = new SfuSession(caller, session, events);
+  return { sfu, events, pc: FakePc.last };
+}
+
+// docs/specs/012-collaboration/blueprints/proximity-audio.md "Subscriptions".
+describe('SfuSession', () => {
+  it('publishes the microphone once, then replaces its track', async () => {
+    const { sfu, pc } = open();
+    const track = {} as MediaStreamTrack;
+    await sfu.publish(track);
+    expect(api.apiCallTracks).toHaveBeenCalledWith(caller, {
+      sessionId: 'me',
+      sessionToken: 'tok',
+      publish: { sdp: 'offer', mid: '0' },
+    });
+    expect(pc.remote).toEqual([{ type: 'answer', sdp: 'sfu-answer' }]);
+    await sfu.publish(track);
+    await sfu.replaceMic(null);
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+    expect(pc.transceivers[0]!.sender.replaceTrack).toHaveBeenCalledTimes(2);
+    expect(sfu.locator('tt')).toEqual({ sessionId: 'me', trackName: 'mic', token: 'tt' });
+  });
+
+  it('subscribes to who is wanted, answers the SFU, routes tracks, and closes who is not', async () => {
+    const { sfu, events, pc } = open();
+    sfu.want([loc('a'), loc('b')]);
+    await settle();
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+    expect(api.apiCallRenegotiate).toHaveBeenCalledWith(caller, {
+      sessionId: 'me',
+      sessionToken: 'tok',
+      sdp: 'answer',
+    });
+    pc.listeners.get('track')!({ transceiver: { mid: '2' }, track: 'tb' });
+    expect(events.onTrack).toHaveBeenCalledWith('b', expect.anything());
+    pc.listeners.get('track')!({ transceiver: { mid: '9' }, track: 'x' });
+    pc.listeners.get('track')!({ transceiver: { mid: null }, track: 'x' });
+    expect(events.onTrack).toHaveBeenCalledTimes(1);
+    // The same set again costs nothing.
+    sfu.want([loc('b'), loc('a')]);
+    await settle();
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+    pc.transceivers.push({ mid: '1', sender: { replaceTrack: vi.fn() }, stop: vi.fn() });
+    sfu.want([loc('b')]);
+    await settle();
+    expect(events.onTrackEnded).toHaveBeenCalledWith('a');
+    expect(api.apiCallClose).toHaveBeenCalledWith(caller, {
+      sessionId: 'me',
+      sessionToken: 'tok',
+      mids: ['1'],
+      sdp: 'offer',
+    });
+    expect(pc.transceivers.at(-1)!.stop).toHaveBeenCalled();
+  });
+
+  it('collapses changes made while a step is in flight into one reconcile', async () => {
+    const { sfu } = open();
+    sfu.want([loc('a')]);
+    sfu.want([loc('b')]);
+    sfu.want([loc('c')]);
+    await settle();
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+    expect(api.apiCallTracks.mock.calls[0]![1].subscribe).toEqual([loc('c')]);
+  });
+
+  it('asks for a crowd in batches', async () => {
+    const { sfu } = open();
+    sfu.want(Array.from({ length: SUBSCRIBE_BATCH + 2 }, (_, i) => loc(`p${i}`)));
+    await settle();
+    await settle();
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(2);
+    expect(api.apiCallTracks.mock.calls[1]![1].subscribe).toHaveLength(2);
+  });
+
+  it('skips a refused track, keeps going after a failed step, and reports a failed connection', async () => {
+    const { sfu, events, pc } = open();
+    api.apiCallTracks.mockResolvedValueOnce({
+      requiresImmediateRenegotiation: false,
+      tracks: [{ errorCode: 'gone' }],
+    });
+    sfu.want([loc('a')]);
+    await settle();
+    api.apiCallTracks.mockRejectedValueOnce(new Error('502'));
+    sfu.want([loc('b')]);
+    await settle();
+    sfu.want([loc('c')]);
+    await settle();
+    // The refused one is not asked for again; the failed one is, with the next change.
+    sfu.want([loc('a'), loc('b')]);
+    await settle();
+    expect(
+      api.apiCallTracks.mock.calls.map(([, body]) => body.subscribe?.map((l) => l.sessionId)),
+    ).toEqual([['a'], ['b'], ['c'], ['b']]);
+    api.apiCallTracks.mockResolvedValueOnce({ requiresImmediateRenegotiation: false, tracks: [] });
+    sfu.want([loc('d')]);
+    await settle();
+    sfu.want([loc('d'), loc('a')]);
+    await settle();
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(5);
+    pc.iceConnectionState = 'checking';
+    pc.listeners.get('iceconnectionstatechange')!({});
+    pc.iceConnectionState = 'failed';
+    pc.listeners.get('iceconnectionstatechange')!({});
+    expect(events.onFailed).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes every subscription and does nothing after', async () => {
+    const { sfu, events, pc } = open();
+    sfu.want([loc('a')]);
+    await settle();
+    sfu.close();
+    expect(events.onTrackEnded).toHaveBeenCalledWith('a');
+    expect(pc.closed).toBe(true);
+    sfu.want([loc('b')]);
+    await settle();
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+  });
+});

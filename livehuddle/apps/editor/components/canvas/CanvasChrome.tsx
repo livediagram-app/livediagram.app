@@ -45,6 +45,7 @@ import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-it
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { AvatarClusterButton } from '@liveworkspace/avatar/components/AvatarClusterButton';
+import { CallClusterButton } from '@/components/calls/CallClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
@@ -533,11 +534,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
                 is on, for every role, Zen included: it is the mode's one piece of chrome. */}
             {props.canvasTool === 'avatar' ? (
-              <AvatarClusterButton
-                popoverOpen={activeDockPanel === 'avatar'}
-                onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}
-                canSpeak={!!props.onSendAvatarMessage}
-              />
+              <>
+                {/* Proximity audio (docs/specs/012-collaboration/proximity-audio.md): Join Audio, then the
+                    microphone and Leave, left of Avatar. Draws nothing while calls are off. */}
+                <CallClusterButton />
+                <AvatarClusterButton
+                  popoverOpen={activeDockPanel === 'avatar'}
+                  onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}
+                  canSpeak={!!props.onSendAvatarMessage}
+                />
+              </>
             ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers. Kept in Zen: a running session is the one piece of chrome a facilitator still

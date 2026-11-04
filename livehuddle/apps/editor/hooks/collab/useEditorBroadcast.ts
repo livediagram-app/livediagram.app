@@ -16,6 +16,7 @@ import { avatarSendIntervalMs } from '@liveworkspace/avatar/relay';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
+import type { CallSignal } from '@/lib/calls/proximity-call';
 
 export const BROADCAST_THROTTLE_MS = 33;
 // The viewport (docs/specs/012-collaboration/follow-me-viewport.md) publishes at ~10 Hz, a third of the cursor's rate: a
@@ -96,6 +97,11 @@ type EditorBroadcastApi = {
   // it went out, so the presser can be told when nobody is listening rather
   // than watching a button do nothing.
   broadcastFocusHere: (at: { x: number; y: number }, zoom: number) => boolean;
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire"): a talking level or this
+  // browser's microphone locator, stamped with the active tab. A vote does not hold it back.
+  broadcastCallSignal: (signal: CallSignal) => void;
+  // Whether the room is open for this document, so a call has somebody to talk to.
+  callsRoom: boolean;
   // The local trail buffer (canvas-coords + timestamps), consumed
   // by the LaserOverlay via the laserTrailRows aggregator in
   // editor-page.
@@ -222,7 +228,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // as the wire is concerned. `null` (leaving the mode) always goes out
   // un-throttled, otherwise a peer keeps a ghost standing on their canvas.
   const broadcastAvatar = (avatar: AvatarPresence | null) => {
-    if (deps.cursorsHidden) return;
+    // Not held by a hide-cursors vote: it hides cursors only (docs/specs/008-canvas/avatar-mode.md "Realtime").
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
@@ -293,7 +299,6 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // avatar snapshot it is never throttled or dropped — but it rides the same
   // presence gate: no room, no push.
   const broadcastAvatarPush = (targetId: string, dx: number, dy: number) => {
-    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     deps.roomRef.current?.send({
@@ -303,9 +308,8 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   };
 
   // A speech bubble (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"). Discrete like the shove above:
-  // never throttled, same presence gate, so a hide-cursors vote keeps it home too.
+  // never throttled, same presence gate. Like the character, a hide-cursors vote leaves it alone.
   const broadcastAvatarSay = (say: { id: string; text: string; x: number; y: number }) => {
-    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     deps.roomRef.current?.send({
@@ -326,7 +330,18 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     });
   };
 
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire"): discrete like the push, paced
+  // by the call itself (a level at most four times a second, a locator at most once a second).
+  const callsRoom =
+    deps.hydrated && !!deps.documentId && (deps.documentShareable || !!deps.documentTeamId);
+  const broadcastCallSignal = (signal: CallSignal) => {
+    if (!callsRoom) return;
+    deps.roomRef.current?.send({ kind: 'op', op: { ...signal, tabId: deps.activeId } });
+  };
+
   return {
+    broadcastCallSignal,
+    callsRoom,
     broadcastCursor,
     broadcastReaction,
     broadcastLaser,

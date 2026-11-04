@@ -532,6 +532,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       authEnabled: {
         type: 'boolean',
       },
+      callsEnabled: {
+        type: 'boolean',
+      },
       cli: {
         additionalProperties: false,
         properties: {

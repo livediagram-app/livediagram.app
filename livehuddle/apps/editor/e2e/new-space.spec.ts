@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
+import { adoptGuest, expect, expectNoPageErrors, mintGuest, test, untilHydrated } from './fixtures';
 
 // The New Space wizard (docs/specs/007-editor/new-document-route.md "One-step wizard"), as a guest: its body always says
 // what Create makes and where it will be saved, every way out of it makes a real Space, and the create's error card
@@ -7,7 +7,10 @@ import { expect, expectNoPageErrors, test, untilHydrated } from './fixtures';
 
 const CREATE_FAILED = /Couldn.t create the space/;
 
+// The page opens as a guest that already holds its token, as a returning guest does. A fresh browser first leaves
+// /new for the guest hand-off and comes back, and a check that lands during that round trip loses its page.
 async function openWizard(page: Page): Promise<void> {
+  await adoptGuest(page, await mintGuest(page.request));
   await page.goto('/new');
   await untilHydrated(page.getByRole('button', { name: 'Create', exact: true }));
 }

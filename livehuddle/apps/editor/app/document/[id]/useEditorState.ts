@@ -1185,6 +1185,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
+    broadcastCallSignal,
+    callsRoom,
     broadcastReaction,
     broadcastViewport,
     broadcastFocusHere,
@@ -1573,6 +1575,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A presenter sees nobody else's cursor, laser or character: it is their screen on a projector
     // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
     cursorsHidden: voteCursorsHidden || presenting,
+    avatarsHidden: presenting,
   });
   // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
   // whoever is present on any tab — the order the Collaborators modal uses, so
@@ -3193,6 +3196,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
+    broadcastCallSignal,
+    callsRoom,
     avatarShove,
     walkIn: openWalking.walkIn,
     fireReaction,
