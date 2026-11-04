@@ -4,6 +4,8 @@
 import type { Item } from '@liveplanner/items';
 
 export const PEOPLE_SHOWN = 5;
+// How many a narrow screen (under sm) shows before More.
+export const PEOPLE_SHOWN_NARROW = 3;
 
 export type PlanPerson = { id: string; name: string; color: string };
 

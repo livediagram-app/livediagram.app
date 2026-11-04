@@ -29,6 +29,7 @@ export function ItemTypeConfiguration({
   inheritance,
   inheritanceNote,
   inherited,
+  openAddField = false,
 }: {
   // The Name input's id (its label points at it).
   nameId: string;
@@ -53,6 +54,8 @@ export function ItemTypeConfiguration({
   inheritanceNote?: ReactNode;
   // An inherited type's base name and the fields it takes, locked in the layout.
   inherited?: { from: string; ids: ReadonlySet<string> } | undefined;
+  // Opens with the Add Field gallery open on Details.
+  openAddField?: boolean;
 }) {
   return (
     <div className="flex flex-col">
@@ -97,6 +100,7 @@ export function ItemTypeConfiguration({
           onDetailsLabel={onDetailsLabel}
           removedSome={removedSome}
           inherited={inherited}
+          openAddField={openAddField}
         />
       </ConfigurationSection>
     </div>

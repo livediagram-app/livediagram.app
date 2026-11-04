@@ -33,10 +33,13 @@ export function PlanCardsClusterStrip({
   typesButtonRef,
   trash,
   folded = false,
+  finder = true,
 }: {
   // On a phone beside the Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): the
   // strip folds into one More Card Tools button, whose menu holds Find a Card, Card Types and the Trash.
   folded?: boolean;
+  // Find a Card, left out on the Overview (docs/specs/026-plan/plan-overview.md "The dock").
+  finder?: boolean;
   finderOpen: boolean;
   onToggleFinder: (button: HTMLElement) => void;
   typesOpen: boolean;
@@ -49,13 +52,14 @@ export function PlanCardsClusterStrip({
   const dragging = usePlanCardDragging();
   const plan = usePlan();
   const hasTypes = (plan?.types.length ?? 1) > 0;
+  const showsFinder = finder && hasTypes;
   const showsTrash = !!trash && (hasTypes || hasTrashed(plan?.items.values()));
   const trashInStrip = showsTrash && !dragging;
   if (folded)
     return (
       <FoldedPlanStrip
         rows={[
-          ...(hasTypes
+          ...(showsFinder
             ? [
                 {
                   label: 'Find a Card',
@@ -92,7 +96,7 @@ export function PlanCardsClusterStrip({
         {trash && trashInStrip ? (
           <TrashSegment popoverOpen={trash.open} onTogglePopover={trash.onToggle} />
         ) : null}
-        {hasTypes ? (
+        {showsFinder ? (
           <ClusterPopoverSegment
             // A divider when the Trash sits to its left.
             divided={trashInStrip}
@@ -106,7 +110,7 @@ export function PlanCardsClusterStrip({
           />
         ) : null}
         <ClusterPopoverSegment
-          divided={hasTypes || trashInStrip}
+          divided={showsFinder || trashInStrip}
           label="Open Card Types"
           hoverTitle="Card Types"
           hoverDescription="The kinds of card this plan's boards hold, and the fields each one has."

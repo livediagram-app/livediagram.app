@@ -97,4 +97,14 @@ describe('useEditorUiState Overview', () => {
     expect(result.current.overviewOpen).toBe(true);
     expect(result.current.activeId).toBe('t2');
   });
+
+  it('opens as a plan opens without tracking a press ("A plan opens on its Overview")', () => {
+    track.mockClear();
+    const { result } = renderHook(() => useEditorUiState('t1', { current: null }));
+    act(() => result.current.showOverviewOnOpen());
+    expect(result.current.overviewOpen).toBe(true);
+    expect(track).not.toHaveBeenCalled();
+    act(() => result.current.setActiveId('t1'));
+    expect(result.current.overviewOpen).toBe(false);
+  });
 });

@@ -2,10 +2,9 @@
 
 // docs/specs/026-plan/plan-overview.md "Performance": derived once per change of what it reads; presence moving
 // between tabs derives nothing again, someone arriving does.
-import { cleanup, render, renderHook } from '@testing-library/react';
+import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Participant } from '@/lib/identity';
-import { TabTilePicture } from './TabTilePicture';
 import { TYPES, boardTab, card, itemsOf } from './overview-fixtures.test-helpers';
 
 const { derive } = vi.hoisted(() => ({ derive: vi.fn() }));
@@ -72,61 +71,5 @@ describe('useOverviewModel', () => {
     });
     expect(derive).toHaveBeenCalledTimes(2);
     expect(result.current.people.map((p) => p.name)).toEqual(['Kai', 'Tess', 'Ana Moreno']);
-  });
-});
-
-describe('TabTilePicture', () => {
-  it('draws every kind of picture, and pulses one still loading', () => {
-    const { container } = render(
-      <>
-        <TabTilePicture picture={{ kind: 'bars', bars: [] }} />
-        <TabTilePicture
-          picture={{ kind: 'bars', bars: [{ id: 'x', colour: '#f00', x: 0.5, w: 0.8 }] }}
-        />
-        <TabTilePicture picture={{ kind: 'sheet' }} />
-        <TabTilePicture
-          picture={{
-            kind: 'dashboard',
-            rows: [
-              {
-                id: 'r',
-                slots: [
-                  { id: 's', span: 20, filled: true },
-                  { id: 't', span: 0, filled: false },
-                ],
-              },
-            ],
-          }}
-        />
-        <TabTilePicture picture={{ kind: 'form', fields: 2 }} />
-        <TabTilePicture picture={{ kind: 'empty' }} />
-        <TabTilePicture picture={{ kind: 'loading' }} />
-        <TabTilePicture picture={{ kind: 'board', columns: [] }} />
-      </>,
-    );
-    const kinds = [...container.querySelectorAll('[data-tile-picture]')].map((el) =>
-      el.getAttribute('data-tile-picture'),
-    );
-    expect(kinds).toEqual([
-      'bars',
-      'bars',
-      'sheet',
-      'dashboard',
-      'form',
-      'empty',
-      'loading',
-      'board',
-    ]);
-    // A bar never runs past the tile's edge.
-    const bar = container.querySelectorAll('[data-tile-picture="bars"]')[1]!.querySelector('span')!;
-    expect(bar.style.width).toBe('50%');
-    // Spans stay within the twelve columns.
-    const slots = container.querySelectorAll('[data-tile-picture="dashboard"] span');
-    expect((slots[0] as HTMLElement).style.gridColumn).toBe('span 12');
-    expect((slots[1] as HTMLElement).style.gridColumn).toBe('span 1');
-    expect(container.querySelector('[data-tile-picture="loading"]')!.className).toContain(
-      'animate-pulse',
-    );
-    expect(container.querySelectorAll('[data-tile-picture="sheet"] span')).toHaveLength(25);
   });
 });

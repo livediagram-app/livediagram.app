@@ -4,7 +4,11 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { PROJECT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
+import {
+  PROJECT_CONTENT_CODE,
+  EDITOR_SURFACE_CODE,
+  loadOverviewPage,
+} from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import {
   useWorkbenchSession,
@@ -73,6 +77,12 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // The code the editor loads on demand (lib/editor-deferred-code.ts): what a board may draw on open
   // alongside the project request, and the surfaces someone opens once the project has rendered.
   useEffect(() => prefetchWhenIdle(PROJECT_CONTENT_CODE), []);
+  // A plan opens on its Overview (docs/specs/026-plan/plan-overview.md "Performance"): its code is fetched now, beside
+  // the project request, not when idle, so the page is in when the plan is. An embed has no Overview, and a workbench
+  // does not open on it.
+  useEffect(() => {
+    if (surface === 'app') void loadOverviewPage().catch(() => {});
+  }, [surface]);
   useEffect(
     () => (state.loadingProject ? undefined : prefetchWhenIdle(EDITOR_SURFACE_CODE)),
     [state.loadingProject],

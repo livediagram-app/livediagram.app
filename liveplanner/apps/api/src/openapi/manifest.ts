@@ -412,17 +412,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Plans',
     summary:
-      "Set a plan's description (plain text, trimmed, up to 500 characters). Needs edit access to the whole plan; answers it as stored.",
+      "Set a plan's description (plain text, trimmed, up to 500 characters), its Overview's style (null clears it), or both. Needs edit access to the whole plan; answers what it wrote as stored.",
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
-      properties: { description: { type: 'string' } },
-      required: ['description'],
+      properties: {
+        description: { type: 'string' },
+        overviewStyle: { type: ['object', 'null'] },
+      },
     },
     responseSchema: {
       type: 'object',
-      properties: { description: { type: 'string' } },
-      required: ['description'],
+      properties: {
+        description: { type: 'string' },
+        overviewStyle: { type: ['object', 'null'] },
+      },
     },
     statuses: [200, 400, 401, 403, 404, 410],
   },

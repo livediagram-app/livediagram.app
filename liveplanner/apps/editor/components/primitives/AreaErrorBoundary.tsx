@@ -34,6 +34,7 @@ import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 // Closed on purpose: the area is part of a public telemetry token.
 type ErrorArea =
   | 'Canvas'
+  | 'Overview'
   | 'Header'
   | 'TabBar'
   | 'TabDialogs'
@@ -52,6 +53,7 @@ type ErrorArea =
 // Human names for the notice, so it reads as a place, not a component.
 const AREA_LABEL: Record<ErrorArea, string> = {
   Canvas: 'the canvas',
+  Overview: 'the Overview',
   Header: 'the header',
   TabBar: 'the tab bar',
   TabDialogs: 'a tab dialog',

@@ -26,9 +26,9 @@ const MODEL = overviewModelOf({
 
 // What `can.level` grants on the Overview, as OverviewPage works it out.
 const ROLES: Record<'Editor' | 'Participant' | 'Viewer', OverviewAbilities> = {
-  Editor: { editDetails: true, addTab: true, editTypes: true, addType: true, share: true },
-  Participant: { editDetails: false, addTab: false, editTypes: false, addType: true, share: false },
-  Viewer: { editDetails: false, addTab: false, editTypes: false, addType: true, share: false },
+  Editor: { editPlan: true, addTab: true, editTypes: true, addType: true },
+  Participant: { editPlan: false, addTab: false, editTypes: false, addType: true },
+  Viewer: { editPlan: false, addTab: false, editTypes: false, addType: true },
 };
 
 function actions(): OverviewActions {
@@ -36,10 +36,13 @@ function actions(): OverviewActions {
     openTab: vi.fn(),
     addTab: vi.fn(),
     editType: vi.fn(),
+    addField: vi.fn(),
+    addCard: vi.fn(),
+    addTypeToBoard: vi.fn(),
     addType: vi.fn(),
     openCard: vi.fn(),
-    editDetails: vi.fn(),
-    share: vi.fn(),
+    rename: vi.fn(),
+    describe: vi.fn(),
   };
 }
 
@@ -51,6 +54,7 @@ function view(may: OverviewAbilities, over: Partial<Parameters<typeof OverviewVi
       description=""
       dates="Created by Ana Moreno on 14 Oct"
       model={MODEL}
+      preview={() => null}
       now={NOW}
       may={may}
       actions={act}
@@ -63,17 +67,27 @@ function view(may: OverviewAbilities, over: Partial<Parameters<typeof OverviewVi
 describe('Overview share roles', () => {
   it('gives an Editor every control, each doing its action', () => {
     const act = view(ROLES.Editor);
-    fireEvent.click(screen.getByRole('button', { name: /Edit Details/ }));
-    expect(act.editDetails).toHaveBeenCalled();
+    // The name is edited in place: its heading keeps the plan's name, the button over it says Rename.
+    expect(screen.getByRole('heading', { level: 1, name: 'Bug Triage' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }));
+    const name = screen.getByRole('textbox', { name: 'Plan Name' });
+    fireEvent.change(name, { target: { value: 'Bugs' } });
+    fireEvent.keyDown(name, { key: 'Enter' });
+    expect(act.rename).toHaveBeenCalledWith('Bugs');
+    // Add a Description starts editing the empty description.
     fireEvent.click(screen.getByRole('button', { name: 'Add a Description' }));
-    expect(act.editDetails).toHaveBeenCalledTimes(2);
-    fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-    expect(act.share).toHaveBeenCalled();
+    const description = screen.getByRole('textbox', { name: 'Description' });
+    fireEvent.change(description, { target: { value: 'Where bugs land.' } });
+    fireEvent.blur(description);
+    expect(act.describe).toHaveBeenCalledWith('Where bugs land.');
+    // Sharing is the app header's: the Overview has no Share of its own.
+    expect(screen.queryByRole('button', { name: 'Share' })).toBeNull();
+    // The Add Tab tile is the one way in: no button beside the Tabs heading.
     const addTabs = screen.getAllByRole('button', { name: /Add Tab/ });
-    expect(addTabs).toHaveLength(2);
-    for (const b of addTabs) fireEvent.click(b);
-    expect(act.addTab).toHaveBeenCalledTimes(2);
-    fireEvent.click(document.querySelector('[data-card-type-tile="bug"]') as HTMLElement);
+    expect(addTabs).toHaveLength(1);
+    fireEvent.click(addTabs[0]!);
+    expect(act.addTab).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Bug' }));
     expect(act.editType).toHaveBeenCalledWith('bug');
     fireEvent.click(screen.getByRole('button', { name: /Add Card Type/ }));
     expect(act.addType).toHaveBeenCalled();
@@ -81,11 +95,23 @@ describe('Overview share roles', () => {
 
   for (const role of ['Participant', 'Viewer'] as const)
     it(`lets a ${role} open tabs and cards but change nothing`, () => {
-      const act = view(ROLES[role]);
-      for (const name of [/Edit Details/, 'Add a Description', 'Share', /Add Tab/, /Add Card Type/])
+      const act = view(ROLES[role], { description: 'Where bugs land.' });
+      for (const name of [
+        'Rename',
+        'Edit Description',
+        'Add a Description',
+        'Share',
+        /Add Tab/,
+        /Add Card Type/,
+      ])
         expect(screen.queryByRole('button', { name })).toBeNull();
-      // Card type tiles only show.
-      expect(document.querySelector('[data-card-type-tile="bug"]')!.tagName).toBe('DIV');
+      // The name and description are plain text.
+      expect(screen.getByRole('heading', { level: 1, name: 'Bug Triage' })).toBeTruthy();
+      expect(document.querySelector('[data-overview-description]')!.tagName).toBe('P');
+      expect(screen.queryByRole('textbox')).toBeNull();
+      // Card type tiles only show: no quick actions, no Add to a Board.
+      expect(screen.queryByRole('group', { name: 'Bug Actions' })).toBeNull();
+      expect(screen.queryByRole('button', { name: /Add to a Board/ })).toBeNull();
       fireEvent.click(document.querySelector('[data-tab-tile="b"]') as HTMLElement);
       expect(act.openTab).toHaveBeenCalledWith('b');
       const activity = screen.getByRole('region', { name: 'Plan Overview' });
@@ -93,11 +119,12 @@ describe('Overview share roles', () => {
       expect(act.openCard).toHaveBeenCalledWith('1');
     });
 
-  it('shares only for whoever may share, and leaves Add Card Type out at the most types', () => {
-    view({ ...ROLES.Editor, share: false, addType: false });
-    expect(screen.queryByRole('button', { name: 'Share' })).toBeNull();
+  it('leaves Add Card Type out at the most types, and lets an Editor edit a description there is', () => {
+    view({ ...ROLES.Editor, addType: false }, { description: 'Where bugs land.' });
     expect(screen.queryByRole('button', { name: /Add Card Type/ })).toBeNull();
-    expect(screen.getByRole('button', { name: /Edit Details/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Add a Description' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Edit Description' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rename' })).toBeTruthy();
   });
 });
 
@@ -109,8 +136,10 @@ describe('Overview content', () => {
       'Where bugs land.\nAnd get fixed.',
     );
     expect(screen.getByText('Created by Ana Moreno on 14 Oct')).toBeTruthy();
-    expect(screen.getByText('1 Person')).toBeTruthy();
-    expect(screen.getByLabelText('Ana Moreno')).toBeTruthy();
+    expect(screen.queryByText(/^\d+ (Person|People)$/)).toBeNull();
+    // Each person is a disc with their name under it.
+    const ana = screen.getByRole('img', { name: 'Ana Moreno' });
+    expect(ana.textContent).toBe('AMAna Moreno');
   });
 
   it('lists eight entries, then every one with See All, and fewer again', () => {
@@ -129,20 +158,53 @@ describe('Overview content', () => {
     view(ROLES.Viewer);
     const tile = document.querySelector('[data-tab-tile="a"]') as HTMLElement;
     expect(tile.textContent).toContain('Board · 12 Cards');
-    expect(document.querySelector('[data-card-type-tile="incident"]')!.textContent).toContain(
-      'On Triage',
-    );
+    const incident = document.querySelector('[data-card-type-tile="incident"]') as HTMLElement;
+    expect(within(incident).getByRole('button', { name: 'Open Triage' })).toBeTruthy();
   });
 
-  it('shows more people than fit as a count', () => {
+  it('shows five people with their names, then More naming the rest (three on a phone)', () => {
     const people = Array.from({ length: 7 }, (_, i) => ({
       id: `p${i}`,
       name: `P ${i}`,
       color: '#123456',
     }));
     view(ROLES.Viewer, { model: { ...MODEL, people } });
-    expect(screen.getByText('+2')).toBeTruthy();
-    expect(screen.getByText('7 People')).toBeTruthy();
+    const row = screen.getByRole('list', { name: 'People on the plan' });
+    const named = within(row)
+      .getAllByRole('img')
+      .filter((el) => !el.getAttribute('aria-label')!.startsWith('More'));
+    expect(named.map((el) => el.getAttribute('aria-label'))).toEqual([
+      'P 0',
+      'P 1',
+      'P 2',
+      'P 3',
+      'P 4',
+    ]);
+    // The fourth and fifth are left out on a phone.
+    expect(named.map((el) => el.closest('li')!.className.includes('max-sm:hidden'))).toEqual([
+      false,
+      false,
+      false,
+      true,
+      true,
+    ]);
+    // One More per width: the rest past five from sm, past three on a phone.
+    const wide = row.querySelector('[data-overview-more="2"]')!;
+    expect(wide.className).toContain('max-sm:hidden');
+    expect(
+      within(wide as HTMLElement).getByRole('img', { name: 'More: P 5, P 6' }).textContent,
+    ).toBe('+2More');
+    const narrow = row.querySelector('[data-overview-more="4"]')!;
+    expect(narrow.className).toContain('sm:hidden');
+    expect(
+      within(narrow as HTMLElement).getByRole('img', { name: 'More: P 3, P 4, P 5, P 6' }),
+    ).toBeTruthy();
+    expect(screen.queryByText('7 People')).toBeNull();
+  });
+
+  it('leaves More out when everyone fits', () => {
+    view(ROLES.Viewer);
+    expect(document.querySelector('[data-overview-more]')).toBeNull();
   });
 });
 
@@ -152,7 +214,9 @@ describe('Overview empty states', () => {
   it('says there is no activity and, for an Editor, how to add a card type', () => {
     view(ROLES.Editor, { model: EMPTY, dates: null });
     expect(screen.getByText('No Activity Yet')).toBeTruthy();
-    expect(screen.getByText('Changes to cards will show here.')).toBeTruthy();
+    expect(
+      screen.getByText('Changes to cards will show here, as people add and move them.'),
+    ).toBeTruthy();
     expect(screen.getByText('No Card Types Yet')).toBeTruthy();
     expect(screen.getByText('Add a card type to give cards their own fields.')).toBeTruthy();
     expect(screen.getByRole('button', { name: /Add Card Type/ })).toBeTruthy();
@@ -164,5 +228,88 @@ describe('Overview empty states', () => {
     view(ROLES.Viewer, { model: EMPTY });
     expect(screen.getByText('This plan has no card types yet.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Add Card Type/ })).toBeNull();
+  });
+});
+
+describe('Overview Add tiles, chips and activity', () => {
+  it('lets an Editor start a tab of each kind straight from the Add Tab tile', () => {
+    const act = view(ROLES.Editor);
+    const kinds = screen.getByRole('group', { name: 'Start a Tab As' });
+    expect(
+      within(kinds)
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Add a Board', 'Add a Sheet', 'Add a Dashboard', 'Add a Form']);
+    fireEvent.click(within(kinds).getByRole('button', { name: 'Add a Sheet' }));
+    expect(act.addTab).toHaveBeenCalledWith('sheets');
+  });
+
+  it('gives no one else the kinds', () => {
+    view(ROLES.Viewer);
+    expect(screen.queryByRole('group', { name: 'Start a Tab As' })).toBeNull();
+  });
+
+  it('leads each card type tile with its chip, and gives each entry its type chip', () => {
+    view(ROLES.Viewer);
+    const tile = document.querySelector('[data-card-type-tile="bug"]') as HTMLElement;
+    expect(tile.querySelector('[data-card-type-chip-face]')!.textContent).toBe('Bug');
+    const entry = document.querySelector('[data-activity-entry="added"]') as HTMLElement;
+    expect(entry.querySelector('[data-card-type-chip-face]')!.textContent).toBe('Bug');
+    // Grouped by day, the person's disc shown once for a run of their entries.
+    expect(screen.getByRole('region', { name: 'Today' })).toBeTruthy();
+  });
+});
+
+describe('Overview card type tiles', () => {
+  it('shows each type’s sample, fields, cards by status and boards, a board link opening its tab', () => {
+    const act = view(ROLES.Viewer);
+    const bug = document.querySelector('[data-card-type-tile="bug"]') as HTMLElement;
+    // Twelve bugs: the latest drawn as its sample; a type with none draws its example.
+    expect(
+      bug.querySelector('[data-card-type-sample]')!.getAttribute('data-card-type-sample'),
+    ).toBe('card');
+    expect(bug.querySelector('[data-card-type-sample]')!.getAttribute('aria-hidden')).toBe('true');
+    expect(
+      document
+        .querySelector('[data-card-type-tile="task"] [data-card-type-sample]')!
+        .getAttribute('data-card-type-sample'),
+    ).toBe('example');
+    expect(bug.querySelector('[data-type-cards]')!.textContent).toBe('12 Cards');
+    expect(within(bug).getByRole('img', { name: 'To Do: 12 Cards' })).toBeTruthy();
+    // Seven fields: five chips, then the rest counted.
+    expect(within(bug).getByRole('list', { name: 'Fields' }).textContent).toContain('+2 More');
+    fireEvent.click(within(bug).getByRole('button', { name: 'Open Triage' }));
+    expect(act.openTab).toHaveBeenCalledWith('a');
+  });
+
+  it('gives an Editor Edit, Add Field and Add Card on each type', () => {
+    const act = view(ROLES.Editor);
+    const actions = screen.getByRole('group', { name: 'Bug Actions' });
+    fireEvent.click(within(actions).getByRole('button', { name: 'Add Field' }));
+    expect(act.addField).toHaveBeenCalledWith('bug');
+    fireEvent.click(within(actions).getByRole('button', { name: 'Add a Bug' }));
+    expect(act.addCard).toHaveBeenCalledWith('bug');
+  });
+
+  it('offers an Editor Add to a Board for a type no board takes', () => {
+    const model = overviewModelOf({
+      tabs: [boardTab('b', 'Tasks', { addTypes: ['task'] })],
+      items: new Map(),
+      types: TYPES,
+      loadedTabIds: new Set(['b']),
+      owner: null,
+      present: [],
+      createdAt: 0,
+    });
+    const act = view(ROLES.Editor, { model });
+    const bug = document.querySelector('[data-card-type-tile="bug"]') as HTMLElement;
+    expect(bug.querySelector('[data-used-on="none"]')!.textContent).toBe('Not on any board yet');
+    // No board takes it, so there is nowhere to Add Card.
+    expect(within(bug).queryByRole('button', { name: 'Add a Bug' })).toBeNull();
+    fireEvent.click(within(bug).getByRole('button', { name: 'Add to a Board' }));
+    expect(act.addTypeToBoard).toHaveBeenCalledWith('bug', 'b-board');
+    cleanup();
+    view(ROLES.Viewer, { model });
+    expect(screen.queryByRole('button', { name: 'Add to a Board' })).toBeNull();
   });
 });

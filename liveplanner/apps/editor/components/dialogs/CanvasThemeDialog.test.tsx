@@ -53,7 +53,7 @@ describe('CanvasThemeDialog placement', () => {
       ({ left: 1360, right: 1404, top: 840, bottom: 884, width: 44, height: 44 }) as DOMRect;
     document.body.appendChild(brush);
     render(<CanvasThemeDialog {...props} />);
-    const panel = screen.getByRole('dialog', { name: 'Tab style' });
+    const panel = screen.getByRole('dialog', { name: 'Tab Style' });
     expect(panel.style.right).toBe('36px');
     expect(panel.style.bottom).toBe('68px');
   });
@@ -61,7 +61,7 @@ describe('CanvasThemeDialog placement', () => {
   it('is the centred dialog without a brush', () => {
     Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
     render(<CanvasThemeDialog {...props} />);
-    expect(screen.getByRole('dialog', { name: 'Tab style' }).style.right).toBe('');
+    expect(screen.getByRole('dialog', { name: 'Tab Style' }).style.right).toBe('');
   });
 });
 
@@ -73,6 +73,14 @@ describe('CanvasThemeDialog Finish tab', () => {
     render(<CanvasThemeDialog {...props} tab="looks" onTabChange={onTabChange} />);
     fireEvent.click(screen.getByRole('button', { name: 'Finish: Flexible' }));
     expect(onTabChange).toHaveBeenCalledWith('finish');
+  });
+
+  // docs/specs/026-plan/plan-overview.md "Style": the Overview's panel is named for it and has no Finish.
+  it('names the panel and leaves Finish out for the Overview', () => {
+    render(<CanvasThemeDialog {...props} tab="looks" heading="Overview Style" noFinish />);
+    expect(screen.getByRole('dialog', { name: 'Overview Style' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Finish:/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /^Text:/ })).toBeTruthy();
   });
 
   it('presses Flexible for a tab without a finish, and sets the one clicked', () => {

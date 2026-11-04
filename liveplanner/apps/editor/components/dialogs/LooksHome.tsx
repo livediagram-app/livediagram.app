@@ -48,6 +48,7 @@ export function LooksHome({
   font,
   defaultTextSize,
   pattern,
+  noFinish = false,
   onOpenPanel,
 }: {
   // The tab's four look settings (the Mashup card is selected while they are its mashup's).
@@ -62,6 +63,8 @@ export function LooksHome({
   font: string | null;
   defaultTextSize: TextSize | undefined;
   pattern: BackgroundPattern;
+  // Leaves the Finish row out (the Overview's Style: it draws no elements).
+  noFinish?: boolean;
   onOpenPanel: (panel: LookPanel) => void;
 }) {
   const theme = getTheme(themeId);
@@ -95,12 +98,14 @@ export function LooksHome({
             }
             onOpen={() => onOpenPanel('theme')}
           />
-          <FineTuneRow
-            label="Finish"
-            value={FINISH_LABELS[finish]}
-            icon={<FinishSwatch finish={finish} />}
-            onOpen={() => onOpenPanel('finish')}
-          />
+          {noFinish ? null : (
+            <FineTuneRow
+              label="Finish"
+              value={FINISH_LABELS[finish]}
+              icon={<FinishSwatch finish={finish} />}
+              onOpen={() => onOpenPanel('finish')}
+            />
+          )}
           <FineTuneRow
             label="Text"
             value={`${fontLabel}, ${sizeLabel(defaultTextSize)}`}

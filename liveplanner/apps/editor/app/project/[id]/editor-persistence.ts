@@ -5,11 +5,40 @@ import { useEffect, useState } from 'react';
 import { UNTITLED_PROJECT_NAME } from '@liveplanner/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
+import type { OverviewStyle } from '@liveplanner/api-schema';
 
-// What the Overview shows of the plan beyond its name (docs/specs/026-plan/plan-overview.md): its description, and
-// its created date and last save as the load read them (0: not known).
-export type ProjectDetails = { description: string; createdAt: number; savedAt: number };
-export const NO_PROJECT_DETAILS: ProjectDetails = { description: '', createdAt: 0, savedAt: 0 };
+// What the Overview shows of the plan beyond its name (docs/specs/026-plan/plan-overview.md): its description, its
+// own style (null: none, it wears the first tab's), and its created date and last save as the load read them (0: not
+// known).
+export type ProjectDetails = {
+  description: string;
+  overviewStyle: OverviewStyle | null;
+  createdAt: number;
+  savedAt: number;
+};
+export const NO_PROJECT_DETAILS: ProjectDetails = {
+  description: '',
+  overviewStyle: null,
+  createdAt: 0,
+  savedAt: 0,
+};
+
+// What a details write changed (a room op, a save's answer): only the parts present.
+export type ProjectDetailsChange = {
+  description?: string;
+  overviewStyle?: OverviewStyle | null;
+};
+
+// The details with a change applied; the same object when nothing differs, so nothing re-renders for an echo.
+export function withDetailsChange(d: ProjectDetails, change: ProjectDetailsChange): ProjectDetails {
+  const description = change.description ?? d.description;
+  const overviewStyle = change.overviewStyle === undefined ? d.overviewStyle : change.overviewStyle;
+  const sameStyle =
+    overviewStyle === d.overviewStyle ||
+    JSON.stringify(overviewStyle) === JSON.stringify(d.overviewStyle);
+  if (description === d.description && sameStyle) return d;
+  return { ...d, description, overviewStyle: sameStyle ? d.overviewStyle : overviewStyle };
+}
 
 // Persistence-facing state for the editor: the autosave status pill, the
 // project name (mirrored into the browser tab title) and the transient import-error toast. The Explorer's lists

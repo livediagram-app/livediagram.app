@@ -49,6 +49,7 @@ export function EditorModals() {
     applyStyleToAllTabs,
     applyingStyleToAllTabs,
     canApplyStyleToAllTabs,
+    overviewOpen,
   } = useEditorContext();
 
   return (
@@ -74,7 +75,8 @@ export function EditorModals() {
           initialSectionId={settingsSection}
         />
       ) : null}
-      {canvasThemeTab !== null && !isReadOnly ? (
+      {/* While the Overview is open, Style is the Overview's (docs/specs/026-plan/plan-overview.md "Style"). */}
+      {canvasThemeTab !== null && !isReadOnly && !overviewOpen ? (
         <CanvasThemeDialog
           tab={canvasThemeTab}
           onTabChange={setCanvasThemeTab}

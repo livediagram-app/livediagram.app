@@ -108,10 +108,14 @@ const NONE_SHUT: ReadonlySet<string> = new Set();
 export function PlanBoardView({
   element,
   fontFamily,
+  cellCardsMax,
 }: {
   element: ShapeElement;
   // The tab's (or the element's own) font (docs/specs/026-plan/plan-board.md "Theme and style").
   fontFamily?: string;
+  // A still picture of the board (an Overview tab preview, docs/specs/026-plan/plan-overview.md "Tabs") draws at most
+  // this many cards in each cell, the most its window can show; the column counts stay the whole board's.
+  cellCardsMax?: number;
 }) {
   const plan = usePlan();
   const surface = useCanvasSurface();
@@ -155,10 +159,17 @@ export function PlanBoardView({
   const focusNextRef = useRef<string | null>(null);
   const items = plan?.items ?? NO_ITEMS;
   const statusNames = plan?.statusNames;
-  const projection = useMemo(
-    () => (setup ? projectBoard(setup, items, applied, types, statusNames) : null),
-    [setup, items, applied, types, statusNames],
-  );
+  const projection = useMemo(() => {
+    const whole = setup ? projectBoard(setup, items, applied, types, statusNames) : null;
+    if (!whole || cellCardsMax === undefined) return whole;
+    return {
+      ...whole,
+      columns: whole.columns.map((col) => ({
+        ...col,
+        lanes: col.lanes.map((lane) => ({ ...lane, items: lane.items.slice(0, cellCardsMax) })),
+      })),
+    };
+  }, [setup, items, applied, types, statusNames, cellCardsMax]);
   // The statuses a column can be made for: the boards', any a card is in and the card types' Default States
   // (docs/specs/026-plan/plan-board.md "The column picker").
   const pickable = useMemo(

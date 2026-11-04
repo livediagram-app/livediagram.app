@@ -90,6 +90,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         <ItemTypeEditor
           key={`${editing?.id ?? 'new'}:${plan.typeTemplateId ?? ''}:${forBoard?.boardId ?? ''}`}
           type={editing ?? null}
+          openAddField={target !== 'new' && target.addField === true}
           {...(template ? { template } : {})}
           types={ctx.types}
           itemCount={ofType.length}

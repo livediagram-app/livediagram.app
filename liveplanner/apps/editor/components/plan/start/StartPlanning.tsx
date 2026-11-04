@@ -4,7 +4,7 @@
 // of categories (Recommended, Boards, Spreadsheets, Dashboards, Inspiration) beside a grid of large cards, each a
 // picture of what it makes over its name, line and (a board's) card types; a search across all of them, which finds
 // only Plan's own. Choosing a card acts at once. In the tab's own light or dark look (planPalette).
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { DASHBOARD_PRESETS } from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
@@ -41,6 +41,7 @@ import {
   type StartItem,
 } from './start-planning-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
+import { takeStartCategory } from './start-request';
 
 const RAIL_ICONS: Record<StartCategory, ReturnType<typeof lucideGlyph>> = {
   recommended: lucideGlyph(lucideStar, 16),
@@ -172,6 +173,8 @@ export function StartPlanning({
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
   const plan = usePlan();
+  // The category an Overview Add Tab chip asked for, taken once as the panel mounts.
+  const [initialCategory] = useState<StartCategory>(() => takeStartCategory() ?? 'recommended');
   const hasCards = (plan?.items.size ?? 0) > 0;
   // Fetched as the panel opens; the effect returns nothing (the fetch is a promise).
   useEffect(() => {
@@ -220,7 +223,9 @@ export function StartPlanning({
       helpArticle="planBoards"
       palette={palette}
       categories={categories}
-      initialCategory="recommended"
+      initialCategory={
+        categories.some((c) => c.id === initialCategory) ? initialCategory : 'recommended'
+      }
       cardsIn={(category) =>
         itemsIn(items, category).map((item) => toCard(item, palette, category === 'recommended'))
       }

@@ -16,6 +16,10 @@ export const loadEditorSearchPanel = () =>
   import('@/components/panels/EditorSearchPanel').then((m) => m.EditorSearchPanel);
 export const loadSessionElementSettings = () =>
   import('@/components/canvas/SessionElementSettings');
+// The Plan Overview (docs/specs/026-plan/plan-overview.md "Performance"): a plan opens on it, so its code is fetched
+// as the editor mounts, beside the project request (editor-page.tsx), never in the first load.
+export const loadOverviewPage = () =>
+  import('@/components/overview/OverviewPage').then((m) => m.OverviewPage);
 
 export const PROJECT_CONTENT_CODE = [loadTableView, loadCollabFaceRouter] as const;
 

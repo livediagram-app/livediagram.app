@@ -90,6 +90,8 @@ export function useIdentityBootstrap(opts: {
   };
   set: {
     setActiveId: SetState<string>;
+    // Opens the Overview as a plan opens (docs/specs/026-plan/plan-overview.md "A plan opens on its Overview").
+    showOverviewOnOpen?: () => void;
     setProjectId: SetState<string | null>;
     setProjectName: SetState<string>;
     setProjectItemTypes: SetState<SavedItemTypes>;
@@ -162,6 +164,7 @@ export function useIdentityBootstrap(opts: {
     const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
     const {
       setActiveId,
+      showOverviewOnOpen,
       setProjectId,
       setProjectName,
       setProjectItemTypes,
@@ -213,6 +216,8 @@ export function useIdentityBootstrap(opts: {
       setProjectTeamId,
       setLoadedExistingProject,
       setLoadedTabIds,
+      // An embed has no Overview.
+      showOverviewOnOpen: embed ? undefined : showOverviewOnOpen,
     });
     // The seed writes refs too (the saved tabs, the loaded ids): a superseded run never starts one.
     const seedFetchedProject: typeof seedOnce = async (...args) => {

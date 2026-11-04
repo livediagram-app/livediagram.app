@@ -14,24 +14,37 @@ import {
 } from '@liveplanner/items';
 import type { Tab } from '@liveplanner/project';
 
-export type OverviewBoard = { tabId: string; tabName: string; setup: PlanBoardSetup };
+// `elementId`: the board element's id, which the plan's board edits address (addTypeToBoard).
+export type OverviewBoard = {
+  tabId: string;
+  tabName: string;
+  elementId: string;
+  setup: PlanBoardSetup;
+};
 
-// The board a Board tab holds, read safely; null for any other tab or an unreadable board.
-export function boardOfTab(tab: Tab): PlanBoardSetup | null {
+// The board a Board tab holds, with its element's id, read safely; null for any other tab or an unreadable board.
+function boardElementOfTab(tab: Tab): { id: string; setup: PlanBoardSetup } | null {
   if (tab.kind !== 'board') return null;
   for (const el of tab.elements) {
     if (el.type !== 'shape' || el.shape !== 'plan-board') continue;
-    return normaliseBoardSetup(el.planBoard);
+    const setup = normaliseBoardSetup(el.planBoard);
+    return setup ? { id: el.id, setup } : null;
   }
   return null;
+}
+
+// The board a Board tab holds, read safely; null for any other tab or an unreadable board.
+export function boardOfTab(tab: Tab): PlanBoardSetup | null {
+  return boardElementOfTab(tab)?.setup ?? null;
 }
 
 // Every Board tab's board, in tab order.
 export function boardsOf(tabs: readonly Tab[]): OverviewBoard[] {
   const out: OverviewBoard[] = [];
   for (const tab of tabs) {
-    const setup = boardOfTab(tab);
-    if (setup) out.push({ tabId: tab.id, tabName: tab.name, setup });
+    const board = boardElementOfTab(tab);
+    if (board)
+      out.push({ tabId: tab.id, tabName: tab.name, elementId: board.id, setup: board.setup });
   }
   return out;
 }

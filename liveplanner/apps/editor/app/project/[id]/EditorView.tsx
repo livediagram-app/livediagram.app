@@ -57,11 +57,13 @@ import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHos
 import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
-import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
+import { loadEditorSearchPanel, loadOverviewPage } from '@/lib/editor-deferred-code';
+import { OverviewLoadingCover } from '@/components/overview/OverviewLoadingCover';
 import { useDismissibleBanner } from '@liveworkspace/workbench/hooks/ui/useDismissibleBanner';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { useDelayedReveal } from '@liveworkspace/workbench/hooks/ui/useDelayedReveal';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
+import { overviewLookOf } from '@/components/overview/overview-look';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
@@ -85,11 +87,12 @@ import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
 const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
-// The Plan Overview (docs/specs/026-plan/plan-overview.md "Performance"): its code loads when it is first opened.
-const OverviewPage = dynamic(
-  () => import('@/components/overview/OverviewPage').then((m) => m.OverviewPage),
-  { ssr: false },
-);
+// The Plan Overview (docs/specs/026-plan/plan-overview.md "Performance"): out of the first load, fetched as the editor
+// mounts (a plan opens on it). Until its code lands the canvas's place is covered, so the canvas never shows first.
+const OverviewPage = dynamic(loadOverviewPage, {
+  ssr: false,
+  loading: () => <OverviewLoadingCover />,
+});
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
 const PlanSheetsHost = dynamic(
@@ -224,7 +227,12 @@ export function EditorView() {
   // theme so the editor chrome matches the project (docs/specs/011-theme/canvas-and-theme-dialog.md).
   // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
   // follows the tab's theme in Draw mode too.
-  useEditorAccent(activeTab.theme);
+  // While the Overview is open, its own theme (else its first tab's: docs/specs/026-plan/plan-overview.md "Style").
+  useEditorAccent(
+    ctx.overviewOpen
+      ? overviewLookOf(ctx.projectDetails.overviewStyle, tabs[0]).theme
+      : activeTab.theme,
+  );
   // The viewer's own light / dark chrome (docs/specs/007-editor/editor-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
   const { appearance } = useAppearance();

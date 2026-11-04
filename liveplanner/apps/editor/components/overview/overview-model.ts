@@ -7,7 +7,7 @@ import { recentActivityOf, type ActivityEntry } from './overview-activity';
 import { boardsOf, cardsByStatus } from './overview-boards';
 import { cardTypeTilesOf, type CardTypeTileSummary } from './overview-card-types';
 import { planPeopleOf, type PlanPerson } from './overview-people';
-import { NO_TYPE_COLOUR, tabTilesOf, type TabTileSummary } from './overview-tabs';
+import { tabTilesOf, type TabTileSummary } from './overview-tabs';
 
 export type OverviewInput = {
   tabs: readonly Tab[];
@@ -30,8 +30,6 @@ export type OverviewModel = {
 };
 
 export function overviewModelOf(input: OverviewInput): OverviewModel {
-  const colours = new Map(input.types.map((t) => [t.id, t.color] as const));
-  const colourOf = (typeId: string) => colours.get(typeId) ?? NO_TYPE_COLOUR;
   const byStatus = cardsByStatus(input.items.values());
   const boards = boardsOf(input.tabs);
   let lastCardChange = 0;
@@ -42,10 +40,11 @@ export function overviewModelOf(input: OverviewInput): OverviewModel {
       items: input.items,
       byStatus,
       types: input.types,
-      colourOf,
       loaded: input.loadedTabIds,
     }),
-    cardTypes: cardTypeTilesOf(input.types, input.items.values(), boards),
+    cardTypes: cardTypeTilesOf(input.types, input.items.values(), boards, {
+      ...(input.statusNames ? { statusNames: input.statusNames } : {}),
+    }),
     activity: recentActivityOf({
       items: input.items,
       types: input.types,

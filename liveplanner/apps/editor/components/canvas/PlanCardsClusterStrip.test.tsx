@@ -131,3 +131,23 @@ describe('the Plan strip without New Card', () => {
     expect(screen.queryByRole('menuitem', { name: /New Card/ })).toBeNull();
   });
 });
+
+// docs/specs/026-plan/plan-overview.md "The dock": on the Overview the strip keeps the Trash and Card Types and leaves
+// Find a Card out.
+describe('the Plan strip on the Overview', () => {
+  it('leaves Find a Card out, keeping the Trash and Card Types', () => {
+    dock.names = true;
+    render(
+      <PlanCardsClusterStrip
+        finder={false}
+        finderOpen={false}
+        onToggleFinder={() => {}}
+        typesOpen={false}
+        onToggleTypes={() => {}}
+        trash={{ open: false, onToggle: () => {} }}
+      />,
+    );
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Trash1', 'Types']);
+    expect(screen.queryByRole('button', { name: 'Find a Card' })).toBeNull();
+  });
+});

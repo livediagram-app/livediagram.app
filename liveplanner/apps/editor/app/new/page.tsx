@@ -50,6 +50,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { NEW_PROJECT_THEME_ID, newProjectContent } from '@/lib/new-project-content';
+import { newPlanEntryState } from '@/lib/overview-address';
 
 // In-place handoff (docs/specs/007-editor/new-project-route.md): once a project is created, this page
 // renders the editor itself under the rewritten /project/<id> URL instead of paying for a second page
@@ -322,9 +323,10 @@ export default function NewProjectPage() {
     // its placement, succeeded.
     if (!offline && settings.teamId) track('Team', 'Added', 'Project');
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
-    // reading the id from the rewritten path exactly as a direct visit would.
+    // reading the id from the rewritten path exactly as a direct visit would. The entry is marked as a new plan's,
+    // so it opens on its tab's Start Planning rather than its Overview (docs/specs/026-plan/plan-overview.md).
     handedOff.current = true;
-    window.history.replaceState(null, '', `/project/${projectId}`);
+    window.history.replaceState(newPlanEntryState(), '', `/project/${projectId}`);
     setOpenedId(projectId);
   };
 

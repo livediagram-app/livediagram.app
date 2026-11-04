@@ -554,6 +554,70 @@
 }
 
 /*
+ * The Plan Overview's entrance (docs/specs/026-plan/plan-overview.md "Opening"): while the page is opening
+ * (`data-overview-entering`, OverviewView, cleared once it has settled) its content rises in, the header first, then
+ * each section's heading and its tiles in reading order, a beat apart. The bands' own surfaces never move. Each piece
+ * runs at `micro` and its delay stops at the cascade cap, so everything lands by the 250ms ceiling
+ * (docs/specs/004-interface-design/motion.md); Recent Activity's entries fan in on their own (useActivityEnter).
+ * Once the attribute is gone nothing here applies, so a tile added later, or any re-render, never animates. Reduced
+ * motion collapses it like every other animation (above).
+ */
+@keyframes overview-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* What rises: the header's text and people, each section's heading row, and the tiles (or empty state) under the
+ * Tabs and Card Types headings. */
+[data-overview-entering] section[aria-labelledby='overview-title'] > *,
+[data-overview-entering] section[aria-labelledby='overview-tabs'] > :first-child,
+[data-overview-entering] section[aria-labelledby='overview-tabs'] > :not(:first-child) > *,
+[data-overview-entering] section[aria-labelledby='overview-card-types'] > :first-child,
+[data-overview-entering] section[aria-labelledby='overview-card-types'] > :not(:first-child) > *,
+[data-overview-entering] section[aria-labelledby='overview-activity'] > :first-child {
+  animation: overview-rise var(--transition-duration-micro) cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* When, a beat apart in reading order: the header's text, its people with the Tabs and Recent Activity headings,
+ * then the tab tiles and the Card Types heading, then the card type tiles; the cap from the third tab on. */
+[data-overview-entering] section[aria-labelledby='overview-title'] > :nth-child(2),
+[data-overview-entering] section[aria-labelledby='overview-tabs'] > :first-child,
+[data-overview-entering] section[aria-labelledby='overview-activity'] > :first-child {
+  animation-delay: 25ms;
+}
+[data-overview-entering]
+  section[aria-labelledby='overview-tabs']
+  > :not(:first-child)
+  > :nth-child(1),
+[data-overview-entering] section[aria-labelledby='overview-card-types'] > :first-child {
+  animation-delay: 50ms;
+}
+[data-overview-entering]
+  section[aria-labelledby='overview-tabs']
+  > :not(:first-child)
+  > :nth-child(2),
+[data-overview-entering]
+  section[aria-labelledby='overview-card-types']
+  > :not(:first-child)
+  > :nth-child(1) {
+  animation-delay: 75ms;
+}
+[data-overview-entering]
+  section[aria-labelledby='overview-tabs']
+  > :not(:first-child)
+  > :nth-child(n + 3),
+[data-overview-entering]
+  section[aria-labelledby='overview-card-types']
+  > :not(:first-child)
+  > :nth-child(n + 2) {
+  animation-delay: var(--motion-cascade-cap);
+}
+
+/*
  * Context-menu "falling stack": each direct child of a right-click menu
  * drops in just after the previous one, so the categories cascade into place
  * rather than appearing all at once. A 10ms beat, capped at the cascade cap

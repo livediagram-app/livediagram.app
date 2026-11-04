@@ -4,6 +4,7 @@ import { useEffect, useRef, type MutableRefObject } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { cardEntryState, cardHash, hashCardId, isCardEntry } from '@/lib/card-address';
 import { isEditorPath } from '@/lib/editor-path';
+import { OVERVIEW_HASH } from '@/lib/overview-address';
 
 // Keeps the open card in the page's address (docs/specs/026-plan/plan-board.md "Its address"), beside the tab pin
 // useTabEntryEffects writes. Reading the address on load is the deep link's (useCollabDeepLink), which opens the
@@ -25,6 +26,7 @@ export function useCardAddress({
   arrivingRef,
   openItem,
   closeItem,
+  overviewOpen = false,
 }: {
   hydrated: boolean;
   activeId: string | null;
@@ -35,6 +37,8 @@ export function useCardAddress({
   arrivingRef: MutableRefObject<string | null>;
   openItem: (itemId: string) => void;
   closeItem: () => void;
+  // The Overview is open: with no card shown the address is its own (docs/specs/026-plan/plan-overview.md).
+  overviewOpen?: boolean;
 }): void {
   const written = useRef<string | null>(null);
   useEffect(() => {
@@ -45,14 +49,14 @@ export function useCardAddress({
     written.current = shownId;
     const arriving = shownId !== null && arrivingRef.current === shownId;
     if (arriving) arrivingRef.current = null;
-    const want = cardHash(activeId, shownId);
+    const want = !shownId && overviewOpen ? OVERVIEW_HASH : cardHash(activeId, shownId);
     if (url.hash === want) return;
     url.hash = want;
     const history = window.history;
     if (shownId && !was && !arriving) history.pushState(cardEntryState(true), '', url);
     else if (!shownId && was && isCardEntry(history.state)) history.back();
     else history.replaceState(cardEntryState(isCardEntry(history.state)), '', url);
-  }, [hydrated, activeId, shownId, arrivingRef]);
+  }, [hydrated, activeId, shownId, arrivingRef, overviewOpen]);
 
   // Back off a card's entry closes it; Forward onto one opens it again, as an arrival (its entry is already there).
   const openRef = useLatest(openItemId);

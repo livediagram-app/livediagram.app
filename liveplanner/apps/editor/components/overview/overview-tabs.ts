@@ -1,5 +1,5 @@
 // The Overview's tab tiles (docs/specs/026-plan/plan-overview.md "Tabs"): each tab's kind, the line under its name and
-// the little picture drawn of it, all from what the editor already holds. Pure: the page draws what this answers.
+// whether its preview can draw, all from what the editor already holds. Pure: the page draws what this answers.
 import {
   PLAN_VISUALISATION_LABELS,
   TRASH_STATUS,
@@ -18,29 +18,9 @@ import {
 } from '@liveplanner/project';
 import { boardOfTab, boardShows, boardStatuses } from './overview-boards';
 
-// How much of a board its tile draws (blueprint DEFAULTS D82), and of anything else.
-export const TILE_COLUMNS_MAX = 4;
-export const TILE_CARDS_MAX = 3;
-export const TILE_BARS_MAX = 5;
-const TILE_ROWS_MAX = 3;
-const TILE_FIELDS_MAX = 2;
-
-// A card drawn on a tile: its type's colour.
-type TileCard = { id: string; colour: string };
-
-export type TabTilePicture =
-  | { kind: 'board'; columns: { id: string; cards: TileCard[] }[] }
-  // A bar per card, as fractions of the tile's width: where it starts and how long it runs.
-  | { kind: 'bars'; bars: { id: string; colour: string; x: number; w: number }[] }
-  | { kind: 'sheet' }
-  // A dashboard's rows, each its slots' spans (twelfths) and what they hold.
-  | {
-      kind: 'dashboard';
-      rows: { id: string; slots: { id: string; span: number; filled: boolean }[] }[];
-    }
-  | { kind: 'form'; fields: number }
-  | { kind: 'empty' }
-  | { kind: 'loading' };
+// What a tile's preview shows (TabPreview): the tab once its content is here, the loading sweep before, or the tab's
+// paper saying nothing is on it yet.
+export type TabTileState = 'loading' | 'ready' | 'empty';
 
 export type TabTileSummary = {
   id: string;
@@ -49,12 +29,10 @@ export type TabTileSummary = {
   kindLabel: string;
   // The rest of the line ("17 Cards"), or null when the kind says it all.
   detail: string | null;
-  picture: TabTilePicture;
+  state: TabTileState;
 };
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-// A card whose type the plan no longer has.
-export const NO_TYPE_COLOUR = '#94a3b8';
 
 // A tab whose content has not arrived is a placeholder with no kind and nothing on it (per-tab-storage.md).
 export function isTabWaiting(tab: Tab, loaded: ReadonlySet<string>): boolean {
@@ -78,7 +56,6 @@ export type TileInput = {
   // The cards by status (cardsByStatus), shared with the other derivations.
   byStatus: ReadonlyMap<string, readonly Item[]>;
   types: readonly ItemTypeDef[];
-  colourOf: (typeId: string) => string;
   loaded: ReadonlySet<string>;
 };
 
@@ -94,22 +71,12 @@ function boardTile(tab: Tab, input: TileInput): TabTileSummary | null {
     for (const status of statuses)
       for (const it of input.byStatus.get(status) ?? []) if (shows(it)) count += 1;
   }
-  const columns = setup.columns.slice(0, TILE_COLUMNS_MAX).map((col) => {
-    const cards: TileCard[] = [];
-    if (!setup.archive && !setup.allCards) {
-      for (const it of input.byStatus.get(col.status) ?? []) {
-        if (cards.length >= TILE_CARDS_MAX) break;
-        if (shows(it)) cards.push({ id: it.id, colour: input.colourOf(it.type) });
-      }
-    }
-    return { id: col.id, cards };
-  });
   return {
     id: tab.id,
     name: tab.name,
     kindLabel: 'Board',
     detail: plural(count, 'Card', 'Cards'),
-    picture: { kind: 'board', columns },
+    state: 'ready',
   };
 }
 
@@ -129,47 +96,12 @@ function viewTile(tab: Tab, view: PlanViewRef, input: TileInput): TabTileSummary
     return start !== undefined && due !== undefined && due >= start ? [{ it, start, due }] : [];
   });
   const count = gantt ? dated.length : read.length;
-  let bars: { id: string; colour: string; x: number; w: number }[];
-  if (dated.length > 0) {
-    const first = dated
-      .slice()
-      .sort((a, b) => a.start - b.start || a.it.key - b.it.key)
-      .slice(0, TILE_BARS_MAX);
-    const lo = Math.min(...first.map((d) => d.start));
-    const hi = Math.max(...first.map((d) => d.due + 1));
-    const span = Math.max(1, hi - lo);
-    bars = first.map((d) => ({
-      id: d.it.id,
-      colour: input.colourOf(d.it.type),
-      x: (d.start - lo) / span,
-      w: Math.max(0.08, (d.due + 1 - d.start) / span),
-    }));
-  } else {
-    // Any other view: its cards by status, a bar per status as long as its share of the busiest one's.
-    const byStatus = new Map<string, Item[]>();
-    for (const it of read) {
-      const key = typeof it.fields['status'] === 'string' ? it.fields['status'] : '';
-      const group = byStatus.get(key);
-      if (group) group.push(it);
-      else byStatus.set(key, [it]);
-    }
-    const groups = [...byStatus.entries()]
-      .sort((a, b) => b[1].length - a[1].length || (a[0] < b[0] ? -1 : 1))
-      .slice(0, TILE_BARS_MAX);
-    const most = groups[0]?.[1].length ?? 1;
-    bars = groups.map(([status, group]) => ({
-      id: status,
-      colour: input.colourOf(group[0]!.type),
-      x: 0,
-      w: group.length / most,
-    }));
-  }
   return {
     id: tab.id,
     name: tab.name,
     kindLabel: label,
     detail: plural(count, 'Card', 'Cards'),
-    picture: { kind: 'bars', bars },
+    state: 'ready',
   };
 }
 
@@ -180,13 +112,7 @@ function dashboardTile(tab: Tab, layout: DashboardLayout): TabTileSummary {
     name: tab.name,
     kindLabel: 'Dashboard',
     detail: plural(slots, 'Slot', 'Slots'),
-    picture: {
-      kind: 'dashboard',
-      rows: layout.rows.slice(0, TILE_ROWS_MAX).map((r) => ({
-        id: r.id,
-        slots: r.slots.map((s) => ({ id: s.id, span: s.span, filled: s.content !== undefined })),
-      })),
-    },
+    state: 'ready',
   };
 }
 
@@ -195,7 +121,7 @@ const notStarted = (tab: Tab): TabTileSummary => ({
   name: tab.name,
   kindLabel: 'Not Started',
   detail: null,
-  picture: { kind: 'empty' },
+  state: 'empty',
 });
 
 // One tab's tile.
@@ -206,7 +132,7 @@ export function tabTileOf(tab: Tab, input: TileInput): TabTileSummary {
       name: tab.name,
       kindLabel: 'Loading…',
       detail: null,
-      picture: { kind: 'loading' },
+      state: 'loading',
     };
   switch (tab.kind) {
     case 'board':
@@ -218,7 +144,7 @@ export function tabTileOf(tab: Tab, input: TileInput): TabTileSummary {
             name: tab.name,
             kindLabel: 'Sheet',
             detail: null,
-            picture: { kind: 'sheet' },
+            state: 'ready',
           }
         : notStarted(tab);
     case 'dashboard': {
@@ -236,7 +162,7 @@ export function tabTileOf(tab: Tab, input: TileInput): TabTileSummary {
         name: tab.name,
         kindLabel: 'Form',
         detail: plural(questions, 'Question', 'Questions'),
-        picture: { kind: 'form', fields: Math.min(TILE_FIELDS_MAX, Math.max(1, questions)) },
+        state: 'ready',
       };
     }
     default:

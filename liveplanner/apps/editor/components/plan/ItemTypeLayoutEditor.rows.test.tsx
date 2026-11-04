@@ -154,3 +154,24 @@ describe('Add Field', () => {
     }
   });
 });
+
+// docs/specs/026-plan/plan-overview.md "Card Types": the Overview's Add Field opens the editor with Details' gallery open.
+describe('Add Field asked for as the editor opens', () => {
+  it('opens Details’ gallery at once', () => {
+    render(
+      <ItemTypeLayoutEditor
+        typeId="task"
+        draft={draft}
+        onChange={() => {}}
+        detailsLabel="Details"
+        onDetailsLabel={() => {}}
+        removedSome={false}
+        openAddField
+      />,
+    );
+    expect(screen.getByRole('dialog', { name: 'Add Field' })).toBeTruthy();
+    expect(
+      screen.getAllByRole('button', { name: 'Add Field' })[0]!.getAttribute('aria-expanded'),
+    ).toBe('true');
+  });
+});

@@ -1,4 +1,4 @@
-import { readProjectDescription } from '@liveplanner/api-schema';
+import { readOverviewStyle, readProjectDescription } from '@liveplanner/api-schema';
 import type { ProjectDetails } from './editor-persistence';
 import { readItemTypeCatalogue } from '@liveplanner/items';
 import type { SavedItemTypes } from '@/lib/api/item-types';
@@ -9,6 +9,7 @@ import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
+import { isNewPlanEntry, landingOf } from '@/lib/overview-address';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -44,6 +45,8 @@ export function makeSeedFetchedProject(deps: {
   setProjectTeamId: SetState<string | null>;
   setLoadedExistingProject: SetState<boolean>;
   setLoadedTabIds: SetState<Set<string>>;
+  // Opens the Overview as the plan opens (no telemetry); left out where there is none (an embed).
+  showOverviewOnOpen?: () => void;
 }) {
   const {
     activeId,
@@ -65,6 +68,7 @@ export function makeSeedFetchedProject(deps: {
     setProjectTeamId,
     setLoadedExistingProject,
     setLoadedTabIds,
+    showOverviewOnOpen,
   } = deps;
   // `tabShareCode` is the share code the per-tab fetch presents as
   // authorisation: the visitor's session code, or null for the owner.
@@ -120,6 +124,7 @@ export function makeSeedFetchedProject(deps: {
     setProjectName(fetched.name);
     setProjectDetails?.({
       description: readProjectDescription(fetched.description),
+      overviewStyle: readOverviewStyle(fetched.overviewStyle),
       createdAt: fetched.createdAt,
       savedAt: fetched.savedAt,
     });
@@ -127,17 +132,21 @@ export function makeSeedFetchedProject(deps: {
       itemTypes: readItemTypeCatalogue(fetched.itemTypes ?? null),
       itemTypesRev: fetched.itemTypesRev ?? 0,
     });
-    // Prefer the tab id pinned in the URL fragment (#t=<id>) when
-    // it points at a real loaded tab — round-trips the user back
-    // to whichever tab they last had open before a refresh.
+    // Where the plan opens (docs/specs/026-plan/plan-overview.md "A plan opens on its Overview"): the tab the
+    // address names (a link, or the pin a reload keeps), else the first tab with the Overview in front of it, unless
+    // the session has no Overview or the plan was just made on /new (its first tab is Start Planning).
     {
-      const hashMatch = window.location.hash.match(/t=([^&]+)/);
-      const hashedId = hashMatch ? hashMatch[1] : null;
-      const pickFromHash =
-        hashedId &&
-        placeholderTabs.some((t) => t.id === hashedId) &&
-        !isTabOutOfScope(hashedId, tabScope);
-      setActiveId(pickFromHash ? hashedId : (firstId ?? activeId));
+      const landing = landingOf({
+        hash: window.location.hash,
+        tabIds: placeholderTabs.map((t) => t.id),
+        firstId,
+        newPlan: isNewPlanEntry(window.history.state),
+        overviewAllowed: !!showOverviewOnOpen && tabScope === null,
+        inScope: (id) => !isTabOutOfScope(id, tabScope),
+      });
+      setActiveId(landing.tabId ?? activeId);
+      // After the tab: a tab switch closes the Overview. Same batch, so the canvas is never drawn first.
+      if (landing.overview) showOverviewOnOpen?.();
     }
     setLoadedExistingProject(true);
     setProjectShareable(fetched.shareable);

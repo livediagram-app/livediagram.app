@@ -8,6 +8,7 @@ import {
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import type { TabItemElement } from '@liveplanner/items';
+import { readOverviewStyle, type OverviewStyle } from '@liveplanner/api-schema';
 import { remapTabLinks, type Element } from '@liveplanner/project';
 import { redactTabDataAuthors } from '../comments';
 import { listItems } from '../db/items';
@@ -31,6 +32,8 @@ export type PlanMeta = {
   createdAt: number;
   // Its description (docs/specs/026-plan/plan-overview.md "The description"); empty for none.
   description: string;
+  // Its Overview's style ("The Overview's style"), read through readOverviewStyle; null for none.
+  overviewStyle: OverviewStyle | null;
 };
 
 // What a project read takes from the plan: its tabs in order (no body), its type catalogue, and what it knows
@@ -57,10 +60,11 @@ type PlanHeadRow = {
   tab_kind: string | null;
   template_family: string | null;
   description: string | null;
+  overview_style: string | null;
 };
 
 const PLAN_HEAD_COLS =
-  'item_types, item_types_rev, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, template_family, description';
+  'item_types, item_types_rev, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, template_family, description, overview_style';
 
 function metaOf(head: PlanHeadRow | null): PlanMeta | null {
   if (!head || !head.created_at) return null;
@@ -74,6 +78,7 @@ function metaOf(head: PlanHeadRow | null): PlanMeta | null {
     templateFamily: head.template_family,
     createdAt: head.created_at,
     description: head.description ?? '',
+    overviewStyle: readStoredOverviewStyle(head.overview_style),
   };
 }
 
@@ -282,6 +287,38 @@ export async function setPlanDescription(
   return row !== null;
 }
 
+// The Overview's style (docs/specs/026-plan/plan-overview.md "The Overview's style"), already normalised by the caller
+// (readOverviewStyle; null clears it). A write moves the plan's last save. Answers false when the plan is not started.
+export async function setPlanOverviewStyle(
+  env: PlanEnv,
+  planId: string,
+  style: OverviewStyle | null,
+  now = Date.now(),
+): Promise<boolean> {
+  const row = await env.PLAN_DB.prepare(
+    `UPDATE plan SET overview_style = ?, saved_at = ? WHERE id = ? AND created_at > 0 RETURNING id`,
+  )
+    .bind(style ? JSON.stringify(style) : null, now, planId)
+    .first<{ id: string }>();
+  return row !== null;
+}
+
+// The stored column read back: JSON through the normaliser, so a row written by an older or broken writer reads as
+// what it can be (or none).
+function readStoredOverviewStyle(raw: string | null | undefined): OverviewStyle | null {
+  if (!raw) return null;
+  try {
+    return readOverviewStyle(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+function serialisedOverviewStyle(raw: string | undefined): string | null {
+  const style = readStoredOverviewStyle(raw);
+  return style ? JSON.stringify(style) : null;
+}
+
 // ---------- Copies --------------------------------------------------------------------------------------------
 
 // A plan's content as one Durable Object hands it to another for a copy (docs/specs/015-api/api.md "Copies"):
@@ -293,6 +330,8 @@ export type PlanCopy = {
   // The plan's description (docs/specs/026-plan/plan-overview.md "The description"): a whole-plan copy's alone, never
   // a tab-scoped one's. Absent from a copy made before descriptions.
   description?: string;
+  // The Overview's style ("The Overview's style"), as stored (JSON): a whole-plan copy's alone.
+  overviewStyle?: string;
   itemsRev: number;
   itemsNextKey: number;
   tabs: {
@@ -397,7 +436,7 @@ export async function exportPlanCopy(
   redactAuthorsFor: string | null,
 ): Promise<PlanCopy | null> {
   const plan = await env.PLAN_DB.prepare(
-    'SELECT item_types, items_rev, items_next_key, description FROM plan WHERE id = ?',
+    'SELECT item_types, items_rev, items_next_key, description, overview_style FROM plan WHERE id = ?',
   )
     .bind(planId)
     .first<{
@@ -405,6 +444,7 @@ export async function exportPlanCopy(
       items_rev: number;
       items_next_key: number;
       description: string | null;
+      overview_style: string | null;
     }>();
   const rows = await readContentTabRows(env, planId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
@@ -452,6 +492,7 @@ export async function exportPlanCopy(
   return {
     itemTypes: plan?.item_types ?? null,
     ...(onlyTabId === null && plan?.description ? { description: plan.description } : {}),
+    ...(onlyTabId === null && plan?.overview_style ? { overviewStyle: plan.overview_style } : {}),
     itemsRev: plan?.items_rev ?? 0,
     itemsNextKey: plan?.items_next_key ?? 1,
     tabs,
@@ -561,13 +602,23 @@ export async function importPlanCopy(
     db
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initPlan).
-        `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at, description)
-         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6)
+        `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at, description,
+                           overview_style)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7)
          ON CONFLICT (id) DO UPDATE SET item_types = excluded.item_types, items_rev = excluded.items_rev,
            items_next_key = excluded.items_next_key, saved_at = excluded.saved_at,
-           description = excluded.description`,
+           description = excluded.description, overview_style = excluded.overview_style`,
       )
-      .bind(planId, copy.itemTypes, copy.itemsRev, copy.itemsNextKey, now, copy.description ?? ''),
+      .bind(
+        planId,
+        copy.itemTypes,
+        copy.itemsRev,
+        copy.itemsNextKey,
+        now,
+        copy.description ?? '',
+        // Read back through the normaliser, so a copy never carries a style its own plan would not keep.
+        serialisedOverviewStyle(copy.overviewStyle),
+      ),
   ];
   for (const tab of copy.tabs) {
     stmts.push(

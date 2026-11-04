@@ -71,6 +71,7 @@ export function ItemTypeEditor({
   onDelete,
   onClose,
   onDuplicate,
+  openAddField = false,
 }: {
   // The type being edited, or null for a new one.
   type: ItemTypeDef | null;
@@ -85,6 +86,8 @@ export function ItemTypeEditor({
   onClose: () => void;
   // Duplicate Type, for a type that exists while the catalogue has room.
   onDuplicate?: () => void;
+  // Opens with the Add Field gallery open on Details (the Overview's Add Field).
+  openAddField?: boolean;
 }) {
   const titleId = useId();
   const start = type ?? template ?? NEW_TYPE;
@@ -299,6 +302,7 @@ export function ItemTypeEditor({
         panels={{
           configuration: (
             <ItemTypeConfiguration
+              openAddField={openAddField}
               nameId={`${titleId}-name`}
               isNew={!type}
               label={label}

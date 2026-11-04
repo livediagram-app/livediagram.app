@@ -6,7 +6,7 @@
 // its group by its handle (or Move Up and Move Down in its ⋯ menu), to another group and off from that menu;
 // Title and Status stay. Each
 // group adds a field into itself. Edits a draft; the type editor saves it.
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { FieldRow } from './ItemTypeFieldRow';
@@ -71,6 +71,7 @@ export function ItemTypeLayoutEditor({
   onDetailsLabel,
   removedSome,
   inherited,
+  openAddField = false,
 }: {
   // The type being edited (undefined for a new one): a Project always keeps its Start and Due.
   typeId?: string | undefined;
@@ -84,6 +85,8 @@ export function ItemTypeLayoutEditor({
   // An inherited type (docs/specs/026-plan/item-types.md "Inherited types"): its base type's name and the fields it
   // takes from it, locked here; its tabs and Details name are the base's, and its own fields go under Details.
   inherited?: { from: string; ids: ReadonlySet<string> } | undefined;
+  // Opens with Details' Add Field gallery open (the Overview's Add Field).
+  openAddField?: boolean;
 }) {
   // The group whose Add Field form is open (Details is `null`), and the custom field being edited.
   // The group whose Add Field popover is open, and the button it hangs from.
@@ -94,6 +97,15 @@ export function ItemTypeLayoutEditor({
   } | null>(null);
   // The open Add Field's own Escape (a step back, a search cleared), asked before the popover closes.
   const addEscape = useRef<(() => boolean) | null>(null);
+  // Details' Add Field button, which the gallery opens from when asked to open at once.
+  const detailsAdd = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    const anchor = detailsAdd.current;
+    if (openAddField && anchor && !anchor.disabled)
+      setAdding({ group: null, anchor, touch: coarsePointer() });
+    // Once, as the editor opens.
+    // oxlint-disable-next-line react/exhaustive-deps
+  }, []);
   const [editing, setEditing] = useState<string | null>(null);
   const fields = orderedFields(draft.fields);
   // What a Formula on this type may read as drafted (docs/specs/026-plan/item-types.md "Formula fields").
@@ -204,6 +216,7 @@ export function ItemTypeLayoutEditor({
   const addForm = (group: GroupId) => (
     <>
       <button
+        ref={group === null ? detailsAdd : undefined}
         type="button"
         disabled={full}
         aria-haspopup="dialog"

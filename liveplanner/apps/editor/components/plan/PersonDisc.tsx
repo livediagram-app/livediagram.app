@@ -5,11 +5,25 @@ import { GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import { initialsOf } from '@liveplanner/project';
 import type { ItemPerson } from '@liveplanner/items';
 
-export function PersonDisc({ person, label }: { person: ItemPerson; label?: string }) {
+// Initials scale with the disc: 9px on the 20px disc a card face draws, larger on a bigger one.
+const initialsClass = (size: number) =>
+  size >= 32 ? 'text-[12px]' : size >= 26 ? 'text-[11px]' : 'text-[9px]';
+
+export function PersonDisc({
+  person,
+  label,
+  size = 20,
+  className = '',
+}: {
+  person: Pick<ItemPerson, 'name' | 'color'>;
+  label?: string;
+  size?: number;
+  className?: string;
+}) {
   return (
     <GlyphDisc
-      size={20}
-      className={`text-[9px] font-bold text-white ${IDENTITY_FILL}`}
+      size={size}
+      className={`${initialsClass(size)} font-bold text-white ${IDENTITY_FILL} ${className}`}
       style={identityVars(person.color)}
       aria-label={label}
       aria-hidden={label ? undefined : true}

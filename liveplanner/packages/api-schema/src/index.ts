@@ -18,6 +18,7 @@ import type { ProjectSource } from './project-source';
 import type { EditorMode, Tab } from '@liveplanner/project';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 import type { ItemTypeCatalogue } from '@liveplanner/items';
+import type { OverviewStyle } from './project-details';
 
 // ---------------------------------------------------------------------
 // Projects
@@ -58,6 +59,9 @@ export type Project = {
   // The plan's description (docs/specs/026-plan/plan-overview.md "The description"), read through
   // readProjectDescription; absent from an older api or record, which reads as none.
   description?: string;
+  // The Overview's style (docs/specs/026-plan/plan-overview.md "The Overview's style"), read through
+  // readOverviewStyle; absent when none is set (the Overview then wears the first tab's).
+  overviewStyle?: OverviewStyle;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the

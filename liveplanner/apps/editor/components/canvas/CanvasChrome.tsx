@@ -31,6 +31,9 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
+// Over the Overview's cover (z-chrome): the cluster and the panels it opens (docs/specs/026-plan/plan-overview.md
+// "The dock").
+const OVER_OVERVIEW_Z = 'z-[calc(var(--z-chrome)+1)]';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -127,6 +130,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     zenMode,
     onToggleZen,
   } = props;
+  const overviewOpen = props.overviewOpen === true;
   // The view is not a prop here: the parts that show it read it from the viewport store, so a pan or
   // zoom renders them and not this chrome or its panels (docs/specs/008-canvas/blueprints/viewport-store.md).
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
@@ -172,13 +176,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const canvasCovered = useCanvasCovered();
   const tabPlanKind = usePlanTabKind();
   // A Dashboard's or a Form tab's page covers the canvas as a page, not an element.
-  const elementCovers = canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
+  const elementCovers =
+    !overviewOpen && canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
   const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
   // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
   const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
   const stripTools = sessionStripTools(planVoting);
   // On a phone beside the Session strip the Plan strip is one More Card Tools button (session-tools.md "The Session strip").
-  const planStripFolded = isMobile && !!(props.sessionTools && stripTools);
+  const planStripFolded = isMobile && !overviewOpen && !!(props.sessionTools && stripTools);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
@@ -292,9 +297,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
         against the canvas, so it renders outside the corner layer. */}
       {zenMode ? null : collaborateEl}
-      {zenMode ? null : cardTypesPopoverEl}
-      {zenMode ? null : trashPopoverEl}
-      {zenMode ? null : cardFinderPopoverEl}
+      {zenMode ? null : overviewOpen ? (
+        // The plan's panels open over the Overview, in the canvas's own box.
+        <div className={`pointer-events-none absolute inset-0 ${OVER_OVERVIEW_Z}`}>
+          {cardTypesPopoverEl}
+          {trashPopoverEl}
+        </div>
+      ) : (
+        <>
+          {cardTypesPopoverEl}
+          {trashPopoverEl}
+          {cardFinderPopoverEl}
+        </>
+      )}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
 
@@ -341,11 +356,13 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // usual 44px (always 44px tall to tap), so Undo, the Session strip, Layers and Theme and Fit fill the
         // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
         // pushed off the screen.
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
+        className={`pointer-events-none absolute bottom-4 right-4 ${overviewOpen ? OVER_OVERVIEW_Z : 'z-[var(--z-panel)]'} flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>
-            {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+            {offscreenContent && !overviewOpen ? (
+              <OffscreenContentHint onBringBack={onFitToScreen} />
+            ) : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
               (docs/specs/013-workspace/share-roles.md). */}
             {!zenMode && (!readOnly || !!props.participantPalette) ? (
@@ -359,7 +376,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
               Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
               chrome a facilitator still needs there: its Timer and Vote. */}
-            {props.sessionTools && stripTools ? (
+            {props.sessionTools && stripTools && !overviewOpen ? (
               <div className="contents">
                 <SessionClusterStrip
                   timer={props.sessionTools.timer}
@@ -389,8 +406,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): one strip,
               while the tab has something that shows cards ("The Plan strip"). */}
-            {!zenMode && tabShowsCards ? (
+            {!zenMode && (tabShowsCards || overviewOpen) ? (
               <PlanCardsClusterStrip
+                // On the Overview: the plan's Trash and Card Types; Search finds a card (plan-overview.md "The dock").
+                finder={!overviewOpen}
                 finderOpen={activeDockPanel === 'plan-cards'}
                 onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
                 typesOpen={activeDockPanel === 'card-types'}
@@ -412,6 +431,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               the tab has a comment thread or an action. A view-role visitor
               gets it too: they read threads and answer them. */}
             {!zenMode &&
+            !overviewOpen &&
             panelsOn.collaborate &&
             (commentRows.length > 0 || actionRows.length > 0) ? (
               <CollaborateClusterButton
@@ -423,19 +443,24 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Layers (docs/specs/006-project/layers.md) and the Theme & Canvas brush
               (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
               pass no handler), one strip in every mode: see LayersThemeStrip. */}
-            {!zenMode ? <LayersThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
-            <ViewZoomControls
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onSetZoom={handleSetZoom}
-              onFitToScreen={onFitToScreen}
-              onToggleZen={onToggleZen}
-              zenActive={zenMode}
-              // View-only visitors have no palette (so no canvas-tool
-              // dropdown); the zoom controls keep the enter button for them.
-              zenEnterHere={readOnly}
-              pinchOnly={isMobile}
-            />
+            {!zenMode ? (
+              <LayersThemeStrip onOpenTheme={onOpenCanvasTheme} overview={overviewOpen} />
+            ) : null}
+            {/* Not on the Overview, a page; Zen keeps them as its way out. */}
+            {overviewOpen && !zenMode ? null : (
+              <ViewZoomControls
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onSetZoom={handleSetZoom}
+                onFitToScreen={onFitToScreen}
+                onToggleZen={onToggleZen}
+                zenActive={zenMode}
+                // View-only visitors have no palette (so no canvas-tool
+                // dropdown); the zoom controls keep the enter button for them.
+                zenEnterHere={readOnly}
+                pinchOnly={isMobile}
+              />
+            )}
           </>
         )}
       </div>

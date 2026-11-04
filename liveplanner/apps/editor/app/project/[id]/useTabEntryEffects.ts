@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 import { isEditorPath } from '@/lib/editor-path';
-import { cardEntryState, isCardEntry } from '@/lib/card-address';
+import { cardEntryState, hashCardId, isCardEntry } from '@/lib/card-address';
+import { pinHash } from '@/lib/overview-address';
 
 // The side effects of LANDING on a tab (hydration, a tab switch, or the
 // active tab's elements finishing their lazy load), lifted out of
@@ -9,7 +10,9 @@ import { cardEntryState, isCardEntry } from '@/lib/card-address';
 // 1. Pin the active tab into the URL fragment (#t=<tabId>) so a refresh
 //    lands on the same tab. replaceState so switches don't pollute
 //    history; skipped pre-hydration to avoid writing a placeholder id.
-//    (The read side lives in seed-fetched-project.ts.)
+//    While the Overview is open the pin is `#overview` instead
+//    (docs/specs/026-plan/plan-overview.md "Its address"); a card shown over it keeps its own address
+//    (useCardAddress). (The read side lives in seed-fetched-project.ts.)
 // 2. Fit the viewport to the tab's content, once per tab entry, as soon as
 //    that content has loaded. The entry is claimed then even when the tab
 //    is empty, so what the user adds afterwards, the first shape included,
@@ -25,6 +28,7 @@ export function useTabEntryEffects({
   tabLoaded,
   fitToScreen,
   skipFitForTabRef,
+  overviewOpen = false,
 }: {
   hydrated: boolean;
   activeId: string | null;
@@ -37,6 +41,8 @@ export function useTabEntryEffects({
   // A tab whose entry has already been positioned by its caller, so this
   // one must not fit it. Consumed (and cleared) on the entry it names.
   skipFitForTabRef?: RefObject<string | null>;
+  // The Overview is open: the pin is its address.
+  overviewOpen?: boolean;
 }) {
   // fitToScreen reads live state; the fit is re-evaluated only on hydration / tab-id / load /
   // element-count transitions (and explicit requests), so it is called through an effect event.
@@ -46,15 +52,17 @@ export function useTabEntryEffects({
     const url = new URL(window.location.href);
     // An address that names no project (new-project-route.md "Unknown addresses") has no tab to pin.
     if (!isEditorPath(url.pathname)) return;
-    if (url.hash === `#t=${activeId}`) return;
-    url.hash = `t=${activeId}`;
+    if (overviewOpen && hashCardId(url.hash)) return;
+    const want = pinHash(activeId, overviewOpen);
+    if (url.hash === want) return;
+    url.hash = want;
     // Keeps an opened card's mark on its entry (useCardAddress), so closing it still steps back off it.
     window.history.replaceState(
       cardEntryState(isCardEntry(window.history.state)),
       '',
       url.toString(),
     );
-  }, [hydrated, activeId]);
+  }, [hydrated, activeId, overviewOpen]);
 
   const lastFittedTabRef = useRef<string | null>(null);
   useEffect(() => {

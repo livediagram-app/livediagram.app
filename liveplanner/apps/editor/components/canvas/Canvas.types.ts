@@ -211,6 +211,9 @@ export type CanvasProps = {
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
+  // The Plan Overview covers the canvas (docs/specs/026-plan/plan-overview.md "The dock"): the bottom-right cluster is
+  // drawn over it, with the plan's buttons only.
+  overviewOpen?: boolean;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
   onRemoveLayer: (layerId: string) => void;

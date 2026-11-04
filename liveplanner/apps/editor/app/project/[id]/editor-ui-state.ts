@@ -26,8 +26,9 @@ export function useEditorUiState(
 ) {
   const [activeId, setActiveIdRaw] = useState<string>(() => initialActiveId);
   // The Plan Overview (docs/specs/026-plan/plan-overview.md "A built-in page, not a tab"): open in the canvas's place
-  // or not. Never stored and never in the address. Any tab switch closes it, except the fallbacks that only keep the
-  // active tab a real one (`keepOverview`).
+  // or not. Never stored; its address is `#overview` (lib/overview-address.ts). Any tab switch closes it, except the
+  // fallbacks that only keep the active tab a real one (`keepOverview`). A plan opens on it ("A plan opens on its
+  // Overview"), and Back or Forward onto its address opens it: `showOverviewOnOpen`, which is not a press, so tracks nothing.
   const [overviewOpen, setOverviewOpen] = useState(false);
   const toast = useToast();
   const setActiveId = useCallback(
@@ -48,14 +49,18 @@ export function useEditorUiState(
   const readSelection = selectionStore.get;
   const { setSelectedId, setMultiSelectedIds } = selectionStore;
   const [editingId, setEditingId] = useState<string | null>(null);
-  // Opens the Overview: nothing on the canvas stays selected or in a text edit under it.
-  const openOverview = useCallback(() => {
-    if (!overviewOpen) track('UI', 'Opened', 'Overview');
+  // Opens the Overview: nothing on the canvas stays selected or in a text edit under it. Only a press of its entry
+  // (`openOverview`) is tracked.
+  const showOverviewOnOpen = useCallback(() => {
     setOverviewOpen(true);
     setSelectedId(null);
     setMultiSelectedIds(new Set());
     setEditingId(null);
-  }, [overviewOpen, setSelectedId, setMultiSelectedIds]);
+  }, [setSelectedId, setMultiSelectedIds]);
+  const openOverview = useCallback(() => {
+    if (!overviewOpen) track('UI', 'Opened', 'Overview');
+    showOverviewOnOpen();
+  }, [overviewOpen, showOverviewOnOpen]);
   // True when the active label edit began via type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): the
   // editor places the caret at the END instead of select-all, so the
   // seeded first character isn't replaced by the next keystroke.
@@ -104,5 +109,6 @@ export function useEditorUiState(
     setSequenceOpenForId,
     overviewOpen,
     openOverview,
+    showOverviewOnOpen,
   };
 }

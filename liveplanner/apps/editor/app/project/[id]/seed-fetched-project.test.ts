@@ -81,3 +81,67 @@ describe('seedFetchedProject and changesets', () => {
     expect(noteChangesetSeen).toHaveBeenCalledWith('t1', 6);
   });
 });
+
+// docs/specs/026-plan/plan-overview.md "A plan opens on its Overview": the seed picks the tab and opens the Overview.
+describe('seedFetchedProject and the Overview', () => {
+  const twoTabs = {
+    ...fetched,
+    tabs: [
+      fetched.tabs[0]!,
+      { id: 't2', projectId: 'd1', name: 'Tab 2', orderIndex: 1, updatedAt: 1 },
+    ],
+  } satisfies Project;
+
+  function open(
+    hash: string,
+    opts: { embed?: boolean; scope?: string | null; state?: unknown } = {},
+  ) {
+    window.history.replaceState(opts.state ?? null, '', `/project/d1${hash}`);
+    const calls: string[] = [];
+    const noop = vi.fn();
+    const run = makeSeedFetchedProject({
+      activeId: 'placeholder',
+      recordOpen: true,
+      resetTabs: noop,
+      lastSavedTabsRef: { current: [] },
+      lastSavedNameRef: { current: '' },
+      loadedTabIdsRef: { current: new Set() },
+      noteChangesetSeen: noop,
+      setActiveId: (id) => calls.push(`tab:${String(id)}`),
+      setProjectName: noop,
+      setProjectItemTypes: noop,
+      setProjectOwnerColor: noop,
+      setProjectOwnerId: noop,
+      setProjectOwnerName: noop,
+      setProjectShareable: noop,
+      setProjectShareCode: noop,
+      setProjectTeamId: noop,
+      setLoadedExistingProject: noop,
+      setLoadedTabIds: noop,
+      showOverviewOnOpen: opts.embed ? undefined : () => calls.push('overview'),
+    });
+    return run('me', twoTabs, null, opts.scope ?? null).then(() => calls);
+  }
+
+  it('opens a plain address on the Overview, after picking the first tab', async () => {
+    expect(await open('')).toEqual(['tab:t1', 'overview']);
+  });
+
+  it('opens a link or reload naming a tab on that tab', async () => {
+    expect(await open('#t=t2')).toEqual(['tab:t2']);
+    expect(await open('#t=t2&item=c1')).toEqual(['tab:t2']);
+  });
+
+  it('opens #overview on the Overview', async () => {
+    expect(await open('#overview')).toEqual(['tab:t1', 'overview']);
+  });
+
+  it('opens an embed and a tab-scoped session on their tab', async () => {
+    expect(await open('', { embed: true })).toEqual(['tab:t1']);
+    expect(await open('', { scope: 't2' })).toEqual(['tab:t2']);
+  });
+
+  it('opens a plan /new just made on its tab', async () => {
+    expect(await open('', { state: { liveplannerNewPlan: true } })).toEqual(['tab:t1']);
+  });
+});

@@ -405,6 +405,14 @@ const V14 = (exec: Exec) => {
     exec(`ALTER TABLE plan ADD COLUMN description TEXT NOT NULL DEFAULT ''`);
 };
 
+// The Overview's style (docs/specs/026-plan/plan-overview.md "The Overview's style"): JSON, null for none, so every plan
+// started before it wears its first tab's style. Asks first, as V10 does, so it runs again harmlessly.
+const V15 = (exec: Exec) => {
+  const columns = exec('PRAGMA table_info(plan)').toArray();
+  if (!columns.some((c) => c.name === 'overview_style'))
+    exec('ALTER TABLE plan ADD COLUMN overview_style TEXT NULL');
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -420,6 +428,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V12,
   V13,
   V14,
+  V15,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

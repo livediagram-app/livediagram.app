@@ -30,8 +30,9 @@ import type { ItemsScope } from '@/lib/api/items';
 // Someone else's hands on a card: dragging it or reading it.
 export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'view' };
 
-// What the type editor is open on: a new type, or a saved one by its id.
-export type ItemTypeEditing = 'new' | { id: string };
+// What the type editor is open on: a new type, or a saved one by its id (`addField`: with its Add Field gallery open
+// on Details, as the Overview's Add Field asks).
+export type ItemTypeEditing = 'new' | { id: string; addField?: boolean };
 
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;

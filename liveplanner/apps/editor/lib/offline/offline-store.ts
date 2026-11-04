@@ -12,7 +12,13 @@
 // every tab of the browser in step).
 
 import type { SheetJson } from '@liveplanner/sheets';
-import type { Project, ProjectSummary, RecordedIntent, TabSummary } from '@liveplanner/api-schema';
+import type {
+  OverviewStyle,
+  Project,
+  ProjectSummary,
+  RecordedIntent,
+  TabSummary,
+} from '@liveplanner/api-schema';
 import { utcDay } from '@liveplanner/api-schema';
 import { drawnCount, migrateStoredTab, stampTabKind } from '@liveplanner/project';
 import type { CardThread, Tab } from '@liveplanner/project';
@@ -71,6 +77,8 @@ export type OfflineProjectRecord = {
   itemTypes?: ItemTypeCatalogue | null;
   // The plan's description (docs/specs/026-plan/plan-overview.md "The description"), absent for none.
   description?: string;
+  // The Overview's style ("The Overview's style"), normalised; absent for none.
+  overviewStyle?: OverviewStyle;
   // The project's sheet store (docs/specs/029-sheets/sheet-store.md "Offline projects"): every sheet, cells
   // included. Optional: a record without it has none.
   sheets?: SheetJson[];
@@ -136,6 +144,7 @@ export function recordToProject(rec: OfflineProjectRecord): Project {
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
     ...(rec.description ? { description: rec.description } : {}),
+    ...(rec.overviewStyle ? { overviewStyle: rec.overviewStyle } : {}),
     ownerName: null,
     ownerColor: null,
     ...UNKNOWN_INTENT,
@@ -384,6 +393,19 @@ export async function offlineSaveDescription(
   await writeLive(id, (rec) => {
     const { description: _old, ...rest } = rec;
     return description ? { ...rest, description, savedAt: now } : { ...rest, savedAt: now };
+  });
+}
+
+// The Overview's style (docs/specs/026-plan/plan-overview.md "The Overview's style"), already normalised; null clears
+// it.
+export async function offlineSaveOverviewStyle(
+  id: string,
+  style: OverviewStyle | null,
+  now: number,
+): Promise<void> {
+  await writeLive(id, (rec) => {
+    const { overviewStyle: _old, ...rest } = rec;
+    return style ? { ...rest, overviewStyle: style, savedAt: now } : { ...rest, savedAt: now };
   });
 }
 

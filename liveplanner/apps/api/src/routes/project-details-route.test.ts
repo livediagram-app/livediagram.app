@@ -26,7 +26,10 @@ async function put(body: unknown, as: { owner?: string; code?: string } = {}, me
   const res = await handleProjects(ctx);
   await Promise.all(pending);
   const text = await res.text();
-  return { status: res.status, body: (text ? JSON.parse(text) : null) as { description?: string } };
+  return {
+    status: res.status,
+    body: (text ? JSON.parse(text) : null) as { description?: string; overviewStyle?: unknown },
+  };
 }
 
 beforeEach(() => {
@@ -114,5 +117,74 @@ describe('PUT /api/projects/:id/details', () => {
     await put({ description: 'Bugs' });
     expect((await exportPlanCopy(sql.env, 'd1', null, null))?.description).toBe('Bugs');
     expect((await exportPlanCopy(sql.env, 'd1', 't1', null))?.description).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/plan-overview.md "The Overview's style" and "Share roles".
+describe('PUT /api/projects/:id/details with the Overview style', () => {
+  const style = { theme: 'brand', backgroundPattern: 'lines', defaultTextSize: 'lg' } as const;
+
+  it('reads no style on a plan that never had one', async () => {
+    expect((await getProject(sql.env, 'd1'))!.overviewStyle).toBeUndefined();
+  });
+
+  it('stores the style as normalised, answers it, and reads it with the plan', async () => {
+    const res = await put({ overviewStyle: { ...style, backgroundOpacity: 7, extra: 'x' } });
+    expect(res).toEqual({ status: 200, body: { overviewStyle: style } });
+    expect((await getProject(sql.env, 'd1'))!.overviewStyle).toEqual(style);
+  });
+
+  it('leaves the description alone when only the style is written, and the other way round', async () => {
+    await put({ description: 'Bugs' });
+    await put({ overviewStyle: style });
+    await put({ description: 'Bugs fixed' });
+    const read = (await getProject(sql.env, 'd1'))!;
+    expect(read.description).toBe('Bugs fixed');
+    expect(read.overviewStyle).toEqual(style);
+  });
+
+  it('writes both at once', async () => {
+    const res = await put({ description: 'Both', overviewStyle: style });
+    expect(res.body).toEqual({ description: 'Both', overviewStyle: style });
+  });
+
+  it('clears the style with null, or with one that keeps nothing', async () => {
+    await put({ overviewStyle: style });
+    expect((await put({ overviewStyle: null })).body).toEqual({ overviewStyle: null });
+    expect((await getProject(sql.env, 'd1'))!.overviewStyle).toBeUndefined();
+    await put({ overviewStyle: style });
+    await put({ overviewStyle: { theme: 'nope' } });
+    expect((await getProject(sql.env, 'd1'))!.overviewStyle).toBeUndefined();
+  });
+
+  it('relays the stored style to the room', async () => {
+    await put({ overviewStyle: style });
+    const sent = JSON.stringify(relayed);
+    expect(sent).toContain('"kind":"project-details"');
+    expect(sent).toContain('"overviewStyle":{"theme":"brand"');
+    expect(sent).not.toContain('"description"');
+  });
+
+  it('refuses a style that is not an object', async () => {
+    expect((await put({ overviewStyle: 'dark' })).status).toBe(400);
+    expect((await put({ overviewStyle: [style] })).status).toBe(400);
+  });
+
+  it('lets a whole-plan Editor style it and refuses a Participant, a Viewer and a tab-scoped Editor', async () => {
+    const body = { overviewStyle: style };
+    expect((await put(body, { owner: 'v', code: 'VIEW' })).status).toBe(403);
+    expect((await put(body, { owner: 'p', code: 'PART' })).status).toBe(403);
+    expect((await put(body, { owner: 't', code: 'TAB1' })).status).toBe(403);
+    expect((await getProject(sql.env, 'd1'))!.overviewStyle).toBeUndefined();
+    expect((await put(body, { owner: 'e', code: 'EDIT' })).status).toBe(200);
+    expect((await getProject(sql.env, 'd1'))!.overviewStyle).toEqual(style);
+  });
+
+  it('carries the style in a whole-plan copy, never a tab-scoped one', async () => {
+    await put({ overviewStyle: style });
+    expect((await exportPlanCopy(sql.env, 'd1', null, null))?.overviewStyle).toBe(
+      JSON.stringify(style),
+    );
+    expect((await exportPlanCopy(sql.env, 'd1', 't1', null))?.overviewStyle).toBeUndefined();
   });
 });

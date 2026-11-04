@@ -150,11 +150,12 @@ import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useTabEntryEffects } from './useTabEntryEffects';
 import { useCardAddress } from './useCardAddress';
+import { useOverviewHistory } from './useOverviewHistory';
 import { cardLink } from '@/lib/card-address';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
-import { useEditorPersistence } from './editor-persistence';
+import { useEditorPersistence, withDetailsChange } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { boundsOfElements } from '@/lib/changeset-reveals';
@@ -323,6 +324,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     identityPromptOpen,
     setIdentityPromptOpen,
     overviewOpen,
+    showOverviewOnOpen,
   } = uiState;
   // Drag state lives inside the useEditorDrag hook, lifted out of
   // this component to keep the page focused on orchestration. The
@@ -746,6 +748,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     set: {
       setActiveId,
+      showOverviewOnOpen,
       setProjectId,
       setProjectName,
       setProjectItemTypes,
@@ -973,9 +976,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveItems: planItems.receive,
     receiveThreads: cardThreads.receive,
     receiveItemTypes: itemTypes.receive,
-    // The plan's description (docs/specs/026-plan/plan-overview.md "The description").
-    receiveProjectDetails: (description: string) =>
-      setProjectDetails((d) => (d.description === description ? d : { ...d, description })),
+    // The plan's description and Overview style (docs/specs/026-plan/plan-overview.md "The description", "The
+    // Overview's style").
+    receiveProjectDetails: (change) => setProjectDetails((d) => withDetailsChange(d, change)),
     receivePlanPresence: planPresence.receive,
     receiveSheets: sheets.receiveSheets,
     receiveSheetPresence: sheets.receiveSheetPresence,
@@ -1170,6 +1173,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       fitToScreen();
     },
     skipFitForTabRef: skipTabFitRef,
+    overviewOpen,
   });
 
   // Derived realtime presence rows (avatars per tab, remote cursors,
@@ -1648,6 +1652,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     arrivingRef: arrivingCardRef,
     openItem: plan.context.openItem,
     closeItem: plan.closeItem,
+    overviewOpen,
+  });
+  // Back and Forward over the Overview's address and the tab pin (docs/specs/026-plan/plan-overview.md "Its address").
+  useOverviewHistory({
+    hydrated,
+    activeId,
+    overviewOpen,
+    tabs,
+    showOverview: showOverviewOnOpen,
+    selectTab: setActiveId,
+    enabled: !embedMode && sessionTabScope === null,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const tourSquare = useTourSquare({ activeId, tickTabs });
@@ -2761,6 +2776,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canvasPointerRef,
     canRedo,
     canUndo,
+    // One step in the shared undo timeline for a change outside the tabs and cards (the Overview's name, description
+    // and style; docs/specs/026-plan/plan-overview.md "Editing in place").
+    pushUndo: itemUndo.push,
     cancelEdit,
     canvasMainRef,
     // Side by side (docs/specs/007-editor/split-view.md) hands the editor a tab already aimed.

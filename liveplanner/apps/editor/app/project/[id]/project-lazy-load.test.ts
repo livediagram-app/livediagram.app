@@ -15,6 +15,8 @@ const importsOf = (path: string) => staticImports(read(path));
 describe('the project page’s first load', () => {
   it.each([
     ['app/project/[id]/EditorView.tsx', '@/components/panels/EditorSearchPanel'],
+    ['app/project/[id]/EditorView.tsx', '@/components/overview/OverviewPage'],
+    ['app/project/[id]/editor-page.tsx', '@/components/overview/OverviewPage'],
     ['components/tour/EditorTours.tsx', '@/components/tour/PlanTourHost'],
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/project/[id]/editor-page.tsx', '@/components/panels/Explorer'],

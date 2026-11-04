@@ -96,6 +96,11 @@ type CanvasThemeDialogProps = {
   // Apply to All Tabs, at the foot of the home (docs/specs/011-theme/canvas-and-theme-dialog.md): offered to an Editor
   // of the whole plan only, so undefined for anyone else.
   allTabs?: { tabCount: number; applying: boolean; onApply: () => void };
+  // The panel's name: "Tab Style" for a tab; the Overview's is "Overview Style"
+  // (docs/specs/026-plan/plan-overview.md "Style").
+  heading?: string;
+  // Leaves Finish out (the Overview draws no elements).
+  noFinish?: boolean;
   onClose: () => void;
 };
 
@@ -125,6 +130,8 @@ export function CanvasThemeDialog({
   canvasBackground,
   onApplyLook: applyLook,
   allTabs,
+  heading = 'Tab Style',
+  noFinish = false,
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
@@ -181,7 +188,7 @@ export function CanvasThemeDialog({
           tabIndex={-1}
           role="dialog"
           aria-modal="true"
-          aria-label="Tab style"
+          aria-label={heading}
           // A bottom sheet on a phone, rising from the bottom edge as the editor's other phone sheets do, the canvas
           // still in view above it so each pick shows on the tab.
           className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:max-h-[75dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
@@ -209,11 +216,13 @@ export function CanvasThemeDialog({
                   with everyone — takes the name of the section that opens it. */}
               <div className="flex min-w-0 flex-col">
                 <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Tab Style
+                  {heading}
                 </h2>
                 {tab === 'looks' ? (
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Pick a look for the whole tab, then fine-tune any part of it.
+                    {noFinish
+                      ? 'Pick a look for the whole page, then fine-tune any part of it.'
+                      : 'Pick a look for the whole tab, then fine-tune any part of it.'}
                   </p>
                 ) : null}
               </div>
@@ -246,11 +255,7 @@ export function CanvasThemeDialog({
               {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip, as the
                 import / export panels do (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
               {tab !== 'looks' ? (
-                <BackBar
-                  label="Tab Style"
-                  current={PANEL_TITLES[tab]}
-                  onClick={() => go('looks')}
-                />
+                <BackBar label={heading} current={PANEL_TITLES[tab]} onClick={() => go('looks')} />
               ) : null}
               {tab === 'looks' ? (
                 <>
@@ -263,6 +268,7 @@ export function CanvasThemeDialog({
                     font={font}
                     defaultTextSize={defaultTextSize}
                     pattern={backgroundPattern}
+                    noFinish={noFinish}
                     onOpenPanel={go}
                   />
                   {allTabs ? (

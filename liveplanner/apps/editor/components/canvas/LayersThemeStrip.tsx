@@ -24,6 +24,7 @@ export function LayersThemeStrip({
   tidyUp,
   layers,
   onOpenTheme,
+  overview = false,
 }: {
   // The Tidy Up button: its popover's state and toggle. Absent, the strip has none.
   tidyUp?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
@@ -31,6 +32,8 @@ export function LayersThemeStrip({
   layers?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Theme & canvas button. Absent, the strip has none.
   onOpenTheme?: (() => void) | undefined;
+  // On the Plan Overview the button styles the Overview (docs/specs/026-plan/plan-overview.md "Style").
+  overview?: boolean;
 }) {
   const named = useDockNames();
   if (!tidyUp && !layers && !onOpenTheme) return null;
@@ -62,8 +65,12 @@ export function LayersThemeStrip({
       ) : null}
       {onOpenTheme ? (
         <HoverCard
-          title="Theme & canvas"
-          description="Change this tab's theme and canvas background."
+          title={overview ? 'Overview Style' : 'Theme & canvas'}
+          description={
+            overview
+              ? "Change the Overview's theme, backdrop and text."
+              : "Change this tab's theme and canvas background."
+          }
         >
           <button
             type="button"

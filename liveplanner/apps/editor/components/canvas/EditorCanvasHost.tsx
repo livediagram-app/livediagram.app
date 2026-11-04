@@ -16,6 +16,7 @@ import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
+import { overviewStyleOpener } from '@/components/overview/overview-dock';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -123,6 +124,7 @@ export function EditorCanvasHost() {
     isPinchingRef,
     isReadOnly,
     can,
+    overviewOpen,
     participating,
     livePresence,
     lockedByOther,
@@ -461,14 +463,12 @@ export function EditorCanvasHost() {
           }
           // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
           // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
-          onOpenCanvasTheme={
-            isReadOnly || embedMode
-              ? undefined
-              : () => {
-                  setCanvasThemeTab('looks');
-                  track('UI', 'Opened', 'ThemePicker');
-                }
-          }
+          onOpenCanvasTheme={overviewStyleOpener(
+            { overviewOpen, canEdit: can.level === 'edit', readOnly: isReadOnly, embedMode },
+            setCanvasThemeTab,
+          )}
+          // The Plan Overview over the canvas: the cluster comes over it (docs/specs/026-plan/plan-overview.md "The dock").
+          overviewOpen={overviewOpen}
           onSelectLayer={setActiveLayer}
           onAddLayer={addLayer}
           onRemoveLayer={removeLayer}

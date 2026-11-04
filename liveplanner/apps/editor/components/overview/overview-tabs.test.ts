@@ -3,9 +3,6 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from '@liveplanner/project';
 import { cardsByStatus } from './overview-boards';
 import {
-  NO_TYPE_COLOUR,
-  TILE_CARDS_MAX,
-  TILE_COLUMNS_MAX,
   isTabWaiting,
   tabTileOf,
   tabTilesOf,
@@ -14,14 +11,12 @@ import {
 } from './overview-tabs';
 import { TYPES, boardTab, card, itemsOf } from './overview-fixtures.test-helpers';
 
-const colours = new Map(TYPES.map((t) => [t.id, t.color]));
 function input(cards = [card('1'), card('2', { fields: { status: 'doing' } })], loaded?: string[]) {
   const items = itemsOf(cards);
   return {
     items,
     byStatus: cardsByStatus(items.values()),
     types: TYPES,
-    colourOf: (id: string) => colours.get(id) ?? NO_TYPE_COLOUR,
     loaded: new Set(loaded ?? ['b', 'v', 's', 'd', 'f', 'e', 'g', 'x']),
   } satisfies TileInput;
 }
@@ -56,7 +51,7 @@ const viewTab = (view: string, opts: { types?: string[]; fill?: boolean } = {}):
   }) as unknown as Tab;
 
 describe('tab tiles', () => {
-  it('counts the cards a board shows and draws its first columns', () => {
+  it('counts the cards a board shows, ready to preview', () => {
     const tile = tabTileOf(
       boardTab('b', 'Triage'),
       input([
@@ -74,15 +69,10 @@ describe('tab tiles', () => {
     );
     expect(tile.kindLabel).toBe('Board');
     expect(tile.detail).toBe('6 Cards');
-    if (tile.picture.kind !== 'board') throw new Error('board');
-    expect(tile.picture.columns).toHaveLength(3);
-    expect(tile.picture.columns[0]!.cards).toHaveLength(TILE_CARDS_MAX);
-    expect(tile.picture.columns[0]!.cards[0]!.colour).toBe('#ef4444');
-    expect(tile.picture.columns[1]!.cards).toHaveLength(1);
-    expect(tile.picture.columns[2]!.cards).toHaveLength(0);
+    expect(tile.state).toBe('ready');
   });
 
-  it('draws at most four columns, and counts one card in the singular', () => {
+  it('counts one card in the singular, however wide the board', () => {
     const many = Array.from({ length: 6 }, (_, i) => ({
       id: `c${i}`,
       status: `s${i}`,
@@ -92,8 +82,6 @@ describe('tab tiles', () => {
       boardTab('b', 'Wide', { columns: many }),
       input([card('1', { fields: { status: 's0' } })]),
     );
-    if (tile.picture.kind !== 'board') throw new Error('board');
-    expect(tile.picture.columns).toHaveLength(TILE_COLUMNS_MAX);
     expect(tile.detail).toBe('1 Card');
   });
 
@@ -116,11 +104,9 @@ describe('tab tiles', () => {
     );
     const all = tabTileOf(boardTab('b', 'All', { allCards: true }), input(cards));
     expect(all.detail).toBe('2 Cards');
-    if (all.picture.kind !== 'board') throw new Error('board');
-    expect(all.picture.columns.every((c) => c.cards.length === 0)).toBe(true);
   });
 
-  it('draws a Gantt from the dated cards, along their dates', () => {
+  it('counts a Gantt’s dated cards', () => {
     const tile = tabTileOf(
       viewTab('gantt'),
       input([
@@ -132,12 +118,10 @@ describe('tab tiles', () => {
     );
     expect(tile.kindLabel).toBe('Gantt Chart');
     expect(tile.detail).toBe('2 Cards');
-    if (tile.picture.kind !== 'bars') throw new Error('bars');
-    expect(tile.picture.bars.map((b) => b.x)).toEqual([0, 0.2]);
-    expect(tile.picture.bars[1]!.colour).toBe('#3b82f6');
+    expect(tile.state).toBe('ready');
   });
 
-  it('draws any other view as bars by status, of the types it reads', () => {
+  it('counts any other view’s cards, of the types it reads', () => {
     const cards = [
       card('1'),
       card('2'),
@@ -148,14 +132,14 @@ describe('tab tiles', () => {
     ];
     const tile = tabTileOf(viewTab('workload', { types: ['bug'] }), input(cards));
     expect(tile.detail).toBe('4 Cards');
-    if (tile.picture.kind !== 'bars') throw new Error('bars');
-    expect(tile.picture.bars.map((b) => b.w)).toEqual([1, 0.5, 0.5]);
-    // No cards: a Gantt with nothing dated, drawn as a single quiet bar by the picture.
-    const empty = tabTileOf(viewTab('gantt'), input([]));
-    expect(empty.picture).toEqual({ kind: 'bars', bars: [] });
+    // No cards: still a view, ready to preview its empty chart.
+    expect(tabTileOf(viewTab('gantt'), input([]))).toMatchObject({
+      detail: '0 Cards',
+      state: 'ready',
+    });
   });
 
-  it('draws a Dashboard as its rows and slots, a metric view counting as a dashboard', () => {
+  it('counts a Dashboard’s slots, a metric view counting as a dashboard', () => {
     const dash = {
       id: 'd',
       name: 'Health',
@@ -177,19 +161,7 @@ describe('tab tiles', () => {
     } as unknown as Tab;
     const tile = tabTileOf(dash, input());
     expect(tile.detail).toBe('3 Slots');
-    expect(tile.picture).toEqual({
-      kind: 'dashboard',
-      rows: [
-        {
-          id: 'r1',
-          slots: [
-            { id: 'a', span: 6, filled: true },
-            { id: 'b', span: 6, filled: false },
-          ],
-        },
-        { id: 'r2', slots: [{ id: 'c', span: 12, filled: false }] },
-      ],
-    });
+    expect(tile.state).toBe('ready');
     // A one-slot filling row of a metric is a dashboard tile, not a view tile.
     expect(tabTileOf(viewTab('metric:count'), input()).kindLabel).toBe('Dashboard');
     expect(tabTileOf(viewTab('gantt', { fill: false }), input()).kindLabel).toBe('Dashboard');
@@ -225,7 +197,7 @@ describe('tab tiles', () => {
     const formTile = tabTileOf(form, input());
     expect(formTile.kindLabel).toBe('Form');
     expect(formTile.detail).toBe('3 Questions');
-    expect(formTile.picture).toEqual({ kind: 'form', fields: 2 });
+    expect(formTile.state).toBe('ready');
     for (const blank of [
       { id: 'e', name: 'Empty', elements: [] },
       { id: 'e', name: 'Empty sheet', kind: 'sheet', elements: [] },
@@ -235,7 +207,7 @@ describe('tab tiles', () => {
     ] as unknown as Tab[])
       expect(tabTileOf(blank, input())).toMatchObject({
         kindLabel: 'Not Started',
-        picture: { kind: 'empty' },
+        state: 'empty',
       });
   });
 
@@ -244,7 +216,7 @@ describe('tab tiles', () => {
     expect(isTabWaiting(waiting, new Set())).toBe(true);
     expect(tabTilesOf([waiting], input([], []))[0]).toMatchObject({
       kindLabel: 'Loading…',
-      picture: { kind: 'loading' },
+      state: 'loading',
     });
   });
 
