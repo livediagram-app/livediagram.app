@@ -6,8 +6,11 @@
 import {
   OVERVIEW_TAB_ID,
   REQUIRED_TYPE_FIELDS,
+  fieldLabelsWith,
   newTabId,
   type CustomFieldDef,
+  type FieldLabels,
+  type ItemFieldId,
   type ItemTypeTab,
 } from '@liveplanner/items';
 
@@ -23,7 +26,43 @@ export type LayoutDraft = {
   tabs: ItemTypeTab[];
   // The Assignee tells no one (docs/specs/026-plan/item-types.md "Notifies"); kept only as false.
   assigneeNotifies?: false;
+  // The type's own names for its built-in fields (item-types.md "Edit Field": Built-in fields), as `fieldLabels`.
+  fieldLabels?: FieldLabels;
+  // Built-in fields made a custom field on Save, by built-in id: the field each becomes (retypeBuiltInIn).
+  retyped?: Partial<Record<ItemFieldId, CustomFieldDef>>;
 };
+
+/** The draft with `field` renamed (a built-in's own name, blank or its own name, dropping the type's). */
+export function renameBuiltIn(d: LayoutDraft, field: ItemFieldId, name: string): LayoutDraft {
+  const { fieldLabels: _was, ...rest } = d;
+  const fieldLabels = fieldLabelsWith(d.fieldLabels, field, name);
+  return fieldLabels ? { ...rest, fieldLabels } : rest;
+}
+
+/** The draft with the built-in `field` to become `def` on Save (its own name for the built-in dropped). */
+export function retypeInDraft(
+  d: LayoutDraft,
+  field: ItemFieldId,
+  def: CustomFieldDef,
+): LayoutDraft {
+  return { ...renameBuiltIn(d, field, ''), retyped: { ...d.retyped, [field]: def } };
+}
+
+/** The draft's custom fields with those its built-ins become on Save. */
+export const draftCustomFields = (d: LayoutDraft): CustomFieldDef[] => [
+  ...d.custom,
+  ...Object.values(d.retyped ?? {}).filter((f): f is CustomFieldDef => !!f),
+];
+
+/** The draft with the Assignee's Notifies on or off (stored only as off). */
+export function withNotifies(d: LayoutDraft, on: boolean): LayoutDraft {
+  const { assigneeNotifies: _was, ...rest } = d;
+  return on ? rest : { ...rest, assigneeNotifies: false };
+}
+
+/** A field's custom definition as drafted: its own, or the one a built-in becomes on Save. */
+export const draftCustomOf = (d: LayoutDraft, id: string): CustomFieldDef | undefined =>
+  d.custom.find((f) => f.id === id) ?? d.retyped?.[id as ItemFieldId];
 
 // Where a field shows: Details is `null`, a tab its id.
 export type GroupId = string | null;
@@ -113,6 +152,7 @@ export function addField(
   custom?: CustomFieldDef,
 ): LayoutDraft {
   return {
+    ...d,
     fields: [...orderedFields(d.fields), field],
     custom: custom ? [...d.custom, custom] : d.custom,
     tabs:
@@ -124,7 +164,11 @@ export function addField(
 
 // A field taken off the type: out of its fields, its custom fields and every tab.
 export function removeField(d: LayoutDraft, field: string): LayoutDraft {
+  const { [field as ItemFieldId]: _def, ...retyped } = d.retyped ?? {};
+  const { retyped: _was, ...rest } = renameBuiltIn(d, field as ItemFieldId, '');
   return {
+    ...rest,
+    ...(Object.keys(retyped).length ? { retyped } : {}),
     fields: orderedFields(d.fields).filter((f) => f !== field),
     custom: d.custom.filter((f) => f.id !== field),
     tabs: fileField(d.tabs, field, null),

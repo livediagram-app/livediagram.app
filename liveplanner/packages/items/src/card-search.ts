@@ -3,6 +3,7 @@
 // match. A field is a board's grouping (built in, or a lane field), and a value is one of its lanes, so values are
 // named, ordered and matched exactly as a board's swimlanes are. What can be added narrows as filters are: only the
 // fields the card types still in play offer, and only the values some still-matching card has.
+import { builtInFieldLabel } from './built-in-field-labels';
 import { liveCards } from './plan-views';
 import {
   SWIMLANE_BY,
@@ -105,7 +106,12 @@ export function searchFields(
   else offered.delete('type');
   for (const by of SWIMLANE_BY.filter((b) => offered.has(b))) {
     if (by === 'none') continue;
-    out.push({ by, label: GROUPING_LABELS[by] ?? by });
+    const own = GROUPING_LABELS[by] ?? by;
+    // Assignee and Priority are built-in fields: named as the matching cards' types name them.
+    out.push({
+      by,
+      label: by === 'assignee' || by === 'priority' ? builtInFieldLabel(by, inPlay, own) : own,
+    });
   }
   for (const f of laneFieldsOf(inPlay, true))
     out.push({ by: 'field', field: f.id, label: f.label });

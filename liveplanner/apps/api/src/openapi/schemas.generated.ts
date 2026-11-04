@@ -5954,6 +5954,63 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "fieldLabels": {
+        "additionalProperties": false,
+        "properties": {
+          "archived": {
+            "type": "string"
+          },
+          "assignee": {
+            "type": "string"
+          },
+          "attachments": {
+            "type": "string"
+          },
+          "checklist": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "comments": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "due": {
+            "type": "string"
+          },
+          "estimate": {
+            "type": "string"
+          },
+          "example": {
+            "type": "string"
+          },
+          "flagged": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "votes": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "fields": {
         "items": {
           "type": "string"

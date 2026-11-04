@@ -23,6 +23,7 @@ export const INHERITED_PARTS = [
   'defaultStatus',
   'assigneeNotifies',
   'colourField',
+  'fieldLabels',
 ] as const satisfies readonly (keyof ItemTypeDef)[];
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };

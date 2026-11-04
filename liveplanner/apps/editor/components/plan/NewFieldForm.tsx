@@ -15,7 +15,7 @@ import {
   pickFirstKind,
   shownCount,
 } from './AddFieldPicker';
-import { AddFieldShape, type NewField } from './AddFieldShape';
+import { AddFieldShape, type BuiltInShapeOf, type NewField } from './AddFieldShape';
 import {
   BUILT_INS_OF_KIND,
   categoryOfKind,
@@ -80,7 +80,15 @@ export function NewFieldForm({
   autoFocusSearch?: boolean;
   // Edit Field (item-types.md "Edit Field"): an existing field, opened on Shape with its name and settings, saved by
   // Save; All Kinds offers the other types it may become (`plan` says which, and what each does to its values).
-  edit?: { field: NewField; plan: EditFieldPlan; onSave: (field: NewField) => void } | undefined;
+  // `builtIn`: a built-in field, renamed on its own tile (what its Shape says of it) and made a custom field on another.
+  edit?:
+    | {
+        field: NewField;
+        plan: EditFieldPlan;
+        onSave: (field: NewField) => void;
+        builtIn?: BuiltInShapeOf | undefined;
+      }
+    | undefined;
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
   const [query, setQuery] = useState('');
@@ -197,7 +205,16 @@ export function NewFieldForm({
             onAdd={edit ? edit.onSave : onAddCustom}
             onAddBuiltIn={onAddBuiltIn}
             edit={
-              edit ? { loss: edit.plan.lossOf(field, PICK_KIND_LABELS[pickOf(field)]) } : undefined
+              edit
+                ? {
+                    loss: edit.plan.lossOf(field, PICK_KIND_LABELS[pickOf(field)]),
+                    // A built-in on its own tile is renamed; on another it is a new field of that type.
+                    builtIn:
+                      edit.builtIn && pickOf(field) === pickOf(edit.field)
+                        ? edit.builtIn
+                        : undefined,
+                  }
+                : undefined
             }
           />
         </GalleryList>

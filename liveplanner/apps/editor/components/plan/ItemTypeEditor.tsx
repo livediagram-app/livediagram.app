@@ -21,6 +21,8 @@ import {
   inheritFrom,
   inheritedFieldIds,
   inheritingTypesOf,
+  retypeBuiltInIn,
+  type ItemFieldId,
   type ItemTypeDef,
 } from '@liveplanner/items';
 import {
@@ -62,6 +64,16 @@ import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 const NEW_TYPE = NEW_ITEM_TYPE;
 
+// The built-ins the draft makes custom fields, still on the type.
+const retypesOf = (d: LayoutDraft) =>
+  Object.entries(d.retyped ?? {}).flatMap(([id, def]) =>
+    def && d.fields.includes(id) ? [[id as ItemFieldId, def] as const] : [],
+  );
+
+// New field id to built-in id, as the save's values and filters read it.
+const retypedIds = (d: LayoutDraft): Record<string, string> =>
+  Object.fromEntries(retypesOf(d).map(([id, def]) => [def.id, id]));
+
 export function ItemTypeEditor({
   type,
   template,
@@ -79,7 +91,8 @@ export function ItemTypeEditor({
   types: readonly ItemTypeDef[];
   // How many cards (out of the Trash) have this type: a delete says they go to the Trash with it.
   itemCount: number;
-  onSave: (type: ItemTypeDef) => void;
+  // `retyped`: the built-ins made custom fields on this Save, new field id to built-in id (empty: none).
+  onSave: (type: ItemTypeDef, retyped: Readonly<Record<string, string>>) => void;
   // Deletes the type and moves its cards to the Trash, once confirmed.
   onDelete: () => void;
   onClose: () => void;
@@ -100,6 +113,7 @@ export function ItemTypeEditor({
       fields: [...t.fields],
     })),
     ...(start.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),
+    ...(start.fieldLabels ? { fieldLabels: { ...start.fieldLabels } } : {}),
   }));
   const { tabs } = layout;
   const [detailsLabel, setDetailsLabel] = useState(detailsLabelOf(start));
@@ -147,7 +161,11 @@ export function ItemTypeEditor({
   const clash = others.some((t) => t.label.toLowerCase() === label.trim().toLowerCase());
   const draft = useMemo((): ItemTypeDef => {
     const name = label.trim();
-    return {
+    // The type's names for the built-ins it still has.
+    const names = Object.fromEntries(
+      Object.entries(layout.fieldLabels ?? {}).filter(([id]) => layout.fields.includes(id)),
+    );
+    const made: ItemTypeDef = {
       id: type?.id ?? newItemTypeId(name || 'type', types),
       label: name,
       newTitle: type && type.label === name ? type.newTitle : defaultNewTitle(name),
@@ -173,7 +191,10 @@ export function ItemTypeEditor({
       ...(base && inheritedIds
         ? { inherits: base.id, ownFields: layout.fields.filter((f) => !inheritedIds.has(f)) }
         : {}),
+      ...(Object.keys(names).length ? { fieldLabels: names } : {}),
     };
+    // Each built-in made a custom field takes its place (docs/specs/026-plan/item-types.md "Edit Field": Another type).
+    return retypesOf(layout).reduce((t, [id, def]) => retypeBuiltInIn(t, id, def), made);
   }, [
     base,
     inheritedIds,
@@ -256,6 +277,7 @@ export function ItemTypeEditor({
       custom: [...(resolved.custom ?? [])],
       tabs: tabsOf(resolved).map((t) => ({ ...t, fields: [...t.fields] })),
       ...(resolved.assigneeNotifies === false ? { assigneeNotifies: false as const } : {}),
+      ...(resolved.fieldLabels ? { fieldLabels: { ...resolved.fieldLabels } } : {}),
     });
     setDetailsLabel(detailsLabelOf(resolved));
     setUsed([...typeStatusesOf(resolved, statusNames?.keys() ?? [])]);
@@ -426,7 +448,7 @@ export function ItemTypeEditor({
               if (saved.inherits && saved.inherits !== type?.inherits)
                 track('Plan', 'Linked', 'CardTypeBase');
               else if (!saved.inherits && type?.inherits) track('Plan', 'Unlinked', 'CardTypeBase');
-              onSave(saved);
+              onSave(saved, retypedIds(layout));
             }}
           >
             <CheckIcon size={14} />

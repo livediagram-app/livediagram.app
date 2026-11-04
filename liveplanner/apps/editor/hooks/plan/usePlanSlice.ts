@@ -10,6 +10,7 @@ import {
   type PlanViewRef,
 } from '@liveplanner/project';
 import {
+  type FieldRetypeTarget,
   normaliseBoardSetup,
   TRASHED_FROM_FIELD,
   TRASH_STATUS,
@@ -40,8 +41,9 @@ import type {
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemTypesSlice } from './useItemTypes';
-import type { ItemUndoStep } from './item-undo-journal';
+import type { ItemUndoStep, ValuesWrite } from './item-undo-journal';
 import { planBoardTarget } from './plan-board-targets';
+import { countFieldFilters, tabsWithoutFieldFilters } from '@/components/plan/field-retype-tabs';
 import { useTypeForBoard } from './useTypeForBoard';
 import { usePlanPeople } from './usePlanPeople';
 import { useRequiredFieldsGate } from './useRequiredFieldsGate';
@@ -57,6 +59,7 @@ import { moveStatusRefusal } from './status-refusal';
 // changed through `commit` on the active tab.
 // Deletes in flight at once while the Trash empties (the store holds at most ITEMS_MAX).
 const EMPTY_TRASH_BATCH = 8;
+const NO_TABS: readonly Tab[] = [];
 
 export function usePlanSlice(opts: {
   planItems: PlanItems;
@@ -73,6 +76,8 @@ export function usePlanSlice(opts: {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // Every tab's elements at once (a state deleted from every board). Absent, only the open tab's boards change.
   commitTabs?: (mapTabs: (tabs: Tab[]) => Tab[]) => void;
+  // The tabs as they are now, read when called (Edit Field's filter count and scan); stable or not, read by ref.
+  readTabs?: () => readonly Tab[];
   select: (elementId: string | null) => void;
   announce: (message: string) => void;
   statusNames: ReadonlyMap<string, string>;
@@ -99,6 +104,7 @@ export function usePlanSlice(opts: {
   // and the context value, keep their identity and boards re-render only when Plan state changes.
   const commitRef = useLatest(opts.commit);
   const commitTabsRef = useLatest(opts.commitTabs);
+  const readTabsRef = useLatest(opts.readTabs);
   const selectRef = useLatest(opts.select);
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
@@ -311,19 +317,37 @@ export function usePlanSlice(opts: {
     [write],
   );
   // A field's values rewritten for its new type: written as an undo is, so a required field's cleared values are never
-  // refused, its undo step handed back for the type's save (docs/specs/026-plan/item-types.md "Edit Field").
+  // refused; whether it all landed and the undo of what did are handed back for the type's save, which keeps or puts
+  // back all of it (docs/specs/026-plan/item-types.md "Edit Field": Saving the type).
   const reshapeValues = useCallback(
     (patches: readonly ItemPatchOf[]) =>
-      new Promise<ItemUndoStep | null>((resolve) => {
+      new Promise<ValuesWrite>((resolve) => {
+        let step: ItemUndoStep | null = null;
         void write(
           { kind: 'patches', patches: [...patches], undo: true },
-          { onUndo: resolve },
+          {
+            onUndo: (s) => {
+              step = s;
+            },
+          },
         ).then(
-          () => resolve(null),
-          () => resolve(null),
+          (ok) => resolve({ ok, step }),
+          () => resolve({ ok: false, step }),
         );
       }),
     [write],
+  );
+  // The tabs read when called, and a field's filters taken off them as one canvas commit (docs/specs/026-plan/
+  // item-types.md "Edit Field": Filters on the field). Answers whether any came off: only then is a step made.
+  const planTabs = useCallback(() => readTabsRef.current?.() ?? NO_TABS, [readTabsRef]);
+  const removeFieldFilters = useCallback(
+    (targets: readonly FieldRetypeTarget[]) => {
+      const commitTabs = commitTabsRef.current;
+      if (!commitTabs || countFieldFilters(planTabs(), targets) === 0) return false;
+      commitTabs((ts) => tabsWithoutFieldFilters(ts, targets));
+      return true;
+    },
+    [commitTabsRef, planTabs],
   );
   const trashItem = useCallback((itemId: string) => void trashItems([itemId]), [trashItems]);
   const restoreItem = useCallback(
@@ -586,6 +610,8 @@ export function usePlanSlice(opts: {
       trashItems,
       patchItems,
       reshapeValues,
+      planTabs,
+      removeFieldFilters,
       restoreItem,
       emptyTrash,
       statusNames: opts.statusNames,
@@ -634,6 +660,8 @@ export function usePlanSlice(opts: {
       trashItems,
       patchItems,
       reshapeValues,
+      planTabs,
+      removeFieldFilters,
       restoreItem,
       emptyTrash,
       opts.statusNames,

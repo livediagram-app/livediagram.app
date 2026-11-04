@@ -39,6 +39,7 @@ export function EditFieldDialog({
     types,
     items: plan?.items,
     people: plan?.people,
+    planTabs: plan?.planTabs,
   });
   const { id, ...shape } = field;
   return (

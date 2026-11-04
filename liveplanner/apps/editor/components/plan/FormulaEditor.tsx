@@ -42,7 +42,11 @@ export interface FormulaDraft {
   typeId?: string | undefined;
   fields: readonly string[];
   custom: readonly CustomFieldDef[];
+  // Its own names for its built-in fields, as drafted (a formula is written by them too).
+  fieldLabels?: ItemTypeDef['fieldLabels'];
 }
+
+const withoutLabels = ({ fieldLabels: _names, ...type }: ItemTypeDef): ItemTypeDef => type;
 
 type FormulaFieldDraft = Pick<CustomFieldDef, 'formula' | 'result' | 'currency'> &
   Partial<Pick<CustomFieldDef, 'id'>>;
@@ -69,12 +73,14 @@ export function FormulaEditor({
   // The type as drafted: what the formula may read now, before the type is saved.
   const type: ItemTypeDef = useMemo(
     () => ({
-      ...typeIn(types, draft.typeId ?? ''),
+      // Its names are the draft's, never the stored type's.
+      ...withoutLabels(typeIn(types, draft.typeId ?? '')),
       ...(draft.typeId ? { id: draft.typeId } : {}),
       fields: [...draft.fields],
       custom: [...draft.custom],
+      ...(draft.fieldLabels ? { fieldLabels: draft.fieldLabels } : {}),
     }),
-    [types, draft.typeId, draft.fields, draft.custom],
+    [types, draft],
   );
   const scope = useMemo(() => formulaScopeOf(type), [type]);
   const [text, setText] = useState(() => shownFormula(field.formula ?? '', scope));

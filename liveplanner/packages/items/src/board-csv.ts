@@ -3,6 +3,7 @@
 import { byRank } from './apply';
 import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSetup } from './board';
 import { builtInFieldOf } from './card-source';
+import { builtInFieldLabel, builtInIdOfName } from './built-in-field-labels';
 import { customFieldText } from './card-text';
 import { itemColourValue } from './item-colour';
 import { calculatedResultOf, hasResult } from './calculated-result';
@@ -115,7 +116,15 @@ export function boardCsvRows(
   const builtIns = BOARD_CSV_FIELDS.filter(([id]) => shown.some((t) => t.fields.includes(id)));
   const customs = customColumns(shown);
   const rows: string[][] = [
-    ['Key', 'Title', 'Type', 'Status', ...builtIns.map(([, h]) => h), ...customs],
+    // A built-in's header is the board's types' own name for it when they all agree (item-types.md "Edit Field").
+    [
+      'Key',
+      'Title',
+      'Type',
+      'Status',
+      ...builtIns.map(([id, h]) => builtInFieldLabel(id, shown, h)),
+      ...customs,
+    ],
   ];
   const byColumn = setup.archive === true || setup.allCards === true;
   const projection = projectBoard(setup, items, undefined, types, statusNames);
@@ -369,14 +378,15 @@ export function boardCsvImport(
   const { setup } = ctx;
   if (setup.archive === true) return { creates: [], skipped: 0, refusal: 'archive' };
   const header = (rows[0] ?? []).map((h) => lower(h));
+  const boardTypes = boardAddTypes(setup, ctx.types);
+  // A built-in by its own names, or by a name the board's types give it (item-types.md "Edit Field").
   const builtIns = new Map<string, number>();
   header.forEach((h, i) => {
-    const id = builtInFieldOf(h);
+    const id = builtInFieldOf(h) ?? builtInIdOfName(h, boardTypes);
     if (id && !builtIns.has(id)) builtIns.set(id, i);
   });
   const titleAt = builtIns.get('title');
   if (titleAt === undefined) return { creates: [], skipped: 0, refusal: 'no_title_column' };
-  const boardTypes = boardAddTypes(setup, ctx.types);
   if (boardTypes.length === 0) return { creates: [], skipped: 0, refusal: 'no_types' };
 
   // The statuses a row may name: the board's columns, or on an All Cards board every state a board names.

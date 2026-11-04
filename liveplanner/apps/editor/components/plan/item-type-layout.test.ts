@@ -5,6 +5,11 @@ import {
   addTab,
   cardFields,
   detailFields,
+  draftCustomFields,
+  draftCustomOf,
+  renameBuiltIn,
+  retypeInDraft,
+  withNotifies,
   fileField,
   moveField,
   moveTab,
@@ -147,5 +152,33 @@ describe('placeField (a handle drag)', () => {
     expect(placeField(draft, null, 'assignee', 0)).toBe(draft);
     expect(placeField(draft, null, 'status', 1)).toBe(draft);
     expect(placeField(draft, 't-x', 'priority', 0)).toBe(draft);
+  });
+});
+
+describe('built-in names and types (Edit Field)', () => {
+  it('renames a built-in, dropping its own name or a blank, and keeps it through adds and removes', () => {
+    const named = renameBuiltIn(draft, 'priority', 'Urgency');
+    expect(named.fieldLabels).toEqual({ priority: 'Urgency' });
+    expect(renameBuiltIn(named, 'priority', 'priority')).not.toHaveProperty('fieldLabels');
+    expect(addField(named, 'estimate', null).fieldLabels).toEqual({ priority: 'Urgency' });
+    expect(removeField(named, 'priority')).not.toHaveProperty('fieldLabels');
+  });
+
+  it('keeps a built-in to become a custom field, counted with the rest, until it is removed', () => {
+    const def = { id: 'f-urgency', label: 'Urgency', kind: 'text' as const };
+    const next = retypeInDraft(renameBuiltIn(draft, 'priority', 'Urgency'), 'priority', def);
+    expect(next.fieldLabels).toBeUndefined();
+    expect(draftCustomOf(next, 'priority')).toBe(def);
+    expect(draftCustomOf(next, 'c-size')?.label).toBe('Size');
+    expect(draftCustomFields(next).map((f) => f.id)).toEqual(['c-size', 'f-urgency']);
+    expect(removeField(next, 'priority')).not.toHaveProperty('retyped');
+    const two = retypeInDraft(next, 'due', { ...def, id: 'f-when' });
+    expect(Object.keys(removeField(two, 'priority').retyped ?? {})).toEqual(['due']);
+  });
+
+  it('switches the Assignee’s Notifies, stored only as off', () => {
+    const off = withNotifies(draft, false);
+    expect(off.assigneeNotifies).toBe(false);
+    expect(withNotifies(off, true)).not.toHaveProperty('assigneeNotifies');
   });
 });

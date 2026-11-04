@@ -73,9 +73,11 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | `display`       | What its cards show at each **card size**: `{ minimal?, detailed? }`, each a list of card fields (Number, Type, Assignee...) that size can draw. A size left out takes the type's default; a stored `compact` (a retired size) is dropped on read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `inherits`      | The [base type](#inherited-types) it inherits from, by id: a type in the same catalogue that inherits from none. Absent: it inherits from none                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `ownFields`     | An inherited type's own fields, by id, in order: what it adds after its base type's, always stored beside `inherits` (empty when none). Absent: every field it has that its base lacks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `fieldLabels`   | The type's own names for its built-in fields ([Edit Field](#built-in-full-edit)): built-in field id to name, each 1 to 32 characters (as a custom field's), never the built-in's own name. Absent (or a field left out): the built-in's name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 - **Built-in field names and custom field kinds are Title Case** wherever the type editor shows them (Start Date,
-  Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are.
+  Due Date, Long Text, Link to Card); the card panel's own short labels (Start, Due) stay as they are, unless the
+  type names the field itself (`fieldLabels`).
 - **`title` and `status` are always offered** and cannot be removed: every item has a title, and a board files
   items by status.
 - **A Project (`project`) always offers `start` and `due`** too: the Gantt chart draws a project from them. They
@@ -1356,7 +1358,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       | Any value                                   | Labels                                      | Its text, or its list's items, as labels                                                                                                                                                                           |
       | Any value                                   | Person, Several People                      | The plan's people it names; nobody named is cleared                                                                                                                                                                |
       | Text and the rest                           | Email, Phone, Link, Colour, Checkbox        | Kept when it is one (an address, a number, `#rrggbb`, a yes); else cleared                                                                                                                                         |
-      | Date                                        | Date and Time                               | 9:00 that day, in the editor's zone                                                                                                                                                                                |
+      | Date                                        | Date and Time                               | 9:00 that day, in the saving Editor's time zone (below)                                                                                                                                                            |
       | Date and Time                               | Date                                        | Its day; the time is lost                                                                                                                                                                                          |
       | Date, Date and Time                         | Date Range, Date and Time Range             | A range of that one day or moment                                                                                                                                                                                  |
       | Date Range, Date and Time Range             | Date, Date and Time                         | Its start; the end is lost                                                                                                                                                                                         |
@@ -1369,33 +1371,80 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       and 2 will keep only part of theirs." (amber). Then Save asks once: the line adds "Change them? Undo puts them
       back.", **Keep Editing** beside it, and Save becomes **Change Values**, which saves. The count is worked out
       once for each type picked (one pass over the plan's cards), and again only when the cards change.
-    - **Saving the type**: the type editor's Save writes the type and every card's changed values as **one undo
-      step**: Undo puts the field's type and every value back, Redo makes them again. The values are written as an
-      undo is, so a Required field's cleared values are never refused.
-    - **What reads the field by id**: a board's swimlanes, sort, filters, a Card Colour, a Gantt's dates, a
+    - **Filters on the field**: a filter naming the field would keep a value written for its old type, and could
+      match nothing without saying so. So a type change takes them off: every **saved filter** chip on a board
+      ([Board widgets](board-widgets.md#saved-filters)) and every **view filter** (a Card Search's,
+      [Plan views](plan-views.md)) naming the field, on every tab, comes off in the same undo step (a saved filter
+      left with nothing to narrow by is removed whole). For a built-in field (below) only those that would match
+      nothing come off: on a board or view whose every card type has stopped holding the built-in. The line over
+      Save counts them: "2 filters on it will be removed." (with the values line when there is one). A board's
+      quick filter (each person's own, never stored) is left to its owner.
+    - **Saving the type** happens **all or none**: the cards' changed values are written first, as one write; the
+      type is saved with them; the filters come off when both have landed. When the values can't be written
+      (offline, refused, part of them refused), any that landed are put back and the type stays as it was; when
+      the type can't be saved, the values are put back. Either way nothing is left half done, and a toast says
+      "Couldn’t change {Name}'s type, so nothing was changed." What did land is **one undo step**: Undo puts the
+      field's type, every value and every filter back, Redo makes them again. The values are written as an undo
+      is, so a Required field's cleared values are never refused.
+    - **Time zone**: a Date becoming a Date and Time (or a Date Range one with times) is set to 9:00 in the time
+      zone of the Editor who saves the type, the zone their editor runs in; a viewer elsewhere sees that moment
+      in their own zone. It is not worked out per viewer.
+    - **What reads the field by id**: a board's swimlanes, sort, a Card Colour, a Gantt's dates, a
       widget, a form's question mapping and a Formula, Rollup or Lookup naming it read its new type at once. One
       that can't use the new type falls back as it does for a removed field (no lanes, the built-in dates, the
       widget marked Changed, a form question going to Description and its form unpublishable until mapped again,
-      a formula giving no value); none is rewritten. A filter on the field keeps its value as written, so it may
-      match no card until changed.
-    - **Built-in fields** (the owner's pick, 2026-11-03, "Full edit"; **not built yet**: today a built-in field has
-      no pencil, and this is the next step). Each built-in field but Title gets the pencil too; an inherited field
-      and a field from a newer version keep their lock (edited on the base type, or after a reload).
-      - **Rename**: a type's own name for a built-in field (stored on the type as `fieldLabels`, by field id), so
-        the field keeps its id and everything reading it by id keeps working. Every place that names the field
-        for a card of that type reads it through one helper: the card panel, the type editor, the card face's
-        chips, and a board's lanes, sort, filters and CSV columns when every type the board shows calls it the
-        same (else its own name).
-      - **Settings**: only those the built-in really has (the Assignee's Notifies; Status its states, in States).
-      - **Another type**: the built-in becomes a custom field of the picked type on this card type (a new custom
-        field id, the name carried over) and comes off the type; its values move to the new field by the same rules
-        and count as above, in the same one undo step, which puts the built-in and its values back. Before Save, a
-        list says what stops reading it for this type, from the plan's own boards, views and widgets ("Boards laned
-        or sorted by Priority, the Gantt chart's Due bar and the Overdue widget won't read this field for Tasks").
-      - **Status** drives the columns, so it never becomes another type: its tiles are dimmed, "Status places the
-        card in a column, so it keeps its type." It is renamed, and its states set, as the rest.
-    - **Share roles**: only an **Editor** (who edits card types) sees the pencil, as the type editor is theirs;
-      a **Participant** and a **Viewer** never open the type editor, so never see it.
+      a formula giving no value); none is rewritten. Its filters come off (above).
+    - <a id="built-in-full-edit"></a>**Built-in fields** (the owner's pick, 2026-11-03, "Full edit"; built
+      2026-11-04). Each built-in field on a type but Title gets the pencil too (tooltip "Edit Field", named "Edit
+      {Name}"); an inherited field and a field from a newer version keep their lock (edited on the base type, or
+      after a reload), and a type inheriting from another reads its base's names, so its own built-ins have no
+      pencil either.
+      - **Opening**: Edit Field opens on Shape for the built-in's own tile: Description on Long Text, Estimate on
+        Number, Start Date and Due Date on Date, Priority on Choice, Labels on Labels, Assignee on Person, Colour
+        on Colour, Checklist on Checklist, Comments on Comments, Votes on Votes, Attachments on Image, and Status
+        on Choice. Shape shows the **Name** (the type's own name for it, its placeholder the built-in's), the line
+        Add Field's Ready to use gives it ("On the calendar and the Gantt chart"), and only the settings the
+        built-in really has: the Assignee's **Notifies**; Status says "Its states are set in States." No Options,
+        Required or Try It (a built-in's values and rules are its own). Save is off while the name is blank.
+      - **Rename**: a type's own name for a built-in field is stored on the type as `fieldLabels` (built-in field
+        id to name, at most 32 characters as a custom field's name, trimmed). A name that is the built-in's own (in any case) or blank is
+        not stored, so the type reads the built-in's name again. The field keeps its id, so everything reading it
+        by id keeps working. An inherited type takes its base's names, as it takes its fields.
+      - **Where the name shows**, through one helper (`typeFieldLabel` for one type, `builtInFieldLabel` for
+        several, `packages/items` built-in-field-labels.ts):
+        - For a card of one type, the type's name: the card's panel, the type editor's rows, the card face's chip
+          names (read aloud and in tooltips: "Points 5" for an Estimate named Points), Add Card's and Required
+          Fields' rows, the field's own pickers, and a Formula on that type (written and shown by the name, and
+          still by the built-in's name and other names; stored by id as ever).
+        - Where several types meet (a board's Sort Cards, Swimlanes and Group By menus, a Filter or Card Search's
+          fields, its saved filters, a view's settings and title, a widget's name, a board's CSV columns, the
+          selection bar): the built-in's own name there (Due Date in a menu, Due as a CSV column), **unless every
+          type that place covers and that holds the field names it the same**, then that name (a type without the field has no say). A board covers the types it shows (all when
+          it names none); a view the types it draws; a search the types of the cards it matches.
+        - A board's **CSV import** takes a column under either name: the built-in's own or any name the board's
+          types give it.
+      - **Another type**: picking another tile makes the built-in a **custom field of the picked type** on this
+        card type: a new custom field (a new id, the name carried over, in the built-in's place among the type's
+        fields, tabs and card display) takes the built-in's place, and the built-in comes off this type (its own
+        name for it is dropped). Its values move to the new field by the same rules and count as above (a Priority
+        reads as its name, Urgent to Low; an Assignee as the person), and the built-in's own values are cleared
+        from the type's cards, in the same one undo step, which puts the built-in, its values and its filters back.
+        Only this type changes: another type keeps its built-in. The tiles it can't become are dimmed as above
+        (Comments, Votes, Checklist and Image both ways, so Checklist, Comments, Votes and Attachments are renamed
+        only).
+      - **What stops reading it**: before Save, under the values line, a list (at most 6 rows, then "and 3 more")
+        says what in the plan reads the built-in for this type and won't any more, from one bounded scan of the
+        plan's tabs and card types: boards sorted, laned or grouped by it ("Sprint board sorts by Priority"), board
+        widgets reading it, views drawn from it (a Gantt's or calendar's dates, Cards by Field, a metric's
+        measure), saved filters and view filters on it (counted above), forms asking for it ("Bug Report asks for
+        Due Date"), Formula, Rollup and Lookup fields naming it ("Days Left reads Due Date"), and a board's CSV
+        export ("CSV exports write it as a column of its own"). With none: "Nothing else in the plan reads it." The
+        confirm step (Keep Editing, Change Values) asks once whenever the list or the values lose anything.
+      - **Status** drives the columns, so it never becomes another type: every tile is dimmed, "Status places the
+        card in a column, so it keeps its type." It is renamed as the rest, its states set in States.
+    - **Share roles**: only an **Editor** (who edits card types) sees the pencil, on custom and built-in fields
+      alike, gated on the session's `can` as the type editor is; a **Participant** and a **Viewer** never open the
+      type editor, so never see it, and read a type's names wherever they show.
   - **Links To** is a multi-select dropdown: a field the width of its row reading **Links To Project** (one type),
     **Links To Project or Epic** (two), **Links To Project, Epic and 2 more** (more), or **Links To a Card Type…**
     (muted, none yet), with a chevron. Pressed, it opens a popover under it listing every card type (its glyph in its
@@ -1482,8 +1531,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
 - Saving a type edit, adding, deleting and reordering are each one undo step, interleaved with canvas and item
   steps. Undo puts the previous catalogue back; it never changes items (a delete's "move them to" writes are
-  their own item steps), but for a field whose type changed ([Edit Field](#edit-field)): its cards' values are
-  written with the type, and undone and redone with it, as one step.
+  their own item steps), but for a field whose type changed ([Edit Field](#edit-field)): its cards' values and the
+  filters taken off it are written with the type, all or none, and undone and redone with it, as one step.
 
 ## Storage and sync
 

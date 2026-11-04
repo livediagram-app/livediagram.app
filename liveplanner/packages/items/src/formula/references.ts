@@ -3,6 +3,7 @@
 // field never breaks a formula. Both ways go through the tokenizer and parser, never a regex over the text.
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from '../item-types';
 import { isNewerField } from '../newer-fields';
+import { typeFieldLabel } from '../built-in-field-labels';
 import { FORMULA_MAX } from './limits';
 import { functionNamed } from './functions';
 import { parseFormula, type FormulaNode } from './parse';
@@ -58,7 +59,7 @@ export interface FormulaScope {
   unreadable: ReadonlyMap<string, string>;
 }
 
-type ScopeType = Pick<ItemTypeDef, 'fields' | 'custom'>;
+type ScopeType = Pick<ItemTypeDef, 'fields' | 'custom' | 'fieldLabels'>;
 
 const scopes = new WeakMap<ScopeType, FormulaScope>();
 
@@ -87,12 +88,14 @@ export function formulaScopeOf(type: ScopeType): FormulaScope {
       continue;
     }
     const built = BUILT_INS.find((b) => b.id === id);
-    if (built) fields.push({ id, name: built.name });
+    // Named as the type names it (item-types.md "Edit Field"); its own names still read it.
+    if (built) fields.push({ id, name: typeFieldLabel(type, id, built.name) });
   }
   for (const b of BUILT_INS) if (b.always) fields.push({ id: b.id, name: b.name });
   for (const b of BUILT_INS) {
     if (!b.always && !offered.has(b.id)) continue;
-    for (const n of [b.name, ...(b.aliases ?? [])])
+    const own = b.always ? [] : [typeFieldLabel(type, b.id, b.name)];
+    for (const n of [...own, b.name, ...(b.aliases ?? [])])
       if (!byName.has(n.toLowerCase())) byName.set(n.toLowerCase(), b.id);
   }
   const scope: FormulaScope = {

@@ -3,6 +3,7 @@
 // with the project. Validation here is the api's and the editor's both, so a catalogue the editor
 // saves is one the api keeps.
 import { readCardDisplay } from './card-display';
+import { readFieldLabels } from './built-in-field-labels';
 import { isPlanGlyphId } from './glyphs';
 import { isCalculation } from './calculated-fields';
 import { readNewerField } from './newer-fields';
@@ -459,6 +460,9 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
       return `${at}.defaultStatus`;
     defaultStatus = d;
   }
+  // Its own names for built-in fields (built-in-field-labels.ts): a field it lacks, or a built-in's own name, dropped.
+  const fieldLabels = readFieldLabels(input['fieldLabels'], fields);
+  if (fieldLabels === null) return `${at}.fieldLabels`;
   const display = readCardDisplay(input['display'], id);
   if (display === null) return `${at}.display`;
   // The Card Colour: a custom Colour field of the type's own; anything else reads as the built-in Colour.
@@ -505,6 +509,7 @@ function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef |
     ...(defaultStatus ? { defaultStatus } : {}),
     ...(display ? { display } : {}),
     ...(input['assigneeNotifies'] === false ? { assigneeNotifies: false } : {}),
+    ...(fieldLabels ? { fieldLabels } : {}),
     ...(colourField ? { colourField } : {}),
     ...(inheritsIn !== undefined ? { inherits: inheritsIn } : {}),
     ...(ownFields ? { ownFields } : {}),

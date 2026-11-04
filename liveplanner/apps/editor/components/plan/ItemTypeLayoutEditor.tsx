@@ -22,6 +22,7 @@ import {
   requiredFieldsOf,
   requiredCustomFieldsOf,
   isNewerField,
+  isRenamableBuiltIn,
   newCustomFieldId,
   type ItemFieldId,
 } from '@liveplanner/items';
@@ -29,6 +30,7 @@ import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@liveplanner/ui
 import { BUILT_IN_FIELD_LABELS, DASHED_ADD_BUTTON, ICON_BUTTON } from './ItemTypeFieldForms';
 import { AddFieldDialog } from './AddFieldDialog';
 import { EditFieldDialog } from './EditFieldDialog';
+import { BuiltInEditDialog } from './BuiltInEditDialog';
 import { track } from '@/lib/telemetry';
 import {
   addField,
@@ -40,9 +42,14 @@ import {
   movableIn,
   moveField,
   moveTab,
+  draftCustomFields,
+  draftCustomOf,
+  withNotifies,
   orderedFields,
   placeField,
   removeField,
+  renameBuiltIn,
+  retypeInDraft,
   type GroupId,
   type LayoutDraft,
 } from './item-type-layout';
@@ -90,19 +97,33 @@ export function ItemTypeLayoutEditor({
     setEditing(null);
   };
   const fields = orderedFields(draft.fields);
-  const editingField = editing ? draft.custom.find((f) => f.id === editing.id) : undefined;
+  // Its custom fields with those built-ins become on Save (they count towards the cap).
+  const allCustom = draftCustomFields(draft);
+  const editingField = editing ? draftCustomOf(draft, editing.id) : undefined;
+  // A built-in Edit Field is open on (docs/specs/026-plan/item-types.md "Edit Field": Built-in fields).
+  const editingBuiltIn =
+    editing && !editingField && isRenamableBuiltIn(editing.id) ? editing.id : undefined;
   // What a Formula on this type may read as drafted (docs/specs/026-plan/item-types.md "Formula fields").
   const formulaDraft = useMemo(
-    () => ({ typeId, fields: orderedFields(draft.fields), custom: draft.custom }),
-    [typeId, draft.fields, draft.custom],
+    () => ({
+      typeId,
+      fields: orderedFields(draft.fields),
+      custom: draft.custom,
+      ...(draft.fieldLabels ? { fieldLabels: draft.fieldLabels } : {}),
+    }),
+    [typeId, draft.fields, draft.custom, draft.fieldLabels],
   );
   const kept = requiredFieldsOf(typeId);
   const isInherited = (id: string) => !!inherited?.ids.has(id);
   // Locked to the base: a tab, the Details name and Add Tab.
   const lockedLayout = !!inherited;
-  const customOf = (id: string) => draft.custom.find((f) => f.id === id);
+  const customOf = (id: string) => draftCustomOf(draft, id);
+  // A built-in by the type's own name for it, as drafted.
   const labelOf = (id: string) =>
-    customOf(id)?.label || BUILT_IN_FIELD_LABELS[id as ItemFieldId] || id;
+    customOf(id)?.label ||
+    draft.fieldLabels?.[id as ItemFieldId] ||
+    BUILT_IN_FIELD_LABELS[id as ItemFieldId] ||
+    id;
   const full = fields.length >= ITEM_TYPE_FIELDS_MAX;
   const groups: { id: GroupId; label: string }[] = [
     { id: null, label: detailsLabel.trim() || DETAILS_LABEL_DEFAULT },
@@ -115,8 +136,7 @@ export function ItemTypeLayoutEditor({
     on: draft.assigneeNotifies !== false,
     onChange: (on: boolean) => {
       track('Plan', 'Changed', 'FieldNotifies');
-      const { assigneeNotifies: _was, ...rest } = draft;
-      onChange(on ? rest : { ...rest, assigneeNotifies: false });
+      onChange(withNotifies(draft, on));
     },
   };
 
@@ -155,7 +175,12 @@ export function ItemTypeLayoutEditor({
                 }
                 required={!!c && requiredCustomFieldsOf({ fields: [id], custom: [c] }).length > 0}
                 editing={editing?.id === id}
-                onEdit={c && !locked && !newer ? (opener) => setEditing({ id, opener }) : undefined}
+                // A custom field, or a built-in on a type of its own (an inherited type takes its base's names).
+                onEdit={
+                  !locked && !newer && (c || (!inherited && isRenamableBuiltIn(id)))
+                    ? (opener) => setEditing({ id, opener })
+                    : undefined
+                }
                 moveTargets={
                   group === undefined || lockedLayout ? [] : groups.filter((g) => g.id !== group)
                 }
@@ -197,13 +222,13 @@ export function ItemTypeLayoutEditor({
         <AddFieldDialog
           formulaDraft={formulaDraft}
           missing={BUILT_IN_FIELD_IDS.filter((f) => !fields.includes(f))}
-          canAddCustom={customFieldCount(draft.custom) < ITEM_TYPE_CUSTOM_MAX}
+          canAddCustom={customFieldCount(allCustom) < ITEM_TYPE_CUSTOM_MAX}
           onAddBuiltIn={(id) => {
             onChange(addField(draft, id, group));
             closeAdding();
           }}
           onAddCustom={(field) => {
-            const id = newCustomFieldId(field.label, [...fields, ...draft.custom.map((f) => f.id)]);
+            const id = newCustomFieldId(field.label, [...fields, ...allCustom.map((f) => f.id)]);
             onChange(addField(draft, id, group, { ...field, id }));
             closeAdding();
           }}
@@ -224,10 +249,39 @@ export function ItemTypeLayoutEditor({
           field={editingField}
           formulaDraft={formulaDraft}
           onSave={(next) => {
-            onChange({
-              ...draft,
-              custom: draft.custom.map((f) => (f.id === next.id ? next : f)),
-            });
+            const becomes = Object.entries(draft.retyped ?? {}).find(([, f]) => f?.id === next.id);
+            onChange(
+              becomes
+                ? { ...draft, retyped: { ...draft.retyped, [becomes[0]]: next } }
+                : { ...draft, custom: draft.custom.map((f) => (f.id === next.id ? next : f)) },
+            );
+            closeEditing();
+          }}
+          onClose={closeEditing}
+        />
+      ) : null}
+      {editingBuiltIn ? (
+        <BuiltInEditDialog
+          typeId={typeId}
+          id={editingBuiltIn}
+          name={labelOf(editingBuiltIn)}
+          notifies={draft.assigneeNotifies !== false}
+          canAddCustom={customFieldCount(allCustom) < ITEM_TYPE_CUSTOM_MAX}
+          formulaDraft={formulaDraft}
+          onRename={(name, notifies) => {
+            track('Plan', 'Renamed', 'BuiltInField');
+            const renamed = renameBuiltIn(draft, editingBuiltIn, name);
+            onChange(editingBuiltIn === 'assignee' ? withNotifies(renamed, notifies) : renamed);
+            closeEditing();
+          }}
+          onRetype={(field) => {
+            track('Plan', 'Changed', 'BuiltInFieldType');
+            const taken = [...fields, ...allCustom.map((f) => f.id)];
+            const id = newCustomFieldId(
+              field.label || BUILT_IN_FIELD_LABELS[editingBuiltIn],
+              taken,
+            );
+            onChange(retypeInDraft(draft, editingBuiltIn, { ...field, id }));
             closeEditing();
           }}
           onClose={closeEditing}

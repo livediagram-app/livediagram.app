@@ -40,6 +40,7 @@ import {
   CurrencySelect,
   RatingScaleSelect,
   FieldSwitches,
+  NotifiesSwitch,
 } from './ItemTypeFieldForms';
 import { LinksToPicker, linkTypeNames } from './LinksToPicker';
 import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
@@ -100,19 +101,23 @@ export function AddFieldShape({
   onAdd: (field: NewField) => void;
   onAddBuiltIn: (id: ItemFieldId) => void;
   // Edit Field (item-types.md "Edit Field"): an existing field, saved by Save (`onAdd`), saying first what its new
-  // type does to the values cards hold (`loss`), and asking before any is cut down or cleared.
-  edit?: { loss: ValueLoss | null } | undefined;
+  // type does to the values cards hold (`loss`), and asking before any is cut down or cleared. `builtIn`: a built-in
+  // field on its own tile, renamed only (BuiltInShape).
+  edit?: { loss: ValueLoss | null; builtIn?: BuiltInShapeOf | undefined } | undefined;
 }) {
   const ids = useId();
-  // Asking to confirm a Save that cuts down or clears values; asked again whenever what it would lose changes.
+  // Asking to confirm a Save that loses something; asked again whenever what it would lose changes.
   const [confirming, setConfirming] = useState<string | null>(null);
   const loss = edit?.loss ?? null;
-  const losing = loss !== null && loss.cleared + loss.trimmed > 0;
-  const asking = losing && confirming === loss.message;
+  const losing = loss !== null && loss.asks;
+  const lossKey = loss ? [loss.message, ...(loss.reads ?? [])].join('\n') : '';
+  const asking = losing && confirming === lossKey;
+  const builtIn = edit?.builtIn;
   // The tile it answers to by name: a variant's while its option is on (Several People), else its kind's.
   const kindLabel = PICK_KIND_LABELS[pickOf(field)];
-  const missing = kindReadiness(field);
   const name = field.label.trim();
+  // A built-in renamed needs only its name: its values and rules are its own.
+  const missing = builtIn ? (name ? null : 'name') : kindReadiness(field);
   const set = (patch: Partial<NewField>) => onChange({ ...field, ...patch });
 
   return (
@@ -122,7 +127,7 @@ export function AddFieldShape({
       onSubmit={(e) => {
         e.preventDefault();
         if (!canAddCustom || missing) return;
-        if (losing && !asking) setConfirming(loss.message);
+        if (losing && !asking) setConfirming(lossKey);
         else onAdd(addedField(field));
       }}
     >
@@ -137,7 +142,9 @@ export function AddFieldShape({
           onAdd={onAddBuiltIn}
         />
       ) : null}
-      {canAddCustom ? (
+      {builtIn ? (
+        <BuiltInShape ids={ids} field={field} set={set} of={builtIn} />
+      ) : canAddCustom ? (
         <ShapeOwn
           ids={ids}
           field={field}
@@ -150,7 +157,7 @@ export function AddFieldShape({
       {canAddCustom ? (
         <div className="sticky bottom-0 flex flex-col gap-1.5 border-t border-slate-100 bg-white px-3.5 py-2.5 dark:border-slate-800 dark:bg-slate-900">
           {loss ? (
-            <p
+            <div
               id={`${ids}-loss`}
               role="status"
               className={`rounded-lg px-2.5 py-1.5 text-[12px] leading-snug ${
@@ -159,8 +166,13 @@ export function AddFieldShape({
                   : 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
               }`}
             >
-              {loss.message} {asking ? 'Change them? Undo puts them back.' : null}
-            </p>
+              {loss.message || asking ? (
+                <p>
+                  {loss.message} {asking ? 'Change them? Undo puts them back.' : null}
+                </p>
+              ) : null}
+              {loss.reads?.length ? <StopsReading ids={ids} reads={loss.reads} /> : null}
+            </div>
           ) : null}
           {edit ? (
             <div className="flex gap-2">
@@ -272,6 +284,76 @@ function ReadyToUse({
         </div>
       ) : null}
     </section>
+  );
+}
+
+// What in the plan stops reading a built-in made another type (item-types.md "Edit Field": What stops reading it).
+function StopsReading({ ids, reads }: { ids: string; reads: readonly string[] }) {
+  return (
+    <div className="mt-1 flex flex-col gap-0.5">
+      <p id={`${ids}-reads`} className="font-medium">
+        What stops reading it
+      </p>
+      <ul aria-labelledby={`${ids}-reads`} className="list-disc pl-4">
+        {reads.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// A built-in field on its own tile: what Shape says of it.
+export type BuiltInShapeOf = {
+  // Its built-in name, the Name's placeholder (a blank name reads as it again).
+  placeholder: string;
+  // The line Ready to use gives it, or Status's.
+  role: string;
+  // The Assignee: Notifies, as a Person field's.
+  notifies: boolean;
+};
+
+// A built-in field renamed (item-types.md "Edit Field": Built-in fields): its Name, its role, and only the settings it
+// really has (the Assignee's Notifies). No Options, Required or Try It: its values and rules are its own.
+function BuiltInShape({
+  ids,
+  field,
+  set,
+  of,
+}: {
+  ids: string;
+  field: NewField;
+  set: (patch: Partial<NewField>) => void;
+  of: BuiltInShapeOf;
+}) {
+  return (
+    <div className="flex flex-col gap-3.5 px-3.5 pb-3 pt-3">
+      <div className="flex flex-col gap-1">
+        <label htmlFor={`${ids}-name`} className={LABEL}>
+          Name
+        </label>
+        <TextInput
+          id={`${ids}-name`}
+          autoFocus
+          autoComplete="off"
+          placeholder={of.placeholder}
+          value={field.label}
+          maxLength={CUSTOM_FIELD_LABEL_MAX}
+          aria-describedby={`${ids}-role`}
+          onChange={(e) => set({ label: e.target.value })}
+          className="pointer-coarse:min-h-11"
+        />
+        <p id={`${ids}-role`} className="text-[11px] text-slate-500 dark:text-slate-400">
+          {of.role}
+        </p>
+      </div>
+      {of.notifies ? (
+        <NotifiesSwitch
+          field={{ kind: 'person', notifies: field.notifies }}
+          onChange={(notifies) => set({ notifies })}
+        />
+      ) : null}
+    </div>
   );
 }
 

@@ -85,10 +85,13 @@ export function DuePill({
   due,
   done,
   palette,
+  name = 'Due',
 }: {
   due: string;
   done: boolean;
   palette: PlanPalette;
+  // The type's name for Due (docs/specs/026-plan/item-types.md "Edit Field": Built-in fields), else Due.
+  name?: string;
 }) {
   const state = dueState(due, done);
   const tone = state === 'late' ? LATE_COLOUR : state === 'soon' ? SOON_COLOUR : undefined;
@@ -96,20 +99,32 @@ export function DuePill({
     <MetaPill
       palette={palette}
       {...(tone ? { tone } : {})}
-      label={`Due ${dayLabel(due)}${state === 'late' ? ', overdue' : ''}`}
+      label={`${name} ${dayLabel(due)}${state === 'late' ? ', overdue' : ''}`}
     >
       <PlanTypeGlyph glyph="calendar" size={11} />
       <span aria-hidden className={state === 'late' ? 'font-semibold' : undefined}>
-        Due {dayLabel(due)}
+        {name} {dayLabel(due)}
       </span>
     </MetaPill>
   );
 }
 
 // When the work begins, always quiet: only a due date takes a colour.
-export function StartPill({ start, palette }: { start: string; palette: PlanPalette }) {
+// `name`: the type's name for Start, read aloud in its place.
+export function StartPill({
+  start,
+  palette,
+  name,
+}: {
+  start: string;
+  palette: PlanPalette;
+  name?: string | undefined;
+}) {
   return (
-    <MetaPill palette={palette} label={`Starts ${dayLabel(start)}`}>
+    <MetaPill
+      palette={palette}
+      label={name ? `${name} ${dayLabel(start)}` : `Starts ${dayLabel(start)}`}
+    >
       <span aria-hidden>From {dayLabel(start)}</span>
     </MetaPill>
   );

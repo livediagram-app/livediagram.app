@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import {
   CARD_SIZES,
   SWIMLANE_BY,
+  builtInFieldLabel,
   laneFieldsOf,
   swimlaneGroupingsFor,
   type ItemTypeDef,
@@ -23,6 +24,9 @@ import { CardSizeArt } from '@/components/plan/plan-tile-art';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
 import { SWIMLANE_LABELS } from '@/components/plan/board-setup-edits';
+
+// The groupings that are a built-in field of the same id.
+const BUILT_IN_GROUPINGS: ReadonlySet<SwimlaneBy> = new Set(['assignee', 'priority', 'status']);
 
 // One group of a flyout: a heading (matching the menu's section headings), an optional hint, its tiles.
 export function MenuGroup({
@@ -129,7 +133,10 @@ export function SwimlaneOptions({
       rows={[
         ...built.map((s) => ({
           id: s,
-          label: SWIMLANE_LABELS[s],
+          // A built-in field's grouping by the name the board's types agree on (item-types.md "Edit Field").
+          label: BUILT_IN_GROUPINGS.has(s)
+            ? builtInFieldLabel(s, types, SWIMLANE_LABELS[s])
+            : SWIMLANE_LABELS[s],
           icon: <PlanTypeGlyph glyph={ROW_GLYPHS[s]} size={16} />,
         })),
         ...lanes.map((f) => ({

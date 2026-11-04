@@ -11,7 +11,6 @@ import {
   linkedCardsOf,
   newItemId,
   requiredFieldEmptied,
-  retypedValuePatches,
   typeIn,
 } from '@liveplanner/items';
 import { duplicateItem } from './duplicate-item';
@@ -20,6 +19,7 @@ import { mayCreateCardType } from './may-create-card-type';
 import { newCardStatus } from './new-card-status';
 import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
 import { liveTrail } from './item-trail';
+import { typeSaveAlong } from './type-save-along';
 import { toggleFlag } from './item-flag';
 import { linkExistingCard } from './link-existing';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
@@ -94,20 +94,12 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           {...(template ? { template } : {})}
           types={ctx.types}
           itemCount={ofType.length}
-          onSave={(next) => {
-            // A field whose type changed takes its cards' values with it, in the same undo step
-            // (docs/specs/026-plan/item-types.md "Edit Field").
-            const reshaped = editing
-              ? retypedValuePatches(editing, next, ctx.types, ctx.items.values(), {
-                  people: ctx.people,
-                  items: ctx.items,
-                })
-              : [];
-            ctx.itemTypes.saveType(
-              next,
-              reshaped.length && ctx.reshapeValues ? ctx.reshapeValues(reshaped) : undefined,
-            );
-            if (reshaped.length) track('Plan', 'Changed', 'FieldType');
+          onSave={(next, retyped) => {
+            // A field whose type changed takes its cards' values and its filters with it, all or none, in the same
+            // undo step (docs/specs/026-plan/item-types.md "Edit Field").
+            const along = editing ? typeSaveAlong(editing, next, retyped, ctx) : undefined;
+            ctx.itemTypes.saveType(next, along);
+            if (along) track('Plan', 'Changed', 'FieldType');
             // Made from a board's Add a Card menu: that board takes it.
             if (forBoard?.boardId) plan.addTypeToBoard(forBoard.boardId, next.id);
             // Made from a Gantt chart's: the chart takes it, where it names its own types.

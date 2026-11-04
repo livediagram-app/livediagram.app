@@ -57,6 +57,8 @@ export function useItemUndo(history: {
     if (step) {
       step.undo();
       setJournal(journalAfterUndo(j, atRef.current));
+      // Its canvas step goes back with it (a type change's filters, item-undo-journal.ts).
+      if (step.canvas) history.undo();
       return;
     }
     if (history.canUndo) history.undo();
@@ -66,6 +68,7 @@ export function useItemUndo(history: {
     const j = journalLiveRedo(journalRef.current, atRef.current);
     const step = journalRedoTarget(j, atRef.current);
     if (step) {
+      if (step.canvas) history.redo();
       step.redo();
       setJournal(journalAfterRedo(j, atRef.current));
       return;
