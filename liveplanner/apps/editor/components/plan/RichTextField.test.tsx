@@ -9,11 +9,13 @@ import { RICH_TEXT_SAVE_MS, RichTextField } from './RichTextField';
 vi.mock('@/components/notes/NoteRichTextEditor', () => ({
   NoteRichTextEditor: (p: {
     label: string;
+    initialRuns: TextRun[];
     onChange: (plain: string, runs: TextRun[]) => void;
     onBlur: () => void;
   }) => (
     <textarea
       aria-label={p.label}
+      defaultValue={p.initialRuns.map((r) => r.text).join('')}
       onChange={(e) => p.onChange(e.target.value, [{ text: e.target.value, bold: true }])}
       onBlur={p.onBlur}
     />
@@ -123,5 +125,45 @@ describe('RichTextField', () => {
     );
     expect(screen.getByText('Read me')).toBeTruthy();
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  // plan-board.md "Look": a key typed on the prompt opens the editor with it, and it is saved like typing.
+  it('opens on a key typed on its prompt, keeping and saving the key', () => {
+    vi.useFakeTimers();
+    const onSave = field([]);
+    fireEvent.keyDown(screen.getByRole('button', { name: /Add steps/ }), { key: 'H' });
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Steps').value).toBe('H');
+    act(() => {
+      vi.advanceTimersByTime(RICH_TEXT_SAVE_MS);
+    });
+    expect(onSave).toHaveBeenCalledWith('H', [{ text: 'H' }]);
+  });
+
+  it('adds a key typed on Edit after the text, and leaves shortcuts alone', () => {
+    const onSave = field([{ text: 'Hi' }]);
+    const editButton = screen.getByRole('button', { name: 'Edit the steps' });
+    fireEvent.keyDown(editButton, { key: 'k', metaKey: true });
+    expect(screen.queryByLabelText('Steps')).toBeNull();
+    fireEvent.keyDown(editButton, { key: '!' });
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Steps').value).toBe('Hi!');
+    fireEvent.blur(screen.getByLabelText('Steps'));
+    expect(onSave).toHaveBeenCalledWith('Hi!', [{ text: 'Hi' }, { text: '!' }]);
+  });
+
+  // Tab out of the editor: focus lands on the next field and stays there; the editor closes after it has.
+  it('closes after focus has moved on, leaving it where it went', () => {
+    vi.useFakeTimers();
+    field([]);
+    fireEvent.click(screen.getByRole('button', { name: /Add steps/ }));
+    const editor = screen.getByLabelText('Steps');
+    const next = screen.getByRole('button', { name: 'Elsewhere' });
+    next.focus();
+    fireEvent.blur(editor, { relatedTarget: next });
+    expect(screen.getByLabelText('Steps')).toBeTruthy();
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
+    expect(screen.queryByLabelText('Steps')).toBeNull();
+    expect(document.activeElement).toBe(next);
   });
 });

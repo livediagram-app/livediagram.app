@@ -253,8 +253,7 @@ describe('in the forms', () => {
       />,
     );
     expect(screen.getByRole('combobox', { name: 'Calculate' })).toBeTruthy();
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'Calculation' }).value).toBe(
-      'rollup',
-    );
+    // A Rollup is a field type of its own: no Calculation menu to turn it into another.
+    expect(screen.queryByRole('combobox', { name: 'Calculation' })).toBeNull();
   });
 });

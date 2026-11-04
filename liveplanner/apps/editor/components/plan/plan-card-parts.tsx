@@ -13,12 +13,12 @@ import {
   type ItemTypeDef,
   type Priority,
 } from '@liveplanner/items';
-import { contrastRatio } from '@liveplanner/project';
+import { contrastRatio, isLightColor } from '@liveplanner/project';
 import { CommentIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideLink } from '@liveworkspace/icons/lucide';
 import { useFieldThreadCount } from '@/hooks/plan/thread-store';
 import { useThreadStore } from './threads/CardThreadsContext';
-import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
+import { PRIORITY_COLOURS, chipInkOn, type PlanPalette } from './plan-palette';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { FLAG_COLOUR } from './item-flag';
 import { labelColour } from './label-colour';
@@ -59,10 +59,10 @@ export function MetaPill({
 }) {
   return (
     <span
-      className="inline-flex h-5 shrink-0 items-center gap-1 rounded-md px-1.5 tabular-nums"
+      className="inline-flex h-[calc(1.25rem*var(--plan-text-scale,1))] shrink-0 items-center gap-1 rounded-md px-1.5 tabular-nums"
       style={
         tone
-          ? { backgroundColor: tint(tone), color: tone }
+          ? { backgroundColor: tint(chipInkOn(tone, palette)), color: chipInkOn(tone, palette) }
           : { backgroundColor: palette.column, color: palette.muted }
       }
     >
@@ -192,9 +192,20 @@ export function CommentsPill({
 }
 
 // The priority as signal bars (Low one, Medium two, High three, Urgent three in its red), with its name or not.
-export function PrioritySignal({ priority, label }: { priority: Priority; label?: boolean }) {
+export function PrioritySignal({
+  priority,
+  label,
+  palette,
+}: {
+  priority: Priority;
+  label?: boolean;
+  // The card's palette: the priority's colour leans until its name reads on the card.
+  palette?: PlanPalette;
+}) {
   const lit = priority === 'low' ? 1 : priority === 'medium' ? 2 : 3;
-  const colour = PRIORITY_COLOURS[priority];
+  const colour = palette
+    ? chipInkOn(PRIORITY_COLOURS[priority], palette)
+    : PRIORITY_COLOURS[priority];
   return (
     <span
       className="inline-flex shrink-0 items-center gap-1"
@@ -233,7 +244,7 @@ export function keyTextOn(fill: string): string {
 export function KeyTag({ itemKey, accent }: { itemKey: number; accent: string }) {
   return (
     <span
-      className="inline-flex h-5 shrink-0 items-center rounded-md px-1.5 text-[11px] font-semibold tabular-nums"
+      className="inline-flex h-[calc(1.25rem*var(--plan-text-scale,1))] shrink-0 items-center rounded-md px-1.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold tabular-nums"
       style={{ backgroundColor: accent, color: keyTextOn(accent) }}
     >
       #{itemKey}
@@ -266,7 +277,7 @@ export function TypeChip({
 }) {
   return (
     <span
-      className="inline-flex h-5 shrink-0 items-center gap-1 rounded-md px-1.5 text-[11px] font-semibold"
+      className="inline-flex h-[calc(1.25rem*var(--plan-text-scale,1))] shrink-0 items-center gap-1 rounded-md px-1.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold"
       style={{ backgroundColor: tint(accent), color: accent }}
     >
       <PlanTypeGlyph glyph={glyph} size={12} color={accent} />
@@ -275,11 +286,20 @@ export function TypeChip({
   );
 }
 
-export function LabelChips({ labels, max = 4 }: { labels: readonly string[]; max?: number }) {
+export function LabelChips({
+  labels,
+  max = 4,
+  palette,
+}: {
+  labels: readonly string[];
+  max?: number;
+  // The card's palette: a label's colour leans until it reads on its chip there.
+  palette?: PlanPalette;
+}) {
   return (
-    <div className="flex flex-wrap gap-1 text-[11px] font-medium">
+    <div className="flex flex-wrap gap-1 text-[length:calc(11px*var(--plan-text-scale,1))] font-medium">
       {labels.slice(0, max).map((l) => {
-        const c = labelColour(l);
+        const c = palette ? chipInkOn(labelColour(l), palette) : labelColour(l);
         return (
           <span
             key={l}
@@ -326,11 +346,14 @@ export function RepeatMark({ color }: { color: string }) {
 export const BLOCKED_COLOUR = '#dc2626';
 // The lighter red a dark card takes: red-600 is about 3.7:1 on a dark card, under AA for the count beside the link.
 export const BLOCKED_COLOUR_ON_DARK = '#f87171';
-// The badge's red on a card's fill: whichever of the two reads better.
+// The badge's red on a card's fill: whichever of the two reads better, leaned toward white or black where neither reaches 4.5:1 (a coloured theme's card).
 export const blockedColourOn = (card: string): string =>
-  contrastRatio(BLOCKED_COLOUR_ON_DARK, card) > contrastRatio(BLOCKED_COLOUR, card)
-    ? BLOCKED_COLOUR_ON_DARK
-    : BLOCKED_COLOUR;
+  chipInkOn(
+    contrastRatio(BLOCKED_COLOUR_ON_DARK, card) > contrastRatio(BLOCKED_COLOUR, card)
+      ? BLOCKED_COLOUR_ON_DARK
+      : BLOCKED_COLOUR,
+    { card, text: isLightColor(card) ? '#000000' : '#ffffff' },
+  );
 const LinkGlyph = lucideGlyph(lucideLink, 12);
 
 export function BlockedMark({ count, card }: { count: number; card: string }) {
@@ -338,7 +361,7 @@ export function BlockedMark({ count, card }: { count: number; card: string }) {
     <Tooltip label={blockedLabel(count)}>
       <span
         data-blocked-mark=""
-        className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold leading-none"
+        className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold leading-none"
         style={{ color: blockedColourOn(card) }}
         role="img"
         aria-label={blockedLabel(count)}

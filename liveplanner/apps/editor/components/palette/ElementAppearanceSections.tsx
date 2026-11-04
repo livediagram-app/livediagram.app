@@ -170,16 +170,20 @@ export function ElementAppearanceSections({
   // A code block takes no element colours (docs/specs/009-elements/code-block.md) but it does pick a colour
   // SCHEME, so the band opens for it carrying only Presets: Colours and Border
   // gate themselves off it already.
+  // A Plan board has no Style of its own: its tab's theme dresses it (docs/specs/026-plan/plan-board.md "The board
+  // set-up"; the old board presets are themes now).
+  const isPlanBoard = target.type === 'shape' && target.shape === 'plan-board';
   const showStyle =
-    isCodeBlock ||
-    hasStylePresets(target) ||
-    target.type === 'sticky' ||
-    target.type === 'arrow' ||
-    (boxed && supportsColours(target) && !isChart && !isSankey) ||
-    (borderable && !isChart) ||
-    // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
-    // which sits in this flyout: without this it was never reachable on one.
-    supportsShadow(target);
+    !isPlanBoard &&
+    (isCodeBlock ||
+      hasStylePresets(target) ||
+      target.type === 'sticky' ||
+      target.type === 'arrow' ||
+      (boxed && supportsColours(target) && !isChart && !isSankey) ||
+      (borderable && !isChart) ||
+      // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
+      // which sits in this flyout: without this it was never reachable on one.
+      supportsShadow(target));
   return (
     <>
       {showAppearanceGroup && afterGroup ? <MenuGroupSeparator /> : null}

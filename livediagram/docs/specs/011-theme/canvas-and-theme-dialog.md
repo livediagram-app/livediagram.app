@@ -208,7 +208,7 @@ Undo puts every tab back."
 - **Tabs not opened yet** are loaded first (the search sweep), so none is left out for being unopened. A tab whose
   content could not load keeps its style, as does a locked tab: neither is written. A toast says how many tabs took
   the style and which kept their own.
-- **One tab:** the row is greyed and says the document has one tab.
+- **One tab:** the row is not shown: with one tab there is nothing to align.
 - **Busy:** while the other tabs load, the row reads "Applying…" with a spinner and takes no second press.
 - **Share roles:** an Editor of the whole document only. A Participant or Viewer never reaches the dialog, and an Editor
   in a tab-scoped session does not see the row (it would reach tabs outside their scope).

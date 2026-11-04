@@ -150,7 +150,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, grouped by what the document is for (reports, proposals, meetings, lessons, pitches, speeches, careers and more), and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts or ${SLIDE_LAYOUT_COUNT} slide layouts. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, grouped by what the document is for (reports, proposals, meetings, lessons, pitches, speeches, careers and more), and twenty-five themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts or ${SLIDE_LAYOUT_COUNT} slide layouts. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Can I write documents in it?',

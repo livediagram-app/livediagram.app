@@ -96,6 +96,7 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
   widget: For You, `WIDGET_GROUPS`, then a section per card type of its fields (`gallerySections`); a tile toggles
   (see Add above). The rail's entry scrolls its section to the list's top (smooth unless reduced motion); a scroll
   marks the last section whose top has passed as current. A search resets to the top only when its text changes.
+  All three are `components/plan/gallery/use-gallery-spy.ts` (`useGallerySpy`), shared with Add Field's rail.
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
   `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount` over `staleItems`, `STALE_DAYS` 14), `time` (`boardTime` over `timeFieldOf(type)`: the first Time Spent field, else the first Duration; minutes, cards counted and timers running); `dueCounts`, `staleItems` and the Due Soon narrowing (`QuickDueWindow.finished`) leave out `finishedStatuses(setup)`, every done column's status (`isDoneColumn`); `boardPoints` counts points in any of them as done. Presets
   carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps

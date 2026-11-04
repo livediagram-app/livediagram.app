@@ -17,7 +17,8 @@ import {
 import { useCardTypeDrag } from '@/hooks/plan/useCardTypeDrag';
 import { CHIP_NAMES_MAX, chipClickCell } from './card-type-chips';
 import { usePlan } from './PlanContext';
-import { PlanCardTileArt } from './plan-tile-art';
+import { CardTypeTile } from './CardTypeTile';
+import { HEADER_ARRIVAL_CLASS, headerArrivalIndex, headerArrivalRow } from './header-arrival';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_BG, ACCENT_TEXT, accentVars, type PlanPalette } from './plan-palette';
 
@@ -67,9 +68,11 @@ export function BoardCardTypeChips({
       aria-label="Add Cards"
       // A row that scrolls sideways when it does not fit, as the widget zone does; no bar of its own.
       className="flex min-w-0 shrink items-center gap-1 overflow-x-auto [scrollbar-width:none]"
+      // The chips fan in as the header mounts, left to right (header-arrival.ts).
+      style={headerArrivalRow}
       onDoubleClick={stop}
     >
-      {types.map((t) => (
+      {types.map((t, i) => (
         <HoverCard
           key={t.id}
           title={`Add a ${t.label}`}
@@ -80,10 +83,10 @@ export function BoardCardTypeChips({
             type="button"
             data-card-type-chip={t.id}
             aria-label={`Add a ${t.label}`}
-            className={`flex h-8 shrink-0 cursor-pointer touch-none select-none items-center gap-1.5 rounded-lg text-[13px] font-medium transition hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/10 ${
+            className={`${HEADER_ARRIVAL_CLASS} flex h-8 shrink-0 cursor-pointer touch-none select-none items-center gap-1.5 rounded-lg text-[13px] font-medium transition hover:bg-black/5 focus-visible:outline-2 dark:hover:bg-white/10 ${
               named ? 'pl-1.5 pr-2.5' : 'px-1.5'
             } ${carrying === t.id ? 'bg-black/5 dark:bg-white/10' : ''}`}
-            style={{ color: palette.text, outlineColor: palette.focus }}
+            style={{ color: palette.text, outlineColor: palette.focus, ...headerArrivalIndex(i) }}
             onPointerDown={(e) => onPointerDown(t.id, e)}
             onClick={(e) => {
               e.stopPropagation();
@@ -91,9 +94,7 @@ export function BoardCardTypeChips({
               if (e.detail === 0) add(t.id);
             }}
           >
-            <span className={ACCENT_TEXT} style={accentVars(t.color)}>
-              <PlanCardTileArt size={22} color={t.color} glyph={t.glyph} />
-            </span>
+            <CardTypeTile color={t.color} glyph={t.glyph} />
             {named ? <span className="whitespace-nowrap">{t.label}</span> : null}
           </button>
         </HoverCard>

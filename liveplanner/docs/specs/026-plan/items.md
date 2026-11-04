@@ -394,13 +394,21 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
   **Trash**, not Delete), the Delete key on a focused card, and the drop on the Trash button. Each closes an open
   panel and is announced ("Card moved to the Trash"). A card leaves the store for good only from the Trash popover
   (below) or Empty Trash.
-- Pressed, it opens the **Trash** popover (352 px wide): how many cards it holds, then each card, newest change
-  first, with its type's stripe and glyph, its whole title, its type, number, the status it came from and when,
-  and **Delete** and **Restore** (back to `trashedFrom`, or no status) on a row of their own. **Delete** asks first
-  in a confirm popover beside the button ("Delete #12 for good? This cannot be undone.", **Delete**), as
-  the workspace Trash does; **Empty Trash** deletes every one at once, with no confirmation (the button is in the Trash and says what it
-  does), announced ("Trash emptied"), then the Trash panel closes.
-- An empty Trash shows the shared empty state: **The Trash is empty**, and how to put a card there.
+- Pressed, it opens the **Trash** popover (352 px wide, `calc(100vw - 2rem)` at most on a phone). Its header row
+  names how many cards it holds (a grey count, "3 cards") with **Empty Trash** on its right. Under it the cards,
+  newest change first, in one bordered list with a divider between rows (Plan's option lists), which scrolls
+  past 320 px. Each row is the card's type tile (`CardTypeTile`, its colour and glyph), its title (up to two lines,
+  cut with an ellipsis, "Untitled" when it has none), then two quiet lines under it, each cut with an ellipsis when long: its type, number and the
+  status it came from ("Task #12 · from Doing"), and when and by whom it was trashed ("Trashed 5 mins ago by Ana",
+  "by you" for the person looking). On the row's right sit two icon buttons, each with its tooltip and a pointer:
+  **Restore** (back to `trashedFrom`, or no status; its name says where, "Restore #12 to Doing") and **Delete
+  Forever** (turning red on hover). Someone who may only view sees the rows without the buttons or Empty Trash.
+  **Delete Forever** asks first in a confirm popover beside the button ("Delete #12 for good? This cannot be undone.",
+  **Delete**), as the workspace Trash does; **Empty Trash** deletes every one at once, with no confirmation (the
+  button is in the Trash and says what it does), announced ("Trash emptied"), then the Trash panel closes.
+- An empty Trash is a small popover (256 px) sized to its content: the small empty state (empty-states.md "Small"),
+  the Trash glyph in the brand badge, **No cards in the Trash**, and one line, "Drag a card onto Trash to put it
+  here.". No count and no Empty Trash.
 - Moving many cards to the Trash at once (a deleted card type's, a removed column's) is one change: one request
   per 200 cards, one undo step, one update for everyone watching.
 - Trash and Restore send `Plan · Moved · Trash` and `Plan · Restored · Card`; opening it, `Plan · Opened · Trash`.

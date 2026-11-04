@@ -214,7 +214,7 @@ export function DashboardPage({
       ) : null}
       {canvas
         ? createPortal(
-            <CanvasCover layout={layout} marker={{ 'data-dashboard': '' }}>
+            <CanvasCover layout={layout} marker={{ 'data-dashboard': '' }} enter>
               <DashboardContext.Provider value={value}>
                 <FaceFinishProvider finish={finish}>
                   <div

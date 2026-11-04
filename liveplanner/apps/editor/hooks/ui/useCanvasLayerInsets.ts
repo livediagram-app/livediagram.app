@@ -1,12 +1,13 @@
 'use client';
 
 // The insets keeping a maximised or tab-filling Plan element clear of the editor's chrome over the canvas
-// (lib/canvas-layer-insets.ts). Measured on mount, and again (once per frame at most) when the chrome says it changed:
+// (lib/canvas-layer-insets.ts). Measured on mount, at once in a layout effect so the element's first frame is already
+// laid out (a tab switch never draws a frame with no insets and its header out of its band, then jumps), and again (once per frame at most) when the chrome says it changed:
 // the canvas or a piece of chrome resizes (ResizeObserver), a piece of chrome moves or shows and hides (its own style
 // or class attributes), a chrome transition ends, the window resizes, or chrome comes or goes (the canvas's children
 // change: the set is looked up again and re-observed only when it differs). Typing, pressing and dragging on the board
 // itself measure nothing.
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import {
   BAND_CONTROLS_SELECTOR,
   NO_LAYOUT,
@@ -36,7 +37,7 @@ export function useCanvasLayerInsets(canvas: HTMLElement | null, withBand = true
   const [layout, setLayout] = useState<CanvasLayout>(NO_LAYOUT);
   // What the last measure learned, for the next one's hysteresis and room (lib/canvas-layer-insets BandMemo).
   const memo = useRef<BandMemo>({ banded: false, endWidth: null });
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!canvas || canvas === document.body) return;
     memo.current = { banded: false, endWidth: null };
     let frame = 0;
@@ -84,7 +85,9 @@ export function useCanvasLayerInsets(canvas: HTMLElement | null, withBand = true
       const t = e.target;
       if (t instanceof Element && t.closest(OBSERVED)) schedule();
     };
-    schedule();
+    // The first measure now, before paint; what it changes (the header moving into its band) is measured again by the
+    // observers above.
+    measure();
     window.addEventListener('resize', schedule);
     window.addEventListener('transitionend', onTransitionEnd, true);
     return () => {

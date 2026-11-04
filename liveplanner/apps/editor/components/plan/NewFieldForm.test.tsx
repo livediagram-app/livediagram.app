@@ -1,55 +1,31 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useRef } from 'react';
 import { ITEM_TYPE_CUSTOM_MAX, type ItemFieldId } from '@liveplanner/items';
-import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
-import { NewFieldForm } from './NewFieldForm';
-import { GALLERY_WIDTH } from './gallery/GalleryFrame';
+import { AddFieldDialog } from './AddFieldDialog';
 
 // docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field, Pick (the gallery: search, the rail of categories, the
 // kinds as tiles, the keyboard) then Shape (Ready to use, name, the kind's settings, Required, the preview, Add {Name}), Escape and back.
 vi.mock('./PlanContext', () => ({ usePlan: () => null }));
 afterEach(cleanup);
 
-// As the type editor opens it: in an AnchoredPopover, its Escape asked first.
+// As the type editor opens it: in its modal, its Escape asked first.
 function Harness(props: {
   missing: readonly ItemFieldId[];
   canAddCustom: boolean;
   onAddBuiltIn: (id: ItemFieldId) => void;
   onAddCustom: (f: unknown) => void;
   onClose: () => void;
-  anchor: HTMLElement;
 }) {
-  const escape = useRef<(() => boolean) | null>(null);
-  return (
-    <AnchoredPopover
-      anchor={props.anchor}
-      name="Add Field"
-      width={GALLERY_WIDTH}
-      onEscape={() => escape.current?.() ?? false}
-      onClose={props.onClose}
-    >
-      <NewFieldForm
-        escapeRef={escape}
-        missing={props.missing}
-        canAddCustom={props.canAddCustom}
-        onAddBuiltIn={props.onAddBuiltIn}
-        onAddCustom={props.onAddCustom}
-        onCancel={props.onClose}
-      />
-    </AnchoredPopover>
-  );
+  return <AddFieldDialog {...props} />;
 }
 
 function open({
   missing = ['assignee', 'due', 'labels'] as ItemFieldId[],
   canAddCustom = true,
 } = {}) {
-  const anchor = document.createElement('button');
-  document.body.append(anchor);
   const spies = { onAddBuiltIn: vi.fn(), onAddCustom: vi.fn(), onClose: vi.fn() };
-  render(<Harness missing={missing} canAddCustom={canAddCustom} anchor={anchor} {...spies} />);
+  render(<Harness missing={missing} canAddCustom={canAddCustom} {...spies} />);
   return spies;
 }
 
@@ -75,9 +51,14 @@ const tagged = () =>
     .filter((t) => t.textContent?.includes('Ready to use'))
     .map((t) => t.querySelector('[data-kind]')!.getAttribute('aria-label'));
 const escape = () => fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
-const preview = () => within(screen.getByRole('figure', { name: 'Preview' }));
+// Shape's Try It (the field's own editor on a pretend card), or the still Preview of a kind that needs a real card.
+const preview = () => within(screen.getByRole('figure', { name: /^(Preview|Try It)$/ }));
 const name = () => screen.getByRole('textbox', { name: 'Name' });
-const addButton = () => screen.getByRole('button', { name: /^Add (?!an option)/ });
+// The form's own submit button: Try It's controls have Add buttons of their own (Add to {Name}).
+const addButton = () =>
+  screen
+    .getAllByRole('button', { name: /^Add (?!an option)/ })
+    .find((b) => b.getAttribute('type') === 'submit')!;
 const pick = (k: string) => fireEvent.click(kind(k));
 const key = (k: string) => fireEvent.keyDown(document.activeElement!, { key: k });
 
@@ -91,14 +72,17 @@ const ALL_KINDS = [
   'Date',
   'Date and Time',
   'Date Range',
+  'Date and Time Range',
   'Duration',
+  'Time Tracking',
   'Choice',
   'Multiple Choice',
   'Checkbox',
+  'Checklist',
   'Labels',
   'Colour',
   'Person',
-  'Checklist',
+  'Several People',
   'Comments',
   'Votes',
   'Link',
@@ -106,18 +90,39 @@ const ALL_KINDS = [
   'Phone',
   'Image',
   'Link to Card',
+  'Several Cards',
+  'Blocked By',
   'Calculated',
+  'Formula',
+  'Rollup',
+  'Lookup',
 ];
 
+// The list's box and each category's place in it, measured (jsdom lays nothing out): `tops` maps a category to its
+// top on screen, the list's own top at 100.
+function layOut(tops: Record<string, number>) {
+  const list = document.querySelector<HTMLElement>('[data-gallery-list]')!;
+  const rect = (top: number) => () =>
+    ({ top, bottom: top + 10, left: 0, right: 10, x: 0, y: top, width: 10, height: 10 }) as DOMRect;
+  list.getBoundingClientRect = rect(100);
+  for (const el of document.querySelectorAll<HTMLElement>('[data-gallery-section]'))
+    el.getBoundingClientRect = rect(tops[el.dataset.gallerySection!] ?? 10_000);
+  return list;
+}
+
 describe('Pick', () => {
-  it('opens on the search and All Fields: every kind a tile under its category, with its line and a sample', () => {
+  it('opens on the search: every kind and variant a tile under its category, with its line and a sample', () => {
     open();
     expect(document.activeElement).toBe(search());
-    expect(screen.getByRole('heading', { name: 'Add Field' })).toBeTruthy();
-    expect(current()).toBe('all');
-    expect(entry('All Fields').textContent).toContain('25');
+    expect(screen.getByRole('heading', { name: 'Add a Field' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Add a Field' })).toBeTruthy();
+    // The rail names only the categories, the first marked; there is no All Fields.
+    expect(current()).toBe('text');
+    expect(rail().queryByRole('button', { name: /^All Fields/ })).toBeNull();
+    expect(entry('Cards').textContent).toContain('3');
+    expect(entry('Calculated').textContent).toContain('4');
     expect(kindNames()).toEqual(ALL_KINDS);
-    for (const c of ['Text', 'Numbers and Money', 'Dates and Time', 'Cards and Formulas'])
+    for (const c of ['Text', 'Numbers', 'Dates', 'Time', 'Cards', 'Calculated'])
       expect(screen.getByRole('heading', { name: c })).toBeTruthy();
     expect(screen.getByText('Counts, amounts, shares and scores.')).toBeTruthy();
     const line = document.getElementById(kind('Link').getAttribute('aria-describedby')!);
@@ -125,18 +130,31 @@ describe('Pick', () => {
     // Each tile draws a sample of its kind's value.
     const currency = document.querySelector('[data-kind-tile="currency"]')!;
     expect(currency.textContent).toContain('£12,500');
+    expect(document.querySelector('[data-kind-tile="people"]')!.textContent).toContain('Ana Lee');
   });
 
-  it('shows one category from the rail, and every one again from All Fields', () => {
+  // As Add a Widget's rail (board-widgets.md "The rail"): a press scrolls to the category, every tile staying.
+  it('scrolls to a category from the rail, every kind still listed, and marks the category in view', () => {
     open();
-    fireEvent.click(entry('Choices and Tags'));
+    const list = layOut({ text: 100, numbers: 300, choices: 900, people: 1200 });
+    fireEvent.click(entry('Choices'));
+    expect(list.scrollTop).toBe(800);
     expect(current()).toBe('choices');
-    expect(kindNames()).toEqual(['Choice', 'Multiple Choice', 'Checkbox', 'Labels', 'Colour']);
-    expect(entry('Choices and Tags').getAttribute('aria-current')).toBe('true');
-    fireEvent.click(entry('People and Teamwork'));
-    expect(kindNames()).toEqual(['Person', 'Checklist', 'Comments', 'Votes']);
-    fireEvent.click(entry('All Fields'));
     expect(kindNames()).toEqual(ALL_KINDS);
+    // Scrolled back to the top, Text is in view again.
+    list.scrollTop = 0;
+    layOut({ text: 100, numbers: 300, choices: 900, people: 1200 });
+    act(() => {
+      fireEvent.scroll(list);
+    });
+    expect(current()).toBe('text');
+    // Scrolled so Numbers' heading has reached the top.
+    list.scrollTop = 200;
+    layOut({ text: -100, numbers: 100, choices: 700, people: 1000 });
+    act(() => {
+      fireEvent.scroll(list);
+    });
+    expect(current()).toBe('numbers');
   });
 
   it('tags the kinds whose built-in field the type lacks Ready to use, and says so', () => {
@@ -181,11 +199,12 @@ describe('Pick', () => {
   it('filters the kinds as you type, by a built-in’s name too, counting the matches on the rail', () => {
     open();
     type('date');
-    expect(kindNames()).toEqual(['Date', 'Date and Time', 'Date Range']);
-    expect(screen.getByRole('heading', { name: 'Dates and Time' })).toBeTruthy();
+    expect(kindNames()).toEqual(['Date', 'Date and Time', 'Date Range', 'Date and Time Range']);
+    expect(screen.getByRole('heading', { name: 'Dates' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Text' })).toBeNull();
-    expect(entry('Dates and Time').textContent).toContain('3');
-    expect(entry('All Fields').textContent).toContain('3');
+    expect(entry('Dates').textContent).toContain('4');
+    // The first category with a match is the one in view.
+    expect(current()).toBe('dates');
     // A category with no match is dimmed, its count gone.
     expect(entry('Text').className).toContain('opacity-55');
     expect(entry('Text').textContent).toBe('Text');
@@ -210,22 +229,14 @@ describe('Pick', () => {
     expect(kindNames()).toEqual(ALL_KINDS);
   });
 
-  it('searches every category from one, narrows the matches from the rail, and keeps the category after', () => {
+  it('searches every category, the rail scrolling among the matches', () => {
     open();
-    fireEvent.click(entry('Text'));
     type('tags');
-    expect(current()).toBe('all');
     expect(kindNames()).toEqual(['Multiple Choice', 'Labels']);
-    fireEvent.click(entry('Choices and Tags'));
-    expect(kindNames()).toEqual(['Multiple Choice', 'Labels']);
-    // Typing more keeps the category picked.
-    type('tags label');
     expect(current()).toBe('choices');
-    fireEvent.click(entry('Text'));
-    expect(screen.getByRole('status').textContent).toContain('No Text fields match');
     type('');
     expect(current()).toBe('text');
-    expect(kindNames()).toEqual(['Text', 'Long Text']);
+    expect(kindNames()).toEqual(ALL_KINDS);
   });
 
   it('says so when nothing matches, the rail stepping aside', () => {
@@ -251,7 +262,7 @@ describe('Pick', () => {
     key('ArrowDown');
     expect(document.activeElement).toBe(tile('number'));
     key('End');
-    expect(document.activeElement).toBe(tile('calculated'));
+    expect(document.activeElement).toBe(tile('lookup'));
     key('Home');
     expect(document.activeElement).toBe(tile('text'));
     // Up from the top row goes back to the search.
@@ -319,7 +330,7 @@ describe('Shape', () => {
     pick('Person');
     expect(readyToUse()).toEqual(['Assignee']);
     fireEvent.change(name(), { target: { value: 'Reviewer' } });
-    expect(preview().getByText('Sam Rivera')).toBeTruthy();
+    expect(preview().getByRole('button', { name: /^Reviewer:/ })).toBeTruthy();
     fireEvent.click(addButton());
     expect(onAddCustom).toHaveBeenCalledWith(
       expect.objectContaining({ label: 'Reviewer', kind: 'person' }),
@@ -341,13 +352,13 @@ describe('Shape', () => {
   it('previews each built-in kind as its field draws, and never makes an Image required', () => {
     open({ missing: [] });
     pick('Labels');
-    expect(preview().getByText('Design')).toBeTruthy();
+    expect(preview().getByPlaceholderText('Add a label')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     pick('Checklist');
-    expect(preview().getByText(/2\/5/)).toBeTruthy();
+    expect(preview().getByRole('textbox', { name: 'Add a step' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     pick('Colour');
-    expect(preview().getByText('Teal')).toBeTruthy();
+    expect(preview().getByRole('button', { name: /: None$/ })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     pick('Image');
     expect(preview().getByText('photo.png')).toBeTruthy();
@@ -382,12 +393,11 @@ describe('Shape', () => {
     expect((search() as HTMLInputElement).value).toBe('mon');
     expect(document.activeElement).toBe(kind('Currency'));
     type('');
-    fireEvent.click(entry('Numbers and Money'));
+    fireEvent.click(entry('Numbers'));
     pick('Rating');
     // The rail stays beside Shape, the category marked.
     expect(current()).toBe('numbers');
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    expect(current()).toBe('numbers');
     expect(document.activeElement).toBe(kind('Rating'));
   });
 
@@ -395,9 +405,11 @@ describe('Shape', () => {
     open();
     pick('Text');
     fireEvent.change(name(), { target: { value: 'Size' } });
-    fireEvent.click(entry('Numbers and Money'));
+    fireEvent.click(entry('Numbers'));
     expect(screen.queryByRole('form')).toBeNull();
-    expect(kindNames()).toEqual(['Number', 'Currency', 'Percent', 'Rating']);
+    // Back on Pick, every kind listed, scrolled to the category pressed.
+    expect(kindNames()).toEqual(ALL_KINDS);
+    expect(current()).toBe('numbers');
     pick('Number');
     expect((name() as HTMLInputElement).value).toBe('Size');
     search().focus();
@@ -420,7 +432,7 @@ describe('Shape', () => {
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
     pick('Number');
     expect((name() as HTMLInputElement).value).toBe('Size');
-    expect(preview().getByText('42')).toBeTruthy();
+    expect(preview().getByRole('spinbutton', { name: 'Size' })).toBeTruthy();
   });
 
   it('makes a Choice from its option rows, pasted lines too', async () => {
@@ -432,7 +444,9 @@ describe('Shape', () => {
       clipboardData: { getData: () => 'Low\nMedium\nHigh' },
     });
     await act(async () => {});
-    expect(preview().getByText('Low')).toBeTruthy();
+    fireEvent.click(preview().getByRole('button', { name: /^Severity:/ }));
+    expect(screen.getByRole('option', { name: /Low/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole('option', { name: /Low/ }));
     // Enter in an option row adds a row; it never adds the field.
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Option 3' }), { key: 'Enter' });
     expect(onAddCustom).not.toHaveBeenCalled();
@@ -452,8 +466,10 @@ describe('Shape', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Option 1' }), { target: { value: 'A' } });
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Option 1' }), { key: 'Enter' });
     fireEvent.change(screen.getByRole('textbox', { name: 'Option 2' }), { target: { value: 'B' } });
-    expect(preview().getByText('A')).toBeTruthy();
-    expect(preview().getByText('B')).toBeTruthy();
+    fireEvent.click(preview().getByRole('button', { name: /^Add to / }));
+    const list = within(screen.getByRole('listbox'));
+    expect(list.getByRole('option', { name: /A/ })).toBeTruthy();
+    expect(list.getByRole('option', { name: /B/ })).toBeTruthy();
   });
 
   it('makes a Currency in the currency picked', () => {
@@ -461,7 +477,7 @@ describe('Shape', () => {
     pick('Currency');
     fireEvent.change(name(), { target: { value: 'Budget' } });
     fireEvent.change(screen.getByLabelText('Currency'), { target: { value: 'USD' } });
-    expect(preview().getByText(/\$12,500/)).toBeTruthy();
+    expect(preview().getByText('USD')).toBeTruthy();
     fireEvent.click(addButton());
     expect(onAddCustom).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'currency', currency: 'USD' }),
@@ -516,7 +532,7 @@ describe('Shape', () => {
     const { onAddCustom } = open();
     pick('Percent');
     fireEvent.change(name(), { target: { value: 'Progress' } });
-    expect(preview().getByText('40%')).toBeTruthy();
+    expect(preview().getByRole('slider', { name: 'Progress' })).toBeTruthy();
     expect(screen.getByRole('switch', { name: 'Required' })).toBeTruthy();
     fireEvent.click(addButton());
     expect(onAddCustom).toHaveBeenCalledWith(
@@ -529,7 +545,50 @@ describe('Shape', () => {
     type('progress');
     expect(kindNames()).toEqual(['Percent']);
     type('formula');
-    expect(kindNames()).toEqual(['Calculated']);
+    expect(kindNames()).toEqual(['Formula']);
+  });
+
+  // item-types.md "Fields and Tabs": Add Field, Variants: a tile per kind-shaping option, the option preset.
+  it('makes a variant its own field type: the option stored, no switch to turn it back', () => {
+    const { onAddCustom } = open({ missing: [] });
+    pick('Several People');
+    expect(screen.getByRole('form', { name: 'New Several People field' })).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Holds Several' })).toBeNull();
+    fireEvent.change(name(), { target: { value: 'Reviewers' } });
+    fireEvent.click(addButton());
+    expect(onAddCustom).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Reviewers', kind: 'person', multiple: true }),
+    );
+    // A Person holds one, with no switch either.
+    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    pick('Person');
+    expect(screen.queryByRole('switch', { name: 'Holds Several' })).toBeNull();
+  });
+
+  it('makes each variant with its option and no switch: Time Tracking, Date and Time Range, Blocked By, Formula', () => {
+    const { onAddCustom } = open({ missing: [] });
+    const back = () => fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    const made = (tile: string, expected: Record<string, unknown>, label = tile) => {
+      pick(tile);
+      for (const name of ['Holds Several', 'Blocks', 'Track Time', 'Include Time'])
+        expect(screen.queryByRole('switch', { name })).toBeNull();
+      expect(screen.queryByLabelText('Calculation')).toBeNull();
+      fireEvent.change(name(), { target: { value: label } });
+      if (!(addButton() as HTMLButtonElement).disabled) {
+        fireEvent.click(addButton());
+        expect(onAddCustom).toHaveBeenLastCalledWith(expect.objectContaining(expected));
+      }
+      back();
+    };
+    made('Time Tracking', { kind: 'duration', timeSpent: true });
+    made('Date and Time Range', { kind: 'daterange', withTime: true });
+    made('Blocked By', { kind: 'card', blocks: true, multiple: true });
+    pick('Formula');
+    expect(screen.queryByLabelText('Calculation')).toBeNull();
+    expect(screen.getByRole('form', { name: 'New Formula field' })).toBeTruthy();
+    // Back to the tile picked.
+    back();
+    expect(document.activeElement).toBe(kind('Formula'));
   });
 
   it('shows a Children Done as a Percent bar, a switch a Child Count never offers', () => {

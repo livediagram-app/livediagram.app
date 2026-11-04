@@ -231,7 +231,7 @@ function SlotEmpty({ canEdit, slotId }: { canEdit: boolean; slotId: string }) {
         title="Empty Slot"
         action={
           canEdit ? (
-            // The shared dashed add row, as Add New Card Type wears it, kept to a button's width in a wide slot.
+            // The shared dashed add row, as Add Card Type wears it, kept to a button's width in a wide slot.
             <DashedAddButton
               label="Add to Slot"
               aria-haspopup="dialog"

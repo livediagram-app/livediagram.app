@@ -2,37 +2,32 @@
 
 // The foot of the Tab Style dialog's home (docs/specs/011-theme/canvas-and-theme-dialog.md "Apply to All Tabs" in
 // each product): one grouped settings row, iOS style, that puts this tab's style on every tab of the document. An
-// Editor's only; the dialog leaves it out for anyone else.
+// Editor's only; the dialog leaves it out for anyone else. With one tab there is nothing to align, so it shows nothing.
 import { Glyph } from '@liveworkspace/ui';
 
 export function ApplyToAllTabsRow({
   tabCount,
   applying,
   onApply,
-  noun,
 }: {
-  // Tabs in the document, this one included. With one there is nothing to align, so the row is greyed and says so.
+  // Tabs in the document, this one included.
   tabCount: number;
   // Busy while the other tabs load and take the style.
   applying: boolean;
   onApply: () => void;
-  // What the product calls the thing that holds the tabs: "document", "plan", "design".
-  noun: string;
 }) {
-  const alone = tabCount < 2;
+  if (tabCount < 2) return null;
   const others = tabCount - 1;
-  const detail = alone
-    ? `This ${noun} has one tab.`
-    : applying
-      ? 'Applying…'
-      : `Give the other ${others === 1 ? 'tab' : `${others} tabs`} this tab's colours, finish, text and canvas.`;
+  const detail = applying
+    ? 'Applying…'
+    : `Give the other ${others === 1 ? 'tab' : `${others} tabs`} this tab's colours, finish, text and canvas.`;
   return (
     <section aria-label="All Tabs" className="flex flex-col gap-2">
       <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
         <button
           type="button"
           onClick={onApply}
-          disabled={alone || applying}
+          disabled={applying}
           aria-busy={applying || undefined}
           data-apply-all-tabs=""
           className="group flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[inherit] px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:cursor-default disabled:hover:bg-transparent dark:hover:bg-slate-700/50"

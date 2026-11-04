@@ -161,20 +161,50 @@ function drawParts(
   // same size would streak twice).
   // An element with a hand-drawn body (SketchOverlay) has its box drawn and shaded already.
   let ownBoxDrawn = page || !!root.querySelector(':scope > svg[data-finish]');
+  // How many parts each keyed owner has drawn so far this take (partIndex).
+  const owned = new Map<string, number>();
   for (const el of parts) {
     if (drawn >= MARKER_FACE_MAX_PARTS) break;
     const faceBox =
       !ownBoxDrawn && el instanceof HTMLElement && (el === root || isFaceBox(el, face));
+    const owner = ownerKey(root, el);
+    const count = owned.get(owner) ?? 0;
+    const index = ownerBase(owner) + count;
     const part =
       el instanceof HTMLElement
-        ? frameInk(el, face, seed, drawn, faceBox || el.hasAttribute(SHAPE_ATTR), pen)
+        ? frameInk(el, face, seed, index, faceBox || el.hasAttribute(SHAPE_ATTR), pen)
         : isSvgShape(el)
-          ? shapeInk(el, face, seed, drawn, pen)
+          ? shapeInk(el, face, seed, index, pen)
           : null;
-    if (part) drawn += 1;
+    if (part) {
+      drawn += 1;
+      owned.set(owner, count + 1);
+    }
     if (part?.role === 'shape' && faceBox) ownBoxDrawn = true;
   }
   return drawn;
+}
+
+// What a part's stroke is seeded by (docs/specs/008-canvas/finish.md "Marker"): the card or column it sits in and its
+// order among that owner's drawn parts, not its place in the whole face. So a part appearing or going elsewhere (a
+// column's hover controls, a card dragged to another column) leaves every other part's ink as it was, and a re-take
+// draws the same strokes instead of a fresh wobble on every card (which read as the borders flashing).
+const OWNER = '[data-plan-card], [data-plan-column], [data-marker-key]';
+function ownerKey(root: Element, el: Element): string {
+  const owner = el.closest(OWNER);
+  if (!owner || !root.contains(owner)) return '';
+  const card = owner.getAttribute('data-plan-card');
+  if (card) return `card:${card}`;
+  const marked = owner.getAttribute('data-marker-key');
+  if (marked) return `key:${marked}`;
+  return `col:${owner.getAttribute('data-plan-column') ?? ''}|${owner.getAttribute('data-plan-lane') ?? ''}`;
+}
+// A 32-bit FNV-1a of the owner's key, spread so owners' indices never meet.
+function ownerBase(key: string): number {
+  if (!key) return 0;
+  let h = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 0x01000193);
+  return (h >>> 0) & 0x7fff0000;
 }
 
 /** Shows a Sketch face's hidden fills and lines while the pass reads them (app/sketch-face.css). */

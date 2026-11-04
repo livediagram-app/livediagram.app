@@ -14,7 +14,7 @@ import { planPalette } from './plan-palette';
 import { PersonPicker } from './PersonPicker';
 import { LinkedCardField } from './LinkedCardField';
 import { LinkedNumbersPill, PeopleStack, severalNames } from './SeveralValuesPills';
-import { CustomFieldForm, HOLDS_SEVERAL_LINES, HoldsSeveralSwitch } from './ItemTypeFieldForms';
+import { CustomFieldForm } from './ItemTypeFieldForms';
 import { addedField } from './AddFieldShape';
 import { customKindPill } from './CustomKindPill';
 import { boardMoveFor } from './plan-board-moves';
@@ -308,33 +308,23 @@ describe('on the card face', () => {
   });
 });
 
-describe('the Holds Several switch', () => {
-  const holds = () => screen.getByRole('switch', { name: 'Holds Several' });
-
-  it('switches a Person or Card field on and off, saying what it does', () => {
-    const onChange = vi.fn();
+// item-types.md "Fields and Tabs": Add Field, Variants: Several People and Several Cards are field types of their own.
+describe('holding several, a field type', () => {
+  it('has no Holds Several switch in a Person or Card field’s form', () => {
     const { rerender } = render(
-      <CustomFieldForm field={{ label: 'Reviewers', kind: 'person' }} onChange={onChange} />,
+      <CustomFieldForm field={{ label: 'Reviewers', kind: 'person' }} onChange={vi.fn()} />,
     );
-    expect(screen.getByText(HOLDS_SEVERAL_LINES.person!)).toBeTruthy();
-    fireEvent.click(holds());
-    expect(onChange).toHaveBeenLastCalledWith({ multiple: true });
-    expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'FieldHoldsSeveral');
+    expect(screen.queryByRole('switch', { name: 'Holds Several' })).toBeNull();
     rerender(
       <CustomFieldForm
         field={{ label: 'Related', kind: 'card', linkType: 'project', multiple: true }}
-        onChange={onChange}
+        onChange={vi.fn()}
       />,
     );
-    expect(screen.getByText(HOLDS_SEVERAL_LINES.card!)).toBeTruthy();
-    expect(holds().getAttribute('aria-checked')).toBe('true');
-    fireEvent.click(holds());
-    expect(onChange).toHaveBeenLastCalledWith({ multiple: undefined });
+    expect(screen.queryByRole('switch', { name: 'Holds Several' })).toBeNull();
   });
 
-  it('is offered on Person and Card fields alone, and kept by Add Field only there', () => {
-    render(<HoldsSeveralSwitch field={{ kind: 'text' }} onChange={vi.fn()} />);
-    expect(screen.queryByRole('switch', { name: 'Holds Several' })).toBeNull();
+  it('is kept by Add Field only on Person and Card fields', () => {
     expect(addedField({ label: 'R', kind: 'person', multiple: true }).multiple).toBe(true);
     expect(addedField({ label: 'A', kind: 'text', multiple: true }).multiple).toBeUndefined();
   });

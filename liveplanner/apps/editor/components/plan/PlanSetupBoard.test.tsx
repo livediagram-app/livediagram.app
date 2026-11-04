@@ -104,7 +104,7 @@ describe('Setup Board', () => {
     ]);
   });
 
-  it('offers Add New Card Type, and a type made there arrives ticked', () => {
+  it('offers Add Card Type, and a type made there arrives ticked', () => {
     const onCreateType = vi.fn();
     const props = {
       boardId: 'b',
@@ -116,7 +116,7 @@ describe('Setup Board', () => {
     };
     const { rerender } = render(<PlanSetupBoard {...props} types={ITEM_TYPES} />);
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Add New Card Type' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Card Type' }));
     expect(onCreateType).toHaveBeenCalled();
     const kudos = { ...ITEM_TYPES[0], id: 'kudos', label: 'Kudos' };
     rerender(<PlanSetupBoard {...props} types={[...ITEM_TYPES, kudos]} />);

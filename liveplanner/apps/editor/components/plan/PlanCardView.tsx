@@ -4,6 +4,7 @@
 // face at the element's size. A double-click or double-tap, in any mode, opens the item;
 // a card whose item is not in this project's store says so and offers to go.
 import { planBoardFontStyle } from '@/lib/plan-font';
+import { usePlanTextScale } from './PlanTextScaleContext';
 import type { ShapeElement } from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
@@ -20,6 +21,8 @@ export function PlanCardView({
   fontFamily?: string;
 }) {
   const plan = usePlan();
+  // The tab's Text Size (fonts.md "Text size on boards and cards").
+  const textScale = usePlanTextScale();
   // Its theme and style colours (docs/specs/026-plan/plan-board.md "Theme and style"): a lone card's
   // fill is its face.
   const themed = planPalette(useCanvasSurface(), planOwnColours(element));
@@ -69,7 +72,7 @@ export function PlanCardView({
   return (
     <div
       className="absolute inset-0"
-      style={planBoardFontStyle(fontFamily)}
+      style={planBoardFontStyle(fontFamily, textScale)}
       role="button"
       tabIndex={-1}
       aria-label={itemAccessibleName(item, plan?.types)}

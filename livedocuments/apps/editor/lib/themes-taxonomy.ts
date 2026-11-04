@@ -32,6 +32,7 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   plum: 'Soft violets on deep plum.',
   abyss: 'Aqua tones on deep teal.',
   espresso: 'Warm tan on dark-roast brown.',
+  teal: 'Quiet teals, a whisper of colour.',
   rainbow: 'A different hue per branch.',
   pastel: 'Soft multi-colour, a hue per branch.',
   tropical: 'Bright, summery hues per branch.',

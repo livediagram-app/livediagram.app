@@ -51,7 +51,6 @@ describe('Add Card on a Gantt chart', () => {
     const p = plan();
     render(
       <GanttAddCard
-        viewId="g"
         plan={p}
         types={ITEM_TYPES}
         shown="project"
@@ -72,7 +71,6 @@ describe('Add Card on a Gantt chart', () => {
   it('is not there for someone who may not add cards, or with no types to add', () => {
     render(
       <GanttAddCard
-        viewId="g"
         plan={plan({ canEditCards: false })}
         types={ITEM_TYPES}
         shown="project"
@@ -85,7 +83,6 @@ describe('Add Card on a Gantt chart', () => {
     cleanup();
     render(
       <GanttAddCard
-        viewId="g"
         plan={plan()}
         types={ITEM_TYPES}
         shown=""
@@ -103,7 +100,6 @@ describe('Add Card under many rows', () => {
   it('pins to the foot of the names column, at full strength on the surface', () => {
     render(
       <GanttAddCard
-        viewId="g"
         plan={plan()}
         types={ITEM_TYPES}
         shown="project"
@@ -119,12 +115,10 @@ describe('Add Card under many rows', () => {
     expect(button.className).not.toContain('opacity-');
   });
 
-  it('offers an Editor Add New Card Type, a new type with Start and Due for this chart', () => {
-    const createTypeForView = vi.fn();
+  it('shows no Add Card with no type to draw, even to an Editor, and its menu makes no types', () => {
     render(
       <GanttAddCard
-        viewId="g"
-        plan={plan({ canEdit: true, createTypeForView })}
+        plan={plan({ canEdit: true })}
         types={ITEM_TYPES}
         shown=""
         palette={palette}
@@ -132,17 +126,11 @@ describe('Add Card under many rows', () => {
         height={40}
       />,
     );
-    // No type to draw yet: Add Card is still there, for Add New Card Type.
-    fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /Add New Card Type/ }));
-    expect(createTypeForView).toHaveBeenCalledWith('g');
-  });
-
-  it('offers no Add New Card Type to a Participant', () => {
+    expect(screen.queryByRole('button', { name: 'Add Card' })).toBeNull();
+    cleanup();
     render(
       <GanttAddCard
-        viewId="g"
-        plan={plan({ canEdit: false })}
+        plan={plan({ canEdit: true })}
         types={ITEM_TYPES}
         shown="project"
         palette={palette}
@@ -151,6 +139,6 @@ describe('Add Card under many rows', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
-    expect(screen.queryByRole('menuitem', { name: /Add New Card Type/ })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /Add Card Type/ })).toBeNull();
   });
 });

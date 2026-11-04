@@ -132,6 +132,32 @@ keep the headings themselves readable:
   in the UI face and needs none.
 - A Dashboard tab passes its font to the boards in its slots the same way.
 
+### Text size on boards and cards
+
+The tab's **Text Size** (Tab Style > Text) scales a board's and a Plan card element's text up and down, all of it
+together, so the proportions between a title, a chip and a count hold. It scales the card titles, everything on a
+card (chips, pills, field values, the description, the key and type tags), the column and swimlane names, a column's
+WIP warning, the Add Card row and a drop gap's message. Icons, paddings, the board's title and its controls keep their
+size, and so does a collapsed column's strip, whose name is clipped to the strip's fixed width.
+
+The scale is measured against Small, the size a new tab starts at, so a board at Small looks exactly as it always has.
+It follows the square root of the size's ratio to Small's 14 px (the shape-label scale, `LABEL_FONT_PX`), because a
+label's steps are large and a card's text is read small:
+
+| Tab Text Size          | Board text scale                                |
+| ---------------------- | ----------------------------------------------- |
+| None set, Small, Scale | 1 (as drawn today)                              |
+| Medium (22 px)         | 1.25                                            |
+| Large (32 px)          | 1.5                                             |
+| An exact px            | √(px / 14), rounded to 0.01, kept to 0.8 to 1.5 |
+
+So 20 px gives 1.2, 12 px gives 0.93, and 6 to 9 px all give 0.8, the smallest scale whose 11 px pills still read.
+The scale reaches the board as one CSS custom property, `--plan-text-scale`, on the board's or the card's root
+(`planTextScale` and `planBoardFontStyle`, `lib/plan-font.ts`), and each text size on the faces is a `calc()` of it,
+so a change of size is a style change only: nothing is measured, and a card's height follows its text in layout. A
+board in a Dashboard slot takes its Dashboard tab's size. Card faces drawn outside a board (the Cards panel, the card
+type Display editor, a view's cards) keep scale 1.
+
 Exports, thumbnails and agent images already draw a board in the system sans, so they are unchanged.
 
 ### Not offered in liveplanner

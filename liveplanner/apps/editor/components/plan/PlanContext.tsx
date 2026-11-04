@@ -25,6 +25,7 @@ import type {
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemOpenVia } from './item-trail';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
+import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import type { ItemsScope } from '@/lib/api/items';
 
 // Someone else's hands on a card: dragging it or reading it.
@@ -41,11 +42,9 @@ export type PlanContextValue = {
   itemTypes: ItemTypesSlice;
   // Opens the type editor on a type, or on a new one (filled from `fromId` when duplicating).
   editType: (target: ItemTypeEditing, fromId?: string) => void;
-  // Add New Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
-  // board once saved (docs/specs/026-plan/plan-board.md "Add New Card Type").
+  // Add Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
+  // board once saved (docs/specs/026-plan/plan-board.md "Add Card Type").
   createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;
-  // A Gantt chart's Add New Card Type: a new type with Start and Due, added to the chart's types if it names some.
-  createTypeForView: (viewId: string) => void;
   // New Form on a board's cog (docs/specs/030-forms/forms.md "Starting a form"): a Blank form whose responses go to
   // this board, on a new Form tab, opened. Absent where no form may be made.
   newFormFor?: (boardElementId: string) => void;
@@ -126,6 +125,10 @@ export type PlanContextValue = {
   // Many cards changed as one write and one undo step (Keep Them on a template's example cards). Absent outside the
   // editor's own slice.
   patchItems?: (patches: readonly ItemPatchOf[]) => void;
+  // A field's values rewritten for its new type (docs/specs/026-plan/item-types.md "Edit Field"): one write, past the
+  // Required rule as an undo is, answering its undo step (null: none) for the type's save to make one with its own.
+  // Absent outside the editor's own slice.
+  reshapeValues?: (patches: readonly ItemPatchOf[]) => Promise<ItemUndoStep | null>;
   restoreItem: (itemId: string) => void;
   emptyTrash: () => void;
   // The names the tab's boards give their statuses, in order (an All Cards board's rows).

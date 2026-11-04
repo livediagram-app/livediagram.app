@@ -24,6 +24,7 @@ import type { PlanPalette } from '../plan-palette';
 import { InfoArt } from '../plan-tile-art';
 import { widgetSlotAt } from '@/hooks/plan/widget-slot';
 import { BoardWidgetPicker } from './BoardWidgetPicker';
+import { HEADER_ARRIVAL_CLASS, headerArrivalIndex, headerArrivalRow } from '../header-arrival';
 
 const PencilIcon = lucideGlyph(lucidePencil, 14);
 
@@ -46,12 +47,15 @@ function ZoneButton({
   size,
   palette,
   pressed = false,
+  enter,
   children,
   ...rest
 }: {
   size: 'sm' | 'md';
   palette: PlanPalette;
   pressed?: boolean;
+  // Its place in the header's fan-in after the widgets (header-arrival.ts); none, it does not fan in.
+  enter?: number;
   children: ReactNode;
 } & Omit<React.ComponentProps<'button'>, 'type' | 'className' | 'style' | 'onPointerDown'>) {
   return (
@@ -60,16 +64,17 @@ function ZoneButton({
       {...rest}
       className={`flex shrink-0 cursor-pointer items-center justify-center rounded-md border transition hover:bg-black/5 dark:hover:bg-white/10 ${
         pressed ? '' : 'border-dashed'
-      } ${size === 'sm' ? 'ml-1 h-6 w-6' : 'h-7 w-7'}`}
-      style={
-        pressed
+      } ${size === 'sm' ? 'ml-1 h-6 w-6' : 'h-7 w-7'} ${enter === undefined ? '' : HEADER_ARRIVAL_CLASS}`}
+      style={{
+        ...(pressed
           ? {
               borderColor: palette.focus,
               color: palette.focus,
               backgroundColor: `color-mix(in srgb, ${palette.focus} 14%, transparent)`,
             }
-          : { borderColor: palette.border, color: palette.muted }
-      }
+          : { borderColor: palette.border, color: palette.muted }),
+        ...(enter === undefined ? {} : headerArrivalIndex(enter)),
+      }}
       onPointerDown={(e) => e.stopPropagation()}
     >
       {children}
@@ -191,10 +196,11 @@ export function BoardWidgetZone({
       palette={palette}
     />
   ) : null;
-  const addButton = (size: 'sm' | 'md') => (
+  const addButton = (size: 'sm' | 'md', enter?: number) => (
     <ZoneButton
       size={size}
       palette={palette}
+      enter={enter}
       aria-label="Add a widget"
       aria-haspopup="dialog"
       aria-expanded={pickerAt !== null}
@@ -267,7 +273,7 @@ export function BoardWidgetZone({
             {addButton('sm')}
           </span>
         ) : canEdit && (offerAdd || emptied) ? (
-          addButton('md')
+          addButton('md', 0)
         ) : null}
         {picker}
       </div>
@@ -279,6 +285,8 @@ export function BoardWidgetZone({
       ref={zone}
       data-widget-zone
       className="flex h-9 min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overflow-y-hidden rounded-md px-1 [scrollbar-width:thin]"
+      // The widgets, then the + and Edit Widgets, fan in as the header mounts (header-arrival.ts).
+      style={headerArrivalRow}
     >
       {/* The widgets are the list; the Add button follows it rather than sitting in it, since a list holds only its
           items. Empty, it takes no room. */}
@@ -298,7 +306,7 @@ export function BoardWidgetZone({
               tabIndex={canEdit ? 0 : undefined}
               aria-label={canEdit ? `${labelOf(kind)} widget` : undefined}
               aria-keyshortcuts={canEdit ? 'Alt+ArrowLeft Alt+ArrowRight Delete' : undefined}
-              className={`relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
+              className={`${HEADER_ARRIVAL_CLASS} relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
                 canEdit ? 'cursor-grab active:cursor-grabbing' : ''
               }`}
               style={{
@@ -306,6 +314,7 @@ export function BoardWidgetZone({
                 zIndex: dragged ? 2 : undefined,
                 opacity: dragged ? 0.85 : 1,
                 ['--tw-ring-color' as string]: palette.focus,
+                ...headerArrivalIndex(i),
               }}
               onPointerDown={onPointerDown(kind)}
               onPointerMove={onPointerMove}
@@ -358,13 +367,14 @@ export function BoardWidgetZone({
         })}
         {barAt === widgets.length ? bar('bar-end') : null}
       </div>
-      {canEdit ? addButton('md') : null}
+      {canEdit ? addButton('md', widgets.length) : null}
       {canEdit ? (
         <Tooltip label={active ? 'Done Editing Widgets' : 'Edit Widgets'}>
           <ZoneButton
             size="md"
             palette={palette}
             pressed={active}
+            enter={widgets.length + 1}
             aria-label={active ? 'Done Editing Widgets' : 'Edit Widgets'}
             aria-pressed={active}
             onClick={(e) => {

@@ -16,23 +16,31 @@ import {
 import { CheckIcon, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalculator,
+  lucideBraces,
+  lucideCalendarCheck,
   lucideCalendarClock,
   lucideCalendarRange,
   lucideClipboardCheck,
   lucideHash,
   lucideImage,
+  lucideLayers,
   lucideList,
   lucideListChecks,
   lucideLink,
+  lucideLock,
+  lucideMerge,
   lucideMessageSquare,
   lucidePalette,
   lucidePhone,
+  lucideScanEye,
   lucideSquareDashed,
   lucideTag,
+  lucideTimer,
   lucideType,
+  lucideUsers,
   lucideVote,
 } from '@liveworkspace/icons/lucide';
-import type { PickKind } from './add-field-kinds';
+import { pickOf, presetOf, storedKindOf, type PickKind } from './add-field-kinds';
 import { PICK_KIND_LABELS } from './ItemTypeFieldForms';
 import { ItemDetailsRow } from './ItemPanelLayout';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -59,6 +67,14 @@ const DateTimeIcon = lucideGlyph(lucideCalendarClock, 16);
 const DateRangeIcon = lucideGlyph(lucideCalendarRange, 16);
 const PhoneIcon = lucideGlyph(lucidePhone, 16);
 const VotesIcon = lucideGlyph(lucideVote, 16);
+const UsersIcon = lucideGlyph(lucideUsers, 16);
+const TimerIcon = lucideGlyph(lucideTimer, 16);
+const DateTimeRangeIcon = lucideGlyph(lucideCalendarCheck, 16);
+const CardsIcon = lucideGlyph(lucideLayers, 16);
+const BlockedByIcon = lucideGlyph(lucideLock, 16);
+const FormulaIcon = lucideGlyph(lucideBraces, 16);
+const RollupIcon = lucideGlyph(lucideMerge, 16);
+const LookupIcon = lucideGlyph(lucideScanEye, 16);
 
 // Each kind's icon: what its value looks like.
 export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
@@ -98,11 +114,20 @@ export const NEWER_FIELD_ICON = { node: <NewerIcon />, name: 'Newer Field' };
 export const customFieldIcon = (field: Pick<CustomFieldDef, 'kind' | 'calculation'>) =>
   isNewerField(field) ? NEWER_FIELD_ICON.node : CUSTOM_KIND_ICONS[field.kind];
 
-// Add Field's kinds: every custom kind's icon, and the one-to-a-type built-in fields' (Comments, Votes).
+// Add Field's tiles: every custom kind's icon, the one-to-a-type built-in fields' (Comments, Votes), and each
+// variant's own (add-field-kinds.ts KIND_VARIANTS).
 export const PICK_KIND_ICONS: Record<PickKind, React.ReactNode> = {
   ...CUSTOM_KIND_ICONS,
   comments: <CommentsIcon />,
   votes: <VotesIcon />,
+  people: <UsersIcon />,
+  'time-tracking': <TimerIcon />,
+  'datetime-range': <DateTimeRangeIcon />,
+  cards: <CardsIcon />,
+  'blocked-by': <BlockedByIcon />,
+  formula: <FormulaIcon />,
+  rollup: <RollupIcon />,
+  lookup: <LookupIcon />,
 };
 
 // What a built-in field holds, as its kind (docs/specs/026-plan/item-types.md "Fields and Tabs"), so every row of the
@@ -127,14 +152,19 @@ const BUILT_IN_KINDS: Partial<Record<string, PickKind>> = {
 // A field's icon and the name of what it holds ("Link to Card", "Date", "Person"), for the type editor's rows.
 export function fieldIconOf(
   id: string,
-  custom: Pick<CustomFieldDef, 'kind' | 'calculation'> | undefined,
+  custom:
+    | (Pick<CustomFieldDef, 'kind' | 'calculation'> &
+        Partial<Pick<CustomFieldDef, 'multiple' | 'blocks' | 'timeSpent' | 'withTime'>>)
+    | undefined,
 ): { node: React.ReactNode; name: string } {
   if (custom && isNewerField(custom)) return NEWER_FIELD_ICON;
-  const kind = custom?.kind ?? BUILT_IN_KINDS[id] ?? 'text';
+  // A custom field wears its Add Field tile's icon and name: a variant's when it was made as one.
+  const kind = custom ? pickOf(custom) : (BUILT_IN_KINDS[id] ?? 'text');
   return { node: PICK_KIND_ICONS[kind], name: PICK_KIND_LABELS[kind] };
 }
 
 const SAMPLE_PERSON = { id: 'sample', name: 'Sam Rivera', color: '#7c3aed' };
+const SAMPLE_PERSON_TWO = { id: 'sample-2', name: 'Ana Lee', color: '#0891b2' };
 const SAMPLE_COLOUR = '#0d9488';
 const SAMPLE_PERCENT = 40;
 
@@ -149,6 +179,8 @@ function SampleValue({
   showAs,
   timeSpent,
   withTime,
+  multiple,
+  blocks,
 }: {
   kind: CustomFieldKind;
   options: readonly string[];
@@ -159,6 +191,9 @@ function SampleValue({
   showAs: 'percent' | undefined;
   timeSpent?: boolean | undefined;
   withTime?: boolean | undefined;
+  // A Person or Card field holding several, and a Card field whose cards block the card.
+  multiple?: boolean | undefined;
+  blocks?: boolean | undefined;
 }) {
   const box =
     'rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -249,7 +284,15 @@ function SampleValue({
       return (
         <div className={`${box} inline-flex items-center gap-1.5`}>
           <PlanTypeGlyph glyph="ticket" size={13} />
-          {linkLabel ? `A ${linkLabel} card` : 'A linked card'}
+          {blocks
+            ? 'Blocked by 2 cards'
+            : multiple
+              ? linkLabel
+                ? `3 ${linkLabel} cards`
+                : '3 linked cards'
+              : linkLabel
+                ? `A ${linkLabel} card`
+                : 'A linked card'}
         </div>
       );
     case 'calculated':
@@ -267,7 +310,8 @@ function SampleValue({
       return (
         <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
           <PersonDisc person={SAMPLE_PERSON} />
-          {SAMPLE_PERSON.name}
+          {multiple ? <PersonDisc person={SAMPLE_PERSON_TWO} /> : null}
+          {multiple ? `${SAMPLE_PERSON.name}, ${SAMPLE_PERSON_TWO.name}` : SAMPLE_PERSON.name}
         </span>
       );
     case 'labels':
@@ -311,17 +355,23 @@ function SampleValue({
   }
 }
 
-// A kind's sample as it starts, before any setting is chosen: Add Field's gallery draws one on each kind's tile.
-export function KindSample({ kind }: { kind: CustomFieldKind }) {
+// A kind's (or a variant's) sample as it starts, with only its preset settings: Add Field's gallery draws one on each
+// tile.
+export function KindSample({ kind }: { kind: PickKind }) {
+  const preset = presetOf(kind);
   return (
     <SampleValue
-      kind={kind}
+      kind={storedKindOf(kind)}
       options={NO_OPTIONS}
       linkLabel={undefined}
       currency={undefined}
       scale={undefined}
-      calculation={undefined}
+      calculation={preset.calculation}
       showAs={undefined}
+      timeSpent={preset.timeSpent}
+      withTime={preset.withTime}
+      multiple={preset.multiple}
+      blocks={preset.blocks}
     />
   );
 }
@@ -340,6 +390,9 @@ export function CustomFieldPreview({
   timeSpent,
   withTime,
   required,
+  note,
+  multiple,
+  blocks,
 }: {
   label: string;
   kind: CustomFieldKind;
@@ -360,14 +413,24 @@ export function CustomFieldPreview({
   withTime?: boolean | undefined;
   // Drawn with the required mark.
   required?: boolean | undefined;
+  // A quiet line beside the caption: why this kind is only a picture here (Add Field's Try It).
+  note?: string | undefined;
+  // A Card field holding several, or whose cards block the card.
+  multiple?: boolean | undefined;
+  blocks?: boolean | undefined;
 }) {
   return (
     <figure
       aria-label="Preview"
       className="flex flex-col gap-1.5 rounded-xl bg-slate-100/80 p-2.5 dark:bg-slate-800/60"
     >
-      <figcaption className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-        Preview
+      <figcaption className="flex items-baseline justify-between gap-2 px-0.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Preview
+        </span>
+        {note ? (
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">{note}</span>
+        ) : null}
       </figcaption>
       {/* A card as a board's panel draws it: only a picture, so nothing in it takes a press or focus. */}
       <div
@@ -388,6 +451,8 @@ export function CustomFieldPreview({
             showAs={showAs}
             timeSpent={timeSpent}
             withTime={withTime}
+            multiple={multiple}
+            blocks={blocks}
           />
         </ItemDetailsRow>
       </div>

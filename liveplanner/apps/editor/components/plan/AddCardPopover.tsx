@@ -7,19 +7,19 @@
 // option list (OptionRows), so arrow keys, Escape, focus return and an outside press behave as every other
 // menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
 // away. On a phone it is a bottom sheet that takes focus on its first choice and closes on Escape or a tap outside
-// it, focus going back to the button. Someone who may edit gets a full-width Add New Card Type under the
-// tiles (docs/specs/026-plan/plan-board.md "Create Card Type").
+// it, focus going back to the button. It wears the board's colours (the tab's theme), as the cells it opens from do;
+// a new card type is made from the Card Types panel or Board, Supported Cards, not from here.
 import { useCallback, useEffect, useRef, type SyntheticEvent } from 'react';
 import { type ItemFields, type ItemTypeDef } from '@liveplanner/items';
 import { useClickOutside, useEscape } from '@liveplanner/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { AddCardTypeButton } from './AddCardTypeButton';
 import { OptionRows } from './OptionRows';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { PlanTypeGlyph } from './plan-type-glyph';
-import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
+import { CardTypeTile } from './CardTypeTile';
+import { typeSummary } from './card-type-summary';
+import type { PlanPalette } from './plan-palette';
 
 export type NewCard = { type: string; fields: ItemFields };
 
@@ -30,7 +30,7 @@ export function AddCardPopover({
   anchor,
   types,
   onAdd,
-  onCreateType,
+  palette,
   onClose,
 }: {
   // The Add card button the menu hangs from.
@@ -38,8 +38,8 @@ export function AddCardPopover({
   // The types this board shows, in the project's order.
   types: readonly ItemTypeDef[];
   onAdd: (card: NewCard) => void;
-  // Create Card Type: absent, the row is not offered (a viewer, or a catalogue with no room).
-  onCreateType?: () => void;
+  // The board's colours, to wear the tab's theme (docs/specs/026-plan/plan-board.md "Theme and style").
+  palette?: PlanPalette;
   onClose: () => void;
 }) {
   const mobile = useIsMobileViewport();
@@ -77,14 +77,7 @@ export function AddCardPopover({
         onClose();
         onAdd(card);
       }}
-      {...(onCreateType
-        ? {
-            onCreateType: () => {
-              onClose();
-              onCreateType();
-            },
-          }
-        : {})}
+      {...(palette ? { palette } : {})}
     />
   );
 
@@ -111,56 +104,75 @@ export function AddCardPopover({
     // display: contents, so it lays out nothing; it only catches what bubbles out of the portal, and
     // keys typed in the menu never reach the canvas's shortcuts.
     <div ref={box} className="contents" onPointerDown={stop} onClick={stop} onKeyDown={stop}>
-      <PortalMenu anchor={anchor} placement="below-start" onClose={onClose} initialFocus="first">
-        {/* No header: it opens right under its own Add card button, which names it. */}
-        <div data-add-card-menu="">{choices}</div>
+      <PortalMenu
+        anchor={anchor}
+        placement="below-start"
+        onClose={onClose}
+        initialFocus="first"
+        {...(palette
+          ? {
+              surfaceStyle: {
+                backgroundColor: palette.column,
+                borderColor: palette.border,
+                color: palette.text,
+              },
+            }
+          : {})}
+      >
+        {/* A small heading, then a row per type: its small card, its name and what it holds. */}
+        <div data-add-card-menu="" className="min-w-0 pt-1">
+          <p
+            className={`px-3 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide ${palette ? '' : 'text-slate-500 dark:text-slate-400'}`}
+            style={palette ? { color: palette.muted } : undefined}
+          >
+            Add a Card
+          </p>
+          {choices}
+        </div>
       </PortalMenu>
     </div>
   );
 }
 
-// The menu's choices: a row per card type (its glyph on a tint of its colour, its name), then, given a way to make
-// one, a full-width Add New Card Type.
+// The menu's choices: a row per card type (its glyph on a tint of its colour, its name), in the board's colours when
+// given; a board taking no types yet says where to turn one on.
 function AddCardChoices({
   types,
   onAdd,
-  onCreateType,
+  palette,
 }: {
   types: readonly ItemTypeDef[];
   onAdd: (card: NewCard) => void;
-  onCreateType?: () => void;
+  palette?: PlanPalette;
 }) {
+  if (types.length === 0)
+    return (
+      <p
+        className={`px-3 pb-2 text-xs ${palette ? '' : 'text-slate-500 dark:text-slate-400'}`}
+        style={palette ? { color: palette.muted } : undefined}
+      >
+        No card types on this board yet. Turn one on in Board, Supported Cards.
+      </p>
+    );
   return (
-    <>
-      {/* A board taking no types yet offers only Add New Card Type. */}
-      {types.length === 0 ? null : (
-        <OptionRows
-          kind="action"
-          label="Card Types"
-          className="mx-1 my-1"
-          rows={types.map((t) => ({
-            id: t.id,
-            label: t.label,
-            icon: (
-              <span
-                className={`flex h-7 w-7 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
-                style={accentVars(t.color)}
-              >
-                <PlanTypeGlyph glyph={t.glyph} size={15} />
-              </span>
-            ),
-          }))}
-          onPick={(id) => {
-            const t = types.find((x) => x.id === id);
-            if (t) onAdd({ type: t.id, fields: { title: t.newTitle } });
-          }}
-        />
-      )}
-      {onCreateType ? (
-        <div className="mt-1.5 px-1 pb-1">
-          <AddCardTypeButton onClick={onCreateType} />
-        </div>
-      ) : null}
-    </>
+    <OptionRows
+      kind="action"
+      label="Card Types"
+      className="mx-1 my-1"
+      {...(palette ? { palette } : {})}
+      rows={types.map((t) => ({
+        id: t.id,
+        label: t.label,
+        // The header chips' small card (CardTypeTile), and what the type holds under its name.
+        icon: <CardTypeTile color={t.color} glyph={t.glyph} size={28} />,
+        detail: typeSummary(t),
+        // Spoken by its name alone: the field count is a sighted aside.
+        ariaLabel: t.label,
+      }))}
+      onPick={(id) => {
+        const t = types.find((x) => x.id === id);
+        if (t) onAdd({ type: t.id, fields: { title: t.newTitle } });
+      }}
+    />
   );
 }

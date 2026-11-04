@@ -5,6 +5,7 @@
 // card under the pointer while it is dragged.
 import { planCardCursor } from './board-cursors';
 import { useEffect, useRef } from 'react';
+import { useGapMotion } from './useGapMotion';
 import { itemVoteKey } from '@liveplanner/project';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import type { CardVote } from './CardVoteContext';
@@ -29,7 +30,8 @@ import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
 import { useCardFileDrop } from './card-file-drop';
 import type { PlanPalette } from './plan-palette';
-import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
+import { PLAN_HEADING_STYLE, planTextScaleVars } from '@/lib/plan-font';
+import { usePlanTextScale } from './PlanTextScaleContext';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -48,18 +50,24 @@ export function DropGap({
   palette: PlanPalette;
   refused?: string | undefined;
 }) {
+  // It opens and closes rather than popping (useGapMotion).
+  const ref = useRef<HTMLDivElement>(null);
+  useGapMotion(ref, height);
   if (!refused)
     return (
       <div
-        className="rounded-lg border-2 border-dashed"
-        style={{ height, borderColor: palette.focus }}
+        ref={ref}
+        // plan-drop-gap: tinted in the focus colour, breathing softly while it waits (globals.css).
+        className="plan-drop-gap overflow-hidden rounded-[var(--plan-card-r,12px)] border-2 border-dashed"
+        style={{ height, borderColor: palette.focus, ['--gap-ink' as string]: palette.focus }}
         aria-hidden
       />
     );
   return (
     <div
+      ref={ref}
       role="status"
-      className="flex items-center justify-center rounded-lg border-2 border-dashed px-2 text-center text-[12px] font-medium leading-snug"
+      className="flex items-center justify-center overflow-hidden rounded-[var(--plan-card-r,12px)] border-2 border-dashed px-2 text-center text-[length:calc(12px*var(--plan-text-scale,1))] font-medium leading-snug"
       style={{
         minHeight: height,
         borderColor: REFUSED_COLOUR,
@@ -95,7 +103,7 @@ export function LaneRow({
     <>
       <button
         type="button"
-        className="flex items-center gap-2 rounded-md px-1 pt-2 text-left text-[12px] font-semibold enabled:cursor-pointer"
+        className="flex items-center gap-2 rounded-md px-1 pt-2 text-left text-[length:calc(12px*var(--plan-text-scale,1))] font-semibold enabled:cursor-pointer"
         style={{ gridColumn: `span ${span}`, color: palette.muted }}
         aria-expanded={!shut}
         onPointerDown={stop}
@@ -191,7 +199,7 @@ export function PlanBoardCard({
         data-selected={selected || undefined}
         // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls); on a
         // phone board one column a screen it scrolls, and a card held still is carried (phone-board.ts).
-        className={`relative ${touch} rounded-lg outline-none transition-opacity focus-visible:ring-2`}
+        className={`relative ${touch} rounded-[var(--plan-card-r,12px)] outline-none transition-opacity focus-visible:ring-2`}
         style={{
           opacity: lifted ? 0.35 : 1,
           cursor: planCardCursor(interactive, canMove),
@@ -237,9 +245,9 @@ export function PlanBoardCard({
           <span
             aria-hidden
             data-card-file-drop=""
-            className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/80 ring-2 ring-brand-500 dark:bg-slate-900/80"
+            className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[var(--plan-card-r,12px)] bg-white/80 ring-2 ring-brand-500 dark:bg-slate-900/80"
           >
-            <span className="rounded-md bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm dark:bg-brand-600">
+            <span className="rounded-md bg-brand-700 px-2 py-0.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold text-white shadow-sm dark:bg-brand-600">
               {fileDrop.uploading ? 'Uploading…' : 'Drop to Attach'}
             </span>
           </span>
@@ -295,6 +303,8 @@ export function PlanDragGhost({
   count?: number;
 }) {
   const at = usePlanDragPointer(pointer) ?? drag;
+  // Portalled out of the board, so it takes the tab's text scale itself (fonts.md "Text size on boards and cards").
+  const textScale = usePlanTextScale();
   const behind = Math.min(GROUP_GHOST_STACK, count - 1);
   return createPortal(
     <div
@@ -304,13 +314,14 @@ export function PlanDragGhost({
         top: at.clientY - drag.offsetY,
         width: drag.width,
         height: drag.height,
+        ...planTextScaleVars(textScale),
       }}
     >
       {Array.from({ length: behind }, (_, i) => (
         <div
           key={i}
           aria-hidden
-          className="absolute inset-0 rounded-lg border shadow-sm"
+          className="absolute inset-0 rounded-[var(--plan-card-r,12px)] border shadow-sm"
           style={{
             transform: `translate(${(behind - i) * 5}px, ${(behind - i) * 5}px)`,
             backgroundColor: palette.card,

@@ -9,7 +9,7 @@ const row = () => screen.getByRole<HTMLButtonElement>('button', { name: /Apply t
 describe('ApplyToAllTabsRow', () => {
   it('applies on a press, saying how many other tabs it reaches', () => {
     const onApply = vi.fn();
-    render(<ApplyToAllTabsRow tabCount={4} applying={false} onApply={onApply} noun="document" />);
+    render(<ApplyToAllTabsRow tabCount={4} applying={false} onApply={onApply} />);
     expect(row().textContent).toContain('Give the other 3 tabs this tab');
     expect(row().className).toContain('cursor-pointer');
     fireEvent.click(row());
@@ -17,28 +17,26 @@ describe('ApplyToAllTabsRow', () => {
   });
 
   it('names a single other tab in the singular', () => {
-    render(<ApplyToAllTabsRow tabCount={2} applying={false} onApply={vi.fn()} noun="plan" />);
+    render(<ApplyToAllTabsRow tabCount={2} applying={false} onApply={vi.fn()} />);
     expect(row().textContent).toContain('Give the other tab this tab');
   });
 
-  it('is greyed, and says why, when the document has one tab', () => {
-    const onApply = vi.fn();
-    render(<ApplyToAllTabsRow tabCount={1} applying={false} onApply={onApply} noun="design" />);
-    expect(row().disabled).toBe(true);
-    expect(row().textContent).toContain('This design has one tab.');
-    fireEvent.click(row());
-    expect(onApply).not.toHaveBeenCalled();
+  it('shows nothing when the document has one tab', () => {
+    const { container } = render(
+      <ApplyToAllTabsRow tabCount={1} applying={false} onApply={vi.fn()} />,
+    );
+    expect(container.innerHTML).toBe('');
   });
 
   it('shows it is busy and takes no second press while applying', () => {
-    render(<ApplyToAllTabsRow tabCount={3} applying onApply={vi.fn()} noun="document" />);
+    render(<ApplyToAllTabsRow tabCount={3} applying onApply={vi.fn()} />);
     expect(row().disabled).toBe(true);
     expect(row().getAttribute('aria-busy')).toBe('true');
     expect(row().textContent).toContain('Applying…');
   });
 
   it('notes that locked tabs keep their style and undo restores every tab', () => {
-    render(<ApplyToAllTabsRow tabCount={3} applying={false} onApply={vi.fn()} noun="document" />);
+    render(<ApplyToAllTabsRow tabCount={3} applying={false} onApply={vi.fn()} />);
     expect(
       screen.getByText('Locked tabs keep their own style. Undo puts every tab back.'),
     ).toBeTruthy();

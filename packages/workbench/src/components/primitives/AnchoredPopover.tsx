@@ -6,13 +6,28 @@
 // never flips; it follows the anchor as the page scrolls or resizes, or the anchor itself grows. Sits above the modal layer,
 // so it can open from inside a dialog: the dialog closes only on a press that starts on its own backdrop, so a
 // press in here never closes it. Escape (taken before the dialog's own) and a press outside close it; opening
-// focuses its first control and closing hands focus back to the anchor.
+// focuses its first control and closing hands focus back to the anchor. With `pointer`, it draws its own surface and a
+// small arrow on the side facing the anchor, aimed at the anchor's middle, so it reads as coming out of that control;
+// with `scrim`, a dim layer behind it sets it apart from everything else.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Portal, useClickOutside } from '@liveworkspace/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 import { usePopoverLayer } from './popover-stack';
 
-const GAP = 6; // space between the anchor and the panel
+const GAP = 6; // space between the anchor and the panel (a pointer's arrow, half of it showing, fills it)
+const ARROW = 12; // a pointer arrow's square, before its quarter turn
+const ARROW_INSET = 16; // how near a corner of the panel the arrow may sit
+
+// Where a pointer's arrow sits across the screen: at the anchor's middle, kept within the panel clear of its rounded
+// corners.
+export function pointerX(
+  anchor: { left: number; right: number },
+  panelLeft: number,
+  panelWidth: number,
+): number {
+  const mid = (anchor.left + anchor.right) / 2;
+  return Math.max(panelLeft + ARROW_INSET, Math.min(mid, panelLeft + panelWidth - ARROW_INSET));
+}
 // The least room a panel takes on its side, however little the window leaves it (an on-screen keyboard that shrinks
 // the window must not squeeze it to nothing: useFloatingKeyboardAvoidance moves it into view instead).
 export const MIN_ROOM_PX = 160;
@@ -83,6 +98,8 @@ export function AnchoredPopover({
   beside,
   keepOpenWithin,
   initialFocus = 'first',
+  pointer = false,
+  scrim = false,
   children,
 }: {
   anchor: HTMLElement;
@@ -101,10 +118,16 @@ export function AnchoredPopover({
   // first control is a text field without raising a keyboard, focus still inside it; or nothing, for a list a
   // field drives as it is typed in (a combobox), focus staying in the field.
   initialFocus?: 'first' | 'panel' | 'none';
+  // Draw the popover surface and an arrow pointing at the anchor (placement under or above it only).
+  pointer?: boolean;
+  // Dim everything behind it (its dialog too), so it stands out; a press on the dim layer is a press outside.
+  scrim?: boolean;
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<AnchoredPlace | null>(null);
+  // The arrow's centre across the screen, aimed at the anchor's middle and kept clear of the panel's corners.
+  const [arrowX, setArrowX] = useState<number | null>(null);
   // The side chosen on opening, kept from then on.
   const side = useRef<AnchoredSide | undefined>(undefined);
   const close = () => {
@@ -135,6 +158,7 @@ export function AnchoredPopover({
         : placeAnchored(anchor.getBoundingClientRect(), size, viewport, side.current);
       side.current = next.side;
       setPos(next);
+      if (pointer && !beside) setArrowX(pointerX(anchor.getBoundingClientRect(), next.left, w));
     };
     place();
     const grow = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place);
@@ -148,7 +172,7 @@ export function AnchoredPopover({
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
     };
-  }, [anchor, width, beside]);
+  }, [anchor, width, beside, pointer]);
 
   useEffect(() => {
     if (initialFocus === 'none') return;
@@ -172,12 +196,48 @@ export function AnchoredPopover({
   // (a picker, a ConfirmPopover) is that popover's.
   useClickOutside(panel, (e) => {
     if (withinAbove(e.target)) return;
+    // The scrim closes it on its own click (below): closing on the press would take the scrim away before the click,
+    // and a tap's click would land on the control under it (the anchor, opening it again).
+    if (e.target instanceof Element && e.target.closest('[data-anchored-popover-scrim]')) return;
     if (keepOpenWithin && e.target instanceof Element && e.target.closest(keepOpenWithin)) return;
     if (!(e.target instanceof Node && anchor.contains(e.target))) onClose();
   });
 
+  const arrow = pointer && !beside && pos && arrowX !== null;
   return (
     <Portal>
+      {scrim ? (
+        // Under the arrow and the panel, at their layer: it takes every press outside, so nothing under it reacts,
+        // and its click closes the popover (a press on its own anchor too, under it).
+        <div
+          aria-hidden
+          data-anchored-popover-scrim=""
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+          className="fixed inset-0 z-[calc(var(--z-popover)+1)] cursor-default bg-slate-900/25 motion-safe:animate-fade-in dark:bg-slate-950/55"
+        />
+      ) : null}
+      {arrow ? (
+        // Drawn before the panel at its layer, so the panel covers the arrow's inner half and its border reads as
+        // one outline with the panel's.
+        <span
+          aria-hidden
+          data-popover-pointer={pos.side}
+          className={`pointer-events-none fixed z-[calc(var(--z-popover)+1)] size-3 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${
+            pos.side === 'below' ? 'border-l border-t' : 'border-b border-r'
+          }`}
+          style={{
+            left: arrowX - ARROW / 2,
+            ...(pos.side === 'above'
+              ? { bottom: (pos.bottom ?? 0) - ARROW / 2 }
+              : { top: (pos.top ?? 0) - ARROW / 2 }),
+          }}
+        />
+      ) : null}
       <div
         ref={panel}
         role="dialog"
@@ -187,7 +247,9 @@ export function AnchoredPopover({
         tabIndex={initialFocus === 'panel' ? -1 : undefined}
         // Over its dialog, over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
         // menu opened mid-tour is never dimmed, and over a menu's flyout (z-popover) it opens from.
-        className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none"
+        className={`fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none ${
+          pointer ? 'border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900' : ''
+        }`}
         style={{
           width: `min(${width}px, calc(100vw - ${2 * EDGE}px))`,
           left: pos?.left ?? -9999,

@@ -40,6 +40,7 @@ import type {
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
 import type { ItemTypesSlice } from './useItemTypes';
+import type { ItemUndoStep } from './item-undo-journal';
 import { planBoardTarget } from './plan-board-targets';
 import { useTypeForBoard } from './useTypeForBoard';
 import { usePlanPeople } from './usePlanPeople';
@@ -148,7 +149,7 @@ export function usePlanSlice(opts: {
   const [editingType, setEditingType] = useState<ItemTypeEditing | null>(null);
   // A new type filled from this one (Duplicate), or none.
   const [typeTemplateId, setTypeTemplateId] = useState<string | null>(null);
-  // Add New Card Type from a board's Add a Card menu: the board the new type is for (useTypeForBoard).
+  // Add Card Type from a board's Add a Card menu: the board the new type is for (useTypeForBoard).
   const forBoard = useTypeForBoard(commitOn);
   const { setTypeForBoard } = forBoard;
   const editType = useCallback(
@@ -164,15 +165,6 @@ export function usePlanSlice(opts: {
       setEditingType('new');
       setTypeTemplateId(null);
       setTypeForBoard({ boardId, statuses });
-    },
-    [setTypeForBoard],
-  );
-  // A Gantt chart's Add New Card Type: a new type with Start and Due, so it draws on the chart once saved.
-  const createTypeForView = useCallback(
-    (viewId: string) => {
-      setEditingType('new');
-      setTypeTemplateId(null);
-      setTypeForBoard({ viewId, fields: ['start', 'due'] });
     },
     [setTypeForBoard],
   );
@@ -316,6 +308,21 @@ export function usePlanSlice(opts: {
           : { kind: 'patches', patches: [...patches] },
       );
     },
+    [write],
+  );
+  // A field's values rewritten for its new type: written as an undo is, so a required field's cleared values are never
+  // refused, its undo step handed back for the type's save (docs/specs/026-plan/item-types.md "Edit Field").
+  const reshapeValues = useCallback(
+    (patches: readonly ItemPatchOf[]) =>
+      new Promise<ItemUndoStep | null>((resolve) => {
+        void write(
+          { kind: 'patches', patches: [...patches], undo: true },
+          { onUndo: resolve },
+        ).then(
+          () => resolve(null),
+          () => resolve(null),
+        );
+      }),
     [write],
   );
   const trashItem = useCallback((itemId: string) => void trashItems([itemId]), [trashItems]);
@@ -542,7 +549,6 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
-      createTypeForView,
       ...(opts.newFormFor && canEdit ? { newFormFor: opts.newFormFor } : {}),
       ...(opts.linkedActions ? { linkedActions: opts.linkedActions } : {}),
       status: planItems.status,
@@ -579,6 +585,7 @@ export function usePlanSlice(opts: {
       trashItem,
       trashItems,
       patchItems,
+      reshapeValues,
       restoreItem,
       emptyTrash,
       statusNames: opts.statusNames,
@@ -591,7 +598,6 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
-      createTypeForView,
       planItems.status,
       planItems.self,
       planItems.refetch,
@@ -627,6 +633,7 @@ export function usePlanSlice(opts: {
       trashItem,
       trashItems,
       patchItems,
+      reshapeValues,
       restoreItem,
       emptyTrash,
       opts.statusNames,
@@ -658,7 +665,6 @@ export function usePlanSlice(opts: {
     typeTemplateId,
     typeForBoard: forBoard.typeForBoard,
     addTypeToBoard: forBoard.addTypeToBoard,
-    addTypeToView: forBoard.addTypeToView,
     closeTypeEditor: () => {
       setEditingType(null);
       setTypeTemplateId(null);

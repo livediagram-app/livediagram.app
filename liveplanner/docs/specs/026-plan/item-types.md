@@ -62,7 +62,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `id`            | A slug, `a-z0-9-`, up to 32 characters, unique in the catalogue. A ready-made type keeps its own (`task`, `bug`...); a new type's is made from its name (`customer-call`), with `-2`, `-3` on a clash. Never changes once made: items store it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `label`         | The name, 1 to 32 characters, unique in the catalogue ignoring case                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a dark surface an accent too dark to see (Project's black) is drawn lifted toward white to 3:1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `color`         | Any `#rrggbb` colour, from the [colour picker](../004-interface-design/colour-picker.md); on a board an accent that would not read on its card (Project's black on a dark card, Idea's yellow on a light one, any accent on a coloured theme's card) is drawn leaned toward white or black until it reaches 3:1 on that card, and its words on the type chip 4.5:1 ([Plan board](plan-board.md) "Theme and style"); in the app's own chrome it is lifted toward white to 3:1 in dark mode                                                                                                                                                                                                                                                                                                                                                        |
 | `icon`          | A glyph from the Plan glyph set: 74 line glyphs in eight categories, the ready-made types' among them (ids never change or go, so a stored type always draws)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `fields`        | The fields its item panel offers, in order: built-in field ids and custom field ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `custom`        | Its custom fields: `{ id, label, kind, options?, linkType?, linkTypes?, calculation?, formula?, result?, through?, aggregate?, source?, showAs?, timeSpent?, withTime?, onCard?, required?, multiple?, blocks? }` (a Card field's target card types: `linkType` the first, `linkTypes` all of them when there are several; a Calculated field's `calculation`, a Formula's `formula` and `result`, a Rollup's or Lookup's `through`, `aggregate` and `source` and its `result`, and `showAs: "percent"` when it [shows as a Percent](#percent-fields); `timeSpent: true` on a Duration field that [tracks time](#time-spent); `withTime: true` on a Date Range whose ends [have times](#date-range-fields); `required: true` for a [required field](#required-fields); `blocks: true` on a Card field whose cards [block](#blocked-by) the card) |
@@ -111,7 +111,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     whose status the type had turned off (an undo) does not turn it on again. The join is made by the editor of
     whoever changed the board (one quiet catalogue change with no undo step of its own, made again over anyone's
     later change), and by the plan agents' **add_board**, **change_board** and **add_tab**.
-  - **A new type's list.** Add New Card Type from a board starts with that board's statuses; a type a board brings
+  - **A new type's list.** Add Card Type from a board starts with that board's statuses; a type a board brings
     (a ready-made type) starts with the statuses of the boards that bring it; any other new type (the Card Types
     panel's Add Type, the default types) starts with every status the project's boards name, in tab, board and
     column order.
@@ -250,8 +250,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       (to the minute, never by the day).
     - Sorts by its moment (earliest first), and lays no swimlanes.
   - <a id="date-range-fields"></a>**Date Range** is a start and an end in one field: an event's days, a trip, a
-    sprint. Its type editor form has **Include Time** (a switch, off; set when the field is made and never changed
-    after, like Track Time): off, its ends are days (`YYYY-MM-DD`); on, each end is a Date and Time instant as above.
+    sprint. Its ends are days (`YYYY-MM-DD`). **Date and Time Range** is its own field type in Add Field (stored as a
+    Date Range with `withTime: true`, fixed when the field is made, no switch in any form): each end is a Date and
+    Time instant as above.
     - **Stored** as a list of its two ends, start first: `["2026-10-31", "2026-11-02"]`, or two instants. The end is
       never before the start: a range written the wrong way round is kept in order (ends swapped).
     - **Shown** "31 Oct to 2 Nov" on the card (each end with its year when it is not this year's; a range of one day
@@ -363,10 +364,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     field's value without knowing its kind, so a stray value written straight to it (text, a negative) reads as no
     value everywhere. A form can't ask it (no question maps to it).
   - It may be [required](#required-fields); 0 counts as a value.
-  - <a id="time-spent"></a>**Time Spent**: a Duration field with **Track Time** on (`timeSpent: true`) holds no typed
-    value: it adds up the time people track on the card, with a start/stop **timer** and **manual entries**, each
-    saying who and when. The switch is set when the field is made and never changes afterwards (the field's form
-    shows it, unchangeable), as a field's kind never does; anything else stored reads as off.
+  - <a id="time-spent"></a>**Time Spent**: a **Time Tracking** field (Add Field's own field type, stored as a Duration
+    with `timeSpent: true`) holds no typed value: it adds up the time people track on the card, with a start/stop
+    **timer** and **manual entries**, each saying who and when. It is fixed when the field is made, as a field's kind
+    is, with no switch in any form; anything else stored reads as a plain Duration.
     - **The value** under the field's id is `{ people, entries, running }` (`time-tracking.ts`): each **entry** a span
       someone spent, `{ id, by, minutes, at }` (a person id, whole minutes from 1, and when it was recorded, in
       milliseconds); each **running timer** `{ id, by, start }`, its start stored so a reload or another device keeps
@@ -555,8 +556,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - Deleting, trashing or archiving a linked card never clears the links: they read **Missing card** until the
     card is back or the link is changed. A Card field whose type is gone from the catalogue keeps it among its
     types, and an unticked type is never taken off a card already linked to one of its cards.
-- <a id="holds-several"></a>**Holds Several**: a Person field or a Card field can hold more than one value, by
-  its **Holds Several** switch (stored as `multiple: true` on the field; kept only as true, and only on those two
+- <a id="holds-several"></a>**Holds Several**: a **Several People** field or a **Several Cards** field (Add Field's own
+  field types; a Person or Card field stored with `multiple: true`; kept only as true, and only on those two
   kinds, so every field saved before holds one). Reviewers, Owners and pair work need several people; Related,
   Depends On and Candidates need several cards. The built-in Assignee and Parent always hold one. One rule serves
   both kinds:
@@ -567,9 +568,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     stored list as its first value, so turning the switch either way never rewrites or loses a card's value: a
     value changes only when someone next edits it. An older editor reading a list reads the field as empty (never a
     crash), and its next pick replaces the list with that one value.
-  - **The switch** sits in the field's form in the type editor (and Add Field's Shape step) under the kind's own
-    settings, with the line "Hold more than one person, such as reviewers or a pair." (Person) or "Link more than
-    one card, such as related work." (Card). Telemetry: `Plan` · `Changed` · `FieldHoldsSeveral`.
+  - **No switch**: holding one or several is the field's type, picked in Add Field (Person or Several People, Link to
+    Card or Several Cards) and fixed after; no form shows a Holds Several switch (removed at the owner's ask,
+    2026-11-03, so each reads as a field type of its own). A value read either way (above) still never breaks.
   - **The control** (the card panel): one bordered field holding a **chip** per value (a person's disc and name; a
     card's type glyph, number and title, pressing it opens the card), each with a remove button (accessible name
     "Remove {name} from {Field}"), then an **Add** button (a plus, accessible name "Add to {Field}") that drops the
@@ -603,17 +604,17 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     names, numbers or titles back, each resolved as one value would be; one value given sets a list of one. An agent
     sets the switch with `multiple` on `change_card_types`' `custom`, `addCustom` and `editCustom` (only a Person or
     Card field). Export CSV writes the list joined by ", ".
-  - **Share roles**: as any field. An Editor sets the switch (the type editor); an Editor and a Participant edit a
+  - **Share roles**: as any field. An Editor picks the field type (Add Field); an Editor and a Participant edit a
     card's values; a Viewer reads them.
-- <a id="blocked-by"></a>**Blocked By**: a Card field with its **Blocks** switch on (stored as `blocks: true`; kept
+- <a id="blocked-by"></a>**Blocked By**: Add Field's **Blocked By** field type (a Card field stored with `blocks: true`
+  and `multiple: true`; kept
   only as true, and only on a Card field, so every field saved before blocks nothing) is a **Blocked By** field: the
   cards it holds are the card's **blockers**, the work it waits on. Any type can offer one, as it offers any Card field
   (a Task's **Blocked By**, linking to Tasks, Bugs and Stories), and a type can offer more than one. Templates such as
   Sprint and Daily Standup keep their **Blocked** column, which says a card is stuck; a Blocked By field says on what.
-  - **The switch** sits in a Card field's form in the type editor (and Add Field's Shape step), under Holds Several,
-    with the line "Its cards block this one: it shows as blocked until each is done." Turning it on turns Holds
-    Several on too (a card can wait on several), and turning Holds Several off afterwards keeps it (the field then
-    holds one blocker). Telemetry: `Plan` · `Changed` · `FieldBlocks`.
+  - **No switch**: a Blocked By field is picked as its own type in Add Field ("Cards that must be done before this
+    one") and fixed after; no form shows a Blocks switch. A field stored with `blocks` and one value (from before)
+    still holds that one blocker.
   - **Open and done**: a blocker is **open** while it is not in a done column, read across the plan's boards as
     Children Done reads them (the plan-wide done columns, [Done columns](plan-board.md#done-columns)). A blocker that
     is trashed, archived or missing is ignored: it is neither open nor counted. A card is **blocked** while it has
@@ -753,14 +754,14 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     whose result is a Number, Currency, Percent or Date (as that kind sorts), and lays swimlanes (and Card Search
     filters) by one whose result is a Number, Percent, Date, Text or Checkbox, read-only ([Rollup and
     Lookup](#rollup-and-lookup-fields), Filters); forms and Import CSV leave it out.
-  - **In the type editor**: picking Formula in the field's form (and Add Field's Shape step) opens the formula
-    editor: a **Result** menu (and **Currency** for a Currency result, **Show as Percent Bar** for a Percent one), a monospaced **Formula** box, the type's
+  - **In the type editor**: a Formula is its own field type, picked in Add Field (**Formula**); its form (and Add
+    Field's Shape step) shows the formula editor, and no Calculation menu (a Formula never turns into a count, nor a
+    count into a Formula): a **Result** menu (and **Currency** for a Currency result, **Show as Percent Bar** for a Percent one), a monospaced **Formula** box, the type's
     fields as chips under it (pressing one writes its name at the caret), and a line that checks the formula as it is
     typed: "Works" with a tick, or the problem in red. **Preview** works it out on a real card: the type's first
     live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Add {Name} waits until the formula
     works ("Write a formula that works"). In an existing field's form, a formula that doesn't work is not kept: the
-    field keeps its last working one, and the line says so ("Not saved: Unknown field "Spnt""). Picking another
-    calculation drops the formula and its result. Telemetry: `Plan` · `Changed` · `FieldFormula` on picking Formula.
+    field keeps its last working one, and the line says so ("Not saved: Unknown field "Spnt"").
   - **Agents**: `change_card_types` takes `formula` (by names) and `result` on `custom`, `addCustom` and
     `editCustom` (and `showAs: "percent"` with a Percent result), refusing a formula that can't be read with its problem; `list_items` lists a Formula field's
     `formula` by names, its `result`, and `formulaError` when it stopped working, and each card's value (a number,
@@ -976,7 +977,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   one to a row. It lists the
   catalogue as **one list**, in its order, with no headings: no type is marked apart from another, wherever it came
   from.
-- The panel lists the catalogue as small cards: each type's accent stripe, its glyph on a tint of its colour,
+- The panel lists the catalogue as small cards: each type's accent stripe, the type drawn as the board header's
+  chips draw it (a small card in its colour with its glyph),
   its name with "N fields" (and "N custom") under it (no count badge: a type no card has yet is drawn a little
   grey, and the count is in its accessible name only), a **Duplicate** button (a copy
   icon, with a tooltip) and a pencil. A press anywhere on a row (or Enter on it) opens the type editor.
@@ -996,10 +998,10 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   cards there), so they can be restored once a type exists.
 - Someone who may only view the project sees the list without the edit and add controls.
 
-## Add New Card Type
+## Add Card Type
 
 - Wherever a card type can be added (the Card Types panel, a board's Add a Card menu, Setup Board) it is the same
-  control: a full-width dashed row, a plus and **Add New Card Type**, quiet until hovered, when it takes the brand
+  control: a full-width dashed row, a plus and **Add Card Type**, quiet until hovered, when it takes the brand
   colour (border, tint and text). On a board it wears the board's colours; in a menu it is one of the menu's items.
 
 ## Card display
@@ -1132,54 +1134,100 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     Title text, Status and Priority a list); its tooltip and accessible name name the kind ("Link to Card", "Date", "Person"). Dragging the handle (mouse, pen or touch alike) moves the field
     within its group: the row follows the pointer, the rows it passes slide aside, release places it and Escape
     puts it back. Title, Status and Votes have no handle, and every row keeps its slot so the names line up.
-    The row ends with a custom field's **Edit** (a pencil), which opens its name, its options (Choice), its
-    **Links To** (Card, below) in its row, and a **⋯** menu headed by the field's name: **Move
+    The row ends with a field's **Edit** (a pencil, tooltip "Edit Field", named "Edit {Name}"), which opens
+    [Edit Field](#edit-field) over the editor (it replaced editing a field's name and settings inside its row,
+    2026-11-03), and a **⋯** menu headed by the field's name: **Move
     Up** and **Move Down** (the keyboard's way to reorder), **Move to {group}** for each other group (Details
     first, then the tabs) and **Remove** (absent for a field the type always keeps). Title has no menu.
   - Each group ends with **Add Field**, a full-width dashed row (as **Add Type** in the panel), which opens a
-    popover anchored to it: a **gallery** on the same frame as [Add a Widget](board-widgets.md#the-widget-gallery)
-    (720 px wide, over the editor, so it is never squeezed by the Details column; on a phone the window's width
-    less its margins; never taller than the room on its side, its list scrolling inside). It works in two steps,
-    **pick, then shape**, in the same popover (named "Add Field"); the field lands in that group (Votes always on
-    the card). (The owner's pick, 2026-10-28, from the design canvas's "B · Pick, then shape"; made a gallery like
-    Add a Widget at the owner's ask, 2026-11-02, Work Tracker #302.)
-    - **The frame**, as Add a Widget's: a header with the title **Add Field**, the line "Pick what the new field
-      holds.", **Search fields** beside them (a search field with a magnifier, its placeholder "Search fields, like
-      money or date") and a close cross at the header's end (closes the popover). The search takes focus on
-      opening under a mouse or a pen, never on a touch screen (no keyboard flies up). Under the header, the
-      **rail** down the left and the list beside it; in a gallery under 600 px wide the rail is a row of chips over
-      the list. The header and the rail stay through both steps (while shaping, the kind's category is marked, and
-      on a phone the rail steps aside for the form); pressing a rail entry while shaping goes back to Pick on that
+    **modal over the type editor**: its own dim layer covers the editor (the editor stays open, dimmed, behind it),
+    and a centred panel 960 px wide (never wider than the window less its margins, and wide enough that the gallery's illustrations keep their shape) and 40 rem tall (less in a short
+    window), so moving between categories and steps never resizes it; on a phone it rises from the bottom as a sheet
+    with a grab handle (dragging it down closes it). It holds a **gallery** on the same frame as
+    [Add a Widget](board-widgets.md#the-widget-gallery), its list scrolling inside. It works in two steps, **pick,
+    then shape**, in the same modal (named "Add a Field"); the field lands in that group (Votes always on the card).
+    Focus stays inside the modal while it is open; a press on its dim layer, its close cross, dragging the sheet
+    down or Escape (once the steps below have taken theirs) closes it alone, never the type editor, and hands focus
+    back to the Add Field that opened it, as adding a field does. (The owner's pick, 2026-10-28, from the design
+    canvas's "B · Pick, then shape"; made a gallery like Add a Widget at the owner's ask, 2026-11-02, Work Tracker
+    #302; a modal over the editor in place of a popover anchored to the button at the owner's ask, 2026-11-03.)
+    - **The frame**, as Add a Widget's but sized as a dialog's: a header with the title **Add a Field** (the type
+      editor's title size), the line "Pick what the new field holds.", **Search fields** beside them (a search field
+      with a magnifier, its placeholder "Search fields, like money or date") and the dialogs' close cross at the
+      header's end (closes the modal). The search takes focus on opening under a mouse or a pen, never on a touch
+      screen (no keyboard flies up; the modal itself takes focus). Under the header, the **rail** down the left and
+      the list beside it; in a gallery under 600 px wide (a phone) the rail is a row of chips over the list. The
+      header and the rail stay through both steps (while shaping, the kind's category is marked, and on a phone the
+      rail steps aside for the form); pressing a rail entry while shaping goes back to Pick scrolled to that
       category, and typing a search goes back to Pick with it.
     - **Pick** (step 1):
-      - **The rail** names the categories, each with its icon and how many kinds it holds: **All Fields** first
-        (chosen on opening), then the seven categories below. Pressing one shows only that category; All Fields
-        shows them all, one after another, each under its heading and line. The chosen entry is marked current.
-      - **The categories**, in order, each with its line and kinds (every kind in exactly one):
+      - **The list** holds every kind, all nine categories one after another, each under its heading and line,
+        as Add a Widget's list holds every widget ([Board widgets](board-widgets.md) "The rail").
+      - **The rail** names the nine categories below, each with its icon and how many kinds it holds. Pressing one
+        scrolls the list to that category's heading (smoothly, at once under reduced motion); every kind stays
+        listed. The entry for the category in view is marked current as the list scrolls (the first on opening; at
+        the list's end, the last whose heading shows). It is the very rail and scroll Add a Widget uses, shared.
+        (Made to work as Add a Widget's at the owner's ask, 2026-11-03: it used to show one category at a time, under
+        an All Fields entry.)
+      - **The categories**, in order, each with its line and kinds (every kind and variant in exactly one, a variant
+        right after its kind):
 
-        | Category            | Line                                               | Kinds                                             |
-        | ------------------- | -------------------------------------------------- | ------------------------------------------------- |
-        | Text                | Words, from a title to pages of notes.             | Text, Long Text                                   |
-        | Numbers and Money   | Counts, amounts, shares and scores.                | Number, Currency, Percent, Rating                 |
-        | Dates and Time      | Days, moments, spans and time spent.               | Date, Date and Time, Date Range, Duration         |
-        | Choices and Tags    | Pick from a list, tick a box or tag a card.        | Choice, Multiple Choice, Checkbox, Labels, Colour |
-        | People and Teamwork | Who has it, what is left and what the team thinks. | Person, Checklist, Comments, Votes                |
-        | Links and Media     | Web addresses, contact details and pictures.       | Link, Email, Phone, Image                         |
-        | Cards and Formulas  | Connect cards, and work values out from them.      | Link to Card, Calculated                          |
+        | Category         | Line                                               | Kinds                                                        |
+        | ---------------- | -------------------------------------------------- | ------------------------------------------------------------ |
+        | Text             | Words, from a title to pages of notes.             | Text, Long Text                                              |
+        | Numbers          | Counts, amounts, shares and scores.                | Number, Currency, Percent, Rating                            |
+        | Dates            | Days, moments and spans on the calendar.           | Date, Date and Time, Date Range, Date and Time Range         |
+        | Time             | How long something takes, or the time spent on it. | Duration, Time Tracking                                      |
+        | Choices          | Pick from a list, tick a box or tag a card.        | Choice, Multiple Choice, Checkbox, Checklist, Labels, Colour |
+        | People           | Who has it, and what the team says about it.       | Person, Several People, Comments, Votes                      |
+        | Links and Images | Web pages, contact details and pictures.           | Link, Email, Phone, Image                                    |
+        | Cards            | Connect a card to other cards.                     | Link to Card, Several Cards, Blocked By                      |
+        | Calculated       | Values worked out for you.                         | Calculated, Formula, Rollup, Lookup                          |
+
+        (Renamed plainer at the owner's ask, 2026-11-03: Numbers and Money became Numbers; Dates and Time split into
+        Dates and Time; Choices and Tags became Choices, taking Checklist; People and Teamwork became People; Links
+        and Media became Links and Images; Cards and Formulas split into Cards and Calculated.)
+
+      - **Variants**: an option that changes what a field is gets a tile of its own, so it is found in the gallery
+        rather than inside a field's form (the owner's ask, 2026-11-03). A variant makes its kind with the option
+        already on; nothing new is stored. Each tile is a field type of its own: no form (Shape, or an existing
+        field's in the type editor) shows a switch or menu to turn one into another (the owner's correction,
+        2026-11-03: Holds Several, Blocks, Track Time and Include Time are gone from every form, and the Calculation
+        menu offers only Child Count and Children Done, on a Calculated field alone). The variants: **Several People** (Person holding several),
+        **Time Tracking** (Duration tracking time), **Date and Time Range** (Date Range with times), **Several
+        Cards** (Link to Card holding several), **Blocked By** (Link to Card, blocks, holding several),
+        **Formula**, **Rollup** and **Lookup** (Calculated, its calculation each). Kept as settings,
+        as they shape how a field reads or behaves rather than what it is: Required, Notifies (a Person),
+        a Currency's currency, a Rating's scale, Show as Percent Bar, a Choice's options, the card types a Link to
+        Card links to, a Formula's Result, a Rollup's or Lookup's Through, Calculate and Field, and a Calculated
+        field's Child Count or Children Done (both count the card's children). Choice and Multiple Choice, and Date and Date and Time, are already
+        kinds of their own. A field wears its type's icon and name in the type editor's rows (a variant's for one made as a variant).
 
       - **Each kind is a tile**, two to a row (one in a gallery under 460 px), as a widget's tile is: a strip on top
-        drawing a sample value of the kind as the card's panel draws it (the samples of Preview, below), then its
+        drawing what the kind does. Where a value explains itself (Text, Number, Currency, Percent, Rating, Choice,
+        Labels, Person, Colour, Link, Email, Phone) the strip is a sample value as the card's panel draws it (the
+        samples of Preview, below). Where a bare value would say nothing, the strip is a small picture of the idea
+        instead: Calculated a card with three child cards, two ticked, giving "2/3"; Formula two field chips worked
+        into a result ("Estimate × Rate = £1,200"); Rollup three linked cards' numbers summed ("Sum 10"); Lookup a
+        linked card's Owner carried onto this card; Link to Card two cards joined; Several Cards one card joined to
+        three; Blocked By a card held behind another, marked Blocked; Date a month grid with the day picked; Date and
+        Time the same with a clock; Date Range and Date and Time Range a week with the span filled; Duration a clock
+        with "2h 30m"; Checkbox a ticked and an unticked line; Checklist three to-dos, two ticked, "2/3"; Comments
+        two speech bubbles from two people; Votes an up-vote button with voters; Image two thumbnails. Then its
         icon, name and a one-line description in plain words: Text "A short line of text", Long Text "Paragraphs of
         notes", Link "A web address", Email "An address that opens your mail app", Phone "A number that calls on a
         phone", Number "Points, counts and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn
-        as a bar", Duration "Hours and minutes, or time tracked with a timer", Rating "Stars out of 3 to 10", Date
+        as a bar", Duration "Hours and minutes, like an estimate", Time Tracking "Time logged on the card with a
+        timer", Rating "Stars out of 3 to 10", Date
         "A day on the calendar", Date and Time "A day and a time, in each person's time zone", Date Range "From one
-        day to another, with times if you like", Choice "One option from a list", Multiple Choice "Several options
+        day to another", Date and Time Range "From one moment to another, like a meeting", Choice "One option from a list", Multiple Choice "Several options
         from a list", Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name", Person "Someone on
-        the plan, like an owner or a reviewer", Checklist "To-dos ticked off one by one", Comments "Threads to talk
+        the plan, like an owner", Several People "A few people at once, like reviewers", Checklist "To-dos ticked off one by one", Comments "Threads to talk
         the card through", Votes "Thumbs up from the team", Colour "A colour to tell cards apart", Image "A picture,
-        like a mock-up or a photo", Link to Card "Another card, like a parent or an epic", Calculated "Worked out
-        from linked cards or a formula". The whole tile is one button: pressing it opens Shape. Tiles lift a pixel
+        like a mock-up or a photo", Link to Card "Another card, like a parent or an epic", Several Cards "Several
+        linked cards, like an epic’s stories", Blocked By "Cards that must be done before this one", Calculated
+        "Counts of child cards, or how many are done", Formula "Works a value out from the card’s fields", Rollup "A
+        sum, average or count over linked cards", Lookup "A field read from a linked card". The whole tile is one button: pressing it opens Shape. Tiles lift a pixel
         on hover (not with reduced motion).
       - A kind whose built-in field the type lacks carries a quiet **Ready to use** tag at its strip's top right
         (Date while the type lacks Start Date or Due Date, Person while it lacks the Assignee, and so on).
@@ -1189,18 +1237,23 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         fields of its kind (**due** and **start** find Date, **assignee** Person, **priority** Choice, **estimate**
         Number, **description** Long Text), and a few everyday words for it (**money**, **price**, **budget** find
         Currency; **stars**, **score** Rating; **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**,
-        **relation** Link to Card; **percent**, **progress**, **complete** Percent; **formula**, **rollup**
+        **relation** Link to Card; **stories**, **children** Several Cards; **blocker**, **depends on**,
+        **waiting on** Blocked By; **percent**, **progress**, **complete** Percent; **formula**, **expression**
+        Formula; **rollup**, **sum**, **average** Rollup; **lookup**, **pull** Lookup; **computed**, **child count**
         Calculated; **url**, **website** Link; **dropdown**, **select**, **option** Choice; **tags**,
         **multi-select** Multiple Choice and Labels; **notes**, **paragraph** Long Text; **deadline**, **day** Date;
         **time**, **meeting**, **appointment** Date and Time; **range**, **event**, **trip** Date Range;
-        **mobile**, **tel**, **call** Phone; **count**, **points** Number; **time**, **hours**, **timer**,
-        **tracking**, **billable** Duration; **mail** Email; **owner**, **reviewer**, **people** Person; **color**,
+        **meeting**, **booking**, **shift** Date and Time Range;
+        **mobile**, **tel**, **call** Phone; **count**, **points** Number; **time**, **hours**, **estimate**
+        Duration; **timer**, **tracking**, **billable**, **timesheet** Time Tracking; **mail** Email; **owner**,
+        **assign** Person; **people**, **reviewers**, **team** Several People; **color**,
         **swatch** Colour; **to-do**, **subtasks** Checklist; **discussion**, **thread** Comments; **like**,
         **upvote** Votes; **picture**, **photo**, **screenshot**, **attachment**, **cover** Image, whose Ready to use
-        offers Attachments). Starting a search shows All Fields, so a match in any category shows; the rail's counts
-        become each category's matches, a category with none dimmed, and pressing one narrows the matches to it.
-        With nothing matching, the rail steps aside (as Add a Widget's does) and it says **No fields match “…”**
-        with "Try a word like money, date or parent." under it. How many match is announced. Clearing the search keeps the category shown.
+        offers Attachments). A search looks in every category and starts the list at its top, the first category
+        with a match marked; the rail's counts become each category's matches, a category with none dimmed, and
+        pressing one with matches scrolls to them. With nothing matching, the rail steps aside (as Add a Widget's
+        does) and it says **No fields match “…”** with "Try a word like money, date or parent." under it. How many
+        match is announced. Clearing the search shows every kind again, from the top.
       - When the type holds the most custom fields it can (12), a note heads the list: "This type holds the most
         custom fields it can (12). Remove one to add another." A kind with a built-in field the type lacks stays
         open (its Shape offers only that field); every other kind's tile is dimmed and can't be pressed, its
@@ -1208,11 +1261,11 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       - **Keyboard**: ↓ from the search moves to the first tile; the arrow keys move between tiles (left and right
         one, up and down a row), ↑ from the top row back to the search, Home and End to the first and last tile;
         Enter or Space presses the one focused; Enter in the search, with a search typed, picks the first match.
-        Tab reaches the search, the close cross, the rail and the tiles in turn. Escape clears a typed search
-        first, then closes the popover.
+        Tab reaches the search, the close cross, the rail and the tiles in turn, and wraps within the modal. Escape
+        clears a typed search first, then closes the modal.
     - **Shape** (step 2, after a kind is picked): a header with **All kinds** (a left chevron; back to Pick with
-      the search as it was, focus on the kind that was picked) and the kind as a pill (its icon and name, read as
-      "Kind: Choice"); then, when the type lacks a built-in field of this kind, **Ready to use**: a row per such
+      the search as it was, focus on the tile that was picked, the list scrolled to it) and the kind as a pill (its
+      icon and name, read as "Kind: Choice"; a variant's name while its option is on, "Kind: Several People"); then, when the type lacks a built-in field of this kind, **Ready to use**: a row per such
       field (its icon, its name and what uses it: Assignee "Notifies them, and fills My Work and Workload", Labels
       "Filters, swimlanes and coloured chips", Colour "A dot on the card, and its bar on the Gantt chart", Checklist
       "Progress on the card, like 2/5", Start Date "Where its bar starts on the Gantt chart", Due Date "On the
@@ -1220,33 +1273,129 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       and swimlanes", Description "The card's main notes, with rich text", Comments "Threads on the card, and
       mentions in the Inbox", Votes "Session votes, Top Voted and sorting", and under Image, Attachments "Pictures on
       the card, and its cover"), each ending in a plus; one press adds that
-      built-in field, keeping its id, and closes the popover. Then, under a rule reading **Or make your own** (only
+      built-in field, keeping its id, and closes the modal. Then, under a rule reading **Or make your own** (only
       while Ready to use shows), **Name** (a labelled field, focused, "Field name" as its placeholder); then only what
       that kind needs: for Choice and Multiple Choice **Options**, a list of option rows (each a field named "Option
       1", "Option 2", … with a remove cross; one empty row to start), **Add an option** (a dashed row, "or paste a
       list" beside it), Enter in a row adding a row after it, Backspace in an empty row removing it, and pasting
       several lines into a row adding one option a line (blanks dropped, at most 20); for Rating **Scale** ("Out of
-      3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for Duration **Track Time** (a switch, off, its line
-      "A start/stop timer on the card, adding up everyone's time."; [Time Spent](#time-spent)); for Date Range **Include
-      Time** (a switch, off, its line "Each end has a time of day too. Chosen once: it can't change later."); for
-      Link to Card **Links To** its card types (at least one); for Calculated **Calculation** (the menu below, the
-      first chosen; a Rollup's and a Lookup's own menus, [Rollup and Lookup](#rollup-and-lookup-fields)) and, for
-      Children Done or a Formula, Rollup or Lookup with a Percent result, **Show as Percent Bar** (off); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes); then
-      **Preview**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
-      typed ("Field name" until then, with the required mark when Required) beside a sample value of its kind
-      (Choice its first option, Multiple Choice its first two, Link to Card the linked types' names, "Project or
-      Epic", Rating stars out of its scale, Currency in its currency, Percent its bar at 40% and "40%", Duration "2h 30m" (with Track Time on, a Start
-      button beside it), Date and Time "Fri 31 Oct, 17:00", Date Range "31 Oct to 2 Nov" (with times "31 Oct, 09:00 to 2 Nov, 17:00"), Phone "+44 20 7946 0958", Calculated "3" or "40%" (the Percent bar when Show as Percent Bar is on), Person a person's
-      disc and name, Labels two label chips, Colour a swatch and its name, Checklist "2/5", Image a picture glyph and
-      "photo.png", Votes "▲ 3"); updating as you
-      type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the
+      3" to "Out of 10", 5 first chosen); for Currency **Currency** (a select of the common codes, GBP first); for
+      Link to Card, Several Cards and Blocked By **Links To** its card types (at least one); for Calculated
+      **Calculation** (Child Count or Children Done, the first chosen); for Rollup and Lookup their own menus
+      ([Rollup and Lookup](#rollup-and-lookup-fields)); for Formula the formula editor; and, for
+      Children Done or a Formula, Rollup or Lookup with a Percent result, **Show as Percent Bar** (off); then **Required** (where the kind may be required: never Checkbox, Calculated, Image, Comments or Votes; its line "Every card of this type needs a value for it.") and, on a Person, **Notifies**. Every on/off setting here, Show as Percent Bar, Required and Notifies, in Shape and in an existing field's form alike, is a Settings row: a full-width bordered card holding its name, a one-line description and the switch, the whole card one press target that flips it (the shared settings toggle row, as Settings and the start screen's Sync Plan to Server use), stacked with one even gap (the owner's ask, 2026-11-03); then
+      **Try It**: a small card as a board's card panel draws it, "Example card" over the field's row: its name as
+      typed ("Field name" until then, with the required mark when Required) beside the card panel's own control for
+      it, working, so the field can be tried before it is added ("Nothing here is saved" beside the caption). A
+      Choice or Multiple Choice opens its list of the options being typed, a Date, Date and Time or Date Range its
+      picker, a Person its picker of the plan's people (Custom Assignee too); Text, Long Text, Number, Currency (in
+      its currency), Percent, Duration, Labels (the plan's labels offered), Colour and Checklist take typing and
+      picks as on a card; a Checkbox ticks; a Rating takes its stars out of its scale. A Phone, Email or Link that is
+      refused says why under the box, as the agent tools word it ("{Name}: Write a phone number like +44 20 7946
+      0958.", "Write an email address like sam@example.com", "Write a link that starts https://"); a Duration says
+      its own. What is tried is held in the dialog alone: nothing is written to a card, the plan or the server, and
+      it starts empty again whenever the kind or a setting that shapes it changes (options, scale, currency, Include
+      Time, Holds Several and the like), never on renaming or Required. Inside it, Enter in a box never adds the
+      field, and Escape in an open list or picker closes only that list. The kinds that need a real card (Link to
+      Card, Calculated, Image, Comments, Votes, and a Duration that tracks time) keep a still **Preview** instead,
+      captioned "Preview" with "Shows on a real card" beside it: a sample value of its kind (Link to Card the
+      linked types' names, "Project or Epic", Calculated "3" or "40%", the Percent bar when Show as Percent Bar is
+      on, Image a picture glyph and "photo.png", Votes "▲ 3", Time Spent "2h 30m" and a Start button). Both
+      follow the settings as you type. Last, one full-width primary button **Add {Name}** ("Add {Kind} Field" until named), off until the
       field is ready: a name, at least one option for Choice and Multiple Choice, at least one type for Link to
       Card. While it is off, a quiet line under it says what is missing ("Name the field to add it.", "Add at
       least one option.", "Pick a card type it links to."). Enter in Name (or anywhere but an option row, a menu or
-      a button) adds it when ready. Escape goes back to Pick (and from Pick closes the popover). Adding closes the
-      popover; the button stays in view at the foot while the rest scrolls.
+      a button) adds it when ready. Escape goes back to Pick (and from Pick closes the modal). Adding closes the
+      modal; the button stays in view at the foot while the rest scrolls.
     - On a touch screen every control in it is at least 44 px tall. Moving between the steps slides in gently,
       not at all with reduced motion. Dark mode throughout.
+  - <a id="edit-field"></a>**Edit Field** (the owner's ask, 2026-11-03: "edit fields I already have on a card type
+    by clicking a pencil and then editing them in a modal like the Add Field so I can rename, and reshape. Maybe
+    even choose a different type."): the pencil on a field's row opens Add Field's modal, the same frame, rail, list
+    and Shape, in its **Edit** mode.
+    - **Opening**: the title **Edit Field** and the line "Rename it, reshape it, or pick another type.", opened
+      straight on **Shape** for the field's own type (its tile: Several People for a Person holding several, and
+      so on), its Name and every setting filled in as the draft holds them: Options, Scale, Currency, Links To,
+      Calculation, the formula, a Rollup's or Lookup's settings, Show as Percent Bar, Required and Notifies. Try It
+      (or Preview) follows them as in Add Field. **Ready to use** never shows. The footer holds **Save** (a tick),
+      off until the field is ready, saying what is missing as Add Field does ("Name the field to save it.").
+      Everything is changed in place: the field keeps its id, so every board, view, widget, filter and formula
+      naming it still finds it.
+    - **Leaving**: the close cross, the dim layer, dragging the sheet down and Escape (Shape steps back to the
+      gallery first, then a typed search clears, then it closes) leave the draft as it was; Save writes the field
+      into the type editor's draft and closes. Focus goes back to the pencil. Nothing reaches the plan until the
+      type editor's own **Save**.
+    - **Another type**: **All kinds** goes back to the gallery, the field's own tile tagged **Current**. Picking
+      another tile opens Shape for it with the name typed so far and Required kept; picking its own tile again gives
+      the field back as it was. A Choice or Multiple Choice made from another type starts with the distinct values
+      the field's cards hold as its options (each list's items one by one, at most 20), so they all fit.
+      Tiles it can't become are dimmed and can't be pressed, the reason in a tooltip (and in the tile's name):
+      Comments ("Comments hold threads, not values, so no field changes to or from them."), Votes ("Votes are
+      counted by a session vote, ..."), Image ("An Image holds an uploaded picture, ..."), Checklist ("A Checklist
+      holds rows to tick, ..."), Time Tracking ("Time Tracking keeps logged time, ..."), all of these both ways;
+      Calculated, Formula, Rollup and Lookup from a field that holds values, and every field with values from one
+      of them ("Worked out, never typed: a field with values can’t become one, nor one become a field with
+      values."; one worked-out field may become another); and Link to Card, Several Cards and Blocked By from any
+      field but a card link ("Only a card link can become a Link to Card field: other values can’t name a card.").
+      A field added in this same edit holds no values yet, so every tile is open to it.
+    - **The values cards hold** move with it, by one rule per pair (`packages/items` field-kind-change.ts), counted
+      from the field as the type is saved:
+
+      | From                                        | To                                          | How                                                                                                                                                                                                                |
+      | ------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+      | Person                                      | Several People                              | Kept (one person reads as a list of one)                                                                                                                                                                           |
+      | Several People                              | Person                                      | The first person; the rest are lost                                                                                                                                                                                |
+      | Link to Card                                | Several Cards, Blocked By                   | Kept                                                                                                                                                                                                               |
+      | Several Cards, Blocked By                   | Link to Card                                | The first card; the rest are lost                                                                                                                                                                                  |
+      | Several Cards                               | Blocked By (and back)                       | Kept                                                                                                                                                                                                               |
+      | Any value                                   | Text, Long Text                             | Written as text: a choice its label, a number plain, a date `YYYY-MM-DD`, a moment or range as the card shows it, Yes or No, people's and cards' names joined by commas; Long Text to Text runs its lines together |
+      | Text and the rest                           | Number, Currency, Percent, Rating, Duration | Read as an import reads a cell; what is no number (or out of range) is cleared                                                                                                                                     |
+      | Number, Currency, Percent, Rating, Duration | one another                                 | The number kept where it fits (Percent 0 to 100, Rating 1 to its scale, Duration as minutes); else cleared                                                                                                         |
+      | Any value                                   | Choice                                      | The option it names (its first, from a list); none is cleared                                                                                                                                                      |
+      | Any value                                   | Multiple Choice                             | The options it names; those it doesn't are lost                                                                                                                                                                    |
+      | Any value                                   | Labels                                      | Its text, or its list's items, as labels                                                                                                                                                                           |
+      | Any value                                   | Person, Several People                      | The plan's people it names; nobody named is cleared                                                                                                                                                                |
+      | Text and the rest                           | Email, Phone, Link, Colour, Checkbox        | Kept when it is one (an address, a number, `#rrggbb`, a yes); else cleared                                                                                                                                         |
+      | Date                                        | Date and Time                               | 9:00 that day, in the editor's zone                                                                                                                                                                                |
+      | Date and Time                               | Date                                        | Its day; the time is lost                                                                                                                                                                                          |
+      | Date, Date and Time                         | Date Range, Date and Time Range             | A range of that one day or moment                                                                                                                                                                                  |
+      | Date Range, Date and Time Range             | Date, Date and Time                         | Its start; the end is lost                                                                                                                                                                                         |
+      | Date Range                                  | Date and Time Range (and back)              | Each end at 9:00; back, each end's day (times lost)                                                                                                                                                                |
+
+      A Long Text's formatting goes with it when it becomes another type.
+
+    - **Before Save**, over the button, one line says what happens: "12 cards have a value; every one is kept as a
+      Number." when nothing is lost, else "12 cards have a value; 3 can’t be kept as a Number and will be cleared,
+      and 2 will keep only part of theirs." (amber). Then Save asks once: the line adds "Change them? Undo puts them
+      back.", **Keep Editing** beside it, and Save becomes **Change Values**, which saves. The count is worked out
+      once for each type picked (one pass over the plan's cards), and again only when the cards change.
+    - **Saving the type**: the type editor's Save writes the type and every card's changed values as **one undo
+      step**: Undo puts the field's type and every value back, Redo makes them again. The values are written as an
+      undo is, so a Required field's cleared values are never refused.
+    - **What reads the field by id**: a board's swimlanes, sort, filters, a Card Colour, a Gantt's dates, a
+      widget, a form's question mapping and a Formula, Rollup or Lookup naming it read its new type at once. One
+      that can't use the new type falls back as it does for a removed field (no lanes, the built-in dates, the
+      widget marked Changed, a form question going to Description and its form unpublishable until mapped again,
+      a formula giving no value); none is rewritten. A filter on the field keeps its value as written, so it may
+      match no card until changed.
+    - **Built-in fields** (the owner's pick, 2026-11-03, "Full edit"; **not built yet**: today a built-in field has
+      no pencil, and this is the next step). Each built-in field but Title gets the pencil too; an inherited field
+      and a field from a newer version keep their lock (edited on the base type, or after a reload).
+      - **Rename**: a type's own name for a built-in field (stored on the type as `fieldLabels`, by field id), so
+        the field keeps its id and everything reading it by id keeps working. Every place that names the field
+        for a card of that type reads it through one helper: the card panel, the type editor, the card face's
+        chips, and a board's lanes, sort, filters and CSV columns when every type the board shows calls it the
+        same (else its own name).
+      - **Settings**: only those the built-in really has (the Assignee's Notifies; Status its states, in States).
+      - **Another type**: the built-in becomes a custom field of the picked type on this card type (a new custom
+        field id, the name carried over) and comes off the type; its values move to the new field by the same rules
+        and count as above, in the same one undo step, which puts the built-in and its values back. Before Save, a
+        list says what stops reading it for this type, from the plan's own boards, views and widgets ("Boards laned
+        or sorted by Priority, the Gantt chart's Due bar and the Overdue widget won't read this field for Tasks").
+      - **Status** drives the columns, so it never becomes another type: its tiles are dimmed, "Status places the
+        card in a column, so it keeps its type." It is renamed, and its states set, as the rest.
+    - **Share roles**: only an **Editor** (who edits card types) sees the pencil, as the type editor is theirs;
+      a **Participant** and a **Viewer** never open the type editor, so never see it.
   - **Links To** is a multi-select dropdown: a field the width of its row reading **Links To Project** (one type),
     **Links To Project or Epic** (two), **Links To Project, Epic and 2 more** (more), or **Links To a Card Type…**
     (muted, none yet), with a chevron. Pressed, it opens a popover under it listing every card type (its glyph in its
@@ -1333,7 +1482,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
 - Saving a type edit, adding, deleting and reordering are each one undo step, interleaved with canvas and item
   steps. Undo puts the previous catalogue back; it never changes items (a delete's "move them to" writes are
-  their own item steps).
+  their own item steps), but for a field whose type changed ([Edit Field](#edit-field)): its cards' values are
+  written with the type, and undone and redone with it, as one step.
 
 ## Storage and sync
 
@@ -1369,6 +1519,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
 - `Plan` · `Opened` · `CardTypes` when the panel opens; `Plan` · `Changed` · `CardType` when a type is saved, `Plan` · `Added` · `CardType` when one is added,
   `Plan` · `Duplicated` · `CardType` when a duplicate is saved and `Plan` · `Deleted` · `CardType` when one is deleted. Never names, ids or field names.
+- `Plan` · `Changed` · `FieldType` when a saved type changes the values of a field whose type changed (Edit Field).
 - `Plan` · `Linked` · `CardTypeBase` when a saved type starts inheriting from a base type, `Plan` · `Unlinked` ·
   `CardTypeBase` when a saved type is detached ([Inherited types](#inherited-types)).
 - `Plan` · `Added` · `LinkedCard` when New {Type} makes a card already linked, and `Plan` · `Linked` · `LinkedCard`

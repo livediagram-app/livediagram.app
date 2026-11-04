@@ -42,6 +42,8 @@ export function RequiredMark() {
   );
 }
 
+// An Overview section: its heading 4 px above what it heads (the prompts and rows below carry their own padding, so
+// the heading reads as theirs; plan-board.md "Look").
 export function ItemPanelSection({
   heading,
   htmlFor,
@@ -61,7 +63,7 @@ export function ItemPanelSection({
   const label = (
     <label
       htmlFor={htmlFor}
-      className={`${actions ? 'shrink-0' : 'mb-2 block'} text-[13px] font-semibold text-slate-800 dark:text-slate-100`}
+      className={`${actions ? 'shrink-0' : 'mb-1 block'} text-[13px] font-semibold text-slate-800 dark:text-slate-100`}
     >
       {heading}
       {required ? <RequiredMark /> : null}
@@ -70,7 +72,7 @@ export function ItemPanelSection({
   return (
     <section className="mb-8">
       {actions ? (
-        <div className="mb-2 flex min-h-8 items-center gap-2">
+        <div className="mb-1 flex min-h-8 items-center gap-2">
           {label}
           {actions}
         </div>
@@ -117,7 +119,7 @@ export function ItemDetailsRow({
   );
 }
 
-// Who made the card and who last edited it, and when: a quiet footer pinned to the bottom of Details (its parent is a
+// Who last edited the card and who made it (made last, at the very bottom), and when: a quiet footer pinned to the bottom of Details (its parent is a
 // flex column; docs/specs/026-plan/plan-board.md "Look", items.md "Created and Last Edited"), each row left out when
 // the card holds no one for it, never a guess.
 export function ItemMeta({ item, now }: { item: Item; now: number }) {
@@ -133,14 +135,13 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
       className="mt-auto flex shrink-0 flex-col gap-0.5 pt-5 text-[12px] text-slate-500 dark:text-slate-400"
     >
       <div className="flex flex-col gap-0.5 border-t border-slate-200/80 pt-3 dark:border-slate-700/80">
-        {maker ? (
+        {editor ? (
           <MetaRow
-            lead={<PersonDisc person={maker} />}
-            // A form's response says when on its own row.
-            at={response ? undefined : made}
-            when={made !== undefined ? stampDayLabel(made) : ''}
+            lead={<PersonDisc person={editor} />}
+            at={edited}
+            when={edited !== undefined ? relativeSince(edited, now) : ''}
           >
-            Created by <span className={META_NAME}>{maker.name}</span>
+            Edited by <span className={META_NAME}>{editor.name}</span>
           </MetaRow>
         ) : null}
         {response ? (
@@ -153,13 +154,14 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
             Form response <span className={META_NAME}>#{response.number}</span>
           </MetaRow>
         ) : null}
-        {editor ? (
+        {maker ? (
           <MetaRow
-            lead={<PersonDisc person={editor} />}
-            at={edited}
-            when={edited !== undefined ? relativeSince(edited, now) : ''}
+            lead={<PersonDisc person={maker} />}
+            // A form's response says when on its own row.
+            at={response ? undefined : made}
+            when={made !== undefined ? stampDayLabel(made) : ''}
           >
-            Edited by <span className={META_NAME}>{editor.name}</span>
+            Created by <span className={META_NAME}>{maker.name}</span>
           </MetaRow>
         ) : null}
       </div>

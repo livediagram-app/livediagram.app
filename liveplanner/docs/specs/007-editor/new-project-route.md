@@ -228,6 +228,11 @@ it cannot tell the difference from a direct visit.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's chunk as soon as it mounts, so the chunk
   downloads in parallel with identity and the create request. If it is not ready at handoff, the opening screen holds
   at its "opening" stage until it is.
+- **One wait reads as one screen, however many copies of it mount.** A visit shows the prerendered opening screen,
+  then the route's fallback or the editor's own copy while the project loads; each is a fresh mount. None restarts
+  its motion: the board drawing and the progress sweep keep their loop's phase from the page's first paint (when the
+  prerendered copy, which runs no script, began), the backdrop glows too, and the label plays its entrance only when
+  it changes ("Creating" to "Opening"), never for the same label mounting again.
 - **The opening screen is the editor's outermost Suspense fallback, so no lazy
   piece inside the editor may suspend up to it.** Every `next/dynamic` import
   in the editor app passes `ssr: false` (or a `loading` component), which gives

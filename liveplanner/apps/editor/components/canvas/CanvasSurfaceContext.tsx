@@ -1,7 +1,12 @@
 'use client';
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { themeChartPalette, type CanvasSurface, type ThemeDefinition } from '@liveplanner/project';
+import {
+  themeChartPalette,
+  type CanvasSurface,
+  type ThemeDefinition,
+  type ThemePaletteEntry,
+} from '@liveplanner/project';
 
 // Which paper the active tab's canvas is: light or dark. Every element that
 // carries no colour of its own is drawn in that paper's ink
@@ -56,4 +61,12 @@ export function CanvasThemeProvider({
 export function useCanvasChartPalette(): readonly string[] | undefined {
   const theme = useContext(CanvasThemeContext);
   return useMemo(() => (theme ? themeChartPalette(theme) : undefined), [theme]);
+}
+
+/** A multi-colour theme's branch colours, in order (docs/specs/011-theme/multicolour-themes.md): what a board gives
+ *  its columns, one each (docs/specs/026-plan/plan-board.md "Columns in the theme's colours"). Undefined on a
+ *  single-colour theme and outside the editor canvas. */
+export function useCanvasBranchColours(): readonly ThemePaletteEntry[] | undefined {
+  const theme = useContext(CanvasThemeContext);
+  return theme?.palette && theme.palette.length > 1 ? theme.palette : undefined;
 }

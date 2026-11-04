@@ -5,10 +5,11 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@liveplanner/project';
+import { createShape, type ShapeElement, type TextSize } from '@liveplanner/project';
 import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { PlanCardView } from './PlanCardView';
+import { PlanTextScaleProvider } from './PlanTextScaleContext';
 
 const person = { id: 'p', name: 'Sam', color: '#2563eb' };
 const item: Item = {
@@ -29,7 +30,7 @@ const card = {
   planCard: { itemId: item.id },
 } as ShapeElement;
 
-function setup(element: ShapeElement = card) {
+function setup(element: ShapeElement = card, size?: TextSize) {
   const openItem = vi.fn();
   const plan = {
     items: new Map([[item.id, item]]),
@@ -38,9 +39,11 @@ function setup(element: ShapeElement = card) {
     openItem,
   } as unknown as PlanContextValue;
   render(
-    <PlanProvider value={plan}>
-      <PlanCardView element={element} />
-    </PlanProvider>,
+    <PlanTextScaleProvider size={size}>
+      <PlanProvider value={plan}>
+        <PlanCardView element={element} />
+      </PlanProvider>
+    </PlanTextScaleProvider>,
   );
   return { openItem, face: screen.getByRole('button', { name: /Ship it/ }) };
 }
@@ -85,5 +88,16 @@ describe('PlanCardView', () => {
     cleanup();
     setup();
     expect(screen.getByText('#3')).toBeTruthy();
+  });
+
+  // docs/specs/004-interface-design/fonts.md "Text size on boards and cards".
+  it("scales its text by its tab's Text Size", () => {
+    const { face } = setup(card, 'lg');
+    expect(face.style.getPropertyValue('--plan-text-scale')).toBe('1.5');
+    // Its title is sized off that scale.
+    expect(screen.getByText('Ship it').style.fontSize).toContain('var(--plan-text-scale, 1)');
+    cleanup();
+    // At Small it carries nothing, so it draws as it always has.
+    expect(setup(card, 'sm').face.style.getPropertyValue('--plan-text-scale')).toBe('');
   });
 });

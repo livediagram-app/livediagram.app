@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement } from '@liveplanner/project';
@@ -57,18 +57,11 @@ function show(overrides: Record<string, unknown>) {
 
 describe('PlanBoardMenuSections', () => {
   // One less click: the sections are rows of the menu itself, not of a Board flyout inside it.
-  it('puts Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card Layout in the menu, no Board parent', () => {
+  it('puts Columns, Swimlanes, Sort Cards, Supported Cards and Card Layout in the menu, no Board parent', () => {
     show({ types: ITEM_TYPES });
     expect(
       [...document.querySelectorAll('[data-flyout]')].map((f) => f.getAttribute('data-flyout')),
-    ).toEqual([
-      'Board Setup',
-      'Columns',
-      'Swimlanes',
-      'Sort Cards',
-      'Supported Cards',
-      'Card Layout',
-    ]);
+    ).toEqual(['Columns', 'Swimlanes', 'Sort Cards', 'Supported Cards', 'Card Layout']);
     expect(document.querySelector('[data-flyout="Board"]')).toBeNull();
     // Set apart from Style above them.
     expect(document.querySelector('[role="separator"]')).toBeTruthy();
@@ -285,33 +278,52 @@ describe('the board menu’s sections', () => {
     for (const k of Object.keys(plan)) delete plan[k];
     Object.assign(plan, { canEdit: true, updateBoard: vi.fn(), announce: vi.fn(), types: [] });
     render(<PlanBoardMenuSections element={board} flyoutProps={() => ({})} />);
-    for (const title of ['Board Setup', 'Columns', 'Swimlanes', 'Card Layout'])
+    for (const title of ['Columns', 'Swimlanes', 'Card Layout'])
       expect(document.querySelector(`[data-flyout="${title}"]`)?.getAttribute('data-panel')).toBe(
         'yes',
       );
   });
 });
 
-// docs/specs/026-plan/plan-board.md "Setup Board": run again from a board's Board Setup.
-describe('Setup Board under the title', () => {
-  it('reopens the setup dialog for the board and closes what holds it', async () => {
-    const { PlanBoardSettings } = await import('./PlanBoardMenuSection');
-    const store = await import('@/lib/setup-dialog-store');
-    store.resetSetupDialogs();
+// docs/specs/026-plan/plan-board.md "The board set-up": Supported Cards ends in Add Card Type, for an Editor.
+describe('Add Card Type under Card Types', () => {
+  it('makes a type with the board’s statuses and closes what holds it', () => {
+    const createTypeForBoard = vi.fn();
     for (const key of Object.keys(plan)) delete plan[key];
-    Object.assign(plan, { canEdit: true, updateBoard: vi.fn() });
+    Object.assign(plan, {
+      canEdit: true,
+      updateBoard: vi.fn(),
+      types: ITEM_TYPES,
+      createTypeForBoard,
+    });
     const onClose = vi.fn();
-    render(<PlanBoardSettings element={board} onClose={onClose} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Setup Board' }));
+    render(<PlanSupportedCardsSettings element={board} onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Card Type' }));
     expect(onClose).toHaveBeenCalled();
-    expect(renderHook(() => store.useSetupOpen('board')).result.current).toBe('again');
+    expect(createTypeForBoard).toHaveBeenCalledWith(
+      'board',
+      presetSetup('kanban').columns.map((c) => c.status),
+    );
+  });
+
+  it('is not offered while the catalogue is full', () => {
+    for (const key of Object.keys(plan)) delete plan[key];
+    const full = Array.from({ length: 200 }, (_, i) => ({ ...ITEM_TYPES[0], id: `t${i}` }));
+    Object.assign(plan, {
+      canEdit: true,
+      updateBoard: vi.fn(),
+      types: full,
+      createTypeForBoard: vi.fn(),
+    });
+    render(<PlanSupportedCardsSettings element={board} />);
+    expect(screen.queryByRole('button', { name: 'Add Card Type' })).toBeNull();
   });
 });
 
 // docs/specs/026-plan/plan-tabs.md "Editing": in a Dashboard slot the board's cog holds the slot's Slot section after
 // the board's own, one section open at a time across both.
 describe('the board panel with a slot’s section', () => {
-  it('adds the section last, opening it closes Board Setup', () => {
+  it('adds the section last, opening it closes Columns', () => {
     Object.assign(plan, { canEdit: true, types: ITEM_TYPES, updateBoard: vi.fn() });
     render(
       <PlanBoardSectionsPanel
@@ -328,12 +340,12 @@ describe('the board panel with a slot’s section', () => {
     );
     const slot = screen.getByRole('button', { name: 'Slot' });
     expect(slot.getAttribute('aria-expanded')).toBe('false');
-    expect(screen.getByRole('button', { name: /Board Setup/ }).getAttribute('aria-expanded')).toBe(
+    expect(screen.getByRole('button', { name: /Columns/ }).getAttribute('aria-expanded')).toBe(
       'true',
     );
     fireEvent.click(slot);
     expect(slot.getAttribute('aria-expanded')).toBe('true');
-    expect(screen.getByRole('button', { name: /Board Setup/ }).getAttribute('aria-expanded')).toBe(
+    expect(screen.getByRole('button', { name: /Columns/ }).getAttribute('aria-expanded')).toBe(
       'false',
     );
   });

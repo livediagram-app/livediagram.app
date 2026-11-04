@@ -1,50 +1,25 @@
-// Add New Card Type from a board's Add a Card menu (docs/specs/026-plan/plan-board.md "Add New Card Type"): the type
+// Add Card Type for a board (Board, Supported Cards; docs/specs/026-plan/plan-board.md "Add Card Type"): the type
 // editor opens on a new type with only that board's statuses on, and saving it adds it to the board's card types.
 import { useCallback, useState } from 'react';
 import type { Element } from '@liveplanner/project';
-import {
-  NEW_ITEM_TYPE,
-  normaliseBoardSetup,
-  type CardField,
-  type ItemTypeDef,
-} from '@liveplanner/items';
+import { NEW_ITEM_TYPE, normaliseBoardSetup, type ItemTypeDef } from '@liveplanner/items';
 
-// What a new type is being made for: a board (with the statuses its columns use), or a Gantt chart (with the fields it
-// needs to draw the type: Start and Due), docs/specs/026-plan/plan-views.md "Gantt Chart".
+// What a new type is being made for: a board, with the statuses its columns use.
 type TypeForBoard = {
   boardId?: string;
   statuses?: readonly string[];
-  viewId?: string;
-  fields?: readonly CardField[];
 };
 
 // A new type's starting point: for a board, only the board's statuses, in its column order (docs/specs/026-plan/
-// item-types.md "The statuses a type uses"); otherwise none given, so the type editor starts it on every status. With
-// fields, those fields on beside the new type's own.
+// item-types.md "The statuses a type uses"); otherwise none given, so the type editor starts it on every status.
 export function newTypeForBoard(forBoard: TypeForBoard): ItemTypeDef {
-  const fields = [...NEW_ITEM_TYPE.fields];
-  for (const f of forBoard.fields ?? []) if (!fields.includes(f)) fields.push(f);
   return {
     ...NEW_ITEM_TYPE,
     id: '',
     newTitle: '',
-    fields,
+    fields: [...NEW_ITEM_TYPE.fields],
     ...(forBoard.statuses ? { statuses: [...new Set(forBoard.statuses)] } : {}),
   };
-}
-
-// The elements with `typeId` added to a chart's card types, where the chart names its own (one naming none already
-// draws every type that can feed it).
-export function withTypeOnView(els: Element[], viewId: string, typeId: string): Element[] {
-  let changed = false;
-  const next = els.map((el) => {
-    if (el.id !== viewId || el.type !== 'shape' || el.shape !== 'plan-view') return el;
-    const view = (el as { planView?: { types?: readonly string[] } }).planView;
-    if (!view?.types || view.types.includes(typeId)) return el;
-    changed = true;
-    return { ...el, planView: { ...view, types: [...view.types, typeId] } } as Element;
-  });
-  return changed ? next : els;
 }
 
 // The elements with `typeId` added to the board's card types. A board taking every type (no `addTypes`) already
@@ -71,10 +46,5 @@ export function useTypeForBoard(
       commitOn(boardId, (els) => withTypeOnBoard(els, boardId, typeId)),
     [commitOn],
   );
-  const addTypeToView = useCallback(
-    (viewId: string, typeId: string) =>
-      commitOn(viewId, (els) => withTypeOnView(els, viewId, typeId)),
-    [commitOn],
-  );
-  return { typeForBoard, setTypeForBoard, addTypeToBoard, addTypeToView };
+  return { typeForBoard, setTypeForBoard, addTypeToBoard };
 }

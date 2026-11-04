@@ -14,7 +14,7 @@ import {
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { PlanCardFace } from './PlanCardFace';
 import { planPalette } from './plan-palette';
-import { BLOCKS_LINE, BlocksSwitch } from './ItemTypeFieldForms';
+import { CustomFieldForm } from './ItemTypeFieldForms';
 import { addedField } from './AddFieldShape';
 import { BlockedBySections } from './BlockedBy';
 import { LinkedCardGroup } from './LinkedCards';
@@ -92,21 +92,16 @@ const EDITOR = { canEdit: true, canEditCards: true };
 const PARTICIPANT = { canEdit: false, canEditCards: true };
 const VIEWER = { canEdit: false, canEditCards: false };
 
-describe('the Blocks switch', () => {
-  it('shows on a Card field only, turns Holds Several on with it, and is tracked', () => {
-    const onChange = vi.fn();
-    render(<BlocksSwitch field={{ kind: 'text' }} onChange={onChange} />);
-    expect(screen.queryByText('Blocks')).toBeNull();
-    cleanup();
-    render(<BlocksSwitch field={{ kind: 'card' }} onChange={onChange} />);
-    expect(screen.getByText(BLOCKS_LINE)).toBeTruthy();
-    fireEvent.click(screen.getByRole('switch', { name: /Blocks/ }));
-    expect(onChange).toHaveBeenCalledWith({ blocks: true, multiple: true });
-    expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'FieldBlocks');
-    cleanup();
-    render(<BlocksSwitch field={{ kind: 'card', blocks: true }} onChange={onChange} />);
-    fireEvent.click(screen.getByRole('switch', { name: /Blocks/ }));
-    expect(onChange).toHaveBeenLastCalledWith({ blocks: undefined });
+describe('Blocked By, a field type', () => {
+  // item-types.md "Fields and Tabs": Add Field, Variants: Blocked By is a field type of its own, no switch in a form.
+  it('has no Blocks switch in a Card field’s form', () => {
+    render(
+      <CustomFieldForm
+        field={{ label: 'Related', kind: 'card', linkType: 'project' }}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('switch', { name: /Blocks/ })).toBeNull();
   });
 
   it('is kept by Add Field only on a Card field', () => {

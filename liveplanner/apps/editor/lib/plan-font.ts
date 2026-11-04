@@ -8,7 +8,8 @@
 // Caveat's lowercase is small (0.36 em), so its headings are lifted to an x-height of PLAN_HANDWRITING_EX. A face
 // liveplanner does not offer (planner-fonts.ts) sets nothing, so its boards letter their headings in the UI face.
 import type { CSSProperties } from 'react';
-import { FONTS, SKETCH_FONT_ID, isPlannerExcludedStack } from '@liveplanner/project';
+import { LABEL_FONT_PX } from '@liveworkspace/model-core/label-font';
+import { FONTS, SKETCH_FONT_ID, isPlannerExcludedStack, type TextSize } from '@liveplanner/project';
 
 /** The x-height the handwriting face is drawn at on a Plan surface, as a share of its font size. */
 export const PLAN_HANDWRITING_EX = 0.52;
@@ -39,10 +40,45 @@ function headingVars(fontFamily: string | undefined): CSSProperties {
   } as CSSProperties;
 }
 
+/** The range a board's text scale is kept to: small enough to fit more on a card, never so small its 11 px pills
+ *  stop reading, nor so large a card's chips crowd out its title. */
+export const PLAN_TEXT_SCALE_MIN = 0.8;
+export const PLAN_TEXT_SCALE_MAX = 1.5;
+
+/** How much a board's and its cards' text is scaled by its tab's Text Size (docs/specs/004-interface-design/fonts.md
+ *  "Text size on boards and cards"): 1 at Small (what a new tab starts at), at Scale and with none set, so those boards
+ *  look as they always have; otherwise the square root of the size's ratio to Small's shape-label px, since a label's
+ *  steps (14, 22, 32) are far larger than a card's text should take, rounded to 0.01 and kept to the range above. */
+export function planTextScale(size: TextSize | undefined): number {
+  const px =
+    typeof size === 'number'
+      ? size
+      : size === 'md' || size === 'lg'
+        ? LABEL_FONT_PX[size]
+        : LABEL_FONT_PX.sm;
+  if (!Number.isFinite(px) || px <= 0) return 1;
+  const scale = Math.round(Math.sqrt(px / LABEL_FONT_PX.sm) * 100) / 100;
+  return Math.min(PLAN_TEXT_SCALE_MAX, Math.max(PLAN_TEXT_SCALE_MIN, scale));
+}
+
+/** A text size on a board or a card face, scaled by the root's `--plan-text-scale` (1 where none is set). */
+export const planTextPx = (px: number): string => `calc(${px}px * var(--plan-text-scale, 1))`;
+
+/** The custom property that hands a text scale down to a face's text sizes; empty at 1, so a board at Small carries
+ *  nothing new. */
+export function planTextScaleVars(textScale: number): CSSProperties {
+  return textScale !== 1 ? ({ '--plan-text-scale': String(textScale) } as CSSProperties) : {};
+}
+
 /** A board's or a Plan card's root: the UI face at its own size (a Dashboard's handwriting lift stays off its slot
- *  boards' small text), with the tab face handed to its headings. */
-export function planBoardFontStyle(fontFamily: string | undefined): CSSProperties {
-  return { fontFamily: PLAN_UI_FONT, fontSizeAdjust: 'none', ...headingVars(fontFamily) };
+ *  boards' small text), with the tab face handed to its headings and the tab's text scale to every text size on it. */
+export function planBoardFontStyle(fontFamily: string | undefined, textScale = 1): CSSProperties {
+  return {
+    fontFamily: PLAN_UI_FONT,
+    fontSizeAdjust: 'none',
+    ...headingVars(fontFamily),
+    ...planTextScaleVars(textScale),
+  };
 }
 
 /** A whole surface lettered in the tab's face (a Dashboard page); it hands the face to the boards in its slots too.

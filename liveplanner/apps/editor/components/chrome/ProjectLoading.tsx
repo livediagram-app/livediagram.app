@@ -28,6 +28,15 @@ const COPY: Record<ProjectLoadingStage, { title: string; detail: string }> = {
 
 const SLOW_AFTER_MS = 10_000;
 
+// One wait can show more than one copy of this screen (the route's fallback, then the editor's own while the plan
+// loads), so a remount must not read as a restart: the glows carry on from the page's start (their loops run from
+// the moment the prerendered copy painted, near the navigation's start), and a label enters only when it changes.
+let lastStage: ProjectLoadingStage | null = null;
+// The page's first paint: the prerendered copy (which runs no script) started its loops and its entrance then.
+const firstPaint = () => performance.getEntriesByType?.('paint')?.[0]?.startTime ?? null;
+const glowDelay = (cycleMs: number) =>
+  `${-((performance.now() - (firstPaint() ?? 0)) % cycleMs)}ms`;
+
 // Glow drift and the label's entrance (the progress sweep is LoadingSweep's). Motion only when
 // the user allows it; reduced motion keeps the screen still.
 const CSS = `
@@ -67,14 +76,28 @@ export function ProjectLoading({ stage = 'opening' }: { stage?: ProjectLoadingSt
     () => false,
   );
   const copy = COPY[stage];
+  // The entrance plays for a new label only, never for the same one remounting.
+  // The first copy to mount replaces the prerendered one when a paint came first, which showed this label already.
+  const [shownBefore] = useState(() => lastStage ?? (firstPaint() !== null ? stage : null));
+  const enter = shownBefore !== stage;
+  useEffect(() => {
+    lastStage = stage;
+  }, [stage]);
+  const [glows] = useState(() => ({ a: glowDelay(28_000), b: glowDelay(36_000) }));
 
   return (
     <div className="relative flex h-dvh flex-col items-center justify-center overflow-hidden bg-slate-50 px-6 dark:bg-slate-950">
       {/* Backdrop: two soft brand-tinted glows behind the centre and the
           editor's dot grid, fading out towards the edges. Decorative. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="ldl-glow-a absolute top-1/2 left-1/2 -mt-72 -ml-80 size-[36rem] rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-500/15" />
-        <div className="ldl-glow-b absolute top-1/2 left-1/2 -mt-40 -ml-24 size-[30rem] rounded-full bg-violet-300/25 blur-3xl dark:bg-violet-500/12" />
+        <div
+          style={{ animationDelay: glows.a }}
+          className="ldl-glow-a absolute top-1/2 left-1/2 -mt-72 -ml-80 size-[36rem] rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-500/15"
+        />
+        <div
+          style={{ animationDelay: glows.b }}
+          className="ldl-glow-b absolute top-1/2 left-1/2 -mt-40 -ml-24 size-[30rem] rounded-full bg-violet-300/25 blur-3xl dark:bg-violet-500/12"
+        />
         <div
           className="absolute inset-0 text-slate-300 dark:text-slate-800"
           style={{
@@ -93,7 +116,10 @@ export function ProjectLoading({ stage = 'opening' }: { stage?: ProjectLoadingSt
         <div role="status" aria-live="polite" className="mt-8 flex flex-col items-center">
           {/* Keyed on the stage so the label re-enters when "Creating"
               gives way to "Opening". */}
-          <div key={stage} className="ldl-enter flex flex-col items-center gap-1 text-center">
+          <div
+            key={stage}
+            className={`${enter ? 'ldl-enter ' : ''}flex flex-col items-center gap-1 text-center`}
+          >
             <p className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-100">
               {copy.title}
             </p>

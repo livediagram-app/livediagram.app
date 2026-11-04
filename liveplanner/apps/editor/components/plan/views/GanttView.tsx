@@ -80,8 +80,7 @@ export function GanttView({
   const dueShape = dates.shapes?.due;
   const minute = useMinute(dueShape === 'datetime' || dueShape === 'daterange-time');
   // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
-  // An Editor gets it with no type to draw yet too, for Add New Card Type.
-  const canAdd = !!plan && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
+  const canAdd = !!plan && !!plan.canEditCards && accepted.length > 0;
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
     () =>
@@ -259,7 +258,6 @@ export function GanttView({
               palette={palette}
               top={AXIS_H + layout.height}
               height={ROW_H}
-              viewId={elementId}
             />
           ) : null}
         </div>

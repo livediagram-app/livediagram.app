@@ -25,8 +25,9 @@ import {
   linkTypesOf,
   withLinkTypes,
 } from '@liveplanner/items';
-import { Select, SwitchRow, TextArea, TextInput } from '@liveplanner/ui';
-import { hasOptions, type PickKind } from './add-field-kinds';
+import { Select, TextArea, TextInput } from '@liveplanner/ui';
+import { SettingsToggleRowView } from '@liveworkspace/settings-ui';
+import { hasOptions, pickOf, type PickKind } from './add-field-kinds';
 import { optionsFrom } from './ChoiceOptionsEditor';
 import { LinksToPicker } from './LinksToPicker';
 import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
@@ -81,11 +82,20 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   votes: 'Votes',
 };
 
-// Add Field's kinds by name: every custom kind's, and the one-to-a-type built-in fields' (Comments, Votes).
+// Add Field's tiles by name: every custom kind's, the one-to-a-type built-in fields' (Comments, Votes), and each
+// variant's (add-field-kinds.ts KIND_VARIANTS).
 export const PICK_KIND_LABELS: Record<PickKind, string> = {
   ...CUSTOM_KIND_LABELS,
   comments: 'Comments',
   votes: 'Votes',
+  people: 'Several People',
+  'time-tracking': 'Time Tracking',
+  'datetime-range': 'Date and Time Range',
+  cards: 'Several Cards',
+  'blocked-by': 'Blocked By',
+  formula: 'Formula',
+  rollup: 'Rollup',
+  lookup: 'Lookup',
 };
 
 // A full-width dashed "add" row (Add Type, Add Field, Add Tab): plain to spot, quiet until hovered.
@@ -197,6 +207,13 @@ export function calculationPatch(calculation: Calculation): Partial<CustomFieldD
 
 // A Calculated field's calculation (docs/specs/026-plan/item-types.md "Calculated fields"): the fixed menu, with what
 // it works out from under it.
+// A Calculated field's own counts: Formula, Rollup and Lookup are field types of their own (Add Field's variants), so
+// the menu never turns a field into one, nor one into a count.
+export const COUNT_CALCULATIONS = [
+  'childCount',
+  'childrenDone',
+] as const satisfies readonly Calculation[];
+
 export function CalculationSelect({
   value,
   onChange,
@@ -215,7 +232,7 @@ export function CalculationSelect({
         value={value ?? CALCULATIONS[0]}
         onChange={(e) => onChange(e.target.value as Calculation)}
       >
-        {CALCULATIONS.map((c) => (
+        {COUNT_CALCULATIONS.map((c) => (
           <option key={c} value={c}>
             {CALCULATION_LABELS[c]}
           </option>
@@ -228,8 +245,34 @@ export function CalculationSelect({
   );
 }
 
-// Required (docs/specs/026-plan/item-types.md "Required fields"): a switch, as a form question's; none for a
-// Checkbox, which reads unticked as empty, or a Calculated field, which nobody fills in.
+// A field's on/off setting as a Settings row (docs/specs/026-plan/item-types.md "Fields and Tabs": a field's
+// switches): the shared settings toggle cell, a full-width card whose whole area flips its one switch, its name and a
+// one-line description in it. Every switch in a field's form is one, stacked by FieldSwitches with one gap.
+function FieldSettingRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  const key = `field-setting-${useId()}`;
+  return (
+    <SettingsToggleRowView
+      row={{ key, label, description }}
+      checked={checked}
+      onChange={onChange}
+    />
+  );
+}
+
+// Required (docs/specs/026-plan/item-types.md "Required fields"): as a form question's; none for a Checkbox, which
+// reads unticked as empty, a Calculated field, which nobody fills in, or a Time Spent field, whose entries are
+// recorded, never typed in.
+export const REQUIRED_LINE = 'Every card of this type needs a value for it.';
 export function RequiredSwitch({
   field,
   onChange,
@@ -237,96 +280,20 @@ export function RequiredSwitch({
   field: Pick<CustomFieldDef, 'kind' | 'required'> & Partial<Pick<CustomFieldDef, 'timeSpent'>>;
   onChange: (required: boolean | undefined) => void;
 }) {
-  // A Time Spent field's entries are recorded, never typed in (docs/specs/026-plan/item-types.md "Required fields").
   if (!canBeRequired(field.kind) || field.timeSpent) return null;
   return (
-    <SwitchRow
+    <FieldSettingRow
+      label="Required"
+      description={REQUIRED_LINE}
       checked={field.required === true}
-      onChange={() => onChange(field.required ? undefined : true)}
-      layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
-      className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-    >
-      Required
-    </SwitchRow>
+      onChange={(on) => onChange(on ? true : undefined)}
+    />
   );
 }
 
-// Show as Percent Bar (docs/specs/026-plan/item-types.md "Percent"): a switch on a worked-out share (a Children Done),
-// with its line under it; none for a field whose result is no share. Off is stored as absent.
+// Show as Percent Bar (docs/specs/026-plan/item-types.md "Percent"): on a worked-out share (a Children Done); none for
+// a field whose result is no share. Off is stored as absent.
 export const SHOW_AS_PERCENT_LINE = 'Draw the share as a bar, like a Percent field.';
-// A Duration field's Track Time switch (docs/specs/026-plan/item-types.md "Time Spent"): set when the field is made
-// (Add Field's Shape step), shown fixed in an existing field's form, as a kind is.
-export const TRACK_TIME_LINE = 'A start/stop timer on the card, adding up everyone’s time.';
-export function TrackTimeSwitch({
-  field,
-  onChange,
-  fixed = false,
-}: {
-  field: Pick<CustomFieldDef, 'kind'> & Partial<Pick<CustomFieldDef, 'timeSpent'>>;
-  onChange?: (patch: Pick<CustomFieldDef, 'timeSpent' | 'required'>) => void;
-  // An existing field: the switch shows how it was made and can't change.
-  fixed?: boolean;
-}) {
-  const lineId = useId();
-  if (field.kind !== 'duration') return null;
-  const on = field.timeSpent === true;
-  return (
-    <div className="flex flex-col">
-      <SwitchRow
-        checked={on}
-        disabled={fixed}
-        aria-describedby={lineId}
-        onChange={() =>
-          onChange?.(on ? { timeSpent: undefined } : { timeSpent: true, required: undefined })
-        }
-        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
-        className="px-1 text-[13px] font-medium text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
-      >
-        Track Time
-      </SwitchRow>
-      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        {fixed ? `${TRACK_TIME_LINE} Set when the field is made.` : TRACK_TIME_LINE}
-      </p>
-    </div>
-  );
-}
-
-// A Date Range field's Include Time switch (docs/specs/026-plan/item-types.md "Date Range"): set when the field is made
-// (Add Field's Shape step), shown fixed in an existing field's form, as Track Time is.
-export const INCLUDE_TIME_LINE =
-  'Each end has a time of day too. Chosen once: it can’t change later.';
-export function IncludeTimeSwitch({
-  field,
-  onChange,
-  fixed = false,
-}: {
-  field: Pick<CustomFieldDef, 'kind'> & Partial<Pick<CustomFieldDef, 'withTime'>>;
-  onChange?: (patch: Pick<CustomFieldDef, 'withTime'>) => void;
-  // An existing field: the switch shows how it was made and can't change.
-  fixed?: boolean;
-}) {
-  const lineId = useId();
-  if (field.kind !== 'daterange') return null;
-  const on = field.withTime === true;
-  return (
-    <div className="flex flex-col">
-      <SwitchRow
-        checked={on}
-        disabled={fixed}
-        aria-describedby={lineId}
-        onChange={() => onChange?.({ withTime: on ? undefined : true })}
-        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
-        className="px-1 text-[13px] font-medium text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
-      >
-        Include Time
-      </SwitchRow>
-      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        {INCLUDE_TIME_LINE}
-      </p>
-    </div>
-  );
-}
-
 export function ShowAsPercentSwitch({
   field,
   onChange,
@@ -335,27 +302,17 @@ export function ShowAsPercentSwitch({
     Partial<Pick<CustomFieldDef, 'result'>>;
   onChange: (showAs: 'percent' | undefined) => void;
 }) {
-  const lineId = useId();
   if (!canShowAsPercent(field)) return null;
-  const on = field.showAs === 'percent';
   return (
-    <div className="flex flex-col">
-      <SwitchRow
-        checked={on}
-        aria-describedby={lineId}
-        onChange={() => {
-          track('Plan', 'Changed', 'FieldShowAsPercent');
-          onChange(on ? undefined : 'percent');
-        }}
-        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
-        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-      >
-        Show as Percent Bar
-      </SwitchRow>
-      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        {SHOW_AS_PERCENT_LINE}
-      </p>
-    </div>
+    <FieldSettingRow
+      label="Show as Percent Bar"
+      description={SHOW_AS_PERCENT_LINE}
+      checked={field.showAs === 'percent'}
+      onChange={(on) => {
+        track('Plan', 'Changed', 'FieldShowAsPercent');
+        onChange(on ? 'percent' : undefined);
+      }}
+    />
   );
 }
 
@@ -364,8 +321,7 @@ export function ShowAsPercentSwitch({
 export const NOTIFIES_LINE =
   'Tell the person when a card is theirs: the Inbox, emails and Only Mine.';
 
-// A Person field's Notifies switch, as Required's, with its line under it (the switch's description); none for any
-// other kind. Off is stored as absent.
+// A Person field's Notifies switch; none for any other kind. Off is stored as absent.
 export function NotifiesSwitch({
   field,
   onChange,
@@ -373,101 +329,44 @@ export function NotifiesSwitch({
   field: Pick<CustomFieldDef, 'kind' | 'notifies'>;
   onChange: (notifies: boolean | undefined) => void;
 }) {
-  const lineId = useId();
   if (field.kind !== 'person') return null;
   return (
-    <div className="flex flex-col">
-      <SwitchRow
-        checked={field.notifies === true}
-        aria-describedby={lineId}
-        onChange={() => {
-          track('Plan', 'Changed', 'FieldNotifies');
-          onChange(field.notifies ? undefined : true);
-        }}
-        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
-        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-      >
-        Notifies
-      </SwitchRow>
-      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        {NOTIFIES_LINE}
-      </p>
-    </div>
+    <FieldSettingRow
+      label="Notifies"
+      description={NOTIFIES_LINE}
+      checked={field.notifies === true}
+      onChange={(on) => {
+        track('Plan', 'Changed', 'FieldNotifies');
+        onChange(on ? true : undefined);
+      }}
+    />
   );
 }
 
-// Holds Several (docs/specs/026-plan/item-types.md "Holds Several"): what the switch on a Person or Card field says.
-export const HOLDS_SEVERAL_LINES: Partial<Record<CustomFieldDef['kind'], string>> = {
-  person: 'Hold more than one person, such as reviewers or a pair.',
-  card: 'Link more than one card, such as related work.',
-};
-
-// A Person or Card field's Holds Several switch, as Notifies', with its line under it; none for any other kind. Off is
-// stored as absent, and turning it either way leaves every card's value as it is.
-export function HoldsSeveralSwitch({
+// Every on/off setting a field's form offers (Show as Percent Bar, Required, Notifies), as Settings rows stacked with
+// one gap; nothing when the field takes none.
+export function FieldSwitches({
   field,
   onChange,
 }: {
-  field: Pick<CustomFieldDef, 'kind' | 'multiple'>;
-  onChange: (multiple: boolean | undefined) => void;
-}) {
-  const lineId = useId();
-  const line = HOLDS_SEVERAL_LINES[field.kind];
-  if (!line) return null;
-  return (
-    <div className="flex flex-col">
-      <SwitchRow
-        checked={field.multiple === true}
-        aria-describedby={lineId}
-        onChange={() => {
-          track('Plan', 'Changed', 'FieldHoldsSeveral');
-          onChange(field.multiple ? undefined : true);
-        }}
-        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
-        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+  field: Pick<CustomFieldDef, 'kind'> &
+    Partial<
+      Pick<
+        CustomFieldDef,
+        'calculation' | 'showAs' | 'required' | 'notifies' | 'result' | 'timeSpent'
       >
-        Holds Several
-      </SwitchRow>
-      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        {line}
-      </p>
-    </div>
-  );
-}
-
-// Blocked By (docs/specs/026-plan/item-types.md "Blocked By"): what the switch on a Card field says.
-export const BLOCKS_LINE = 'Its cards block this one: it shows as blocked until each is done.';
-
-// A Card field's Blocks switch, as Holds Several's, with its line under it; none for any other kind. On also turns
-// Holds Several on (a card can wait on several); off is stored as absent and leaves every card's value as it is.
-export function BlocksSwitch({
-  field,
-  onChange,
-}: {
-  field: Pick<CustomFieldDef, 'kind' | 'blocks'>;
-  onChange: (
-    patch: Pick<CustomFieldDef, 'blocks'> & Partial<Pick<CustomFieldDef, 'multiple'>>,
-  ) => void;
+    >;
+  onChange: (patch: Partial<Pick<CustomFieldDef, 'showAs' | 'required' | 'notifies'>>) => void;
 }) {
-  const lineId = useId();
-  if (field.kind !== 'card') return null;
+  const percent = canShowAsPercent(field);
+  const required = canBeRequired(field.kind) && !field.timeSpent;
+  const notifies = field.kind === 'person';
+  if (!percent && !required && !notifies) return null;
   return (
-    <div className="flex flex-col">
-      <SwitchRow
-        checked={field.blocks === true}
-        aria-describedby={lineId}
-        onChange={() => {
-          track('Plan', 'Changed', 'FieldBlocks');
-          onChange(field.blocks ? { blocks: undefined } : { blocks: true, multiple: true });
-        }}
-        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
-        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-      >
-        Blocks
-      </SwitchRow>
-      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-        {BLOCKS_LINE}
-      </p>
+    <div data-field-switches className="flex flex-col gap-2">
+      <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
+      <RequiredSwitch field={field} onChange={(v) => onChange({ required: v })} />
+      <NotifiesSwitch field={field} onChange={(v) => onChange({ notifies: v })} />
     </div>
   );
 }
@@ -512,7 +411,7 @@ export function CustomFieldForm({
       {field.kind === 'rating' ? (
         <RatingScaleSelect value={field.scale} onChange={(scale) => onChange({ scale })} />
       ) : null}
-      {field.kind === 'calculated' ? (
+      {pickOf(field) === 'calculated' ? (
         <CalculationSelect
           value={field.calculation}
           onChange={(calculation) => onChange(calculationPatch(calculation))}
@@ -535,9 +434,6 @@ export function CustomFieldForm({
       {(isRollupField(field) || isLookupField(field)) && formulaDraft ? (
         <RollupEditor field={field} draft={formulaDraft} onChange={onChange} />
       ) : null}
-      <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
-      <TrackTimeSwitch field={field} fixed />
-      <IncludeTimeSwitch field={field} fixed />
       {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"
@@ -551,10 +447,7 @@ export function CustomFieldForm({
           }}
         />
       ) : null}
-      <HoldsSeveralSwitch field={field} onChange={(multiple) => onChange({ multiple })} />
-      <BlocksSwitch field={field} onChange={onChange} />
-      <RequiredSwitch field={field} onChange={(required) => onChange({ required })} />
-      <NotifiesSwitch field={field} onChange={(notifies) => onChange({ notifies })} />
+      <FieldSwitches field={field} onChange={onChange} />
       {/* Where it shows on a card is the Display tab's: drag it onto the card there. */}
     </div>
   );

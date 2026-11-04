@@ -57,14 +57,15 @@ const getEpoch = () => bandEpoch;
 // The selector CanvasCover marks its element's box with while it has a band.
 const HEADER_BAND_SELECTOR = '[data-header-band]';
 
-// The slot in the menu box: a hairline before it, the chrome's own ink, hidden while it holds nothing. Its width is
+// The slot in the menu box: straight after the menu button with no hairline between them (the button and the name
+// read as one control), the chrome's own ink, hidden while it holds nothing. Its width is
 // left out of the room the band needs (canvas-layer-insets MENU_NAME_SLOT_SELECTOR).
 export function MenuNameSlot() {
   return (
     <span
       ref={setMenuNameSlot}
       data-menu-name-slot=""
-      className="ml-0.5 flex min-w-0 items-center gap-1.5 border-l border-slate-200 pl-2.5 pr-2 text-slate-800 empty:hidden dark:border-slate-700 dark:text-slate-100"
+      className="flex min-w-0 items-center gap-1.5 pl-1 pr-2 text-slate-800 empty:hidden dark:text-slate-100"
     />
   );
 }

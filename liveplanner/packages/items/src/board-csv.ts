@@ -220,6 +220,16 @@ export function multiChoiceOf(options: readonly string[], text: string): string[
 
 const TRUE_TEXT = new Set(['yes', 'y', 'true', '1', 'x', '✓', '✔']);
 
+// A custom field's value read from text as an import reads a cell, or undefined when the text is not one (shared with
+// a field's kind change, field-kind-change.ts, which reads a value written as text into its new kind).
+export function customValueOfText(
+  f: CustomFieldDef,
+  text: string,
+  people: readonly ItemPerson[],
+): ItemFieldValue | undefined {
+  return customValue(f, text, people);
+}
+
 function customValue(
   f: CustomFieldDef,
   text: string,

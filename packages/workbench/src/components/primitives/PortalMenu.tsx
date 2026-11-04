@@ -33,6 +33,8 @@ type PortalMenuBase = {
   landmark?: string;
   // A wider menu for rows that carry a line under their name (the Sheet's function menus): 20rem, not 14.
   wide?: boolean;
+  // Colours over the menu's own (a board's Add a Card menu in the tab's theme): background, border, text.
+  surfaceStyle?: CSSProperties;
 };
 
 // A command menu (the default) or, when it holds a control, a control menu
@@ -68,6 +70,7 @@ function CommandPortalMenu({
   initialFocus,
   wide,
   landmark,
+  surfaceStyle,
 }: PortalMenuBase & { label?: string; initialFocus?: MenuInitialFocus }) {
   const { attach, element, tree, surfaceProps } = useMenu({
     onClose,
@@ -85,6 +88,7 @@ function CommandPortalMenu({
       surfaceProps={surfaceProps}
       wide={wide}
       landmark={landmark}
+      surfaceStyle={surfaceStyle}
     >
       {children}
     </PortalMenuFrame>
@@ -100,6 +104,7 @@ function ControlPortalMenu({
   label,
   wide,
   landmark,
+  surfaceStyle,
 }: PortalMenuBase & { label: string }) {
   const { attach, element, tree, surfaceProps } = useControlMenu({
     onClose,
@@ -116,6 +121,7 @@ function ControlPortalMenu({
       surfaceProps={surfaceProps}
       wide={wide}
       landmark={landmark}
+      surfaceStyle={surfaceStyle}
     >
       {children}
     </PortalMenuFrame>
@@ -130,6 +136,7 @@ function PortalMenuFrame({
   surfaceProps,
   wide = false,
   landmark,
+  surfaceStyle,
   children,
 }: {
   at: { left: number; top: number; flat: boolean } | null;
@@ -139,6 +146,7 @@ function PortalMenuFrame({
   surfaceProps: object;
   wide?: boolean | undefined;
   landmark?: string | undefined;
+  surfaceStyle?: CSSProperties | undefined;
   children: ReactNode;
 }) {
   if (!at) return null;
@@ -151,6 +159,7 @@ function PortalMenuFrame({
         left: at.left,
         top: at.top,
         transform: at.flat ? 'none' : PLACEMENT_TRANSFORM[placement],
+        ...surfaceStyle,
       }}
     >
       {children}
@@ -377,7 +386,13 @@ export function MenuGroupSeparator() {
   // A command menu announces its separators between groups of items.
   const inCommandMenu = useMenuKind() === 'command';
   return (
-    <div className="my-1.5 px-2" role="separator" aria-hidden={inCommandMenu ? undefined : true}>
+    // Never a menu's first row (a group whose rows above it all left out, as a Plan board's Style is): nothing to
+    // set apart from, so it hides.
+    <div
+      className="my-1.5 px-2 first:hidden"
+      role="separator"
+      aria-hidden={inCommandMenu ? undefined : true}
+    >
       <div className="h-px bg-slate-200/90 dark:bg-slate-700/80" />
     </div>
   );

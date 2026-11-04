@@ -6,8 +6,7 @@
 // its group by its handle (or Move Up and Move Down in its ⋯ menu), to another group and off from that menu;
 // Title and Status stay. Each
 // group adds a field into itself. Edits a draft; the type editor saves it.
-import { useMemo, useRef, useState } from 'react';
-import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
+import { useMemo, useState } from 'react';
 import { useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { FieldRow } from './ItemTypeFieldRow';
 import { fieldIconOf } from './CustomFieldKindParts';
@@ -27,16 +26,9 @@ import {
   type ItemFieldId,
 } from '@liveplanner/items';
 import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@liveplanner/ui';
-import {
-  BUILT_IN_FIELD_LABELS,
-  CustomFieldForm,
-  DASHED_ADD_BUTTON,
-  ICON_BUTTON,
-} from './ItemTypeFieldForms';
-import { NewFieldForm } from './NewFieldForm';
-// The Add Field gallery, Add a Widget's width, whatever column it opens from; on a phone, the window's width less its
-// margins.
-import { GALLERY_WIDTH } from './gallery/GalleryFrame';
+import { BUILT_IN_FIELD_LABELS, DASHED_ADD_BUTTON, ICON_BUTTON } from './ItemTypeFieldForms';
+import { AddFieldDialog } from './AddFieldDialog';
+import { EditFieldDialog } from './EditFieldDialog';
 import { track } from '@/lib/telemetry';
 import {
   addField,
@@ -55,8 +47,6 @@ import {
   type LayoutDraft,
 } from './item-type-layout';
 
-// A touch screen opens it without focusing the search, so no keyboard flies up over the list (asked from the press).
-const coarsePointer = () => window.matchMedia?.('(pointer: coarse)').matches === true;
 const NAME_INPUT =
   'min-w-0 flex-1 rounded-md border bg-transparent px-1.5 py-0.5 text-[13px] font-semibold text-slate-900 placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:bg-white focus:outline-none dark:text-slate-50 dark:hover:border-slate-600 dark:focus:bg-slate-900';
 const isRequired = (f: string) => (REQUIRED_TYPE_FIELDS as readonly string[]).includes(f);
@@ -85,17 +75,22 @@ export function ItemTypeLayoutEditor({
   // takes from it, locked here; its tabs and Details name are the base's, and its own fields go under Details.
   inherited?: { from: string; ids: ReadonlySet<string> } | undefined;
 }) {
-  // The group whose Add Field form is open (Details is `null`), and the custom field being edited.
-  // The group whose Add Field popover is open, and the button it hangs from.
-  const [adding, setAdding] = useState<{
-    group: GroupId;
-    anchor: HTMLElement;
-    touch: boolean;
-  } | null>(null);
-  // The open Add Field's own Escape (a step back, a search cleared), asked before the popover closes.
-  const addEscape = useRef<(() => boolean) | null>(null);
-  const [editing, setEditing] = useState<string | null>(null);
+  // The group whose Add Field modal is open (Details is `null`) and the button that opened it, focused again on
+  // closing; and the custom field being edited.
+  const [adding, setAdding] = useState<{ group: GroupId; opener: HTMLElement } | null>(null);
+  const closeAdding = () => {
+    adding?.opener.focus({ preventScroll: true });
+    setAdding(null);
+  };
+  // The custom field Edit Field is open on (docs/specs/026-plan/item-types.md "Edit Field") and its pencil, focused
+  // again on closing.
+  const [editing, setEditing] = useState<{ id: string; opener: HTMLElement } | null>(null);
+  const closeEditing = () => {
+    editing?.opener.focus({ preventScroll: true });
+    setEditing(null);
+  };
   const fields = orderedFields(draft.fields);
+  const editingField = editing ? draft.custom.find((f) => f.id === editing.id) : undefined;
   // What a Formula on this type may read as drafted (docs/specs/026-plan/item-types.md "Formula fields").
   const formulaDraft = useMemo(
     () => ({ typeId, fields: orderedFields(draft.fields), custom: draft.custom }),
@@ -159,10 +154,8 @@ export function ItemTypeLayoutEditor({
                       : undefined
                 }
                 required={!!c && requiredCustomFieldsOf({ fields: [id], custom: [c] }).length > 0}
-                editing={editing === id}
-                onEdit={
-                  c && !locked && !newer ? () => setEditing(editing === id ? null : id) : undefined
-                }
+                editing={editing?.id === id}
+                onEdit={c && !locked && !newer ? (opener) => setEditing({ id, opener }) : undefined}
                 moveTargets={
                   group === undefined || lockedLayout ? [] : groups.filter((g) => g.id !== group)
                 }
@@ -179,21 +172,7 @@ export function ItemTypeLayoutEditor({
                 }
                 onRemove={() => onChange(removeField(draft, id))}
                 notifies={id === 'assignee' && !locked ? assigneeNotifies : undefined}
-              >
-                {c && !newer && editing === id ? (
-                  <CustomFieldForm
-                    field={c}
-                    formulaDraft={formulaDraft}
-                    className="mt-2"
-                    onChange={(patch) =>
-                      onChange({
-                        ...draft,
-                        custom: draft.custom.map((f) => (f.id === id ? { ...f, ...patch } : f)),
-                      })
-                    }
-                  />
-                ) : null}
-              </FieldRow>
+              />
             );
           })
         }
@@ -209,48 +188,27 @@ export function ItemTypeLayoutEditor({
         aria-haspopup="dialog"
         aria-expanded={adding?.group === group}
         className={`${DASHED_ADD_BUTTON} bg-white/60 dark:bg-slate-900/40`}
-        onClick={(e) => {
-          const anchor = e.currentTarget;
-          setAdding((open) =>
-            open?.group === group ? null : { group, anchor, touch: coarsePointer() },
-          );
-        }}
+        onClick={(e) => setAdding({ group, opener: e.currentTarget })}
       >
         <PlusIcon size={13} />
         Add Field
       </button>
       {adding?.group === group ? (
-        <AnchoredPopover
-          anchor={adding.anchor}
-          name="Add Field"
-          width={GALLERY_WIDTH}
-          initialFocus={adding.touch ? 'panel' : 'first'}
-          onEscape={() => addEscape.current?.() ?? false}
-          onClose={() => setAdding(null)}
-        >
-          <NewFieldForm
-            escapeRef={addEscape}
-            formulaDraft={formulaDraft}
-            missing={BUILT_IN_FIELD_IDS.filter((f) => !fields.includes(f))}
-            canAddCustom={customFieldCount(draft.custom) < ITEM_TYPE_CUSTOM_MAX}
-            onAddBuiltIn={(id) => {
-              onChange(addField(draft, id, group));
-              setAdding(null);
-            }}
-            onAddCustom={(field) => {
-              const id = newCustomFieldId(field.label, [
-                ...fields,
-                ...draft.custom.map((f) => f.id),
-              ]);
-              onChange(addField(draft, id, group, { ...field, id }));
-              setAdding(null);
-            }}
-            onCancel={() => {
-              adding.anchor.focus();
-              setAdding(null);
-            }}
-          />
-        </AnchoredPopover>
+        <AddFieldDialog
+          formulaDraft={formulaDraft}
+          missing={BUILT_IN_FIELD_IDS.filter((f) => !fields.includes(f))}
+          canAddCustom={customFieldCount(draft.custom) < ITEM_TYPE_CUSTOM_MAX}
+          onAddBuiltIn={(id) => {
+            onChange(addField(draft, id, group));
+            closeAdding();
+          }}
+          onAddCustom={(field) => {
+            const id = newCustomFieldId(field.label, [...fields, ...draft.custom.map((f) => f.id)]);
+            onChange(addField(draft, id, group, { ...field, id }));
+            closeAdding();
+          }}
+          onClose={closeAdding}
+        />
       ) : null}
     </>
   );
@@ -260,6 +218,21 @@ export function ItemTypeLayoutEditor({
     // on desktop, spanning both rows; one column on a phone. The DOM order (On the Card, Details, the tabs) is the
     // phone's order, so focus and reading order follow what is shown.
     <div className="flex flex-col gap-2.5 md:grid md:grid-cols-[minmax(0,1fr)_18rem] md:grid-rows-[auto_1fr] md:items-start md:gap-x-3">
+      {editingField ? (
+        <EditFieldDialog
+          typeId={typeId}
+          field={editingField}
+          formulaDraft={formulaDraft}
+          onSave={(next) => {
+            onChange({
+              ...draft,
+              custom: draft.custom.map((f) => (f.id === next.id ? next : f)),
+            });
+            closeEditing();
+          }}
+          onClose={closeEditing}
+        />
+      ) : null}
       <div className="md:col-start-1 md:row-start-1">
         <LayoutGroup title={<span className="px-1.5">On the Card</span>} tag="Always shown">
           {rowsOf('card', cardFields(draft))}

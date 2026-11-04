@@ -1,7 +1,7 @@
 'use client';
 
 // The full-width dashed "add" row: a plus and the label, quiet until hovered,
-// when it takes the brand colour. Add New Card Type and Start From Scratch both wear it. Its border and text
+// when it takes the brand colour. Add Card Type and Start From Scratch both wear it. Its border and text
 // default to the chrome's; a host may pass its own (`tone`) through CSS variables.
 import type { ButtonHTMLAttributes, CSSProperties } from 'react';
 import { PlusIcon } from '@liveworkspace/ui';

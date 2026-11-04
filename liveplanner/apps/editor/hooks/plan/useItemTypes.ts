@@ -35,7 +35,7 @@ import {
 import { ItemTypesStaleError, saveItemTypes, type SavedItemTypes } from '@/lib/api/item-types';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import type { ItemUndoStep } from './item-undo-journal';
+import { combinedStep, type ItemUndoStep } from './item-undo-journal';
 
 // How many times one change is sent: the first, and again after each change of someone else's that landed first.
 const ITEM_TYPES_SAVE_ATTEMPTS = 3;
@@ -45,8 +45,9 @@ export type ItemTypesSlice = {
   // not chosen (none).
   catalogue: ItemTypeCatalogue | null;
   types: readonly ItemTypeDef[];
-  // Adds or replaces a type (matched by id), keeping its place.
-  saveType: (type: ItemTypeDef) => void;
+  // Adds or replaces a type (matched by id), keeping its place. `along`: another change's undo step (its cards'
+  // values, docs/specs/026-plan/item-types.md "Edit Field"), made one undo step with this once it settles (null: none).
+  saveType: (type: ItemTypeDef, along?: Promise<ItemUndoStep | null>) => void;
   deleteType: (typeId: string) => void;
   // Types added together, as one change; any whose id the catalogue already has is skipped, and the catalogue's
   // cap holds.
@@ -170,37 +171,53 @@ export function useItemTypes(opts: {
     [send, setPendingNow],
   );
 
-  // A change from the catalogue as shown to `next`, pushed as one undo step.
+  // A change from the catalogue as shown to `next`, pushed as one undo step (with `along`'s, once it settles).
   const change = useCallback(
-    (next: (shown: ItemTypeCatalogue | null) => ItemTypeCatalogue | null) => {
+    (
+      next: (shown: ItemTypeCatalogue | null) => ItemTypeCatalogue | null,
+      along?: Promise<ItemUndoStep | null>,
+    ) => {
       const before = applied(storedRef.current.value.itemTypes, pendingRef.current);
       const made: CatalogueChange = { before, after: next(before) };
       make(made);
-      latest.current.pushUndo({
+      const step: ItemUndoStep = {
         undo: () => make(inverseCatalogueChange(made)),
         redo: () => make(made),
-      });
+      };
+      if (!along) return latest.current.pushUndo(step);
+      void along.then(
+        (other) => latest.current.pushUndo(other ? combinedStep([step, other]) : step),
+        () => latest.current.pushUndo(step),
+      );
     },
     [latest, make],
   );
 
   const withTypes = useCallback(
-    (edit: (types: readonly ItemTypeDef[]) => readonly ItemTypeDef[]) =>
-      change((shown) => ({
-        version: ITEM_TYPE_CATALOGUE_VERSION,
-        // A base saved or deleted reaches the types inheriting from it at once, in the same undo step
-        // (docs/specs/026-plan/item-types.md "Inherited types").
-        types: withInheritance(edit(typesOf(shown))),
-      })),
+    (
+      edit: (types: readonly ItemTypeDef[]) => readonly ItemTypeDef[],
+      along?: Promise<ItemUndoStep | null>,
+    ) =>
+      change(
+        (shown) => ({
+          version: ITEM_TYPE_CATALOGUE_VERSION,
+          // A base saved or deleted reaches the types inheriting from it at once, in the same undo step
+          // (docs/specs/026-plan/item-types.md "Inherited types").
+          types: withInheritance(edit(typesOf(shown))),
+        }),
+        along,
+      ),
     [change],
   );
 
   const saveType = useCallback(
-    (type: ItemTypeDef) =>
-      withTypes((ts) =>
-        ts.some((t) => t.id === type.id)
-          ? ts.map((t) => (t.id === type.id ? type : t))
-          : [...ts, type],
+    (type: ItemTypeDef, along?: Promise<ItemUndoStep | null>) =>
+      withTypes(
+        (ts) =>
+          ts.some((t) => t.id === type.id)
+            ? ts.map((t) => (t.id === type.id ? type : t))
+            : [...ts, type],
+        along,
       ),
     [withTypes],
   );

@@ -34,7 +34,7 @@ is the team, not the individual.
 - Multi-select: marquee drag, shift-click, format painter, groups.
 - 82 templates (Blank, Mind map, Flowchart, Gantt, SWOT, Retrospective, Org
   chart, Timeline, Fishbone, Pyramid, Flywheel, Venn, User journey).
-- 30 themes (24 in the picker, plus 6 seasonal ones) that recolor the whole
+- 31 themes (25 in the picker, plus 6 seasonal ones) that recolor the whole
   canvas in one click.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each editor.
 - Tabs per document (link across them, copy a tab into another document), nested

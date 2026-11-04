@@ -31,6 +31,8 @@ import { PhoneField } from './PhoneField';
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
 const LINK = /^https:\/\/\S+$/i;
+// Whether a typed Link is one the field keeps: an `https://` address with no spaces.
+export const isLinkText = (text: string): boolean => LINK.test(text);
 
 export function CustomFieldEditor({
   id,
@@ -75,7 +77,7 @@ export function CustomFieldEditor({
             const raw = e.target.value.trim();
             if (raw === text) return;
             if (raw === '') void onSave(undefined);
-            else if (LINK.test(raw)) void onSave(raw);
+            else if (isLinkText(raw)) void onSave(raw);
             else e.target.value = text;
           }}
         />

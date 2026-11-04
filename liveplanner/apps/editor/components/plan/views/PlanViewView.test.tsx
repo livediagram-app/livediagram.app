@@ -161,7 +161,7 @@ describe('plan views', () => {
     );
     const entry = screen.getByRole('button', { name: /Ship it/ });
     // A card face (rounded and bordered as a board's), not a dot and a line.
-    expect(entry.querySelector('[data-plan-card-face], .rounded-xl, .rounded-lg')).not.toBeNull();
+    expect(entry.querySelector('[data-plan-card-face], .plan-card')).not.toBeNull();
     unmount();
     draw('calendar', plan);
     expect(

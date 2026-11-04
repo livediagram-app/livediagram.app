@@ -53,13 +53,14 @@ describe('THEMES catalogue', () => {
   // copy. If the catalogue drifts from this the spec stops being
   // accurate. The extras include the multicolour themes from docs/specs/011-theme/multicolour-themes.md.
   // Mirrors the equivalent assertions in templates.test.ts.
-  // 24: Charcoal merged into Default, and Autumn and Jewel retired (docs/specs/011-theme/light-and-dark.md).
+  // 24: Charcoal merged into Default, and Autumn and Jewel retired (docs/specs/011-theme/light-and-dark.md); 25 with
+  // Teal, brought over from liveplanner's board style presets.
   // The seasonal themes (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks") are the seasonal looks'
   // own, never offered in a picker, so the catalogue's counts are of the year-round themes.
   const yearRound = THEMES.filter((t) => !t.seasonal);
 
-  it('lists exactly 24 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
-    expect(yearRound).toHaveLength(24);
+  it('lists exactly 25 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
+    expect(yearRound).toHaveLength(25);
   });
 
   it('holds six seasonal themes, all listed after the year-round ones', () => {
@@ -74,11 +75,11 @@ describe('THEMES catalogue', () => {
     expect(THEMES.slice(0, yearRound.length)).toEqual(yearRound);
   });
 
-  it('splits cleanly into 12 default + 12 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 13 extra (retained as catalogue metadata)', () => {
     const defaults = yearRound.filter((t) => !t.extra);
     const extras = yearRound.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(12);
+    expect(extras).toHaveLength(13);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {

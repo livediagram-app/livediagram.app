@@ -160,7 +160,11 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
   - **Small parts** (chips, pills, badges, inputs, buttons, check boxes, glyphs, axes, grid lines, anything under
     the frame size) keep their plain look, so the words in and around them stay easy to read.
   - The marker strokes are seeded by the element's id and the part's place in it, so a face looks the same on
-    every screen and in every export.
+    every screen and in every export. On the canvas a part inside a Plan card or column counts its place within that
+    card or column (its owner, keyed by the card's id or the column's status and lane), not within the whole face:
+    a part appearing or going elsewhere (a column's hover controls, a card dragged into another column) leaves every
+    other part's strokes as they were, so a re-take after a change draws the same ink instead of flashing new
+    strokes across the board.
 - **Not affected:** freehand pen strokes and highlights, images, photos inside a face, and a tab window's content (it keeps the
   finish of the tab it shows).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
