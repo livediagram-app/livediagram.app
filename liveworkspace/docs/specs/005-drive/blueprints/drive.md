@@ -251,7 +251,7 @@ Every line is `drive: <step>` with ids. `driveLog`: `route <name>`, `connect`, `
 `adopt-existing`, `adopt-folder`, `outbound`, `recreated`, `deferred`, `export-missing`, `open-with`,
 `open-with-imported`, `account-deleted`. `driveWarn`: `key-invalid`, `person-mismatch`, `connect exchange-failed`,
 `flag-failed`, `token unreadable`, `token invalid_grant`, `revoke-skipped token_unreadable`, `channel-failed`,
-`channel-stop-failed`, `root-missing`, `backoff`, `pass-failed`, `alarm-failed`, `page-token-rejected`,
+`channel-stop-failed`, `root-missing`, `backoff`, `pass-failed`, `pass-stalled`, `alarm-failed`, `page-token-rejected`,
 `inbound-cycle`, `inbound-missing`, `adopt-ambiguous`, `adopt-failed`, `outbound-failed`, `thumbnail-failed`,
 `import-refused`, `import-download-failed`, `push-refused`, `push-signal-failed`, `<route>-failed`.
 
@@ -262,7 +262,7 @@ Every line is `drive: <step>` with ids. `driveLog`: `route <name>`, `connect`, `
 | `apps/drive/src/routes.test.ts` (15)                                        | config off and on; who may call; connecting through the routes; Google's push; open and import; the index's and accounts' calls |
 | `apps/drive/src/mirror/mirror.test.ts` (19)                                 | connecting; another Google account; disconnecting; Check now; the Picker's token; marks; adopting a folder; Open with           |
 | `apps/drive/src/mirror/pass.test.ts` (21)                                   | the first mirror; the root; outbound; inbound; cadence                                                                          |
-| `apps/drive/src/mirror/budget.test.ts` (3)                                  | a burst of Drive-side changes stays in budget; the meter                                                                        |
+| `apps/drive/src/mirror/budget.test.ts` (7)                                  | a burst of Drive-side changes stays in budget; the meter; a pass that makes no progress slows to the write interval             |
 | `apps/drive/src/consent.test.ts` (3)                                        | `safeReturnTo`; the channel token                                                                                               |
 | `packages/drive/src/plan/plan-inbound.test.ts` (53)                         | items, folders, unrecorded files, adoption, change order                                                                        |
 | `packages/drive/src/plan/plan-outbound.test.ts` (30)                        | first mirror, folders, items, contents and the write interval, items leaving, order                                             |
