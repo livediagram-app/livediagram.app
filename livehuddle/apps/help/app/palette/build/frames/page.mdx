@@ -6,7 +6,7 @@ import { FrameSection } from '@liveworkspace/help-site/art/illustrations/palette
 export const metadata = helpMetadata({
   title: 'Frames',
   description:
-    'Use frames to label sections of the canvas: a frame draws behind its contents, carries them when moved, and defines a section for exports and slides.',
+    'Use frames to label sections of the canvas: a frame draws behind its contents, carries them when moved, and keeps its layering in an export.',
   path: '/help/palette/build/frames/',
 });
 
@@ -43,12 +43,9 @@ A selected frame shows the quick-connect **+** buttons like any shape, so you ca
 
 Arrows that pass behind boxes don't break around a frame: everything inside sits on top of it, so an arrow inside a section stays whole.
 
-## What else reads a frame
+## Frames in exports
 
-A frame is the one element other features treat as "a section", which is what makes it worth reaching for beyond tidiness:
-
-- **A slide with exactly one frame on it is framed by that frame** when you present it, rather than by a box drawn round its elements. That is how you author precise framing for a [slide deck](/help/selection-modes/slide-deck/presenting/) without learning a second concept.
-- **Exports keep the layering**, so a frame is behind its contents in a PNG or SVG exactly as on the canvas. See [Exporting](/help/account-and-data/exporting-spaces/).
+Exports keep the layering, so a frame is behind its contents in a PNG or SVG exactly as on the canvas. See [Exporting](/help/account-and-data/exporting-spaces/).
 
 ## Frames and multi-selection
 

@@ -917,34 +917,6 @@ body:has([data-mode-message]) [data-yields-to-mode] {
   --note-link-color: var(--color-brand-200);
 }
 
-/* Presenting a slide deck (docs/specs/012-collaboration/presentation-mode.md).
-
-   The SLIDE is the canvas itself, narrowed to one slide's elements and framed
-   to their bounds by useEditorState. These rules are only the frame around
-   it, driven by the attributes the PresentationHost sets on <html>:
-   `data-presenting` while a deck is running, and `data-slide-move="pending"`
-   while the first slide waits for the screen to settle. The motion itself is a
-   View Transition of the canvas surface (canvas-motion.css): one picture moves,
-   so a hundred-element slide costs what a one-element slide does. */
-
-/* Chrome hiding is NOT done here: presenting reports zenMode, so the editor's
-   own zen treatment (docs/specs/007-editor/zen-mode.md) takes the header, tab bar, palette and panels
-   away through the same path a zen user gets. One way to hide the chrome, not
-   two that can disagree. The zoom cluster is the one survivor zen keeps, and
-   presenting hides it below since a deck has no zoom controls. */
-html[data-presenting] [data-zoom-cluster] {
-  display: none !important;
-}
-
-/* A still cursor left sitting on a projector is a distraction, so it goes
-   away with the HUD. Driven by the same idle state, so the pointer and the
-   controls come back together on the first twitch of the mouse — a hidden
-   cursor you cannot bring back would be a trap. */
-html[data-presenting][data-hide-pointer][data-pointer-idle] [data-canvas-a11y-root],
-html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-surface] {
-  cursor: none;
-}
-
 /* The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
    elements"): the canvas's cursor is inherited, and changes on a tool switch, a pan and a stroke
    landing; stopping it here means such a change restyles this one node, not every element. Each

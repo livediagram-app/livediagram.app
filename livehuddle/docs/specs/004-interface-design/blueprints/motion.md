@@ -356,7 +356,6 @@ logging, because motion isn't a decision point.
 | Chrome animations settle in 250ms at runtime | `apps/editor/e2e/motion-budget.spec.ts`                                                          |
 | The root takes no View Transition part       | `apps/editor/app/view-transitions.test.ts`                                                       |
 | View Transition classes stay in their files  | `apps/editor/app/view-transitions.test.ts`                                                       |
-| Slide moves animate, reduced motion cuts     | `apps/editor/e2e/perf/slide-transition.perf.ts`, `PresentationHost.test.tsx`                     |
 
 ### The runtime guard
 

@@ -43,10 +43,9 @@ export type OfflineDocumentRecord = {
   createdAt: number;
   savedAt: number;
   tabs: Tab[];
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. Offline documents get
-  // decks for the same reason they get everything else: Offline Mode is the
-  // whole product minus the server, not a reduced one. Optional so records
-  // written before the field existed stay valid.
+  // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised StoredPresentation. livehuddle no
+  // longer presents (Work Tracker #423 part 2), but a deck carried in from the server is kept so a sync never
+  // drops it. Optional so records written before the field existed stay valid.
   presentation?: string | null;
   // Starred in the Explorer (docs/specs/013-workspace/favourites.md). A canvas's star is the index's, on its item,
   // which an offline canvas has none of, so its star has to live here instead. Optional so records

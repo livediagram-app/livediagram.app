@@ -55,10 +55,6 @@ export function useCanvasTool({
     if (tool === 'avatar' && canvasTool !== 'avatar') track('Canvas', 'Used', 'AvatarMode');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
     if (tool === 'isometric' && canvasTool !== 'isometric') track('Canvas', 'Used', 'Isometric');
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md) is 'UI'/'Opened' rather than 'Canvas'/'Used':
-    // picking it opens the deck workbench, it does not change the canvas.
-    // Starting the presentation is its own event, fired from the panel.
-    if (tool === 'slide-deck' && canvasTool !== 'slide-deck') track('UI', 'Opened', 'SlideDeck');
     setCanvasTool(tool);
   };
   // Opening walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"): a tab that offers the walk puts you in

@@ -242,9 +242,8 @@ export type UserPreferences = {
   // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
   // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
-  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): transition, speed,
-  // playback and display, as one object. Read through lib/presentation-config, which trusts it only once parsed.
-  // Missing === what this browser kept before they followed the account, else the defaults.
+  // livediagram's presenter settings (docs/specs/012-collaboration/presentation-mode.md), one shared setting.
+  // livehuddle has no presenting since Work Tracker #423 part 2: it never reads or writes the key, only carries it.
   presentation?: Record<string, unknown>;
 };
 

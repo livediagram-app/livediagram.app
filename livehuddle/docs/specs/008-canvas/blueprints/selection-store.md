@@ -22,7 +22,6 @@ who re-renders when it changes.
 | `apps/editor/components/canvas/selection-aware-views.tsx`                  | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
 | `apps/editor/components/canvas/LayerSelectionChrome.tsx`                   | Quick-connect pluses, union resize box                                              |
 | `apps/editor/hooks/canvas/useCanvasSelectionView.ts`                       | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
-| `apps/editor/components/panels/SlideDeckPanel.tsx`                         | Reads the selection it slides from the store                                        |
 | `apps/editor/lib/canvas-selection.ts`                                      | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming

@@ -69,15 +69,16 @@ with Blank Space, are the whole catalogue (Work Tracker #423; [Templates by mode
 Every tab is a meeting board, livehuddle's one editor mode, stored as `'workshop'`
 ([Workshop mode](../012-collaboration/workshop-mode.md)); the interface never names a mode.
 
-- **The palette** is the meeting palette: Popular; Write (Text, Sticky note); Frame; Navigate, Selection Mode;
-  Icons, Stickers, Media (Image, Link card) ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
+- **The palette** is the meeting palette: Popular; Write (Text, Sticky note); Frame; Navigate, React (the five Reaction
+  Pads), Selection Mode; Icons, Stickers, Media (Image, Link card) ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
 - **The Session strip**, with Timer and Vote, the quick vote
   ([Session tools](../012-collaboration/session-tools.md)).
 - **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md), Bring Focus, follow-me, the laser
   and the spotlight.
 
 Why only these (owner, 2026-11-04, Work Tracker #423): livehuddle is about meeting in Spaces, not workshops. A Team
-Pod's stand-up wants a timer, a room deciding something wants a quick vote, and the All-Hands Hall needs Bring Focus;
+Pod's stand-up wants a timer, a room deciding something wants a quick vote, and the All-Hands Hall needs Bring Focus, and a
+good moment wants a Reaction Pad;
 the rest of Workshop mode (polls, quizzes, Q&A, agendas, reveals, the retros and workshops) is livediagram's, as are
 the diagram tools ([Not in livehuddle](not-in-livehuddle.md)). This replaces "all of Workshop mode", D2 in
 [Open decisions](../005-project-roadmap/open-decisions.md).

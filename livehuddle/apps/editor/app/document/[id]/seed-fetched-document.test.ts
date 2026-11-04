@@ -45,7 +45,6 @@ function seed(recordOpen: boolean, noteChangesetSeen = vi.fn()) {
     noteChangesetSeen,
     setActiveId: noop,
     setDocumentName: noop,
-    setDocumentPresentation: noop,
     setDocumentOwnerColor: noop,
     setDocumentOwnerId: noop,
     setDocumentOwnerName: noop,

@@ -16,12 +16,9 @@ const SpotlightPanel = dynamic(() => loadToolPanels().then((m) => m.SpotlightPan
 });
 const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), { ssr: false });
 const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
-const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPanel), {
-  ssr: false,
-});
 
-// The six tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
-// docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
+// The five tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
+// docs/specs/008-canvas/format-panel.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -48,7 +45,6 @@ export function useCanvasToolPanels({
   spotlightEl: ReactNode;
   eraserEl: ReactNode;
   formatEl: ReactNode;
-  slideDeckEl: ReactNode;
 } {
   const {
     canvasTool,
@@ -86,13 +82,6 @@ export function useCanvasToolPanels({
     formatPanelPosition,
     onMoveFormatPanel,
     onResetFormatPanel,
-    slideDeck,
-    slideDeckPanelPosition,
-    onMoveSlideDeckPanel,
-    onResetSlideDeckPanel,
-    tabSummaries,
-    activeTabId,
-    readOnly,
   } = props;
   // Draw mode, which kept its eraser settings in the dock, is gone (docs/specs/007-editor/editor-modes.md).
   const whiteboard = false;
@@ -108,9 +97,6 @@ export function useCanvasToolPanels({
   );
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
-  );
-  const slideDeckWiring = panelWiringFor('slide-deck', slideDeckPanelPosition ?? null, () =>
-    onResetSlideDeckPanel?.(),
   );
 
   // Avatar Panel (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): the character sheet, a popover over the
@@ -211,23 +197,5 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
-  // started, mounted only while its tool is picked. The sixth, and the one
-  // whose tool does not itself change the canvas — picking it opens the
-  // workbench, and Start is a deliberate second act.
-  const slideDeckEl =
-    !chromeHidden && slideDeck && canvasTool === 'slide-deck' ? (
-      <SlideDeckPanel
-        state={slideDeck}
-        tabs={tabSummaries}
-        activeTabId={activeTabId ?? ''}
-        isReadOnly={readOnly}
-        position={slideDeckWiring.position}
-        onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
-        onReset={slideDeckWiring.onReset}
-        dock={slideDeckWiring.dock}
-      />
-    ) : null;
-
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
+  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl };
 }

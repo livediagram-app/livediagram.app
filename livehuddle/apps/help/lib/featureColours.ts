@@ -33,10 +33,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'markdown-import': '#0d9488',
   history: '#94a3b8',
   'session-tools': '#f43f5e',
-  // The last ten cards
-  'building-a-deck': '#0ea5e9',
-  presenting: '#6366f1',
-  'presenter-controls': '#8b5cf6',
+  // The last cards
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
   'auto-align': '#22c55e',
@@ -65,7 +62,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'avatar-mode': '#ec4899',
   'avatar-tour': '#db2777',
   'walking-together': '#a855f7',
-  'slide-deck': '#0ea5e9',
   select: '#0ea5e9',
   hand: '#0891b2',
   eraser: '#f43f5e',
@@ -129,7 +125,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   pickers: '#f59e0b',
   // Palette → Tools elements
   tables: '#0ea5e9',
-  pages: '#64748b',
   'sticky-notes': '#eab308',
   'code-blocks': '#475569',
   checklists: '#22c55e',

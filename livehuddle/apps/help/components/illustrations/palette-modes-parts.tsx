@@ -21,7 +21,6 @@ export {
   PainterGlyph,
   LaserGlyph,
   SpotlightGlyph,
-  SlideDeckGlyph,
   ZenGlyph,
 } from '@liveworkspace/help-site/art/illustrations/palette-modes-parts';
 

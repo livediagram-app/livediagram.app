@@ -130,12 +130,12 @@ working; each part that removes a feature removes its help in the same PR, so he
    Not in livehuddle, the meeting board ([Workshop mode](../012-collaboration/workshop-mode.md)), the catalogue
    ([Templates by mode](../007-editor/templates-by-mode.md)), a **Leaving livehuddle** note on every spec that goes,
    and both products' AGENTS.md shared-features lists set to the target.
-2. **Decks, presenting and the Page** (#356's scope): the Slide Deck panel, Presentation mode and the `page` tile and
+2. **Decks, presenting and the Page** (#356's scope, done): the Slide Deck panel, Presentation mode and the `page` tile and
    kind leave the editor, with their help articles, help registry entries, figures and links (redirects to the
    nearest article). They are small and self-contained, so their code goes in the same PR.
 3. **Entry points to the rest.** The catalogue becomes Blank Space and the four Spaces (`packages/templates`, Popular,
    the template categories, `retired-templates.test.ts` answering a leaving kind with Blank Space); the palette
-   becomes the meeting palette; the Session strip offers Timer and Vote; the Session button, the Workshop tour and the
+   becomes the meeting palette (with the React category's Reaction Pads, owner 2026-11-04); the Session strip offers Timer and Vote; the Session button, the Workshop tour and the
    interface's "Workshop" wording go (Start a Space, the default folder's label, the Explorer's Opens In filter). The
    help articles for the retros, the Collaborate elements, the leaving palette categories and the templates are
    removed or rewritten in the same PR. Stored elements still draw. The MCP's and CLI's template lists follow the

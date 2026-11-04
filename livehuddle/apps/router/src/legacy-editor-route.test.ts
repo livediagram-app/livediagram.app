@@ -135,6 +135,15 @@ describe('legacyHelpRedirect', () => {
       ['/help/explorer/tags/', '/help/explorer/folders/'],
       ['/help/tools/ai/', '/help/account-and-data/connect-ai-mcp/'],
       ['/help/tools/ai/ai-tools/', '/help/account-and-data/connect-ai-mcp/'],
+      // Slide decks, presenting and the Page element left livehuddle (Work Tracker #423): the deck's articles land
+      // on Following Someone, and Pages on Write Elements.
+      ['/help/selection-modes/slide-deck/', '/help/canvas/follow-along/'],
+      ['/help/selection-modes/slide-deck', '/help/canvas/follow-along'],
+      ['/help/selection-modes/slide-deck/building-a-deck/', '/help/canvas/follow-along/'],
+      ['/help/selection-modes/slide-deck/presenting/', '/help/canvas/follow-along/'],
+      ['/help/selection-modes/slide-deck/presenter-controls/', '/help/canvas/follow-along/'],
+      ['/help/tips-and-tricks/presenting-well/', '/help/canvas/follow-along/'],
+      ['/help/palette/tools/pages/', '/help/palette/write/'],
       // A retired category's link that lost its `/help` prefix lands on the help centre home too.
       ['/self-hosting', '/help/'],
       ['/self-hosting/', '/help/'],

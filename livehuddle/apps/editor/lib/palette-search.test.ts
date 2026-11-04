@@ -68,9 +68,12 @@ describe('buildPaletteSearchItems', () => {
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['lane', 'page', 'bar-chart', 'portal']) {
+    for (const kind of ['lane', 'bar-chart', 'portal']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
     }
+    // The Page left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2): no
+    // search result places one, though a stored Page still draws.
+    expect([...ids].filter((id) => id === 'shape:page' || id === 'tile:tools:page')).toEqual([]);
     // And the split kinds, one entry per choice (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
     for (const id of [
       'shape:session-button:timer',

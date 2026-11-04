@@ -1,6 +1,6 @@
 # The Reaction Pad: blueprint
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/reaction-pad.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Stays in livehuddle** (Work Tracker #423, owner, 2026-11-04): Reaction Pads are a light meeting tool, kept when the other Collaborate elements left ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md) "What stays"). In livehuddle the five pads are the meeting palette's **React** category ([The meeting board](../../012-collaboration/workshop-mode.md#the-palette)), which part 3 builds. A change to them lands in livediagram too ([AGENTS.md](../../../../AGENTS.md) "Workshop features shared with livediagram").
 
 Derived from [The Reaction Pad](../reaction-pad.md). The spec decides; this file only adds
 engineering precision. Defaults applied where the spec is silent are ledgered in

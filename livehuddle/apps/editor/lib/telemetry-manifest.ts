@@ -176,7 +176,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Trash·Deleted',
   'Trash·Opened',
   'Trash·Restored',
-  'UI·Added',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).
   'UI·Cleared',
@@ -187,7 +186,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',
-  'UI·Removed',
   'UI·Searched',
   'UI·Selected',
   'UI·Started',

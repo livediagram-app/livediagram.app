@@ -43,7 +43,7 @@ export const categories: Category[] = [
     title: 'Tips and Tricks',
     description:
       'Work faster with the shortcuts, hidden features, and small habits experienced users rely on.',
-    articleCount: 7,
+    articleCount: 6,
   },
   {
     slug: 'account-and-data',
@@ -118,8 +118,8 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, Slide Deck, and Isometric.',
-    articleCount: 10,
+      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Avatar, and Isometric.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -422,14 +422,6 @@ export const articles: Article[] = [
     title: 'Restyle a Board Fast',
     description: 'Restyle an entire board in seconds with themes and presets.',
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
-    category: 'Tips and Tricks',
-    categorySlug: 'tips-and-tricks',
-  },
-  {
-    slug: 'presenting-well',
-    title: 'Presenting from the Canvas',
-    description: 'Get the most out of Presentation mode and Zen mode.',
-    keywords: 'presentation slideshow demo present fullscreen slides meeting',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -868,48 +860,6 @@ export const articles: Article[] = [
     parentSlug: 'avatar-mode',
   },
   {
-    slug: 'slide-deck',
-    title: 'Slide Deck',
-    description:
-      'Build slides from what is on your canvas and present them full screen, with notes, transitions and auto-advance.',
-    keywords:
-      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'building-a-deck',
-    title: 'Building a Deck',
-    description: 'Edit, hide, reorder and annotate the slides before you present them.',
-    keywords:
-      'build deck new slide add remove elements selection membership rename duplicate copy slide delete confirm hide hidden slide skip struck through eye reorder drag order presenter notes script speaker notes budget minutes timing per slide pace slide menu ellipsis',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'presenting',
-    title: 'Presenting',
-    description:
-      'What a running deck does: framing, transitions, moving through it, and what a click does.',
-    keywords:
-      'present full screen fullscreen start presenting framing frame fit padding backdrop transition travel slide fade reduce motion advance next previous arrow keys space page down home end escape exit laser spotlight point read only popover note comment action wake lock screen awake announce screen reader shortcuts dead',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
-    slug: 'presenter-controls',
-    title: "The Presenter's Controls",
-    description:
-      'The strip in the corner of a running deck, and the eleven settings behind its cog.',
-    keywords:
-      'hud controls strip corner position counter slide name jump to slide list grid notes button popover elapsed time clock budget minutes over amber pacing settings cog transition speed auto advance autoadvance loop click to advance fill screen actual size show position keep controls visible hide pointer cursor kiosk unattended',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes/slide-deck',
-    parentSlug: 'slide-deck',
-  },
-  {
     slug: 'isometric-mode',
     title: 'Isometric Mode',
     description: 'Look at the tab as a tilted 3D scene, orbit it, and export it that way.',
@@ -950,10 +900,9 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description:
-      'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
+    description: 'Text, Sticky note, Annotation and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
+      'write writing text words wordy prose label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -974,7 +923,7 @@ export const articles: Article[] = [
     title: 'Frames',
     description: 'A labelled section that draws behind its contents and moves them as one.',
     keywords:
-      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
+      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export framing nest nested centre quick connect plus fill background',
     category: 'Palette',
     categorySlug: 'palette/build',
     parentSlug: 'build',
@@ -1954,16 +1903,6 @@ export const articles: Article[] = [
     description: 'An editable grid of cells for tabular content on the canvas.',
     keywords:
       'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
-    slug: 'pages',
-    title: 'Pages',
-    description: 'A paper-sized surface for the prose a label cannot hold.',
-    keywords:
-      'page document doc paper sheet a4 prose writing write rich text brief memo report notes longform masthead heading subtitle word processor',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

@@ -23,14 +23,10 @@ const handledKeys = new Set([
   ...HANDLED_OUTSIDE_THE_MAPS,
 ]);
 
-// The presentation binds its own keys on the overlay (PresentationOverlay),
-// deliberately outside the editor's maps — while a deck runs, the editor's
-// shortcuts are dead. So its rows describe real bindings that `handledKeys`
-// will never contain, and checking them against it would fail on the truth.
-// Avatar mode's keys are the same: the walk's own listeners (useAvatarKeys, useAvatarActionKeys) bind them.
+// Avatar mode's keys are bound by the walk's own listeners (useAvatarKeys, useAvatarActionKeys), deliberately outside
+// the editor's maps, so its rows describe real bindings that `handledKeys` will never contain.
 const EDITOR_SECTIONS = SHORTCUT_SECTIONS.filter(
-  (section) =>
-    section.heading !== 'While presenting' && !section.heading.startsWith('While walking'),
+  (section) => !section.heading.startsWith('While walking'),
 );
 
 // Rows whose `keys` are a single printable character: the ones that name one

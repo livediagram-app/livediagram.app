@@ -10,8 +10,7 @@ import { describe, expect, it } from 'vitest';
 // the editor into a transition: a position written and measured in the same
 // frame read back the old value. The tab menu's viewport clamp then nudged
 // again, forever ("Maximum update depth exceeded"). Animations only run where
-// one is declared, so they keep 0.01ms and their animationend still fires
-// (PresentationHost waits on it).
+// one is declared, so they keep 0.01ms and their animationend still fires.
 const css = readFileSync(fileURLToPath(new URL('./globals.css', import.meta.url)), 'utf8');
 
 function collapse(selector: string): string {

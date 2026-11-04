@@ -8,7 +8,7 @@ import {
 } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
-import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { isAnimatedPattern } from '@livehuddle/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
@@ -85,7 +85,6 @@ import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { CallBubbles } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
-import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
@@ -431,9 +430,9 @@ function CanvasView(props: CanvasProps) {
   return (
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
-      {/* A slide move animates the surface as a View Transition typed by its direction (slide-transition.ts);
-            nothing else animates it. */}
-      <ViewTransition default="none" update={SLIDE_VIEW_TRANSITION_UPDATE}>
+      {/* The surface's slide View Transition went with presenting (Work Tracker #423 part 2). A fragment keeps the
+            surface's indentation until part 4 unwraps it, so a branch editing inside it still merges. */}
+      <>
         <main
           ref={mainRef}
           // In the tab order (docs/specs/004-interface-design/canvas-accessibility.md): keyboard users Tab to the canvas as
@@ -886,7 +885,7 @@ function CanvasView(props: CanvasProps) {
             press-and-hold affordance that opens the context menu on touch. */}
           <LongPressRing point={surface.canvasLongPress.pressPoint} />
         </main>
-      </ViewTransition>
+      </>
     </CanvasFinishProvider>
   );
 }

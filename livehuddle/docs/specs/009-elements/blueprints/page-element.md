@@ -1,6 +1,6 @@
 # The Page element: blueprint
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/page-element.md) is the one to change. Part 2 removes it with its help articles. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 2): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/page-element.md) is the one to read and change. livehuddle's palette, its Toolbar strip's Search and the search panel offer no Page, and its help has no Pages article (the address redirects to Write Elements). A stored Page is still the `page` shape kind: it draws, exports, moves, copies, edits and deletes as below, so nothing anyone wrote is lost. The rest of this page describes that stored element.
 
 Derived from [The Page element](../page-element.md). The body's formatting is the label runs model
 ([Canvas and palette](../../008-canvas/canvas-and-palette.md)); headings in it follow

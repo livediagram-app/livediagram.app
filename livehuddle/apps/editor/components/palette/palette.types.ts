@@ -13,13 +13,7 @@ export type CanvasTool =
   | 'avatar'
   | 'eraser'
   | 'format'
-  | 'isometric'
-  // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
-  // Picking the tool does NOT start presenting; Start is a deliberate second
-  // act. Deliberately absent from SELECTION_MODES: there is no Mode Button
-  // for it, because handing somebody else's screen into a full-screen deck is
-  // not something one person should do to another.
-  | 'slide-deck';
+  | 'isometric';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.

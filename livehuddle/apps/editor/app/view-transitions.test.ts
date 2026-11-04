@@ -19,14 +19,10 @@ describe('View Transitions', () => {
     expect(globals).toMatch(/html\s*\{\s*view-transition-name:\s*none;\s*\}/);
   });
 
-  it('keep the start mode switch with chrome and the slide moves with the canvas', () => {
+  // The slide moves went with presenting (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2).
+  it('keep the start mode switch with chrome, and give the canvas none', () => {
     expect([...classesIn(globals)]).toEqual(['start-mode']);
-    expect([...classesIn(canvasMotion)].sort()).toEqual([
-      'slide-back',
-      'slide-fade',
-      'slide-forward',
-      'slide-in',
-    ]);
+    expect([...classesIn(canvasMotion)]).toEqual([]);
   });
 
   it('are started only through React, never document.startViewTransition', () => {

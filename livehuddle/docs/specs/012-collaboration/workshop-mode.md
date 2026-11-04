@@ -23,7 +23,7 @@ livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode
 | **meeting board** | A tab of a Space, in livehuddle's one mode (`EditorMode` `'workshop'` in the code)    | Workshop (livediagram's mode); a liveplanner board     |
 | **session**       | The meeting a group holds on a board (a stand-up, an all-hands); never a stored thing | a tab kind, a document type, a call                    |
 | **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to the mode   | whoever opened the Space first                         |
-| **meeting tools** | The Timer, the quick vote (Vote) and Bring Focus                                      | the Collaborate elements, which livehuddle has none of |
+| **meeting tools** | The Timer, the quick vote (Vote), Bring Focus and the Reaction Pads                   | the Collaborate elements, which livehuddle has none of |
 | **light content** | Sticky notes, text, images, stickers, icons, link cards and frames                    | shapes, arrows, drawings, containers, charts           |
 
 - The interface says neither **Workshop** nor **mode**: a person opens a Space, never a mode. Specs say **meeting
@@ -47,18 +47,19 @@ livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode
 - assigned actions from any element's menu, and the Collaborate Panel;
 - the facilitator baton in the Collaborators dialog.
 
-No Presentation mode, no Slide Deck, no Page ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
+No Presentation mode, no Slide Deck, no Page ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)): part 2 took
+them out, and a document's stored deck is kept untouched.
 
 ## The palette
 
 The meeting palette is livehuddle's one palette, in order:
 
-| Band     | Categories               |
-| -------- | ------------------------ |
-| _(none)_ | Popular                  |
-| Common   | Write, Frame             |
-| Meet     | Navigate, Selection Mode |
-| Decorate | Icons, Stickers, Media   |
+| Band     | Categories                      |
+| -------- | ------------------------------- |
+| _(none)_ | Popular                         |
+| Common   | Write, Frame                    |
+| Meet     | Navigate, React, Selection Mode |
+| Decorate | Icons, Stickers, Media          |
 
 - **Popular** (the landing category), fixed: Sticky note, Text, Frame, Image, Link card, then behind a divider Room,
   Meeting Table, Chair, Bring Focus and Avatar Pad. No openers: every category is one level deep.
@@ -68,15 +69,16 @@ The meeting palette is livehuddle's one palette, in order:
 - **Navigate**: Portal, Bring Focus, Chair, Desk, Sofa, Fence, Avatar Pad and Link card, then the
   [office pieces](../009-elements/office.md): Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine and
   Rug.
+- **React**: the five [Reaction Pads](../009-elements/reaction-pad.md), Confetti, Sparkles, Hearts, Applause and
+  Fireworks (owner, 2026-11-04: they stay as a light meeting tool).
 - **Selection Mode**: one [Selection Mode button](../009-elements/mode-button.md) per selection mode (the Spaces'
   **Walk In** is the Avatar one).
 - **Icons** and **Stickers**, for decoration, as livediagram has them.
 - **Media**: Image (upload, the gallery, [image search](../009-elements/image-search.md)) and Link card. No video or
   website embeds.
-- **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Layout, Data, Components, Ask, Tools, Record or
-  React. A connector or a flowchart shape is a diagram tool: livediagram's.
+- **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Layout, Data, Components, Ask, Tools or Record. A connector or a flowchart shape is a diagram tool: livediagram's.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows
-  **Write, Frame · Navigate, Selection Mode · Icons, Stickers, Media**: no Popular, no Session category.
+  **Write, Frame · Navigate, React, Selection Mode · Icons, Stickers, Media**: no Popular, no Session category.
 - The Toolbar strip's **Search** finds only what the palette offers: an element livehuddle no longer offers is not
   placed from anywhere ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)).
 - A **Participant** gets sticky notes, text and an image, as before ([Share roles](#share-roles)).

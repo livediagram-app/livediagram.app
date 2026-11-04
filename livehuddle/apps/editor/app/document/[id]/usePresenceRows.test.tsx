@@ -10,7 +10,7 @@ const p = (id: string): Participant => ({ id, name: id, color: '#123456', status
 const self = p('me');
 const peer = p('peer');
 
-const rows = (cursorsHidden: boolean, avatarsHidden = false) =>
+const rows = (cursorsHidden: boolean) =>
   renderHook(() =>
     usePresenceRows({
       documentShareable: true,
@@ -30,12 +30,10 @@ const rows = (cursorsHidden: boolean, avatarsHidden = false) =>
       ]),
       localLaserTrail: [{ x: 3, y: 4, t: 1 }],
       cursorsHidden,
-      avatarsHidden,
     }),
   ).result.current;
 
-// The hide-cursors vote (docs/specs/012-collaboration/session-tools.md) and presenting
-// (docs/specs/012-collaboration/presentation-mode.md) both set cursorsHidden.
+// The hide-cursors vote (docs/specs/012-collaboration/session-tools.md) sets cursorsHidden.
 describe('usePresenceRows cursorsHidden', () => {
   it("shows a peer's cursor and laser normally", () => {
     const r = rows(false);
@@ -51,8 +49,7 @@ describe('usePresenceRows cursorsHidden', () => {
   });
 
   // docs/specs/008-canvas/avatar-mode.md "Realtime": the vote hides cursors only (owner, 2026-11-03).
-  it("keeps a peer's character through a hide-cursors vote, and withholds it while presenting", () => {
+  it("keeps a peer's character through a hide-cursors vote", () => {
     expect(rows(true).remoteAvatarRows.map((a) => a.id)).toEqual(['peer']);
-    expect(rows(true, true).remoteAvatarRows).toEqual([]);
   });
 });
