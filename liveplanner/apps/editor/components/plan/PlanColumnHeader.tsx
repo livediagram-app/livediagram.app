@@ -14,7 +14,7 @@ import {
   takeColumnSettingsRequestOf,
 } from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
-import { columnPartStyle } from './column-part';
+import { columnHeadStyle } from './column-part';
 import { COLUMN_ATTR } from './column-move-flip';
 import { plural } from '@liveplanner/project';
 import { CollapseColumnButton } from './CollapsedColumn';
@@ -70,7 +70,7 @@ export function PlanColumnHeader({
     <div
       {...{ [COLUMN_ATTR]: column.id }}
       className="plan-col group sticky top-0 z-[1] rounded-[var(--plan-col-r,8px)] px-3 pb-1.5 pt-2"
-      style={columnPartStyle(palette)}
+      style={columnHeadStyle(palette)}
       onClick={
         onFrame
           ? (e) => {

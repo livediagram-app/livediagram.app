@@ -876,14 +876,16 @@ html {
  * colour (--plan-col-bg, set on each part), shifting 2.5% toward the board's ink (--plan-col-ink) while the column is
  * under the pointer (useColumnHover), easing in and out. */
 @utility plan-col {
-  /* 85% solid, so the tab's canvas shows faintly through the column too (plan-board.md "See-through surface"). */
-  background-color: color-mix(in srgb, var(--plan-col-bg) 85%, transparent);
+  /* 85% solid, so the tab's canvas shows faintly through the column too (plan-board.md "See-through surface"). A head
+   * mixes into the board's solid paper instead (--plan-col-under, columnHeadStyle), so stuck over the cards it hides
+   * them (plan-board.md "Column heads stick flush"). */
+  background-color: color-mix(in srgb, var(--plan-col-bg) 85%, var(--plan-col-under, transparent));
   transition: background-color 250ms ease-out;
   &[data-column-hover] {
     background-color: color-mix(
       in srgb,
       color-mix(in srgb, var(--plan-col-ink) 1.5%, var(--plan-col-bg)) 85%,
-      transparent
+      var(--plan-col-under, transparent)
     );
   }
   @media (prefers-reduced-motion: reduce) {
