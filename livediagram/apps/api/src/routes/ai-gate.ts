@@ -8,14 +8,17 @@ import {
 } from '../responses';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { resolveAiProvider } from '../ai-provider';
+import { spendAiDailyBudget } from '../ai-daily-cap';
 import type { RouteContext } from './context';
 
 // May this caller use the model at all? (docs/specs/021-event-storming/note-reader.md.)
 //
 // The one answer to "who may spend the operator's model budget" for the
 // sticky-note photo reader — and the order matters as much as the checks: the origin allow-list runs BEFORE auth so a third-party
-// site cannot even probe the endpoint for state, and the rate limiter runs
-// last so a refused caller never consumes anyone's budget.
+// site cannot even probe the endpoint for state, the rate limiter runs after
+// the rest so a refused caller never consumes anyone's budget, and the
+// deployment's daily cap counts last, so only a caller every other check
+// admitted spends one of the day's requests.
 //
 // Returns the Response to send, or null when the caller is admitted.
 export async function aiGate(ctx: RouteContext): Promise<Response | null> {
@@ -57,6 +60,10 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
     const { success } = await env.AI_RATE_LIMITER.limit({ key: ip });
     if (!success) return rateLimited();
   }
+
+  // The whole deployment's daily cap (ai-daily-cap.ts). Spent, it answers as a provider out of quota does, so the
+  // editor reads the rest on the device and says AI is resting for today.
+  if (!(await spendAiDailyBudget(env))) return json({ error: 'ai_quota' }, { status: 429 });
 
   return null;
 }
