@@ -144,10 +144,10 @@ export function PhotoStatus({
         </Pill>
       ) : null}
       {readerFallback === 'budget' ? (
-        // Whose budget it was (the deployment's key, or the author's free
+        // Whose budget it was (the deployment's key, its daily cap, or the author's free
         // share) is deliberately not said.
         <Pill tone="warn" testId="photo-reader-fallback">
-          Free monthly budget reached. Reading on this device instead.
+          AI is resting for today. Reading on this device instead.
         </Pill>
       ) : null}
       {readError === 'reader_unavailable' ? (

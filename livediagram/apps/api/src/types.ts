@@ -182,6 +182,10 @@ export type Env = {
   // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
   // it open to guests. Hosted livediagram.app leaves it unset.
   AI_REQUIRE_SIGN_IN?: string;
+  // The whole deployment's reader requests a UTC day (src/ai-daily-cap.ts,
+  // docs/specs/021-event-storming/note-reader.md "Security"). A positive whole number; unset or anything else
+  // is the code default, 1000.
+  AI_DAILY_CAP?: string;
 };
 
 // The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the
