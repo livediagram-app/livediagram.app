@@ -60,7 +60,12 @@ a migration catches up on its own.
 - Running a second stack in another port block: give the site `ACCOUNTS_DEV_ORIGIN` (and `INDEX_DEV_ORIGIN`,
   `MEDIA_DEV_ORIGIN`), accounts `BASE_URL` and `--local-upstream` at that site, the router `--var` overrides for
   `WORKSPACE_ORIGIN`, `EDITOR_ORIGIN` and `API_ORIGIN`, and every `wrangler` its own `WRANGLER_REGISTRY_PATH`
-  and `--persist-to`, so nothing reaches the workers already running.
+  and `--persist-to`, so nothing reaches the workers already running. The accounts Worker accepts a sign-in on an
+  app's own address only on that app's first port (3500 for livehuddle), so give it
+  `SIGN_IN_ON_APP_ORIGINS=false` there: sign-in then runs on the site's address and comes back to the app.
+- Without the api's accounts vars the editor still opens: nobody can sign in, guests have no identity
+  (`/api/auth/guest` comes straight back to `/auth/guest#error=guest_not_configured`), and share links can't be
+  checked.
 
 ## Driving the app (Claude in Chrome)
 
