@@ -21,6 +21,14 @@
   --hsf-shadow: rgb(0 0 0 / 0.5);
 }
 
+/* Below lg the copy spans the window, so the wings would stand cropped against the headline: the wide stage
+   shows its floor alone (from y 490, under the calls to action). */
+@media (max-width: 63.999rem) {
+  .hsf-floor-only {
+    clip-path: inset(490px 0 0 0);
+  }
+}
+
 /* The band's dot grid is the floor: it reaches the floor's foot rather than fading out under the copy. */
 .hsf-dots {
   mask-image: linear-gradient(to bottom, black 55%, transparent);

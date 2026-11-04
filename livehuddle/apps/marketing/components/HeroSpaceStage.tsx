@@ -129,12 +129,15 @@ export function HeroSpaceFloor({
   );
 }
 
-/** The wide stage, its foot on the band's foot and centred, from `sm` up; a phone has its own (HeroSpacePhone). */
+/**
+ * The wide stage, its foot on the band's foot and centred, from `sm` up, its floor alone below `lg` (space-floor.css);
+ * a phone has its own (HeroSpacePhone).
+ */
 export function HeroSpaceStage() {
   return (
     <HeroSpaceFloor
       stage="wide"
-      className="absolute bottom-0 left-1/2 -translate-x-1/2 max-sm:hidden"
+      className="hsf-floor-only absolute bottom-0 left-1/2 -translate-x-1/2 max-sm:hidden"
     />
   );
 }
