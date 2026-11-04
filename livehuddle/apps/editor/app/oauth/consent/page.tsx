@@ -30,7 +30,7 @@ function Consent() {
   const session = params.get('session');
   const { authLoaded, sessionAnswered, isSignedIn, accountUserId } = useAccountBootstrap();
   // Sign in is offered only once the session says there is no one: the 5 s give-up is not that answer while
-  // the ld_signed_in hint says a session is coming (docs/specs/014-identity/auth-and-guest-access.md).
+  // the lh_signed_in hint says a session is coming (docs/specs/014-identity/auth-and-guest-access.md).
   const gate = useSignInGate({
     authLoaded,
     sessionAnswered,

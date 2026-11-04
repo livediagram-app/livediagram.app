@@ -117,9 +117,9 @@ describe('the randomUUID pre-hydration script', () => {
 describe('SILENT_SIGN_IN_BOOT_SCRIPT', () => {
   it("bounces through this app's own api and reads only this app's cookies", () => {
     expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain(`"/api"+'/auth/silent?return='`);
-    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ld_signed_in','1')");
-    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ld_signed_out','2')");
-    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ld_silent')");
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('lh_signed_in','1')");
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('lh_signed_out','2')");
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('lh_silent')");
   });
 
   it('leaves the sign-in pages, the guest hand-off and embeds alone', () => {
