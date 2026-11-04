@@ -70,7 +70,9 @@ Scope, by file:
   writes them in the push's write batch: `INSERT OR IGNORE … SELECT` from `json_each(rows)` joined to the item and the
   row's scope's listening webhooks, under the pending cap and the hour. `type` `mention`, the actor the thread's latest
   author, the detail `{text, on, mentionedId}`.
-- `pingStatement`: a `ping` for one webhook, `app` `liveworkspace`, no item, its title the webhook's name.
+- `pingStatement`: a `ping` for one webhook, `app` `liveworkspace`, no item, its title the webhook's name, inserted
+  only while the webhook is not paused (`INSERT ... SELECT ... WHERE paused_at IS NULL`); no row written is
+  `409 webhook_paused`.
 - Each statement built adds one to the isolate's `queuedCount`. The Worker's `fetch` compares it before and after a
   request and, when it moved, `waitUntil(kickWebhooks(env))`: one read on `webhook_deliveries_due`
   (`state = 'pending' AND next_at <= now + 1 s`, `LIMIT 1`) and, when something is due, the dispatcher's `kick()`.
@@ -101,7 +103,9 @@ Scope, by file:
      `RETURNING failures`), and the trim (finished rows past the newest `WEBHOOK_DELIVERIES_KEPT`, 20). At
      `FAILING_PAUSE_AFTER` (20) failures, paused `failing`.
 - Pausing: `paused_at`, `paused_reason`, and every pending row `failed` with `error` `paused`.
-- `nextAt`: now when the run took a full batch, else `MIN(next_at)` of the pending rows, else null.
+- `nextAt`: now when the run took a full batch, else the soonest `next_at` of the pending rows whose webhook is not
+  paused (the due index in order, `LIMIT 1`), at least `DISPATCH_MIN_GAP_MS` (1 s) from now, else null. A pending
+  row left on a paused webhook is never due, so it must not schedule a run either, or the alarm loops.
 
 ### Routes (`routes.ts`)
 
@@ -166,7 +170,7 @@ deleted, its others' pending rows failed (`paused`), and they paused `creator_le
   when a `mention` webhook could hear it, at most one accounts ask per mentioned person (10 at most) and one
   statement in its write batch; never a query per mention or per webhook. A request that built one: one indexed read after answering, and one Durable Object call only
   when something is due.
-- A run: at most 50 sends, 6 at a time, each at most 10 s; one D1 read, one batch per webhook, one `MIN` read.
+- A run: at most 50 sends, 6 at a time, each at most 10 s; one D1 read, one batch per webhook, one read for the next run.
 - A webhook holds at most 500 pending and 20 finished deliveries; a scope at most 10 webhooks.
 
 ## Observability

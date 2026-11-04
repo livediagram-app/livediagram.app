@@ -96,7 +96,7 @@ Scopes: `drive.file` and `drive.install`.
    `readChanges` page by page (`DRIVE_CHANGES_PAGE_SIZE` 1000); a `400`/`404` token restarts from now and adopts. The
    root removed: rows cleared, root forgotten, a new root next batch. Else `applyInbound`.
 8. Inbound stopped short (`DRIVE_PASS_MAX_INBOUND` 200 effectful changes, or the meter can't afford 4 more): log and
-   continue in 1 s, no outbound.
+   continue in 1 s (the write interval once stalled, below), no outbound.
 9. Re-read the picture if anything was adopted or applied; `noteSeen` each item's `updatedAt`.
 10. `planOutbound(snapshot, { now, flush, writeIntervalMs })`; `runOutbound` up to `DRIVE_PASS_MAX_WRITES` (40), each
     op needing 6 subrequests of headroom.
@@ -108,9 +108,16 @@ Failures (`failed`): `PassAborted` stops; `BudgetSpent` continues in 1 s; `Needs
 ### The next alarm (`nextPassAt`)
 
 The soonest of: `lastPassAt` + the fallback check (6 h with a live channel, 30 min without, doubled per back-off level
-up to 6 h); a failure's `retryAt`; `now + 1 s` for more; the plan's `nextDueAt`; the channel's renewal (expiry minus
+up to 6 h); a failure's `retryAt`; `now + 1 s` for more, or `now` + the write interval for more after
+`DRIVE_PASS_STALLS_MAX` (3) stalled passes in a row; the plan's `nextDueAt`; the channel's renewal (expiry minus
 24 h) when still ahead. An earlier alarm already set stands. `signal` sets `now + 30 s` unless sooner is set; `check`
 sets `now` with `flushNext` unless syncing or a pass ended within 30 s.
+
+A pass that ends with more to do is `stalled` when it moved nothing on: no row recorded or dropped (`PassState.writes`),
+no change applied, no file written, and the page token and the root as they were when it began. `Mirror` counts stalled
+passes in a row in memory (`stalls`, reset by any other outcome, and by a fresh object). Saving the page token part-way
+through `readChanges` was not chosen: inbound orders a whole read (folders first, the root's last change), so a token
+between pages could skip a folder a later page's item needs.
 
 ### Inbound effects (`applyEffect`, through the index as the person)
 
@@ -214,7 +221,7 @@ person id as additional data. The consent `state` and the channel token are HMAC
 | A folder move making a cycle               | refused by the index; Drive put back                                                        |
 | Item moved into a team or purged           | its file to Drive's bin, row kept (the index can't tell which)                              |
 | A push with a bad token                    | `200`, logged `push-refused`                                                                |
-| A pass past 800 subrequests                | stops cleanly, continues in 1 s                                                             |
+| A pass past 800 subrequests                | stops cleanly, continues in 1 s; after 3 with no progress, in the write interval            |
 | Index flag write fails                     | logged; the fallback check covers it                                                        |
 | The mirror's Durable Object out of reach   | `503 storage_unavailable`, never `502 google_failed`; logged `[durable-object] unavailable` |
 | Anything else a route throws               | `500 internal_error`, logged `api error route=<route words>`                                |
@@ -277,6 +284,7 @@ Every line is `drive: <step>` with ids. `driveLog`: `route <name>`, `connect`, `
 | `DRIVE_CHECK_MIN_GAP_MS`                       | 30 s            | `check`; a failed alarm's retry |
 | `DRIVE_PASS_MAX_WRITES`                        | 40              | outbound batch                  |
 | `DRIVE_PASS_CONTINUE_MS`                       | 1 s             | the next batch                  |
+| `DRIVE_PASS_STALLS_MAX`                        | 3               | stalled passes before slowing   |
 | `DRIVE_PASS_MAX_INBOUND`                       | 200             | inbound batch                   |
 | `DRIVE_PASS_SUBREQUEST_BUDGET`                 | 800             | `SubrequestMeter`               |
 | `DRIVE_CHANGES_PAGE_SIZE`                      | 1000            | `listChanges`                   |

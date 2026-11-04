@@ -113,7 +113,10 @@ mentionedId}`).
 - **Paused** (nothing is sent, and what was waiting is given up): by an admin or the owner; when its creator is no
   longer an admin of its team ("Paused: whoever added it no longer runs the team"); after 20 deliveries in a row
   were given up ("Paused: 20 deliveries in a row failed"); or on 410 ("Paused: the address said it’s gone").
-  Resuming clears the failures, and a team admin resuming one becomes its creator.
+  Resuming clears the failures, and a team admin resuming one becomes its creator. A paused webhook's deliveries
+  never wake the dispatcher: Send Test queues its `ping` only while the webhook is not paused, in the same statement
+  (a pause landing between the check and the write gets `409 webhook_paused`), and the next run is scheduled only
+  from deliveries of webhooks that are not paused, never sooner than a second away.
 - **Recent deliveries**: each webhook keeps its last 20 finished deliveries (event, time, tries, the last
   response code or the reason none came), listed in Settings.
 - A webhook holds at most 500 pending deliveries; an event past that is not queued for it.
