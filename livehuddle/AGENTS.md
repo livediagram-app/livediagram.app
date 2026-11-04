@@ -274,32 +274,35 @@ When the right place for code is genuinely unclear, default to `packages/`.
 
 ## Workshop features shared with livediagram
 
-livehuddle was forked from livediagram (`livehuddle/.forked-from`) and both carry **Workshop mode**, so these features
-exist twice, once in each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-project-roadmap/build-plan.md#keeping-the-two-products-from-drifting)):
+livehuddle was forked from livediagram (`livehuddle/.forked-from`) and carried all of **Workshop mode**. Since Work
+Tracker #423 livehuddle is for meeting in Spaces and keeps only the meeting kit, so these features exist twice, once in
+each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-project-roadmap/build-plan.md#keeping-the-two-products-from-drifting)):
 
-- **Workshop mode** itself: the Session strip and its tools (Timer, Vote, Poll), the Workshop palette layout and the
-  Workshop tour (`docs/specs/012-collaboration/`).
-- **The Collaborate elements**: Ask (Dot vote, Poll, Quiz, the estimate scales, Temperature check, Idea box, Q&A
-  board), Tools (Timer, Stopwatch, Reveal zone, Done check, Picker), Record (Comment panel, Action card, Agenda,
-  Decision record, Roll call), React (the reaction pads) and Selection Mode, with participant responses, poll result
-  capture and vote integrity (`docs/specs/012-collaboration/`, `docs/specs/009-elements/`).
-- **Facilitation**: the facilitator baton, Bring Focus, follow-me, Presentation mode and the Slide Deck, the Collaborate
-  Panel, assigned actions, comments with mentions, pins and reactions.
-- **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring focus, Chair, Desk,
-  Sofa, Fence, Link card, Office and the Avatar Pad (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
-- **The Spaces and session templates**: the Virtual Office, the retrospectives, the quizzes and games, and the other
-  Workshop templates both catalogues carry (`packages/templates`, `docs/specs/012-collaboration/virtual-office-template.md`).
-- **Share roles in a session**: what a Participant may do on a Workshop board (`docs/specs/013-workspace/share-roles.md`).
+- **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
+  Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
+  (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
+- **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the facilitator baton
+  and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`).
+- **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
+- **The Spaces templates**: Virtual Office, Coworking Space, Team Pod and All-Hands Hall (`packages/templates`,
+  `docs/specs/012-collaboration/virtual-office-template.md`).
+- **Share roles on a board**: what a Participant may do (`docs/specs/013-workspace/share-roles.md`).
+
+**Leaving livehuddle** (Work Tracker #423, [Not in livehuddle](../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md)):
+the retro and workshop templates, the quizzes and games, every Collaborate element (polls, quizzes, Q&A, agendas,
+reveals and the rest), the Session strip's Poll, the Session button, the Workshop tour, Presentation mode and the Slide
+Deck, the Page element and the diagram tools. These are livediagram's alone. Until #423's code parts land livehuddle
+still carries copies of them: a fix to one lands in livediagram only, and livehuddle's copy is left for deletion.
 
 The rules:
 
 - **A fix or change to one of these lands in both products in the same PR**, specs and code, **or the code moves to
   `packages/` first** (as `@liveworkspace/*`, the root AGENTS.md order) so there is one copy to change. The pure parts
-  of the Session strip and the Collaborate elements are the next extraction, to `@liveworkspace/session-tools`, the first
-  time a change has to land in both.
+  of the Session strip's Timer and Vote, Bring Focus and the facilitator baton are the next extraction, to
+  `@liveworkspace/session-tools`, the first time a change has to land in both.
 - What is already one copy stays one: the avatar core and its wire shapes (`@liveworkspace/avatar`,
   `@liveworkspace/api-schema`), the realtime room's shared shapes, and everything else in `packages/`.
-- Only livehuddle has: Avatar mode first-class (the Selection Mode picker offers Avatar and a Spaces board opens walking), the Space noun, and its emerald brand (`@livehuddle/tailwind-config`).
+- Only livehuddle has: Avatar mode first-class (the Selection Mode picker offers Avatar and a Spaces board opens walking), the meeting board and its palette, proximity audio and calls, the Space noun, and its emerald brand (`@livehuddle/tailwind-config`).
 - CI's **Drift report** (the Plan job's summary, `.github/scripts/drift-report.mjs`, the root docs/ci.md) counts the
   identical, changed and one-only files between `livediagram/` and `livehuddle/`, names ignored. It never fails a
   build; read it before picking what to share next.
