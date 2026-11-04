@@ -65,6 +65,7 @@ import { useRegisterConfigurableBoard } from '@/hooks/plan/board-configure-store
 import { SlotBoardCog } from './SlotBoardCog';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
+import { COLUMN_REORDERED, useColumnReorder } from './useColumnReorder';
 import { columnBackgroundMenu } from './column-settings-request';
 import { CellAddRow } from './CellAddRow';
 import { useColumnHover } from './useColumnHover';
@@ -350,6 +351,18 @@ export function PlanBoardView({
     COLLAPSED_COLUMN_PX,
   );
   usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null, columnMove.isMoving);
+  // An Editor reorders the columns by dragging a head, or Alt+Shift+Arrows on one, on a desktop (plan-board.md "Drag a
+  // column"); never on a phone nor a slot board (setUpHere is false there).
+  const reorder = useColumnReorder({
+    setup,
+    write: (next) => plan?.updateBoard(element.id, next),
+    announce: (message) => plan?.announce(message),
+    enabled: setUpHere && interactive && !phone,
+    grid: gridRef,
+    scroller: bodyRef,
+    board: boardRef,
+    glide: columnMove,
+  });
   // Maximised (or filling its tab, or in a Dashboard slot, whose columns scroll sideways when it is narrow), a card
   // dragged near the columns' left or right edge scrolls them sideways.
   useEdgeAutoScroll(bodyRef, (maximised || filled || simplified) && (!!drag.drag || !!incoming));
@@ -734,7 +747,7 @@ export function PlanBoardView({
               ),
             }}
           >
-            {projection.columns.map((col) =>
+            {projection.columns.map((col, position) =>
               simplified ? (
                 <SlotColumnHeader
                   key={col.column.id}
@@ -778,8 +791,9 @@ export function PlanBoardView({
                   palette={toneOf(col.column.id).palette}
                   bar={toneOf(col.column.id).bar}
                   canEdit={setUpHere}
+                  reorder={reorder.reorderFor(col.column.id, position)}
                   onChange={(next, part) => {
-                    if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
+                    if (part === COLUMN_REORDERED) return reorder.reordered(next, col.column.id);
                     plan?.updateBoard(element.id, next);
                     trackSetup(part);
                   }}

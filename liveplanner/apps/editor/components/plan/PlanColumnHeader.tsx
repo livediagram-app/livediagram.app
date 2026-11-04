@@ -5,6 +5,8 @@
 // opens the column's settings (PlanColumnPopover). The cog shows on hover and focus, and always on a
 // touch screen. Collapse Column (CollapsedColumn.tsx) sits before the cog (both always shown), for everyone, where the board offers it
 // (docs/specs/026-plan/plan-board.md "Collapse Column"); the cog's toolbar has it too. A column just added from another column's settings opens its own, its name selected.
+// For an Editor on a desktop (`reorder`), the head is the column's handle (plan-board.md "Drag a column"): the open hand
+// on hover, a press that moves picks the column up (useColumnDrag), and focused, Alt+Shift+Left/Right move it.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlanBoardSetup, ProjectedColumn } from '@liveplanner/items';
 import { CountBadge, SettingsIcon } from '@liveplanner/ui';
@@ -16,6 +18,7 @@ import {
 import type { PlanPalette } from './plan-palette';
 import { columnHeadStyle } from './column-part';
 import { COLUMN_ATTR } from './column-move-flip';
+import { COLUMN_HEAD_ATTR, columnMoveKey, type ColumnReorder } from './column-drag';
 import { plural } from '@liveplanner/project';
 import { CollapseColumnButton } from './CollapsedColumn';
 import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
@@ -32,6 +35,7 @@ export function PlanColumnHeader({
   onFrame,
   onCollapse,
   bar,
+  reorder,
 }: {
   col: ProjectedColumn & { count: number; overLimit: boolean };
   setup: PlanBoardSetup;
@@ -47,6 +51,8 @@ export function PlanColumnHeader({
   onCollapse?: (() => void) | undefined;
   // Its top bar's colour when the column has none of its own (a multi-colour theme's, column-tones.ts).
   bar?: string | undefined;
+  // The head as the column's handle, for someone who may reorder the board's columns; absent, it is no handle.
+  reorder?: ColumnReorder | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // Opened for a column just added: its name is selected, ready to type over.
@@ -69,8 +75,36 @@ export function PlanColumnHeader({
   return (
     <div
       {...{ [COLUMN_ATTR]: column.id }}
-      className="plan-col group sticky top-0 z-[1] rounded-[var(--plan-col-r,8px)] px-3 pb-1.5 pt-2"
-      style={columnHeadStyle(palette)}
+      {...(reorder
+        ? {
+            role: 'group',
+            tabIndex: 0,
+            'aria-label': `${column.name} column, position ${reorder.position + 1} of ${reorder.total}`,
+            'aria-keyshortcuts': 'Alt+Shift+ArrowLeft Alt+Shift+ArrowRight',
+            [COLUMN_HEAD_ATTR]: column.id,
+            onPointerDown: reorder.onPointerDown,
+            onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => {
+              const step = columnMoveKey(e);
+              if (!step) return;
+              e.preventDefault();
+              e.stopPropagation();
+              reorder.onMoveKey(step);
+            },
+          }
+        : {})}
+      className={`plan-col group sticky top-0 z-[1] rounded-[var(--plan-col-r,8px)] px-3 pb-1.5 pt-2 ${
+        reorder
+          ? 'cursor-grab outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--plan-col-focus)]'
+          : ''
+      }`}
+      style={
+        reorder
+          ? ({
+              ...columnHeadStyle(palette),
+              '--plan-col-focus': palette.focus,
+            } as React.CSSProperties)
+          : columnHeadStyle(palette)
+      }
       onClick={
         onFrame
           ? (e) => {

@@ -236,6 +236,7 @@ export function PlanColumnPopover({
           <div className="flex h-8 overflow-hidden rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
             <ToolbarButton
               label="Move Left"
+              keys="Alt+Shift+Left"
               disabled={at <= 0}
               onClick={() => onChange(moveColumn(setup, column.id, -1), 'ColumnReordered')}
             >
@@ -244,6 +245,7 @@ export function PlanColumnPopover({
             <span aria-hidden className="w-px bg-slate-200 dark:bg-slate-700" />
             <ToolbarButton
               label="Move Right"
+              keys="Alt+Shift+Right"
               disabled={at >= setup.columns.length - 1}
               onClick={() => onChange(moveColumn(setup, column.id, 1), 'ColumnReordered')}
             >
@@ -576,23 +578,27 @@ export function PlanColumnPopover({
   );
 }
 
-// A Move button on the column's toolbar: an icon square in the segmented control, its name as a tooltip.
+// A Move button on the column's toolbar: an icon square in the segmented control, its name as a tooltip, with the
+// keys that do the same on a focused column head (plan-board.md "Drag a column").
 function ToolbarButton({
   label,
+  keys,
   disabled = false,
   onClick,
   children,
 }: {
   label: string;
+  keys?: string;
   disabled?: boolean;
   onClick: () => void;
   children: ReactNode;
 }) {
+  const name = keys ? `${label} (${keys})` : label;
   return (
-    <Tooltip label={label}>
+    <Tooltip label={name}>
       <button
         type="button"
-        aria-label={label}
+        aria-label={name}
         disabled={disabled}
         className="relative touch-target flex w-9 items-center justify-center text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:text-slate-300 motion-reduce:transition-none dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-50 dark:disabled:text-slate-600"
         onClick={onClick}

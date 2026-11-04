@@ -92,9 +92,14 @@ export function setDoneColumn(setup: PlanBoardSetup, id: string, done: boolean):
 }
 
 export function moveColumn(setup: PlanBoardSetup, id: string, step: -1 | 1): PlanBoardSetup {
+  return moveColumnTo(setup, id, setup.columns.findIndex((c) => c.id === id) + step);
+}
+
+// The column put at place `to` (a column dragged by its head, plan-board.md "Drag a column"); the set-up itself when
+// it is already there or either end is off the board, so letting go where it started writes nothing.
+export function moveColumnTo(setup: PlanBoardSetup, id: string, to: number): PlanBoardSetup {
   const from = setup.columns.findIndex((c) => c.id === id);
-  const to = from + step;
-  if (from < 0 || to < 0 || to >= setup.columns.length) return setup;
+  if (from < 0 || to < 0 || to >= setup.columns.length || to === from) return setup;
   const columns = [...setup.columns];
   const [c] = columns.splice(from, 1);
   columns.splice(to, 0, c!);

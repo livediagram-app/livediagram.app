@@ -4,6 +4,7 @@ import {
   addColumnAfter,
   addColumnsAfter,
   moveColumn,
+  moveColumnTo,
   newColumnStatus,
   recolourColumn,
   removeColumn,
@@ -62,6 +63,22 @@ describe('board set-up edits', () => {
     ]);
     expect(moveColumn(board, first.id, -1)).toBe(board);
     expect(moveColumn(board, last.id, 1)).toBe(board);
+  });
+
+  it('puts a column at any place, writing nothing where it already is (plan-board.md "Drag a column")', () => {
+    expect(moveColumnTo(board, first.id, 2).columns.map((c) => c.id)).toEqual([
+      second.id,
+      last.id,
+      first.id,
+    ]);
+    expect(moveColumnTo(board, last.id, 0).columns.map((c) => c.id)).toEqual([
+      last.id,
+      first.id,
+      second.id,
+    ]);
+    expect(moveColumnTo(board, second.id, 1)).toBe(board);
+    expect(moveColumnTo(board, second.id, 3)).toBe(board);
+    expect(moveColumnTo(board, 'nope', 0)).toBe(board);
   });
 
   it('adds a column after another with a unique status, until the board is full', () => {

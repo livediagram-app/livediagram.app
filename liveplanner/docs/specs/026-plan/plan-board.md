@@ -716,6 +716,55 @@ In Plan mode:
 - Positions are read within the board (layout units), so panning or zooming the canvas never reads as a move.
   Reduced motion snaps. The measuring runs only when the board's arrangement of cards changes.
 
+### Drag a column
+
+<a id="drag-a-column"></a>An Editor reorders a board's columns by dragging a column's head left or right, as cards are
+dragged, on a desktop (a mouse, pen or trackpad).
+
+- **What moves**: the order of **this board's** columns, its set-up, nothing else. A column is a status shown on
+  this board, so the statuses themselves, their cards and every other board's columns stay as they are (as
+  Move Left and Move Right in a column's settings, which this is the drag of). No column is fixed: a
+  [done column](#done-columns) may go anywhere, and a board that ends with its done columns keeps them there only
+  while nobody moves them.
+- **Where it starts**: pressing a column's head (its colour bar, count or name, anywhere but its buttons) and moving
+  4 px (`COLUMN_DRAG_START_PX`) picks the column up; a press that moves less is still a press, so the head's
+  buttons (Collapse Column, the cog) and a phone's tap keep working exactly as before. On hover the head shows the
+  open hand (`grab`); while carried, the closed hand (`grabbing`) shows wherever the pointer goes. A collapsed
+  column's strip is not picked up (a press on it expands it), but it moves aside like any column.
+- **While carried**: the whole column, its head and every swimlane's cell, lifts (a soft shadow, raised 2 px and
+  2% wider) and follows the pointer sideways only. The other columns slide aside to open the gap where it will land,
+  each over the column move's 240 ms and easing (`COLUMN_MOVE_MS`), so the gap opens smoothly as the pointer
+  crosses each neighbour's middle. Near the board's left or right edge the columns scroll sideways, as they do for a
+  card. Nothing else on the board changes or re-renders while it is carried: the column's position is written
+  straight to it at most once a frame.
+- **Letting go** over the board puts the column where the gap is: one change to the board's set-up, so one undo
+  step, sent live to everyone on the plan, the column settling from where it was let go into its place (the column
+  move's glide, its shadow fading). Letting go where it started changes nothing (no write, no undo step).
+  It is announced: "Moved In Progress to position 3 of 5".
+- **Cancelling**: **Escape**, letting go outside the board, or the pointer being lost (a cancelled pointer, the
+  window losing focus) puts every column back where it was, gliding, with no write. Escape while a column is
+  carried does nothing else (it does not also close a popover or leave a maximised board).
+- **The keyboard**: an Editor's column head is focusable (a tab stop, after the board's cards, named "{Name}
+  column, position 2 of 5"); with it focused (or one of its buttons), **Alt+Shift+Left** and **Alt+Shift+Right**
+  move the column one place, as Move Left and Move Right do, the move gliding, focus staying on the head and the move
+  announced as a drag's is. At the first or last place the move is refused and said so ("In Progress is already the
+  first column"). Move Left and Move Right in the column's settings name the keys in their tooltips and announce
+  the same way.
+- **Everywhere a board is worked**: on a board with swimlanes the column moves across every swimlane; collapsed
+  columns slide aside like the rest; a sorted board's columns move as any board's (sorting orders cards, never
+  columns); with a header band, and under every theme and finish: a multi-colour theme's column colours go by place
+  ([Columns in the theme's colours](#column-colours)), so a column takes the colour of the place it lands in unless
+  it has one of its own, while under Marker each column keeps its own hand-drawn ink, which is seeded by the column,
+  not its place. A board maximised or filling its tab works the same.
+- **Not here**: a phone, or any press by a finger (touch screens keep today's behaviour: a tap on a head frames the
+  column), where columns are reordered in a column's settings (Move Left and Move Right) or Setup Board's Columns
+  step; and a Dashboard slot's compact board, on which nothing sets the board up (it is reordered on its tab, or
+  maximised from the slot).
+- **Share roles**: an **Editor** drags and moves columns. A **Participant** and a **Viewer** may not change the
+  board's set-up: their column heads show no hand, are not tab stops, never pick up and take no Alt+Shift+Arrows;
+  the server refuses a Participant's set-up change in any case.
+- **Telemetry**: `Plan / Changed / ColumnReordered`, as Move Left and Move Right.
+
 ### Keyboard
 
 With focus on a card: arrow keys move focus between cards; Enter opens the item; **Shift+Left/Right** moves the
