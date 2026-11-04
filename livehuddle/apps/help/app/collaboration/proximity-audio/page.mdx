@@ -5,7 +5,7 @@ import { CallStrip, Earshot, MicStates } from '@/components/illustrations/calls'
 export const metadata = helpMetadata({
   title: 'Proximity Audio',
   description:
-    'Talk in a livehuddle Space by walking up to people: join audio, hear whoever is near your character, see who is talking further off, and walk over to them.',
+    'Talk in a livehuddle Space by walking up to people: join audio, hear whoever is near you or in your room, see who is talking further off, and walk over.',
   path: '/help/collaboration/proximity-audio/',
 });
 
@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="collaboration"
 >
 
-In a Space you talk by walking up to people. You hear the characters near yours and nobody else: a voice fades as its person walks away, and sits to your left or right as they stand. Someone too far away to hear still shows that they are talking, so you can choose to walk over and join in.
+In a Space you talk by walking up to people. Out on the open floor you hear the characters near yours and nobody else: a voice fades as its person walks away, and sits to your left or right as they stand. Step into a room and it becomes a call of its own, with walls nobody hears through. Someone too far away to hear still shows that they are talking, so you can choose to walk over and join in.
 
 Audio rides [Avatar mode](/help/selection-modes/avatar-mode/): only a walking character has a place on the board, so only someone walking hears or is heard. People in a Space can also turn on a camera or share a screen; see [Cameras and Screen Sharing](/help/collaboration/cameras-and-screen-sharing/).
 
@@ -52,11 +52,23 @@ Audio only works on a Space other people can reach. A Space saved in this browse
 
 ## Who you hear
 
-You hear the people whose characters stand within earshot of yours, on the same tab, and only while you both walk. Somebody sitting in a chair is heard from where the chair is.
+You hear people on the same tab, and only while you both walk. Somebody sitting in a chair is heard from where the chair is. On the open floor (anywhere outside a room: a corridor, a lawn, the space between rooms), you hear the people within earshot:
 
 - **Closer is louder.** A voice is full volume when you are right next to its person, and fades smoothly to silence as they walk out of range. There is a little give at the edge, so somebody standing on the boundary does not flicker in and out.
 - **Left is left.** A person standing to your left is heard more in your left ear, which helps when a few people talk at once.
 - **Walking away leaves a conversation.** There is nothing to hang up: walk over to another group to join theirs.
+
+## Rooms are calls
+
+A room in a Space (an Office Room, with its walls and doorway) is a call of its own, so a meeting in it stays private:
+
+- **Inside a room, you hear everyone in the same room**, at full volume, however far apart you stand. Voices still sit to your left or right, so you can tell who is talking.
+- **Walls block sound.** Nobody outside hears anyone inside, however close they stand to the wall or the door, and nobody inside hears anyone outside. Two rooms side by side don't hear each other through their shared wall.
+- **The doorway is the line.** You are in a room once your feet are past the line of its walls. Standing in the doorway with your feet on the corridor side, you are still in the corridor; one step in, you are in the meeting.
+- **A room inside a room** is private from the one around it, so a phone booth drawn inside an open-plan room is a quiet corner of its own.
+- A room on a hidden layer is no room: it neither blocks walking nor makes a call.
+
+In the **Virtual Office** template, the meeting rooms, the phone booths and the kitchen are each their own call, and the open floor between them is by distance. The **Coworking Space** and the **All-Hands Hall** are each one big room, so everyone inside hears everyone else inside.
 
 ## Your microphone
 
@@ -66,18 +78,18 @@ Once you are in, the first button in the strip is your microphone. Press it to m
   <MicStates />
 </Figure>
 
-- **Live**: somebody is in earshot and hears you. A soft ring round the button breathes with your voice.
-- **Nobody Near**: your microphone is on, but nobody is close enough to hear you. People further off still see that you are talking.
+- **Live**: somebody hears you: anyone in your room, or in earshot on the open floor. A soft ring round the button breathes with your voice.
+- **Nobody Near**: your microphone is on, but nobody hears you. People further off, or on the other side of a wall, still see that you are talking.
 - **Muted**: nobody hears you. Press to unmute.
 - **Mic Blocked**: your browser refused the microphone. Allow it from the address bar, then join again. You still hear everyone.
 - **Mic Off**: nobody else is on this tab, so your microphone has closed (your browser's recording light goes out). It opens again the moment somebody arrives. This happens after you have been alone on the tab for 15 seconds.
 
 ## Seeing who is talking
 
-When someone talks, three small bars in their colour bounce above their name. You see them for everyone on your tab, not just the people in earshot:
+When someone talks, three small bars in their colour bounce above their name. You see them for everyone on your tab, not just the people you hear, even through a room's walls: the bars only say that somebody is talking, never what is said, so a closed meeting room reads like glass.
 
-- **Out of earshot** the bars are calm and faint, fading further with distance, so the nearest conversations stand out.
-- **In earshot** they are brighter, so you can see who you are hearing.
+- **People you don't hear** have calm, faint bars, fading further with distance, so the nearest conversations stand out.
+- **People you hear** have brighter bars, so you can see who is coming through.
 - **Your own bars** show above your own head while you talk, so you can tell you are coming through.
 
 Hover or tap someone's bars to see "Sam is talking, walk over". Press them and your character walks towards Sam, stopping a short way off so you do not bump into them. This works while you are walking; otherwise the bars only show.
@@ -88,9 +100,15 @@ Hover or tap someone's bars to see "Sam is talking, walk over". Press them and y
 
 Only a rough level of each person's voice is sent to show the bars, never the sound itself: nobody out of earshot receives any audio. Nothing said in a call is recorded or stored anywhere.
 
+## Speaking from a stage
+
+A Space can hold a **Stage**: a raised platform with its name on a plate at the front. Whoever stands on it, and may speak from it, is heard by everyone on the tab, in any room or none, at full volume. Several people on a stage hear each other as one room does.
+
+While someone speaks from a stage, everyone else in its room (or, for a stage on the open floor, everyone else on the tab) is the **audience**: the stage does not hear them, and they hear each other only by distance, so neighbours can whisper without the whole hall hearing. Walls still stand, so a meeting room elsewhere on the tab stays its own call. Step off the stage and you are back in your room's call straight away.
+
 ## Raise your hand
 
-When someone speaks from a stage, the whole Space hears them, and everyone else in the room is the audience: the stage does not hear you, but you can ask to speak.
+In a stage's audience, the stage does not hear you, but you can ask to speak.
 
 - **Raise Hand** appears in the call strip while you are in a stage's audience. Press it and a small amber hand shows beside your character, where everyone can see it. Press **Lower Hand** to put it down.
 - **The people on the stage see how many hands are up**, as a count in their call strip. They, and any Editor, can press the hand beside your character to **Let Speak**.
@@ -112,6 +130,7 @@ Need to concentrate? Open the **Avatar** panel and set your **Status** to **Do N
 | What you can do                   | Editor | Participant  | Viewer |
 | --------------------------------- | ------ | ------------ | ------ |
 | Join and hear the people near you | Yes    | Yes          | Yes    |
+| Speak from a stage                | Yes    | When allowed | No     |
 | Speak, mute and unmute            | Yes    | Yes          | No     |
 | Show your talking bars to others  | Yes    | Yes          | No     |
 | See who is talking, and walk over | Yes    | Yes          | Yes    |
@@ -119,7 +138,7 @@ Need to concentrate? Open the **Avatar** panel and set your **Status** to **Do N
 | Let a raised hand speak           | Yes    | From a stage | No     |
 | Set Do Not Disturb                | Yes    | Yes          | Yes    |
 
-Guests speak too, wherever their [share link](/help/collaboration/sharing/) is an Editor or Participant one: audio needs no sign-in. A Viewer link listens: its button says **Listen In**, and the strip shows **Listening** rather than a microphone.
+A stage lets Editors speak from it, and Participants too when it is set to; anyone else standing on it is heard as the audience is. Guests speak too, wherever their [share link](/help/collaboration/sharing/) is an Editor or Participant one: audio needs no sign-in. A Viewer link listens: its button says **Listen In**, and the strip shows **Listening** rather than a microphone.
 
 ## When calls are paused
 
