@@ -53,6 +53,9 @@ let container: HTMLDivElement;
 let root: Root;
 
 beforeEach(() => {
+  // The panel reads the real clock to tell a ready export from an expired one, so the tests pin it to NOW: with the
+  // real clock the sample export (three days past NOW) expired on 2026-11-04 and two tests failed from then on.
+  vi.setSystemTime(NOW);
   calls = [];
   state = { personal: null, teams: [] };
   answer = () => null;
@@ -120,7 +123,7 @@ describe('Settings › Your Data', () => {
   });
 
   it('starts mine, shows its progress and asks again only while it runs', async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ now: NOW });
     await render();
     await press('Download All My Data');
     expect(calls.at(-1)).toMatchObject({
