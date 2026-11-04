@@ -90,7 +90,6 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 | The Diagram tour is never offered in Workshop                                | `TourHost.test.tsx`                                                          |
 | Step order, anchors, Share filter, telemetry tokens                          | `workshop-tour-steps.test.ts`                                                |
 | Settings switch inverted, third in Tours                                     | `settings-catalogue.test.ts`                                                 |
-| Power user mode marks it seen                                                | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |
 | The slot holds `'workshop'`                                                  | `lib/tour-active.test.ts`                                                    |
 
 ## Constants and configuration

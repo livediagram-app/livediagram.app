@@ -305,7 +305,7 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | `EmbedChrome`                                                                | `EditorView.tsx`                      | Not rendered; `WorkbenchChrome` instead                   |
 | Explorer (popover)                                                           | `useCanvasChromePanels.tsx`           | Not rendered; status screens use `EmbedShell`             |
 | Photo-import note reading on the server                                      | `useCapabilities` consumer            | `aiEnabled` read as false                                 |
-| Sign-in banner, theme-mode banner, power-user offer                          | `EditorView.tsx`, `usePowerUserOffer` | Off                                                       |
+| Sign-in banner, theme-mode banner                                            | `EditorView.tsx`                      | Off                                                       |
 | Settings categories `documents`, `account`, `tokens`; the Appearance choice  | `settings-catalogue.ts`               | Hidden                                                    |
 | Share, delete, move, take offline, copy commands                             | `editor-commands.ts`                  | Absent                                                    |
 | TabBar "copy to another document"                                            | `EditorView.tsx` `otherDocuments`     | `[]`                                                      |

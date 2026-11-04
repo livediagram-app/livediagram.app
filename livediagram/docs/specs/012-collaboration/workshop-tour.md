@@ -87,7 +87,3 @@ The Diagram tour's funnel, with its own tokens:
 - **End**: `UI` · `Ended` · `WorkshopTourCompleted` | `WorkshopTourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `WorkshopTourSeenOn` | `WorkshopTourSeenOff`.
 
-## Power user mode
-
-[Power user mode](../007-editor/power-user-mode.md) marks the Workshop tour seen alongside the Diagram, Draw and Avatar
-tours.

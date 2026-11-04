@@ -61,7 +61,7 @@ Writes go through a patch so the live preview can reuse it:
 - `withUiScalePatch(prefs, patch)` spreads the patch and deletes the keys it
   set to `undefined`, so a cleared part is absent, not stored as null.
 
-`UiScaleProvider` is mounted in `EditorView` beside `MinimalChromeProvider`,
+`UiScaleProvider` is mounted in `EditorView` beside `DockNamesProvider`,
 fed `resolveUiScales({ ...userPreferences, ...preview }, { mobile })`, where
 `preview` is the dragged slider's patch (see Interfaces). `useUiScale(part)`
 returns `1` outside a provider, so the Explorer page and `/new` are
