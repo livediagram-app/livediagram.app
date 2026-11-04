@@ -81,4 +81,3 @@ The Workshop tour's funnel, with its own tokens:
   `DrawTourStepQuickStyle`, `DrawTourStepShapes`, `DrawTourStepSettings`, `DrawTourStepOutro`).
 - **End**: `UI` · `Ended` · `DrawTourCompleted` | `DrawTourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `DrawTourSeenOn` | `DrawTourSeenOff`.
-

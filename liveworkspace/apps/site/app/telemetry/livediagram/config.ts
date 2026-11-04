@@ -75,7 +75,6 @@ import {
   PANELS_OPENED,
   PHOTO_IMPORT,
   POLLS,
-  POWER_USER_OFFER,
   PRESENTATIONS,
   REALTIME_RESYNCS,
   RETURNING_VISITORS,
@@ -346,7 +345,7 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
       title: 'Tours',
       metrics: [WELCOME_TOUR, WORKSHOP_TOUR, DRAW_TOUR, AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
-    { title: 'Prompts', metrics: [POWER_USER_OFFER, NEW_VERSION_PROMPT] },
+    { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
   ],
   exceptions: {
     groups: [

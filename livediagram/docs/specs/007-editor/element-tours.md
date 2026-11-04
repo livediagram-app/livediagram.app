@@ -322,8 +322,8 @@ step puts it away. While it runs, Escape is the tour's and never closes the dial
 ## Menu steps on the elements of round two
 
 The chart, stack, entity, lane, boundary and portal are edited mostly from their own section of the
-element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More**, which every
-selection toolbar shows.
+element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
+otherwise the element itself, with "Right-click it" in place of "More".
 The tour points at the section by name; it never opens the menu itself.
 
 ## The Chart tour

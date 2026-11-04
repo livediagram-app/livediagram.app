@@ -21,7 +21,6 @@ export function ChromeControls({
   settingsDescription = 'Configure editor behaviour.',
   labelled = false,
   github = true,
-  powerUser = false,
   appearance = true,
 }: {
   onOpenSearch?: () => void;
@@ -34,9 +33,6 @@ export function ChromeControls({
   // The editor moved its GitHub link into the Explorer panel's ⋯ menu
   // (docs/specs/013-workspace/folders.md); the full-page Explorer's bar keeps it.
   github?: boolean;
-  // Power user mode: the Appearance control becomes a quick switch
-  // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
-  powerUser?: boolean;
   // The Appearance control; withheld where the host sets the scheme itself (a workbench frame,
   // docs/specs/013-workspace/blueprints/workbench-embeds.md, WB15).
   appearance?: boolean;
@@ -94,7 +90,7 @@ export function ChromeControls({
           </button>
         </HoverCard>
       ) : null}
-      {appearance ? <AppearanceToggle labelled={labelled} quick={powerUser} /> : null}
+      {appearance ? <AppearanceToggle labelled={labelled} /> : null}
     </>
   );
 }

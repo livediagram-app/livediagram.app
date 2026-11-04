@@ -447,7 +447,6 @@ Missing key === undefined === default behaviour. Concretely:
   `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip
   applies immediately with no subscription.
 
-
 Empty (or missing entirely) localStorage entry, AND no settings kept
 for this owner, is therefore the "everything on" state.
 

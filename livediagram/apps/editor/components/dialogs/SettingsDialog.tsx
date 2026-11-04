@@ -34,7 +34,6 @@ import {
   settingsRequest,
 } from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { useRetiredPartsCount } from '@/hooks/persistence/useRetiredPartsCount';
 
@@ -81,10 +80,7 @@ export function SettingsDialog({
   // A workbench's Settings reach nothing beyond its one document (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, Surface table).
   const workbench = useWorkbenchSession() !== null;
-  // Power-user-only rows appear the moment the mode's own row switches on
-  // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
-  const powerUserMode = isPowerUserMode(settings);
-  // Live settings too: a panel's rows follow its Enable switch the same way.
+  // Live settings, not a snapshot: a panel's rows follow its Enable switch the moment it flips.
   // Documents in This Browser with parts set aside: Account's way back to the offer
   // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
   const retiredParts = useRetiredPartsCount(!workbench);
@@ -95,13 +91,12 @@ export function SettingsDialog({
       visibleCategories({
         emailEnabled,
         signedIn,
-        powerUserMode,
         preferences: settings,
         workbench,
         cursorsDrawn,
         retiredParts,
       }),
-    [emailEnabled, signedIn, powerUserMode, settings, workbench, retiredParts, cursorsDrawn],
+    [emailEnabled, signedIn, settings, workbench, retiredParts, cursorsDrawn],
   );
 
   // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt

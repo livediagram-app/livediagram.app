@@ -91,4 +91,3 @@ The Draw tour's funnel, with its own tokens:
   `AvatarTourStepOutro`).
 - **End**: `UI` · `Ended` · `AvatarTourCompleted` | `AvatarTourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `AvatarTourSeenOn` | `AvatarTourSeenOff`.
-

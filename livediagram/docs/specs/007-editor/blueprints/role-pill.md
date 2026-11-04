@@ -8,15 +8,15 @@ retired, [Power user mode](../power-user-mode.md); the role pill is what remains
 
 Scope, by file:
 
-| File                                                 | Role                                                            |
-| ---------------------------------------------------- | --------------------------------------------------------------- |
-| `apps/editor/components/chrome/RoleIndicator.tsx`    | `RolePill` (title bar)                                          |
-| `apps/editor/app/document/[id]/useViewPreview.ts`    | `viewPreview`, `canToggleRole`, `toggleViewPreview`             |
-| `apps/editor/app/document/[id]/useRoleIndicator.ts`  | Role in force, owner name and toggle, for the pill              |
-| `apps/editor/app/document/[id]/useEditorState.ts`    | `isReadOnly` includes the preview                               |
-| `apps/editor/app/document/[id]/EditorView.tsx`       | Places the pill in the header's `rolePill` slot                 |
-| `apps/editor/components/chrome/EditorHeader.tsx`     | `rolePill` slot after the visibility badge                      |
-| `apps/editor/components/chrome/TopCenterChrome.tsx`  | No separate visitor owner / role badge                          |
+| File                                                | Role                                                |
+| --------------------------------------------------- | --------------------------------------------------- |
+| `apps/editor/components/chrome/RoleIndicator.tsx`   | `RolePill` (title bar)                              |
+| `apps/editor/app/document/[id]/useViewPreview.ts`   | `viewPreview`, `canToggleRole`, `toggleViewPreview` |
+| `apps/editor/app/document/[id]/useRoleIndicator.ts` | Role in force, owner name and toggle, for the pill  |
+| `apps/editor/app/document/[id]/useEditorState.ts`   | `isReadOnly` includes the preview                   |
+| `apps/editor/app/document/[id]/EditorView.tsx`      | Places the pill in the header's `rolePill` slot     |
+| `apps/editor/components/chrome/EditorHeader.tsx`    | `rolePill` slot after the visibility badge          |
+| `apps/editor/components/chrome/TopCenterChrome.tsx` | No separate visitor owner / role badge              |
 
 ## Domain and naming
 
@@ -48,9 +48,9 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 
 ## Errors and edge cases
 
-| Case                                    | Behaviour                                                  |
-| --------------------------------------- | ---------------------------------------------------------- |
-| View preview while text is being edited | Toggle deselects first, which commits / closes the editor  |
+| Case                                    | Behaviour                                                 |
+| --------------------------------------- | --------------------------------------------------------- |
+| View preview while text is being edited | Toggle deselects first, which commits / closes the editor |
 
 ## Security and trust
 
@@ -70,17 +70,17 @@ where `role` is the role in force (`isReadOnly ? 'view' : 'edit'`).
 
 ## Observability
 
-| Decision             | Log                                         |
-| -------------------- | ------------------------------------------- |
-| View preview flipped | `console.info('[role] view preview', on)`   |
+| Decision             | Log                                       |
+| -------------------- | ----------------------------------------- |
+| View preview flipped | `console.info('[role] view preview', on)` |
 
 ## Testing
 
-| Rule                                               | Test                                                  |
-| -------------------------------------------------- | ----------------------------------------------------- |
-| Toggle for owner and edit link, none for view link | `app/document/[id]/useViewPreview.test.tsx` (jsdom)   |
-| Role pill: toggle vs static, names, Tooltip label  | `components/chrome/RoleIndicator.test.tsx` (jsdom)    |
-| Role pill toggles view preview for the owner       | `e2e/role-pill.spec.ts`                               |
+| Rule                                               | Test                                                    |
+| -------------------------------------------------- | ------------------------------------------------------- |
+| Toggle for owner and edit link, none for view link | `app/document/[id]/useViewPreview.test.tsx` (jsdom)     |
+| Role pill: toggle vs static, names, Tooltip label  | `components/chrome/RoleIndicator.test.tsx` (jsdom)      |
+| Role pill toggles view preview for the owner       | `e2e/role-pill.spec.ts`                                 |
 | A blob with the retired power user keys loads      | `e2e/role-pill.spec.ts`, `lib/user-preferences.test.ts` |
 
 ## Defaults ledger
