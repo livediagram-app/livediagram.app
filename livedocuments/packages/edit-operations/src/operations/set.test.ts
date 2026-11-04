@@ -44,7 +44,9 @@ describe('set', () => {
     const tab = checkoutFlow();
     tab.elements[3] = { ...tab.elements[3]!, opacity: 0.5 };
     const outcome = run([set('n3', { opacity: null })], tab);
-    expect(applied(outcome).tab.elements.find((el) => el.id === 'n3')).not.toHaveProperty('opacity');
+    expect(applied(outcome).tab.elements.find((el) => el.id === 'n3')).not.toHaveProperty(
+      'opacity',
+    );
     expect(lines(outcome)).toEqual(['~ n3  opacity 0.5→']);
   });
 
@@ -54,8 +56,13 @@ describe('set', () => {
 
   // docs/specs/009-elements/links-and-notes-retired.md
   it('refuses an element link or note, which are retired', () => {
-    for (const fields of [{ note: 'Ask for SSO' }, { link: { kind: 'tab', tabId: 't2' } }] as Fields[])
-      expect(JSON.stringify(run([set('n3', fields)]))).toContain('element links and notes are retired');
+    for (const fields of [
+      { note: 'Ask for SSO' },
+      { link: { kind: 'tab', tabId: 't2' } },
+    ] as Fields[])
+      expect(JSON.stringify(run([set('n3', fields)]))).toContain(
+        'element links and notes are retired',
+      );
   });
 
   it('prints the fields it wrote first, then what normalising added', () => {
@@ -249,9 +256,7 @@ describe('set with aliases', () => {
         log: (fingerprint) => void calls.push(fingerprint),
       },
     );
-    expect(lines(outcome)[0]).toBe(
-      '~ wide  label "x"→"Orders service" · textSize →md',
-    );
+    expect(lines(outcome)[0]).toBe('~ wide  label "x"→"Orders service" · textSize →md');
     expect(calls).toEqual(['[edit-ops] coerced', '[edit-ops] label-capped', '[edit-ops] applied']);
     const diamond = applyEditOperations(
       checkoutFlow(),

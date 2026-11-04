@@ -123,13 +123,7 @@ describe('buildEditorCommands — selection commands', () => {
   it('offers rotate and comment for a single boxed element, and no note (element notes are retired)', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true });
     expect(out).toEqual(
-      expect.arrayContaining([
-        'rotate-90',
-        'rotate-180',
-        'rotate-270',
-        'rotate-0',
-        'comment',
-      ]),
+      expect.arrayContaining(['rotate-90', 'rotate-180', 'rotate-270', 'rotate-0', 'comment']),
     );
     expect(out).not.toContain('note');
   });

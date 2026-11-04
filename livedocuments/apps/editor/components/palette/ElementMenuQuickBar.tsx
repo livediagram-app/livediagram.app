@@ -18,10 +18,7 @@ type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; 
 // The items the bar offers on `target`, in order: what attaches to it.
 export function quickBarItems(
   target: BoxedElement,
-  props: Pick<
-    EditorContextMenuProps,
-    'onAssignAction' | 'onOpenComments'
-  >,
+  props: Pick<EditorContextMenuProps, 'onAssignAction' | 'onOpenComments'>,
 ): QuickBarItem[] {
   const comments = (target as { commentThread?: { comments: readonly unknown[] } }).commentThread;
   const hasComments = !!comments && comments.comments.length > 0;

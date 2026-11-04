@@ -40,14 +40,24 @@ describe('attributesOf (VW14)', () => {
       note: 'Owns the order lifecycle and is the source of truth for order state.',
       commentThread: { comments: [comment], resolved: true },
     } as Element;
-    expect(printed(el)).toBe('icon=server locked action="Fix retries" @Sam done comments=1 resolved');
+    expect(printed(el)).toBe(
+      'icon=server locked action="Fix retries" @Sam done comments=1 resolved',
+    );
   });
 
   it("prints a link card's and a video's link, to tabs, elements and documents (VW28)", () => {
     const link = (l: object) =>
-      printed({ ...shapeAt('square', 'x', 0, 0), type: 'link-card', link: l } as unknown as Element);
+      printed({
+        ...shapeAt('square', 'x', 0, 0),
+        type: 'link-card',
+        link: l,
+      } as unknown as Element);
     expect(
-      printed({ ...shapeAt('square', 'x', 0, 0), type: 'video', link: { kind: 'url', url: 'https://youtu.be/x' } } as unknown as Element),
+      printed({
+        ...shapeAt('square', 'x', 0, 0),
+        type: 'video',
+        link: { kind: 'url', url: 'https://youtu.be/x' },
+      } as unknown as Element),
     ).toBe('link=https://youtu.be/x');
     expect(link({ kind: 'tab', tabId: '51c9abcd' })).toBe('link=tab:51c9');
     expect(link({ kind: 'element', tabId: '51c9abcd', elementId: 'e4a8-1' })).toBe(

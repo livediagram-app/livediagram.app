@@ -80,9 +80,7 @@ describe('addAnotherLabel', () => {
     expect(addAnotherLabel({ kind: 'wireframe', device: 'iphone-duo' })).toBe(
       'Add iPhone Duo Screen',
     );
-    expect(addAnotherLabel({ kind: 'wireframe', device: 'browser' })).toBe(
-      'Add Browser Page',
-    );
+    expect(addAnotherLabel({ kind: 'wireframe', device: 'browser' })).toBe('Add Browser Page');
     expect(addAnotherLabel({ kind: 'wireframe', device: 'watch' })).toBe('Add Watch Face');
   });
 });

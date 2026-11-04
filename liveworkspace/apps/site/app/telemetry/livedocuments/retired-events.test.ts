@@ -32,7 +32,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Canvas', 'Changed', 'Crosshatch')).toBe(false);
   });
 
-  it('retires element links and notes in livedocuments, keeping link cards\' Element·Linked', () => {
+  it("retires element links and notes in livedocuments, keeping link cards' Element·Linked", () => {
     for (const action of ['Added', 'Changed', 'Deleted', 'Opened']) {
       expect(isRetiredEvent('Note', action, null)).toBe(true);
     }

@@ -30,7 +30,10 @@ function caretAt(node: HTMLElement, x: number, y: number): void {
   if (!sel) return;
   const pos = (
     doc as Document & {
-      caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null;
+      caretPositionFromPoint?: (
+        x: number,
+        y: number,
+      ) => { offsetNode: Node; offset: number } | null;
     }
   ).caretPositionFromPoint?.(x, y);
   const range = pos

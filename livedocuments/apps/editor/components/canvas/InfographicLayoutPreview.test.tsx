@@ -70,7 +70,9 @@ describe('LayoutPreviewHost', () => {
         vi.advanceTimersByTime(LAYOUT_PREVIEW_OUT_MS);
       });
       expect(layers(container)).toHaveLength(1);
-      expect(container.querySelector('[data-layout-preview]')!.getAttribute('data-layout-preview')).toBe('title');
+      expect(
+        container.querySelector('[data-layout-preview]')!.getAttribute('data-layout-preview'),
+      ).toBe('title');
     } finally {
       vi.useRealTimers();
     }

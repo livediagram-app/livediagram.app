@@ -85,7 +85,11 @@ describe('ReadOnlyElementMenuHost', () => {
   });
 
   it('runs each row with the editor’s own handler', () => {
-    const el = square({ label: 'Hi', link: { kind: 'url', url: 'https://example.com' }, note: 'n' });
+    const el = square({
+      label: 'Hi',
+      link: { kind: 'url', url: 'https://example.com' },
+      note: 'n',
+    });
     open('participate', el);
     fireEvent.click(screen.getByRole('button', { name: 'Add Comment' }));
     expect(ctx.openComments).toHaveBeenCalledWith('sq');

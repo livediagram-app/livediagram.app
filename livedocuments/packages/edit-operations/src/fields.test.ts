@@ -186,7 +186,12 @@ describe('writeFieldsOnto', () => {
   });
 
   it('refuses element links and notes, which are retired, but keeps a link card and a video their link', () => {
-    for (const fields of [{ note: 'x' }, { note: null }, { noteRich: null }, { link: null }] as Fields[])
+    for (const fields of [
+      { note: 'x' },
+      { note: null },
+      { noteRich: null },
+      { link: null },
+    ] as Fields[])
       expect(refusal(square, fields).details[0]).toContain('element links and notes are retired');
     const url = { kind: 'url', url: 'https://example.com' };
     for (const type of ['link-card', 'video']) {

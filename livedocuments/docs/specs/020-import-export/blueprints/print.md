@@ -4,22 +4,22 @@ Derived from [Print](../print.md). Everything lives in `apps/editor`.
 
 ## Domain and naming
 
-| Term (spec)             | Identifier                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| the Print format        | `'print'` in `Format` (`apps/editor/components/dialogs/ExportTabDialog.tsx`)   |
-| Current Page / Whole Document | `PrintScope` = `'page' \| 'document'` (`lib/print-pages.ts`)             |
-| a sheet                 | `PrintSheet` = `{ tab: Tab; page: LaidOutPage }`                               |
-| the sheets for a scope  | `printSheets(scope, current, documentTabs)`                                    |
-| the print document      | `printDocumentHtml(sheets, svgOf)`                                             |
-| the print frame         | `printInFrame(html)` (`lib/print-frame.ts`), `PRINT_FRAME_ATTR`               |
-| the panel               | `PrintPanel` (`components/dialogs/PrintPanel.tsx`)                             |
+| Term (spec)                   | Identifier                                                                   |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| the Print format              | `'print'` in `Format` (`apps/editor/components/dialogs/ExportTabDialog.tsx`) |
+| Current Page / Whole Document | `PrintScope` = `'page' \| 'document'` (`lib/print-pages.ts`)                 |
+| a sheet                       | `PrintSheet` = `{ tab: Tab; page: LaidOutPage }`                             |
+| the sheets for a scope        | `printSheets(scope, current, documentTabs)`                                  |
+| the print document            | `printDocumentHtml(sheets, svgOf)`                                           |
+| the print frame               | `printInFrame(html)` (`lib/print-frame.ts`), `PRINT_FRAME_ATTR`              |
+| the panel                     | `PrintPanel` (`components/dialogs/PrintPanel.tsx`)                           |
 
 ## Constants
 
-| Constant                | Value  | Provenance                                     |
-| ----------------------- | ------ | ---------------------------------------------- |
-| `PRINT_FRAME_CLEANUP_MS`| 60000  | Spec ("after a minute")                        |
-| `PRINT_FRAME_ATTR`      | `data-print-frame` | Marks the one frame, so a second replaces it |
+| Constant                 | Value              | Provenance                                   |
+| ------------------------ | ------------------ | -------------------------------------------- |
+| `PRINT_FRAME_CLEANUP_MS` | 60000              | Spec ("after a minute")                      |
+| `PRINT_FRAME_ATTR`       | `data-print-frame` | Marks the one frame, so a second replaces it |
 
 ## Pure parts (`lib/print-pages.ts`)
 

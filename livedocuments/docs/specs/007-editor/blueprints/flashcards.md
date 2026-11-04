@@ -26,17 +26,17 @@ small modules beside it. Each rule below names its home.
 
 ## Constants and configuration
 
-| Constant                     | Value     | Where                | Why                                                                        |
-| ---------------------------- | --------- | -------------------- | -------------------------------------------------------------------------- |
-| card size                    | 900 x 540 | `PAGE_SIZES.card`    | A 5:3 index card; Narrow margins leave 804 x 420 px, a title and ~15 lines |
-| `FLASHCARD_WORDS_PER_MINUTE` | 130       | `flashcards.ts`      | Talks run 120 to 150 wpm                                                   |
-| `SPEAKING_STEP_S`            | 5         | `flashcards.ts`      | Under a minute, said to the next 5 s (at most "55 sec")                    |
-| `CONTINUED_TITLE_MAX`        | 120       | `flashcards.ts`      | A continued card's title stays a title                                     |
-| `FLASHCARD_STACK_MAX`        | 6         | `flashcard-stack.ts` | Enough depth to read "many", little enough to stay a card                  |
-| `FLASHCARD_STACK_STEP_Y`     | 10        | `flashcard-stack.ts` | Px each note card behind sits lower (presenter's straight stack)            |
-| `FLASHCARD_STACK_INSET_X`    | 14        | `flashcard-stack.ts` | Px each note card behind is narrower each side (presenter's straight stack) |
-| `FLASHCARD_FAN`              | 6 steps   | `flashcard-stack.ts` | Each depth's turn (degrees) and nudge (canvas px) in the canvas's fan       |
-| `FLASHCARD_MOUNT_SPAN`       | 1         | `flashcard-stack.ts` | Cards each side of the card in front whose writing stays mounted; 1 to 3   |
+| Constant                     | Value     | Where                | Why                                                                           |
+| ---------------------------- | --------- | -------------------- | ----------------------------------------------------------------------------- |
+| card size                    | 900 x 540 | `PAGE_SIZES.card`    | A 5:3 index card; Narrow margins leave 804 x 420 px, a title and ~15 lines    |
+| `FLASHCARD_WORDS_PER_MINUTE` | 130       | `flashcards.ts`      | Talks run 120 to 150 wpm                                                      |
+| `SPEAKING_STEP_S`            | 5         | `flashcards.ts`      | Under a minute, said to the next 5 s (at most "55 sec")                       |
+| `CONTINUED_TITLE_MAX`        | 120       | `flashcards.ts`      | A continued card's title stays a title                                        |
+| `FLASHCARD_STACK_MAX`        | 6         | `flashcard-stack.ts` | Enough depth to read "many", little enough to stay a card                     |
+| `FLASHCARD_STACK_STEP_Y`     | 10        | `flashcard-stack.ts` | Px each note card behind sits lower (presenter's straight stack)              |
+| `FLASHCARD_STACK_INSET_X`    | 14        | `flashcard-stack.ts` | Px each note card behind is narrower each side (presenter's straight stack)   |
+| `FLASHCARD_FAN`              | 6 steps   | `flashcard-stack.ts` | Each depth's turn (degrees) and nudge (canvas px) in the canvas's fan         |
+| `FLASHCARD_MOUNT_SPAN`       | 1         | `flashcard-stack.ts` | Cards each side of the card in front whose writing stays mounted; 1 to 3      |
 | `FLASHCARD_FLIP_MS`          | 240       | `flashcard-flip.ts`  | A quick lift-away that reads at a glance; the presenter's note cards share it |
 
 ## Data and persistence

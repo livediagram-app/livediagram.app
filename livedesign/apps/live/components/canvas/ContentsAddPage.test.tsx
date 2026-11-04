@@ -48,7 +48,9 @@ describe('ContentsAddPage', () => {
 
   it('is disabled at the page limit, and shows nothing to a Participant, a Viewer or a blank tab', () => {
     render(<ContentsAddPage contents={contents({ full: true })} />);
-    expect(screen.getByRole('button', { name: /^Add Logo Page/ }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: /^Add Logo Page/ }).hasAttribute('disabled')).toBe(
+      true,
+    );
     cleanup();
     const { container } = render(<ContentsAddPage contents={contents({ canAdd: false })} />);
     expect(container.innerHTML).toBe('');

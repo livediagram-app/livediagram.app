@@ -20,7 +20,10 @@ export const VIEWER_DOTS_MAX = 10;
 // As a flashcard turns: deep enough to read as a card's, at the viewer's size.
 const PERSPECTIVE = 'perspective(1200px)';
 // The same quiet lift as a flashcard's flip (flashcards.md "Flipping"): a small tilt, a touch higher, a shade smaller.
-const TURNED = { transform: `${PERSPECTIVE} rotateX(14deg) translateY(-3%) scale(0.985)`, opacity: 0 };
+const TURNED = {
+  transform: `${PERSPECTIVE} rotateX(14deg) translateY(-3%) scale(0.985)`,
+  opacity: 0,
+};
 const FLAT = { transform: `${PERSPECTIVE} rotateX(0deg) translateY(0) scale(1)`, opacity: 1 };
 const FLIP_EASING = 'cubic-bezier(0.2, 0, 0, 1)';
 

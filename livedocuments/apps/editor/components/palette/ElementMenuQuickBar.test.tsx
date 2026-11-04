@@ -25,7 +25,14 @@ describe('quickBarItems', () => {
       commentThread: {
         resolved: false,
         comments: [
-          { id: '1', text: 'c', authorId: 'me', authorName: 'Me', authorColor: '#000', createdAt: 0 },
+          {
+            id: '1',
+            text: 'c',
+            authorId: 'me',
+            authorName: 'Me',
+            authorColor: '#000',
+            createdAt: 0,
+          },
         ],
       },
     });

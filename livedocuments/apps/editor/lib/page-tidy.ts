@@ -49,7 +49,10 @@ export const PAGE_TIDY_MIN_MOVE = 8;
 
 /** The least move, in canvas px, that makes this page untidy. */
 export function pageTidyMinMove(rect: { width: number; height: number }): number {
-  return Math.max(PAGE_TIDY_MIN_MOVE, Math.min(rect.width, rect.height) * PAGE_TIDY_MIN_MOVE_FRACTION);
+  return Math.max(
+    PAGE_TIDY_MIN_MOVE,
+    Math.min(rect.width, rect.height) * PAGE_TIDY_MIN_MOVE_FRACTION,
+  );
 }
 /** "Nearly lined up": a share of the page's short side (about 16 px on A4), comfortably above the least move. */
 const PAGE_TIDY_ALIGN_FRACTION = 0.02;
@@ -366,7 +369,9 @@ export function tidyPageElements(elements: Element[], input: PageTidyInput): Ele
     if (next === out) break;
     out = next;
   }
-  return out === elements || movesVisibly(elements, out, pageTidyMinMove(input.rect)) ? out : elements;
+  return out === elements || movesVisibly(elements, out, pageTidyMinMove(input.rect))
+    ? out
+    : elements;
 }
 
 /** Whether anything moved at least `least` canvas px along either axis. */
@@ -374,9 +379,7 @@ function movesVisibly(before: Element[], after: Element[], least: number): boole
   return after.some((el, i) => {
     const was = before[i]!;
     if (el === was || !isBoxed(el) || !isBoxed(was)) return false;
-    return (
-      Math.abs(el.x - was.x) >= least || Math.abs(el.y - was.y) >= least
-    );
+    return Math.abs(el.x - was.x) >= least || Math.abs(el.y - was.y) >= least;
   });
 }
 

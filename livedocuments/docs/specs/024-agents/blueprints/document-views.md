@@ -236,13 +236,13 @@ gives `READ_DOCUMENT_DEFAULT_BUDGET` to every view it reads unless the caller pa
 `fitOutline(model, budget)` steps down a fixed ladder; each state is entered only while the estimate exceeds the
 budget:
 
-| State                  | Entered when                     | Drops                                                                                    |
-| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
-| `full`                 | always first                     | nothing                                                                                  |
-| `notes-dropped`        | retired 2026-11-04: notes never print, so the ladder skips it | (none)                                                         |
-| `attributes-dropped`   | still over                       | every attribute, summary and state attribute except `comments=N open` (`VW38`)           |
-| `containers-collapsed` | still over; repeats              | the children of the container with the most descendants (ties: earlier in reading order) |
-| `root-collapsed`       | still over after every container | every root line                                                                          |
+| State                  | Entered when                                                  | Drops                                                                                    |
+| ---------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `full`                 | always first                                                  | nothing                                                                                  |
+| `notes-dropped`        | retired 2026-11-04: notes never print, so the ladder skips it | (none)                                                                                   |
+| `attributes-dropped`   | still over                                                    | every attribute, summary and state attribute except `comments=N open` (`VW38`)           |
+| `containers-collapsed` | still over; repeats                                           | the children of the container with the most descendants (ties: earlier in reading order) |
+| `root-collapsed`       | still over after every container                              | every root line                                                                          |
 
 - Estimates come from a per-line cost model built once: each node's line length at each detail level, and each
   subtree's total, so a step subtracts and adds lengths instead of re-rendering. O(n + c log c) for c containers.

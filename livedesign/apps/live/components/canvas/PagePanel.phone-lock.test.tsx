@@ -60,7 +60,10 @@ describe("a page's lock on a phone", () => {
 
   it('unlocks a locked page there, and says so', () => {
     const edit = edits();
-    panel({ id: 'p', orientation: 'portrait', kind: 'wireframe', size: 'device', locked: true }, edit);
+    panel(
+      { id: 'p', orientation: 'portrait', kind: 'wireframe', size: 'device', locked: true },
+      edit,
+    );
     expect(screen.getByRole('status').textContent).toContain('Unlock it below');
     fireEvent.click(screen.getByRole('button', { name: 'Unlock page' }));
     expect(edit.setLocked).toHaveBeenCalledWith('p', false);

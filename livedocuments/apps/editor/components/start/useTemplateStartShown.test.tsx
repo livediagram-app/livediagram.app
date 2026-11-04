@@ -32,7 +32,11 @@ describe('useTemplateStartShown', () => {
   });
 
   it('is off once the tab has a chosen page, or for a Viewer', () => {
-    ctx.value.activeTab = { id: 't', elements: [], pages: [{ id: 'p', orientation: 'landscape', kind: 'slide' }] };
+    ctx.value.activeTab = {
+      id: 't',
+      elements: [],
+      pages: [{ id: 'p', orientation: 'landscape', kind: 'slide' }],
+    };
     expect(renderHook(() => useTemplateStartShown()).result.current).toBe(false);
     ctx.value.activeTab = { id: 't', elements: [], pages: undefined };
     ctx.value.isReadOnly = true;
