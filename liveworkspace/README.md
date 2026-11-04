@@ -50,8 +50,9 @@ each service's paths to it (`apps/site/next.config.ts`), so the pages and the AP
 liveworkspace.app. That origin, `http://localhost:3000`, is the accounts Worker's `BASE_URL` and the issuer apps
 check locally. Each service's first-time local setup (a `.dev.vars`, `db:migrate:local`) is in its spec.
 
-A local D1 database built before a migration was added misses its tables: run `corepack pnpm db:migrate:local`
-in the service's folder again. If a local database is past repair, remove its state
+Each service with a D1 database applies its local migrations as its `dev` script starts, so a local database built
+before a migration was added catches up on its own (a database behind on accounts' `0018_livehuddle.sql` refused to
+register livehuddle's client). Outside `dev`, run `corepack pnpm db:migrate:local` in the service's folder. If a local database is past repair, remove its state
 (`rm -rf apps/<service>/.wrangler/state/v3/d1`) and migrate again, which drops its local rows.
 
 Locally, emails aren't sent. Each code email is printed in the accounts Worker's output. Turnstile

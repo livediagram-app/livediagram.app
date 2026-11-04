@@ -134,6 +134,12 @@ What a deploy never writes, set once per environment and kept across deploys:
    settings and records ([accounts.md](accounts.md#which-app-a-client-is)); a client
    registered without one is given it with `scripts/map-clients.ts`.
 
+   A database that doesn't take the app yet (a local one built before the migration that added the app, such as
+   `0018_livehuddle.sql`) refuses to record which app the client is. Registration then removes the client it just
+   made, so nothing is left half-registered, and answers `500 client_app_refused`, naming the app and saying to
+   apply the migrations. Locally, each service's `dev` script applies its local migrations before it starts, so a
+   database catches up on its own; registering again then works.
+
 3. Wire the app up: [integrating-an-app.md](../002-architecture/integrating-an-app.md).
 
 ## Security notes
