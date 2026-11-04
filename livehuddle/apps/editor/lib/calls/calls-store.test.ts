@@ -7,9 +7,11 @@ import {
   callSelf,
   forgetCallPeer,
   levelNow,
+  onCallsMode,
   onCallTracks,
   pruneCallPeers,
   receiveCallOp,
+  receiveCallsMode,
   resetCallPeers,
   resetCallSelf,
   setCallActions,
@@ -104,5 +106,24 @@ describe('calls store self', () => {
     act(() => resetCallSelf());
     expect(result.current.self.available).toBe(false);
     expect(result.current.actions).toBeNull();
+  });
+});
+
+// docs/specs/016-platform/blueprints/calls-kill-switch.md "Wired in (part 2)".
+describe('calls store mode', () => {
+  it('starts on, and takes the room’s push only from the room itself', () => {
+    const heard = vi.fn();
+    const off = onCallsMode(heard);
+    expect(callSelf().mode).toBe('on');
+    receiveCallsMode('p1', { kind: 'calls-mode', mode: 'off' });
+    receiveCallsMode('system', { kind: 'calls-mode', mode: 'loud' });
+    expect(callSelf().mode).toBe('on');
+    expect(heard).not.toHaveBeenCalled();
+    receiveCallsMode('system', { kind: 'calls-mode', mode: 'off' });
+    expect(callSelf().mode).toBe('off');
+    // The same mode again tells nobody.
+    receiveCallsMode('system', { kind: 'calls-mode', mode: 'off' });
+    expect(heard).toHaveBeenCalledTimes(1);
+    off();
   });
 });

@@ -39,7 +39,7 @@ const SHARED_PLATFORM =
 // Every app's own items named together (closing an account deletes them all), and the documents of the old
 // livediagram.app that the migration brings over.
 const OTHER_APP_ITEMS =
-  /canvas(es)?, plans?,? documents? and designs?|livediagram(\.app)? document/;
+  /canvas(es)?, plans?,? documents?(?: and designs?|, designs? and spaces?)|livediagram(\.app)? document/;
 
 // Search words for the page element, so someone typing "document" in the palette still finds it.
 const PAGE_SEARCH_WORDS = /^\s*page: '[^']*\bdocument\b[^']*',$/;

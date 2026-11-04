@@ -1,5 +1,10 @@
 # Session tools (timer + voting)
 
+In livehuddle (Work Tracker #423) these are two of the three light meeting tools, with Bring Focus: the Timer and the
+quick vote. The Session strip offers **Timer and Vote**; Poll and the Session button leave
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md), part 3). What this spec says about them otherwise
+stands.
+
 Live, facilitator-run **workshop tools** that make the collaborative templates
 (retro, brainstorm, planning) interactive: a per-tab **timer** and per-tab
 **dot-voting**, both driven from the Current Tab settings and synced to every

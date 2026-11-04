@@ -8,7 +8,7 @@ import {
   setCallSelf,
   type CallSelf,
 } from '@/lib/calls/calls-store';
-import { CallClusterButton, micIndicator } from './CallClusterButton';
+import { CALLS_PAUSED_ANNOUNCEMENT, CallClusterButton, micIndicator } from './CallClusterButton';
 
 const actions = { join: vi.fn(), leave: vi.fn(), toggleMute: vi.fn() };
 
@@ -52,6 +52,31 @@ describe('CallClusterButton', () => {
     show({ phase: 'error' });
     fireEvent.click(screen.getByRole('button', { name: 'Join Audio' }));
     expect(actions.join).toHaveBeenCalled();
+  });
+
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
+  it('reads Calls Paused for every role while the switch is off, calmly, and a press tries again', () => {
+    const { container } = render(<CallClusterButton />);
+    const live = () => container.querySelector('[aria-live]')!.textContent;
+    show({});
+    expect(live()).toBe('');
+    show({ mode: 'off' });
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Calls Paused' });
+    expect(button.className).not.toMatch(/amber|rose/);
+    expect(live()).toBe(CALLS_PAUSED_ANNOUNCEMENT);
+    expect(screen.queryByRole('button', { name: 'Join Audio' })).toBeNull();
+    fireEvent.click(button);
+    expect(actions.join).toHaveBeenCalledTimes(1);
+    show({ mode: 'off', phase: 'joining' });
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Calls Paused' }).disabled).toBe(
+      true,
+    );
+    show({ mode: 'off', phase: 'off', canSpeak: false });
+    expect(screen.getByRole('button', { name: 'Calls Paused' })).toBeTruthy();
+    // Audio only changes nothing while calls are audio alone.
+    show({ mode: 'audio-only' });
+    expect(screen.getByRole('button', { name: 'Join Audio' })).toBeTruthy();
+    expect(live()).toBe('');
   });
 
   it('once in, mutes and unmutes, and leaves', () => {

@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { callsConfigured, callsGate, isProductionDeployment } from './calls-gate';
+import { resetCallsModeCache } from './calls-mode';
+import { fakeKv } from './fake-kv';
 
 // docs/specs/012-collaboration/proximity-audio.md "Turning calls on".
 const secrets = {
@@ -11,17 +13,22 @@ const secrets = {
 };
 const env = (e: Partial<Env>) => e as Env;
 
+beforeEach(() => resetCallsModeCache());
+
 describe('the calls gate', () => {
-  it('is shut on production whatever is set, the hard flag until the kill switch (#316)', async () => {
+  it('is shut on production whatever is set, the switch included', async () => {
     for (const APP_BASE_URL of [
       'https://www.livehuddle.app',
       'https://livehuddle.app',
       ' https://www.livehuddle.app/ ',
     ]) {
-      expect(await callsGate(env({ ...secrets, APP_BASE_URL }))).toEqual({
+      const CALLS_SWITCH = fakeKv({ 'calls-mode': 'on' });
+      expect(await callsGate(env({ ...secrets, APP_BASE_URL, CALLS_SWITCH }))).toEqual({
         open: false,
         reason: 'production',
       });
+      // Shut before the switch is ever read.
+      expect(CALLS_SWITCH.gets).toBe(0);
     }
   });
 
@@ -41,8 +48,33 @@ describe('the calls gate', () => {
       undefined,
       'not a url',
     ]) {
-      expect(await callsGate(env({ ...secrets, APP_BASE_URL }))).toEqual({ open: true });
+      expect(await callsGate(env({ ...secrets, APP_BASE_URL }))).toEqual({
+        open: true,
+        mode: 'on',
+      });
     }
+  });
+
+  it('reads the kill switch last: off pauses, audio only stays open with its mode', async () => {
+    const CALLS_SWITCH = fakeKv({ 'calls-mode': 'off' });
+    expect(await callsGate(env({ ...secrets, CALLS_SWITCH }))).toEqual({
+      open: false,
+      reason: 'paused',
+    });
+    resetCallsModeCache();
+    CALLS_SWITCH.store.set('calls-mode', 'audio-only');
+    expect(await callsGate(env({ ...secrets, CALLS_SWITCH }))).toEqual({
+      open: true,
+      mode: 'audio-only',
+    });
+    // Unconfigured is answered before the switch is read.
+    resetCallsModeCache();
+    const unread = fakeKv({ 'calls-mode': 'off' });
+    expect(await callsGate(env({ CALLS_SWITCH: unread }))).toEqual({
+      open: false,
+      reason: 'unconfigured',
+    });
+    expect(unread.gets).toBe(0);
   });
 
   it('reads production from the hosted origin only', () => {

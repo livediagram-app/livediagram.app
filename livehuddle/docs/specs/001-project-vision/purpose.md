@@ -1,10 +1,12 @@
 # Purpose
 
-Status: **built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190).
+Status: **approved, being built** (first approved on Work Tracker #99; refocused on meeting by Work Tracker #423,
+2026-11-04). The code still carries what [Not in livehuddle](../002-project-scope/not-in-livehuddle.md) lists until
+the parts of #423 remove it.
 
-livehuddle is a web app where teams **meet, run workshops and collaborate together, in one shared space, in real
-time**. Everyone in the meeting has a character on the board, walks to the room or the topic they are talking about,
-and works on the same board while they talk.
+livehuddle is a web app where a team **meets in a shared space, in real time**. Everyone in the meeting has a
+character in the space, walks to the room they want to talk in, hears the people near them, and meets around the
+notes and pictures on the walls.
 
 This is the root of livehuddle's spec tree: every other spec is a decision taken inside the boundaries set here. Like
 every liveworkspace product's purpose, it keeps a [record of the boundaries that have moved](#boundaries-that-have-moved)
@@ -14,69 +16,74 @@ rather than quietly describing a product that no longer exists.
 
 livediagram grew three things that are about people being together rather than about diagrams:
 
-- [Avatar mode](../008-canvas/avatar-mode.md): a pixel character for everyone in the
-  room, who walks, sits, talks in speech bubbles, waves and shows a status.
+- [Avatar mode](../008-canvas/avatar-mode.md): a pixel character for everyone in the room, who walks, sits, talks in
+  speech bubbles, waves and shows a status.
 - The **Navigate** elements: portals, chairs, desks, sofas, fences, Avatar Pads, link cards and the
-  [office pieces](../009-elements/office.md) (rooms, meeting tables, plants,
-  bookshelves, water coolers, coffee machines, rugs).
+  [office pieces](../009-elements/office.md) (rooms, meeting tables, plants, bookshelves, water coolers, coffee
+  machines, rugs).
 - The **Spaces** templates ([Virtual Office and space templates](../012-collaboration/virtual-office-template.md)):
   Virtual Office, Coworking Space, Team Pod and All-Hands Hall.
 
-Around them sits [Workshop mode](../012-collaboration/workshop-mode.md), the kit that
-runs a session: timers, votes, polls, quizzes, Q&A, agendas, reveals, the facilitator baton and Bring Focus.
+In livediagram these sit inside Workshop mode, one mode among three, and a person looking for a place to hold a
+meeting never thinks to open a diagram tool. livehuddle gives the meeting a product of its own: **Spaces, avatars,
+rooms and calls** are the product (owner, 2026-11-04).
 
-In livediagram these are one mode among three, reached through a Selection Mode button on a board, and a person
-looking for a place to hold a meeting never thinks to open a diagram tool. livehuddle gives them a product of their
-own, built around **collaboration, workshops and meetings**.
-
-livediagram keeps every one of these features (Work Tracker #99). livehuddle gets its own copy, by forking, and the
-parts that can be shared without either product reading the other's element union move to `packages/` first
-([Build plan](../005-project-roadmap/build-plan.md)).
+livediagram keeps every one of these features, and it keeps **all of Workshop mode** (retros, workshops, the
+Collaborate elements, decks): running a workshop on a board is livediagram's job.
 
 ## What it is
 
-A multiplayer board in the browser, made for meeting on. A **space** (the thing a person makes, opens and shares)
-holds tabs, and every tab is a board in Workshop's look: a canvas with the session tools, the Collaborate elements,
-stickies, text, frames, arrows, icons, stickers and media. Anyone with access to a space can join, see everyone's
-character and cursor, and take part at the level their share link gives them.
+A **Space** (the thing a person makes, opens and shares) is a place to meet: a floor plan of rooms and furniture that
+everyone walks round as a character. It holds tabs, and every tab is a floor. Anyone with access to a Space can join,
+see everyone's character and cursor, hear the people near them, and take part at the level their share link gives them.
 
-The meeting is the product. Everything else exists because a team meeting together needs somewhere to stand, a way
-to talk over the board, and a way to run the session: start a timer, take a vote, ask a question, bring everyone's
-view to one place.
+The meeting is the product. Everything else exists because a team meeting together needs somewhere to stand, a way to
+talk, and a few light tools to keep a meeting moving:
+
+- **Somewhere to stand**: the Spaces templates, Avatar mode, the Navigate elements and the office pieces.
+- **A way to talk**: [proximity audio](../012-collaboration/proximity-audio.md) and calls between the people near
+  each other, speech bubbles, comments with mentions and reactions.
+- **Light meeting tools**: a timer, a quick vote and [Bring Focus](../012-collaboration/bring-focus.md), all three on
+  the Session strip or the board, nothing more ([Workshop mode](../012-collaboration/workshop-mode.md), the meeting
+  board).
+- **Light content on the walls**: sticky notes, text, images, stickers and icons, link cards and frames, for notes
+  and decoration in a room. No diagram tools.
 
 ## Target users
 
 - **Remote and hybrid teams** who want a standing place to meet: a virtual office they walk round, a team pod for a
   stand-up, an all-hands hall for a company meeting.
-- **Facilitators** running a retrospective, a workshop, a lean coffee or a town hall, who need the session tools and
-  a room that holds the people.
-- **Teachers and event hosts** running a quiz, an icebreaker or a game with a room of participants.
+- **People hosting a meeting**: a stand-up, a one-to-one in a quiet room, an all-hands on a stage, who need a room
+  that holds the people and a timer to keep it short.
+- **Communities and event hosts** who want a place for a group to gather, walk up to each other and talk.
 
 The unit of value is the **group in the room**. The entry point is still one person: the editor works without
 signing in, and a guest gets a share link to send. The product earns the second person, and the third, by being the
 place they meet.
 
-## Core capabilities (v1)
+## Core capabilities
 
-The full list, with what each brings over from livediagram, is in [v1 scope](../002-project-scope/v1-scope.md).
+The full list is in [v1 scope](../002-project-scope/v1-scope.md).
 
-- **Being together on the board**: Avatar mode first-class, live cursors, presence, follow-me, Bring Focus.
-- **Spaces to meet in**: the four Spaces templates and every Navigate element to build more.
-- **Running the session**: all of Workshop mode, the Session strip (Timer, Vote, Poll) and every Collaborate element.
-- **Talking without a call**: avatar speech bubbles, comments with mentions, reactions.
+- **Being together in a Space**: Avatar mode first-class, live cursors, presence, follow-me, Bring Focus.
+- **Spaces to meet in**: the four Spaces templates, every Navigate element and the office pieces to build more.
+- **Talking**: proximity audio and calls ([Future work](../005-project-roadmap/future-work.md) and the calls specs in
+  `012-collaboration/`), speech bubbles, comments with mentions and reactions.
+- **Keeping a meeting moving**: the Session strip's Timer and Vote, and Bring Focus.
+- **Light content**: sticky notes, text, images, stickers, icons, link cards and frames.
 - **The liveworkspace platform**: one account, the One Explorer, teams, share links with the three roles, media,
-  telemetry.
+  Offline Mode, Google Drive sync, the Community, the MCP server and the CLI, telemetry.
 
 ## What it is _not_
 
-- **Not a diagramming tool.** No Diagram or Draw mode, no flowcharts, mind maps, Event Storming or concept graphics.
-  That is livediagram.
-- **Not a document, design or planning tool.** No pages, slides, logos, boards of cards or spreadsheets: those are
-  livedocuments, livedesign and liveplanner.
-- **Not a video-call app, yet.** v1 carries no audio, video or screen sharing. They are the planned next step
-  ([Future work](../005-project-roadmap/future-work.md)), and v1 is designed so they can join without reshaping it.
-- **Not a paid product.** Free and open source like every liveworkspace product: no tier, no billing, no feature
-  flags gating the core.
+- **Not a workshop tool.** No retrospective or workshop templates, no quizzes or games, no polls, Q&A boards, agendas,
+  reveal zones or any other Collaborate element. Running a workshop on a board is livediagram's Workshop mode.
+- **Not a diagramming tool.** No shapes, connectors, flowcharts, mind maps, layout containers, charts or drawing
+  tools. That is livediagram.
+- **Not a document, presentation, design or planning tool.** No Page element, slide decks or presenting, no logos,
+  boards of cards or spreadsheets: those are livedocuments, livedesign and liveplanner.
+- **Not a paid product.** Free and open source like every liveworkspace product: no tier, no billing, no feature flags
+  gating the core.
 
 ## Boundaries that have moved
 
@@ -89,9 +96,18 @@ spec that moved it.
   but the Timeline, device frames, the Technology palette category, Draw's dock, the Fill and Path tools and the
   templates built from them leave with it. Pencil, highlighter, arrow and line stay as Workshop's Draw category
   ([Editor modes](../007-editor/editor-modes.md)).
+- **Meet-first, not workshops** (Work Tracker #423, owner, 2026-11-04): livehuddle was "for meeting, running workshops
+  and collaborating", with every tab a Workshop board. It is now for meeting in Spaces. The retrospective and workshop
+  templates, the quizzes and games, every Collaborate element (polls, quizzes, Q&A, agendas, reveals and the rest),
+  slide decks, building a deck, presenting, the Page element, and the diagram tools left over from Workshop (shapes,
+  arrows and lines, the Draw tools, the Layout containers but the frame, tables, charts, the components and the
+  embeds) leave livehuddle; livediagram keeps them all. What stays: Spaces, avatars, rooms, calls, the Timer, the
+  quick vote and Bring Focus, and light content (sticky notes, text, images, stickers, icons, link cards, frames).
+  The full list, and the build part that removes each, is [Not in livehuddle](../002-project-scope/not-in-livehuddle.md).
 
 ## Why it matters
 
-A team that meets online usually has a call in one tab and a board in another, and the board has no idea who is in
-the meeting. livehuddle puts the people on the board. The honest check on any new feature is: "does a group meeting
-together in a space need this?"
+A team that meets online usually has a call in one tab and a board in another, and neither has any idea who is near
+whom. livehuddle puts the people in a place: walk up to someone to talk, walk away to stop. The honest check on any
+new feature is: "does a group meeting together in a Space need this?" A feature that helps a group _work_ on a board
+belongs in livediagram.

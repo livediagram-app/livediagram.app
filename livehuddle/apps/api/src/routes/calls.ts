@@ -1,6 +1,7 @@
 // /api/documents/<id>/calls/*: proximity audio's mint route (docs/specs/012-collaboration/proximity-audio.md "The
 // mint route"). The browser never holds the Realtime secret or the TURN key: every session, track, renegotiation and
-// close is made here, after the grant on the Space, the calls gate, and the session's own token.
+// close is made here, after the grant on the Space, the calls gate, and the session's own token. The calls kill switch
+// (docs/specs/016-platform/calls-kill-switch.md "The mint route") checks every session and track against its mode.
 import {
   CALL_TRACK_NAME,
   levelAtLeast,
@@ -10,6 +11,7 @@ import {
   type CallsErrorCode,
 } from '@livehuddle/api-schema';
 import { callsGate } from '../calls/calls-gate';
+import { callsModeAllows, callTrackKind, type CallsMode } from '../calls/calls-mode';
 import {
   openSessionToken,
   sealSessionToken,
@@ -39,6 +41,24 @@ const MID_MAX = 16;
 const refuse = (status: number, error: CallsErrorCode, extra: Record<string, unknown> = {}) =>
   json({ error, ...extra }, { status });
 const invalid = () => refuse(400, 'invalid_call_request');
+
+/**
+ * The refusal for a track the switch's mode does not allow (a video or screen track while calls are audio only), or
+ * null when every one is allowed. `off` never reaches here: the gate pauses the whole route first. A name no call
+ * publishes is refused too, though the locator parser and the publish path only ever name the microphone.
+ */
+export function mediaRefused(
+  mode: Exclude<CallsMode, 'off'>,
+  trackNames: readonly string[],
+): Response | null {
+  for (const name of trackNames) {
+    const kind = callTrackKind(name);
+    if (kind && callsModeAllows(mode, kind)) continue;
+    console.warn('[calls] mode', mode, name);
+    return refuse(503, 'calls_off', { reason: 'audio-only' });
+  }
+  return null;
+}
 
 const isSdp = (v: unknown): v is string =>
   typeof v === 'string' && v.length > 0 && v.length <= SDP_MAX;
@@ -117,6 +137,7 @@ async function mintSession(
   env: RealtimeEnv,
   documentId: string,
   canSpeak: boolean,
+  mode: Exclude<CallsMode, 'off'>,
 ): Promise<Response> {
   return upstream(
     async () => {
@@ -130,6 +151,7 @@ async function mintSession(
           : {}),
         iceServers,
         canSpeak,
+        mode,
       };
       return answer;
     },
@@ -142,6 +164,7 @@ async function tracks(
   documentId: string,
   body: Record<string, unknown>,
   canSpeak: boolean,
+  mode: Exclude<CallsMode, 'off'>,
 ): Promise<Response> {
   const session = await provenSession(env, documentId, body);
   if (!session) return invalid();
@@ -157,6 +180,8 @@ async function tracks(
     ) {
       return invalid();
     }
+    const paused = mediaRefused(mode, [CALL_TRACK_NAME]);
+    if (paused) return paused;
     const offer = { type: 'offer' as const, sdp: publish.sdp };
     const tracks = [{ location: 'local' as const, mid: publish.mid, trackName: CALL_TRACK_NAME }];
     return upstream(
@@ -167,6 +192,11 @@ async function tracks(
   if (body.subscribe !== undefined && publish === undefined) {
     const locators = await provenLocators(env, documentId, body.subscribe);
     if (!locators) return invalid();
+    const paused = mediaRefused(
+      mode,
+      locators.map((l) => l.trackName),
+    );
+    if (paused) return paused;
     const tracks = locators.map((l) => ({
       location: 'remote' as const,
       sessionId: l.sessionId,
@@ -201,19 +231,25 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   if (!grant) return notFound();
   if (grant.trashed) return documentTrashed();
   const gate = await callsGate(env);
-  if (!gate.open) {
+  // Closing never costs, so a browser may still close its tracks while the kill switch alone pauses calls.
+  const closingWhilePaused = !gate.open && gate.reason === 'paused' && segments[4] === 'close';
+  if (!gate.open && !closingWhilePaused) {
     console.warn('[calls] gate', gate.reason);
     return refuse(503, 'calls_off', { reason: gate.reason });
   }
-  // The gate's open: the four secrets are set.
+  // Past the production flag and the secrets: the four secrets are set.
   const realtime = env as RealtimeEnv;
   // Speaking is taking part (docs/specs/012-collaboration/proximity-audio.md "Share roles"): an Editor's or a
   // Participant's, a guest's included; a Viewer listens.
   const canSpeak = levelAtLeast(grant.level, 'participate');
-  if (segments[4] === 'session') return mintSession(realtime, documentId, canSpeak);
+  if (gate.open && segments[4] === 'session') {
+    return mintSession(realtime, documentId, canSpeak, gate.mode);
+  }
   const body = await bodyOf(request);
   if (!body) return invalid();
-  if (segments[4] === 'tracks') return tracks(realtime, documentId, body, canSpeak);
+  if (gate.open && segments[4] === 'tracks') {
+    return tracks(realtime, documentId, body, canSpeak, gate.mode);
+  }
   const session = await provenSession(realtime, documentId, body);
   if (!session) return invalid();
   if (segments[4] === 'renegotiate') {

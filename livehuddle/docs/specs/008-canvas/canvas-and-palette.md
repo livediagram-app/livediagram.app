@@ -355,6 +355,10 @@ The **Arrow** section of the **Animation** row (the underlying field is still `f
 
 ## Arrows
 
+> **Leaving livehuddle** (Work Tracker #423): arrows and lines are diagram tools, offered nowhere in livehuddle after
+> part 3 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). A stored arrow still draws. livediagram's
+> [Canvas and palette](../../../../livediagram/docs/specs/008-canvas/canvas-and-palette.md) is the spec to change.
+
 Arrows are a second element kind. They link two points on the canvas.
 
 ### Endpoints
@@ -515,6 +519,10 @@ type Element = ShapeElement | ArrowElement;
 
 ## Shape primitives
 
+> **Leaving livehuddle** (Work Tracker #423): the Shapes category leaves the palette in part 3; the shape kinds stay in
+> the code for sticky notes, text, frames and the Spaces' pieces, which are built on them
+> ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
+
 Fourteen general-purpose shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger (72 members) because every later family of element reused the shape type rather than inventing its own: the structural elements (`page`, `lane`), the web components (`banner`, `callout` (read-only, migrated to `card`), `stat-row`, `process`, `site-header`, [The Action Panel](../009-elements/web-components-and-no-groups.md)), the Behaviour and Collaborate controls (`mode-button`, `portal`, `session-button`, `reveal`, `picker`, `reaction-pad`, `chair`, `desk`, `sofa`, `fence`, [`avatar-pad`](../009-elements/avatar-pad.md), the [office](../009-elements/office.md) (`room`, `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine`, `rug`), `estimate`, `temperature`, `idea-box`, `qa-board`, `agenda`, `decision`, `roll-call`, `comment-pin`, `action-card`, `done-check`, `quiz`), the self-drawing data shapes (`progress-bar`, `progress-ring`, `timeline-rail`, `rating`, the three charts, `code-block`, `checklist`, `legend`), the [Card](../009-elements/card.md) (`card`), the [Badge](../009-elements/badge.md) and [Step number](../009-elements/step-number.md) (`badge`, `step`), the [Pointer note](../009-elements/pointer-note.md) (`pointer-note`), the [Diagram key](../009-elements/diagram-key.md) (`diagram-key`), the [Stack](../009-elements/stack.md) (`stack`), the [Boundary](../009-elements/boundary.md) (`boundary`), `icon` / `sticker`. Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `actor`, the UML final state `final-state` (a ring round a solid dot, one element, made by graph input and Mermaid for a state machine's end, no palette tile), `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`) and the `frame` container) landed later and are documented in the Palette section above. livediagram's UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`) are not part of livehuddle. The canonical list is `ShapeKind` in `@livehuddle/document` (declared in `src/shape-kind.ts`); the test in `apps/editor/lib/templates.test.ts` pins shape coverage indirectly via the template catalogue.
 
 | Kind            | Rendering                                                                                                                                                                                                                          | Aspect lock |
@@ -592,6 +600,9 @@ A template is picked where the work begins: on an empty tab's **start** ([Templa
 
 ### The catalogue
 
+> **Being replaced** (Work Tracker #423, part 3): the catalogue becomes five templates, Blank Space and the four
+> Spaces ([Templates by mode](../007-editor/templates-by-mode.md#the-catalogue)). What follows is the code until then.
+
 The catalogue (`packages/templates/src/templates.ts`, pinned by `templates.test.ts` so spec drift surfaces as a test failure) ships livediagram's catalogue at the fork less the templates built from the elements cut with Diagram and Draw (Mind Map, Tree Mind Map, Bubble Map, Org Chart, Flowchart, Decision Tree, Approval Workflow, Swimlane Flowchart, Database Schema, Sequence Diagram, Class Diagram, Funnel, Pyramid, Sankey Diagram, Flywheel and Sitemap: `mindmap`, `mindmap-tree`, `mindmap-bubble`, `orgchart`, `flowchart`, `decision-tree`, `approval-workflow`, `swimlane`, `er-diagram`, `sequence-diagram`, `uml-class`, `funnel`, `pyramid`, `sankey`, `flywheel`, `sitemap`). Step 5.4 of the [Build plan](../005-project-roadmap/build-plan.md) cut the rest to Workshop's and the Spaces: the drawn templates, the technical and planning diagrams, and livediagram's other blanks (Blank Diagram, Blank Whiteboard, Data Flow Diagram, Timeline, the two Milestone Timelines, Venn Diagram, Fishbone, Gantt Chart, Comparison Table, System and Cloud Architecture, OKR Tree, State Machine, Wardley Map, Threat Model, Service Blueprint, Metric Tree, Family Tree, Value Stream Map, Sketchnote, Rich Picture, Comic Strip, Doodle Warm-Up, Paper Prototype, Journey Doodle, Pre-Mortem, Idea Garden, Eisenhower Matrix, Concept Map, Network Diagram and 30-60-90 Day Plan). Thirty-nine templates remain, Blank Space among them, every one opening in Workshop; the count is pinned there. The `extra` flag is retained as catalogue metadata; the picker browses by category (each one's is in [Template categories](#template-categories)) rather than gating behind a "Show more" toggle):
 
 - **Retrospective**: a sprint retro laid out in the order it is run, under a "Sprint 14 retro" title and a one-line how-to. A left rail opens it: a fist-of-five **temperature check** ("How did the sprint feel?", [Temperature check](../012-collaboration/temperature-check.md)) over two [session buttons](../012-collaboration/session-button.md), a 5-minute writing timer and a 3-dot vote, so anyone can workshop, then a one-line how-to and **Sprint 14 in numbers** (a stat row: points done, bugs fixed, releases) at its foot. Three tinted columns (**Went well** green / **To improve** rose / **Ideas** violet), each with a header, a line-art glyph and a prompt ("What slowed us down?"), hold eight believable notes two abreast, in the column's own sticky hue and written a size up (md) so they read with the whole board in view, the same sticky grid as Start, Stop, Continue. A neutral, heavier-bordered **Action items** column closes it out: a checklist whose every line names what, who and when ("Automate deploy approval · Sam · Fri"), **From Sprint 13** (last sprint's actions checked in, one done, one carried over), then a **Shout-outs** note with a party-popper sticker. Ships layered: a "Board" scaffold (columns, headers, glyphs, prompts, rail headings) under "Stickies" (title, notes, the mood check, session buttons, stat row, checklists, shout-out), so the tools stay usable when the board is locked.
@@ -654,6 +665,10 @@ A template picked on a start is painted in the **tab's theme** and leaves the ta
 All template elements are inserted via the history hook (commit), so they're undoable in one step.
 
 #### Template categories
+
+> **Being replaced** (Work Tracker #423, part 3): livehuddle's catalogue becomes Blank Space and the four Spaces, so
+> **Virtual Spaces** is its one category and the other eleven below leave with their templates
+> ([Templates by mode](../007-editor/templates-by-mode.md#the-catalogue)). The table is the code until part 3.
 
 The catalogue is browsed by **what a person is using it for**, the use case, never by what shape of artefact a
 template is: twelve categories of livehuddle's own (no product's categories need match another's), declared once in

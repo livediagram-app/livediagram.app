@@ -54,10 +54,10 @@ const SECTIONS: Section[] = [
           The first time, liveworkspace makes a folder called <strong>liveworkspace</strong> and
           copies your work into it, oldest first, in folders that match yours, each item a file
           named after it with its app&apos;s extension (<code>.livediagram</code>,{' '}
-          <code>.liveplanner</code>, <code>.livedocuments</code>, <code>.livedesign</code>) and a
-          picture of it as the thumbnail. Cloud Sync shows the progress, and the copy carries on if
-          you close the tab. You may rename or move the folder in Drive; liveworkspace keeps using
-          it.
+          <code>.liveplanner</code>, <code>.livedocuments</code>, <code>.livedesign</code>,{' '}
+          <code>.livehuddle</code>) and a picture of it as the thumbnail. Cloud Sync shows the
+          progress, and the copy carries on if you close the tab. You may rename or move the folder
+          in Drive; liveworkspace keeps using it.
         </p>
       </>
     ),

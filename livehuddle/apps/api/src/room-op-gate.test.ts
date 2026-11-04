@@ -19,6 +19,8 @@ const say = { kind: 'avatar-say', tabId: 't', id: 'a', text: 'hi', x: 0, y: 0 };
 describe('gateClientOp', () => {
   it('never relays a system op from a client, whatever the role', () => {
     expect(gateClientOp({ kind: 'share-revoked', code: 'x' }, as('edit'))).toEqual(DROP);
+    // The calls kill switch's push is the room's own: a forged one would end everyone's call.
+    expect(gateClientOp({ kind: 'calls-mode', mode: 'off' }, as('edit'))).toEqual(DROP);
   });
 
   it('relays presence from anyone, mutations from an editor only', () => {

@@ -14,8 +14,12 @@ Storming and repository links, the templates down to Workshop's and the Spaces) 
 step 9 folded the tree back to what shipped (Work Tracker #190): every cited path, link, anchor and symbol is checked
 against the code. The decisions that were open are settled in [Open decisions for the owner](./005-project-roadmap/open-decisions.md).
 
-Workshop mode is in livediagram too. A fix to a feature both have lands in both specs and both codes in the same PR,
-or moves the code to `packages/` first ([AGENTS.md](../../AGENTS.md#workshop-features-shared-with-livediagram)).
+**Meet-first** (Work Tracker #423, being built): livehuddle is for meeting in Spaces. The workshop kit, decks, the Page
+and the diagram tools leave it in the parts [Step 10](./005-project-roadmap/build-plan.md#10-meet-first-work-tracker-423)
+sets out; [Not in livehuddle](./002-project-scope/not-in-livehuddle.md) lists them, and each of their specs here carries
+a **Leaving livehuddle** note pointing at livediagram's. The meeting kit is in livediagram too: a fix to a feature both
+have lands in both specs and both codes in the same PR, or moves the code to `packages/` first
+([AGENTS.md](../../AGENTS.md#workshop-features-shared-with-livediagram)).
 
 Specs live in numbered category folders: the reserved `001`-`005` first (vision, scope, architecture, interface
 design, roadmap), then one folder per domain concept, numbered as livediagram numbers them so a forked spec keeps its
@@ -34,7 +38,7 @@ place. The specs themselves are unnumbered and named by subject.
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, per-mode layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in and multi-colour themes
-- ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
+- ./012-collaboration/README.md - when working on realtime, the meeting board, the Timer, the quick vote, Bring Focus, facilitation, comments, actions, proximity audio, or a Collaborate spec marked Leaving livehuddle
 - ./013-workspace/README.md - when gating any feature by share role (Editor, Participant and Viewer in livehuddle), or working on the Explorer, its filters, folders, default folders, teams, favourites, tags, shape libraries, share links, the Trash or the empty document clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI

@@ -6,7 +6,9 @@
 import { useSyncExternalStore } from 'react';
 import {
   parseAvatarVoice,
+  parseCallsModeOp,
   parseCallTrack,
+  type CallsMode,
   type CallTrackLocator,
   type VoiceLevel,
 } from '@livehuddle/api-schema';
@@ -42,6 +44,8 @@ export type CallSelf = {
   heard: ReadonlySet<string>;
   // Somebody walks within the hearing radius of you, so they can hear you (the indicator's Live).
   someoneNear: boolean;
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): `off` shows Calls Paused.
+  mode: CallsMode;
 };
 
 /** What the control's buttons do; set by the running call, absent while there is none to drive. */
@@ -61,6 +65,7 @@ const OFF: CallSelf = {
   level: 0,
   heard: EMPTY_HEARD,
   someoneNear: false,
+  mode: 'on',
 };
 
 let peers = new Map<string, CallPeer>();
@@ -70,6 +75,7 @@ let actions: CallActions | null = null;
 const peerListeners = createListeners();
 const selfListeners = createListeners();
 const trackListeners = createListeners();
+const modeListeners = createListeners();
 let peerNotifyDue: ReturnType<typeof setTimeout> | null = null;
 
 const now = () => performance.now();
@@ -110,6 +116,27 @@ export function receiveCallOp(from: string, op: unknown): void {
   peers.set(from, { ...peerOf(from), tabId: track.tabId, track: track.track });
   notifyPeers(false);
   trackListeners.notify();
+}
+
+/**
+ * The calls kill switch's mode, from the room's `calls-mode` push (only the room's own, `from: 'system'`), the
+ * capabilities or a refusal. A running call hears of it through `onCallsMode` and ends if it no longer may run.
+ */
+export function setCallsMode(mode: CallsMode): void {
+  if (self.mode === mode) return;
+  setCallSelf({ mode });
+  modeListeners.notify();
+}
+
+/** The room's `calls-mode` op; anything else, or from anyone but the room, is ignored. */
+export function receiveCallsMode(from: string, op: unknown): void {
+  const parsed = from === 'system' ? parseCallsModeOp(op) : null;
+  if (parsed) setCallsMode(parsed.mode);
+}
+
+/** Subscribe to the switch's mode changing (the running call). */
+export function onCallsMode(listener: () => void): () => void {
+  return modeListeners.subscribe(listener);
 }
 
 /** A peer left the mode: their level and microphone go with their character. */

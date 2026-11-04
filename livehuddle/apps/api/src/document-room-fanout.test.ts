@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { presenceStepMs } from '@livehuddle/api-schema';
 import { DocumentRoom } from './document-room/document-room';
+import { resetCallsModeCache } from './calls/calls-mode';
+import { fakeKv } from './calls/fake-kv';
 
 // The avatar fan-out bound (docs/specs/015-api/api.md "A busy room bounds its presence fan-out", and the measured
 // numbers in docs/specs/008-canvas/avatar-mode.md "A busy room"): walks 10, 32 and 100 characters through the real
@@ -9,7 +11,7 @@ import { DocumentRoom } from './document-room/document-room';
 
 type Socket = { sent: string[]; attachment: unknown };
 
-function newRoom() {
+function newRoom(env: Record<string, unknown> = {}) {
   const sockets: Socket[] = [];
   const kv = new Map<string, unknown>();
   const state = {
@@ -26,7 +28,7 @@ function newRoom() {
     blockConcurrencyWhile: (fn: () => Promise<void>) => fn(),
     waitUntil: () => {},
   };
-  const room = new DocumentRoom(state as unknown as DurableObjectState, {} as never);
+  const room = new DocumentRoom(state as unknown as DurableObjectState, env as never);
   const join = (id: string, tabId: string, batches = true, role = 'view') => {
     const s: Socket = {
       sent: [],
@@ -211,6 +213,31 @@ describe('the avatar relay in the room', () => {
     expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar-voice')).toBe(false);
     say(room, sameTab, voiceOp('t1', 0));
     expect(talker.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar-voice')).toBe(false);
+  });
+
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients").
+  it('tells every socket, once, when a call op finds the kill switch off', async () => {
+    resetCallsModeCache();
+    const CALLS_SWITCH = fakeKv({ 'calls-mode': 'off' });
+    const { room, join, sockets } = newRoom({ CALLS_SWITCH });
+    const talker = join('p0', 't1', true, 'participate');
+    join('p1', 't1');
+    join('p2', 't2');
+    for (const s of sockets) s.sent.length = 0;
+    // A walk alone never reads the switch.
+    say(room, talker, avatarOp('t1', 1));
+    expect(CALLS_SWITCH.gets).toBe(0);
+    say(room, talker, voiceOp('t1', 0));
+    say(room, talker, voiceOp('t1', 1));
+    await vi.waitFor(() => expect(sockets[2]!.sent.length).toBeGreaterThan(0));
+    for (const s of sockets) {
+      const told = s.sent.flatMap(opsIn).filter((f) => f.op?.kind === 'calls-mode');
+      expect(told).toEqual([
+        { kind: 'op', from: 'system', op: { kind: 'calls-mode', mode: 'off' } },
+      ]);
+    }
+    expect(CALLS_SWITCH.gets).toBe(1);
+    resetCallsModeCache();
   });
 
   it('forgets a walker whose socket closed', () => {

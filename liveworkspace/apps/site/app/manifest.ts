@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return installManifest({
     name: 'liveworkspace',
     description:
-      'One account and one Explorer across livediagram, liveplanner, livedocuments and livedesign.',
+      'One account and one Explorer across livediagram, liveplanner, livedocuments, livedesign and livehuddle.',
     themeColor: '#64748b',
     icons: [
       { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },

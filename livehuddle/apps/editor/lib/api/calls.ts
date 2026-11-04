@@ -13,14 +13,21 @@ import { API_BASE, apiFetch, apiHeaders } from './core';
 /** Who is asking about which Space. */
 export type CallsCaller = { ownerId: string; documentId: string; shareCode: string | null };
 
-/** The mint route refused or failed; `code` is its error code when it gave one. */
+/** The mint route refused or failed; `code` is its error code and `reason` its `calls_off` reason, when given. */
 export class CallsApiError extends Error {
   readonly status: number;
   readonly code: string | null;
-  constructor(status: number, code: string | null) {
-    super(`calls ${status}${code ? ` ${code}` : ''}`);
+  readonly reason: string | null;
+  constructor(status: number, code: string | null, reason: string | null = null) {
+    super(`calls ${status}${code ? ` ${code}` : ''}${reason ? ` ${reason}` : ''}`);
     this.status = status;
     this.code = code;
+    this.reason = reason;
+  }
+
+  /** The calls kill switch paused calls (docs/specs/016-platform/calls-kill-switch.md "Calls Paused"). */
+  get paused(): boolean {
+    return this.code === 'calls_off' && this.reason === 'paused';
   }
 }
 
@@ -41,13 +48,15 @@ async function send<T>(
   });
   if (!res.ok) {
     let code: string | null = null;
+    let reason: string | null = null;
     try {
-      const err = (await res.json()) as { error?: unknown };
+      const err = (await res.json()) as { error?: unknown; reason?: unknown };
       code = typeof err.error === 'string' ? err.error : null;
+      reason = typeof err.reason === 'string' ? err.reason : null;
     } catch {
       // No body: the status says enough.
     }
-    throw new CallsApiError(res.status, code);
+    throw new CallsApiError(res.status, code, reason);
   }
   return (await res.json()) as T;
 }

@@ -761,7 +761,7 @@ test('a spent budget reads on this device instead, and says so', async ({ page, 
   );
   await importToReview(page, [{ fill: ORANGE, x: 300, y: 120, w: 180, h: 180 }]);
   await expect(page.getByTestId('photo-reader-fallback')).toHaveText(
-    /free monthly budget reached\. reading on this device instead/i,
+    /ai is resting for today\. reading on this device instead/i,
     { timeout: 20_000 },
   );
   await expect(page.getByTestId('photo-reader-unavailable')).toBeVisible({ timeout: 90_000 });

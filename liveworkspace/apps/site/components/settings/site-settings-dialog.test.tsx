@@ -442,6 +442,8 @@ describe('the Settings panel, opened on a section', () => {
     expect(fetchMock.mock.calls.filter(([url]) => url === '/api/index/webhooks')).toHaveLength(1);
   });
 
+  // Two opens, each waiting up to until()'s 5s for the lazy panel on a cold import, so the test's own limit sits above
+  // their sum: at vitest's 5s default a busy CI runner timed it out at 5030ms.
   it('draws Your Data in place for a signed-in person, read only when its category shows', async () => {
     fetchMock.mockImplementation((url: string) =>
       url === '/api/account/data-export'
@@ -461,5 +463,5 @@ describe('the Settings panel, opened on a section', () => {
     expect(fetchMock.mock.calls.filter(([url]) => url === '/api/account/data-export')).toHaveLength(
       1,
     );
-  });
+  }, 20_000);
 });

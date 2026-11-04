@@ -14,6 +14,7 @@ const calls = vi.hoisted(() => ({
     start: ReturnType<typeof vi.fn>;
     stop: ReturnType<typeof vi.fn>;
     toggleMute: ReturnType<typeof vi.fn>;
+    ended: boolean;
   }[],
   fail: false,
 }));
@@ -23,6 +24,7 @@ vi.mock('./proximity-call', () => ({
     start = vi.fn(async () => {});
     stop = vi.fn();
     toggleMute = vi.fn();
+    ended = false;
     constructor() {
       if (calls.fail) throw new Error('chunk');
       calls.made.push(this);
@@ -124,6 +126,23 @@ describe('useProximityCall', () => {
     hook.unmount();
     expect(calls.made[2]!.stop).toHaveBeenCalled();
     expect(callActions()).toBeNull();
+  });
+
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
+  it('takes the switch from the capabilities, and joins afresh once a pause ended the call', async () => {
+    caps.apiGetCapabilities.mockResolvedValue({ callsEnabled: true, callsMode: 'off' });
+    mount();
+    await waitFor(() => expect(callSelf()).toMatchObject({ available: true, mode: 'off' }));
+    act(() => callActions()!.join());
+    await waitFor(() => expect(calls.made).toHaveLength(1));
+    // A running call is left alone by a second press.
+    act(() => callActions()!.join());
+    expect(calls.made).toHaveLength(1);
+    // The switch ended it (phase off, the call stopped): the press tries again.
+    calls.made[0]!.ended = true;
+    act(() => callActions()!.join());
+    await waitFor(() => expect(calls.made).toHaveLength(2));
+    expect(calls.made[0]!.stop).toHaveBeenCalled();
   });
 
   it('a press without a room does nothing', async () => {

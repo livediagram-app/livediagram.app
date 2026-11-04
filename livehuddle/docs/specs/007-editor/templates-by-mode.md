@@ -1,14 +1,17 @@
 # Templates by mode
 
-Every template opens in Workshop, livehuddle's one [editor mode](editor-modes.md). They wait on an empty tab in Start a
-Workshop ([Template starts](start-diagramming.md)), grouped by the catalogue's categories. Templates built from the
-elements cut with Diagram and Draw are not in the catalogue, and step 5.4 of the
-[Build plan](../005-project-roadmap/build-plan.md) cut the rest to Workshop's and the Spaces: the catalogue is the
-templates below and nothing else ([Templates](../012-collaboration/workshop-mode.md#templates)).
+Status: **approved, being built** (Work Tracker #423, part 3). Until part 3 lands the code still ships the thirty-nine
+templates livehuddle forked down to; the catalogue below is the target.
+
+Every template opens on a meeting board, livehuddle's one [editor mode](editor-modes.md)
+([The meeting board](../012-collaboration/workshop-mode.md)). They wait on an empty tab in Start a Space
+([Template starts](start-diagramming.md)). livehuddle is for meeting in Spaces, so the catalogue is the Spaces and the
+blank and nothing else ([Templates](../012-collaboration/workshop-mode.md#templates)); the retrospectives, workshops,
+planning boards and games are livediagram's ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
 ## A template's mode
 
-- A template's tab opens in Workshop (`Tab.opensIn: 'workshop'`, through `templateCanvasOverrides`).
+- A template's tab opens on a meeting board (`Tab.opensIn: 'workshop'`, through `templateCanvasOverrides`).
 
 ## The blank
 
@@ -23,56 +26,44 @@ untitled.
 - Boards, Sheets and form templates (Blank Plan, Blank Spreadsheet, Kanban Board and the rest) are liveplanner's
   ([Editor modes](editor-modes.md) "Stored tabs from other products' modes"). A link, an agent or a seed naming one
   is answered as any unknown kind is (`retired-templates.test.ts`).
-- Popular, in order: Blank Space, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub
-  Quiz ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
+- Popular, in order: Blank Space, Virtual Office, Team Pod, Coworking Space, All-Hands Hall
+  ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
-## Workshop templates
+## The catalogue
 
-The session formats ([Workshop mode](../012-collaboration/workshop-mode.md#templates)), with the Collaborate kit and
-the Session strip there when the session starts:
-
-- The Retrospectives family's **Retrospective** (`retrospective`), **Start, Stop, Continue**
-  (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
-  (`sailboat`).
-- **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
-  (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
-  **Brainstorm Board** (`brainstorm`).
-- The boards that ship a dot vote: **Affinity Map** (`affinity-map`), **Prioritization Matrix**
-  (`prioritization-matrix`) and **Risk Matrix** (`risk-matrix`).
-- The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
-  postmortem** (`incident-postmortem`), **User Persona** (`user-persona`), **Empathy Map** (`empathy-map`), **User
-  Journey** (`journey`), **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`), **RACI Matrix**
-  (`raci-matrix`), **User Story Map** (`user-story-map`), **SWOT** (`swot`), **PESTLE Analysis**
-  (`pestle-analysis`), **Business Model Canvas** (`business-model-canvas`), **Value Proposition Canvas**
-  (`value-proposition-canvas`), **Stakeholder map** (`stakeholder-map`), **Opportunity Solution Tree**
-  (`opportunity-solution-tree`) and **KWL Chart** (`kwl-chart`, a class's board). A board built from sticky notes for a group to add theirs to is a session's work: a note per voice.
-- The spaces: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
-  (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), in the **Virtual Spaces** category ([Virtual Office
+- **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod** (`team-pod`) and
+  **All-Hands Hall** (`all-hands-hall`), in the one **Virtual Spaces** category ([Virtual Office
   template](../012-collaboration/virtual-office-template.md)).
-- The games: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions** (`icebreaker-questions`), **Two Truths and a Lie**
-  (`two-truths-and-a-lie`), **Would You Rather** (`would-you-rather`) and **Find Someone Who Bingo**
-  (`people-bingo`), in **Quizzes & Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
-- Start a Space groups them by the catalogue's categories, as every start does ([Start
-  diagramming](start-diagramming.md) "Recommended and groups").
+- Start a Space shows them as one group under Recommended, as every start does ([Start
+  diagramming](start-diagramming.md) "Recommended and groups"); with one category it has no rail of groups.
+- **Leaving** (part 3): the Retrospectives family (`retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`,
+  `sailboat`), `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, the
+  dot-vote boards (`affinity-map`, `prioritization-matrix`, `risk-matrix`), the fill-in-together boards
+  (`incident-postmortem`, `user-persona`, `empathy-map`, `journey`, `objectives-planner`, `roadmap`, `raci-matrix`,
+  `user-story-map`, `swot`, `pestle-analysis`, `business-model-canvas`, `value-proposition-canvas`,
+  `stakeholder-map`, `opportunity-solution-tree`, `kwl-chart`) and the games (`pub-quiz`, `icebreaker-questions`,
+  `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`). A link, an agent or a seed naming one is answered with
+  Blank Space (`retired-templates.test.ts`). The Meetings & Workshops, Retrospectives, Workshops, Planning, Strategy
+  and Quizzes & Games categories leave with them.
 
 ## Testing
 
-- Every template opens in Workshop (`templates.test.ts`).
+- Every template opens on a meeting board (`templates.test.ts`).
 - Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the Workshop templates above, thirty-nine with the blank (`templates.test.ts`'s
-  kind list, the `TemplateKind` union and `TEMPLATES` move together).
+- The catalogue is the four Spaces and the blank, five templates (`templates.test.ts`'s kind list, the `TemplateKind`
+  union and `TEMPLATES` move together).
 
 ## The tab's name
 
 - A template picked on a start or on /new names the tab it fills after itself, (a retrospective's tab is
-  "Retrospective"): the template's title. It does
+  "Virtual Office"): the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
 
 ## The document's name
 
 - A template picked on a start names the **document** after itself too, as /new names a document after the template
-  it is made from: "Untitled Retrospective", the blank "Untitled Space" (`untitledNameForTemplate`).
+  it is made from: "Untitled Virtual Office", the blank "Untitled Space" (`untitledNameForTemplate`).
 - Only while the document still has a default name: one of those untitled names (`isDefaultDocumentName`, any
   template's, or the legacy "Untitled diagram"; a blank's names are the shared `isUntitledName` list, which the first label's naming uses too). A name someone gave it, or the first element's label the editor
   named it after ([Name length](../006-document/name-length.md)), is kept.
