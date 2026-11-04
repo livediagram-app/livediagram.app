@@ -19,6 +19,7 @@ const PURE = [
   'reactions',
   'relay',
   'scene',
+  'seat-claims',
   'seats',
   'speech',
   'speech-store',

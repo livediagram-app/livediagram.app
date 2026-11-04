@@ -20,7 +20,8 @@ import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
 import { useAvatarPadArrivals } from '@liveworkspace/avatar/hooks/useAvatarPadArrivals';
 import { avatarSpawnFromButton, type AvatarPoint } from '@liveworkspace/avatar/walk';
 import { isSeatingShape, drinkFrom } from '@livediagram/document';
-import { seatFor } from '@liveworkspace/avatar/seats';
+import { seatOnArrival } from '@liveworkspace/avatar/seat-claims';
+import { useSeatYield } from '@liveworkspace/avatar/hooks/useSeatYield';
 import { useAvatarConfig } from '@liveworkspace/avatar/hooks/useAvatarConfig';
 import type { Reaction } from '@livediagram/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
@@ -92,6 +93,12 @@ export function useCanvasAvatar({
     () => visibleLayerElements(elements, tabLayers),
     [elements, tabLayers],
   );
+  // The peers on this tab as the seat rules read them (docs/specs/009-elements/chair.md "Occupancy is presence"):
+  // where they stand, what they sit on and their claim. Rebuilt only when presence changes.
+  const seatPeers = useMemo(
+    () => props.remoteAvatars.map((peer) => peer.avatar),
+    [props.remoteAvatars],
+  );
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     config: avatarLook.config,
@@ -112,13 +119,15 @@ export function useCanvasAvatar({
     // Chair (docs/specs/009-elements/chair.md): walking onto one sits the character down, snapped to
     // the seat point so it sits ON the chair rather than wherever it arrived.
     // A desk or a sofa does the same (docs/specs/009-elements/chair.md "Desk and sofa"): a sofa seats
-    // the character on the cushion nearest where it walked in.
+    // the character on the free cushion nearest where it walked in.
     onWalkIntoChair: (element, feet) => {
       if (!isSeatingShape(element.shape)) return;
-      // The nearest seat, facing away from the back; a meeting table's seats each face the table
-      // (docs/specs/009-elements/office.md "Meeting Table").
-      const seat = seatFor({ ...element, shape: element.shape }, feet);
-      avatarRef.current?.sitOn(element.id, seat, seat.facing);
+      // The nearest seat nobody holds, facing away from the back (a meeting table's seats each face the table,
+      // docs/specs/009-elements/office.md "Meeting Table"); every seat taken stops us beside the piece
+      // (docs/specs/009-elements/chair.md "Sitting").
+      const arrival = seatOnArrival({ ...element, shape: element.shape }, feet, seatPeers);
+      if ('stopAt' in arrival) avatarRef.current?.stepAside(arrival.stopAt);
+      else avatarRef.current?.sitOn(element.id, arrival.sit, arrival.sit.facing, arrival.sit.index);
     },
     // A water cooler or a coffee machine (docs/specs/009-elements/office.md "Using it"): a drink in the hand,
     // and the machine answers on your screen.
@@ -148,6 +157,15 @@ export function useCanvasAvatar({
   // goes through a ref — declared above, repointed here, read at arrival time.
   // Same shape as `enterPortalRef` below, for the same reason.
   const avatarRef = useLatest<ReturnType<typeof useAvatarWalk> | null>(avatar);
+  // Two people who sat on one seat at once: the later claim stands up beside it
+  // (docs/specs/009-elements/chair.md "Occupancy is presence").
+  useSeatYield({
+    seatedOn: avatar.seatedOn,
+    claim: avatar.seatClaim,
+    elements: walkElements,
+    peers: seatPeers,
+    onYield: avatar.stepAside,
+  });
   // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
   // something above their character's head; everyone on the tab sees it float away.
   const speech = useAvatarSpeech({
