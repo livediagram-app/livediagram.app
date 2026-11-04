@@ -29,3 +29,12 @@ One row per default applied where a spec is silent or qualitative.
 | VK1 | vote-keys         | Which characters are the vote keys                       | `+` and `=` (one key, shifted or not) and `-`; the numpad's `+` and `-` give the same `key`        |
 | VK2 | vote-keys         | What a key says when the tab refuses the dot             | `This tab is locked, so no dot moved.`: a locked tab is the one block a voter can meet             |
 | VK3 | vote-keys         | Whether a refused key is tracked                         | No: only a dot that moved is (`Element` `Voted` / `Removed` `Vote`), as for a press                |
+
+| #   | Blueprint       | Spec silence                                     | Default applied                                                                          |
+| --- | --------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| PA1 | proximity-audio | "The mic is only on while someone is in range"   | Open while another walker is on your tab (they may hear you or see your bars)            |
+| PA2 | proximity-audio | What starts audio                                | A Join Audio press: the browser's gesture for sound and the microphone prompt            |
+| PA3 | proximity-audio | How production is told apart                     | The api's `APP_BASE_URL` origin is livehuddle.app's production one (hosted-vars.json)    |
+| PA4 | proximity-audio | How a late joiner learns a speaker's microphone  | The speaker resends its locator when a new walker reaches its tab, at most once a second |
+| PA5 | proximity-audio | Whether a hide-cursors vote hides speech bubbles | No: bubbles belong to characters, which the vote no longer hides                         |
+| PA6 | proximity-audio | Where the equaliser sits                         | Above the name chip, at reading size, in the speaker's colour                            |

@@ -7,6 +7,9 @@ page records what that needs, so v1 is built not to stand in its way. Each featu
 
 ## Audio calls
 
+**Built for staging**: [Proximity audio](../012-collaboration/proximity-audio.md) (Work Tracker #315), within a radius
+in the open; a room as one call and the All-Hands Hall's stage are still ahead.
+
 People near each other on the board hear each other: **proximity audio**. A character's position already rides the
 room ([Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md#realtime)), so the board can decide
 who hears whom: everyone in the same [room](../../../../livediagram/docs/specs/009-elements/office.md#room), or within
@@ -40,12 +43,14 @@ must never relay audio or video.
 
 ## What it costs
 
-TURN and SFU usage is billed by traffic on the Cloudflare account, unlike everything livehuddle does in v1. It needs
-the owner's decision on spend and limits before it is built ([Open decisions](open-decisions.md) D4).
+TURN and SFU usage is billed by traffic on the Cloudflare account, unlike everything livehuddle does in v1. D4 is
+settled for audio ([Open decisions](open-decisions.md) D4); the spend limit is the calls kill switch's (Work Tracker
+#316), and audio's cost is in [Proximity audio](../012-collaboration/proximity-audio.md#cost).
 
 ## Share roles
 
-The proposal for the spec that builds it, in the [Share roles](../013-workspace/share-roles.md) ladder:
+In the [Share roles](../013-workspace/share-roles.md) ladder; the audio rows are settled in
+[Proximity audio](../012-collaboration/proximity-audio.md#share-roles), guests included:
 
 | Act                                 | Editor | Participant | Viewer |
 | ----------------------------------- | ------ | ----------- | ------ |
