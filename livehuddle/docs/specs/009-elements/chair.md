@@ -85,16 +85,25 @@ there).
   seat rather than on the backrest of a sideways chair.
 - While seated it **ignores walk targets**: clicking elsewhere on the canvas
   does not drag it out of the chair by accident.
+- **A taken seat is not sat in.** Walking into a chair somebody is already sitting in does not seat
+  you: your character **stops beside it**, just outside the piece on the side it came from, and
+  stays standing. A piece with more than one seat (a sofa, a meeting table) seats you on the **free
+  seat nearest where you arrived**, and stops you beside it only when every seat is taken.
 - **Standing up** is any arrow key, or double-clicking the canvas. Both are
   deliberate acts. The seated face also carries a small **Stand** press for
   people using a touch device with no arrow keys.
 - A seated character can still **wave and react** ([Avatar mode](../008-canvas/avatar-mode.md)). Sitting removes
   locomotion, not personality.
+- A seated character **cannot be pushed** ([Avatar mode](../008-canvas/avatar-mode.md) "You can push each other"):
+  clicking it walks you up beside it and sends no push, and a push that reaches a sitter anyway (they sat while you
+  walked over) is ignored.
 
 ## Occupancy is presence, never document state
 
 Who is in a chair rides the `avatar` RoomOp, as
-`seatedOn: elementId | null` on `AvatarPresence`. **Nothing is written to the
+`seatedOn: elementId | null` on `AvatarPresence`, with `seat: { index, at, tie }` beside it: which of
+the piece's seats (`index`, in `seatPoints` order), when the sitter sat (`at`, their clock's epoch
+milliseconds) and a random tiebreak drawn at that moment (`tie`). **Nothing is written to the
 document.**
 
 This is the rule that makes the feature safe, and it is [Avatar mode](../008-canvas/avatar-mode.md)'s rule
@@ -106,10 +115,14 @@ reaches the stored document or undo.
 - The chair renders **occupied**: a soft ring in the sitter's presence colour
   and their name under it, derived from the peer presence the canvas already
   receives.
-- **Two people can sit in the same chair.** Not an accident: enforcing one
-  seat means a lock, a lock means an owner, and an owner means a chair that
-  gets stuck. Two overlapping characters is a self-correcting problem that the
-  room resolves socially in about a second, and a stuck chair is not.
+- **One sitter per seat, with no lock.** A seat is taken while somebody's presence says they sit in
+  it; nothing else holds it, so it cannot get stuck. Two people who arrive at the same seat at once
+  (each seated before the other's presence arrived) settle it the same way on every machine: the
+  **earlier `at` keeps the seat, then the lower `tie`**, and the other stands up beside the seat as if
+  they had found it taken. A packet without `seat` (an older client) holds the seat **nearest its
+  feet** and counts as the earliest, since that client never gives a seat up.
+- Sitting down and standing up are told to the room **at once**, not at the next heartbeat, so the
+  seat reads taken or free to everyone within a packet's flight.
 - A peer who leaves the mode, changes tab or disconnects vacates every chair
   for free, because their presence went away.
 
@@ -128,7 +141,7 @@ Two more pieces of furniture seat a character exactly as a chair does, beside it
 Both share the chair's rules unchanged: the same `chairFacing` field and **Desk** / **Sofa**
 menu section (the Chair section, titled for the furniture it is on), arrival seating through the
 same walk hook, the same seated guards and ways of standing, and occupancy as presence (one ring in
-the first sitter's colour, names above). Two people may share a cushion, as they may a chair.
+the first sitter's colour, names above). A cushion takes one sitter, as a chair does; a sofa takes two.
 
 Where they differ from the chair:
 
@@ -142,6 +155,7 @@ Where they differ from the chair:
 
 ## Not in scope
 
-- **No walk-to-the-nearest-free-chair.** Sit where you walked.
+- **No walk-to-the-nearest-free-chair.** Sit where you walked; a taken chair stops you beside it
+  rather than sending you to another chair.
 - **No table element.** A chair is furniture the room already knows how to
   arrange around whatever the author drew.
