@@ -23,6 +23,35 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors);
 });
 
+// The first visit itself (docs/specs/003-system-architecture/e2e-smoke.md "Every test opens as a returning guest"):
+// every other test opens as a guest who holds a token, and a browser with none leaves /new for the guest handoff and
+// comes back holding one. Nothing is checked on the page until the round trip is back.
+test.describe('a first visit', () => {
+  test.use({ freshVisitor: true });
+
+  test('goes through the guest handoff and comes back to the wizard with a guest token', async ({
+    page,
+    pageErrors,
+  }) => {
+    const visited: string[] = [];
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame()) visited.push(new URL(frame.url()).pathname);
+    });
+    await page.goto('/new');
+    const cameBack = () => {
+      const at = visited.findIndex((path) => path.startsWith('/auth/guest'));
+      return at >= 0 && at < visited.length - 1;
+    };
+    await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
+    await expect(page.locator('[data-new-mode="workshop"]')).toBeVisible();
+    expect(visited.at(-1)).toMatch(/^\/new\/?$/);
+    expect(
+      await page.evaluate(() => localStorage.getItem('livehuddle:v2:guest-token')),
+    ).toBeTruthy();
+    expectNoPageErrors(pageErrors);
+  });
+});
+
 // The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
 // panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
 test('the new-document wizard shows with no apps menu in the header', async ({
