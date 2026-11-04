@@ -165,6 +165,12 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
     a part appearing or going elsewhere (a column's hover controls, a card dragged into another column) leaves every
     other part's strokes as they were, so a re-take after a change draws the same ink instead of flashing new
     strokes across the board.
+  - **Every frame keeps its marker edge.** The pointer's own feedback on a face (a Plan column's tint, the light
+    that follows it across a card) is not a change to the face, so moving over a board never redraws it, and a card
+    under the pointer keeps the stroke it was drawn with (only its light shows the hover). A redraw after a real change
+    reads every part as it rests, never part way through easing its line in or out (a card's edge fading back from
+    the marker's hidden line read as no line at all, so each redraw skipped every card the last one drew and its
+    border went plain until the next).
 - **Not affected:** freehand pen strokes and highlights, images, photos inside a face, and a tab window's content (it keeps the
   finish of the tab it shows).
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, as under Sketch.
@@ -256,6 +262,11 @@ own backdrop flag flips. Generating one element's strokes and hatching stays und
 drag frame for unmoved elements ([Canvas performance](canvas-performance.md)).
 Marker is held to the same budgets: it computes from the same inputs, is memoised the same way, and draws at most
 five paths per body with no filter, so it costs about what Sketch does.
+A face's own parts in marker are bounded per face: at most 120 shapes and lines (a shape's colouring is the costly
+part) and, counted apart, at most 600 frames (an outline is four strokes), so a busy Plan board outlines every card.
+Exporting 600 frames takes about 11 ms (200 about 4 ms). On the canvas a redraw reads every part before it writes any
+ink, so it lays the face out once rather than once per part: a 200-card board redraws in about 50 ms (it took
+105 to 280 ms, and its 120-part cap left 80 cards plain), and only after a real change, never on a hover.
 
 A sketched face costs one still copy of its DOM, taken once it settles (so a zoom, which restyles faces every
 frame, copies each once afterwards), and one light wobble filter. On a Sketch tab of 200 charts, copying every face

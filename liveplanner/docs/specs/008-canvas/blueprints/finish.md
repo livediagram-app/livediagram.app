@@ -260,7 +260,8 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
   `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole).
 - `../packages/workbench/src/components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` uses (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
-  `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`.
+  `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`. It asks for `attributeOldValue`, so an
+  `ignore` can tell a write that moves nothing it draws from one that does.
 - Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is
   one, so words a face writes itself inherit it.
 
@@ -305,7 +306,10 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   `MARKER_FACE_FRAME_INK_SHIFT` 0.45) streaked at `MARKER_FACE_STREAK_OPACITY` (0.2); a frame `markerFrameInk` at
   `MARKER_FACE_FRAME_PX` (2.5). `handDrawnInk(stroke, fill)` draws a line under `HAND_DRAWN_INK_MIN_CONTRAST` (1.8)
   in `markerFrameInk`, used by every hand-drawn body (`SketchOverlay`, `svgSketchedBody`). At most
-  `MARKER_FACE_MAX_PARTS` (120) parts; `MARKER_FACE_RULE_MIN_PX` (2.5) admits an SVG `<line>`.
+  `MARKER_FACE_MAX_PARTS` (120) shapes and lines and, counted apart, `MARKER_FACE_MAX_FRAMES` (600) frames: a
+  `MarkerFaceBudget` (`markerFaceBudget`, `faceBudgetAllows`, `spendFaceBudget`, `faceBudgetSpent`) passed to
+  `markerFacePart` / `sketchFacePart` returns null for a role already spent, before its strokes are worked out;
+  `MARKER_FACE_RULE_MIN_PX` (2.5) admits an SVG `<line>`.
 - Export: `svg-render-face-finish.ts` `svgProfessionalFace(markup)` (rect corners off unless a pill or
   `data-finish-keep`, `stroke-width="2"` to 1) and `svgMarkerFace(markup, id, face)` (clips, definitions,
   foreignObjects and the marker body held; each part kept with its line removed, its marker after it, in its own
@@ -317,7 +321,16 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   `useFaceFinishPass(rootRef, finish, id)` re-takes on settle (`watchUntilSettled` with `ignore` for its own
   changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
-  `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules.
+  `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules
+  (`marker-grid-rules.ts`; the marks it sets are named in `face-finish-marks.ts`).
+  - A take sets `data-marker-taking` on the root for its whole length; face-finish.css holds `transition: none` under
+    it, and reads a hovered `.plan-card-hover` at its resting `--card-line`. It reads every part first (sizes, computed
+    style, the part's drawing) and only then runs each part's write (its ink, `data-marker-drawn`, isolation), then
+    reads each marked part's style once so the marks land before transitions return. A re-take therefore never reads
+    a line mid-ease from the mark it just cleared, and lays the face out once.
+  - `ignore` also skips the pointer's own feedback (`components/plan/board-hover.ts` `isBoardHoverWrite`): the
+    column hover mark `data-column-hover`, and a `style` write that changes nothing but `--card-mx` / `--card-my`
+    (`useCardSpotlight`'s `SPOTLIGHT_X` / `SPOTLIGHT_Y`), compared against the record's old value.
 - A Plan body over the canvas (`MaximisableSlot`'s `OverFace`) carries `data-face-finish`, its own pass and a
   stable-tree `SketchFace` (`keepTree`).
 - `drawn-outline-finish.ts`: `isPolygonOutline`, `polygonStrokePx`, `handDrawnPolygonPaint`, `imageCornerPx`, `handDrawnImagePaint` (an edge round
@@ -473,29 +486,32 @@ per command letter.
 
 ## Testing
 
-| Rule                                                         | Test                                                                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| resolve order, unknown values, Professional fallbacks, font  | `packages/project/src/finish.test.ts`                                                                        |
-| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/project/src/sketch.test.ts`                                                                        |
-| budgets                                                      | `packages/project/src/sketch.perf.test.ts`                                                                   |
-| export draws sketch strokes / hatching / Professional radius | `packages/project/src/svg-render-finish.test.ts`                                                             |
-| variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
-| menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
-| backdrops: what sits on a shape, order, finish, speed        | `packages/project/src/sketch-backdrop.test.ts`                                                               |
-| Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
-| which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
-| applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
-| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                     |
-| dialog tab sets, previews, Apply to All clears               | `apps/editor/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/editor/hooks/canvas/useTabCanvas.test.ts` |
-| Participant cannot write `finish`                            | `packages/project/src/participant-content.leak.test.ts`                                                      |
-| which elements split their face                              | `packages/project/src/finish.test.ts`                                                                        |
-| Marker: finish rules, font, widths, icon weight, sticky      | `packages/project/src/finish.test.ts`                                                                        |
-| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/project/src/marker.test.ts`                                                                        |
-| Marker: budgets                                              | `packages/project/src/marker.perf.test.ts`                                                                   |
-| one door to both pens; Marker in the export; backdrops       | `packages/project/src/hand-drawn.test.ts`                                                                    |
-| export split, body placement, tab window frame, defs, fonts  | `packages/project/src/svg-render-sketch.test.ts`                                                             |
-| ink copy, settle and longest wait, single render             | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                            |
-| WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
+| Rule                                                                                 | Test                                                                                                         |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| resolve order, unknown values, Professional fallbacks, font                          | `packages/project/src/finish.test.ts`                                                                        |
+| determinism, seeds differ, outlines, hatching bounds/caps                            | `packages/project/src/sketch.test.ts`                                                                        |
+| budgets                                                                              | `packages/project/src/sketch.perf.test.ts`                                                                   |
+| export draws sketch strokes / hatching / Professional radius                         | `packages/project/src/svg-render-finish.test.ts`                                                             |
+| variant drops shadow / peel / border per finish                                      | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
+| menu rows commit, preview, Follow Tab clears                                         | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
+| backdrops: what sits on a shape, order, finish, speed                                | `packages/project/src/sketch-backdrop.test.ts`                                                               |
+| Professional new arrows angled; avoidance per finish                                 | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
+| which palette tiles take the finish                                                  | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
+| applyFinishToEl                                                                      | `apps/editor/lib/style-presets.test.ts`                                                                      |
+| preview draws each finish, stable, in the tab's font                                 | `apps/editor/lib/finish-preview.test.ts`                                                                     |
+| dialog tab sets, previews, Apply to All clears                                       | `apps/editor/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/editor/hooks/canvas/useTabCanvas.test.ts` |
+| Participant cannot write `finish`                                                    | `packages/project/src/participant-content.leak.test.ts`                                                      |
+| which elements split their face                                                      | `packages/project/src/finish.test.ts`                                                                        |
+| Marker: finish rules, font, widths, icon weight, sticky                              | `packages/project/src/finish.test.ts`                                                                        |
+| Marker: strokes, layers, gestures, pins, trim, heads, rows                           | `packages/project/src/marker.test.ts`                                                                        |
+| Marker: budgets                                                                      | `packages/project/src/marker.perf.test.ts`                                                                   |
+| one door to both pens; Marker in the export; backdrops                               | `packages/project/src/hand-drawn.test.ts`                                                                    |
+| export split, body placement, tab window frame, defs, fonts                          | `packages/project/src/svg-render-sketch.test.ts`                                                             |
+| ink copy, settle and longest wait, single render                                     | `../packages/workbench/src/components/canvas/SketchFace.test.tsx`                                            |
+| WebKit is told by `GestureEvent`                                                     | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
+| Marker face: every card on a busy board, hover never re-takes, held still while read | `apps/editor/components/canvas/useFaceFinishPass.board.test.tsx`                                             |
+| the pointer's feedback on a board is not a change                                    | `apps/editor/components/plan/board-hover.test.ts`                                                            |
+| face budget: frames apart from shapes; 600 frames' cost                              | `packages/project/src/marker-face.test.ts`, `packages/project/src/marker-face.perf.test.ts`                  |
 
 ## Constants and configuration
 
