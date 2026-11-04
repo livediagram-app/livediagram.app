@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
+import { resetCallsModeCache } from '../calls/calls-mode';
+import { fakeKv } from '../calls/fake-kv';
 import { handleCapabilities } from './capabilities';
 import { makeTestRouteContext } from './test-route-context';
 
@@ -82,5 +84,25 @@ describe('calls (docs/specs/012-collaboration/proximity-audio.md "Turning calls 
     expect(
       await capabilities({ ...secrets, APP_BASE_URL: 'https://www.livehuddle.app' }),
     ).toMatchObject({ callsEnabled: false });
+  });
+
+  it('stay shown while the kill switch pauses them, and say the mode', async () => {
+    const withMode = (mode: string) => ({
+      ...secrets,
+      CALLS_SWITCH: fakeKv({ 'calls-mode': mode }),
+    });
+    resetCallsModeCache();
+    expect(await capabilities(withMode('off'))).toMatchObject({
+      callsEnabled: true,
+      callsMode: 'off',
+    });
+    resetCallsModeCache();
+    expect(await capabilities(withMode('audio-only'))).toMatchObject({
+      callsEnabled: true,
+      callsMode: 'audio-only',
+    });
+    resetCallsModeCache();
+    expect(await capabilities(secrets)).toMatchObject({ callsMode: 'on' });
+    expect(await capabilities({})).not.toHaveProperty('callsMode');
   });
 });

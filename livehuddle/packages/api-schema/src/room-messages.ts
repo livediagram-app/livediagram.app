@@ -5,6 +5,7 @@ import type { ParticipantPresence } from './index';
 import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
 import type { AvatarVoiceOp, CallTrackOp } from './call-voice';
+import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
@@ -143,12 +144,16 @@ export const MUTATION_OP_KINDS = [
 //
 // `changeset` (docs/specs/024-agents/agent-changesets.md): one write the api applied and recorded,
 // sequenced through /mutation. A forged one would show people a change nobody made (CS24).
+//
+// `calls-mode` (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients"): the room's own word that
+// the calls kill switch changed. A forged one would end everyone's call.
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'qa',
   'document-trashed',
   'changeset',
+  'calls-mode',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -499,6 +504,8 @@ export type RoomOp =
   // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire").
   | AvatarVoiceOp
   | CallTrackOp
+  // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md): system only, from the room.
+  | CallsModeOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor
   // / laser / avatar: never logged, never ordered, never replayed to a
   // reconnecting client — a burst you missed is a burst that is over.
