@@ -1006,7 +1006,10 @@ async function main() {
       ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${EDITOR_PORT}`] : []),
       // More vars for the api, space-separated `KEY:value` pairs: E2E_API_VARS="REALTIME_APP_ID:x …" turns on
       // what a stack has no secrets for, such as proximity audio's calls (docs/specs/012-collaboration/proximity-audio.md).
-      ...(process.env.E2E_API_VARS ?? '').split(/\s+/).filter(Boolean).flatMap((v) => ['--var', v]),
+      ...(process.env.E2E_API_VARS ?? '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .flatMap((v) => ['--var', v]),
     ],
     {
       cwd: ROOT,
