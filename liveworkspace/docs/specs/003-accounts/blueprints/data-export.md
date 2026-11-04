@@ -52,6 +52,9 @@ Scope, by file:
 - **A failed step** is tried again on the next alarm after `min(5 s * 2^n, 5 min)`; `EXPORT_FAILURES_MAX` in a row
   fails the export. A door's `404` skips the item (gone since the list); another refusal names it in the README
   (`problems`) and goes on.
+- **An app not reachable** (`Sources.reachable`: its `APP_ORIGIN_<APP>` or `DATA_EXPORT_KEY_<APP>` unset): its items
+  are never asked for. Each is a problem, `its app is not part of downloads yet`, with no request spent, and the export
+  finishes as any other.
 - **Expiry**: the alarm at `expiresAt` deletes the file and marks the job `expired`.
 
 ## Interfaces and contracts
@@ -136,7 +139,8 @@ accounts' routes, link and email; the index's export delegate; media's export ca
 | `EXPORT_POLL_MS`           | 3 s     | `@liveworkspace/data-export` |
 
 Bindings: the service's `DATA_EXPORT` (Durable Object), `EXPORTS` (R2), `INDEX`, `MEDIA`, `ACCOUNTS` (services); the
-secrets `EXPORT_KEY_ACCOUNTS`, `INDEX_KEY_EXPORT`, `MEDIA_KEY_EXPORT`, `DATA_EXPORT_KEY_<APP>`; vars `APP_ORIGIN_<APP>`.
+secrets `EXPORT_KEY_ACCOUNTS`, `INDEX_KEY_EXPORT`, `MEDIA_KEY_EXPORT`, `DATA_EXPORT_KEY_<APP>`; vars `APP_ORIGIN_<APP>`,
+for each of livediagram, liveplanner, livedocuments, livedesign and livehuddle.
 Accounts' `EXPORT` binding and `EXPORT_KEY_ACCOUNTS`.
 
 ## Defaults ledger
