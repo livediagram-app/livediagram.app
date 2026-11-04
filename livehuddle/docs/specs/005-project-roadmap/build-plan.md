@@ -1,7 +1,8 @@
 # Build plan
 
-Status: **built**. The owner approved it on Work Tracker #99, every step below has shipped, and step 9 folded the specs
-back to the code (Work Tracker #190). What remains is the owner's D8 steps (Work Tracker #395) and keeping the two
+Status: **steps 1 to 9 built; step 10 being built**. The owner approved it on Work Tracker #99, steps 1 to 9 have
+shipped, and step 9 folded the specs back to the code (Work Tracker #190). Step 10, the meet-first refocus (Work
+Tracker #423), is being built. What remains besides it is the owner's D8 steps (Work Tracker #395) and keeping the two
 products from drifting (below).
 
 How livehuddle gets built: by forking livediagram in-tree and cutting it down to Workshop, as livedocuments and
@@ -119,6 +120,39 @@ remaining D8 steps (Work Tracker #395) are done (the PR, #1251, merged).
 link, anchor and backticked symbol checked against livehuddle's code and the shared `packages/`; both products'
 AGENTS.md carry the drift rules below; and the drift report runs in CI.
 
+### 10. Meet-first (Work Tracker #423)
+
+The owner (2026-11-04): livehuddle is about meeting in Spaces, not workshops. Five PRs, in order, each leaving main
+working; each part that removes a feature removes its help in the same PR, so help never points at a missing feature
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md) lists what leaves and which part removes it):
+
+1. **Specs.** [Purpose](../001-project-vision/purpose.md) and its boundaries record, [v1 scope](../002-project-scope/v1-scope.md),
+   Not in livehuddle, the meeting board ([Workshop mode](../012-collaboration/workshop-mode.md)), the catalogue
+   ([Templates by mode](../007-editor/templates-by-mode.md)), a **Leaving livehuddle** note on every spec that goes,
+   and both products' AGENTS.md shared-features lists set to the target.
+2. **Decks, presenting and the Page** (#356's scope): the Slide Deck panel, Presentation mode and the `page` tile and
+   kind leave the editor, with their help articles, help registry entries, figures and links (redirects to the
+   nearest article). They are small and self-contained, so their code goes in the same PR.
+3. **Entry points to the rest.** The catalogue becomes Blank Space and the four Spaces (`packages/templates`, Popular,
+   the template categories, `retired-templates.test.ts` answering a leaving kind with Blank Space); the palette
+   becomes the meeting palette; the Session strip offers Timer and Vote; the Session button, the Workshop tour and the
+   interface's "Workshop" wording go (Start a Space, the default folder's label, the Explorer's Opens In filter). The
+   help articles for the retros, the Collaborate elements, the leaving palette categories and the templates are
+   removed or rewritten in the same PR. Stored elements still draw. The MCP's and CLI's template lists follow the
+   catalogue.
+4. **Delete the Collaborate and workshop code**, now unreachable: the Collaborate element kinds and their menus, the
+   `poll-*` room ops, the Q&A endpoint and `qa` op, per-participant responses, the leaving template builders, and
+   their tests, in the editor, the api and `packages/document`; the OpenAPI, MCP and CLI element enums with them.
+   First a read-only count of stored tabs holding a leaving kind; a deleted kind then reads as an unknown element,
+   kept and drawn as a placeholder. The drift report's header and both AGENTS.md lists lose their "until #423's code
+   parts land" notes.
+5. **Marketing, Home and the help centre's framing**: the Home hero (Work Tracker #409), the marketing pages, FAQ and
+   comparisons, the Community categories, and the help centre's About and Getting Started articles say meeting in
+   Spaces, never workshops.
+
+The diagram tools' code (shapes, arrows, the pens, the layout containers, tables, charts, embeds) is offered nowhere
+after part 3; deleting it reaches the element engine both shapes and Spaces stand on, so it is its own card.
+
 ## What livediagram keeps
 
 **Everything** (Work Tracker #99: "Don't remove these capabilities from livediagram"). Avatar mode, every Navigate
@@ -130,11 +164,13 @@ marketing decision, not part of this card.
 
 ## Keeping the two products from drifting
 
-Two copies of Workshop mode will drift. Four rules keep that small:
+Two copies of what both products carry will drift. Since step 10 that is Avatar mode, the Navigate elements, the
+office pieces, the Spaces templates, the Session strip's Timer and Vote, Bring Focus, the facilitator baton and
+follow-me; the rest of Workshop mode is livediagram's alone. Four rules keep the drift small:
 
 1. **One copy of what can be shared.** The avatar core and its wire shapes live once, in `packages/` (step 1).
-2. **The next extraction is named now.** The Session strip and the Collaborate elements (timer, vote, poll, quiz,
-   Q&A, reveal, picker, Bring Focus, facilitator) are the next candidates. Their pure parts move to a
+2. **The next extraction is named now.** The Session strip's Timer and Vote, Bring Focus and the facilitator baton
+   are the next candidates (the Collaborate elements were, until step 10 took them out of livehuddle). Their pure parts move to a
    `@liveworkspace/session-tools` package the first time a change has to land in both products, instead of being
    made twice.
 3. **A fix to a feature both products have lands in both, in the same PR**, or moves the code to `packages/` first.

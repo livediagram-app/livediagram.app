@@ -1,6 +1,7 @@
 # v1 scope
 
-Status: **built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190).
+Status: **approved, being built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190;
+refocused on meeting by Work Tracker #423, whose parts remove what [Not in livehuddle](not-in-livehuddle.md) lists).
 
 What livehuddle's first release holds, what it leaves out, and which apps it ships. Every feature named here comes
 over from livediagram at the fork and **behaves as its forked spec in this tree says** unless this page says otherwise;
@@ -12,10 +13,10 @@ of it ([What livediagram keeps](../005-project-roadmap/build-plan.md#what-livedi
 | Term            | Means                                                                                       | Not                                                    |
 | --------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | **space**       | What a person makes, opens and shares in livehuddle: tabs of boards, stored as one document | a Spaces template; a room; a document (the API's word) |
-| **board**       | One tab of a space: a canvas in Workshop's look                                             | a liveplanner board of cards                           |
+| **board**       | One tab of a space: a floor to meet on                                                      | a liveplanner board of cards                           |
 | **room**        | The [Room](../009-elements/office.md#room) element, walls with a doorway                    | the realtime room (the Durable Object everyone joins)  |
 | **character**   | A person's figure in [Avatar mode](../008-canvas/avatar-mode.md)                            | their profile picture, the Avatar element tile         |
-| **session**     | The activity a group runs on a board (a retro, a stand-up, a quiz); never a stored thing    | a meeting call; a share session                        |
+| **session**     | The meeting a group holds on a board (a stand-up, an all-hands); never a stored thing       | a meeting call; a share session                        |
 | **facilitator** | Whoever holds the baton ([Facilitator](../012-collaboration/facilitator.md))                | anyone who opened the space first                      |
 
 "Space" is the noun, settled as D6 (a) in [Open decisions](../005-project-roadmap/open-decisions.md)
@@ -48,7 +49,7 @@ the rules in [Avatar mode](../008-canvas/avatar-mode.md#where-it-lives)):
 
 ### 2. The Navigate elements
 
-Every tile of Workshop's **Navigate** category, and the office pieces the palette lists with them: Portal
+Every tile of the **Navigate** category, and the office pieces the palette lists with them: Portal
 ([Portal element](../009-elements/portal-element.md)), Bring Focus
 ([Bring Focus](../012-collaboration/bring-focus.md)), Chair, Desk and Sofa
 ([Chair](../009-elements/chair.md)), Fence
@@ -56,36 +57,30 @@ Every tile of Workshop's **Navigate** category, and the office pieces the palett
 ([Avatar Pad](../009-elements/avatar-pad.md)), Link card
 ([Link cards](../009-elements/link-cards.md)), and Room, Meeting Table, Plant,
 Bookshelf, Water Cooler, Coffee Machine and Rug ([Office](../009-elements/office.md)).
-With them come the Selection Mode buttons and the five
-[Reaction pads](../009-elements/reaction-pad.md).
+With them come the [Selection Mode buttons](../009-elements/mode-button.md).
 
 ### 3. The Spaces templates
 
 [Virtual Office, Coworking Space, Team Pod and All-Hands Hall](../012-collaboration/virtual-office-template.md),
-unchanged, as the **first** row of livehuddle's start screen and template picker rather than a group after Meetings.
+with Blank Space, are the whole catalogue (Work Tracker #423; [Templates by mode](../007-editor/templates-by-mode.md)).
 
-### 4. All of Workshop mode, as the only mode
+### 4. The meeting board: light content and light meeting tools
 
-[Workshop mode](../012-collaboration/workshop-mode.md) is livehuddle's one editor
-mode, so there is no mode switch and no mode in the interface: every board is a Workshop board.
+Every tab is a meeting board, livehuddle's one editor mode, stored as `'workshop'`
+([Workshop mode](../012-collaboration/workshop-mode.md)); the interface never names a mode.
 
-- **The palette** is Workshop's: Popular; Shapes, My shapes, Write, Draw; Layout; Ask, Tools, Record, React,
-  Selection Mode, Navigate; Icons, Stickers, Media; Data.
-- **The Session strip**, with Timer, Vote and Poll
+- **The palette** is the meeting palette: Popular; Write (Text, Sticky note); Frame; Navigate, Selection Mode;
+  Icons, Stickers, Media (Image, Link card) ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
+- **The Session strip**, with Timer and Vote, the quick vote
   ([Session tools](../012-collaboration/session-tools.md)).
-- **Every Collaborate element**: dot vote, live poll, quiz, the estimate scales, temperature check, idea box, Q&A
-  board; timer, stopwatch, reveal zone, done check, picker; comment panel, action card, agenda, decision record, roll
-  call; the reaction pads.
-- **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md),
-  Bring Focus, hide-cursors votes.
-- **The session templates**: the retrospectives, town hall, lean coffee, crazy eights, meeting agenda, workshop board,
-  brainstorm, the dot-vote boards, the fill-in-together boards, and the
-  [quizzes and games](../012-collaboration/quiz-and-game-templates.md), plus Blank
-  Workshop as livehuddle's blank ("Untitled Space").
+- **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md), Bring Focus, follow-me, the laser
+  and the spotlight.
 
-Why all of it ([Open decisions](../005-project-roadmap/open-decisions.md) D2): the card asks for a product built
-around workshops and meetings, the All-Hands Hall needs Bring Focus, a Team Pod's stand-up wants a timer, and a
-facilitator who has to go back to livediagram for a vote has been sent away from the meeting.
+Why only these (owner, 2026-11-04, Work Tracker #423): livehuddle is about meeting in Spaces, not workshops. A Team
+Pod's stand-up wants a timer, a room deciding something wants a quick vote, and the All-Hands Hall needs Bring Focus;
+the rest of Workshop mode (polls, quizzes, Q&A, agendas, reveals, the retros and workshops) is livediagram's, as are
+the diagram tools ([Not in livehuddle](not-in-livehuddle.md)). This replaces "all of Workshop mode", D2 in
+[Open decisions](../005-project-roadmap/open-decisions.md).
 
 ### 5. Collaboration
 
@@ -133,9 +128,11 @@ another product.
 
 | Left out                                                        | Why                                                                                                                     | When        |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------- |
-| Diagram and Draw modes, Diagrams, Concepts, Technology, Devices | Building diagrams is livediagram's job. Workshop's Draw category (pencil, highlighter) stays                            | Not here    |
+| Diagram and Draw modes, Diagrams, Concepts, Technology, Devices | Building diagrams is livediagram's job. Workshop's Draw category leaves with #423 too                                   | Not here    |
 | Event Storming boards, the wall-photo import                    | A diagram kind with its own rules; livediagram's                                                                        | Not here    |
-| Pages, slides, presenting as a deck                             | livedocuments'                                                                                                          | Not here    |
+| Pages, slides, presenting as a deck                             | livedocuments' (decks and presenting stay in livediagram's Workshop mode)                                               | Not here    |
+| Retros, workshops, quizzes and games, the Collaborate elements  | Running a workshop is livediagram's Workshop mode (Work Tracker #423, [Not in livehuddle](not-in-livehuddle.md))        | Not here    |
+| Shapes, arrows, drawing, layout containers, tables, charts      | Diagram tools; livediagram's. A Space keeps sticky notes, text, images, link cards and frames                           | Not here    |
 | Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                           | Later       |
 | Audio calls, video calls, screen sharing                        | Need media infrastructure (TURN, an SFU) the stack does not have ([Future work](../005-project-roadmap/future-work.md)) | Next        |
 | Calendar invites, recordings, transcripts                       | Each is a product of its own; none is asked for                                                                         | Not planned |

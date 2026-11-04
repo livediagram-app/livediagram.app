@@ -1,5 +1,7 @@
 # Bending arrows and the double-press rule: blueprint
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/008-canvas/blueprints/arrow-bending.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Derived from [Bending arrows and the double-press rule](../arrow-bending.md). The spec decides;
 this file only adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and
 cited as `Dn`.

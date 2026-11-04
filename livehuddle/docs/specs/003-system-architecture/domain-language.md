@@ -5,23 +5,24 @@
 Three words describe how a document and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                                                      | Where it lives                             |
-| ------------ | ------------------------------ | ----------------------------------------------------------- | ------------------------------------------ |
-| **mode**     | How is a tab worked on?        | Workshop, the one mode (`EditorMode`)                       | Every tab; `Tab.opensIn` reads as Workshop |
-| **kind**     | What is a tab?                 | the general diagram tab (`TabKind`)                         | `Tab.kind`                                 |
-| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                 |
+| Term         | Answers                        | Values                                                      | Where it lives                       |
+| ------------ | ------------------------------ | ----------------------------------------------------------- | ------------------------------------ |
+| **mode**     | How is a tab worked on?        | the meeting board, the one mode (`EditorMode` `'workshop'`) | Every tab; `Tab.opensIn` reads as it |
+| **kind**     | What is a tab?                 | the general diagram tab (`TabKind`)                         | `Tab.kind`                           |
+| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation           |
 
 ### Mode
 
-- An **editor mode** is how a tab is worked on. livehuddle has one, **Workshop**, so every tab is in it and there is
-  no switch ([Editor modes](../007-editor/editor-modes.md)).
+- An **editor mode** is how a tab is worked on. livehuddle has one, the **meeting board** (`'workshop'` in the code,
+  forked from livediagram's Workshop), so every tab is in it and there is no switch
+  ([Editor modes](../007-editor/editor-modes.md), [The meeting board](../012-collaboration/workshop-mode.md)).
 - A mode is never a type of document or tab.
 - Whiteboarding is an activity. There is no whiteboard tab kind, mode or document type.
-- Running a session (a retro, a town hall) is what Workshop mode is for. A session is an activity, never a tab kind
-  or a stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
-- "Workshop" names the mode; a start's template group is never called Workshops (Workshop's is **Ideation**). The
-  template catalogue's **Workshops** category and the community's **Workshops** category stay: they say what a
-  template is for, as **Planning** does.
+- Holding a meeting (a stand-up, an all-hands) is what the meeting board is for. A session is an activity, never a
+  tab kind or a stored thing; "Session" and "Collaborate" never name the mode.
+- The interface never says "Workshop" (Work Tracker #423): running a workshop is livediagram's Workshop mode
+  ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Until part 3 the code still names the mode, the
+  template categories and the community categories after workshops.
 
 ### Kind
 
@@ -37,10 +38,10 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 - A **template** is what a document was made from. It shapes the starting content of a general diagram tab and
   then has no further hold on it.
-- Templates group into **template families** where a family is meaningful to people, for example Retrospectives
-  (several retrospective formats).
-- A template or a template family is never a kind or a type: a retrospective is a general diagram tab made from a
-  retrospective template.
+- Templates group into **template families** where a family is meaningful to people, for example the Spaces (several
+  floor plans built from the same office pieces).
+- A template or a template family is never a kind or a type: a virtual office is a general tab made from the Virtual
+  Office template.
 
 ### Using the three together
 

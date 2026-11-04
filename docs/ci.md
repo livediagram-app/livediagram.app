@@ -117,8 +117,10 @@ in a `wall-clock:` comment.
 
 ## Drift report
 
-livehuddle was forked in-tree from livediagram and both carry Workshop mode, so the two copies drift
-as each changes on its own. The Plan job's **Drift report** step (`.github/scripts/drift-report.mjs`)
+livehuddle was forked in-tree from livediagram and both carry the meeting kit (Avatar mode, the Spaces,
+the Timer, the quick vote, Bring Focus), so the two copies drift as each changes on its own. The rest
+of Workshop mode leaves livehuddle with Work Tracker #423, and its files move to "only in livediagram"
+as that card's parts land. The Plan job's **Drift report** step (`.github/scripts/drift-report.mjs`)
 compares `livediagram/` and `livehuddle/` file by file, with the product names ignored (`livediagram`
 and `livehuddle` in any case, in paths and contents, read as one word), and writes to the run's
 summary how many files are identical, changed or in one product only, per app and package, with

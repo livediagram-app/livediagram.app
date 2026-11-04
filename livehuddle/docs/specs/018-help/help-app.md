@@ -1,5 +1,10 @@
 # Help app
 
+> **Refocus pending** (Work Tracker #423): each build part removes the help articles for what it takes out of
+> livehuddle, with their help registry entries, figures and links, and redirects their addresses to the nearest article
+> that stays ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Part 5 rewrites the About and Getting
+> Started articles for meeting in Spaces.
+
 A standalone help centre at `/help`, modelled on the Manager Toolkit help centre but with livehuddle's information architecture, content, and brand.
 
 ## Why

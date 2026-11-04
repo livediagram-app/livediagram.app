@@ -1,5 +1,9 @@
 # Marketing site
 
+> **Refocus pending** (Work Tracker #423, part 5): livehuddle is for meeting in Spaces
+> ([Purpose](../001-project-vision/purpose.md)). Wherever this spec or the site's copy offers workshops, retros,
+> quizzes, polls or decks, part 5 rewrites it to meeting in Spaces; the hero's cast lines already do.
+
 The marketing app (`apps/marketing`) is the public landing site served at `/` (everything the router doesn't hand to the live editor's routes, `/api/*`, or `/telemetry`, see [08-router-app](../016-platform/router-app.md)). Static Next.js export, no SSR. It is the top of the acquisition funnel: its only job is to explain what livehuddle is and send visitors to `/new`.
 
 What every product's marketing site has in common lives once, in `@liveworkspace/marketing-site` ([its README](../../../../packages/marketing-site/README.md)): the page hero, sections, CTA link and band classes, the Build with AI page, the FAQ browser, the licences page, the shared stylesheets and the source guards. This app keeps its words, its art, its routes and its header and footer, and hands them over as props.
