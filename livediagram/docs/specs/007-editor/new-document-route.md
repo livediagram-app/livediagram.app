@@ -111,7 +111,12 @@ a retry, so the card says why and offers **Choose another place** instead.
 On `/new`, **Retry** re-runs the same create under the same document and tab
 ids it first tried: a create that reached the server but whose answer was lost
 is then taken as the re-commit of an id the caller already owns, never a second
-document.
+document. The same holds one step earlier: the index makes the item before the api
+makes its content, so when the content's create is what failed, the Retry finds the
+item already there (`409 item_exists`). `apiCreateDocument` makes the item through
+`createOrResumeItem` (`@liveworkspace/index-client`, [One Explorer: contracts](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "A create that
+resumes"), which then asks for the item's grant and, when it is an edit grant (the caller's own item), carries
+the create on with it, so the Retry opens the new canvas; any other answer fails as before (Work Tracker #397).
 
 The distinction is made at every call site that can fail this way:
 the document load and the share-link resolve in `useIdentityBootstrap`,

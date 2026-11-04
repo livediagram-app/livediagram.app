@@ -18,10 +18,10 @@ import {
   offlineLoadDocument,
   offlineSaveDocumentMeta,
 } from '../offline/offline-store';
-import { IndexError } from '@liveworkspace/index-client';
+import { createOrResumeItem, type CreatedOrResumed, IndexError } from '@liveworkspace/index-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markReported, reportApiError } from './error-report';
-import { seedDocumentGrant } from './document-grants';
+import { documentGrant, seedDocumentGrant } from './document-grants';
 import {
   API_BASE,
   ApiError,
@@ -189,18 +189,25 @@ export async function apiCreateDocument(
 ): Promise<LiveDoc> {
   // The index makes the document first (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): its place, its title
   // and the grant on it come back together. The content is then started in the document's room with that grant.
-  let created: Awaited<ReturnType<typeof indexClient.createItem>>;
+  let created: CreatedOrResumed;
   try {
-    created = await indexClient.createItem({
-      id: d.id,
-      // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
-      ...(opts.conversion === 'sync' ? { synced: true } : {}),
-      app: 'livedocuments',
-      title: d.name,
-      ...(d.teamId ? { teamId: d.teamId } : {}),
-      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
-      ...(d.intent ? { intent: indexIntentOf(d.intent) } : {}),
-    });
+    // A Retry re-runs a create under the ids it first tried (docs/specs/007-editor/new-document-route.md "Retry"):
+    // when the index made the item but the content's create failed, the item is already there and the caller's own,
+    // so its edit grant carries the create on (createOrResumeItem) rather than failing again.
+    created = await createOrResumeItem(
+      indexClient,
+      {
+        id: d.id,
+        // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+        ...(opts.conversion === 'sync' ? { synced: true } : {}),
+        app: 'livedocuments',
+        title: d.name,
+        ...(d.teamId ? { teamId: d.teamId } : {}),
+        ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
+        ...(d.intent ? { intent: indexIntentOf(d.intent) } : {}),
+      },
+      documentGrant,
+    );
   } catch (err) {
     if (err instanceof IndexError) {
       reportApiError(err.status, 'create document in index', err.code);
@@ -211,7 +218,7 @@ export async function apiCreateDocument(
     throw err;
   }
   seedDocumentGrant(d.id, created.grant);
-  indexTitles.set(d.id, created.item.title);
+  indexTitles.set(d.id, created.title);
   const res = await apiFetch(`${API_BASE}/documents`, {
     method: 'POST',
     headers: {

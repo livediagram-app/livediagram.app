@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import type { Tab } from '@livedesign/design';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { IndexError } from '@liveworkspace/index-client';
 import {
   apiCreateDesign,
   apiDeleteImage,
@@ -731,5 +732,44 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     }
     expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
     expect(String(spy.mock.calls[1]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
+  });
+});
+
+// docs/specs/007-editor/new-design-route.md "Retry": a create the index made but the content did not is resumed, not failed
+// again, when the item is the caller's own (Work Tracker #397; the branches are createOrResumeItem's own tests).
+describe('apiCreateDesign resumes a create the index already made', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    grants.designGrant.mockReset();
+  });
+  const editGrant = {
+    grant: 'resumed',
+    level: 'edit',
+    tabId: null,
+    expiresAt: Date.now() + 600_000,
+  };
+  const exists = () => index.createItem.mockRejectedValueOnce(new IndexError(409, 'item_exists'));
+
+  it('carries on with its edit grant', async () => {
+    exists();
+    grants.designGrant.mockResolvedValueOnce(editGrant);
+    const fetchSpy = vi.fn().mockResolvedValue(Response.json({ design: { id: 'd9' } }));
+    vi.stubGlobal('fetch', fetchSpy);
+    await expect(apiCreateDesign('owner', { id: 'd9', name: 'N' })).resolves.toEqual({ id: 'd9' });
+    expect(grants.designGrant).toHaveBeenCalledWith('d9');
+    const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(new Headers(init.headers).get('X-Index-Grant')).toBe('resumed');
+  });
+
+  it('fails as before when the item is not the caller’s to edit', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    exists();
+    grants.designGrant.mockResolvedValueOnce({ ...editGrant, level: 'view' });
+    await expect(apiCreateDesign('owner', { id: 'd9', name: 'N' })).rejects.toMatchObject({
+      status: 409,
+      code: 'item_exists',
+    });
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
