@@ -571,6 +571,12 @@ and the dialog stays as the one complete, browsable index of them.
   `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
   the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
 
+  **Your Data** is an account's too: downloading everything the person owns, in every app, as one zip, made in
+  liveworkspace's Settings ([Download your data](../../../../liveworkspace/docs/specs/003-accounts/data-export.md#settings)).
+  Signed in, the Account section's **Your Data** links there (`?settings=data`). A guest gets a **Your Data** category
+  under Account (id `data`) holding one stand-in row, "Sign in to download your data." with the **Sign In** link, as
+  for Webhooks. A workbench has neither.
+
   Panels holds Layers, Map, Collaborate and Quick Style,
   one per panel, each its own pane. Each opens with that panel's **Enable
   switch** ("Enable Layers Panel", "Enable Map",

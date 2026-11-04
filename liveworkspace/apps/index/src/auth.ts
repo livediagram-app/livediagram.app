@@ -8,7 +8,10 @@
 //   - accounts, by the merge key: its own internal calls, and acting for an account it checked itself (a workbench's
 //     token) as an app's server does, for the app X-Index-App names;
 //   - the Google Drive mirror's service, by its key, X-Index-App: drive and X-Index-Person: that account, for
-//     their personal items and folders only, in every app (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index").
+//     their personal items and folders only, in every app (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index");
+//   - the data export's service, by its key, X-Index-App: export and X-Index-Person: that account, listing their
+//     personal items, or one team's they administer (X-Index-Teams), in every app
+//     (liveworkspace/docs/specs/003-accounts/data-export.md "Contracts > The index").
 
 import { createPersonVerifier } from '@liveworkspace/auth-client';
 import {
@@ -36,6 +39,9 @@ export type Person = {
   // Set when the Drive mirror acts for the person: only their personal items (any app's) and their own folders
   // are theirs to reach here, never a team's or one shared with them. Their teams are always empty.
   drive?: true;
+  // Set when the data export's service acts for the person: it lists one scope's items alone, their personal items
+  // or the one team in `teams` (accounts checked they administer it), never one shared with them.
+  export?: true;
 };
 
 // `visitor`: the network a password guess is counted against (share-guesses.ts), null when the request can't say.
@@ -90,6 +96,9 @@ export function shareOf(request: Request): ShareCredentials | null {
 // What the Drive mirror's service names itself in X-Index-App when it acts for a person.
 export const DRIVE_DELEGATE = 'drive';
 
+// What the data export's service names itself in X-Index-App when it acts for a person.
+export const EXPORT_DELEGATE = 'export';
+
 // The account an app's server acts for, or null when the request names none. A request that names one without
 // the app's key, or names a guest or a malformed id, is refused rather than read as nobody. The Drive mirror's
 // service naming a guest is `guest` (403): its key is right, the person can't be mirrored.
@@ -105,6 +114,15 @@ export async function delegatedPersonOf(
     if (!isId(personId) || personId.includes(':')) return 'refused';
     // X-Index-Teams is ignored: a team's items are never the mirror's.
     return { id: personId, kind: 'account', teams: [], drive: true };
+  }
+  if (request.headers.get(INDEX_APP_HEADER) === EXPORT_DELEGATE) {
+    if (!(await isExportCaller(request, env))) return 'refused';
+    if (personId.startsWith('guest_')) return 'guest';
+    if (!isId(personId) || personId.includes(':')) return 'refused';
+    // One team at most: the export's scope is one space.
+    const named = (request.headers.get(INDEX_TEAMS_HEADER) ?? '').trim();
+    if (named !== '' && (!isId(named) || named.includes(','))) return 'refused';
+    return { id: personId, kind: 'account', teams: named ? [named] : [], export: true };
   }
   // The app's own key, or accounts' (its workbench service acting for a token's account on one app's items,
   // liveworkspace/docs/specs/011-workbench/workbench.md).
@@ -126,8 +144,8 @@ export async function callerOf(request: Request, env: Env): Promise<Caller | nul
   const delegated = await delegatedPersonOf(request, env);
   if (delegated === 'refused') return null;
   if (delegated === 'guest') return 'guest';
-  // The mirror never comes in through a link.
-  if (delegated?.drive) return { person: delegated, share: null };
+  // Neither the mirror nor the export ever comes in through a link.
+  if (delegated?.drive || delegated?.export) return { person: delegated, share: null };
   return { person: delegated ?? (await personOf(request, env)), share: shareOf(request) };
 }
 
@@ -165,6 +183,14 @@ export function handoffPersonOf(request: Request): string | null {
 // Whether a request carries the Drive mirror's key (INDEX_KEY_DRIVE).
 export async function isDriveCaller(request: Request, env: Env): Promise<boolean> {
   const expected = env.INDEX_KEY_DRIVE?.trim();
+  const token = bearerOf(request);
+  if (!expected || !token) return false;
+  return timingSafeEqual(token, expected);
+}
+
+// Whether a request carries the data export service's key (INDEX_KEY_EXPORT).
+export async function isExportCaller(request: Request, env: Env): Promise<boolean> {
+  const expected = env.INDEX_KEY_EXPORT?.trim();
   const token = bearerOf(request);
   if (!expected || !token) return false;
   return timingSafeEqual(token, expected);

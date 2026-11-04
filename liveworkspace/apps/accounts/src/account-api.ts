@@ -96,6 +96,11 @@ import { reportServerEvent } from './telemetry.ts';
 import { handleWorkbenchInternal } from './workbench/internal.ts';
 import { endTokenWorkbench, tokenBySecret } from './workbench/revoke.ts';
 import { handleWorkbench } from './workbench/routes.ts';
+import {
+  handleDataExport,
+  handleDataExportDownload,
+  handleDataExportReady,
+} from './data-export/routes.ts';
 
 export const ACCOUNT_API_PATH = '/api/account';
 
@@ -122,6 +127,24 @@ export async function handleAccountApi(
 ): Promise<Response> {
   const url = new URL(request.url);
   const parts = url.pathname.slice(ACCOUNT_API_PATH.length).split('/').filter(Boolean);
+  // Download Your Data (data-export/routes.ts): the export service's call when one finishes, with its own key, and
+  // the emailed link, which sends someone signed out to sign in rather than answering 401.
+  if (
+    parts[0] === 'internal' &&
+    parts[1] === 'data-export' &&
+    parts[2] === 'ready' &&
+    parts.length === 3
+  ) {
+    return handleDataExportReady(request, env);
+  }
+  if (
+    parts[0] === 'data-export' &&
+    parts[1] === 'download' &&
+    parts.length === 2 &&
+    request.method === 'GET'
+  ) {
+    return handleDataExportDownload(request, env, (r) => sessionActor(r, auth));
+  }
   if (parts[0] === 'internal')
     return handleInternal(request, env, auth, parts.slice(1), url, waitUntil);
   // Workbenches, for every app (workbench/routes.ts): an API token, a ticket, a workbench session or the signed-in
@@ -350,6 +373,9 @@ async function handleSignedIn(
     const answered = await profileRoute(request, db, actor.id);
     if (answered) return answered;
   }
+
+  // Download Your Data: theirs, and each team's they administer (data-export/routes.ts).
+  if (section === 'data-export' && !id) return handleDataExport(request, env, actor);
 
   // The settings every app shows; each app's own are its server's to read and write.
   if (section === 'settings' && !id) {

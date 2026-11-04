@@ -308,6 +308,9 @@ function testDesignRooms(
           designId,
           query.ifVersion,
         ),
+      // The data export's comment threads (design-room.ts exportComments).
+      exportComments: async (designId: string) =>
+        (await import('./design-room/design-comments')).exportDesignComments(env, designId),
       importFile: async (designId: string, file: unknown) =>
         (await import('./design-room/design-file')).importDesignFile(env, designId, file as never),
       hasTab: async (designId: string, tabId: string) =>

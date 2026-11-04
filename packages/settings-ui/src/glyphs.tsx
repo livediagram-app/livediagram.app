@@ -158,8 +158,8 @@ export function SettingsCategoryTile({ id }: { id: SettingsTileId }) {
 }
 
 // The sub-category glyphs every app's Account shares: a bell for Notifications, a key for API Tokens, a hook for
-// Webhooks.
-export type SettingsSharedGlyphId = 'notifications' | 'tokens' | 'webhooks';
+// Webhooks, a tray taking in an arrow for Your Data.
+export type SettingsSharedGlyphId = 'notifications' | 'tokens' | 'webhooks' | 'data';
 
 const SHARED_GLYPHS: Record<SettingsSharedGlyphId, ReactNode> = {
   notifications: (
@@ -180,6 +180,12 @@ const SHARED_GLYPHS: Record<SettingsSharedGlyphId, ReactNode> = {
       <path d="M12 13.9h4.4a2.4 2.4 0 1 1-1 3" />
       <path d="M12.3 8.1l2.2 3.8a2.4 2.4 0 1 1-3 1.8" />
       <circle cx="6.4" cy="15" r="2.4" />
+    </Svg>
+  ),
+  data: (
+    <Svg>
+      <path d="M10 3.5v9M6.5 9 10 12.5 13.5 9" />
+      <path d="M3.5 12.5v2.5a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-2.5" />
     </Svg>
   ),
 };

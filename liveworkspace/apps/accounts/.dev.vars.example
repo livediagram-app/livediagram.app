@@ -33,6 +33,9 @@ TELEMETRY_KEY_LIVEDESIGN=dev-livedesign-key
 # The Google Drive mirror (liveworkspace/apps/drive), told when an account closes, through the DRIVE binding.
 # Optional: the drive Worker's DRIVE_KEY_ACCOUNTS; without it (or the binding) nothing is sent.
 DRIVE_KEY_ACCOUNTS=
+# Optional: the export service's EXPORT_KEY_ACCOUNTS (Download Your Data); without it (or the EXPORT binding) its doors
+# answer 503.
+EXPORT_KEY_ACCOUNTS=
 
 # The migration's returning guests (src/legacy-guests.ts): the old livediagram.app's GUEST_ID_HMAC_SECRET. Optional:
 # without it, POST /api/account/internal/legacy-guests/claim is a plain 404.

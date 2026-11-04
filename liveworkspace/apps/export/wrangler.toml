@@ -1,0 +1,100 @@
+name = "liveworkspace-export"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Download Your Data (liveworkspace/docs/specs/003-accounts/data-export.md): no route of its own. Only accounts reaches
+# it, through its EXPORT service binding.
+workers_dev = false
+
+# A chunk draws up to a few dozen tabs as PNGs with resvg: more CPU than the default 30 s allows in the worst case.
+# Inheritable, so staging takes it too.
+[limits]
+cpu_ms = 120000
+
+# The pictures' rasteriser (@liveworkspace/render-png/worker) imports its fonts as raw bytes: a Worker has no system
+# fonts. Inheritable, so staging takes it too.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf", "**/*.otf"]
+
+# Secrets (wrangler secret put):
+#   EXPORT_KEY_ACCOUNTS    accounts' EXPORT_KEY_ACCOUNTS: its calls in carry it, and the service's call back to accounts
+#                          (an export finished) carries it too. Without it every route answers 404.
+#   INDEX_KEY_EXPORT       the index's INDEX_KEY_EXPORT: listing a person's or a team's items.
+#   MEDIA_KEY_EXPORT       the media service's MEDIA_KEY_EXPORT: a person's images and their bytes.
+#   DATA_EXPORT_KEY_LIVEDIAGRAM, DATA_EXPORT_KEY_LIVEPLANNER, DATA_EXPORT_KEY_LIVEDOCUMENTS, DATA_EXPORT_KEY_LIVEDESIGN
+#                          each shared with that app's api Worker as DATA_EXPORT_KEY: its export door (file, svg, csv,
+#                          comments).
+[vars]
+ENVIRONMENT = "production"
+# Where the service calls each app's export door.
+APP_ORIGIN_LIVEDIAGRAM = "https://www.livediagram.app"
+APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
+APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
+APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
+
+# The index (listing the items), the media service (the images) and accounts (an export finished): a Worker's fetch to
+# another Worker's route on its own zone isn't routed to it.
+[[services]]
+binding = "INDEX"
+service = "liveworkspace-index"
+
+[[services]]
+binding = "MEDIA"
+service = "liveworkspace-media"
+
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+# The zips, kept until their link lapses. The bucket has a lifecycle rule deleting objects 4 days after they are made
+# (data-export.md "Before deploy"), in case the object can't delete one itself.
+[[r2_buckets]]
+binding = "EXPORTS"
+bucket_name = "liveworkspace-exports"
+
+# One export per scope (src/job/durable-object.ts), by its key: `personal:<account>` or `team:<team>`.
+[[durable_objects.bindings]]
+name = "DATA_EXPORT"
+class_name = "DataExport"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DataExport"]
+
+[env.staging]
+name = "liveworkspace-export-staging"
+workers_dev = false
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
+APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
+APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
+APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
+
+[[env.staging.services]]
+binding = "INDEX"
+service = "liveworkspace-index-staging"
+
+[[env.staging.services]]
+binding = "MEDIA"
+service = "liveworkspace-media-staging"
+
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.r2_buckets]]
+binding = "EXPORTS"
+bucket_name = "liveworkspace-exports-staging"
+
+# `durable_objects` and `migrations` are non-inheritable: restated for staging.
+[[env.staging.durable_objects.bindings]]
+name = "DATA_EXPORT"
+class_name = "DataExport"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DataExport"]

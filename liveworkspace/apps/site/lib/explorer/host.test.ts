@@ -97,6 +97,7 @@ describe('addresses the Explorer used to have', () => {
     expect(settingsOpening('profile', null)).toMatchObject({ categoryId: 'account:account' });
     expect(settingsOpening('tokens', null)).toMatchObject({ categoryId: 'account:tokens' });
     expect(settingsOpening('webhooks', null)).toMatchObject({ categoryId: 'account:webhooks' });
+    expect(settingsOpening('data', null)).toMatchObject({ categoryId: 'account:data' });
     expect(settingsOpening('accessibility', null)).toMatchObject({
       categoryId: 'account:accessibility',
     });

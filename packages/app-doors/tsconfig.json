@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Server side only: Drive's and the export service's Workers calling the apps' doors.
+    "lib": ["ES2023"],
+    "types": ["@cloudflare/workers-types", "node"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}

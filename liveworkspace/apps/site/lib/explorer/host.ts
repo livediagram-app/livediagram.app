@@ -201,6 +201,9 @@ export const SETTINGS_PARAM = 'settings';
 /** A section of the category `?settings=` opens, to scroll to (`?settings=profile&section=cloud-sync`). */
 export const SECTION_PARAM = 'section';
 
+/** Why Download Your Data's emailed link didn't open (`?settings=data&export=expired`): Settings › Your Data says. */
+export const EXPORT_LINK_PARAM = 'export';
+
 /** The account's notification settings: every notification email's unsubscribe link lands here. */
 export const NOTIFICATIONS_SETTINGS = `/explorer?${SETTINGS_PARAM}=notifications`;
 
@@ -211,6 +214,7 @@ const ACCOUNT_CATEGORIES: Readonly<Record<string, string>> = {
   notifications: 'notifications',
   tokens: 'tokens',
   webhooks: 'webhooks',
+  data: 'data',
   privacy: 'privacy',
   accessibility: 'accessibility',
 };

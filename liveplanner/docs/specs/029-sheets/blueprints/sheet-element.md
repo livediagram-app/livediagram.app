@@ -156,7 +156,7 @@ sheet-controller.tsx     the controller in context: selection (and selectionNow)
 sheet-geometry.ts        offsets, hit testing, windows, reveal
 sheet-keys.ts            the keyboard map (the spec's table) as commands
 sheet-pointing.ts        the formula being written, for pointing from another Sheet of the tab
-sheet-csv.ts             CSV text out (Download CSV, through @liveworkspace/workbench's lib/download-blob.ts) and in (Import CSV, a dropped file)
+sheet-csv.ts             CSV out (Download CSV: @liveplanner/sheets sheetCsvText, saved through @liveworkspace/workbench's lib/download-blob.ts) and in (Import CSV, a dropped file)
 sheet-store-client.ts, sheet-presence-store.ts (sheet-store blueprint)
 sheet-icons.tsx, sheet-art.tsx (toolbar glyphs; the palette tile's art)
 hooks: useSheetModel.ts, useSheetActions.ts (every command), useFormulaInput.ts, useSheetPointer.ts,

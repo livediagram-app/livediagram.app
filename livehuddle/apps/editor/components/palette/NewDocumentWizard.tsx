@@ -4,6 +4,7 @@ import { useLayoutEffect, type ReactNode } from 'react';
 import { Button, CloseIcon, useEscape } from '@livehuddle/ui';
 import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livehuddle/templates';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { NewSpaceSummary } from './NewSpaceSummary';
 import { takeEarlyModeChoice } from '@/app/new/early-mode-choice';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
@@ -14,7 +15,8 @@ import {
 } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
 // The New Document wizard (docs/specs/007-editor/new-document-route.md "One-step wizard"): no question, as there is
-// one mode; Create makes a Blank Space document at once. It asks nothing about where the document goes or what it
+// one mode; Create makes a Blank Space document at once. Its body shows what Create makes (NewSpaceSummary, static,
+// so the body is never empty) and, under it, where it will be saved. It asks nothing about where the document goes or what it
 // is called: /new stores and files it by default (Save Locations, Default folders), and it opens on its start, where
 // the templates are. Escape and the X back out, creating nothing; Skip makes a Blank Space with its start closed.
 export function NewDocumentWizard({
@@ -35,7 +37,7 @@ export function NewDocumentWizard({
   onBackOut: () => void;
   // To the Explorer, to open a document that exists.
   onOpenExisting?: () => void;
-  // Where the new space will be saved: the Sync Space to Server switch, under Create
+  // Where the new space will be saved: the Sync Space to Server switch, in the body under what it makes
   // (docs/specs/006-document/save-locations.md "On the start screen"). Absent where /new names a server place.
   saveSwitch?: ReactNode;
 }) {
@@ -54,14 +56,14 @@ export function NewDocumentWizard({
     if (!busy) onBackOut();
   });
   return (
-    <CanvasModalCard label="Start a new space" width="sm:w-[44rem]">
+    <CanvasModalCard label="Start a new space" width="sm:w-[36rem]">
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-5 pt-6 dark:border-slate-800">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
             New Space
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
-            What are you making today?
+            A place for your team to meet, plan and run sessions.
           </p>
         </div>
         <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
@@ -82,11 +84,12 @@ export function NewDocumentWizard({
           </button>
         </div>
       </div>
-      {saveSwitch ? (
-        <div className="border-t border-slate-100 px-6 py-1.5 dark:border-slate-800">
-          {saveSwitch}
-        </div>
-      ) : null}
+      {/* The body scrolls between the pinned header and footer; on a phone it fills the screen, so the footer sits at
+          the bottom rather than mid-screen. */}
+      <div data-new-space-body className="flex-1 overflow-y-auto px-6 pb-5 pt-5">
+        <NewSpaceSummary />
+        {saveSwitch ? <div className="mt-3">{saveSwitch}</div> : null}
+      </div>
       <div className="flex items-center gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
         {onOpenExisting ? (
           <button

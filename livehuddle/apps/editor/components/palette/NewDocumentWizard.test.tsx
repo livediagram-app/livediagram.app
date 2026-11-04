@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NewDocumentWizard } from './NewDocumentWizard';
+import { START_TEMPLATE_TITLES } from './NewSpaceSummary';
 
 // docs/specs/007-editor/new-document-route.md "One-step wizard": with one mode there is no question, so Create makes a
 // Blank Space at once; it never asks where the document goes or what it is called.
@@ -65,5 +66,31 @@ describe('NewDocumentWizard', () => {
     wizard();
     expect(screen.queryByRole('button', { name: /just draw/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /^start blank$/i })).toBeNull();
+  });
+
+  // Issue #330: with the mode cards gone the card was a heading over a footer. The body always says what Create makes.
+  it('never has an empty body: it names the Blank Space and the templates on its start', () => {
+    const { container } = render(
+      <NewDocumentWizard onCreate={vi.fn()} onSkip={vi.fn()} onBackOut={vi.fn()} />,
+    );
+    const body = container.querySelector('[data-new-space-body]');
+    expect(body).not.toBeNull();
+    expect(screen.getByRole('region', { name: 'Blank Space' })).toBeTruthy();
+    expect(START_TEMPLATE_TITLES).toHaveLength(3);
+    for (const title of START_TEMPLATE_TITLES) expect(screen.getByText(title)).toBeTruthy();
+    expect(screen.queryByText(/blank/i, { selector: 'li' })).toBeNull();
+  });
+
+  it('puts the save switch in the body, under what it makes', () => {
+    const { container } = render(
+      <NewDocumentWizard
+        onCreate={vi.fn()}
+        onSkip={vi.fn()}
+        onBackOut={vi.fn()}
+        saveSwitch={<span data-testid="switch">Sync Space to Server</span>}
+      />,
+    );
+    const body = container.querySelector('[data-new-space-body]');
+    expect(body?.contains(screen.getByTestId('switch'))).toBe(true);
   });
 });

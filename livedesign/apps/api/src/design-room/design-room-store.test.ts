@@ -778,6 +778,63 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     ).toBe(0);
   });
 
+  // liveworkspace/docs/specs/003-accounts/data-export.md "The apps' doors": the design's threads with their real
+  // authors, read in its own object, which a design never started is not made by.
+  it('answers the data export every comment thread with its author, and starts no design', async () => {
+    const w = world({ INDEX_KEY: 'index-key', DATA_EXPORT_KEY: 'data-key' });
+    await createDesign(w, 'A');
+    const thread = {
+      comments: [
+        {
+          id: 'c1',
+          authorId: 'user_ada',
+          authorName: 'Ada',
+          authorColor: '#000',
+          text: 'hi',
+          createdAt: 5,
+        },
+      ],
+      resolved: false,
+    };
+    w.designs
+      .get('A')!
+      .db.prepare('UPDATE tabs SET data = ?, rev = rev + 1')
+      .run(JSON.stringify({ elements: [{ ...box('a'), commentThread: thread }] }));
+    const data = { Authorization: 'Bearer data-key' };
+    const res = await w.send(
+      'GET',
+      '/api/internal/items/A/export?format=comments',
+      undefined,
+      data,
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      threads: [
+        {
+          id: 't1:a',
+          tabId: 't1',
+          tabName: 'Board',
+          on: 'a',
+          resolved: false,
+          comments: [
+            { id: 'c1', authorId: 'user_ada', authorName: 'Ada', text: 'hi', createdAt: 5 },
+          ],
+        },
+      ],
+    });
+    const missing = await w.send(
+      'GET',
+      '/api/internal/items/Z/export?format=comments',
+      undefined,
+      data,
+    );
+    expect(missing.status).toBe(404);
+    const z = w.designs.get('Z');
+    expect(
+      z ? z.db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get()!.n : 0,
+    ).toBe(0);
+  });
+
   it('ends the sessions of revoked codes, refusing a body that is not codes', async () => {
     const w = world({ INDEX_KEY: 'index-key' });
     await createDesign(w, 'A');

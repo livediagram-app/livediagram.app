@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/app-doors": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

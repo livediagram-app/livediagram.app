@@ -13,6 +13,7 @@ const FOLDED: Readonly<Record<string, string>> = {
   notifications: 'notifications',
   tokens: 'tokens',
   webhooks: 'webhooks',
+  data: 'data',
   privacy: 'privacy',
   accessibility: 'accessibility',
 };

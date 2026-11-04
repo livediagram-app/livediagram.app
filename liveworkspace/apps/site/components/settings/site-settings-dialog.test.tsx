@@ -441,4 +441,25 @@ describe('the Settings panel, opened on a section', () => {
     );
     expect(fetchMock.mock.calls.filter(([url]) => url === '/api/index/webhooks')).toHaveLength(1);
   });
+
+  it('draws Your Data in place for a signed-in person, read only when its category shows', async () => {
+    fetchMock.mockImplementation((url: string) =>
+      url === '/api/account/data-export'
+        ? json(200, { personal: null, teams: [] })
+        : json(200, { all: {}, app: {}, updatedAt: null }),
+    );
+    await open(null, { initialScope: 'all' });
+    expect(fetchMock.mock.calls.some(([url]) => url === '/api/account/data-export')).toBe(false);
+    act(() => root.unmount());
+    root = createRoot(container);
+    await open(null, { initialScope: 'all', initialCategoryId: 'account:data' });
+    await until(() =>
+      document
+        .querySelector('[data-settings-cell="data"]')
+        ?.textContent?.includes('Download All My Data'),
+    );
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/api/account/data-export')).toHaveLength(
+      1,
+    );
+  });
 });
