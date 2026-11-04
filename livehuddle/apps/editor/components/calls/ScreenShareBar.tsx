@@ -32,7 +32,7 @@ export function ScreenShareBar() {
             className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-rose-500 px-3 font-semibold text-white transition hover:bg-rose-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-rose-700"
           >
             <StopIcon />
-            Stop Sharing
+            <span className="text-optical-centre">Stop Sharing</span>
           </button>
         </div>
       </div>
