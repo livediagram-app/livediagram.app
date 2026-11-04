@@ -7,8 +7,6 @@ import {
   Glyph,
   safeInlinePadding,
   safeInset,
-  SITE_ID,
-  SiteSwitcher,
 } from '@livehuddle/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
@@ -129,15 +127,14 @@ export function EditorHeader({
     >
       <div className="flex w-auto items-center gap-2.5">
         {/* The editor's logo goes up one level, to the Explorer home; the Explorer's goes to the homepage.
-            Hovering it lists liveworkspace's other sites (liveworkspace/docs/specs/010-site/site-switcher.md). */}
-        <SiteSwitcher current={SITE_ID}>
-          <Brand
-            href={explorerHref()}
-            size="md"
-            wordmarkClassName="hidden sm:inline"
-            className="relative touch-target"
-          />
-        </SiteSwitcher>
+            A plain logo, with no site switcher: in an editor it stays out of the way of the work
+            (liveworkspace/docs/specs/010-site/site-switcher.md "Where it shows"). */}
+        <Brand
+          href={explorerHref()}
+          size="md"
+          wordmarkClassName="hidden sm:inline"
+          className="relative touch-target"
+        />
       </div>
       {/* min-w-0 down to the name, so a long name truncates instead of pushing Share and Sign in off a phone. */}
       <div className="flex min-w-0 flex-1 items-center justify-start sm:justify-center">

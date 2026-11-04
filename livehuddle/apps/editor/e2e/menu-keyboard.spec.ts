@@ -128,24 +128,20 @@ test.describe('menus by keyboard', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the site switcher opens from the keyboard, not on focus alone', async ({
+  // In an editor the logo is a plain link, with no site switcher: no chevron to reach, and hovering it opens no
+  // card (liveworkspace/docs/specs/010-site/site-switcher.md "Where it shows").
+  test('the editor logo opens no site switcher, on hover or from the keyboard', async ({
     page,
     pageErrors,
   }) => {
     await startBlankDocument(page);
-    const switcher = page.getByRole('button', { name: 'Switch site' });
-    await untilHydrated(switcher);
-    await switcher.focus();
-    await expect(page.getByRole('menu')).toHaveCount(0);
-    await page.keyboard.press('Enter');
-    const menu = page.getByRole('menu', { name: 'liveworkspace sites' });
-    await expect(menu).toBeVisible();
-    await expect(menu.getByRole('menuitem').first()).toBeFocused();
-    await page.keyboard.press('ArrowDown');
-    await expect(menu.getByRole('menuitem').nth(1)).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expect(menu).toBeHidden();
-    await expect(switcher).toBeFocused();
+    const header = page.locator('header[data-region="header"]');
+    const logo = header.getByRole('link', { name: 'livehuddle' });
+    await untilHydrated(logo);
+    await logo.hover();
+    await logo.focus();
+    await expect(header.getByRole('button', { name: 'Switch site' })).toHaveCount(0);
+    await expect(page.getByRole('menu', { name: 'liveworkspace sites' })).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 });

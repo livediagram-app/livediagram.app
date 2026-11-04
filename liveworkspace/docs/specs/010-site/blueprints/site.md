@@ -9,7 +9,7 @@ Derived from [site.md](../site.md) and [site-switcher.md](../site-switcher.md). 
 | Site          | `@liveworkspace/site`              | A static Next.js export, served as Worker assets    |
 | Explorer page | `/explorer/*`                      | The One Explorer, also served on each app's address |
 | Sign-in pages | `/sign-in`, `/sign-up`, `/consent` | Accounts' pages, drawn by the site                  |
-| Site switcher | `@liveworkspace/sites`             | The list of every site, in every header             |
+| Site switcher | `@liveworkspace/sites`             | Every site, in the public and Explorer headers      |
 
 ## Behaviour and state
 
