@@ -36,6 +36,10 @@ In a meeting app the three read naturally:
 - **Avatar first-class changes no gate.** The picker's Avatar entry and a Spaces board opening walking
   ([v1 scope](../002-project-scope/v1-scope.md) feature 1) are offered to every role, because walking writes
   nothing.
+- **Every role can enter and leave Avatar mode on any board.** An Editor and a Participant use the picker on their
+  palette strip; a Viewer, who has no strip, has the [Walk button](../008-canvas/avatar-mode.md#the-walk-button)
+  first in the bottom-right cluster, which toggles the mode, so a board with no Walk In button, pad or opening walk
+  still lets a Viewer walk.
 - **Every gate reads the session's `can`, never `isReadOnly` alone.** Avatar mode makes the canvas read-only for
   everyone in it, so `isReadOnly` cannot tell a Viewer from a walking Editor.
 - **The room enforces what the client hides**: it drops a Viewer's `avatar-say`, reaction and answer, and checks an

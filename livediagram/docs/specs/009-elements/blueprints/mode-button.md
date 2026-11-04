@@ -86,7 +86,9 @@ The element holds one field, `mode`. Everything else is per-viewer and never per
 1. `usePressWithoutDrag(onPress)`: `pointerdown` records the screen point; `click` stops
    propagation, then returns without pressing when `isDragTravel(dx, dy)` (D108).
 2. `Canvas.pressModeButton`: if the button's mode is `avatar`, set `avatarSpawnRef` to
-   `(x + width / 2, y + height + AVATAR_SPAWN_GAP)` (D110). Then call the host's handler.
+   `avatarSpawnBelow(button, scale)`: `(x + width / 2, y + height + AVATAR_SPAWN_GAP + avatarFigureHeight(scale))`,
+   where `scale` is your character's Size (D110). The whole figure, hair included, stands below the button, so the
+   button's label is never under it. Then call the host's handler.
 3. `useEditorState.pressModeButton(mode)`:
    `pickCanvasTool(canvasTool === mode ? toolBeforeCurrent() : mode)` (D109).
 4. `pickCanvasTool` applies the palette's rules unchanged: entering `spotlight` or `avatar`
@@ -264,5 +266,5 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | `CONTROL_SKIN_DARK` (private)       | `{ fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' }` | Dark-paper skin; text ≥ 4.5:1 (D147)        |
 | `LEGACY_BUTTON_SKIN` (private)      | `{ fill: '#0ea5e9', stroke: '#0284c7', text: '#ffffff' }` | The first stamped skin; fixed forever       |
 | `PRESS_DRAG_SLOP_PX`                | `4`                                                       | Shared press tolerance, screen px; 3 to 6   |
-| `AVATAR_SPAWN_GAP`                  | `12`                                                      | Canvas px below the button; 8 to 24         |
+| `AVATAR_SPAWN_GAP`                  | `12`                                                      | Canvas px, button to head; 8 to 24          |
 | `FIXED_SIZE_SHAPES`                 | `mode-button`, `session-button`, `done-check`             | Controls laid out for their own content     |

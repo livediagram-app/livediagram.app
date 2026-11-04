@@ -10,11 +10,12 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 ## Where it lives
 
-- New `CanvasTool` id `'avatar'`. In livehuddle walking is the point, so the mode is **first-class** (D7 (a) in [Open decisions](../005-project-roadmap/open-decisions.md)), reached three ways:
+- New `CanvasTool` id `'avatar'`. In livehuddle walking is the point, so the mode is **first-class** (D7 (a) in [Open decisions](../005-project-roadmap/open-decisions.md)), reached four ways:
   - **The picker.** The canvas-tool picker (the Selection Mode menu at the start of the palette strip) lists **Avatar** in its first group, straight after Select and Hand, on every viewport and for every role. It is never disabled: an empty board is still a place to stand in. The search panel finds it as **Avatar Mode** (`tool:avatar`), as it finds every mode the picker lists. There is no keyboard shortcut for it (the arrow keys and Space belong to the walk once in it; a letter key would put a character in front of someone typing a shortcut).
   - **A [Selection Mode button](../009-elements/mode-button.md) set to Avatar**, placed on the board, as in livediagram: every Spaces template's **Walk In** button is one, and pressing it again goes back.
   - **Opening walking** ([below](#opening-walking)): a tab that offers the walk puts you in the mode when it is first shown.
-- **The picker names where you are.** While you are in Avatar mode the picker's current value reads **Avatar**, and picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`, `K`, `I`), reaching for the palette, or pressing an Avatar button again.
+  - **The Walk button, for a Viewer** ([below](#the-walk-button)): a Viewer has no palette strip, so no picker; the bottom-right cluster gives them a Walk button instead, so they can walk on any board.
+- **The picker names where you are.** While you are in Avatar mode the picker's current value reads **Avatar**, and picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`, `K`, `I`), reaching for the palette, or pressing an Avatar button again, and for a Viewer, pressing Walk again.
 - A button hands Avatar out in **every** editor mode, and leaving Workshop while walking does not end the walk.
 - Available on **every viewport** (unlike Spotlight): tap-to-walk works fine on touch, it just loses the arrow keys.
 - Available to **view-role** visitors: it is a pure view aid and mutates nothing.
@@ -33,9 +34,31 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 - Renders **above the element layer** (it is standing in front of what's on the canvas, not behind it) and below the palette / chrome, which stay clickable so you can leave the mode.
 - **Where it appears on entry**: on the tab's [Avatar Pad](../009-elements/avatar-pad.md) when it has one (the nearest to the view's centre when it has several), arriving in a beam of light; otherwise just below the button that was pressed ([Entering from a button](#entering-from-a-button)), or, opening walking, below the tab's first Avatar button ([Opening walking](#opening-walking)); otherwise where it was left, while that is still on screen (a quick detour to another tool, the canvas staying mounted); otherwise the **centre of the current viewport**. It resets on the next entry after a tab change: it is transient view state that belongs to nobody.
 
+## The Walk button
+
+Every role may walk ([Share roles](../013-workspace/share-roles.md)), but an Editor and a Participant reach the mode
+through the picker on their palette strip, which a Viewer does not have. Without a Spaces board's opening walk, an
+Avatar button or a pad, a Viewer had no way in. So the bottom-right cluster gives a Viewer a **Walk** button.
+
+- **Where.** First in the cluster, the place a Viewer's Avatar button takes while walking (a Viewer has no Undo), so
+  the Viewer's way in sits where the mode's own control appears. While walking, the Avatar button (and the call
+  buttons) follow it, and Walk stays put under the pointer.
+- **What it does.** Pressing it enters Avatar mode exactly as picking Avatar does (the selection cleared, the tool
+  before it remembered, `Canvas·Used·AvatarMode` counted), the character appearing wherever a fresh entry puts it (a
+  pad, else where it was left, else the view's centre). While walking it shows **pressed**, and pressing it again
+  leaves the mode for the tool before it: a phone has no view-tool keys, so the button is a Viewer's way out too.
+- **How it reads.** The footprints glyph the picker's Avatar entry uses, named **Walk** beside it on a wide desktop and
+  the glyph alone narrower, like its neighbours. Its tooltip is **Walk** ("Walk round the board as your character.")
+  or, while walking, **Stop Walking** ("Leave Avatar mode and look round the board."). A toggle (`aria-pressed`),
+  named Walk in both states.
+- **Who.** A Viewer only (read-only, no Participant palette): an Editor and a Participant have the picker, and one
+  door per role keeps the cluster from growing. A Viewer previewed through the role pill gets it too.
+- **Where not.** Not in an embed, which never walks ([Opening walking](#opening-walking)), and not while the welcome
+  flow is open. Zen keeps it, as it keeps the Avatar button.
+
 ## The Avatar Panel
 
-While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (first in the cluster for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Layers, Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. Zen keeps the button, the mode's one piece of chrome there, and the panel opens from it as anywhere else; only the welcome flow hides it. The panel is never a corner panel: it does not dock, drag or join a corner stack.
+While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (right of the [Walk button](#the-walk-button) for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Layers, Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. Zen keeps the button, the mode's one piece of chrome there, and the panel opens from it as anywhere else; only the welcome flow hides it. The panel is never a corner panel: it does not dock, drag or join a corner stack.
 
 Contents, top to bottom:
 
@@ -248,7 +271,7 @@ walking too, and a board somebody gives a pad or a Walk In button becomes one th
 
 ## Entering from a button
 
-A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. A pad on the tab beats it ([Entering on a pad](#entering-on-a-pad)). The spawn point is one-shot: a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
+A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. The whole figure stands below the button, its head a small gap under the button's bottom edge at whatever Size you chose, so it never hides the button's label (`avatarSpawnBelow`). A pad on the tab beats it ([Entering on a pad](#entering-on-a-pad)). The spawn point is one-shot: a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
 
 ## Entering on a pad
 
@@ -307,7 +330,7 @@ Per the no-god-files rule (`../packages/…` paths are the monorepo's shared pac
 - **`../packages/avatar/src/bindings.ts`** and **`apps/editor/lib/avatar-bindings.ts`**: the product's facts (telemetry, storage prefix, colour maths) and where this editor hands them over.
 - **`../packages/avatar/src/scene.ts`**: what the package reads of a board's elements (`AvatarSceneElement`, `isSceneShape`, `hasSceneBox`).
 - **Realtime**: `AvatarPresence` + the `avatar` `RoomOp` in `@liveworkspace/api-schema/avatar`, re-exported by `@livehuddle/api-schema`; `'avatar'` added to `PRESENCE_OP_KINDS` in `@livehuddle/api-schema`; `broadcastAvatar` in `useEditorBroadcast`; the inbound coalescing buffer in `useRoomConnection`; `remoteAvatars` in `usePresenceState`; `buildRemoteAvatarRows` in `lib/presence-rows.ts` (unit-tested).
-- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (the picker entry, listed after Hand), `useOpenWalking.ts` + `lib/walk-entrance.ts` (opening walking: which tab offers the walk and where, composed into `useCanvasAvatar`), `useCanvasTool.ts`'s `openWalking` (the untracked entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button).
+- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (the picker entry, listed after Hand), `useOpenWalking.ts` + `lib/walk-entrance.ts` (opening walking: which tab offers the walk and where, composed into `useCanvasAvatar`), `useCanvasTool.ts`'s `openWalking` (the untracked entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button), and **`../packages/avatar/src/components/WalkClusterButton.tsx`** (a Viewer's [Walk button](#the-walk-button), shown by `CanvasChrome.tsx` when `walkButton` is on and the session has no palette strip; `walkButtonShown` in `lib/walk-button.ts` is the rule, unit-tested per role).
 
 ## Telemetry
 
