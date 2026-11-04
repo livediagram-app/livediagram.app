@@ -186,9 +186,19 @@ describe('a type saved with its cards’ values (Edit Field)', () => {
     answering();
     const { hook, steps } = render({ itemTypes: cat('task'), itemTypesRev: 1 });
     const values = { undo: vi.fn(), redo: vi.fn() };
+    const settle = vi.fn(() => true);
     const renamed = { ...def('task'), label: 'Job' };
-    act(() => hook.result.current.slice.saveType(renamed, Promise.resolve(values)));
+    act(() =>
+      hook.result.current.slice.saveType(renamed, {
+        name: 'Size',
+        values: Promise.resolve({ ok: true, step: values }),
+        settle,
+      }),
+    );
     await waitFor(() => expect(steps).toHaveLength(1));
+    // The filters came off once both had landed, tied to the step as one.
+    expect(settle).toHaveBeenCalledTimes(1);
+    expect(steps[0]!.canvas).toBe(true);
     act(() => steps[0]!.undo());
     expect(values.undo).toHaveBeenCalledTimes(1);
     expect(hook.result.current.slice.types[0]!.label).toBe('task');
@@ -200,7 +210,52 @@ describe('a type saved with its cards’ values (Edit Field)', () => {
   it('pushes the type’s step alone when the values made none', async () => {
     answering();
     const { hook, steps } = render({ itemTypes: cat('task'), itemTypesRev: 1 });
-    act(() => hook.result.current.slice.saveType(def('task'), Promise.resolve(null)));
+    act(() =>
+      hook.result.current.slice.saveType(def('task'), {
+        name: 'Size',
+        values: Promise.resolve({ ok: true, step: null }),
+      }),
+    );
     await waitFor(() => expect(steps).toHaveLength(1));
+    expect(steps[0]!.canvas).toBeUndefined();
+  });
+
+  it('puts the type back when the values can’t be written, and pushes nothing', async () => {
+    answering();
+    const { hook, steps, onError } = render({ itemTypes: cat('task'), itemTypesRev: 1 });
+    // Part of the values landed before the write was refused: that part is put back.
+    const landed = { undo: vi.fn(), redo: vi.fn() };
+    const settle = vi.fn(() => true);
+    act(() =>
+      hook.result.current.slice.saveType(
+        { ...def('task'), label: 'Job' },
+        { name: 'Size', values: Promise.resolve({ ok: false, step: landed }), settle },
+      ),
+    );
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    expect(onError).toHaveBeenCalledWith('Couldn’t change Size’s type, so nothing was changed.');
+    expect(landed.undo).toHaveBeenCalledTimes(1);
+    expect(settle).not.toHaveBeenCalled();
+    expect(steps).toHaveLength(0);
+    // The type's change was saved, then its inverse: the catalogue reads as before.
+    await waitFor(() => expect(api.saveItemTypes).toHaveBeenCalledTimes(2));
+    expect(hook.result.current.slice.types[0]!.label).toBe('task');
+  });
+
+  it('puts the values back when the type can’t be saved, with one toast', async () => {
+    api.saveItemTypes.mockRejectedValue(new Error('offline'));
+    const { hook, steps, onError } = render({ itemTypes: cat('task'), itemTypesRev: 1 });
+    const values = { undo: vi.fn(), redo: vi.fn() };
+    act(() =>
+      hook.result.current.slice.saveType(
+        { ...def('task'), label: 'Job' },
+        { name: 'Size', values: Promise.resolve({ ok: true, step: values }) },
+      ),
+    );
+    await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+    expect(onError).toHaveBeenCalledWith('Couldn’t change Size’s type, so nothing was changed.');
+    expect(values.undo).toHaveBeenCalledTimes(1);
+    expect(steps).toHaveLength(0);
+    expect(hook.result.current.slice.types[0]!.label).toBe('task');
   });
 });

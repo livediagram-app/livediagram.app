@@ -195,8 +195,9 @@ describe('Edit Field', () => {
 describe('saving a type whose field changed type', () => {
   function host(canEdit: boolean) {
     const saveType = vi.fn();
-    const reshapeValues = vi.fn(() => Promise.resolve(null));
-    setPlan({ canEdit, itemTypes: { saveType }, reshapeValues });
+    const reshapeValues = vi.fn(() => Promise.resolve({ ok: true, step: null }));
+    const removeFieldFilters = vi.fn(() => false);
+    setPlan({ canEdit, itemTypes: { saveType }, reshapeValues, removeFieldFilters });
     const slice = {
       context: plan,
       editingType: { id: 'task' },
@@ -208,11 +209,11 @@ describe('saving a type whose field changed type', () => {
       closeTypeEditor: vi.fn(),
     } as unknown as PlanSlice;
     render(<PlanSheetsHost plan={slice} />);
-    return { saveType, reshapeValues };
+    return { saveType, reshapeValues, removeFieldFilters };
   }
 
   it('writes the cards’ values with the type, handing their undo step to the type’s save', () => {
-    const { saveType, reshapeValues } = host(true);
+    const { saveType, reshapeValues, removeFieldFilters } = host(true);
     const dialog = openEdit('Size');
     fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Number' }));
@@ -226,7 +227,15 @@ describe('saving a type whose field changed type', () => {
       { id: CARDS[1]!.id, patch: { clear: ['f-size'] } },
       { id: CARDS[2]!.id, patch: { set: { 'f-size': 7 } } },
     ]);
-    expect(saveType.mock.lastCall![1]).toBeInstanceOf(Promise);
+    const along = saveType.mock.lastCall![1];
+    expect(along.name).toBe('Size');
+    expect(along.values).toBeInstanceOf(Promise);
+    // Its filters come off once the type and the values have landed (the type's save runs it).
+    expect(removeFieldFilters).not.toHaveBeenCalled();
+    along.settle();
+    expect(removeFieldFilters.mock.lastCall![0]).toEqual([
+      expect.objectContaining({ field: 'f-size', builtIn: false }),
+    ]);
   });
 
   it('shows the pencil to an Editor only', () => {

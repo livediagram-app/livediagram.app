@@ -7,6 +7,7 @@ import { typeCardLayout, type CardLayout, type CardSlot } from './card-display';
 import {
   fieldKindChange,
   kindChangeRefusal,
+  retypedValuePatches,
   type FieldCards,
   type KindChangeContext,
   type KindChangeOutcome,
@@ -14,7 +15,8 @@ import {
   type ValueReader,
 } from './field-kind-change';
 import { PRIORITIES, PRIORITY_LABELS, isPriority } from './fields';
-import type { Item, ItemFieldValue } from './item';
+import type { Item, ItemFieldValue, ItemPatch } from './item';
+import type { ItemPatchOf } from './store';
 import type { CustomFieldDef, ItemFieldId, ItemTypeDef } from './item-types';
 import { inheritingTypesOf } from './type-inheritance';
 import type { CardField } from './board';
@@ -144,4 +146,37 @@ export function builtInRetypePatches(
   const shape = BUILT_IN_KIND_SHAPES[id] ?? { kind: 'text' };
   const read = builtInReader(id);
   return fieldKindChange(shape, to, items, on, ctx, { into, ...(read ? { read } : {}) });
+}
+
+/**
+ * Every write a type's save makes to its cards (docs/specs/026-plan/item-types.md "Edit Field"): its custom fields'
+ * changed values (retypedValuePatches) and each built-in made a custom field (`retyped`, new field id to built-in id)
+ * moving its values across, one patch per card however many fields changed on it.
+ */
+export function typeSavePatches(
+  before: ItemTypeDef,
+  after: ItemTypeDef,
+  retyped: Readonly<Record<string, string>>,
+  types: readonly ItemTypeDef[],
+  items: Iterable<Item>,
+  ctx: KindChangeContext = {},
+): ItemPatchOf[] {
+  const list = [...items];
+  const byId = new Map<string, ItemPatch>();
+  const add = (patches: readonly ItemPatchOf[]) => {
+    for (const { id, patch } of patches) {
+      const into = byId.get(id) ?? {};
+      if (patch.set) into.set = { ...into.set, ...patch.set };
+      if (patch.clear) into.clear = [...(into.clear ?? []), ...patch.clear];
+      byId.set(id, into);
+    }
+  };
+  add(retypedValuePatches(before, after, types, list, ctx));
+  for (const [into, id] of Object.entries(retyped)) {
+    const def = after.custom?.find((f) => f.id === into);
+    if (!def || !BUILT_IN_KIND_SHAPES[id as ItemFieldId]) continue;
+    const on = builtInCardsOf(before.id, id as ItemFieldId, types);
+    add(builtInRetypePatches(id as ItemFieldId, def, into, list, on, ctx).patches);
+  }
+  return [...byId].map(([id, patch]) => ({ id, patch }));
 }

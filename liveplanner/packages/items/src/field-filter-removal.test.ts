@@ -3,6 +3,7 @@ import type { PlanBoardSetup } from './board';
 import {
   boardWithoutFieldFilters,
   clauseNamesField,
+  fieldRetypeTargets,
   viewWithoutFieldFilters,
   type FieldRetypeTarget,
 } from './field-filter-removal';
@@ -143,7 +144,7 @@ describe('a view’s filters', () => {
   });
 
   it('leaves a view without such a filter, or a built-in another type it draws still holds', () => {
-    const none = { view: 'search' as const };
+    const none = { view: 'search' as const, filters: [{ by: 'type' as const, key: 'task' }] };
     expect(viewWithoutFieldFilters(none, custom).settings).toBe(none);
     const held = {
       view: 'search' as const,
@@ -157,5 +158,20 @@ describe('a view’s filters', () => {
     };
     expect(viewWithoutFieldFilters(held, target).removed).toBe(0);
     expect(viewWithoutFieldFilters({ ...held, types: ['task'] }, target).removed).toBe(1);
+  });
+});
+
+describe('the fields a save changes the type of', () => {
+  it('names each custom field whose kind changed and each built-in made a custom field', () => {
+    const after: ItemTypeDef = {
+      ...TASK,
+      custom: [{ id: 'f-size', label: 'Size', kind: 'number' }],
+    };
+    expect(fieldRetypeTargets(TASK, after, { 'f-urgency': 'priority' }, [after])).toEqual([
+      { field: 'f-size', builtIn: false, typesAfter: [after] },
+      { field: 'priority', builtIn: true, typesAfter: [after] },
+    ]);
+    expect(fieldRetypeTargets(TASK, TASK, {}, [TASK])).toEqual([]);
+    expect(fieldRetypeTargets({ ...TASK, custom: undefined }, after, {}, [after])).toEqual([]);
   });
 });

@@ -191,7 +191,7 @@ describe('the places several types meet', () => {
         ['Title', 'Points'],
         ['B', '5'],
       ],
-      { setup, types, room: 10 },
+      { setup, types, room: 10, people: [] },
     );
     expect(imported.creates[0]?.fields['estimate']).toBe(5);
     const byOwnName = boardCsvImport(
@@ -199,7 +199,7 @@ describe('the places several types meet', () => {
         ['Title', 'Estimate'],
         ['B', '8'],
       ],
-      { setup, types, room: 10 },
+      { setup, types, room: 10, people: [] },
     );
     expect(byOwnName.creates[0]?.fields['estimate']).toBe(8);
   });

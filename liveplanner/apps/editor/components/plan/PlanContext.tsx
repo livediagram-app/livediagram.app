@@ -7,9 +7,10 @@
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
 import { createContext, useContext } from 'react';
-import type { PlanCardRef, PlanViewRef } from '@liveplanner/project';
+import type { PlanCardRef, PlanViewRef, Tab } from '@liveplanner/project';
 import type {
   BoardStatusTypes,
+  FieldRetypeTarget,
   Item,
   ItemCreate,
   ItemMove,
@@ -25,7 +26,7 @@ import type {
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemOpenVia } from './item-trail';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
-import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
+import type { ValuesWrite } from '@/hooks/plan/item-undo-journal';
 import type { ItemsScope } from '@/lib/api/items';
 
 // Someone else's hands on a card: dragging it or reading it.
@@ -126,9 +127,15 @@ export type PlanContextValue = {
   // editor's own slice.
   patchItems?: (patches: readonly ItemPatchOf[]) => void;
   // A field's values rewritten for its new type (docs/specs/026-plan/item-types.md "Edit Field"): one write, past the
-  // Required rule as an undo is, answering its undo step (null: none) for the type's save to make one with its own.
-  // Absent outside the editor's own slice.
-  reshapeValues?: (patches: readonly ItemPatchOf[]) => Promise<ItemUndoStep | null>;
+  // Required rule as an undo is, answering whether it all landed and the undo of what did, for the type's save to keep
+  // or put back with its own. Absent outside the editor's own slice.
+  reshapeValues?: (patches: readonly ItemPatchOf[]) => Promise<ValuesWrite>;
+  // The plan's tabs as they are now, read when called (Edit Field's filter count and what stops reading a field), so
+  // no render reads them. Absent outside the editor's own slice.
+  planTabs?: () => readonly Tab[];
+  // Takes the filters on fields whose type changed off every board and view (one canvas commit), answering whether
+  // any came off (docs/specs/026-plan/item-types.md "Edit Field": Filters on the field).
+  removeFieldFilters?: (targets: readonly FieldRetypeTarget[]) => boolean;
   restoreItem: (itemId: string) => void;
   emptyTrash: () => void;
   // The names the tab's boards give their statuses, in order (an All Cards board's rows).

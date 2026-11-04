@@ -60,6 +60,28 @@ describe('the item undo journal', () => {
     expect(order).toEqual(['T1', 'A', 'T2', 'B']);
   });
 
+  it('undoes and redoes a step tied to its canvas step as one (a type change and its filters)', () => {
+    // canvas T1, then the filters' canvas T2 and the type change's item step C made together.
+    let at: HistoryPosition = { depth: 1, branch: 1, futureLength: 0 };
+    const C = { ...combinedStep([step('type'), step('values')], true), name: 'C' };
+    expect(C.canvas).toBe(true);
+    // Pushed with the history as read before the filters' commit landed.
+    let j: ItemUndoJournal = journalPush(EMPTY_JOURNAL, C, at);
+    at = { depth: 2, branch: 3, futureLength: 0 };
+    // One undo: the item step is the target, and its canvas step goes back with it.
+    expect(journalUndoTarget(j, at)).toBe(C);
+    j = journalAfterUndo(j, at);
+    at = { ...at, depth: 1, futureLength: 1 };
+    // The next undo is the canvas's own T1.
+    expect(journalUndoTarget(j, at)).toBeNull();
+    // One redo: the canvas step comes back, then the item step, filed after it.
+    expect(journalRedoTarget(j, at)).toBe(C);
+    j = journalAfterRedo(j, at);
+    at = { ...at, depth: 2, futureLength: 0 };
+    expect(journalUndoTarget(j, at)).toBe(C);
+    expect(combinedStep([step('x')]).canvas).toBeUndefined();
+  });
+
   it('drops redo steps from an older branch', () => {
     const at: HistoryPosition = { depth: 0, branch: 1, futureLength: 0 };
     let j = journalPush(EMPTY_JOURNAL, step('A'), at);

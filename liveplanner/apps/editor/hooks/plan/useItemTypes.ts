@@ -35,7 +35,8 @@ import {
 import { ItemTypesStaleError, saveItemTypes, type SavedItemTypes } from '@/lib/api/item-types';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { combinedStep, type ItemUndoStep } from './item-undo-journal';
+import type { ItemUndoStep } from './item-undo-journal';
+import { settleRetype, type SaveAlong } from './retype-settle';
 
 // How many times one change is sent: the first, and again after each change of someone else's that landed first.
 const ITEM_TYPES_SAVE_ATTEMPTS = 3;
@@ -45,9 +46,10 @@ export type ItemTypesSlice = {
   // not chosen (none).
   catalogue: ItemTypeCatalogue | null;
   types: readonly ItemTypeDef[];
-  // Adds or replaces a type (matched by id), keeping its place. `along`: another change's undo step (its cards'
-  // values, docs/specs/026-plan/item-types.md "Edit Field"), made one undo step with this once it settles (null: none).
-  saveType: (type: ItemTypeDef, along?: Promise<ItemUndoStep | null>) => void;
+  // Adds or replaces a type (matched by id), keeping its place. `along`: what comes with a field's type change (its
+  // cards' values and its filters, docs/specs/026-plan/item-types.md "Edit Field"), saved with it all or none and
+  // made one undo step with it (retype-settle.ts).
+  saveType: (type: ItemTypeDef, along?: SaveAlong) => void;
   deleteType: (typeId: string) => void;
   // Types added together, as one change; any whose id the catalogue already has is skipped, and the catalogue's
   // cap holds.
@@ -64,7 +66,8 @@ export type ItemTypesSlice = {
 };
 
 type Remake = (stored: ItemTypeCatalogue | null) => ItemTypeCatalogue | null;
-type Pending = { id: number; change: CatalogueChange; remake?: Remake };
+// `silent`: its failure is said by whoever waits for it (a type change saved with its values), not by this toast.
+type Pending = { id: number; change: CatalogueChange; remake?: Remake; silent?: true };
 
 // One pending change made to `current`: a quiet change's remake (unchanged when it answers null), else the change.
 const madeTo = (current: ItemTypeCatalogue | null, p: Pending) =>
@@ -120,17 +123,23 @@ export function useItemTypes(opts: {
     setPending(next);
   }, []);
 
-  // Sends one change, made again to the stored catalogue each time another change landed first.
+  // Sends one change, made again to the stored catalogue each time another change landed first. True once stored.
   const send = useCallback(
-    async (entry: Pending): Promise<void> => {
+    async (entry: Pending): Promise<boolean> => {
       const { projectId: doc, ownerId, shareCode, onError } = latest.current;
       const done = () => setPendingNow(pendingRef.current.filter((p) => p.id !== entry.id));
-      if (!doc) return done();
+      if (!doc) {
+        done();
+        return true;
+      }
       for (let attempt = 1; attempt <= ITEM_TYPES_SAVE_ATTEMPTS; attempt += 1) {
         const base = storedRef.current.value;
         const next = madeTo(base.itemTypes, entry);
         // A quiet change already made (by someone else first) sends nothing.
-        if (entry.remake && next === base.itemTypes) return done();
+        if (entry.remake && next === base.itemTypes) {
+          done();
+          return true;
+        }
         try {
           const saved = await saveItemTypes(
             { ownerId, projectId: doc, shareCode },
@@ -143,7 +152,7 @@ export function useItemTypes(opts: {
             types: next?.types.length ?? null,
             rev: saved.itemTypesRev,
           });
-          return;
+          return true;
         } catch (err) {
           if (err instanceof ItemTypesStaleError) {
             debugLog('[item-types] save stale', { attempt, rev: err.stored.itemTypesRev });
@@ -156,48 +165,55 @@ export function useItemTypes(opts: {
       }
       // Only this change is dropped: any saved since stay. A quiet change fails quietly.
       done();
-      if (!entry.remake) onError('Couldn’t save the card types');
+      if (!entry.remake && !entry.silent) onError('Couldn’t save the card types');
+      return false;
     },
     [latest, keepStored, setPendingNow],
   );
 
-  // Makes `change` now (shown at once), and saves it after any change still on its way.
+  // Makes `change` now (shown at once), and saves it after any change still on its way; true once it is stored.
   const make = useCallback(
-    (change: CatalogueChange, remake?: Remake) => {
-      const entry: Pending = { id: (nextId.current += 1), change, ...(remake ? { remake } : {}) };
+    (change: CatalogueChange, remake?: Remake, silent?: true): Promise<boolean> => {
+      const entry: Pending = {
+        id: (nextId.current += 1),
+        change,
+        ...(remake ? { remake } : {}),
+        ...(silent ? { silent } : {}),
+      };
       setPendingNow([...pendingRef.current, entry]);
-      queue.current = queue.current.then(() => send(entry));
+      const stored = queue.current.then(() => send(entry));
+      queue.current = stored.then(() => undefined);
+      return stored;
     },
     [send, setPendingNow],
   );
 
-  // A change from the catalogue as shown to `next`, pushed as one undo step (with `along`'s, once it settles).
+  // A change from the catalogue as shown to `next`, pushed as one undo step. With `along` (a field's type change), it
+  // is saved all or none with its values and filters, and pushed with them once both have landed (retype-settle.ts).
   const change = useCallback(
-    (
-      next: (shown: ItemTypeCatalogue | null) => ItemTypeCatalogue | null,
-      along?: Promise<ItemUndoStep | null>,
-    ) => {
+    (next: (shown: ItemTypeCatalogue | null) => ItemTypeCatalogue | null, along?: SaveAlong) => {
       const before = applied(storedRef.current.value.itemTypes, pendingRef.current);
       const made: CatalogueChange = { before, after: next(before) };
-      make(made);
+      const saved = make(made, undefined, along ? true : undefined);
       const step: ItemUndoStep = {
-        undo: () => make(inverseCatalogueChange(made)),
-        redo: () => make(made),
+        undo: () => void make(inverseCatalogueChange(made)),
+        redo: () => void make(made),
       };
       if (!along) return latest.current.pushUndo(step);
-      void along.then(
-        (other) => latest.current.pushUndo(other ? combinedStep([step, other]) : step),
-        () => latest.current.pushUndo(step),
-      );
+      void settleRetype({
+        saved,
+        along,
+        typeStep: step,
+        rollbackType: () => void make(inverseCatalogueChange(made)),
+        push: (s) => latest.current.pushUndo(s),
+        onError: (message) => latest.current.onError(message),
+      });
     },
     [latest, make],
   );
 
   const withTypes = useCallback(
-    (
-      edit: (types: readonly ItemTypeDef[]) => readonly ItemTypeDef[],
-      along?: Promise<ItemUndoStep | null>,
-    ) =>
+    (edit: (types: readonly ItemTypeDef[]) => readonly ItemTypeDef[], along?: SaveAlong) =>
       change(
         (shown) => ({
           version: ITEM_TYPE_CATALOGUE_VERSION,
@@ -211,7 +227,7 @@ export function useItemTypes(opts: {
   );
 
   const saveType = useCallback(
-    (type: ItemTypeDef, along?: Promise<ItemUndoStep | null>) =>
+    (type: ItemTypeDef, along?: SaveAlong) =>
       withTypes(
         (ts) =>
           ts.some((t) => t.id === type.id)
@@ -245,7 +261,7 @@ export function useItemTypes(opts: {
     (remake: Remake) => {
       const before = applied(storedRef.current.value.itemTypes, pendingRef.current);
       const after = remake(before);
-      if (after) make({ before, after }, remake);
+      if (after) void make({ before, after }, remake);
     },
     [make],
   );

@@ -20,7 +20,9 @@ import {
   type ItemTypeDef,
   type KindChangeOutcome,
 } from '@liveplanner/items';
+import type { Tab } from '@liveplanner/project';
 import { hasOptions, presetOf, storedKindOf, type PickKind } from './add-field-kinds';
+import { countFieldFilters } from './field-retype-tabs';
 import type { NewField } from './AddFieldShape';
 
 // What a change does to the cards, said before Save: how many hold a value, and those cut down or cleared.
@@ -28,12 +30,32 @@ export type ValueLoss = {
   held: number;
   trimmed: number;
   cleared: number;
-  // The line Shape shows over Save.
+  // The line Shape shows over Save (empty: no line, only `reads`).
   message: string;
+  // A built-in's type change: what in the plan stops reading it (fieldRetypeImpact, already cut to its rows shown).
+  reads?: readonly string[];
+  // Save asks once before saving: values are cut down or cleared, filters come off, or something stops reading it.
+  asks: boolean;
 };
 
+/** The line counting the filters a type change takes off, or null with none. */
+export const filtersMessage = (n: number): string | null =>
+  n === 0 ? null : `${n} ${n === 1 ? 'filter' : 'filters'} on it will be removed.`;
+
+/** Values line, then filters line, as one ValueLoss (null when neither says anything). */
+export function valueLoss(
+  outcome: KindChangeOutcome,
+  label: string,
+  filters: number,
+): ValueLoss | null {
+  const lines = [lossMessage(outcome, label), filtersMessage(filters)].filter(Boolean);
+  if (lines.length === 0) return null;
+  const { held, trimmed, cleared } = outcome;
+  return { held, trimmed, cleared, message: lines.join(' '), asks: trimmed + cleared + filters > 0 };
+}
+
 // The shape of a tile, as kindChangeRefusal reads it.
-const shapeOf = (pick: PickKind) => ({ kind: storedKindOf(pick), ...presetOf(pick) });
+export const shapeOf = (pick: PickKind) => ({ kind: storedKindOf(pick), ...presetOf(pick) });
 
 // "a Number", "an Email", but "Several People" as it is.
 const asName = (label: string) => (label.startsWith('Several') ? label : withArticle(label));
@@ -84,8 +106,10 @@ export function useEditFieldPlan(opts: {
   types: readonly ItemTypeDef[];
   items: ReadonlyMap<string, Item> | undefined;
   people: readonly ItemPerson[] | undefined;
+  // The plan's tabs, read when a type is first picked (its filters on the field counted once).
+  planTabs?: (() => readonly Tab[]) | undefined;
 }): EditFieldPlan {
-  const { typeId, stored, types, items, people } = opts;
+  const { typeId, stored, types, items, people, planTabs } = opts;
   return useMemo(() => {
     const on = typeId && stored ? fieldCardsOf(typeId, stored.id, types) : null;
     const all = items ? [...items.values()] : [];
@@ -93,6 +117,11 @@ export function useEditFieldPlan(opts: {
     // Counted once per shape, until the cards change (a new `items` makes a new plan).
     const counted = new Map<string, KindChangeOutcome>();
     let options: string[] | null = null;
+    let filters: number | null = null;
+    const filtersOn = (field: string) =>
+      (filters ??= planTabs
+        ? countFieldFilters(planTabs(), [{ field, builtIn: false, typesAfter: types }])
+        : 0);
     return {
       refusalOf: (pick) => (stored ? kindChangeRefusal(stored, shapeOf(pick)) : null),
       optionsFor: (pick) => {
@@ -108,11 +137,9 @@ export function useEditFieldPlan(opts: {
           outcome = fieldKindChange(stored, field, all, on, ctx);
           counted.set(key, outcome);
         }
-        const message = lossMessage(outcome, pickLabel);
-        return message
-          ? { held: outcome.held, trimmed: outcome.trimmed, cleared: outcome.cleared, message }
-          : null;
+        // Only a new kind's filters come off: a Choice keeping its kind with new options keeps them.
+        return valueLoss(outcome, pickLabel, field.kind === stored.kind ? 0 : filtersOn(stored.id));
       },
     };
-  }, [typeId, stored, types, items, people]);
+  }, [typeId, stored, types, items, people, planTabs]);
 }

@@ -114,3 +114,23 @@ export function viewWithoutFieldFilters<
     removed: filters.length - kept.length,
   };
 }
+
+/**
+ * The fields a type's save changes the type of, as filter targets: each custom field kept by id whose kind changed,
+ * and each built-in made a custom field (`retyped`, new field id to built-in id). `typesAfter` is the catalogue
+ * once saved.
+ */
+export function fieldRetypeTargets(
+  before: ItemTypeDef,
+  after: ItemTypeDef,
+  retyped: Readonly<Record<string, string>>,
+  typesAfter: readonly ItemTypeDef[],
+): FieldRetypeTarget[] {
+  const out: FieldRetypeTarget[] = [];
+  for (const next of after.custom ?? []) {
+    const was = before.custom?.find((f) => f.id === next.id);
+    if (was && was.kind !== next.kind) out.push({ field: next.id, builtIn: false, typesAfter });
+  }
+  for (const id of Object.values(retyped)) out.push({ field: id, builtIn: true, typesAfter });
+  return out;
+}

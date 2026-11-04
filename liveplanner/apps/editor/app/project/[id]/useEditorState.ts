@@ -1612,6 +1612,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     publishPresence: planPresence.publish,
     commit,
     commitTabs,
+    // Read when called (Edit Field's filter count), never on a render.
+    readTabs: () => tabsRef.current,
     select: setSelectedId,
     announce,
     statusNames: planStatusNames,

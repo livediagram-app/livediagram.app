@@ -8,6 +8,7 @@ import {
   builtInRetypeRefusal,
   builtInValueOf,
   retypeBuiltInIn,
+  typeSavePatches,
 } from './built-in-field-retype';
 import { fieldValues } from './field-kind-change';
 import { ITEM_TYPES, type CustomFieldDef, type ItemTypeDef } from './item-types';
@@ -174,5 +175,30 @@ describe('the values moved', () => {
       typeIds: new Set(['task']),
     });
     expect(out.held).toBe(1);
+  });
+});
+
+describe('every write a type’s save makes', () => {
+  it('moves a built-in’s values beside a custom field’s changed ones, one patch per card', () => {
+    const before: ItemTypeDef = {
+      ...TASK,
+      fields: [...TASK.fields, 'f-size'],
+      custom: [{ id: 'f-size', label: 'Size', kind: 'text' }],
+    };
+    const def: CustomFieldDef = { id: 'f-urgency', label: 'Urgency', kind: 'text' };
+    const after = retypeBuiltInIn(
+      { ...before, custom: [{ id: 'f-size', label: 'Size', kind: 'number' }] },
+      'priority',
+      def,
+    );
+    const a = item({ title: 'A', priority: 'high', 'f-size': '3' });
+    const patches = typeSavePatches(before, after, { 'f-urgency': 'priority' }, [before], [a]);
+    expect(patches).toEqual([
+      { id: a.id, patch: { set: { 'f-size': 3, 'f-urgency': 'High' }, clear: ['priority'] } },
+    ]);
+    // A retype naming a field the type lacks, or a built-in with no shape, writes nothing.
+    expect(typeSavePatches(before, before, { 'f-gone': 'priority' }, [before], [a])).toEqual([]);
+    const withDef = { ...before, custom: [...before.custom!, def] };
+    expect(typeSavePatches(before, withDef, { 'f-urgency': 'title' }, [before], [a])).toEqual([]);
   });
 });

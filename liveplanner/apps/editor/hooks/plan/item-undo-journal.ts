@@ -8,12 +8,21 @@
 export type ItemUndoStep = {
   undo: () => void;
   redo: () => void;
+  // Made together with the canvas step committed just before it (a field's filters taken off its boards and views,
+  // docs/specs/026-plan/item-types.md "Edit Field"): undone and redone with that step, as one.
+  canvas?: true;
 };
 
+// A write of many cards' values, as a type's save waits for it (docs/specs/026-plan/item-types.md "Edit Field":
+// Saving the type, all or none): whether it all landed, and the undo of whatever did (null: nothing did).
+export type ValuesWrite = { ok: boolean; step: ItemUndoStep | null };
+
 // Several steps made as one (a field's type changed with its cards' values, docs/specs/026-plan/item-types.md "Edit
-// Field"): undo takes them back last first, redo makes them again in order.
-export function combinedStep(steps: readonly ItemUndoStep[]): ItemUndoStep {
+// Field"): undo takes them back last first, redo makes them again in order. `canvas` ties it to the canvas step made
+// just before it.
+export function combinedStep(steps: readonly ItemUndoStep[], canvas = false): ItemUndoStep {
   return {
+    ...(canvas ? { canvas: true as const } : {}),
     undo: () => {
       for (let i = steps.length - 1; i >= 0; i -= 1) steps[i]!.undo();
     },
@@ -40,7 +49,9 @@ export function journalPush(
   step: ItemUndoStep,
   at: HistoryPosition,
 ): ItemUndoJournal {
-  return { undo: [...j.undo, { step, depth: at.depth }].slice(-ITEM_UNDO_LIMIT), redo: [] };
+  // A step tied to a canvas step sits after it: one deeper than the history read before that commit.
+  const depth = at.depth + (step.canvas ? 1 : 0);
+  return { undo: [...j.undo, { step, depth }].slice(-ITEM_UNDO_LIMIT), redo: [] };
 }
 
 // The item step undo takes now, or null when the canvas's step is the later one.
@@ -63,12 +74,18 @@ export function journalLiveRedo(j: ItemUndoJournal, at: HistoryPosition): ItemUn
   return redo.length === j.redo.length ? j : { ...j, redo };
 }
 
+// A step tied to a canvas step was filed before that step was undone too: its canvas step lies one further on.
 export function journalRedoTarget(j: ItemUndoJournal, at: HistoryPosition): ItemUndoStep | null {
   const top = j.redo[j.redo.length - 1];
-  return top && top.branch === at.branch && top.futureLength === at.futureLength ? top.step : null;
+  const ahead = top?.step.canvas ? 1 : 0;
+  return top && top.branch === at.branch && top.futureLength + ahead === at.futureLength
+    ? top.step
+    : null;
 }
 
 export function journalAfterRedo(j: ItemUndoJournal, at: HistoryPosition): ItemUndoJournal {
   const top = j.redo[j.redo.length - 1]!;
-  return { undo: [...j.undo, { step: top.step, depth: at.depth }], redo: j.redo.slice(0, -1) };
+  // Its canvas step is made again first, so it sits one deeper than the history read before.
+  const depth = at.depth + (top.step.canvas ? 1 : 0);
+  return { undo: [...j.undo, { step: top.step, depth }], redo: j.redo.slice(0, -1) };
 }
