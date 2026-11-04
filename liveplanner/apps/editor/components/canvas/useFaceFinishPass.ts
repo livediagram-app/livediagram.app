@@ -3,20 +3,35 @@
 import { useLayoutEffect, type RefObject } from 'react';
 import {
   MARKER_FACE_BODY_SLACK_PX,
-  MARKER_FACE_MAX_PARTS,
   MARKER_FACE_RULE_MIN_PX,
-  handDrawnInk,
+  faceBudgetSpent,
   isPillRect,
+  markerFaceBudget,
   markerFacePart,
   markerFaceSeed,
   sketchFacePart,
+  spendFaceBudget,
   type FacePartDrawing,
   type FacePartPaint,
   type FacePartShape,
   type Finish,
+  type MarkerFaceBudget,
 } from '@liveplanner/project';
 import { trustedHtml } from '@liveplanner/ui';
 import { watchUntilSettled } from '@liveworkspace/workbench/components/canvas/settle-watch';
+import { isBoardHoverWrite } from '@/components/plan/board-hover';
+import {
+  DRAWN_ATTR,
+  INK_ATTR,
+  ISOLATED_ATTR,
+  MEASURE_ATTR,
+  PILL_ATTR,
+  RULES_ATTR,
+  SHAPE_ATTR,
+  SVG_NS,
+  TAKING_ATTR,
+} from './face-finish-marks';
+import { readGridRules, type Write } from './marker-grid-rules';
 
 // A face's own parts in its finish on the canvas. Under Marker (docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes"):
 // once the face has settled, its frames (outlined HTML boxes) and its SVG shapes are read from the live DOM and
@@ -26,13 +41,6 @@ import { watchUntilSettled } from '@liveworkspace/workbench/components/canvas/se
 // face draws above the part (its words). The part's own line is hidden by app/face-finish.css through the mark set
 // here. The ink is ours, not React's: React never sees it, and every take clears the last one first.
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
-/** The ink this pass adds; everything carrying it is removed before each take. */
-const INK_ATTR = 'data-marker-ink';
-/** Marks a part whose line the ink replaces: `frame`, `shape` or `line` (face-finish.css). */
-const DRAWN_ATTR = 'data-marker-drawn';
-/** Marks an SVG rectangle whose ends are round, which Professional keeps round (face-finish.css). */
-const PILL_ATTR = 'data-finish-pill';
 /** What the pass never reads into: the hand-drawn body, photos, embeds, kept parts and its own ink. */
 const SKIP = `[data-finish="marker"], [data-finish-keep], [data-sketch-skip], [data-sketch-ink], [${INK_ATTR}], img, video, iframe, canvas, foreignObject, text`;
 type Pen = 'marker' | 'pencil';
@@ -97,6 +105,9 @@ function ownChange(r: MutationRecord): boolean {
       r.attributeName === RULES_ATTR ||
       r.attributeName === MEASURE_ATTR ||
       r.attributeName === ISOLATED_ATTR ||
+      r.attributeName === TAKING_ATTR ||
+      // The pointer's own feedback on a Plan board (a column's tint, a card's light): never a change to the face.
+      isBoardHoverWrite(r) ||
       // The isolation it sets on a box it colours in.
       (r.attributeName === 'style' && (r.target as Element).hasAttribute?.(ISOLATED_ATTR))
     );
@@ -125,28 +136,40 @@ export function drawMarkerFace(
   pen: Pen = 'marker',
   page = false,
 ): number {
-  clearMarkerFace(root);
-  const face = { width: root.offsetWidth, height: root.offsetHeight };
-  const seed = markerFaceSeed(elementId);
-  let drawn = 0;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: (n) =>
-      (n as Element).matches(SKIP) || offScreenCard(n as Element)
-        ? NodeFilter.FILTER_REJECT
-        : NodeFilter.FILTER_ACCEPT,
-  });
-  const parts: Element[] = [root];
-  for (let n = walker.nextNode(); n; n = walker.nextNode()) parts.push(n as Element);
-  // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, app/sketch-face.css):
-  // they are shown again for the moment they are read.
-  const measured = [...root.querySelectorAll('[data-sketch-words]')];
-  for (const live of measured) live.setAttribute(MEASURE_ATTR, '');
+  // The face is held still (no transitions) for the whole take (face-finish.css).
+  root.setAttribute(TAKING_ATTR, '');
   try {
-    drawn = drawParts(root, parts, face, seed, drawn, pen, page);
+    clearMarkerFace(root);
+    const face = { width: root.offsetWidth, height: root.offsetHeight };
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+      acceptNode: (n) =>
+        (n as Element).matches(SKIP) || offScreenCard(n as Element)
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_ACCEPT,
+    });
+    const parts: Element[] = [root];
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) parts.push(n as Element);
+    // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, app/sketch-face.css):
+    // they are shown again for the moment they are read.
+    const measured = [...root.querySelectorAll('[data-sketch-words]')];
+    for (const live of measured) live.setAttribute(MEASURE_ATTR, '');
+    // Every part is read first and written after, so a part's ink going in never makes the next read lay the face
+    // out again (on a 200-card board that was a layout per card).
+    const writes: Write[] = [];
+    let drawn = 0;
+    try {
+      drawn = readParts(root, parts, face, markerFaceSeed(elementId), pen, page, writes);
+    } finally {
+      for (const live of measured) live.removeAttribute(MEASURE_ATTR);
+    }
+    const marked = writes.map((write) => write());
+    // The marks take effect while transitions are still held, or each part's own line would ease out from where the
+    // clear left it instead of going at once.
+    for (const el of marked) if (el) void getComputedStyle(el).color;
+    return drawn;
   } finally {
-    for (const live of measured) live.removeAttribute(MEASURE_ATTR);
+    root.removeAttribute(TAKING_ATTR);
   }
-  return drawn;
 }
 
 // A busy board's card the browser is not drawing (content-visibility: auto, app/globals.css): reading it would lay it
@@ -157,16 +180,18 @@ function offScreenCard(el: Element): boolean {
   return !!inner?.checkVisibility && !inner.checkVisibility({ contentVisibilityAuto: true });
 }
 
-function drawParts(
+function readParts(
   root: HTMLElement,
   parts: readonly Element[],
   face: { width: number; height: number },
   seed: number,
-  drawn: number,
   pen: Pen,
   page: boolean,
+  writes: Write[],
 ): number {
-  if (pen === 'marker') drawn += drawGridRules(root, face, seed, drawn);
+  // A face draws at most MARKER_FACE_MAX_PARTS shapes and lines and MARKER_FACE_MAX_FRAMES frames.
+  const budget = markerFaceBudget();
+  let drawn = pen === 'marker' ? readGridRules(root, face, seed, writes, budget) : 0;
   // The face's own box is coloured in once: the outermost element that paints it (a wrapper and a card inside it the
   // same size would streak twice).
   // An element with a hand-drawn body (SketchOverlay) has its box drawn and shaded already.
@@ -174,19 +199,22 @@ function drawParts(
   // How many parts each keyed owner has drawn so far this take (partIndex).
   const owned = new Map<string, number>();
   for (const el of parts) {
-    if (drawn >= MARKER_FACE_MAX_PARTS) break;
+    if (faceBudgetSpent(budget)) break;
     const faceBox =
       !ownBoxDrawn && el instanceof HTMLElement && (el === root || isFaceBox(el, face));
     const owner = ownerKey(root, el);
     const count = owned.get(owner) ?? 0;
     const index = ownerBase(owner) + count;
-    const part =
+    const ink =
       el instanceof HTMLElement
-        ? frameInk(el, face, seed, index, faceBox || el.hasAttribute(SHAPE_ATTR), pen)
+        ? frameInk(el, face, seed, index, budget, faceBox || el.hasAttribute(SHAPE_ATTR), pen)
         : isSvgShape(el)
-          ? shapeInk(el, face, seed, index, pen)
+          ? shapeInk(el, face, seed, index, budget, pen)
           : null;
-    if (part) {
+    const part = ink?.part;
+    if (ink) {
+      writes.push(ink.write);
+      spendFaceBudget(budget, ink.part.role);
       drawn += 1;
       owned.set(owner, count + 1);
     }
@@ -217,118 +245,8 @@ function ownerBase(key: string): number {
   return (h >>> 0) & 0x7fff0000;
 }
 
-/** Shows a Sketch face's hidden fills and lines while the pass reads them (app/sketch-face.css). */
-const MEASURE_ATTR = 'data-sketch-measure';
-/** Marks a part a face wants drawn as a shape whatever its size or roundness (a progress bar's track and fill). */
-const SHAPE_ATTR = 'data-marker-shape';
-/** Marks a box this pass made its own stacking context, so its colouring can sit under its contents. */
-const ISOLATED_ATTR = 'data-marker-isolated';
-/** Marks a grid cell's sides whose border the grid's marker rules replace (`r`, `b`: face-finish.css). */
-const RULES_ATTR = 'data-marker-rules';
-
-// A grid's rules (a table's cell borders, inside `[data-marker-grid]`): each cell draws only its right and bottom
-// border, so a row or column line is many short pieces. They are joined into whole rules, one per line, each
-// drawn in one marker stroke in an <svg> over the face, and the pieces hidden. Returns how many rules it drew.
-function drawGridRules(
-  root: HTMLElement,
-  face: { width: number; height: number },
-  seed: number,
-  first: number,
-): number {
-  type Piece = { at: number; from: number; to: number; colour: string; px: number };
-  const vertical = new Map<string, Piece[]>();
-  const horizontal = new Map<string, Piece[]>();
-  for (const grid of root.querySelectorAll<HTMLElement>('[data-marker-grid]')) {
-    for (const cell of grid.querySelectorAll<HTMLElement>('*')) {
-      const at = offsetIn(cell, root);
-      if (!at) continue;
-      const css = getComputedStyle(cell);
-      const sides: string[] = [];
-      const see = (
-        side: 'right' | 'bottom',
-        map: Map<string, Piece[]>,
-        piece: Omit<Piece, 'colour' | 'px'>,
-      ) => {
-        const px = parseFloat(css.getPropertyValue(`border-${side}-width`)) || 0;
-        const colour = css.getPropertyValue(`border-${side}-color`);
-        if (px <= 0 || css.getPropertyValue(`border-${side}-style`) === 'none') return;
-        const key = `${Math.round(piece.at)}|${colour}`;
-        map.set(key, [...(map.get(key) ?? []), { ...piece, colour, px }]);
-        sides.push(side[0]!);
-      };
-      see('right', vertical, {
-        at: at.x + cell.offsetWidth,
-        from: at.y,
-        to: at.y + cell.offsetHeight,
-      });
-      see('bottom', horizontal, {
-        at: at.y + cell.offsetHeight,
-        from: at.x,
-        to: at.x + cell.offsetWidth,
-      });
-      if (sides.length > 0) cell.setAttribute(RULES_ATTR, sides.join(' '));
-    }
-  }
-  const ink: string[] = [];
-  let drawn = 0;
-  const rule = (pieces: Piece[], vertical: boolean) => {
-    pieces.sort((a, b) => a.from - b.from);
-    const draw = (run: Piece) => {
-      if (first + drawn >= MARKER_FACE_MAX_PARTS) return;
-      const a = vertical ? { x: run.at, y: run.from } : { x: run.from, y: run.at };
-      const b = vertical ? { x: run.at, y: run.to } : { x: run.to, y: run.at };
-      const part = markerFacePart(
-        { kind: 'polyline', points: [a, b] },
-        { fill: null, stroke: handDrawnInk(run.colour, null), strokePx: run.px },
-        face,
-        seed,
-        first + drawn,
-      );
-      if (part) {
-        ink.push(part.svg);
-        drawn += 1;
-      }
-    };
-    // Pieces that touch (within 2 px) are one rule.
-    let run: Piece | undefined;
-    for (const p of pieces) {
-      if (run && p.from <= run.to + 2) run.to = Math.max(run.to, p.to);
-      else {
-        if (run) draw(run);
-        run = { ...p };
-      }
-    }
-    if (run) draw(run);
-  };
-  for (const pieces of vertical.values()) rule(pieces, true);
-  for (const pieces of horizontal.values()) rule(pieces, false);
-  if (ink.length === 0) return 0;
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute(INK_ATTR, '');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('width', String(face.width));
-  svg.setAttribute('height', String(face.height));
-  svg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none';
-  svg.innerHTML = trustedHtml(ink.join('')) as string;
-  root.appendChild(svg);
-  return drawn;
-}
-
-// An element's place in `root`, through its offset parents (layout px, so a zoom or a rotation of the element does
-// not move it); null when `root` is not among them.
-function offsetIn(el: HTMLElement, root: HTMLElement): { x: number; y: number } | null {
-  let x = 0;
-  let y = 0;
-  let at: HTMLElement | null = el;
-  while (at && at !== root) {
-    x += at.offsetLeft;
-    y += at.offsetTop;
-    const parent: Element | null = at.offsetParent;
-    if (parent === root) return { x, y };
-    at = parent instanceof HTMLElement && root.contains(parent) ? parent : null;
-  }
-  return at === root ? { x, y } : null;
-}
+/** A part read and drawn, and how its ink goes in once every part is read. */
+type Ink = { part: FacePartDrawing; write: Write };
 
 // An inset hairline ring (`box-shadow: <colour> 0 0 0 <n>px inset`), the frame some faces draw instead of a border.
 function insetRing(shadow: string): { colour: string; px: number } | null {
@@ -354,10 +272,11 @@ function frameInk(
   face: { width: number; height: number },
   seed: number,
   index: number,
+  budget: MarkerFaceBudget,
   // The face's own box: a fill alone gives it a marker edge (a banner, a timer), as a border does.
   own = false,
   pen: Pen = 'marker',
-): FacePartDrawing | null {
+): Ink | null {
   const w = el.offsetWidth;
   const h = el.offsetHeight;
   if (w < 1 || h < 1) return null;
@@ -400,31 +319,40 @@ function frameInk(
     face,
     seed,
     index,
+    budget,
   );
   // A box is outlined (a frame) or, when it is the face's own, coloured in (a shape); never a bare line.
   if (!part || part.role === 'line' || (part.role === 'shape' && !own)) return null;
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute(INK_ATTR, '');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('width', String(w));
-  svg.setAttribute('height', String(h));
   // A coloured-in box's streaks go under its contents, as a shape's go under its label: the box becomes its own
   // stacking context (isolation, set and cleared by this pass) and the ink sits at its back, over its own background.
   // A frame's outline is its edge, over everything.
   const under = part.role === 'shape';
-  if (under && css.isolation !== 'isolate') {
-    el.style.isolation = 'isolate';
-    el.setAttribute(ISOLATED_ATTR, '');
-  }
-  svg.style.cssText = `position:absolute;left:${-parseFloat(css.borderLeftWidth)}px;top:${-parseFloat(
-    css.borderTopWidth,
-  )}px;overflow:visible;pointer-events:none${under ? ';z-index:-1' : ''}`;
-  svg.innerHTML = trustedHtml(part.svg) as string;
+  const isolate = under && css.isolation !== 'isolate';
+  const left = -parseFloat(css.borderLeftWidth);
+  const top = -parseFloat(css.borderTopWidth);
   // Its own line gives way to the ink (face-finish.css): a border, or a ring (`ring`, which drops that shadow only).
-  if (pen === 'marker' && (bordered || ring))
-    el.setAttribute(DRAWN_ATTR, ring ? 'ring' : part.role);
-  el.appendChild(svg);
-  return part;
+  const drawnAs = pen === 'marker' && (bordered || ring) ? (ring ? 'ring' : part.role) : null;
+  return {
+    part,
+    write: () => {
+      const svg = document.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute(INK_ATTR, '');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('width', String(w));
+      svg.setAttribute('height', String(h));
+      if (isolate) {
+        el.style.isolation = 'isolate';
+        el.setAttribute(ISOLATED_ATTR, '');
+      }
+      svg.style.cssText = `position:absolute;left:${left}px;top:${top}px;overflow:visible;pointer-events:none${
+        under ? ';z-index:-1' : ''
+      }`;
+      svg.innerHTML = trustedHtml(part.svg) as string;
+      if (drawnAs) el.setAttribute(DRAWN_ATTR, drawnAs);
+      el.appendChild(svg);
+      return drawnAs ? el : null;
+    },
+  };
 }
 
 // An SVG shape: its marker drawing in a <g> straight after it, in its own coordinates (and its own transform).
@@ -433,8 +361,9 @@ function shapeInk(
   face: { width: number; height: number },
   seed: number,
   index: number,
+  budget: MarkerFaceBudget,
   pen: Pen = 'marker',
-): FacePartDrawing | null {
+): Ink | null {
   const css = getComputedStyle(el);
   if (css.markerStart !== 'none' || css.markerEnd !== 'none') return null;
   const shape = shapeOf(el);
@@ -446,16 +375,21 @@ function shapeInk(
     ...(Number(css.opacity) < 1 ? { opacity: Number(css.opacity) } : {}),
     ...(css.strokeDasharray && css.strokeDasharray !== 'none' ? { dashed: true } : {}),
   };
-  const part = PEN_PART[pen](shape, paint, face, seed, index);
+  const part = PEN_PART[pen](shape, paint, face, seed, index, budget);
   if (!part) return null;
-  const g = document.createElementNS(SVG_NS, 'g');
-  g.setAttribute(INK_ATTR, '');
-  const transform = el.getAttribute('transform');
-  if (transform) g.setAttribute('transform', transform);
-  g.innerHTML = trustedHtml(part.svg) as string;
-  if (pen === 'marker') el.setAttribute(DRAWN_ATTR, part.role);
-  el.after(g);
-  return part;
+  return {
+    part,
+    write: () => {
+      const g = document.createElementNS(SVG_NS, 'g');
+      g.setAttribute(INK_ATTR, '');
+      const transform = el.getAttribute('transform');
+      if (transform) g.setAttribute('transform', transform);
+      g.innerHTML = trustedHtml(part.svg) as string;
+      if (pen === 'marker') el.setAttribute(DRAWN_ATTR, part.role);
+      el.after(g);
+      return pen === 'marker' ? el : null;
+    },
+  };
 }
 
 // An SVG shape the pass reads (jsdom has no SVGGeometryElement, so it reads none there).

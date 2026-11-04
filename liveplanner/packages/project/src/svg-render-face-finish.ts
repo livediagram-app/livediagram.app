@@ -3,12 +3,14 @@
 // parsed, as svgSketchFace does: a face is our own renderers' output, its attributes always double-quoted.
 import { faceAttrs, isPillRect } from '@liveworkspace/model-core/face-finish';
 import {
-  MARKER_FACE_MAX_PARTS,
   MARKER_FACE_RULE_MIN_PX,
+  faceBudgetSpent,
+  markerFaceBudget,
   markerFacePart,
   markerFaceSeed,
   polygonPoints,
   sketchFacePart,
+  spendFaceBudget,
   type FacePartPaint,
   type FacePartShape,
 } from './marker-face';
@@ -110,10 +112,11 @@ export function svgMarkerFace(
   const box = { ...face, bodyDrawn: /data-finish="(marker|sketch)"/.test(markup) };
   const drawPart = pen === 'marker' ? markerFacePart : sketchFacePart;
   const held: string[] = [];
+  const budget = markerFaceBudget();
   let drawn = 0;
   return mapTags(holdBlocks(dropStickerShadow(markup), held), SHAPE_TAGS, (t, tag) => {
     const { name, attrs } = t;
-    if (!t.selfClosing || drawn >= MARKER_FACE_MAX_PARTS) return tag;
+    if (!t.selfClosing || faceBudgetSpent(budget)) return tag;
     const a = faceAttrs(attrs);
     // A line carrying arrowheads, or a part marked to keep its look, is drawn as it is.
     if (a['marker-start'] || a['marker-end'] || a['data-finish-keep'] !== undefined) return tag;
@@ -128,9 +131,10 @@ export function svgMarkerFace(
       ...(a['stroke-dasharray'] && a['stroke-dasharray'] !== 'none' ? { dashed: true } : {}),
       ...(a['data-marker-shape'] !== undefined ? { shape: true } : {}),
     };
-    const part = drawPart(shape, paint, box, seed, drawn);
+    const part = drawPart(shape, paint, box, seed, drawn, budget);
     if (!part) return tag;
     drawn += 1;
+    spendFaceBudget(budget, part.role);
     // Pencil shading goes over the part as drawn; the face's wobble draws its line by hand.
     if (pen === 'pencil')
       return tag + (a.transform ? `<g transform="${a.transform}">${part.svg}</g>` : part.svg);

@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MARKER_FACE_MAX_FRAMES,
   MARKER_FACE_MAX_PARTS,
+  faceBudgetAllows,
+  faceBudgetSpent,
   facePartRole,
+  markerFaceBudget,
+  sketchFacePart,
+  spendFaceBudget,
   isInkColour,
   markerFacePart,
   markerFaceSeed,
@@ -253,6 +259,22 @@ describe('svgMarkerFace', () => {
     );
   });
 
+  it(`outlines up to ${MARKER_FACE_MAX_FRAMES} frames, counted apart from its shapes (a busy board's cards)`, () => {
+    const big = { width: 4000, height: 40000 };
+    const frames = Array.from(
+      { length: MARKER_FACE_MAX_FRAMES + 5 },
+      (_, i) =>
+        `<rect x="0" y="${i * 60}" width="260" height="50" fill="#ffffff" stroke="#94a3b8"/>`,
+    ).join('');
+    const bands = Array.from(
+      { length: MARKER_FACE_MAX_PARTS + 5 },
+      (_, i) => `<rect x="300" y="${i * 60}" width="100" height="30" fill="#38bdf8"/>`,
+    ).join('');
+    const out = svgMarkerFace(frames + bands, 'el', big);
+    expect(out.match(/data-marker-part="frame"/g)).toHaveLength(MARKER_FACE_MAX_FRAMES);
+    expect(out.match(/data-marker-part="shape"/g)).toHaveLength(MARKER_FACE_MAX_PARTS);
+  });
+
   it('colours in a chevron drawn as a polygon', () => {
     const out = svgMarkerFace(
       '<polygon points="0,0 120,0 150,40 120,80 0,80 30,40" fill="#38bdf8"/>',
@@ -271,5 +293,33 @@ describe('svgMarkerFace', () => {
     const stack = { ...createShape('layer-stack', 0, 0), id: 'ls' };
     expect(svgBoxed(stack, {})).not.toContain('data-marker-part');
     expect(svgBoxed(stack, { tabFinish: 'marker' })).toContain('data-marker-part="shape"');
+  });
+});
+
+describe('a face’s budget', () => {
+  const frame = { kind: 'rect', x: 0, y: 0, width: 200, height: 100, rx: 0 } as const;
+  const framed: FacePartPaint = { fill: '#ffffff', stroke: '#94a3b8', strokePx: 1 };
+  const band: FacePartPaint = { fill: '#38bdf8', stroke: null, strokePx: 0 };
+
+  it('counts frames apart from shapes and lines, and is spent only when both are', () => {
+    const budget = markerFaceBudget();
+    for (let i = 0; i < MARKER_FACE_MAX_PARTS; i++) spendFaceBudget(budget, 'shape');
+    expect(faceBudgetAllows(budget, 'shape')).toBe(false);
+    expect(faceBudgetAllows(budget, 'line')).toBe(false);
+    expect(faceBudgetAllows(budget, 'frame')).toBe(true);
+    expect(faceBudgetSpent(budget)).toBe(false);
+    for (let i = 0; i < MARKER_FACE_MAX_FRAMES; i++) spendFaceBudget(budget, 'frame');
+    expect(faceBudgetSpent(budget)).toBe(true);
+  });
+
+  it('draws nothing in a role the face has drawn its most of', () => {
+    const budget = { parts: MARKER_FACE_MAX_PARTS, frames: 0 };
+    expect(markerFacePart(frame, framed, face, 1, 0, budget)?.role).toBe('frame');
+    expect(markerFacePart(frame, band, face, 1, 0, budget)).toBeNull();
+    expect(sketchFacePart(frame, band, face, 1, 0, budget)).toBeNull();
+    expect(sketchFacePart(frame, band, face, 1, 0, markerFaceBudget())?.role).toBe('shape');
+    expect(
+      markerFacePart(frame, framed, face, 1, 0, { parts: 0, frames: MARKER_FACE_MAX_FRAMES }),
+    ).toBeNull();
   });
 });

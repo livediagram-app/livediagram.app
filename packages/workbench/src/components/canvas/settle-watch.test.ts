@@ -64,4 +64,28 @@ describe('watchUntilSettled', () => {
     vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS);
     expect(take).not.toHaveBeenCalled();
   });
+
+  it('hands `ignore` each attribute’s old value, so a change that moves nothing can be skipped', async () => {
+    vi.useFakeTimers();
+    const live = document.createElement('div');
+    live.setAttribute('data-x', 'a');
+    const take = vi.fn();
+    const seen: (string | null)[] = [];
+    const stop = watchUntilSettled(live, take, {
+      ignore: (r) => {
+        seen.push(r.oldValue);
+        return r.oldValue === live.getAttribute('data-x');
+      },
+    });
+    live.setAttribute('data-x', 'a');
+    await Promise.resolve();
+    vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS);
+    expect(seen).toEqual(['a']);
+    expect(take).not.toHaveBeenCalled();
+    live.setAttribute('data-x', 'b');
+    await Promise.resolve();
+    vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS);
+    expect(take).toHaveBeenCalledTimes(1);
+    stop();
+  });
 });

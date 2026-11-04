@@ -44,7 +44,14 @@ export function watchUntilSettled(
   const observer = new MutationObserver((records) => {
     if (!ignore || records.some((r) => !ignore(r))) changed();
   });
-  observer.observe(live, { subtree: true, childList: true, attributes: true, characterData: true });
+  // Old values let `ignore` tell a change that moves nothing it draws (a hover's style write) from one that does.
+  observer.observe(live, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeOldValue: true,
+    characterData: true,
+  });
   // A resize changes no attribute inside: a resized icon's art is redrawn at its new size. The first callback
   // reports the size it started at, which the first take already drew.
   let sized = false;

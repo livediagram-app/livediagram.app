@@ -6,6 +6,9 @@
 import { useEffect, type RefObject } from 'react';
 
 const CARD = '.plan-card-hover';
+/** The custom properties the light is written to, on the card itself. */
+export const SPOTLIGHT_X = '--card-mx';
+export const SPOTLIGHT_Y = '--card-my';
 
 export function useCardSpotlight(gridRef: RefObject<HTMLElement | null>, enabled: boolean): void {
   useEffect(() => {
@@ -18,8 +21,8 @@ export function useCardSpotlight(gridRef: RefObject<HTMLElement | null>, enabled
       if (!last) return;
       const { card, x, y } = last;
       const box = card.getBoundingClientRect();
-      card.style.setProperty('--card-mx', `${Math.round(x - box.left)}px`);
-      card.style.setProperty('--card-my', `${Math.round(y - box.top)}px`);
+      card.style.setProperty(SPOTLIGHT_X, `${Math.round(x - box.left)}px`);
+      card.style.setProperty(SPOTLIGHT_Y, `${Math.round(y - box.top)}px`);
     };
     const onMove = (e: PointerEvent) => {
       if (e.pointerType === 'touch') return;

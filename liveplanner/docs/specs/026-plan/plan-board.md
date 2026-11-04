@@ -1246,8 +1246,9 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   - **Card hover**: the card under the pointer stays exactly where it is (no rise: a moving transform re-rasterised
     its words and shifted them by a pixel as it eased) and gains a soft shadow lightly tinted with its type's colour, its
     edge leans 25% toward that colour, and a faint light in the colour (8%, fading out over 220 px) follows the pointer
-    across its face. It eases in over about 250 ms. Under Professional and Marker, which draw no shadows, only its
-    edge and light change. With reduced motion nothing moves or eases. Under Sketch, whose
+    across its face. It eases in over about 250 ms. Under Professional, which draws no shadows, only its edge and
+    light change; under Marker only its light does, its marker edge staying exactly as drawn (a hover never redraws
+    the board, [finish.md](../008-canvas/finish.md) "Marker"). With reduced motion nothing moves or eases. Under Sketch, whose
     drawing is a still copy, a 4% wash of the ink is laid over the card as well. The pointer's spot is written
     straight to the card at most once a frame, from one listener on the board, with no render; a touch has no hover.
   - <a id="cards-fan-in"></a>**Cards fan in**: when a board first shows its cards (its tab opened or loaded), the cards

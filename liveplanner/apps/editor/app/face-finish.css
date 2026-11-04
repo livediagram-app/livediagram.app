@@ -97,6 +97,17 @@
 [data-face-finish='marker'][data-marker-drawn='ring'] {
   box-shadow: none !important;
 }
+/* While a take reads the face (useFaceFinishPass's data-marker-taking), nothing eases: a part's line reads as it rests,
+ * not as the first frame of easing back from the mark the take just cleared (a card's 180 ms border fade read as no
+ * line at all, so a re-take skipped every card the last take drew), and the new marks land at once. A card under the
+ * pointer reads its resting edge, so a hover never colours its ink. */
+[data-marker-taking],
+[data-marker-taking] * {
+  transition: none !important;
+}
+[data-marker-taking] .plan-card-hover:hover:not([data-marker-drawn]) {
+  border-color: var(--card-line) !important;
+}
 
 /* A sticker's shadow (sticker-markup.ts): a flat or a marker drawing casts none. */
 :is([data-face-finish='professional'], [data-face-finish='marker']) [data-sticker-shadow] {
