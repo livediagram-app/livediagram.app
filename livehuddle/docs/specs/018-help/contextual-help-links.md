@@ -112,6 +112,10 @@ Grouped by priority; each links the keyed article.
 - Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`
+- The call strip in the bottom-right cluster (Join Audio or Listen In, the microphone strip once joined, and Calls
+  Paused) -> `proximity-audio`: a `?` segment at the strip's end, the same height as its buttons and parted from them
+  by the strip's hairline, so the one control with no panel or popover of its own still reaches its article. The
+  Proximity Audio article links on to Cameras and Screen Sharing, so the strip carries one `?`, not two.
 
 **Onboarding / empty states**
 
