@@ -14,7 +14,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('splitByHearing', () => {
   it('keeps what the room says is heard and marks the rest by position', async () => {
-    const ask = vi.fn(async () => ['heard', 'stopped', 'apart'] as const);
+    const ask = vi.fn(async (_asks: unknown) => ['heard', 'stopped', 'apart'] as const);
     const split = await splitByHearing([a, b, c], async (asks) => [...(await ask(asks))]);
     expect(ask).toHaveBeenCalledWith([
       { sessionId: 'A', trackName: 'mic' },
