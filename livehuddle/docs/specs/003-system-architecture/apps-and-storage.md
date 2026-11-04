@@ -1,6 +1,6 @@
 # Apps and storage
 
-Status: **proposed**, awaiting the owner's approval (Work Tracker #99).
+Status: **built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190).
 
 How livehuddle's apps fit together and where its data lives. It is livediagram's architecture, which every
 liveworkspace product already shares, so the fork brings it over whole; this page records the choices so nobody adds
@@ -12,7 +12,7 @@ a database on the way.
 D1").
 
 - A space is stored as livediagram stores a document
-  ([Storage](../../../../livediagram/docs/specs/015-api/api.md#storage)): one SQLite-backed Durable Object
+  ([Storage](../015-api/api.md#storage)): one SQLite-backed Durable Object
   (`DocumentRoom`) holds its tabs, image references and changesets, and is the realtime room everyone on it joins.
   The api Worker routes every content request to it by RPC.
 - The api Worker has **no D1 binding**. Where a space is filed (owner, folder, team, trash) and who may open it
@@ -29,7 +29,7 @@ D1").
 
 - **Presence**: cursors, selections, characters, statuses, speech bubbles, pushes and follow-me are ephemeral room
   ops (`PRESENCE_OP_KINDS`), relayed and forgotten, never logged and never replayed to a reconnecting client, as in
-  livediagram ([Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md#realtime)).
+  livediagram ([Avatar mode](../008-canvas/avatar-mode.md#realtime)).
 - **A person's character**: kept in their own browser only, under livehuddle's own storage key (livediagram's
   `livediagram:v2:avatar-config`, renamed for livehuddle at the fork), so a costume chosen in one product does not
   leak into the other.

@@ -1,6 +1,6 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps, one distributed command-line app and twelve packages of its own, beside the monorepo's shared `@liveworkspace/*` packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: seven Cloudflare-deployed apps, one distributed command-line app and thirteen packages of its own, beside the monorepo's shared `@liveworkspace/*` packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/

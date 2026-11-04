@@ -5,15 +5,17 @@ Follow the references below only as needed; never upfront.
 This folder is the **source of truth** for what livehuddle is and how it works. Before building anything, check
 here. After every product decision, update or add a spec.
 
-**Status: forked.** The product spec written for the owner's approval (Work Tracker #99) sets where livehuddle is
-going: its [vision](./001-project-vision/purpose.md), [v1 scope](./002-project-scope/v1-scope.md),
-[apps and storage](./003-system-architecture/apps-and-storage.md), [roadmap](./005-project-roadmap/README.md),
-[share roles](./013-workspace/share-roles.md) and [platform registration](./016-platform/platform-registration.md).
-Every other spec was forked from livediagram's at the commit the code was (`.forked-from`, `fd73b2c921`), with the
-code fork's renames, so it describes the code as forked less the cuts made so far (Diagram and Draw modes went in step 5.1): Event
-Storming, the Community and the rest are still here until their cuts ([Build plan](./005-project-roadmap/build-plan.md) step 5).
-Each cut removes its specs in the same PR as its code, so the tree never describes a feature livehuddle no longer
-has. The decisions still open are in [Open decisions for the owner](./005-project-roadmap/open-decisions.md).
+**Status: built.** livehuddle was forked from livediagram in-tree (`.forked-from`, `fd73b2c921`) and cut down to
+Workshop, as the [Build plan](./005-project-roadmap/build-plan.md) set out: its [vision](./001-project-vision/purpose.md),
+[v1 scope](./002-project-scope/v1-scope.md), [apps and storage](./003-system-architecture/apps-and-storage.md),
+[share roles](./013-workspace/share-roles.md) and [platform registration](./016-platform/platform-registration.md) were
+written for it, and every other spec was forked from livediagram's with the code. The cuts (Diagram and Draw modes, Event
+Storming and repository links, the templates down to Workshop's and the Spaces) removed their specs with their code, and
+step 9 folded the tree back to what shipped (Work Tracker #190): every cited path, link, anchor and symbol is checked
+against the code. The decisions that were open are settled in [Open decisions for the owner](./005-project-roadmap/open-decisions.md).
+
+Workshop mode is in livediagram too. A fix to a feature both have lands in both specs and both codes in the same PR,
+or moves the code to `packages/` first ([AGENTS.md](../../AGENTS.md#workshop-features-shared-with-livediagram)).
 
 Specs live in numbered category folders: the reserved `001`-`005` first (vision, scope, architecture, interface
 design, roadmap), then one folder per domain concept, numbered as livediagram numbers them so a forked spec keeps its
@@ -51,5 +53,6 @@ place. The specs themselves are unnumbered and named by subject.
 - A new feature, scope decision, or constraint goes into a spec **before** code.
 - Reference specs by filename in PRs and discussions.
 - If two specs conflict, that's the bug: fix the specs first, then the code.
-- A cut (build plan step 5) removes the specs of what it removes, in the same PR as the code.
+- A cut removes the specs of what it removes, in the same PR as the code.
+- A change to a Workshop feature livediagram also has updates livediagram's spec of it in the same PR.
 - Keep specs terse but unambiguous. Update them when something changes; don't let them drift.
