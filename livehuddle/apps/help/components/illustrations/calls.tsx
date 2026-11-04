@@ -359,8 +359,8 @@ export function Earshot() {
         className="fill-white/80"
       />
       <TalkingBars cx={priya.x} y={priya.y - CHIP_TOP - 6} hue="violet" faint />
-      <Card x={262} y={10} w={150} title="Priya is talking, walk over" />
-      <Cursor x={priya.x + 4} y={priya.y - CHIP_TOP - 10} />
+      <Card x={236} y={10} w={172} title="Priya is talking, walk over" />
+      <Cursor x={priya.x + 8} y={priya.y - CHIP_TOP - 12} />
     </Scene>
   );
 }
@@ -578,7 +578,15 @@ export function SharingAndVideoPaused() {
   return (
     <Scene w={420} h={206}>
       <g className="help-art-as-drawn">
-        <rect x={70} y={12} width={280} height={32} rx={16} className="fill-slate-900" />
+        <rect
+          x={70}
+          y={12}
+          width={280}
+          height={32}
+          rx={16}
+          className="fill-slate-900 stroke-white/10"
+          strokeWidth={1}
+        />
         <circle cx={88} cy={28} r={4} className="fill-rose-500" />
         <Label x={100} y={29} size={10.5} weight={600} className="fill-white">
           You are sharing your screen
