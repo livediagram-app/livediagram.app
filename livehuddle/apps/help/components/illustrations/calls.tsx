@@ -521,7 +521,7 @@ export function CallBubbles() {
       <BubbleRing x={priyaScreen} y={by} hue="violet" />
       <PixelCharacter fx={sam.x} fy={sam.y} shirt="emerald" name="Sam" hair="fill-slate-800" />
       <PixelCharacter fx={priya.x} fy={priya.y} shirt="violet" name="Priya" hair="fill-slate-900" />
-      <Card x={samX} y={by - 34} w={136} title="Maximise Sam's Camera" />
+      <Card x={samX} y={by - 34} w={150} title="Maximise Sam's Camera" />
       <Cursor x={samX + BUBBLE_W - 30} y={by + 24} />
     </Scene>
   );
