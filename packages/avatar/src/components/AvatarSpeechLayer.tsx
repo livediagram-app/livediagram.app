@@ -12,7 +12,18 @@ import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } fro
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { avatarBindings } from '../bindings';
-import { bubbleMotion, edgeShift, screenX, tailOffset, type SpeechBubble } from '../speech';
+import {
+  bubbleMotion,
+  edgeShift,
+  screenX,
+  speechLift,
+  tailOffset,
+  SPEECH_LIFT_EASE_MS,
+  SPEECH_RISE_PX_PER_S,
+  SPEECH_SWAY_PX,
+  type SpeechBubble,
+  type SpeechObstacle,
+} from '../speech';
 import type { AvatarPoint } from '../walk';
 import { AVATAR_FALLBACK_COLOUR } from '../config';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
@@ -60,6 +71,8 @@ function motionOf(
   reduced: boolean,
   // The bubble's anchor on screen, its card's measured width and the view's width: all the edge clamp reads.
   edge: { x: number; width: number; viewWidth: number },
+  // Screen px it starts higher by, to keep clear of what is in its path (speechLift).
+  lift = 0,
 ): { transform: string; opacity: number; tail: number; tailOffset: number } {
   const m = bubbleMotion(
     now - b.bornAt,
@@ -70,18 +83,59 @@ function motionOf(
   const width = edge.width * m.scale;
   const shift = edge.viewWidth > 0 ? edgeShift(edge.x + m.sway, width, edge.viewWidth) : 0;
   return {
-    transform: `translate(calc(-50% + ${m.sway + shift}px), ${-m.rise}px) scale(${m.scale})`,
+    transform: `translate(calc(-50% + ${m.sway + shift}px), ${-(m.rise + lift)}px) scale(${m.scale})`,
     opacity: m.opacity,
     tail: m.tail,
     tailOffset: tailOffset(shift, width),
   };
 }
 
-// `width` is the card's laid-out width, read once when it mounts: the flight loop never reads layout.
-type BubbleNodes = Map<
-  string,
-  { card: HTMLDivElement | null; tail: HTMLSpanElement | null; width: number }
->;
+// `width` and `height` are the card's laid-out size, read once when it mounts: the flight loop never reads layout.
+// `lift` is how far it has been lifted clear of obstacles so far (canvas px), `liftAt` when, null before its first
+// frame.
+type BubbleNode = {
+  card: HTMLDivElement | null;
+  tail: HTMLSpanElement | null;
+  width: number;
+  height: number;
+  lift: number;
+  liftAt: number | null;
+};
+type BubbleNodes = Map<string, BubbleNode>;
+
+const EMPTY_OBSTACLES: readonly SpeechObstacle[] = [];
+
+/**
+ * A bubble's lift this frame, in canvas px: the largest it has needed so far (never pushed down during its flight),
+ * eased toward over SPEECH_LIFT_EASE_MS, at once on its first frame and under reduced motion.
+ */
+function liftOf(
+  n: BubbleNode,
+  b: SpeechBubble,
+  now: number,
+  reduced: boolean,
+  v: { zoom: number; offsetX: number; width: number },
+  obstacles: readonly SpeechObstacle[],
+): number {
+  if (obstacles.length === 0 && n.lift === 0) return 0;
+  const x = screenX(b.x, v.zoom, v.offsetX, v.width);
+  const shift = v.width > 0 ? edgeShift(x, n.width, v.width) : 0;
+  const reach = (SPEECH_RISE_PX_PER_S * (b.flightMs / 1000) + n.height) / v.zoom;
+  const target = speechLift(
+    { x: b.x + shift / v.zoom, y: b.y },
+    (n.width / 2 + SPEECH_SWAY_PX) / v.zoom,
+    reach,
+    obstacles,
+  );
+  if (target > n.lift) {
+    n.lift =
+      reduced || n.liftAt === null
+        ? target
+        : n.lift + (target - n.lift) * (1 - Math.exp(-(now - n.liftAt) / SPEECH_LIFT_EASE_MS));
+  }
+  n.liftAt = now;
+  return n.lift;
+}
 
 // One flying bubble, its own component so its ref callbacks live as long as it does: new ones each render (the canvas
 // re-renders on every walk frame) would detach and reattach its nodes each time.
@@ -99,10 +153,20 @@ function FlyingBubble({
   const { id } = b;
   // Plain functions: the React Compiler keeps them the same while `id` and `nodes` are.
   const put = (part: 'card' | 'tail', el: HTMLElement | null) => {
-    const entry = nodes.current.get(id) ?? { card: null, tail: null, width: 0 };
+    const entry = nodes.current.get(id) ?? {
+      card: null,
+      tail: null,
+      width: 0,
+      height: 0,
+      lift: 0,
+      liftAt: null,
+    };
     if (part === 'card') {
       entry.card = el as HTMLDivElement | null;
-      if (el) entry.width = el.offsetWidth;
+      if (el) {
+        entry.width = el.offsetWidth;
+        entry.height = el.offsetHeight;
+      }
     } else entry.tail = el;
     if (entry.card || entry.tail) nodes.current.set(id, entry);
     else nodes.current.delete(id);
@@ -218,6 +282,7 @@ export function AvatarSpeechLayer({
   peers,
   composer,
   self,
+  obstacles,
 }: {
   bubbles: SpeechBubble[];
   activeTabId: string;
@@ -230,6 +295,8 @@ export function AvatarSpeechLayer({
   composer: SpeechComposerProps | null;
   // Your own name and colour, for your bubbles.
   self: { name: string; colour: string };
+  // Canvas rects every floating bubble keeps clear of (livehuddle's camera and screen bubbles), read each frame.
+  obstacles?: RefObject<readonly SpeechObstacle[]>;
 }) {
   // Who said each bubble, decided once their character is found: a peer whose character is not on this tab (or is
   // hidden by a hide-cursors vote) is not drawn, and one who walks off afterwards keeps their words on screen. Not
@@ -267,6 +334,7 @@ export function AvatarSpeechLayer({
   // shows a frame out of place.
   const shownRef = useLatest(shown);
   const viewRef = useLatest({ zoom, offsetX: view.offsetX, width: view.width });
+  const obstaclesRef = useLatest(obstacles);
   const flying = shown.length > 0;
   useLayoutEffect(() => {
     if (!flying) return;
@@ -275,15 +343,22 @@ export function AvatarSpeechLayer({
     const reduced = prefersReducedMotion();
     const tick = () => {
       const now = performance.now();
+      const around = obstaclesRef.current?.current ?? EMPTY_OBSTACLES;
       for (const b of shownRef.current) {
         const n = nodes.current.get(b.id);
         if (!n?.card) continue;
         const v = viewRef.current;
-        const m = motionOf(b, now, reduced, {
-          x: screenX(b.x, v.zoom, v.offsetX, v.width),
-          width: n.width,
-          viewWidth: v.width,
-        });
+        const m = motionOf(
+          b,
+          now,
+          reduced,
+          {
+            x: screenX(b.x, v.zoom, v.offsetX, v.width),
+            width: n.width,
+            viewWidth: v.width,
+          },
+          liftOf(n, b, now, reduced, v, around) * v.zoom,
+        );
         n.card.style.transform = m.transform;
         n.card.style.opacity = String(m.opacity);
         if (n.tail) {
@@ -299,7 +374,7 @@ export function AvatarSpeechLayer({
     tick();
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [flying, shown.length, shownRef, viewRef]);
+  }, [flying, shown.length, shownRef, viewRef, obstaclesRef]);
 
   return (
     <>

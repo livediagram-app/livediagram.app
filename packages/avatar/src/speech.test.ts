@@ -11,6 +11,8 @@ import {
   liveBubbles,
   SeenIds,
   tailOffset,
+  speechLift,
+  SPEECH_CLEAR_GAP,
   SPEECH_FADE_FRACTION,
   SPEECH_MAX_MS,
   SPEECH_OVERFLOW_FADE_MS,
@@ -112,6 +114,35 @@ describe('headPoint', () => {
   it('sits above the head, scaled with the character', () => {
     expect(headPoint({ x: 10, y: 100 }, 1)).toEqual({ x: 10, y: 36 });
     expect(headPoint({ x: 10, y: 100 }, 1.5)).toEqual({ x: 10, y: 4 });
+  });
+});
+
+// docs/specs/012-collaboration/video-and-screen-bubbles.md "Close together": speech bubbles stay clear.
+describe('speechLift', () => {
+  const box = (left: number, top: number, w = 120, h = 68) => ({
+    left,
+    top,
+    right: left + w,
+    bottom: top + h,
+  });
+  const from = { x: 100, y: 300 };
+
+  it('stays at the head with nothing in the way', () => {
+    expect(speechLift(from, 60, 200, [])).toBe(0);
+    // Beside its path, below where it starts, and beyond its reach.
+    expect(speechLift(from, 60, 200, [box(170, 200), box(40, 310), box(40, -100)])).toBe(0);
+  });
+
+  it('starts over a bubble on its way up, its own speaker’s or a neighbour’s', () => {
+    expect(speechLift(from, 60, 200, [box(40, 182)])).toBe(300 - 182 + SPEECH_CLEAR_GAP);
+    // One straddling the head lifts it too.
+    expect(speechLift(from, 60, 200, [box(140, 280)])).toBe(20 + SPEECH_CLEAR_GAP);
+  });
+
+  it('climbs past a stack, each lift bringing the next into reach', () => {
+    // The second is out of reach from the head but in reach once lifted over the first.
+    const lift = speechLift(from, 60, 100, [box(0, -300), box(40, 182), box(60, 40)]);
+    expect(lift).toBe(300 - 40 + SPEECH_CLEAR_GAP);
   });
 });
 

@@ -176,6 +176,42 @@ export function tailOffset(shift: number, width: number): number {
   return Math.min(reach, Math.max(-reach, -shift)) + 0;
 }
 
+/** A canvas rect a bubble keeps clear of: livehuddle's camera and screen bubbles. */
+export type SpeechObstacle = { left: number; top: number; right: number; bottom: number };
+
+/** Canvas px kept between a lifted bubble and the obstacle under it. */
+export const SPEECH_CLEAR_GAP = 8;
+/** How quickly a bubble eases up when something moves into its path, in ms (a time constant). */
+export const SPEECH_LIFT_EASE_MS = 50;
+
+/**
+ * Canvas px a bubble rising from `from` must start higher by so that, all the way up, it never crosses an obstacle
+ * (docs/specs/012-collaboration/video-and-screen-bubbles.md "Close together"). `halfWidth` is half the card's
+ * width with its sway and `reach` how far its top travels over the flight, both in canvas px. The obstacles across
+ * its width are taken nearest first: one still in its path lifts its start to SPEECH_CLEAR_GAP over that obstacle,
+ * which may bring the next into its path.
+ */
+export function speechLift(
+  from: AvatarPoint,
+  halfWidth: number,
+  reach: number,
+  obstacles: readonly SpeechObstacle[],
+): number {
+  const across = obstacles
+    .filter((o) => o.right > from.x - halfWidth && o.left < from.x + halfWidth)
+    .sort((a, b) => b.bottom - a.bottom);
+  let lift = 0;
+  for (const o of across) {
+    const start = from.y - lift;
+    // Wholly below where it starts: it rises away from it.
+    if (o.top >= start) continue;
+    // Beyond its reach, and so is every one after (they end higher still).
+    if (o.bottom <= start - reach) break;
+    lift = from.y - o.top + SPEECH_CLEAR_GAP;
+  }
+  return lift;
+}
+
 /** The bubbles still flying at `now`. */
 export function liveBubbles(list: readonly SpeechBubble[], now: number): SpeechBubble[] {
   return list.filter((b) => bubbleEndsAt(b) > now);
