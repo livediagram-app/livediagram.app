@@ -1,8 +1,8 @@
 # Calls kill switch
 
-Status: **part 1 built** (the switch, the budget poll and its email; Work Tracker #316). Part 2, the gate in the
-Realtime mint route, the room telling clients to close their tracks, the calm "Calls are paused" state and the media
-limits, follows once proximity audio (#315) has merged.
+Status: **built** (Work Tracker #316): part 1, the switch, the budget poll and its email; part 2, the switch wired
+into the Realtime mint route, the room telling clients when it tightens, the calm "Calls Paused" state and the media
+each mode allows.
 
 ## What
 
@@ -45,8 +45,9 @@ spending that does not wait for a deploy, and a guard that acts when nobody is w
   does not know reads as `off`, so a typo stops spending rather than starting it. `audio_only` and `audio` are
   accepted for `audio-only`, and case and spaces are ignored. If KV cannot be read, the last answer this isolate had
   stands; with none, `on`.
-- **Who reads it.** The Realtime mint route, before every session and every track (part 2): `off` refuses both,
-  `audio-only` refuses any video or screen-share track. Nothing else.
+- **Who reads it.** The Realtime mint route, before every session and every track, the Space's room, while calls
+  are under way in it, and `/api/capabilities`, so a page opened while calls are paused shows it. See
+  [Wired in](#wired-in).
 
 ## The budget poll
 
@@ -108,14 +109,80 @@ the repo can set it.
 ## Share roles
 
 The switch is not a share-role act: no Editor, Participant or Viewer can see or change it, and it applies to every
-role alike. Only someone with access to the Cloudflare account flips it. Part 2 adds what each role sees when calls
-are paused.
+role alike. Only someone with access to the Cloudflare account flips it. Every role sees the same calm "Calls Paused"
+state while it is off (an Editor's and a Participant's Join Audio, a Viewer's Listen In), and the same refusal.
 
-## Part 2 (after #315)
+## Wired in
 
-- The mint route checks `callsMode()` before every session and track.
-- When the switch tightens, the room tells every connected client to close the call tracks it no longer allows,
-  and the UI shows a calm "Calls are paused" (or "Video is paused") state, never an error.
-- Media limits that keep normal use cheap: at most N video bubbles received per person, a cap on screen-share
-  resolution and frame rate, and a maximum call length. Guests may publish audio (decided on #315), so sign-in to
-  publish no longer applies to audio; whether video and screen sharing need it is part 2's to settle.
+### What each mode allows
+
+One rule, `callsModeAllows(mode, kind)`, decides every mint, for a `session` or a track of one kind: `audio`,
+`video` or `screen`. A track's kind comes from its name (`callTrackKind`): the microphone (`mic`) is audio; video
+(#317) and screen sharing (#318) add their own names and kinds, and get this rule for free.
+
+| Mode         | Session | Audio | Video | Screen |
+| ------------ | ------- | ----- | ----- | ------ |
+| `on`         | Yes     | Yes   | Yes   | Yes    |
+| `audio-only` | Yes     | Yes   | No    | No     |
+| `off`        | No      | No    | No    | No     |
+
+The rule and the track names live in `@livehuddle/api-schema`, so the api and the editor read the same table.
+
+### The mint route
+
+The switch is an extra gate after the calls gate, never a replacement: production's own hard off and the unset
+secrets ([Proximity audio](../012-collaboration/proximity-audio.md#turning-calls-on)) are checked first and still
+refuse whatever the switch says.
+
+- **Session.** `off` answers **503 `calls_off`** with reason **`paused`**. Otherwise the answer carries the mode
+  (`on` or `audio-only`), so a browser that joins learns it.
+- **Publish and subscribe.** Each track asked for is checked against the mode by its kind: `off` refuses with reason
+  `paused`, a video or screen track under `audio-only` with reason **`audio-only`**. A refusal is the whole request's
+  (nothing is half-made).
+- **Renegotiate** is refused while `off`: it finishes setting up a subscription.
+- **Close** is always allowed while the calls gate is open, `off` included: closing tracks never costs anything, and
+  lets a browser leave cleanly.
+
+### The room tells its clients
+
+A flip from the command line, or a trip by the poll, reaches nobody by itself, so the Space's room watches the
+switch while a call is under way in it:
+
+- Each `avatar-voice` or `call-track` op the room relays (a speaker starts, talks, or a new walker arrives) lets it
+  read the switch, at most once every 5 seconds per room (`CALLS_MODE_CACHE_MS`; the read is cached per isolate too).
+- When the mode differs from the last one the room told, it sends every socket in the room a system op,
+  `calls-mode` `{ mode }`, stamped `from: 'system'`. A client may never send one: the room drops it like every
+  system op.
+- A client in a call that no longer allows it closes it at once: the microphone is released, every subscription and
+  the session end. A client not in a call only changes its button.
+- A room where nobody talks or arrives sends no ops and so learns nothing new; it needs nothing, because muted and
+  silent speakers send no audio, and the next subscription a walker makes is refused by the mint route, which the
+  client treats exactly like the push.
+
+### Calls Paused
+
+Pausing is never an error. While the mode is `off` (from `/api/capabilities` when the page opens, from the room's
+push, or from a refused mint):
+
+- The audio control beside Avatar reads **Calls Paused**, with a pause icon, in the cluster's calm resting colour,
+  never amber or red. Its hover card says "Calls are paused for now. Everything else in the Space carries on. Press
+  to try again."
+- Pressing it tries to join: if calls are back on, you join, as Join Audio would; if not, it stays paused.
+- A call that was live when the pause arrived ends quietly into that state, and a screen reader hears "Calls are
+  paused".
+- Text, avatars, the equaliser bars already on screen and the Space carry on.
+
+`audio-only` changes nothing visible while calls are audio alone; video (#317) and screen sharing (#318) show their
+own "Video is paused" state from the same mode.
+
+### Sign-in to publish
+
+Guests may publish audio (decided on #315). Video and screen sharing follow the same share roles as audio, with no
+sign-in either: the switch and the per-mode table are the cost guard, and a guest on a Participant link is taking
+part like anyone else.
+
+### Later
+
+The per-person cap on video bubbles received and the screen share's resolution and frame-rate caps belong to video
+(#317) and screen sharing (#318), which add those media. A maximum call length is not set: the TURN credentials
+already last 4 hours, and the budget poll guards the month.
