@@ -1,0 +1,110 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  CallBubbles,
+  MaximisedBubble,
+  SharingAndVideoPaused,
+} from '@/components/illustrations/calls';
+
+export const metadata = helpMetadata({
+  title: 'Cameras and Screen Sharing',
+  description:
+    'Turn on your camera or share a screen in a livehuddle call: it shows as a bubble above your character to the people near you, and anyone can maximise it.',
+  path: '/help/collaboration/cameras-and-screen-sharing/',
+});
+
+<ArticleLayout
+  title="Cameras and Screen Sharing"
+  description="Show your face, or a screen, in a bubble above your character to the people you are talking with."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+>
+
+Once you are talking in a call, you can turn on your camera or share a screen. Either one shows as a small **bubble above your character's head** to the people near you, and anyone watching a bubble can press it to see it large.
+
+Cameras and screens ride the call, so start with [Proximity Audio](/help/collaboration/proximity-audio/): walk into the Space and press **Join Audio**. The **Camera** and **Share** buttons appear in the call strip once you are in.
+
+<Note>
+  Calls are not switched on everywhere yet. Where they are off, there is no **Join Audio** button,
+  so there are no cameras or screen sharing either.
+</Note>
+
+## Turn on your camera
+
+<Step n={1}>Join the call, then press **Camera** in the call strip.</Step>
+
+<Step n={2}>
+  Your browser asks for the camera the first time. Allow it, and the button turns on: the people
+  near you now see you in a bubble above your character.
+</Step>
+
+<Step n={3}>Press **Camera** again to turn it off. Your browser's camera light goes out.</Step>
+
+Your own bubble shows above your own head, mirrored, so you can see what others see; they see it the right way round. The camera stays on while you walk around alone, as it is your choice to make, but nothing is sent to anyone out of earshot. Leaving the call, Avatar mode or the tab turns it off.
+
+If the button says **Camera Blocked**, your browser refused the camera. Allow it from the address bar, then press the button to try again.
+
+## Share your screen
+
+Sharing a screen is an Editor's to do, so the **Share** button only appears for Editors.
+
+<Step n={1}>
+  Press **Share** in the call strip. Your browser's own picker opens: choose a whole screen, a
+  window or a browser tab.
+</Step>
+
+<Step n={2}>
+  The people near you see it as a bubble above your head, beside your camera's when both are on.
+  While you share, a bar at the top of the canvas says **You are sharing your screen** (just
+  "Sharing your screen" on a phone).
+</Step>
+
+<Step n={3}>
+  Press **Stop Sharing** on that bar, or the share button in the strip, to stop. Stopping it from
+  your browser's own control works too, as does leaving the call.
+</Step>
+
+<Figure caption="While you share: the bar only you see, with Stop Sharing, and the strip with your camera on. When video is paused, the strip shows Video Paused instead.">
+  <SharingAndVideoPaused />
+</Figure>
+
+A shared screen carries no sound of its own: voices stay the call's only sound. It is tuned for reading text, so slides, documents and code come through clearly.
+
+## Bubbles, and who sees them
+
+Cameras and screens follow the same rule as voices: **you see the bubbles of the people you hear**, and nobody else sees yours. Walk out of earshot and a bubble goes; walk back and it returns.
+
+- **Off-screen bubbles are not shown.** If someone in earshot is outside the part of the board you can see, their bubble waits until you scroll them into view.
+- **A hidden tab shows none.** While your browser tab is hidden, cameras and screens pause and voices carry on. They come back when you return.
+- **Up to six cameras and two screens at once**, the nearest. Anyone else in earshot shows just their character.
+
+<Figure caption="Sam's camera bubble, hovered to show its name and the maximise mark. Priya shares a screen beside her camera.">
+  <CallBubbles />
+</Figure>
+
+## Maximise a bubble
+
+Press any bubble to **maximise** it. It opens into a large panel over the canvas, with the person's name in a bar above the picture and a **Restore** button. The board stays live, softly dimmed behind it, and a maximised camera switches to a sharper picture for you alone.
+
+Press **Restore**, press **Esc**, or click the dimmed board to put it back. One bubble is maximised at a time: maximising another restores the first. If its person walks out of earshot, turns it off or leaves, the panel closes by itself. On a phone the panel fills the width of the screen.
+
+<Figure caption="A maximised screen share, with Restore in the bar above the picture.">
+  <MaximisedBubble />
+</Figure>
+
+## Who can do what
+
+| What you can do                        | Editor | Participant | Viewer |
+| -------------------------------------- | ------ | ----------- | ------ |
+| See the bubbles of the people near you | Yes    | Yes         | Yes    |
+| Maximise and restore a bubble          | Yes    | Yes         | Yes    |
+| Turn on a camera                       | Yes    | Yes         | No     |
+| Share a screen                         | Yes    | No          | No     |
+
+Guests on an Editor or Participant link can turn on a camera without signing in, just as they can speak. A Viewer link listens and watches.
+
+## Video Paused
+
+Video and screen sharing can be paused while audio carries on. The camera and share buttons then give way to one calm **Video Paused**: a camera or share that was on stops, every bubble closes, and you keep talking as before.
+
+</ArticleLayout>

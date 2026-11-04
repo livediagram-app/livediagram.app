@@ -158,8 +158,8 @@ export const categories: Category[] = [
     slug: 'collaboration',
     title: 'Collaboration',
     description:
-      'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 7,
+      'Work together in real time: comments, assigned actions, live presence, calls, teams, sharing, and session tools.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -1342,6 +1342,24 @@ export const articles: Article[] = [
     description: 'Live cursors, names, selections, and who is on which tab, in real time.',
     keywords:
       'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'proximity-audio',
+    title: 'Proximity Audio',
+    description: 'Talk with the people your character is near, and see who is talking further off.',
+    keywords:
+      'audio voice call calls talk talking speak speaker microphone mic mute unmute listen listen in join audio leave proximity nearby earshot hearing headphones equaliser equalizer bars walk over muted blocked nobody near huddle',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'cameras-and-screen-sharing',
+    title: 'Cameras and Screen Sharing',
+    description: 'Turn on your camera or share a screen in a bubble above your character.',
+    keywords:
+      'camera video webcam face screen share sharing present presenting window tab bubble maximise maximize restore stop sharing video paused call calls',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
