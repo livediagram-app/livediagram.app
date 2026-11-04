@@ -91,16 +91,18 @@ describe('WorkKinds', () => {
     const { container: one } = render(
       <WorkKinds app="livehuddle" all={false} templateHref={href} />,
     );
-    expect(one.querySelector('ul')!.className).toContain('grid-cols-4 lg:grid-cols-2');
+    expect(one.querySelector('ul')!.className).toContain('grid-cols-4 gap-2 lg:grid-cols-2');
     const { container: all } = render(<WorkKinds app="livehuddle" all templateHref={href} />);
     const grid = all.querySelector('ul')!.className;
     expect(grid).toContain('grid-cols-5');
     expect(grid).toContain('lg:grid-cols-6');
     expect(grid).toContain('lg:[&>li]:col-span-2');
     expect(grid).toContain('lg:[&>li:nth-child(4)]:col-start-2');
-    // Every tile is the same tile as an app's own: only the grid differs.
-    const tile = (root: HTMLElement) => shape(root.querySelector('li')!);
-    expect(tile(all)).toBe(tile(one));
+    // Every tile is the same tile as an app's own; only the grid, and on a phone the name's size, differ.
+    const tileClass = (root: HTMLElement) => root.querySelector('[data-work-kind]')!.className;
+    expect(tileClass(all)).toBe(tileClass(one));
+    expect(all.querySelector('[data-work-kind] span')!.className).toContain('text-[11px]');
+    expect(one.querySelector('[data-work-kind] span')!.className).toContain('text-xs');
   });
 
   it('shows one per app under All, each in that app’s colours and named by its kind', () => {

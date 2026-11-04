@@ -61,8 +61,11 @@ function Tile({ tile, all, href }: { tile: WorkTile; all: boolean; href: string 
         <rect width={VIEW.w} height={VIEW.h} className="fill-brand-50" />
         {kind.draw(BOX)}
       </svg>
-      {/* Two lines held on a phone, where a longer name wraps, so every app's tiles stand as tall. */}
-      <span className="min-h-8 break-words px-0.5 text-xs font-semibold leading-4 text-slate-800 sm:min-h-0 sm:px-1 sm:text-[13px] sm:leading-[18px] dark:text-slate-100">
+      {/* Two lines held on a phone, where a longer name wraps, so every app's tiles stand as tall. All's five are
+          narrower there, so its one-word names (Document the longest) set a touch smaller and never break. */}
+      <span
+        className={`min-h-8 break-words font-semibold leading-4 text-slate-800 sm:min-h-0 sm:px-1 sm:text-[13px] sm:leading-[18px] dark:text-slate-100 ${all ? LABEL_ALL : 'px-0.5 text-xs'}`}
+      >
         {label}
       </span>
     </>
@@ -90,9 +93,10 @@ function Tile({ tile, all, href }: { tile: WorkTile; all: boolean; href: string 
 // included; All's five one row of five below `lg` and three over two from `lg`, the two centred (a six-column grid, each
 // tile two columns wide, the fourth starting at the second), so every tile keeps one size and spacing.
 const GRID = {
-  app: 'grid-cols-4 lg:grid-cols-2',
-  all: 'grid-cols-5 lg:grid-cols-6 lg:[&>li]:col-span-2 lg:[&>li:nth-child(4)]:col-start-2',
+  app: 'grid-cols-4 gap-2 lg:grid-cols-2',
+  all: 'grid-cols-5 gap-1 lg:grid-cols-6 lg:[&>li]:col-span-2 lg:[&>li:nth-child(4)]:col-start-2',
 } as const;
+const LABEL_ALL = 'px-0 text-[11px] tracking-[-0.01em] sm:text-[13px] sm:tracking-normal';
 
 /** The hero's set: the app's kinds, or one per app under All (GRID). */
 export function WorkKinds({
@@ -114,7 +118,7 @@ export function WorkKinds({
       >
         {WORK_KINDS_COPY.heading}
       </h2>
-      <ul className={`grid ${all ? GRID.all : GRID.app} gap-2 sm:gap-3`}>
+      <ul className={`grid ${all ? GRID.all : GRID.app} sm:gap-3`}>
         {tiles.map((tile) => (
           <li key={`${tile.app}:${tile.kind.id}`} className="min-w-0">
             <Tile tile={tile} all={all} href={hrefOf(tile.app, tile.kind.template)} />
