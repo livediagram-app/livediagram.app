@@ -13,12 +13,12 @@ import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Terms of Use · liveworkspace',
   description:
-    'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign): what you agree to, and what the free service promises.',
+    'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign and livehuddle): what you agree to, and what the free service promises.',
   alternates: { canonical: '/terms' },
   openGraph: {
     title: 'Terms of Use · liveworkspace',
     description:
-      'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign): what you agree to, and what the free service promises.',
+      'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign and livehuddle): what you agree to, and what the free service promises.',
     url: '/terms',
     siteName: 'liveworkspace',
     type: 'website',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Terms of Use · liveworkspace',
     description:
-      'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments and livedesign): what you agree to, and what the free service promises.',
+      'The terms for liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign and livehuddle): what you agree to, and what the free service promises.',
   },
 };
 
@@ -249,9 +249,9 @@ const SECTIONS: LegalSection[] = [
     title: 'The software',
     body: (
       <p>
-        The apps&rsquo; source code (livediagram, liveplanner, livedocuments and livedesign) is
-        public and MIT-licensed, and that licence governs the code itself. These terms cover your
-        use of the hosted apps on their .app addresses and liveworkspace.app.
+        The apps&rsquo; source code (livediagram, liveplanner, livedocuments, livedesign and
+        livehuddle) is public and MIT-licensed, and that licence governs the code itself. These
+        terms cover your use of the hosted apps on their .app addresses and liveworkspace.app.
       </p>
     ),
   },
@@ -269,12 +269,13 @@ export default function Terms() {
         <p>
           These terms cover your use of <strong>liveworkspace.app</strong>, including your
           liveworkspace account, and the hosted apps <strong>livediagram.app</strong>,{' '}
-          <strong>liveplanner.app</strong>, <strong>livedocuments.app</strong> and{' '}
-          <strong>livedesign.app</strong> (together, the &ldquo;Service&rdquo;), operated by the
-          liveworkspace team (&ldquo;we&rdquo;, &ldquo;us&rdquo;). By using the Service you agree to
-          them. If you do not agree, please do not use it. They are the same for every app, and work
-          alongside our <a href="/privacy">Privacy Policy</a>, which explains what the Service does
-          with your data.
+          <strong>liveplanner.app</strong>, <strong>livedocuments.app</strong>,{' '}
+          <strong>livedesign.app</strong> and <strong>livehuddle.app</strong> (together, the
+          &ldquo;Service&rdquo;), operated by the liveworkspace team (&ldquo;we&rdquo;,
+          &ldquo;us&rdquo;). By using the Service you agree to them. If you do not agree, please do
+          not use it. They are the same for every app, and work alongside our{' '}
+          <a href="/privacy">Privacy Policy</a>, which explains what the Service does with your
+          data.
         </p>
       }
     />
