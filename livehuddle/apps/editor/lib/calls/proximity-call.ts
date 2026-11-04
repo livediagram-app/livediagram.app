@@ -3,21 +3,36 @@
 // distance and side, detects your own voice for the equaliser, and closes the microphone while nobody is on your
 // tab. Loaded only when somebody presses Join Audio; the canvas feeds it positions through `update`. The calls kill
 // switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused") ends it quietly, from the room's push or a
-// refused mint.
-import { callsModeAllows, type CallTrackLocator, type VoiceLevel } from '@livehuddle/api-schema';
+// refused mint. The camera and a shared screen ride the same session (docs/specs/012-collaboration/
+// video-and-screen-bubbles.md): published on demand, received as bubbles from the people heard and on screen.
+import {
+  CALL_SCREEN_TRACK_NAME,
+  CALL_TRACK_NAME,
+  CALL_VIDEO_TRACK_NAME,
+  callsModeAllows,
+  type CallTrackLocator,
+  type VoiceLevel,
+} from '@livehuddle/api-schema';
 import { apiCallSession, CallsApiError, type CallsCaller } from '@/lib/api/calls';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { AudioGraph } from './audio-graph';
+import { pickSeen, type ViewRect } from './bubbles';
 import {
+  callMaximised,
   callPeers,
   callSelf,
+  onCallMaximised,
   onCallsMode,
   onCallTracks,
+  resetCallMedia,
+  SELF_MEDIA_ID,
+  setCallMedia,
   setCallSelf,
   setCallsMode,
+  type CallMedia,
 } from './calls-store';
 import { distance, gainAt, HEARING_RADIUS_PX, nextHeard, panAt, type Point } from './hearing';
-import { SfuSession } from './sfu-session';
+import { SfuSession, type SfuWant } from './sfu-session';
 import {
   silenceVoice,
   SILENT,
@@ -31,27 +46,75 @@ export const MIC_IDLE_CLOSE_MS = 15_000;
 /** A speaker's locator goes out again for a new walker at most this often. */
 export const LOCATOR_RESEND_MS = 1000;
 
+/** The camera's source: the large layer's size (video-and-screen-bubbles.md "Two layers"). */
+export const CAMERA_CONSTRAINTS: MediaStreamConstraints = {
+  audio: false,
+  video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
+};
+/** Two simulcast layers, large first (Realtime ranks RIDs a to z): `f` 720p at 1.5 Mbps, `h` half size at 300 kbps. */
+export const CAMERA_ENCODINGS: RTCRtpEncodingParameters[] = [
+  { rid: 'f', maxBitrate: 1_500_000, maxFramerate: 24 },
+  { rid: 'h', scaleResolutionDownBy: 2, maxBitrate: 300_000, maxFramerate: 24 },
+];
+/** A screen, capped for cost and clarity: up to 1080p at 5 to 15 fps (video-and-screen-bubbles.md "The screen share"). */
+export const SCREEN_MAX_FPS = 15;
+export const SCREEN_MAX_BITRATE = 1_000_000;
+export const SCREEN_CONSTRAINTS: DisplayMediaStreamOptions = {
+  audio: false,
+  video: {
+    width: { max: 1920 },
+    height: { max: 1080 },
+    frameRate: { ideal: SCREEN_MAX_FPS, max: SCREEN_MAX_FPS },
+  },
+};
+const SCREEN_ENCODINGS: RTCRtpEncodingParameters[] = [
+  { maxBitrate: SCREEN_MAX_BITRATE, maxFramerate: SCREEN_MAX_FPS },
+];
+
 /** What a call sends over the room: the editor adds the tab. */
 export type CallSignal =
   | { kind: 'avatar-voice'; level: VoiceLevel }
-  | { kind: 'call-track'; track: CallTrackLocator | null };
+  | {
+      kind: 'call-track';
+      track: CallTrackLocator | null;
+      video?: CallTrackLocator | null;
+      screen?: CallTrackLocator | null;
+    };
 
-/** Where everyone stands, as the canvas sees it: your feet, and every other walker's on your tab. */
-export type CallScene = { tabId: string; self: Point | null; walkers: ReadonlyMap<string, Point> };
+/** Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, and the visible area. */
+export type CallScene = {
+  tabId: string;
+  self: Point | null;
+  walkers: ReadonlyMap<string, Point>;
+  view?: ViewRect | null;
+};
 
 export type ProximityCallInput = {
   caller: CallsCaller;
   canSpeak: boolean;
+  // An Editor: may share a screen.
+  canShare?: boolean;
   // Made in the Join press, so the browser lets it play.
   context: AudioContext;
   send: (signal: CallSignal) => void;
   getUserMedia?: (constraints: MediaStreamConstraints) => Promise<MediaStream>;
+  getDisplayMedia?: (options: DisplayMediaStreamOptions) => Promise<MediaStream>;
+  // Whether the page is visible; a hidden tab receives no bubbles. Defaults to the document's.
+  pageVisible?: () => boolean;
 };
 
 const MIC_CONSTRAINTS: MediaStreamConstraints = {
   audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
   video: false,
 };
+
+const MEDIA_OF: Readonly<Record<string, CallMedia | undefined>> = {
+  [CALL_VIDEO_TRACK_NAME]: 'video',
+  [CALL_SCREEN_TRACK_NAME]: 'screen',
+};
+
+const documentVisible = () =>
+  typeof document === 'undefined' || document.visibilityState !== 'hidden';
 
 export class ProximityCall {
   private readonly input: ProximityCallInput;
@@ -62,6 +125,11 @@ export class ProximityCall {
   private micBlocked = false;
   private muted = false;
   private published = false;
+  private camera: MediaStream | null = null;
+  private screen: MediaStream | null = null;
+  // Whether the op carries a camera or screen slot: once used in this call, it says when it goes off too.
+  private cameraAnnounced = false;
+  private screenAnnounced = false;
   private voice: VoiceState = SILENT;
   private sampler: ReturnType<typeof setInterval> | null = null;
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
@@ -71,16 +139,23 @@ export class ProximityCall {
   private locatorSentAt = -Infinity;
   private locatorDue: ReturnType<typeof setTimeout> | null = null;
   private stopped = false;
+  // Publisher session and track → the presence id it was received for, so an ended track finds its owner even after
+  // the owner's locator has gone.
+  private readonly owners = new Map<string, string>();
   private readonly unsubscribeTracks: () => void;
   private readonly unsubscribeMode: () => void;
+  private readonly unsubscribeMaximised: () => void;
+  private readonly onVisibility = () => this.hear();
 
   constructor(input: ProximityCallInput) {
     this.input = input;
     this.graph = new AudioGraph(input.context);
     this.unsubscribeTracks = onCallTracks(() => this.hear());
-    this.unsubscribeMode = onCallsMode(() => {
-      if (!callsModeAllows(callSelf().mode, 'session')) this.pause();
-    });
+    this.unsubscribeMode = onCallsMode(() => this.applyMode());
+    this.unsubscribeMaximised = onCallMaximised(() => this.hear());
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.onVisibility);
+    }
   }
 
   /** Whether this call has stopped (left, failed or paused); a stopped call never starts again. */
@@ -99,13 +174,11 @@ export class ProximityCall {
       setCallsMode(session.mode === 'audio-only' ? 'audio-only' : 'on');
       this.trackToken = session.trackToken ?? null;
       this.sfu = new SfuSession(this.input.caller, session, {
-        onTrack: (publisher, stream) => this.onTrack(publisher, stream),
-        onTrackEnded: (publisher) => {
-          const id = this.presenceOf(publisher);
-          if (id) this.graph.detach(id);
-        },
+        onTrack: (publisher, trackName, stream) => this.onTrack(publisher, trackName, stream),
+        onTrackEnded: (publisher, trackName) => this.onTrackEnded(publisher, trackName),
         onFailed: () => this.fail('connection'),
         onPaused: () => this.pause(),
+        onAudioOnly: () => setCallsMode('audio-only'),
       });
       if (this.input.canSpeak && session.canSpeak) await this.openMic();
       if (this.stopped) return;
@@ -120,6 +193,18 @@ export class ProximityCall {
     }
   }
 
+  // The switch changed: off ends the call; audio only stops the camera and the share, and every bubble goes.
+  private applyMode(): void {
+    const mode = callSelf().mode;
+    if (!callsModeAllows(mode, 'session')) {
+      this.pause();
+      return;
+    }
+    if (!callsModeAllows(mode, 'video')) this.stopCamera();
+    if (!callsModeAllows(mode, 'screen')) this.stopScreen();
+    this.hear();
+  }
+
   /** The kill switch paused calls: end as Leave Audio does, into Calls Paused. Never an error. */
   private pause(): void {
     if (this.stopped) return;
@@ -132,7 +217,13 @@ export class ProximityCall {
     debugLog('[calls] failed', why);
     if (this.stopped) return;
     this.teardown();
-    setCallSelf({ phase: 'error', mic: this.micBlocked ? 'blocked' : 'closed', level: 0 });
+    setCallSelf({
+      phase: 'error',
+      mic: this.micBlocked ? 'blocked' : 'closed',
+      level: 0,
+      camera: 'off',
+      screen: 'off',
+    });
   }
 
   private async openMic(): Promise<void> {
@@ -177,6 +268,105 @@ export class ProximityCall {
     setCallSelf({ mic: 'closed' });
   }
 
+  // --- The camera and the screen (video-and-screen-bubbles.md "The camera", "The screen share") -----------------
+
+  /** Turn the camera on or off. A Viewer has none; audio only pauses it. */
+  async toggleCamera(): Promise<void> {
+    if (this.camera) {
+      this.stopCamera();
+      return;
+    }
+    const sfu = this.sfu;
+    if (!sfu || !this.trackToken || !this.input.canSpeak || this.stopped) return;
+    if (!callsModeAllows(callSelf().mode, 'video') || callSelf().camera === 'starting') return;
+    setCallSelf({ camera: 'starting' });
+    const getUserMedia =
+      this.input.getUserMedia ??
+      ((c: MediaStreamConstraints) => navigator.mediaDevices.getUserMedia(c));
+    let stream: MediaStream;
+    try {
+      stream = await getUserMedia(CAMERA_CONSTRAINTS);
+    } catch {
+      if (!this.stopped) setCallSelf({ camera: 'blocked' });
+      return;
+    }
+    if (this.stopped || !callsModeAllows(callSelf().mode, 'video')) {
+      for (const t of stream.getTracks()) t.stop();
+      if (!this.stopped) setCallSelf({ camera: 'off' });
+      return;
+    }
+    this.camera = stream;
+    setCallMedia(SELF_MEDIA_ID, 'video', stream);
+    setCallSelf({ camera: 'on' });
+    this.cameraAnnounced = true;
+    await sfu.publish(stream.getVideoTracks()[0]!, CALL_VIDEO_TRACK_NAME, CAMERA_ENCODINGS);
+    this.sendLocator(true);
+  }
+
+  private stopCamera(): void {
+    if (!this.camera) {
+      if (callSelf().camera === 'blocked') setCallSelf({ camera: 'off' });
+      return;
+    }
+    for (const t of this.camera.getTracks()) t.stop();
+    this.camera = null;
+    void this.sfu?.replaceTrack(CALL_VIDEO_TRACK_NAME, null);
+    setCallMedia(SELF_MEDIA_ID, 'video', null);
+    setCallSelf({ camera: 'off' });
+    this.sendLocator(true);
+  }
+
+  /** Share a screen, or stop sharing. An Editor's alone; audio only pauses it. */
+  async toggleScreen(): Promise<void> {
+    if (this.screen) {
+      this.stopScreen();
+      return;
+    }
+    const sfu = this.sfu;
+    if (!sfu || !this.trackToken || !this.input.canShare || this.stopped) return;
+    if (!callsModeAllows(callSelf().mode, 'screen') || callSelf().screen === 'starting') return;
+    setCallSelf({ screen: 'starting' });
+    const getDisplayMedia =
+      this.input.getDisplayMedia ??
+      ((o: DisplayMediaStreamOptions) => navigator.mediaDevices.getDisplayMedia(o));
+    let stream: MediaStream;
+    try {
+      stream = await getDisplayMedia(SCREEN_CONSTRAINTS);
+    } catch {
+      // Cancelled in the browser's picker, or refused: back to off, never an error.
+      if (!this.stopped) setCallSelf({ screen: 'off' });
+      return;
+    }
+    if (this.stopped || !callsModeAllows(callSelf().mode, 'screen')) {
+      for (const t of stream.getTracks()) t.stop();
+      if (!this.stopped) setCallSelf({ screen: 'off' });
+      return;
+    }
+    const track = stream.getVideoTracks()[0]!;
+    // Text stays sharp: the encoder keeps detail and drops frames rather than resolution.
+    track.contentHint = 'detail';
+    // The browser's own Stop Sharing control ends the track.
+    track.addEventListener('ended', () => {
+      if (this.screen === stream) this.stopScreen();
+    });
+    this.screen = stream;
+    setCallMedia(SELF_MEDIA_ID, 'screen', stream);
+    setCallSelf({ screen: 'on' });
+    this.screenAnnounced = true;
+    await sfu.publish(track, CALL_SCREEN_TRACK_NAME, SCREEN_ENCODINGS);
+    this.sendLocator(true);
+  }
+
+  private stopScreen(): void {
+    if (!this.screen) return;
+    for (const t of this.screen.getTracks()) t.stop();
+    this.screen = null;
+    void this.sfu?.replaceTrack(CALL_SCREEN_TRACK_NAME, null);
+    setCallMedia(SELF_MEDIA_ID, 'screen', null);
+    setCallSelf({ screen: 'off' });
+    this.sendLocator(true);
+  }
+
   private startSampling(): void {
     if (this.sampler) return;
     this.sampler = setInterval(() => this.sample(), VOICE_SAMPLE_MS);
@@ -208,8 +398,27 @@ export class ProximityCall {
     setCallSelf({ muted: this.muted });
   }
 
+  // Where this browser's media is: the microphone's locator once published, the camera's and the screen's while on.
+  private trackSignal(): CallSignal | null {
+    const sfu = this.sfu;
+    const token = this.trackToken;
+    if (!sfu || !token) return null;
+    if (!this.published && !this.cameraAnnounced && !this.screenAnnounced) return null;
+    return {
+      kind: 'call-track',
+      track: this.published ? sfu.locator(token) : null,
+      ...(this.cameraAnnounced
+        ? { video: this.camera ? sfu.locator(token, CALL_VIDEO_TRACK_NAME) : null }
+        : {}),
+      ...(this.screenAnnounced
+        ? { screen: this.screen ? sfu.locator(token, CALL_SCREEN_TRACK_NAME) : null }
+        : {}),
+    };
+  }
+
   private sendLocator(force = false): void {
-    if (!this.sfu || !this.trackToken || !this.published) return;
+    const signal = this.trackSignal();
+    if (!signal) return;
     const wait = LOCATOR_RESEND_MS - (performance.now() - this.locatorSentAt);
     if (!force && wait > 0) {
       this.locatorDue ??= setTimeout(() => {
@@ -219,7 +428,7 @@ export class ProximityCall {
       return;
     }
     this.locatorSentAt = performance.now();
-    this.input.send({ kind: 'call-track', track: this.sfu.locator(this.trackToken) });
+    this.input.send(signal);
   }
 
   /** The canvas moved: re-decide who is heard, how loudly, and whether the microphone stays open. */
@@ -261,16 +470,40 @@ export class ProximityCall {
     const candidates = new Map<string, Point>();
     for (const [id, at] of this.scene.walkers) {
       const peer = peers.get(id);
-      if (peer?.track && peer.tabId === this.scene.tabId) candidates.set(id, at);
+      if (peer && (peer.track || peer.video || peer.screen) && peer.tabId === this.scene.tabId) {
+        candidates.set(id, at);
+      }
     }
     this.heard = nextHeard(this.heard, this.scene.self, candidates);
     setCallSelf({ heard: this.heard });
-    const locators: CallTrackLocator[] = [];
+    const wants: SfuWant[] = [];
     for (const id of this.heard) {
       const track = peers.get(id)?.track;
-      if (track) locators.push(track);
+      if (track) wants.push(track);
     }
-    this.sfu.want(locators);
+    const mode = callSelf().mode;
+    const maximised = callMaximised();
+    const seen = pickSeen({
+      self: this.scene.self,
+      heard: this.heard,
+      walkers: this.scene.walkers,
+      peers,
+      view: this.scene.view ?? null,
+      visible: (this.input.pageVisible ?? documentVisible)(),
+      allowVideo: callsModeAllows(mode, 'video'),
+      allowScreen: callsModeAllows(mode, 'screen'),
+      maximised,
+    });
+    for (const id of seen.video) {
+      const video = peers.get(id)?.video;
+      const large = maximised?.id === id && maximised.media === 'video';
+      if (video) wants.push(large ? { ...video, layer: 'f' } : video);
+    }
+    for (const id of seen.screen) {
+      const screen = peers.get(id)?.screen;
+      if (screen) wants.push(screen);
+    }
+    this.sfu.want(wants);
     this.place();
   }
 
@@ -283,17 +516,40 @@ export class ProximityCall {
     }
   }
 
-  private presenceOf(publisherSessionId: string): string | null {
-    for (const [id, peer] of callPeers())
-      if (peer.track?.sessionId === publisherSessionId) return id;
+  private presenceOf(publisherSessionId: string, trackName: string): string | null {
+    for (const [id, peer] of callPeers()) {
+      const locator =
+        trackName === CALL_VIDEO_TRACK_NAME
+          ? peer.video
+          : trackName === CALL_SCREEN_TRACK_NAME
+            ? peer.screen
+            : peer.track;
+      if (locator?.sessionId === publisherSessionId) return id;
+    }
     return null;
   }
 
-  private onTrack(publisherSessionId: string, stream: MediaStream): void {
-    const id = this.presenceOf(publisherSessionId);
+  private onTrack(publisherSessionId: string, trackName: string, stream: MediaStream): void {
+    const id = this.presenceOf(publisherSessionId, trackName);
     if (!id) return;
+    this.owners.set(`${publisherSessionId}|${trackName}`, id);
+    const media = MEDIA_OF[trackName];
+    if (media) {
+      setCallMedia(id, media, stream);
+      return;
+    }
     this.graph.attach(id, stream);
     this.place();
+  }
+
+  private onTrackEnded(publisherSessionId: string, trackName: string): void {
+    const key = `${publisherSessionId}|${trackName}`;
+    const id = this.owners.get(key) ?? this.presenceOf(publisherSessionId, trackName);
+    this.owners.delete(key);
+    if (!id) return;
+    const media = MEDIA_OF[trackName];
+    if (media) setCallMedia(id, media, null);
+    else this.graph.detach(id);
   }
 
   private teardown(): void {
@@ -302,12 +558,30 @@ export class ProximityCall {
     if (this.locatorDue) clearTimeout(this.locatorDue);
     this.unsubscribeTracks();
     this.unsubscribeMode();
+    this.unsubscribeMaximised();
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.onVisibility);
+    }
     this.stopSampling();
-    if (this.published) this.input.send({ kind: 'call-track', track: null });
-    if (this.mic) for (const t of this.mic.getTracks()) t.stop();
+    const announced = this.published || this.cameraAnnounced || this.screenAnnounced;
+    if (announced) {
+      this.input.send({
+        kind: 'call-track',
+        track: null,
+        ...(this.cameraAnnounced ? { video: null } : {}),
+        ...(this.screenAnnounced ? { screen: null } : {}),
+      });
+    }
+    for (const stream of [this.mic, this.camera, this.screen]) {
+      for (const t of stream?.getTracks() ?? []) t.stop();
+    }
     this.mic = null;
+    this.camera = null;
+    this.screen = null;
     this.sfu?.close();
     this.sfu = null;
+    this.owners.clear();
+    resetCallMedia();
     this.graph.close();
   }
 
@@ -322,6 +596,8 @@ export class ProximityCall {
       level: 0,
       heard: new Set(),
       someoneNear: false,
+      camera: 'off',
+      screen: 'off',
     });
   }
 }

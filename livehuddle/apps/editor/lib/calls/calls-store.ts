@@ -2,7 +2,9 @@
 // state"): every peer's talking level and microphone locator, as the room connection hands them over, and this
 // browser's own call, which the bottom-right control reads and drives. A module store, like the speech bubbles', so
 // the room connection, the canvas and the chrome share it without threading it through the editor's state. Memory
-// only: nothing here is written anywhere.
+// only: nothing here is written anywhere. Video and screen bubbles (docs/specs/012-collaboration/
+// video-and-screen-bubbles.md) add each peer's camera and screen locators, the streams the bubbles draw, and the one
+// bubble this viewer has maximised.
 import { useSyncExternalStore } from 'react';
 import {
   parseAvatarVoice,
@@ -24,8 +26,22 @@ export type CallPeer = {
   tabId: string | null;
   level: VoiceLevel;
   levelAt: number;
+  // The microphone's locator; null while it is not published.
   track: CallTrackLocator | null;
+  // The camera's and the shared screen's, null while off.
+  video: CallTrackLocator | null;
+  screen: CallTrackLocator | null;
 };
+
+/** What a bubble shows. */
+export type CallMedia = 'video' | 'screen';
+export type CameraState = 'off' | 'starting' | 'on' | 'blocked';
+export type ScreenState = 'off' | 'starting' | 'on';
+/** Your own bubbles are keyed by this in the media store; everyone else's by presence id. */
+export const SELF_MEDIA_ID = 'self';
+/** The one bubble this viewer has opened large. */
+export type CallMaximised = { id: string; media: CallMedia };
+export type CallMediaStreams = { readonly video?: MediaStream; readonly screen?: MediaStream };
 
 export type CallPhase = 'off' | 'joining' | 'live' | 'error';
 export type MicState = 'closed' | 'open' | 'blocked';
@@ -46,6 +62,10 @@ export type CallSelf = {
   someoneNear: boolean;
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): `off` shows Calls Paused.
   mode: CallsMode;
+  // This session may share a screen (an Editor).
+  canShare: boolean;
+  camera: CameraState;
+  screen: ScreenState;
 };
 
 /** What the control's buttons do; set by the running call, absent while there is none to drive. */
@@ -53,6 +73,8 @@ export type CallActions = {
   join: () => void;
   leave: () => void;
   toggleMute: () => void;
+  toggleCamera: () => void;
+  toggleScreen: () => void;
 };
 
 const EMPTY_HEARD: ReadonlySet<string> = new Set();
@@ -66,6 +88,9 @@ const OFF: CallSelf = {
   heard: EMPTY_HEARD,
   someoneNear: false,
   mode: 'on',
+  canShare: false,
+  camera: 'off',
+  screen: 'off',
 };
 
 let peers = new Map<string, CallPeer>();
@@ -76,6 +101,10 @@ const peerListeners = createListeners();
 const selfListeners = createListeners();
 const trackListeners = createListeners();
 const modeListeners = createListeners();
+const mediaListeners = createListeners();
+const maximisedListeners = createListeners();
+let media: ReadonlyMap<string, CallMediaStreams> = new Map();
+let maximised: CallMaximised | null = null;
 let peerNotifyDue: ReturnType<typeof setTimeout> | null = null;
 
 const now = () => performance.now();
@@ -100,7 +129,9 @@ function notifyPeers(soon = true) {
 }
 
 function peerOf(id: string): CallPeer {
-  return peers.get(id) ?? { tabId: null, level: 0, levelAt: 0, track: null };
+  return (
+    peers.get(id) ?? { tabId: null, level: 0, levelAt: 0, track: null, video: null, screen: null }
+  );
 }
 
 /** A peer's `avatar-voice` or `call-track`, as the room relayed it. Anything malformed is ignored. */
@@ -113,7 +144,14 @@ export function receiveCallOp(from: string, op: unknown): void {
   }
   const track = parseCallTrack(op);
   if (!track) return;
-  peers.set(from, { ...peerOf(from), tabId: track.tabId, track: track.track });
+  // An op from before video and screens carries neither: both read as off.
+  peers.set(from, {
+    ...peerOf(from),
+    tabId: track.tabId,
+    track: track.track,
+    video: track.video ?? null,
+    screen: track.screen ?? null,
+  });
   notifyPeers(false);
   trackListeners.notify();
 }
@@ -220,6 +258,60 @@ export function resetCallPeers(): void {
   peers = new Map();
   publishPeers();
   trackListeners.notify();
+}
+
+// --- The bubbles' streams and the maximised one (docs/specs/012-collaboration/video-and-screen-bubbles.md) ---------
+
+/** Show (or with null, stop showing) a stream in someone's bubble; `SELF_MEDIA_ID` for your own. */
+export function setCallMedia(id: string, kind: CallMedia, stream: MediaStream | null): void {
+  const prev = media.get(id) ?? {};
+  if ((prev[kind] ?? null) === stream) return;
+  const next = new Map(media);
+  const streams: CallMediaStreams = { ...prev, [kind]: stream ?? undefined };
+  if (!streams.video && !streams.screen) next.delete(id);
+  else next.set(id, streams);
+  media = next;
+  mediaListeners.notify();
+  // A bubble that is no longer received cannot stay maximised.
+  if (!stream && maximised?.id === id && maximised.media === kind) setCallMaximised(null);
+}
+
+/** Every bubble's streams, by presence id. */
+export function callMedia(): ReadonlyMap<string, CallMediaStreams> {
+  return media;
+}
+
+export function useCallMedia(): ReadonlyMap<string, CallMediaStreams> {
+  return useSyncExternalStore(mediaListeners.subscribe, callMedia, callMedia);
+}
+
+/** Open a bubble large, or with null restore it. Only one at a time. */
+export function setCallMaximised(next: CallMaximised | null): void {
+  if (maximised?.id === next?.id && maximised?.media === next?.media) return;
+  maximised = next;
+  maximisedListeners.notify();
+}
+
+export function callMaximised(): CallMaximised | null {
+  return maximised;
+}
+
+export function useCallMaximised(): CallMaximised | null {
+  return useSyncExternalStore(maximisedListeners.subscribe, callMaximised, callMaximised);
+}
+
+/** Subscribe to a maximise or a restore (the running call switches that camera's layer). */
+export function onCallMaximised(listener: () => void): () => void {
+  return maximisedListeners.subscribe(listener);
+}
+
+/** Every bubble goes: the call ended. */
+export function resetCallMedia(): void {
+  maximised = null;
+  maximisedListeners.notify();
+  if (media.size === 0) return;
+  media = new Map();
+  mediaListeners.notify();
 }
 
 /** Back to no call at all (the hook unmounting). */

@@ -3,20 +3,28 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   callActions,
+  callMaximised,
+  callMedia,
   callPeers,
   callSelf,
   forgetCallPeer,
   levelNow,
+  onCallMaximised,
   onCallsMode,
   onCallTracks,
   pruneCallPeers,
   receiveCallOp,
   receiveCallsMode,
+  resetCallMedia,
   resetCallPeers,
   resetCallSelf,
   setCallActions,
+  setCallMaximised,
+  setCallMedia,
   setCallSelf,
   useCallActions,
+  useCallMaximised,
+  useCallMedia,
   useCallPeers,
   useCallSelf,
   VOICE_STALE_MS,
@@ -30,6 +38,7 @@ beforeEach(() => {
 afterEach(() => {
   resetCallPeers();
   resetCallSelf();
+  resetCallMedia();
   vi.useRealTimers();
 });
 
@@ -67,7 +76,9 @@ describe('calls store peers', () => {
     expect(levelNow(peer, peer!.levelAt + 10)).toBe(4);
     expect(levelNow(peer, peer!.levelAt + VOICE_STALE_MS + 1)).toBe(0);
     expect(levelNow(undefined)).toBe(0);
-    expect(levelNow({ tabId: 't1', level: 0, levelAt: 0, track: null })).toBe(0);
+    expect(
+      levelNow({ tabId: 't1', level: 0, levelAt: 0, track: null, video: null, screen: null }),
+    ).toBe(0);
   });
 
   it('forgets a peer leaving the mode or the room', () => {
@@ -98,7 +109,13 @@ describe('calls store self', () => {
     expect(callSelf()).toBe(before);
     act(() => setCallSelf({ available: true, canSpeak: true }));
     expect(result.current.self).toMatchObject({ available: true, canSpeak: true });
-    const actions = { join: vi.fn(), leave: vi.fn(), toggleMute: vi.fn() };
+    const actions = {
+      join: vi.fn(),
+      leave: vi.fn(),
+      toggleMute: vi.fn(),
+      toggleCamera: vi.fn(),
+      toggleScreen: vi.fn(),
+    };
     act(() => setCallActions(actions));
     setCallActions(actions);
     expect(result.current.actions).toBe(actions);
@@ -125,5 +142,63 @@ describe('calls store mode', () => {
     receiveCallsMode('system', { kind: 'calls-mode', mode: 'off' });
     expect(heard).toHaveBeenCalledTimes(1);
     off();
+  });
+});
+
+// docs/specs/012-collaboration/blueprints/video-and-screen-bubbles.md "State".
+describe('calls store bubbles', () => {
+  const cam = { sessionId: 's1', trackName: 'cam', token: 't' };
+  const screen = { sessionId: 's1', trackName: 'screen', token: 't' };
+  const stream = (n: number) => ({ id: `stream-${n}` }) as unknown as MediaStream;
+
+  it('keeps a peer’s camera and screen locators, reading an op without them as off', () => {
+    receiveCallOp('p1', { kind: 'call-track', tabId: 't1', track: null, video: cam, screen });
+    expect(callPeers().get('p1')).toMatchObject({ track: null, video: cam, screen });
+    receiveCallOp('p1', { kind: 'call-track', tabId: 't1', track: locator });
+    expect(callPeers().get('p1')).toMatchObject({ track: locator, video: null, screen: null });
+  });
+
+  it('holds each bubble’s streams, and forgets a person with none left', () => {
+    const { result } = renderHook(() => useCallMedia());
+    const a = stream(1);
+    act(() => setCallMedia('p1', 'video', a));
+    // The same stream again tells nobody.
+    const before = callMedia();
+    setCallMedia('p1', 'video', a);
+    expect(callMedia()).toBe(before);
+    act(() => setCallMedia('p1', 'screen', stream(2)));
+    expect(result.current.get('p1')).toEqual({ video: a, screen: stream(2) });
+    act(() => setCallMedia('p1', 'video', null));
+    expect(result.current.get('p1')?.video).toBeUndefined();
+    act(() => setCallMedia('p1', 'screen', null));
+    expect(result.current.has('p1')).toBe(false);
+  });
+
+  it('maximises one bubble at a time, and restores it when its stream goes', () => {
+    const { result } = renderHook(() => useCallMaximised());
+    const told = vi.fn();
+    const off = onCallMaximised(told);
+    setCallMedia('p1', 'video', stream(1));
+    act(() => setCallMaximised({ id: 'p1', media: 'video' }));
+    setCallMaximised({ id: 'p1', media: 'video' });
+    expect(told).toHaveBeenCalledTimes(1);
+    expect(result.current).toEqual({ id: 'p1', media: 'video' });
+    // Another person's stream ending leaves it open.
+    setCallMedia('p2', 'video', stream(2));
+    setCallMedia('p2', 'video', null);
+    expect(callMaximised()).not.toBeNull();
+    act(() => setCallMedia('p1', 'video', null));
+    expect(result.current).toBeNull();
+    off();
+  });
+
+  it('empties every bubble and the maximised one when the call ends', () => {
+    setCallMedia('p1', 'screen', stream(1));
+    setCallMaximised({ id: 'p1', media: 'screen' });
+    resetCallMedia();
+    expect(callMedia().size).toBe(0);
+    expect(callMaximised()).toBeNull();
+    // Nothing to empty: still fine.
+    resetCallMedia();
   });
 });

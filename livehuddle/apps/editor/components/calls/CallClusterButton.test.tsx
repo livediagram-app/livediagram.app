@@ -10,7 +10,13 @@ import {
 } from '@/lib/calls/calls-store';
 import { CALLS_PAUSED_ANNOUNCEMENT, CallClusterButton, micIndicator } from './CallClusterButton';
 
-const actions = { join: vi.fn(), leave: vi.fn(), toggleMute: vi.fn() };
+const actions = {
+  join: vi.fn(),
+  leave: vi.fn(),
+  toggleMute: vi.fn(),
+  toggleCamera: vi.fn(),
+  toggleScreen: vi.fn(),
+};
 
 function show(patch: Partial<CallSelf>) {
   act(() => {
@@ -113,5 +119,53 @@ describe('CallClusterButton', () => {
     expect(micIndicator(self({ mic: 'closed' }))).toBe('closed');
     expect(micIndicator(self({ mic: 'open', someoneNear: true }))).toBe('live');
     expect(micIndicator(self({ mic: 'open', someoneNear: false }))).toBe('nobody-near');
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "The camera", "The screen share", "Share roles".
+  describe('the camera and Share Screen', () => {
+    const button = (name: string) => screen.queryByRole<HTMLButtonElement>('button', { name });
+
+    it('offers a camera to a speaker, Share Screen to an Editor, and neither to a Viewer', () => {
+      render(<CallClusterButton />);
+      show({ phase: 'live', mic: 'open' });
+      fireEvent.click(button('Turn On Camera')!);
+      expect(actions.toggleCamera).toHaveBeenCalledTimes(1);
+      expect(button('Share Screen')).toBeNull();
+      show({ phase: 'live', canShare: true });
+      fireEvent.click(button('Share Screen')!);
+      expect(actions.toggleScreen).toHaveBeenCalledTimes(1);
+      show({ phase: 'live', canSpeak: false, canShare: false });
+      expect(button('Turn On Camera')).toBeNull();
+      expect(button('Share Screen')).toBeNull();
+    });
+
+    it('shows the camera on, starting and blocked, and a share running', () => {
+      render(<CallClusterButton />);
+      show({ phase: 'live', canShare: true, camera: 'on', screen: 'on' });
+      expect(button('Turn Off Camera')!.getAttribute('aria-pressed')).toBe('true');
+      // The strip's Stop Sharing, pressed, and the sharing bar's own.
+      const stops = screen.getAllByRole('button', { name: 'Stop Sharing' });
+      expect(stops.map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', null]);
+      expect(screen.getByRole('status').textContent).toContain('You are sharing your screen');
+      fireEvent.pointerDown(stops[1]!);
+      fireEvent.click(stops[1]!);
+      expect(actions.toggleScreen).toHaveBeenCalledTimes(1);
+      show({ phase: 'live', camera: 'starting', screen: 'starting' });
+      expect(button('Turn On Camera')!.disabled).toBe(true);
+      expect(button('Share Screen')!.disabled).toBe(true);
+      expect(screen.queryByRole('status')).toBeNull();
+      show({ phase: 'live', camera: 'blocked', screen: 'off' });
+      expect(button('Turn On Camera')!.disabled).toBe(false);
+    });
+
+    it('reads one calm Video Paused while calls are audio only', () => {
+      render(<CallClusterButton />);
+      show({ phase: 'live', canShare: true, mode: 'audio-only' });
+      expect(button('Video Paused')).not.toBeNull();
+      expect(button('Turn On Camera')).toBeNull();
+      expect(button('Share Screen')).toBeNull();
+      // The microphone carries on.
+      expect(button('Mute')).not.toBeNull();
+    });
   });
 });

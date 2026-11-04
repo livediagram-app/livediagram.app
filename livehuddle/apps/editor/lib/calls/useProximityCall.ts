@@ -2,13 +2,15 @@
 
 // Proximity audio's door in the canvas (docs/specs/012-collaboration/proximity-audio.md "Who is in a call"): learns
 // whether calls are on, offers Join Audio or Listen In through the calls store, loads the call itself only when
-// somebody presses it, feeds it where everyone stands, and ends it on leaving the mode, the room or the page.
+// somebody presses it, feeds it where everyone stands, and ends it on leaving the mode, the room or the page. The
+// camera and screen share buttons (docs/specs/012-collaboration/video-and-screen-bubbles.md) drive the same call.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiGetCapabilities } from '@/lib/api/capabilities';
 import type { CallsCaller } from '@/lib/api/calls';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } from './calls-store';
+import type { ViewRect } from './bubbles';
 import type { Point } from './hearing';
 import type { CallScene, CallSignal, ProximityCall } from './proximity-call';
 
@@ -25,12 +27,16 @@ export type ProximityCallDeps = {
   caller: CallsCaller | null;
   // An Editor or a Participant (`can.takePart`): a Viewer listens.
   canSpeak: boolean;
+  // An Editor (`can.level === 'edit'`): may share a screen.
+  canShare?: boolean;
   // Sends to the room; absent without a room, which keeps calls away.
   send?: (signal: CallSignal) => void;
   tabId: string;
   self: Point | null;
   // Every other walker on this tab, by presence id.
   walkers: readonly { id: string; at: Point }[];
+  // The canvas area on screen, in canvas px: a bubble off it is not received.
+  view?: ViewRect | null;
 };
 
 // Whether this deployment has calls, paused or not; the kill switch's mode goes to the store (Calls Paused).
@@ -64,8 +70,9 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       tabId: deps.tabId,
       self: deps.self,
       walkers: new Map(deps.walkers.map((w) => [w.id, w.at])),
+      view: deps.view ?? null,
     }),
-    [deps.tabId, deps.self, deps.walkers],
+    [deps.tabId, deps.self, deps.walkers, deps.view],
   );
   const sceneRef = useRef(scene);
   // The buttons read the latest props and positions through these, so their actions stay stable.
@@ -74,9 +81,10 @@ export function useProximityCall(deps: ProximityCallDeps): void {
     sceneRef.current = scene;
   });
 
+  const canShare = deps.canShare === true;
   useEffect(() => {
-    setCallSelf({ available, canSpeak: deps.canSpeak });
-  }, [available, deps.canSpeak]);
+    setCallSelf({ available, canSpeak: deps.canSpeak, canShare });
+  }, [available, deps.canSpeak, canShare]);
 
   // The buttons' actions, stable for the life of the canvas: each reads the latest props through the ref.
   useEffect(() => {
@@ -86,7 +94,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
     };
     setCallActions({
       join: () => {
-        const { caller, send, canSpeak } = latest.current;
+        const { caller, send, canSpeak, canShare } = latest.current;
         if (!caller || !send) return;
         if (callRef.current) {
           // Join again after a failure, or after a pause ended the call, starts fresh; a running call is left alone.
@@ -103,6 +111,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
             const call = new ProximityCall({
               caller,
               canSpeak,
+              canShare: canShare === true,
               context,
               send: (signal) => latest.current.send?.(signal),
             });
@@ -120,6 +129,18 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       toggleMute: () => {
         callRef.current?.toggleMute();
         track('UI', 'Changed', 'AudioMute');
+      },
+      toggleCamera: () => {
+        const call = callRef.current;
+        if (!call) return;
+        if (callSelf().camera !== 'on') track('Canvas', 'Used', 'CameraOn');
+        void call.toggleCamera();
+      },
+      toggleScreen: () => {
+        const call = callRef.current;
+        if (!call) return;
+        if (callSelf().screen !== 'on') track('Canvas', 'Used', 'ScreenShare');
+        void call.toggleScreen();
       },
     });
     return () => {

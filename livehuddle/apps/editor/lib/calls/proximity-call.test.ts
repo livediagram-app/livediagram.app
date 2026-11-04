@@ -1,24 +1,37 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CallsApiError } from '@/lib/api/calls';
 import {
+  callMedia,
   callSelf,
   receiveCallOp,
   receiveCallsMode,
+  resetCallMedia,
   resetCallPeers,
   resetCallSelf,
+  setCallMaximised,
+  setCallsMode,
 } from './calls-store';
-import { MIC_IDLE_CLOSE_MS, ProximityCall, type CallSignal } from './proximity-call';
+import {
+  CAMERA_ENCODINGS,
+  MIC_IDLE_CLOSE_MS,
+  ProximityCall,
+  SCREEN_CONSTRAINTS,
+  type CallSignal,
+} from './proximity-call';
 
 const sfu = vi.hoisted(() => ({
   instances: [] as {
     events: {
-      onTrack: (p: string, s: unknown) => void;
-      onTrackEnded: (p: string) => void;
+      onTrack: (p: string, name: string, s: unknown) => void;
+      onTrackEnded: (p: string, name: string) => void;
       onFailed: () => void;
       onPaused: () => void;
+      onAudioOnly: () => void;
     };
     publish: ReturnType<typeof vi.fn>;
     replaceMic: ReturnType<typeof vi.fn>;
+    replaceTrack: ReturnType<typeof vi.fn>;
     want: ReturnType<typeof vi.fn>;
     close: ReturnType<typeof vi.fn>;
   }[],
@@ -42,6 +55,7 @@ vi.mock('./sfu-session', () => ({
     events: (typeof sfu.instances)[number]['events'];
     publish = vi.fn(async () => {});
     replaceMic = vi.fn(async () => {});
+    replaceTrack = vi.fn(async () => {});
     want = vi.fn();
     close = vi.fn();
     constructor(
@@ -52,8 +66,8 @@ vi.mock('./sfu-session', () => ({
       this.events = events;
       sfu.instances.push(this);
     }
-    locator(token: string) {
-      return { sessionId: 'me', trackName: 'mic', token };
+    locator(token: string, trackName = 'mic') {
+      return { sessionId: 'me', trackName, token };
     }
   },
 }));
@@ -86,19 +100,49 @@ function micStream() {
   };
 }
 
-function makeCall(opts: { canSpeak?: boolean; getUserMedia?: () => Promise<MediaStream> } = {}) {
+function videoStream() {
+  const listeners = new Map<string, () => void>();
+  const track = {
+    stop: vi.fn(),
+    contentHint: '',
+    addEventListener: (name: string, fn: () => void) => listeners.set(name, fn),
+    end: () => listeners.get('ended')?.(),
+  };
+  return {
+    track,
+    stream: { getVideoTracks: () => [track], getTracks: () => [track] } as unknown as MediaStream,
+  };
+}
+
+function makeCall(
+  opts: {
+    canSpeak?: boolean;
+    canShare?: boolean;
+    getUserMedia?: (c: MediaStreamConstraints) => Promise<MediaStream>;
+    getDisplayMedia?: () => Promise<MediaStream>;
+    visible?: () => boolean;
+  } = {},
+) {
   const sent: CallSignal[] = [];
   const mic = micStream();
-  const getUserMedia = opts.getUserMedia ?? vi.fn(async () => mic.stream);
+  const camera = videoStream();
+  const display = videoStream();
+  const getUserMedia =
+    opts.getUserMedia ??
+    vi.fn(async (c: MediaStreamConstraints) => (c.video ? camera.stream : mic.stream));
+  const getDisplayMedia = opts.getDisplayMedia ?? vi.fn(async () => display.stream);
   const context = { resume: vi.fn(async () => {}) } as unknown as AudioContext;
   const call = new ProximityCall({
     caller,
     canSpeak: opts.canSpeak ?? true,
+    canShare: opts.canShare ?? false,
     context,
     send: (s) => sent.push(s),
     getUserMedia,
+    getDisplayMedia,
+    ...(opts.visible ? { pageVisible: opts.visible } : {}),
   });
-  return { call, sent, mic, getUserMedia };
+  return { call, sent, mic, camera, display, getUserMedia, getDisplayMedia };
 }
 
 const scene = (walkers: [string, number][], tabId = 't1') => ({
@@ -115,6 +159,7 @@ beforeEach(() => {
 afterEach(() => {
   resetCallPeers();
   resetCallSelf();
+  resetCallMedia();
   vi.clearAllMocks();
   vi.useRealTimers();
 });
@@ -163,14 +208,14 @@ describe('ProximityCall', () => {
     expect(s.want).toHaveBeenLastCalledWith([near]);
     expect(callSelf().heard).toEqual(new Set(['p1']));
     expect(callSelf().someoneNear).toBe(true);
-    s.events.onTrack('p1s', {});
+    s.events.onTrack('p1s', 'mic', {});
     expect(graph.attach).toHaveBeenCalledWith('p1', {});
     expect(graph.place).toHaveBeenLastCalledWith('p1', expect.any(Number), expect.any(Number));
     expect(graph.place.mock.lastCall![2]).toBeLessThan(0);
-    s.events.onTrack('unknown', {});
-    s.events.onTrackEnded('p1s');
+    s.events.onTrack('unknown', 'mic', {});
+    s.events.onTrackEnded('p1s', 'mic');
     expect(graph.detach).toHaveBeenCalledWith('p1');
-    s.events.onTrackEnded('unknown');
+    s.events.onTrackEnded('unknown', 'mic');
     call.stop();
   });
 
@@ -296,5 +341,297 @@ describe('ProximityCall', () => {
       sfu.instances.at(-1)!.events.onPaused();
       expect(call.ended).toBe(true);
     });
+  });
+});
+
+// docs/specs/012-collaboration/video-and-screen-bubbles.md.
+describe('ProximityCall video and screens', () => {
+  const me = (trackName: string) => ({ sessionId: 'me', trackName, token: 'tt' });
+  const at = (id: string, trackName: string) => ({ sessionId: `${id}s`, trackName, token: 'a' });
+
+  it('turns the camera on in two layers, shows it to you, tells the room, and off again', async () => {
+    const { call, sent, camera, getUserMedia } = makeCall();
+    await call.start();
+    await call.toggleCamera();
+    const s = sfu.instances[0]!;
+    expect(getUserMedia).toHaveBeenLastCalledWith(expect.objectContaining({ audio: false }));
+    expect(s.publish).toHaveBeenLastCalledWith(camera.track, 'cam', CAMERA_ENCODINGS);
+    expect(callSelf().camera).toBe('on');
+    expect(callMedia().get('self')?.video).toBe(camera.stream);
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), video: me('cam') });
+    await call.toggleCamera();
+    expect(camera.track.stop).toHaveBeenCalled();
+    expect(s.replaceTrack).toHaveBeenCalledWith('cam', null);
+    expect(callSelf().camera).toBe('off');
+    expect(callMedia().has('self')).toBe(false);
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), video: null });
+    call.stop();
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: null, video: null });
+  });
+
+  it('a refused camera reads blocked and a press tries again; a Viewer has none', async () => {
+    let refuse = true;
+    const camera = videoStream();
+    const { call } = makeCall({
+      getUserMedia: async (c) => {
+        if (!c.video) return micStream().stream;
+        if (refuse) throw new Error('NotAllowed');
+        return camera.stream;
+      },
+    });
+    await call.start();
+    await call.toggleCamera();
+    expect(callSelf().camera).toBe('blocked');
+    refuse = false;
+    await call.toggleCamera();
+    expect(callSelf().camera).toBe('on');
+    call.stop();
+    expect(callSelf().camera).toBe('off');
+
+    const viewer = makeCall({ canSpeak: false });
+    await viewer.call.start();
+    await viewer.call.toggleCamera();
+    expect(viewer.getUserMedia).not.toHaveBeenCalled();
+    viewer.call.stop();
+  });
+
+  it('a camera alone, with the microphone blocked, still tells the room', async () => {
+    const camera = videoStream();
+    const { call, sent } = makeCall({
+      getUserMedia: async (c) => {
+        if (c.video) return camera.stream;
+        throw new Error('NotAllowed');
+      },
+    });
+    await call.start();
+    await call.toggleCamera();
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: null, video: me('cam') });
+    call.stop();
+  });
+
+  it('leaving while the camera opens releases it', async () => {
+    const camera = videoStream();
+    let open: (s: MediaStream) => void = () => {};
+    const { call } = makeCall({
+      getUserMedia: (c) =>
+        c.video ? new Promise((r) => (open = r)) : Promise.resolve(micStream().stream),
+    });
+    await call.start();
+    const opening = call.toggleCamera();
+    // A second press while it opens does nothing.
+    await call.toggleCamera();
+    call.stop();
+    open(camera.stream);
+    await opening;
+    expect(camera.track.stop).toHaveBeenCalled();
+    expect(callSelf().camera).toBe('off');
+  });
+
+  it('shares a screen for an Editor, capped and tuned for text, and stops from either control', async () => {
+    const { call, sent, display, getDisplayMedia } = makeCall({ canShare: true });
+    await call.start();
+    await call.toggleScreen();
+    const s = sfu.instances[0]!;
+    expect(getDisplayMedia).toHaveBeenCalledWith(SCREEN_CONSTRAINTS);
+    expect(display.track.contentHint).toBe('detail');
+    expect(s.publish).toHaveBeenLastCalledWith(display.track, 'screen', [
+      { maxBitrate: 1_000_000, maxFramerate: 15 },
+    ]);
+    expect(callSelf().screen).toBe('on');
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), screen: me('screen') });
+    // The browser's own Stop Sharing.
+    display.track.end();
+    expect(callSelf().screen).toBe('off');
+    expect(s.replaceTrack).toHaveBeenCalledWith('screen', null);
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), screen: null });
+    // An ended track of a share already stopped changes nothing.
+    display.track.end();
+    // The button.
+    await call.toggleScreen();
+    await call.toggleScreen();
+    expect(callSelf().screen).toBe('off');
+    call.stop();
+  });
+
+  it('a cancelled picker is no error, and only an Editor shares', async () => {
+    const { call } = makeCall({
+      canShare: true,
+      getDisplayMedia: () => Promise.reject(new Error('NotAllowed')),
+    });
+    await call.start();
+    await call.toggleScreen();
+    expect(callSelf()).toMatchObject({ phase: 'live', screen: 'off' });
+    call.stop();
+    const participant = makeCall();
+    await participant.call.start();
+    await participant.call.toggleScreen();
+    expect(participant.getDisplayMedia).not.toHaveBeenCalled();
+    participant.call.stop();
+  });
+
+  it('receives the cameras and screens of the people heard, a maximised camera large', async () => {
+    const { call } = makeCall();
+    await call.start();
+    receiveCallOp('p1', {
+      kind: 'call-track',
+      tabId: 't1',
+      track: at('p1', 'mic'),
+      video: at('p1', 'cam'),
+      screen: at('p1', 'screen'),
+    });
+    receiveCallOp('p2', { kind: 'call-track', tabId: 't1', track: null, video: at('p2', 'cam') });
+    call.update(
+      scene([
+        ['p1', 50],
+        ['p2', 900],
+      ]),
+    );
+    const s = sfu.instances[0]!;
+    expect(s.want).toHaveBeenLastCalledWith([at('p1', 'mic'), at('p1', 'cam'), at('p1', 'screen')]);
+    setCallMaximised({ id: 'p1', media: 'video' });
+    expect(s.want).toHaveBeenLastCalledWith([
+      at('p1', 'mic'),
+      { ...at('p1', 'cam'), layer: 'f' },
+      at('p1', 'screen'),
+    ]);
+    // Their streams arrive in the bubbles, and leave them even once the locator has gone.
+    const video = { id: 'v' } as unknown as MediaStream;
+    s.events.onTrack('p1s', 'cam', video);
+    s.events.onTrack('p1s', 'screen', video);
+    expect(callMedia().get('p1')).toEqual({ video, screen: video });
+    receiveCallOp('p1', { kind: 'call-track', tabId: 't1', track: at('p1', 'mic') });
+    s.events.onTrackEnded('p1s', 'cam');
+    s.events.onTrackEnded('p1s', 'screen');
+    expect(callMedia().has('p1')).toBe(false);
+    s.events.onTrackEnded('nobody', 'cam');
+    call.stop();
+  });
+
+  it('a hidden page receives voices only', async () => {
+    let visible = true;
+    const { call } = makeCall({ visible: () => visible });
+    await call.start();
+    receiveCallOp('p1', {
+      kind: 'call-track',
+      tabId: 't1',
+      track: at('p1', 'mic'),
+      video: at('p1', 'cam'),
+    });
+    visible = false;
+    call.update(scene([['p1', 50]]));
+    expect(sfu.instances[0]!.want).toHaveBeenLastCalledWith([at('p1', 'mic')]);
+    visible = true;
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(sfu.instances[0]!.want).toHaveBeenLastCalledWith([at('p1', 'mic'), at('p1', 'cam')]);
+    call.stop();
+  });
+
+  it('audio only stops the camera and the share and every bubble, and keeps the call', async () => {
+    const { call, camera, display } = makeCall({ canShare: true });
+    await call.start();
+    await call.toggleCamera();
+    await call.toggleScreen();
+    receiveCallOp('p1', {
+      kind: 'call-track',
+      tabId: 't1',
+      track: at('p1', 'mic'),
+      video: at('p1', 'cam'),
+    });
+    call.update(scene([['p1', 50]]));
+    receiveCallsMode('system', { kind: 'calls-mode', mode: 'audio-only' });
+    expect(callSelf()).toMatchObject({ phase: 'live', camera: 'off', screen: 'off' });
+    expect(camera.track.stop).toHaveBeenCalled();
+    expect(display.track.stop).toHaveBeenCalled();
+    expect(sfu.instances[0]!.want).toHaveBeenLastCalledWith([at('p1', 'mic')]);
+    // Pressing either now does nothing.
+    await call.toggleCamera();
+    await call.toggleScreen();
+    expect(callSelf()).toMatchObject({ camera: 'off', screen: 'off' });
+    call.stop();
+  });
+
+  it('a camera or screen refused as audio only switches the mode, and a camera arriving then is let go', async () => {
+    const camera = videoStream();
+    let open: (s: MediaStream) => void = () => {};
+    const { call } = makeCall({
+      getUserMedia: (c) =>
+        c.video ? new Promise((r) => (open = r)) : Promise.resolve(micStream().stream),
+    });
+    await call.start();
+    const opening = call.toggleCamera();
+    sfu.instances[0]!.events.onAudioOnly();
+    expect(callSelf().mode).toBe('audio-only');
+    open(camera.stream);
+    await opening;
+    expect(camera.track.stop).toHaveBeenCalled();
+    expect(callSelf().camera).toBe('off');
+    setCallsMode('on');
+    call.stop();
+  });
+
+  it('reads the page’s own visibility when none is given', async () => {
+    const { call } = makeCall();
+    await call.start();
+    receiveCallOp('p1', { kind: 'call-track', tabId: 't1', track: null, video: at('p1', 'cam') });
+    call.update(scene([['p1', 50]]));
+    expect(sfu.instances[0]!.want).toHaveBeenLastCalledWith([at('p1', 'cam')]);
+    call.stop();
+  });
+
+  it('a camera refused or a picker cancelled after leaving changes nothing', async () => {
+    let refuseCamera: (e: Error) => void = () => {};
+    let refuseScreen: (e: Error) => void = () => {};
+    const { call } = makeCall({
+      canShare: true,
+      getUserMedia: (c) =>
+        c.video ? new Promise((_, no) => (refuseCamera = no)) : Promise.resolve(micStream().stream),
+      getDisplayMedia: () => new Promise((_, no) => (refuseScreen = no)),
+    });
+    await call.start();
+    const camera = call.toggleCamera();
+    const sharing = call.toggleScreen();
+    call.stop();
+    refuseCamera(new Error('NotAllowed'));
+    refuseScreen(new Error('NotAllowed'));
+    await Promise.all([camera, sharing]);
+    expect(callSelf()).toMatchObject({ phase: 'off', camera: 'off', screen: 'off' });
+  });
+
+  it('a share chosen after leaving, or once audio only, is let go', async () => {
+    const display = videoStream();
+    let choose: (s: MediaStream) => void = () => {};
+    const { call } = makeCall({
+      canShare: true,
+      getDisplayMedia: () => new Promise((r) => (choose = r)),
+    });
+    await call.start();
+    const sharing = call.toggleScreen();
+    setCallsMode('audio-only');
+    choose(display.stream);
+    await sharing;
+    expect(display.track.stop).toHaveBeenCalled();
+    expect(callSelf().screen).toBe('off');
+    setCallsMode('on');
+    const again = call.toggleScreen();
+    call.stop();
+    choose(display.stream);
+    await again;
+    expect(callSelf().screen).toBe('off');
+  });
+
+  it('audio only clears a blocked camera back to off', async () => {
+    const { call } = makeCall({
+      getUserMedia: async (c) => {
+        if (c.video) throw new Error('NotAllowed');
+        return micStream().stream;
+      },
+    });
+    await call.start();
+    await call.toggleCamera();
+    expect(callSelf().camera).toBe('blocked');
+    setCallsMode('audio-only');
+    expect(callSelf().camera).toBe('off');
+    setCallsMode('on');
+    call.stop();
   });
 });

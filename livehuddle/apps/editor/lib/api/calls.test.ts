@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   apiCallClose,
+  apiCallLayer,
   apiCallRenegotiate,
   apiCallSession,
   apiCallTracks,
@@ -34,11 +35,14 @@ describe('calls api client', () => {
     await apiCallTracks(caller, { ...proof, subscribe: [] });
     await apiCallRenegotiate(caller, { ...proof, sdp: 'x' });
     await apiCallClose(caller, { ...proof, mids: ['1'] });
+    const tracks = [{ mid: '2', sessionId: 'p', trackName: 'cam', layer: 'f' as const }];
+    await apiCallLayer(caller, { ...proof, tracks });
     expect(core.apiFetch.mock.calls.map(([url, init]) => [url, init.method, init.body])).toEqual([
       ['/api/documents/d%2F1/calls/session', 'POST', undefined],
       ['/api/documents/d%2F1/calls/tracks', 'POST', JSON.stringify({ ...proof, subscribe: [] })],
       ['/api/documents/d%2F1/calls/renegotiate', 'PUT', JSON.stringify({ ...proof, sdp: 'x' })],
       ['/api/documents/d%2F1/calls/close', 'PUT', JSON.stringify({ ...proof, mids: ['1'] })],
+      ['/api/documents/d%2F1/calls/layer', 'PUT', JSON.stringify({ ...proof, tracks })],
     ]);
   });
 
@@ -63,8 +67,16 @@ describe('calls api client', () => {
     await expect(apiCallSession(caller)).rejects.toMatchObject({
       reason: 'paused',
       paused: true,
+      audioOnly: false,
       message: 'calls 503 calls_off paused',
     });
+    // Audio only refuses a camera or a screen (video-and-screen-bubbles.md "The kill switch").
+    core.apiFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: 'calls_off', reason: 'audio-only' }),
+    });
+    await expect(apiCallSession(caller)).rejects.toMatchObject({ paused: false, audioOnly: true });
     core.apiFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,

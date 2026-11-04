@@ -69,4 +69,36 @@ describe('useCanvasCall', () => {
     expect(result.current.bars.self).toBeNull();
     expect(result.current.bars.onWalkTo).toBeUndefined();
   });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Who sees what" and "Share roles".
+  it('tells the call the visible canvas area, snapped, and whether this session may share', () => {
+    const run = (viewport?: {
+      offset: { x: number; y: number };
+      zoom: number;
+      width: number;
+      height: number;
+    }) =>
+      renderHook(() =>
+        useCanvasCall({
+          props: { ...props, canShareScreen: true },
+          canvasTool: 'avatar',
+          avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+          avatarScale: 1,
+          ...(viewport ? { viewport } : {}),
+        }),
+      );
+    const { result } = run({ offset: { x: -1000, y: 30 }, zoom: 2, width: 1280, height: 700 });
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        canShare: true,
+        view: { x: 1024, y: 0, width: 640, height: 320 },
+      }),
+    );
+    expect(result.current.bubbles.self).toMatchObject({ at: { x: 0, y: 0 }, color: '#00f' });
+    // Not measured yet: no view.
+    run({ offset: { x: 0, y: 0 }, zoom: 1, width: 0, height: 0 });
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
+    run();
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
+  });
 });

@@ -1,0 +1,128 @@
+// @vitest-environment jsdom
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  callMaximised,
+  resetCallMedia,
+  setCallMaximised,
+  setCallMedia,
+} from '@/lib/calls/calls-store';
+import { CallBubbles } from './CallBubbles';
+import { mediaTitle } from './MediaBubble';
+
+const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
+vi.mock('@/lib/telemetry', () => telemetry);
+
+const stream = (id: string) => ({ id }) as unknown as MediaStream;
+const peer = (id: string, name: string, x: number) => ({
+  id,
+  name,
+  color: '#0ea5e9',
+  at: { x, y: 300 },
+  scale: 1,
+  glideMs: 100,
+  walking: true,
+});
+const self = { at: { x: 0, y: 300 }, scale: 1, color: '#f97316' };
+
+beforeEach(() => {
+  vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(() => Promise.resolve());
+});
+afterEach(() => {
+  cleanup();
+  act(() => resetCallMedia());
+  vi.restoreAllMocks();
+});
+
+// docs/specs/012-collaboration/video-and-screen-bubbles.md "The bubble" and "Maximised".
+describe('CallBubbles', () => {
+  it('draws nothing without a stream', () => {
+    const { container } = render(<CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} />);
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('puts each person’s camera and screen above their head, and yours mirrored above yours', () => {
+    const { container } = render(
+      <CallBubbles peers={[peer('p1', 'Sam', 100), peer('p2', 'Kim', 400)]} self={self} />,
+    );
+    act(() => {
+      setCallMedia('p1', 'video', stream('a'));
+      setCallMedia('p1', 'screen', stream('b'));
+      setCallMedia('self', 'video', stream('c'));
+    });
+    const sam = container.querySelector<HTMLElement>('[data-call-bubbles="p1"]')!;
+    expect(sam.style.left).toBe('100px');
+    expect(sam.querySelectorAll('[data-call-bubble]')).toHaveLength(2);
+    expect(container.querySelector('[data-call-bubbles="p2"]')).toBeNull();
+    expect(screen.getByRole('button', { name: "Maximise Sam's Camera" })).toBeTruthy();
+    expect(screen.getByRole('button', { name: "Maximise Sam's Screen" })).toBeTruthy();
+    const mine = screen.getByRole('button', { name: 'Maximise Your Camera' });
+    expect(mine.querySelector('video')!.className).toContain('-scale-x-100');
+    // A video shows only once its first frame is in.
+    const video = sam.querySelector('video')!;
+    expect(video.className).toContain('opacity-0');
+    fireEvent.loadedData(video);
+    expect(video.className).toContain('opacity-100');
+  });
+
+  it('slides with a walking character, and lands at once on a jump', () => {
+    const { rerender, container } = render(
+      <CallBubbles peers={[peer('p1', 'Sam', 100)]} self={null} />,
+    );
+    act(() => setCallMedia('p1', 'video', stream('a')));
+    rerender(<CallBubbles peers={[peer('p1', 'Sam', 110)]} self={null} />);
+    const group = container.querySelector<HTMLElement>('[data-call-bubbles="p1"]')!;
+    expect(group.style.transition).toContain('left 100ms');
+    rerender(<CallBubbles peers={[peer('p1', 'Sam', 3000)]} self={null} />);
+    expect(group.style.transition).toBe('');
+  });
+
+  it('maximises on a press, counts it, and restores from the button, Escape and the backdrop', () => {
+    render(<CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} />);
+    act(() => setCallMedia('p1', 'screen', stream('a')));
+    const bubble = screen.getByRole('button', { name: "Maximise Sam's Screen" });
+    // A press on a bubble is not a press on the canvas under it.
+    const down = new Event('pointerdown', { bubbles: true });
+    const stop = vi.spyOn(down, 'stopPropagation');
+    bubble.dispatchEvent(down);
+    expect(stop).toHaveBeenCalled();
+    fireEvent.click(bubble);
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'BubbleMaximise');
+    const dialog = screen.getByRole('dialog', { name: "Sam's Screen" });
+    expect(dialog.textContent).toContain("Sam's Screen");
+    const restore = screen.getAllByRole('button', { name: 'Restore' });
+    // Focus goes to the panel's Restore.
+    expect(document.activeElement?.textContent).toContain('Restore');
+    fireEvent.click(restore.at(-1)!);
+    expect(callMaximised()).toBeNull();
+    act(() => setCallMaximised({ id: 'p1', media: 'screen' }));
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(callMaximised()).toBeNull();
+    act(() => setCallMaximised({ id: 'p1', media: 'screen' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Restore' })[0]!);
+    expect(callMaximised()).toBeNull();
+  });
+
+  it('shows no panel for a bubble that is gone or a person who left', () => {
+    const { rerender } = render(<CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} />);
+    act(() => {
+      setCallMedia('p1', 'video', stream('a'));
+      setCallMedia('self', 'video', stream('b'));
+      setCallMaximised({ id: 'p1', media: 'screen' });
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    act(() => setCallMaximised({ id: 'self', media: 'video' }));
+    expect(screen.getByRole('dialog', { name: 'Your Camera' })).toBeTruthy();
+    act(() => setCallMaximised({ id: 'p1', media: 'video' }));
+    rerender(<CallBubbles peers={[]} self={null} />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // Your own, once you stop walking, keeps a neutral colour.
+    act(() => setCallMaximised({ id: 'self', media: 'video' }));
+    expect(screen.getByRole('dialog', { name: 'Your Camera' })).toBeTruthy();
+  });
+
+  it('names a bubble for its person, or yours', () => {
+    expect(mediaTitle('Sam', 'video')).toBe("Sam's Camera");
+    expect(mediaTitle(null, 'screen')).toBe('Your Screen');
+  });
+});
