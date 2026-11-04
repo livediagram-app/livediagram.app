@@ -35,12 +35,12 @@ export default function Home() {
     <>
       <Header share />
       <main>
-        <section className="relative overflow-hidden">
+        <section className="hero-tall relative overflow-hidden [--hero-tall-header:64px]">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_60%_at_15%_0%,rgb(14_165_233/0.12),transparent_70%),radial-gradient(60%_60%_at_95%_30%,rgb(139_92_246/0.12),transparent_70%)] dark:bg-[radial-gradient(70%_60%_at_15%_0%,rgb(14_165_233/0.16),transparent_70%),radial-gradient(60%_60%_at_95%_30%,rgb(139_92_246/0.18),transparent_70%)]"
           />
-          <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pt-14 pb-20 sm:px-6 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-8 lg:pt-24 lg:pb-28">
+          <div className="relative mx-auto grid w-full max-w-7xl flex-1 content-center items-center gap-12 px-4 pt-14 pb-20 sm:px-6 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-8 lg:pt-24 lg:pb-28">
             <div className="lw-rise text-center sm:text-left">
               <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 py-1 pr-3.5 pl-1.5 text-sm font-medium text-slate-600 backdrop-blur dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300">
                 <span className="flex size-6 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">

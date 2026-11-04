@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@liveworkspace/tailwind-config';
 @import '@liveworkspace/marketing-site/css/licences.css';
+@import '@liveworkspace/marketing-site/css/hero-tall.css';
 
 /* Every page but the telemetry dashboard and the Explorer, whose classes (and the apps' UI) are in
  * their own stylesheets, telemetry/telemetry.css and explorer/explorer.css, each loaded only there. */
