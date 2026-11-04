@@ -16,9 +16,6 @@ import type { CallScene, CallSignal, ProximityCall } from './proximity-call';
 import type { CallStage } from './stage';
 import type { CallZone } from './zones';
 
-// Do Not Disturb (Work Tracker #319) hides other people's bars from you; until it lands, nobody is in it.
-export const DO_NOT_DISTURB = false;
-
 /** The call's code, loaded on the first Join press (blueprint "Performance and limits"). */
 export const loadProximityCall = () => import('./proximity-call');
 
@@ -43,6 +40,8 @@ export type ProximityCallDeps = {
   zones?: readonly CallZone[];
   // The tab's visible stages, each heard by the whole tab (meeting-rooms-and-stage.md "The stage").
   stages?: readonly CallStage[];
+  // Your status is Do Not Disturb: nobody's voice or bubbles reach you (meeting-rooms-and-stage.md).
+  doNotDisturb?: boolean;
 };
 
 const NO_ZONES: readonly CallZone[] = [];
@@ -127,6 +126,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
               send: (signal) => latest.current.send?.(signal),
             });
             callRef.current = call;
+            call.setDoNotDisturb(latest.current.doNotDisturb === true);
             call.update(sceneRef.current);
             return call.start();
           })
@@ -153,6 +153,8 @@ export function useProximityCall(deps: ProximityCallDeps): void {
         if (callSelf().screen !== 'on') track('Canvas', 'Used', 'ScreenShare');
         void call.toggleScreen();
       },
+      raiseHand: () => callRef.current?.raiseHand(),
+      lowerHand: () => callRef.current?.lowerHand(),
     });
     return () => {
       stop();
@@ -177,4 +179,9 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   useEffect(() => {
     callRef.current?.update(scene);
   }, [scene]);
+
+  const doNotDisturb = deps.doNotDisturb === true;
+  useEffect(() => {
+    callRef.current?.setDoNotDisturb(doNotDisturb);
+  }, [doNotDisturb]);
 }

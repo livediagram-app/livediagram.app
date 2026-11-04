@@ -22,7 +22,20 @@ import { AvatarSprite } from './avatar-sprite';
 const AWAY_OPACITY = 0.5;
 
 // A status dot: a small circle in the status's colour with a white rim, so it reads on a name chip and on the canvas.
+// Do Not Disturb (livehuddle's calls status) is a touch larger with a white bar across it, the sign everyone knows.
 function StatusDot({ status }: { status: AvatarStatus }) {
+  if (status === 'dnd') {
+    return (
+      <span
+        aria-hidden
+        data-status-dot="dnd"
+        className="relative inline-flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full ring-[1.5px] ring-white"
+        style={{ backgroundColor: avatarStatusColour(status) }}
+      >
+        <span className="block h-[2px] w-[6px] rounded-full bg-white" />
+      </span>
+    );
+  }
   return (
     <span
       aria-hidden

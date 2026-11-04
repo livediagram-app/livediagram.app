@@ -181,15 +181,20 @@ Your character can say **how you are** without a word: a status set from the Ava
 the tab while you are in the mode. It is what makes a virtual office read at a glance:
 who is free to talk, who is heads-down, who has stepped away.
 
-| Status           | Token       | How it shows                                                   |
-| ---------------- | ----------- | -------------------------------------------------------------- |
-| **Available**    | `available` | A green dot above the head                                     |
-| **Focusing**     | `focus`     | Headphones on the character (violet ear cups) and a violet dot |
-| **In a Meeting** | `meeting`   | A red dot above the head                                       |
-| **Away**         | `away`      | The character fades to half and a slow "Zz" rises above it     |
+| Status             | Token       | How it shows                                                   |
+| ------------------ | ----------- | -------------------------------------------------------------- |
+| **Available**      | `available` | A green dot above the head                                     |
+| **Focusing**       | `focus`     | Headphones on the character (violet ear cups) and a violet dot |
+| **In a Meeting**   | `meeting`   | A red dot above the head                                       |
+| **Away**           | `away`      | The character fades to half and a slow "Zz" rises above it     |
+| **Do Not Disturb** | `dnd`       | A red dot with a white bar across it                           |
 
-- **Set from the panel**: a **Status** row, closed until opened like the rest, with the five choices (**None** and
-  the four), its current value in the collapsed header. Every role may set it: it is presence, like the character.
+- **Set from the panel**: a **Status** row, closed until opened like the rest, with the six choices (**None** and
+  the five), its current value in the collapsed header. Every role may set it: it is presence, like the character.
+- **Do Not Disturb** is the calls' status ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#do-not-disturb-part-3-built)):
+  while it is on, no voice, bubble or other person's equaliser reaches you, and you are still heard if you speak.
+  The status list is shared with livediagram (`@liveworkspace/avatar`), which has no calls and keeps offering the
+  four; the panel takes the list it offers from the product.
 - **Peers see it**: the status rides the avatar presence (`status`), parsed field by field; anything else is no
   status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
 - **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.

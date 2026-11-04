@@ -11,7 +11,17 @@ import {
   togetherWith,
   type Point,
 } from './hearing';
-import { callStages, mayTakeStage, stageAt, staging, type CallStage } from './stage';
+import {
+  barringStage,
+  callStages,
+  letSpeakers,
+  mayLetSpeak,
+  mayLetSpeakSelf,
+  mayTakeStage,
+  stageAt,
+  staging,
+  type CallStage,
+} from './stage';
 import { roomZones, zoning, type CallZone, type CallZoning } from './zones';
 
 // docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage" (Work Tracker #319 part 2). An all-hands hall
@@ -278,6 +288,132 @@ describe('the stage', () => {
     );
     expect([...heard].sort()).toEqual(['p0', 'speaker']);
     // 60 scenes, a second of walking: well under a frame each.
+    // Measured: about 30 µs a scene (1.8 ms for 60).
+    expect(best).toBeLessThan(cpuBudgetMs(30));
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand" and "The stage line" (part 3).
+describe('raised hands let speak', () => {
+  const stages = callStages([stage('stage', 420, 40)], zones);
+  const hall = { x: 300, y: 600 };
+  const back = { x: 900, y: 600 };
+
+  it('lets an Editor anywhere, or a speaker on the stage, let a hand speak', () => {
+    const walkers = new Map<string, Point>([
+      ['ed', corridor(100)],
+      ['onstage', onStage],
+      ['floor', hall],
+    ]);
+    const levels = new Map<string, AccessLevel>([
+      ['ed', 'edit'],
+      ['onstage', 'participate'],
+      ['floor', 'participate'],
+    ]);
+    expect(mayLetSpeak('ed', walkers, levels, stages)).toBe(true);
+    // A Participant on an Editors-only stage is only its audience.
+    expect(mayLetSpeak('onstage', walkers, levels, stages)).toBe(false);
+    const open = callStages([stage('stage', 420, 40, { stageSpeakers: 'take-part' })], zones);
+    expect(mayLetSpeak('onstage', walkers, levels, open)).toBe(true);
+    expect(mayLetSpeak('floor', walkers, levels, open)).toBe(false);
+    expect(mayLetSpeak('gone', walkers, levels, open)).toBe(false);
+    expect(mayLetSpeakSelf(hall, 'edit', stages)).toBe(true);
+    expect(mayLetSpeakSelf(onStage, 'participate', open)).toBe(true);
+    expect(mayLetSpeakSelf(hall, 'participate', open)).toBe(false);
+    expect(mayLetSpeakSelf(null, 'participate', open)).toBe(false);
+  });
+
+  it('counts only hands let speak by someone who still may, or by you while you may', () => {
+    const walkers = new Map<string, Point>([
+      ['a', hall],
+      ['b', back],
+      ['c', hall],
+      ['ed', onStage],
+    ]);
+    const levels = new Map<string, AccessLevel>([['ed', 'edit']]);
+    const hands = new Map([
+      ['a', { letSpeak: 'ed' }],
+      ['b', { letSpeak: 'nobody' }],
+      ['c', { letSpeak: null }],
+      ['away', { letSpeak: 'ed' }],
+    ]);
+    expect([...letSpeakers(hands, walkers, levels, stages, new Set(), false)]).toEqual(['a']);
+    // You let c speak: it counts while you may, never once you may not.
+    expect([...letSpeakers(hands, walkers, levels, stages, new Set(['c']), true)].sort()).toEqual([
+      'a',
+      'c',
+    ]);
+    expect([...letSpeakers(hands, walkers, levels, stages, new Set(['c']), false)]).toEqual(['a']);
+  });
+
+  it('makes a hand let speak a speaker heard by the whole tab, unseen, adding no audience', () => {
+    const walkers = new Map<string, Point>([
+      ['asker', hall],
+      ['next', { x: 320, y: 600 }],
+    ]);
+    const levels = new Map<string, AccessLevel>();
+    const s = staging(corridor(100), 'participate', walkers, levels, stages, {
+      let: new Set(['asker']),
+      self: false,
+    });
+    expect(s).toEqual({
+      self: false,
+      speakers: new Set(['asker']),
+      audience: new Set(),
+      unseen: new Set(['asker']),
+    });
+    const z = { ...zoning(corridor(100), walkers, zones), stage: s! };
+    // Out in the corridor, the hall is walled off, but the one let speak reaches you.
+    expect(togetherWith('asker', z)).toBe('stage');
+    expect(togetherWith('next', z)).toBe('apart');
+  });
+
+  it('makes you a speaker when your own hand is let speak', () => {
+    const walkers = new Map<string, Point>([['neighbour', { x: 320, y: 600 }]]);
+    const s = staging(hall, 'participate', walkers, new Map(), stages, {
+      let: new Set(),
+      self: true,
+    });
+    expect(s?.self).toBe(true);
+    // As a speaker you hear only the other speakers.
+    expect(togetherWith('neighbour', { ...zoning(hall, walkers, zones), stage: s! })).toBe('apart');
+  });
+
+  it('names the stage that bars you, and none for one you may speak from', () => {
+    expect(barringStage(onStage, 'participate', stages)).toBe('edit');
+    expect(barringStage(onStage, 'edit', stages)).toBeNull();
+    const open = callStages([stage('stage', 420, 40, { stageSpeakers: 'take-part' })], zones);
+    expect(barringStage(onStage, 'view', open)).toBe('take-part');
+    expect(barringStage(hall, 'view', open)).toBeNull();
+    expect(barringStage(null, 'view', open)).toBeNull();
+  });
+
+  it('works out 100 raised hands, all let speak, with the staging within a frame’s budget', () => {
+    const walkers = new Map<string, Point>(
+      Array.from({ length: 100 }, (_, i) => [`p${i}`, { x: 20 + i * 11, y: 600 }] as const),
+    );
+    walkers.set('ed', onStage);
+    const levels = new Map<string, AccessLevel>([['ed', 'edit']]);
+    const hands = new Map(
+      Array.from({ length: 100 }, (_, i) => [`p${i}`, { letSpeak: 'ed' }] as const),
+    );
+    let speakers = 0;
+    const best = Math.min(
+      ...Array.from({ length: 5 }, () =>
+        cpuMsOf(() => {
+          for (let i = 0; i < 60; i++) {
+            const allowed = letSpeakers(hands, walkers, levels, stages, new Set(), false);
+            const s = staging(hall, 'participate', walkers, levels, stages, {
+              let: allowed,
+              self: false,
+            });
+            speakers = s?.speakers.size ?? 0;
+          }
+        }),
+      ),
+    );
+    expect(speakers).toBe(101);
+    // Measured: about 30 µs a scene (1.8 ms for 60).
     expect(best).toBeLessThan(cpuBudgetMs(30));
   });
 });

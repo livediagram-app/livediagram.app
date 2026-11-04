@@ -1,9 +1,10 @@
 # Meeting rooms and the stage
 
 Status: **in progress** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
-calls**, and part 2, **the stage under the hood** (the element, its hearing and its role gate, not yet in the palette),
-are built for staging; raise hand and Do Not Disturb (part 3) and the stage's palette tile, settings, template and help
-(part 4) are specified here and built later. Under the calls kill switch and off in production with the rest of calls
+calls**, part 2, **the stage under the hood** (the element, its hearing and its role gate, not yet in the palette), and
+part 3, **raise hand and Do Not Disturb** (with the line under the call strip for a stage you may not speak from), are
+built for staging; the stage's palette tile, settings, template and full help (part 4) are specified here and built
+later. Under the calls kill switch and off in production with the rest of calls
 ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
 Plain distance ([Proximity audio](proximity-audio.md#hearing)) suits an open floor, but not every gathering. A meeting
@@ -76,23 +77,56 @@ rug and the help come in part 4, so until then a stage arrives only from an agen
   it does for a room.
 - **The mic indicator** reads **Live** on the stage while anyone else walks the tab (they all hear you).
 
-## Raise hand (part 3, planned)
+## Raise hand (part 3, built)
 
-- An audience member may **Raise Hand** from the call strip while a stage is live. A small raised hand shows above
-  their character, and a count of raised hands shows to the people on the stage.
-- Anyone on the stage (or an Editor) presses a raised hand's **Let Speak**: that person is heard by everyone on the
-  tab as if on the stage, until they **Lower Hand**, the stage presses **Done**, or they walk out of the room.
-- Raising a hand is presence, never stored: leaving the mode lowers it.
+A stage's audience asks to speak by raising a hand, and the stage lets them.
 
-## Do Not Disturb (part 3, planned)
+- **Raise Hand** sits in the call strip while you are a live stage's **audience** (someone speaks from a stage and
+  you do not) and you may speak (an Editor or a Participant). Pressed, it reads **Lower Hand**, and a raised hand
+  shows above your character: a small amber hand on a round badge, beside your head, where everyone on the tab sees
+  it. Raising is counted (`RaiseHand`).
+- **The stage sees how many.** While you speak from a stage, the call strip shows the number of raised hands on the
+  tab (a hand badge with the count), and each raised hand above a character is a button: **Let Speak**.
+- **Let Speak** is pressed by anyone speaking from a stage, or by an Editor anywhere on the tab, on the hand above
+  someone's character. That person is then **heard by everyone on the tab as if on the stage** (full volume,
+  centred, and they hear the other speakers as one room), and their badge turns from the amber hand to the brand's
+  microphone. Their call strip reads **Speaking**, still with **Lower Hand**. Letting someone speak is counted
+  (`LetSpeak`).
+- **It ends** when they press **Lower Hand**, when someone who may let them speak presses their badge again
+  (**Done**), when they walk out of the room they raised it in (for a stage in the open, off the open floor into a
+  room), or when they leave audio, the mode, the tab or the Space. Done lowers the hand too: asking again is a new
+  hand.
+- **Whoever let you speak must still be able to.** Each browser checks the person who pressed Let Speak is an Editor
+  or speaks from a stage now; once neither is true (a Participant who let you speak steps off the stage), you are
+  the audience again, with your hand still raised.
+- **Heard, not seen.** Someone let speak reaches the whole tab's ears, never its screens: their camera and screen
+  bubbles stay with the people who would see them anyway (the other speakers, as one room).
+- **Presence, never stored**: a hand lives on the room's connection, so a reload, a dropped connection or leaving
+  the mode lowers it, and nobody arriving later sees an old one. A late arrival does see the hands already up: a
+  raised hand is sent again whenever someone new walks onto the tab.
+- With a screen reader: the badge is a button named "Sam raised a hand, Let Speak" (or "Sam is speaking, Done")
+  for someone who may press it, and an image named "Sam raised a hand" for everyone else; the call strip's count is
+  read as "3 raised hands".
 
-- A fifth [status](../008-canvas/avatar-mode.md#status), **Do Not Disturb** (token `dnd`): a red dot with a bar
+## The stage line (part 3, built)
+
+Standing on a stage you may not speak from, a calm line sits just above the call strip, right-aligned with it:
+**"Only Editors speak from this stage"** (or "Only Editors and Participants speak from this stage" for a Viewer on a
+stage that lets Participants speak). It goes the moment you step off. It is an `aria-live="polite"` status, so a
+screen reader hears it once on stepping on.
+
+## Do Not Disturb (part 3, built)
+
+- A fifth [status](../008-canvas/avatar-mode.md#status), **Do Not Disturb** (token `dnd`): a red dot with a white bar
   across it, shown to everyone like the other statuses.
 - **While it is on, no voice reaches you**: every audio subscription closes, every bubble closes, and other people's
   equalisers hide from you ([Proximity audio](proximity-audio.md#do-not-disturb)). The stage does not reach you either.
 - **You can still be heard** if you speak (your microphone keeps its own Mute), and your bars still show to others,
   so turning to a neighbour does not need the status cleared.
-- Set and cleared from the Avatar panel's Status row, like the others, for the session only.
+- Set and cleared from the Avatar panel's Status row, like the others, for the session only. While you are in a call,
+  the call strip shows a **Do Not Disturb** segment beside the microphone; pressing it clears the status.
+- **Only livehuddle offers it.** The status vocabulary is shared with livediagram (`@liveworkspace/avatar`), which has
+  no calls: there the Avatar panel keeps offering the four, though a `dnd` status on the wire still parses and draws.
 
 ## Share roles
 
@@ -107,13 +141,15 @@ rug and the help come in part 4, so until then a stage arrives only from an agen
 
 - **Who may take the stage** is the stage's own setting, **Who Can Speak** (`stageSpeakers`): **Editors** (`edit`,
   the default) or **Editors and Participants** (`take-part`). Someone not allowed may still stand on it; they are
-  heard as the audience is, and (part 4) a line under the call strip says "Only Editors speak from this stage".
+  heard as the audience is, and [the stage line](#the-stage-line-part-3-built) says "Only Editors speak from this stage".
 - **Whose level counts** is the one the room stamps on each person's presence from their grant (`role`), never one a
   browser claims; your own is your session's `can`.
 - A Viewer never speaks anywhere ([Proximity audio](proximity-audio.md#share-roles)); it hears a room or a stage as
   anyone does.
 - Gated in the editor on the session's `can` (never `isReadOnly`), and in the room on the grant's level for the hand
-  and let-speak ops (part 3), as the room gates `avatar-voice` and `call-track` today.
+  and let-speak ops (part 3), as the room gates `avatar-voice` and `call-track`: a Viewer's `avatar-hand` or
+  `avatar-let-speak` reaches nobody. Whether the person pressing Let Speak stands on a stage is checked in the
+  browsers (the room does not place people), as hearing is.
 
 ## Trust
 

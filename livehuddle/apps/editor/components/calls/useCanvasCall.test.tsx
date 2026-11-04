@@ -2,10 +2,11 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import { callLetByMe, resetCallPeers } from '@/lib/calls/calls-store';
 import { useCanvasCall } from './useCanvasCall';
 
 const hook = vi.hoisted(() => ({ useProximityCall: vi.fn() }));
-vi.mock('@/lib/calls/useProximityCall', () => ({ DO_NOT_DISTURB: false, ...hook }));
+vi.mock('@/lib/calls/useProximityCall', () => hook);
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => telemetry);
 
@@ -152,5 +153,45 @@ describe('useCanvasCall', () => {
     expect(zones.map((z) => z.id)).toEqual(['shown']);
     // And the stages you can see, each with the room it stands in (the same spec's "The stage").
     expect(stages.map((s) => [s.id, s.zone])).toEqual([['stage', 'shown']]);
+  });
+
+  // meeting-rooms-and-stage.md "Raise hand" and "Do Not Disturb" (part 3).
+  it('lets an Editor let a hand speak and press Done, and hides others’ bars under Do Not Disturb', () => {
+    const send = vi.fn();
+    const { result } = renderHook(() =>
+      useCanvasCall({
+        props: { ...props, canShareScreen: true, onCallSignal: send },
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+        doNotDisturb: true,
+      }),
+    );
+    expect(result.current.bars.hidePeers).toBe(true);
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(
+      expect.objectContaining({ doNotDisturb: true }),
+    );
+    expect(result.current.hands.self).toEqual({ at: { x: 0, y: 0 }, scale: 1 });
+    result.current.hands.onLetSpeak!('p1', true);
+    expect(send).toHaveBeenLastCalledWith({ kind: 'avatar-let-speak', targetId: 'p1', on: true });
+    expect(callLetByMe().has('p1')).toBe(true);
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'LetSpeak');
+    result.current.hands.onLetSpeak!('p1', false);
+    expect(callLetByMe().has('p1')).toBe(false);
+    expect(telemetry.track).toHaveBeenCalledTimes(1);
+    resetCallPeers();
+  });
+
+  it('gives a Participant off every stage no Let Speak', () => {
+    const { result } = renderHook(() =>
+      useCanvasCall({
+        props,
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+      }),
+    );
+    expect(result.current.hands.onLetSpeak).toBeUndefined();
+    expect(result.current.bars.hidePeers).toBe(false);
   });
 });

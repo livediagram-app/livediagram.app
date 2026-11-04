@@ -102,9 +102,9 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
 
 ### Do Not Disturb
 
-[Do Not Disturb](meeting-rooms-and-stage.md#do-not-disturb-part-3-planned) (Work Tracker #319, part 3) still shows
-**your** bars to others but hides **theirs** from you, and closes every subscription. Until that part lands, the hook
-takes a `doNotDisturb` flag that is always false.
+[Do Not Disturb](meeting-rooms-and-stage.md#do-not-disturb-part-3-built) (Work Tracker #319, part 3) still shows
+**your** bars to others but hides **theirs** from you, and closes every subscription (no voice, no bubble, not even a
+stage's). Your microphone carries on under its own Mute, so you are heard if you speak.
 
 ## Hide cursors
 

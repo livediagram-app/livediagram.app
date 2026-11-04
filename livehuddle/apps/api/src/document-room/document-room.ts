@@ -1576,7 +1576,9 @@ export class DocumentRoom extends DurableObject<Env> {
             .catch(() => {});
           return;
         }
-        if (opKind === 'avatar-push') {
+        // A let-speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand") is addressed the same
+        // way: only the hand's owner acts on it, and it cannot recognise its own id in a broadcast.
+        if (opKind === 'avatar-push' || opKind === 'avatar-let-speak') {
           const targetId = (msg.op as { targetId?: unknown }).targetId;
           if (typeof targetId === 'string') {
             this.sendToPresence(targetId, { kind: 'op', from: sender.id, op: msg.op }, ws);

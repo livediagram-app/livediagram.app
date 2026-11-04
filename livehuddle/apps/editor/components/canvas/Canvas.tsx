@@ -84,6 +84,7 @@ import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFont
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
+import { RaisedHands } from '@/components/calls/RaisedHands';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
@@ -312,6 +313,7 @@ function CanvasView(props: CanvasProps) {
       width: mainSize.width,
       height: mainSize.height,
     },
+    doNotDisturb: avatarStatus === 'dnd',
   });
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
@@ -732,6 +734,8 @@ function CanvasView(props: CanvasProps) {
             ) : null}
             {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
             <TalkingBars {...call.bars} />
+            {/* Raised hands beside the heads, each a Let Speak for whoever may (meeting-rooms-and-stage.md). */}
+            <RaisedHands {...call.hands} />
             {/* Camera and screen bubbles above the characters (docs/specs/012-collaboration/video-and-screen-bubbles.md). */}
             <CallBubbles {...call.bubbles} rectsRef={callBubbleRects} />
             {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}

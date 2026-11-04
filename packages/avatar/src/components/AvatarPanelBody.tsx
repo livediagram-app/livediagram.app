@@ -16,7 +16,12 @@
 // what you're wearing. A cropped portrait sits on top, drawn by the SAME sprite
 // the canvas uses, so what you build here is exactly what walks around.
 
-import { AVATAR_STATUSES, avatarStatusColour, type AvatarStatus } from '../status';
+import {
+  AVATAR_STATUSES,
+  avatarStatusColour,
+  type AvatarStatus,
+  type AvatarStatusEntry,
+} from '../status';
 import { useState } from 'react';
 import {
   AVATAR_CLOTHING,
@@ -40,11 +45,15 @@ import { AvatarMessagePopover } from './AvatarMessagePopover';
 
 const MessageIcon = lucideGlyph(lucideMessageCircle, 14);
 
-// The Status row's choices (docs/specs/008-canvas/avatar-mode.md "Status"): none, then the four.
-const STATUS_OPTIONS: readonly { id: AvatarStatus | 'none'; label: string }[] = [
+// The Status row's choices (docs/specs/008-canvas/avatar-mode.md "Status"): none, then the product's statuses (the
+// four, or livehuddle's five with Do Not Disturb).
+const statusOptions = (
+  statuses: readonly AvatarStatusEntry[],
+): readonly { id: AvatarStatus | 'none'; label: string }[] => [
   { id: 'none', label: 'None' },
-  ...AVATAR_STATUSES.map(({ id, label }) => ({ id, label })),
+  ...statuses.map(({ id, label }) => ({ id, label })),
 ];
+const DEFAULT_STATUS_OPTIONS = statusOptions(AVATAR_STATUSES);
 
 type Row = 'gender' | 'clothing' | 'hair' | 'size' | 'status' | 'behaviour' | 'reactions';
 
@@ -127,6 +136,8 @@ export type AvatarPanelBodyProps = {
   // How you are (docs/specs/008-canvas/avatar-mode.md "Status"); absent where nothing can take it.
   status?: AvatarStatus | null;
   onSetStatus?: (status: AvatarStatus | null) => void;
+  // The statuses this product offers: the four by default; a product with calls adds Do Not Disturb.
+  statuses?: readonly AvatarStatusEntry[];
 };
 
 export function AvatarPanelBody({
@@ -140,6 +151,7 @@ export function AvatarPanelBody({
   speechCooling = false,
   status = null,
   onSetStatus,
+  statuses,
 }: AvatarPanelBodyProps) {
   // Single-open, and closed to start: the panel opens as a four-line summary of
   // the character, and you expand only the row you came to change.
@@ -233,7 +245,7 @@ export function AvatarPanelBody({
               {onSetStatus ? (
                 <ToolOptionRow
                   label="Status"
-                  options={STATUS_OPTIONS}
+                  options={statuses ? statusOptions(statuses) : DEFAULT_STATUS_OPTIONS}
                   value={status ?? 'none'}
                   open={openRow === 'status'}
                   onToggle={() => toggle('status')}

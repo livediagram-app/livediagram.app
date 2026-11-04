@@ -5,13 +5,17 @@
 // only: nothing here is written anywhere. Video and screen bubbles (docs/specs/012-collaboration/
 // video-and-screen-bubbles.md) add each peer's camera and screen locators, the streams the bubbles draw, and the one
 // bubble this viewer has maximised. The stage (meeting-rooms-and-stage.md "The stage") adds each peer's level, as the
-// room stamped it on their presence, for who may speak from one.
+// room stamped it on their presence, for who may speak from one; raise hand (the same spec's "Raise hand") adds every
+// peer's raised hand and the hands this browser let speak.
 import { useSyncExternalStore } from 'react';
 import {
+  parseAvatarHand,
+  parseAvatarLetSpeak,
   parseAvatarVoice,
   parseCallsModeOp,
   parseCallTrack,
   parseStoredLevel,
+  ROOM_MAX_CONNECTIONS,
   type AccessLevel,
   type CallsMode,
   type CallTrackLocator,
@@ -46,6 +50,15 @@ export const SELF_MEDIA_ID = 'self';
 export type CallMaximised = { id: string; media: CallMedia };
 export type CallMediaStreams = { readonly video?: MediaStream; readonly screen?: MediaStream };
 
+/** A peer's raised hand: the tab it went up on, who let it speak (a presence id, or null), and when it went up. */
+export type CallHand = { tabId: string; letSpeak: string | null; at: number };
+/** One hand a connection: the room holds at most this many, so the store never holds more. */
+export const HANDS_MAX = ROOM_MAX_CONNECTIONS;
+/** Where you stand towards a live stage (meeting-rooms-and-stage.md): the call strip reads it. */
+export type StagePlace = 'none' | 'audience' | 'speaker' | 'barred';
+/** Your own hand: down, raised, or let speak. */
+export type HandState = 'down' | 'raised' | 'speaking';
+
 export type CallPhase = 'off' | 'joining' | 'live' | 'error';
 export type MicState = 'closed' | 'open' | 'blocked';
 
@@ -69,6 +82,12 @@ export type CallSelf = {
   canShare: boolean;
   camera: CameraState;
   screen: ScreenState;
+  // Raise hand (meeting-rooms-and-stage.md "Raise hand"): where you stand towards a live stage, the Who Can Speak of
+  // a stage you stand on that bars you (for the stage line), your hand, and the hands up on the tab.
+  stage: StagePlace;
+  barredBy: 'edit' | 'take-part' | null;
+  hand: HandState;
+  handsUp: number;
 };
 
 /** What the control's buttons do; set by the running call, absent while there is none to drive. */
@@ -78,6 +97,8 @@ export type CallActions = {
   toggleMute: () => void;
   toggleCamera: () => void;
   toggleScreen: () => void;
+  raiseHand: () => void;
+  lowerHand: () => void;
 };
 
 const EMPTY_HEARD: ReadonlySet<string> = new Set();
@@ -94,6 +115,10 @@ const OFF: CallSelf = {
   canShare: false,
   camera: 'off',
   screen: 'off',
+  stage: 'none',
+  barredBy: null,
+  hand: 'down',
+  handsUp: 0,
 };
 
 let peers = new Map<string, CallPeer>();
@@ -111,6 +136,17 @@ let maximised: CallMaximised | null = null;
 let peerNotifyDue: ReturnType<typeof setTimeout> | null = null;
 let levels: ReadonlyMap<string, AccessLevel> = new Map();
 const levelListeners = createListeners();
+let hands: ReadonlyMap<string, CallHand> = new Map();
+const handListeners = createListeners();
+let letByMe: ReadonlySet<string> = new Set();
+/** What the canvas draws hands from: every raised hand, and the ones this browser let speak. */
+export type CallHandsView = {
+  readonly hands: ReadonlyMap<string, CallHand>;
+  readonly letByMe: ReadonlySet<string>;
+};
+let handsView: CallHandsView = { hands, letByMe };
+type LetSpeakListener = (from: string, on: boolean) => void;
+const letSpeakListeners = new Set<LetSpeakListener>();
 
 const now = () => performance.now();
 
@@ -141,6 +177,11 @@ function peerOf(id: string): CallPeer {
 
 /** A peer's `avatar-voice` or `call-track`, as the room relayed it. Anything malformed is ignored. */
 export function receiveCallOp(from: string, op: unknown): void {
+  const hand = parseAvatarHand(op);
+  if (hand) {
+    setHand(from, hand.raised ? { tabId: hand.tabId, letSpeak: hand.letSpeak ?? null } : null);
+    return;
+  }
   const voice = parseAvatarVoice(op);
   if (voice) {
     peers.set(from, { ...peerOf(from), tabId: voice.tabId, level: voice.level, levelAt: now() });
@@ -182,8 +223,9 @@ export function onCallsMode(listener: () => void): () => void {
   return modeListeners.subscribe(listener);
 }
 
-/** A peer left the mode: their level and microphone go with their character. */
+/** A peer left the mode: their level, microphone and hand go with their character. */
 export function forgetCallPeer(id: string): void {
+  setHand(id, null);
   if (!peers.delete(id)) return;
   notifyPeers(false);
   trackListeners.notify();
@@ -191,6 +233,7 @@ export function forgetCallPeer(id: string): void {
 
 /** Keep only the peers still in the room (the presence list's prune). */
 export function pruneCallPeers(present: ReadonlySet<string>): void {
+  pruneHands(present);
   let changed = false;
   for (const id of [...peers.keys()]) {
     if (!present.has(id)) {
@@ -264,6 +307,103 @@ export function resetCallPeers(): void {
   publishPeers();
   trackListeners.notify();
   setCallLevels([]);
+  pruneHands(new Set());
+  letByMe = new Set();
+}
+
+// --- Raised hands (meeting-rooms-and-stage.md "Raise hand") --------------------------------------------------------
+
+// React reads one snapshot of both, taken when either changes.
+function publishHands(): void {
+  handsView = { hands, letByMe };
+  handListeners.notify();
+}
+
+// A hand keeps the time it first went up, so the order is the order hands were raised; a full store takes no more.
+function setHand(id: string, next: Omit<CallHand, 'at'> | null): void {
+  const prev = hands.get(id);
+  if (!next) {
+    if (!prev) return;
+    const copy = new Map(hands);
+    copy.delete(id);
+    hands = copy;
+    letByMe = withoutId(letByMe, id);
+    publishHands();
+    return;
+  }
+  if (prev && prev.tabId === next.tabId && prev.letSpeak === next.letSpeak) return;
+  if (!prev && hands.size >= HANDS_MAX) return;
+  const copy = new Map(hands);
+  copy.set(id, { ...next, at: prev?.at ?? now() });
+  hands = copy;
+  publishHands();
+}
+
+function withoutId(set: ReadonlySet<string>, id: string): ReadonlySet<string> {
+  if (!set.has(id)) return set;
+  const copy = new Set(set);
+  copy.delete(id);
+  return copy;
+}
+
+function pruneHands(present: ReadonlySet<string>): void {
+  const gone = [...hands.keys()].filter((id) => !present.has(id));
+  if (gone.length === 0) return;
+  const copy = new Map(hands);
+  for (const id of gone) {
+    copy.delete(id);
+    letByMe = withoutId(letByMe, id);
+  }
+  hands = copy;
+  publishHands();
+}
+
+/** Every peer's raised hand, by presence id (the call reads this). */
+export function callHands(): ReadonlyMap<string, CallHand> {
+  return hands;
+}
+
+const handsForRender = () => handsView;
+
+export function useCallHands(): CallHandsView {
+  return useSyncExternalStore(handListeners.subscribe, handsForRender, handsForRender);
+}
+
+/** Subscribe to a hand going up, down or being let speak (the running call recounts). */
+export function onCallHands(listener: () => void): () => void {
+  return handListeners.subscribe(listener);
+}
+
+/**
+ * An addressed `avatar-let-speak` reached this browser: someone let your hand speak, or pressed Done. Handed to the
+ * running call, which checks the sender may; malformed, it is ignored.
+ */
+export function receiveLetSpeak(from: string, op: unknown): void {
+  const parsed = parseAvatarLetSpeak(op);
+  if (!parsed) return;
+  for (const listener of letSpeakListeners) listener(from, parsed.on);
+}
+
+/** Subscribe to let-speaks addressed to you (the running call). */
+export function onLetSpeak(listener: LetSpeakListener): () => void {
+  letSpeakListeners.add(listener);
+  return () => letSpeakListeners.delete(listener);
+}
+
+/**
+ * You let `id` speak, or pressed Done: kept because a browser never learns its own presence id, so it cannot see
+ * itself in their hand's `letSpeak`. Their hand going down forgets it.
+ */
+export function noteLetSpeak(id: string, on: boolean): void {
+  if (on === letByMe.has(id)) return;
+  if (on) letByMe = new Set([...letByMe, id]);
+  else letByMe = withoutId(letByMe, id);
+  publishHands();
+}
+
+/** The hands this browser let speak. */
+export function callLetByMe(): ReadonlySet<string> {
+  return letByMe;
 }
 
 // --- Levels, for the stage (meeting-rooms-and-stage.md "Share roles") ---------------------------------------------
