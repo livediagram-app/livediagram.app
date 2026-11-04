@@ -838,7 +838,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "Publish this browser's microphone (Editor or Participant) or subscribe to speakers' microphones by their locators, through the api's Realtime app.",
+      "Publish this browser's microphone or camera (Editor or Participant) or shared screen (Editor), or subscribe to other people's by their locators, a camera on its small simulcast layer, through the api's Realtime app.",
     auth: 'guest-or-clerk',
     statuses: [200, 400, 403, 404, 410, 502, 503],
   },
@@ -848,6 +848,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary: "Send the browser's answer to an offer the Realtime SFU made on a subscribe.",
+    auth: 'guest-or-clerk',
+    statuses: [200, 400, 403, 404, 410, 502, 503],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/calls/layer',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "Switch this session's camera subscriptions between the small and the large simulcast layer (a bubble maximised or restored; docs/specs/012-collaboration/video-and-screen-bubbles.md).",
     auth: 'guest-or-clerk',
     statuses: [200, 400, 403, 404, 410, 502, 503],
   },

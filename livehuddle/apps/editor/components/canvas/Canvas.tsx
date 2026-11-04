@@ -82,6 +82,7 @@ import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/u
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
+import { CallBubbles } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
@@ -306,6 +307,12 @@ function CanvasView(props: CanvasProps) {
     canvasTool,
     avatar,
     avatarScale: avatarScale(avatarLook.config.size),
+    viewport: {
+      offset: viewportOffset,
+      zoom: viewportZoom,
+      width: mainSize.width,
+      height: mainSize.height,
+    },
   });
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
@@ -724,6 +731,8 @@ function CanvasView(props: CanvasProps) {
             ) : null}
             {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
             <TalkingBars {...call.bars} />
+            {/* Camera and screen bubbles above the characters (docs/specs/012-collaboration/video-and-screen-bubbles.md). */}
+            <CallBubbles {...call.bubbles} />
             {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
             <AvatarPadArrivals arrivals={padArrivals} />
             {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your

@@ -62,6 +62,20 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ ...track, track: { sessionId: 's' } }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles": a camera is taking part, a screen an Editor's.
+  it('relays a camera from a speaker, a screen from an Editor only, and never a slot holding another track', () => {
+    const at = (trackName: string) => ({ sessionId: 's', trackName, token: 'k' });
+    const camera = { kind: 'call-track', tabId: 't', track: null, video: at('cam') };
+    const screen = { kind: 'call-track', tabId: 't', track: null, screen: at('screen') };
+    expect(gateClientOp(camera, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp(camera, as('view'))).toEqual(DROP);
+    expect(gateClientOp(screen, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp(screen, as('participate'))).toEqual(DROP);
+    // Stopping a share is not sharing one.
+    expect(gateClientOp({ ...screen, screen: null }, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp({ ...camera, video: at('screen') }, as('edit'))).toEqual(DROP);
+  });
+
   it("routes a participant's element op through the content rule, and relays its own answers", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',

@@ -39,8 +39,31 @@ export const MARKER_FACE_SHAPE_THIN_PX = 6;
 export const MARKER_FACE_BODY_SLACK_PX = 6;
 /** An unoutlined rectangle covering at least this share of its face is the face's backdrop, drawn as it is. */
 export const MARKER_FACE_BACKDROP_SHARE = 0.6;
-/** Most parts one face draws in marker (project order), bounding a busy face's cost. */
+/** Most shapes and lines one face draws in marker (project order), bounding a busy face's cost: a shape's colouring
+ *  is the costly part. */
 export const MARKER_FACE_MAX_PARTS = 120;
+/** Most frames one face outlines in marker, counted apart from its shapes and lines: a frame is four strokes, so a
+ *  busy Plan board (a frame per card) keeps every card's marker edge, still bounded. */
+export const MARKER_FACE_MAX_FRAMES = 600;
+
+/** What one face has drawn so far, against MARKER_FACE_MAX_PARTS and MARKER_FACE_MAX_FRAMES. */
+export type MarkerFaceBudget = { parts: number; frames: number };
+export const markerFaceBudget = (): MarkerFaceBudget => ({ parts: 0, frames: 0 });
+/** Whether a part in this role still fits the face's budget. */
+export function faceBudgetAllows(budget: MarkerFaceBudget, role: FacePartRole): boolean {
+  return role === 'frame'
+    ? budget.frames < MARKER_FACE_MAX_FRAMES
+    : budget.parts < MARKER_FACE_MAX_PARTS;
+}
+/** Counts a part drawn. */
+export function spendFaceBudget(budget: MarkerFaceBudget, role: FacePartRole): void {
+  if (role === 'frame') budget.frames += 1;
+  else budget.parts += 1;
+}
+/** Whether the face can draw nothing more. */
+export function faceBudgetSpent(budget: MarkerFaceBudget): boolean {
+  return budget.frames >= MARKER_FACE_MAX_FRAMES && budget.parts >= MARKER_FACE_MAX_PARTS;
+}
 /** A frame's marker line, px: the table frame's weight, a touch under a body's nib so a board of cards stays calm. */
 export const MARKER_FACE_FRAME_PX = 2.5;
 /** A line thicker than this (a donut chart's ring) is drawn at its own width; thinner ones at the nib. */
@@ -274,17 +297,19 @@ export function facePartRole(
 const LINE_ATTRS = ' fill="none" stroke-linecap="round" stroke-linejoin="round"';
 
 /** One part of a face in marker, or null when it keeps its plain look. `seed` is the face's (markerFaceSeed) and
- *  `index` the part's place among the face's drawn parts. */
+ *  `index` the part's place among the face's drawn parts. With `budget`, a part whose role the face has drawn its
+ *  most of is null too, before any of its strokes are worked out. */
 export function markerFacePart(
   shape: FacePartShape,
   paint: FacePartPaint,
   face: FaceBox,
   seed: number,
   index: number,
+  budget?: MarkerFaceBudget,
 ): FacePartDrawing | null {
   const outline = outlineOf(shape);
   const role = facePartRole(shape, outline, paint, face);
-  if (!role) return null;
+  if (!role || (budget && !faceBudgetAllows(budget, role))) return null;
   const partSeed = (seed ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0;
   // A line in its own colour; an edge with no line of its own (a filled band, a bar, a banner) in a deeper shade of
   // its fill, which on the fill itself would not show; a frame's line pulled from its fill (markerFrameInk).
@@ -345,9 +370,11 @@ export function sketchFacePart(
   face: FaceBox,
   seed: number,
   index: number,
+  budget?: MarkerFaceBudget,
 ): FacePartDrawing | null {
   const outline = outlineOf(shape);
   if (facePartRole(shape, outline, paint, face) !== 'shape' || !outline.area) return null;
+  if (budget && !faceBudgetAllows(budget, 'shape')) return null;
   const partSeed = (seed ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0;
   const stroked = isInkColour(paint.stroke);
   const colour = xmlEscape(

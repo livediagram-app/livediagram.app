@@ -16,9 +16,11 @@ describe('calls kill switch rule (calls-kill-switch.md "What each mode allows")'
     expect(KINDS.map((k) => callsModeAllows('off', k))).toEqual([false, false, false, false]);
   });
 
-  it('knows the microphone as audio and no other name', () => {
+  it('knows the microphone, the camera and a screen, and no other name', () => {
     expect(callTrackKind('mic')).toBe('audio');
-    expect(callTrackKind('cam')).toBeNull();
+    expect(callTrackKind('cam')).toBe('video');
+    expect(callTrackKind('screen')).toBe('screen');
+    expect(callTrackKind('camera')).toBeNull();
     expect(callTrackKind('toString')).toBeNull();
   });
 

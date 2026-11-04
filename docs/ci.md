@@ -70,7 +70,7 @@ result.
   - **CI:** one job that fails when any of the above failed, and passes when nothing needed to run.
     It's the check to require on `main`.
 - **E2E** (`e2e.yml`, calling `e2e-product.yml` per product), on every pull request and push to
-  `main`, for each product whose editor a change reaches: six smoke shards, the sites audit and the
+  `main`, for each product whose editor a change reaches: one smoke build shared by three smoke shards, the sites audit and the
   signed-in specs, in Playwright's container, with Turbopack's build cache restored from `main`.
   **E2E** is its one result check.
 - **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss

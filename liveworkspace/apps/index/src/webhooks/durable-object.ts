@@ -4,6 +4,7 @@
 // wake was lost. It keeps nothing of its own: the deliveries are the index's D1 rows.
 
 import { DurableObject } from 'cloudflare:workers';
+import { roomAlarmAt } from '@liveworkspace/api-kit/room-alarm';
 import type { Env } from '../env';
 import { accountsAdminTeams } from './access';
 import { dohResolve } from './address';
@@ -34,7 +35,8 @@ export class WebhookDispatcher extends DurableObject<Env> {
       console.log('[webhooks] dispatched', JSON.stringify(result));
     }
     if (result.nextAt !== null) {
-      await this.ctx.storage.setAlarm(Math.max(result.nextAt, Date.now()));
+      // Never sooner than a second from now: a row stuck due must not fire the alarm back to back.
+      await this.ctx.storage.setAlarm(roomAlarmAt(result.nextAt, Date.now()));
     }
   }
 }

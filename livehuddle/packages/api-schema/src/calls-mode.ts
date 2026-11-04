@@ -1,7 +1,7 @@
 // The calls kill switch's shared rule (docs/specs/016-platform/calls-kill-switch.md "What each mode allows"): the
 // three modes, which media each allows, a track's kind by its name, and the room's `calls-mode` push. The api's mint
 // route and the editor read the same table, so a refusal and the control that explains it never disagree.
-import { CALL_TRACK_NAME } from './call-voice';
+import { CALL_SCREEN_TRACK_NAME, CALL_TRACK_NAME, CALL_VIDEO_TRACK_NAME } from './call-voice';
 
 export type CallsMode = 'on' | 'audio-only' | 'off';
 
@@ -17,8 +17,13 @@ export function callsModeAllows(mode: CallsMode, kind: CallsMediaKind): boolean 
   return true;
 }
 
-// Every track name a browser publishes, by the media it carries. Video (#317) and screen sharing (#318) add theirs.
-const TRACK_KINDS: Readonly<Record<string, CallsMediaKind>> = { [CALL_TRACK_NAME]: 'audio' };
+// Every track name a browser publishes, by the media it carries: the microphone, the camera (#317) and a shared
+// screen (#318).
+const TRACK_KINDS: Readonly<Record<string, CallsMediaKind>> = {
+  [CALL_TRACK_NAME]: 'audio',
+  [CALL_VIDEO_TRACK_NAME]: 'video',
+  [CALL_SCREEN_TRACK_NAME]: 'screen',
+};
 
 /** The media a track name carries, or null for a name no call publishes. */
 export function callTrackKind(trackName: string): CallsMediaKind | null {

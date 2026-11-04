@@ -225,8 +225,9 @@ describe('a press that pans through an element', () => {
 
 // docs/specs/008-canvas/avatar-mode.md "Walking": a finger's drag pans, and only its tap walks.
 describe('Avatar mode presses', () => {
-  function avatarSetup() {
+  function avatarSetup(peerAvatars: unknown[] = []) {
     const walkTo = vi.fn();
+    const onPushPeer = vi.fn();
     const setPan = vi.fn();
     const wrapper = document.createElement('div');
     wrapper.getBoundingClientRect = () =>
@@ -254,7 +255,8 @@ describe('Avatar mode presses', () => {
         setMarquee: vi.fn(),
         spotlight: {},
         avatar: { walkTo, pos: { x: 0, y: 0 }, seatedOn: null },
-        peerAvatars: [],
+        peerAvatars,
+        onPushPeer,
         isoCamera: {},
         beginPendingDrawGesture: () => false,
         onDeselect: vi.fn(),
@@ -272,7 +274,7 @@ describe('Avatar mode presses', () => {
         preventDefault: vi.fn(),
         stopPropagation: vi.fn(),
       } as unknown as ReactPointerEvent);
-    return { press, walkTo, setPan };
+    return { press, walkTo, setPan, onPushPeer };
   }
 
   it('pans on a finger, walking only when the press turns out a tap', () => {
@@ -290,6 +292,42 @@ describe('Avatar mode presses', () => {
     press('mouse');
     expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
     expect(setPan).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/009-elements/chair.md "Sitting": a seated character cannot be pushed.
+  const peerAt = (seatedOn: string | null) => ({
+    id: 'peer',
+    name: 'Ada',
+    color: '#f00',
+    glideMs: 0,
+    avatar: {
+      x: 120,
+      y: 250,
+      facing: 'down',
+      walking: false,
+      stepFrame: 0,
+      lift: 0,
+      wave: null,
+      seatedOn,
+    },
+  });
+
+  it('walks up to a standing peer and pushes them on arrival', () => {
+    const { press, walkTo, onPushPeer } = avatarSetup([peerAt(null)]);
+    press('mouse');
+    const arrive = walkTo.mock.calls[0]?.[1] as (() => void) | undefined;
+    arrive?.();
+    expect(onPushPeer).toHaveBeenCalledWith('peer', expect.any(Number), expect.any(Number));
+  });
+
+  it('walks up to a seated peer and sends no push', () => {
+    const { press, walkTo, onPushPeer } = avatarSetup([peerAt('chair')]);
+    press('mouse');
+    expect(walkTo).toHaveBeenCalledWith(
+      expect.objectContaining({ x: expect.any(Number) }),
+      undefined,
+    );
+    expect(onPushPeer).not.toHaveBeenCalled();
   });
 });
 

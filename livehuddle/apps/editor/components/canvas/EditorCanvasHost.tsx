@@ -515,6 +515,7 @@ export function EditorCanvasHost() {
             readOnly={isReadOnly}
             participantPalette={participating && can.addContent}
             takePart={can.takePart}
+            canShareScreen={gates.shape}
             canMove={can.move}
             canWriteText={can.writeText}
             canResize={can.resize}

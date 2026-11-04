@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { MARKER_FACE_MAX_PARTS } from './marker-face';
+import { MARKER_FACE_MAX_FRAMES, MARKER_FACE_MAX_PARTS } from './marker-face';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import { svgMarkerFace } from './svg-render-face-finish';
 
-// docs/specs/008-canvas/finish.md "Performance": a face drawn in marker draws at most MARKER_FACE_MAX_PARTS parts, each
+// docs/specs/008-canvas/finish.md "Performance": a face drawn in marker draws at most MARKER_FACE_MAX_PARTS shapes and
+// lines and MARKER_FACE_MAX_FRAMES frames (a frame is four strokes: 600 take about 11 ms, 200 about 4 ms), each
 // a marker part (markerFacePart) about the cost of a Marker body. The worst face, every part a coloured-in band, stays
 // under 12 ms (x10 for CI and coverage), so one settle of the canvas pass (useFaceFinishPass) on a busy face fits a
 // frame budget's worth of idle time; an ordinary concept graphic stays under 2 ms. CPU time, fastest of rounds.
@@ -31,6 +32,16 @@ describe('marker face budgets', { timeout: PERF_TEST_TIMEOUT_MS }, () => {
     ).join('');
     const face = { width: 2000, height: 4000 };
     expect(fastest(() => svgMarkerFace(markup, 'budget', face))).toBeLessThan(cpuBudgetMs(120));
+  });
+
+  it(`a board of ${MARKER_FACE_MAX_FRAMES} framed cards stays under 20 ms (x10 for CI and coverage)`, () => {
+    const markup = Array.from(
+      { length: MARKER_FACE_MAX_FRAMES },
+      (_, i) =>
+        `<rect x="${(i % 5) * 280}" y="${Math.floor(i / 5) * 110}" width="260" height="100" rx="12" fill="#ffffff" stroke="#e2e8f0"/>`,
+    ).join('');
+    const face = { width: 1400, height: 13200 };
+    expect(fastest(() => svgMarkerFace(markup, 'budget', face))).toBeLessThan(cpuBudgetMs(200));
   });
 
   it('a concept graphic stays under 2 ms (x10 for CI and coverage)', () => {

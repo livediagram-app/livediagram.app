@@ -42,6 +42,7 @@ import {
   clearAgentsForOp,
   RoomAgentPresence,
 } from '@liveworkspace/api-kit/room-agent-presence';
+import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import type { ClientMessage, DocumentEnv, Env, ParticipantPresence, ServerMessage } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import { multiplayerDecision } from '@liveworkspace/api-kit/room-multiplayer';
@@ -1747,9 +1748,9 @@ export class DocumentRoom extends DurableObject<Env> {
       this.shares.at,
       this.communityAt,
       this.maintenanceAt,
-    ].filter((t): t is number => t !== null);
-    if (due.length === 0) void this.state.storage.deleteAlarm();
-    else void this.state.storage.setAlarm(Math.min(...due));
+    ];
+    // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
+    armRoomAlarm(this.state.storage, due, Date.now());
   }
 
   /**

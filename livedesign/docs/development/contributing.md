@@ -98,7 +98,7 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 ### End-to-end tests
 
-A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium: the layer the Vitest unit tests can't reach. It runs from the monorepo's root `.github/workflows/e2e.yml` on every pull request and push to `main` whose change reaches livedesign's editor (`e2e-product.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), and on demand: `gh workflow run e2e.yml --ref <branch>`.
+A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium: the layer the Vitest unit tests can't reach. It runs from the monorepo's root `.github/workflows/e2e.yml` on every pull request and push to `main` whose change reaches livedesign's editor (`e2e-product.yml`: a **Smoke build** job, three **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
 Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3402` / `:8989`):
 

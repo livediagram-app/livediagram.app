@@ -170,6 +170,7 @@ someone's bars. Never who, never how long, never anything heard.
 ## Out of scope
 
 - Room walls deciding who hears whom (an [Office](../009-elements/office.md) room as one call), the All-Hands Hall's
-  stage, and video or screen sharing: [Future work](../005-project-roadmap/future-work.md).
+  stage: [Future work](../005-project-roadmap/future-work.md). Video and screen sharing ride the same call:
+  [Video and screen share bubbles](video-and-screen-bubbles.md).
 - Muting someone else (an Editor's act in the future-work role table) and per-person volume.
 - Any recording, transcript or history: nothing said is stored anywhere.
