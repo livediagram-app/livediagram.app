@@ -42,7 +42,8 @@ export type CreationIntent = {
 
 type EntryWords = { label: string; noun: string };
 const MODE_WORDS: Record<EditorMode, EntryWords> = {
-  workshop: { label: 'Sessions', noun: 'sessions' },
+  // The meeting board's entry (docs/specs/012-collaboration/workshop-mode.md "Workspace").
+  workshop: { label: 'Spaces', noun: 'spaces' },
 };
 const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {};
 

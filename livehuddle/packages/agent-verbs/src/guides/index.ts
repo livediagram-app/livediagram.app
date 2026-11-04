@@ -5,14 +5,14 @@ export const GUIDE_TOPIC_MAX_TOKENS = 1200;
 
 export const GUIDE_TOPICS = {
   build: {
-    summary: 'build a Space for a meeting or workshop',
+    summary: 'build a Space for a meeting',
     text: `Build a Space
 
-A Space is a board a team meets on; the commands call it a document. Start from a session template:
+A Space is a place a team meets in; the commands call it a document. Start from a Space template:
 
-  livehuddle template ls                                    the session boards
-  livehuddle document create "Sprint retro" --template retrospective
-  livehuddle tab add "Sprint retro" Actions --template meeting-agenda
+  livehuddle template ls                                    the Spaces
+  livehuddle document create "Sprint retro" --template team-pod
+  livehuddle tab add "Sprint retro" Hall --template all-hands-hall
 
 Boxes and arrows (a process, a flow) come from a graph or Mermaid, laid out for you:
 

@@ -121,7 +121,7 @@ describe('applyReplace on an existing tab', () => {
   });
 
   it('builds a template with the tab theme', () => {
-    const { tab } = applied(applyReplace(themed('ocean'), { template: 'swot' }, options));
+    const { tab } = applied(applyReplace(themed('ocean'), { template: 'team-pod' }, options));
     expect(tab.elements.length).toBeGreaterThan(0);
     expect(tab.name).toBe('Checkout flow');
   });
@@ -179,7 +179,7 @@ describe('applyReplace for a new tab', () => {
   });
 
   it('builds a template tab whole, with its canvas and kind', () => {
-    const { tab } = applied(applyReplace(null, { template: 'retrospective' }, options));
+    const { tab } = applied(applyReplace(null, { template: 'virtual-office' }, options));
     expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'diagram' });
   });
 
@@ -241,7 +241,7 @@ describe('applyReplace refusals', () => {
   it('names the templates for an unknown one', () => {
     const rejection = refusal({ template: 'nope' });
     expect(rejection.details).toEqual(['template="nope": not a template']);
-    expect(rejection.hint).toContain('sailboat');
+    expect(rejection.hint).toContain('all-hands-hall');
     expect(refusal({ template: 7 }).code).toBe('invalid_value');
   });
 

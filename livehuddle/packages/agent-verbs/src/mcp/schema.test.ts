@@ -192,13 +192,13 @@ describe('SERVER_INSTRUCTIONS on Spaces', () => {
   it('talks about Spaces and maps them to the document tools', () => {
     expect(SERVER_INSTRUCTIONS).toMatch(/livehuddle Spaces/);
     expect(SERVER_INSTRUCTIONS).toMatch(/call a Space a document/);
-    expect(SERVER_INSTRUCTIONS).not.toMatch(/storm|esKind|Draw mode|whiteboard|org chart/i);
+    expect(SERVER_INSTRUCTIONS).not.toMatch(/storm|esKind|Draw mode|whiteboard|org chart|workshop/i);
   });
 });
 
 describe('SERVER_INSTRUCTIONS template examples', () => {
   it('names only kinds create_document takes', () => {
-    const list = /hand-tuned session boards \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
+    const list = /four ready-furnished Spaces \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
     const examples = list
       .split(/,\s*/)
       .map((s) => s.trim())
