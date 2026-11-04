@@ -2,9 +2,9 @@ import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livehud
 import {
   expect,
   test,
-  dismissQuickTour,
   expectNoPageErrors,
   openStartBlank,
+  serverNewUrl,
   seedTab,
 } from './fixtures';
 
@@ -18,14 +18,6 @@ import {
 
 const CANVAS = '[data-canvas-a11y-root]';
 
-// The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank document on the Default colour
-// scheme, in one click. What this suite needs is a default tab, not the wizard.
-async function startBlank(page: import('@playwright/test').Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
-  await page.locator(CANVAS).waitFor();
-  await dismissQuickTour(page);
-}
 const DARK_CANVAS = DARK_CANVAS_BACKGROUND_COLOR;
 const LIGHT_CANVAS = DEFAULT_BACKGROUND_COLOR;
 
@@ -121,7 +113,7 @@ test.describe('Appearance', () => {
     // pick time: switching chrome is not an edit. If it were, one reader's
     // appearance would travel to everyone else on the tab.
     await page.emulateMedia({ colorScheme: 'light' });
-    await startBlank(page);
+    await openStartBlank(page);
     await page.waitForTimeout(1500); // let the create-time autosave settle
 
     const writes: string[] = [];
@@ -145,13 +137,13 @@ test.describe('Appearance', () => {
     // Asserted on the rendered page, not the metadata object: Next drops a meta
     // whose content is empty, and a unit test on the object passed while the
     // page carried nothing.
-    await page.goto('/new');
+    await page.goto(await serverNewUrl(page, '/new'));
     await expect(page.locator('head meta[name="darkreader-lock"]')).toHaveCount(1);
   });
 
   test('remembers the setting across a reload, before first paint', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
-    await startBlank(page);
+    await openStartBlank(page);
     await appearanceButton(page).click(); // System -> Light
     await appearanceButton(page).click(); // Light -> Dark
     await expect(page.locator('html')).toHaveClass(/dark/);
