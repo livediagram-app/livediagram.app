@@ -570,6 +570,7 @@ export function EditorCanvasHost() {
             onCallSignal={callsRoom ? broadcastCallSignal : undefined}
             avatarShove={avatarShove}
             walkIn={walkIn}
+            walkButton={!embedMode}
             onFireReaction={can.takePart ? fireReaction : undefined}
             // Bring Focus (docs/specs/012-collaboration/bring-focus.md) moves everyone's view, so it is running the
             // session: an Editor's (docs/specs/013-workspace/share-roles.md), and the facilitator's while somebody holds the
