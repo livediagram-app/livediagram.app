@@ -100,17 +100,20 @@ The glue between the apps: what liveworkspace is, each app in its own colours, h
 moves between them, and the one account that joins them.
 
 1. **Hero**: "Everything your team makes, live in one workspace", one sentence naming each app
-   in its accent and what it is for (sketch, plan, write it up, make it look right), and two calls to
+   in its accent and what it is for (sketch, plan, write it up, make it look right, talk it through), and two calls to
    action: **Create your free account** (`/sign-up`, back here after) and **Explore the apps**.
    Signed in, they are hidden. Beside it, the platform's prism
-   with each app's logo at a corner, joined to it by a line in its accent, read clockwise in the
+   with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
+   clockwise in the
    order work moves through them, and a collaborator's cursor at each. Each app there is a link to its
    site that lifts and rings in its accent on hover, and holds still while pointed at. On phones (below
    `sm`) it is left out, and the hero's words, calls to action and promises are centred.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
-   and a photo being cropped), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**, **Start Designing**. Below `lg` the window sits between the summary and the three things it does.
+   and a photo being cropped; a Space's stand-up room with its timer running, its notes voted on and people walked
+   in), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**,
+   **Start Designing**, **Start Huddling**. Below `lg` the window sits between the summary and the three things it does.
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" in the app's deep shade on light and its own 400 on dark, which reads at AA on a dark card where its 500
    accent does not (`components/landing/AppLogo.tsx`). The copy is
@@ -496,10 +499,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   a common setting the editor has is never left out of its side (before 2 November 2026 they were missed whenever
   the editor's own catalogue was not read, which in an editor it never is).
 - **A held app.** An app registered before its launch
-  ([integrating-an-app.md](../002-architecture/integrating-an-app.md#registered-before-launch), livehuddle today)
-  has its own catalogue and scope like any other (`@liveworkspace/settings/catalogues/livehuddle`,
-  `livehuddle.app`), so its editor's panel names it ("livehuddle Settings", its own heading in the rail) and reads
-  and writes its own settings. It is held out of every other list: the panel's apps (`SETTINGS_APP_IDS`) are
+  ([integrating-an-app.md](../002-architecture/integrating-an-app.md#registered-before-launch); none today, livehuddle
+  was until Work Tracker #189) has its own catalogue and scope like any other
+  (`@liveworkspace/settings/catalogues/<app>`, its site id), so its editor's panel names it ("<app> Settings", its
+  own heading in the rail) and reads and writes its own settings. It is held out of every other list: the panel's apps (`SETTINGS_APP_IDS`) are
   `APP_SITES`' alone, so it is in no other app's All and no `?app=` link here opens it. The panel opened for the held
   app adds it to its own All, first, beside the listed apps. Launch lists it with no change here.
 - **All.** Every setting, in one set of categories (merged on 25 October 2026; before, All listed Common and then

@@ -594,7 +594,8 @@ the accounts Worker's code. Outside the deploy, set once:
 
 1. The Turnstile widget holds the app hostnames: `livediagram.app`, `www.livediagram.app`,
    `liveplanner.app`, `www.liveplanner.app`, `livedocuments.app`, `www.livedocuments.app`,
-   `livedesign.app`, `www.livedesign.app`, and their `staging.` hosts for staging.
+   `livedesign.app`, `www.livedesign.app`, `livehuddle.app`, `www.livehuddle.app`, and their `staging.` hosts for
+   staging.
 2. Google on the app's address is off (`GOOGLE_ON_APP_ORIGINS = "false"`, so Continue with Google goes through
    liveworkspace.app's own page). Turning it on adds these authorised redirect URIs to the Google OAuth client and
    sets the var to `"true"`:
@@ -606,8 +607,10 @@ the accounts Worker's code. Outside the deploy, set once:
    - `https://www.livedocuments.app/api/workspace/auth/callback/google`
    - `https://livedesign.app/api/workspace/auth/callback/google`
    - `https://www.livedesign.app/api/workspace/auth/callback/google`
+   - `https://livehuddle.app/api/workspace/auth/callback/google`
+   - `https://www.livehuddle.app/api/workspace/auth/callback/google`
    - staging: `https://staging.<app>/api/workspace/auth/callback/google` for each app
-   - local: `http://localhost:3100`, `3200`, `3300` and `3400`, each with
+   - local: `http://localhost:3100`, `3200`, `3300`, `3400` and `3500`, each with
      `/api/workspace/auth/callback/google`
 
 Locally, an app client registered before the guest hand-off also needs its `/auth/guest` redirect
@@ -683,7 +686,7 @@ Each setting is stored in one scope:
   colours, and every editor setting two or more apps have (`COMMON_SETTING_KEYS`, below). Its
   `splitSettings` and `joinSettings` turn an editor's flat preferences into the two scopes and back.
 - **an app's site id** (`livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, and
-  `livehuddle.app`, registered before its launch, as `REGISTERED_APP_SITES` in `@liveworkspace/sites` spells them):
+  `livehuddle.app`, as `REGISTERED_APP_SITES` in `@liveworkspace/sites` spells them):
   shown by that app only.
 
 An app reads its own scope and `all`, and shows only the settings that mean something to it. It

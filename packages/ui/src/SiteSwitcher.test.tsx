@@ -56,6 +56,7 @@ describe('SiteSwitcher on an Explorer page', () => {
       'https://www.liveplanner.app/explorer/folder?id=f1',
       'https://www.livedocuments.app/explorer/folder?id=f1',
       'https://www.livedesign.app/explorer/folder?id=f1',
+      'https://www.livehuddle.app/explorer/folder?id=f1',
     ]);
     expect(html).toMatch(
       /href="https:\/\/www\.liveplanner\.app\/explorer[^"]*"[^>]*aria-current="page"/,

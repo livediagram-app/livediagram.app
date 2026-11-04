@@ -214,15 +214,23 @@ person sees lists it.
 - **Secrets** (owner only) come with the app's first deploy: its accounts client, and its `INDEX_KEY_<APP>`,
   `MEDIA_KEY_<APP>`, `TELEMETRY_KEY_<APP>` and `DRIVE_KEY_<APP>` (the same value as the app api's `DRIVE_KEY`). Until each is set, that service refuses the app's Workers, as for any
   app without its key.
-- **Launch** moves the row from `HELD_APP_SITES` into `APP_SITES` and the app from `HELD_TELEMETRY_APPS` into
-  `TELEMETRY_APPS`; the sign-in email's line names it in the same change.
+- **Launch** moves the row from `HELD_APP_SITES` into `APP_SITES`, which lists the app everywhere above at once,
+  and adds its bare domain to `APP_BARE_HOSTS`; the sign-in email's line names it in the same change, and its
+  product's CI group drops `held: true` ([docs/ci.md](../../../../docs/ci.md)), so its Workers deploy. The app
+  moves from `HELD_TELEMETRY_APPS` into `TELEMETRY_APPS` with its telemetry dashboard (step 3 of
+  [telemetry.md](../008-telemetry/telemetry.md#adding-an-app)), since the dashboard's app picker reads that list.
+  A list that draws something per app (the front door's window onto its work, the Explorer hero's pictures) carries
+  the app's own drawing; until it has one, the Explorer hero leaves it out.
 
-Held today: **livehuddle** (`livehuddle.app`, port block 3500, its item a **Space**, its index kind `space`), by
-[livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md).
-It ships every platform-wide feature, as the other apps do (owner, 2026-11-02): its MCP server, which the status
-checks look at ([status.md](../009-status/status.md#where-the-checks-go)), and a Community, whose service takes its
-posts under `COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with This
-Browser's conversions and the Share dialog's Community tab in its `AppItems`.
+No app is held today. **livehuddle** (`livehuddle.app`, port block 3500, its item a **Space**, its index kind
+`space`) was registered this way, by
+[livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md), and
+launched with Work Tracker #189: its row is in `APP_SITES`. Its telemetry stays held until its dashboard is built,
+and the Explorer hero has no pictures of its kinds yet (both follow-ups to #189). It ships every platform-wide
+feature, as the other apps do (owner, 2026-11-02): its MCP server, which the status checks look at
+([status.md](../009-status/status.md#where-the-checks-go)), and a Community, whose service takes its posts under
+`COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with This Browser's
+conversions and the Share dialog's Community tab in its `AppItems`.
 
 A held app's Settings are its own from the start: its plain-data catalogue sits beside the listed apps'
 (`@liveworkspace/settings/catalogues/<app>`, [accounts.md](../003-accounts/accounts.md#scopes)) and its id is a

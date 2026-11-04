@@ -1,7 +1,7 @@
 # Community
 
 Every liveworkspace product has a Community: **livediagram**, **liveplanner**, **livedocuments**,
-**livedesign** and **livehuddle** (registered before its launch; owner, 2026-11-02). Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
+**livedesign** and **livehuddle** (owner, 2026-11-02; launched with Work Tracker #189). Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
 service stores them in its own D1 database. It is an API only: liveworkspace.app has no Community pages. Each app
 hosts its own gallery and post pages, in its own look, and they show that app's posts only.
 

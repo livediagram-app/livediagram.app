@@ -178,6 +178,7 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
       'https://liveplanner.app/api',
       'https://livedocuments.app/api',
       'https://livedesign.app/api',
+      'https://livehuddle.app/api',
     ]);
   });
 

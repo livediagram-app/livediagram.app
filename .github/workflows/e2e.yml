@@ -119,7 +119,6 @@ jobs:
         apps/help/.next/cache
         apps/marketing/.next/cache
 
-  # Held until launch (ci-plan.mjs): planned only when a change reaches livehuddle/ itself.
   livehuddle:
     name: livehuddle
     needs: plan

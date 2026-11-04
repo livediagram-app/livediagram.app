@@ -99,8 +99,9 @@ describe('the Inbox pane’s verbs in the editor’s panel', () => {
   it('replies to and resolves this app’s threads only, and marks done an action on the open tab only', () => {
     const markDone = vi.fn();
     const actions = explorerInboxActions('user_me', { itemId: 'i1', tabId: 't1', markDone });
-    // A held app's rows are not the platform's yet (isAppName), so its own threads open in place until launch.
-    expect(actions.offers(row)).toEqual(isAppName('livehuddle') ? ['reply', 'resolve'] : []);
+    // A launched app's rows are the platform's (isAppName), so its own threads are answered in the Inbox.
+    expect(isAppName('livehuddle')).toBe(true);
+    expect(actions.offers(row)).toEqual(['reply', 'resolve']);
     expect(actions.offers({ ...row, app: 'liveplanner' })).toEqual([]);
     expect(actions.offers({ ...row, local: true })).toEqual([]);
     const action = { ...row, kind: 'Action' as const, actionId: 'a1' };

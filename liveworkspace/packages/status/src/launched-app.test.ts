@@ -1,10 +1,10 @@
-import { APP_SITES, HELD_APP_SITES } from '@liveworkspace/sites';
+import { APP_SITES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
 import { appGroup, hasMcp, mcpOrigin, statusGroups } from './services';
 
-// The MCP server is optional per app (liveworkspace/docs/specs/009-status/status.md "Where the checks go"), and a held
-// app is not on the page until it launches.
-const huddle = HELD_APP_SITES.find((site) => site.id === 'livehuddle.app')!;
+// The MCP server is optional per app (liveworkspace/docs/specs/009-status/status.md "Where the checks go"), and
+// livehuddle, launched, is on the page as every app is.
+const huddle = APP_SITES.find((site) => site.id === 'livehuddle.app')!;
 
 describe('the MCP check, optional per app', () => {
   it('stays for every listed app', () => {
@@ -15,7 +15,7 @@ describe('the MCP check, optional per app', () => {
     }
   });
 
-  it("checks the held app's MCP server too", () => {
+  it("checks livehuddle's MCP server", () => {
     expect(hasMcp(huddle)).toBe(true);
     expect(mcpOrigin(huddle, 'production')).toBe('https://mcp.livehuddle.app');
     expect(mcpOrigin(huddle, 'development')).toBe('http://localhost:9088');
@@ -48,8 +48,8 @@ describe('the MCP check, optional per app', () => {
   });
 });
 
-describe('a held app', () => {
-  it('is not on the page', () => {
+describe('a launched app', () => {
+  it('is on the page, last', () => {
     for (const env of ['production', 'staging', 'development'] as const) {
       expect(statusGroups(env).map((g) => g.id)).toEqual([
         'liveworkspace',
@@ -57,6 +57,7 @@ describe('a held app', () => {
         'liveplanner',
         'livedocuments',
         'livedesign',
+        'livehuddle',
       ]);
     }
   });

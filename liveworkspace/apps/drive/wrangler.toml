@@ -33,7 +33,7 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   DRIVE_TOKEN_KEY        base64 of 32 random bytes: seals refresh tokens (AES-GCM); the consent state and the push
 #                          channel tokens are signed with keys derived from it (HKDF), never with it.
 #   DRIVE_KEY_LIVEDIAGRAM, DRIVE_KEY_LIVEPLANNER, DRIVE_KEY_LIVEDOCUMENTS, DRIVE_KEY_LIVEDESIGN,
-#   DRIVE_KEY_LIVEHUDDLE (livehuddle, held until launch: unset, its Spaces wait and retry)
+#   DRIVE_KEY_LIVEHUDDLE (livehuddle)
 #                          each shared with that app's api Worker as DRIVE_KEY: its export (format=file, svg) and
 #                          import doors.
 #   DRIVE_KEY_INDEX        the index's DRIVE_KEY_INDEX: its change signal (POST /app/changes) carries it.

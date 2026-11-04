@@ -135,7 +135,7 @@ export function lifecycleEmail(
         subject: 'Welcome to liveworkspace',
         heading: 'Welcome, let’s make something',
         intro:
-          'Your liveworkspace account signs you in to four free apps for working together in real time. Everything you make in one shows in all of them:',
+          'Your liveworkspace account signs you in to five free apps for working together in real time. Everything you make in one shows in all of them:',
         points: appLines(env),
         outro:
           'Each starts from a blank page or a template, and saves as you go, so you can just start and come back later.',

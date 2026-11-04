@@ -11,7 +11,7 @@ livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
-livehuddle/      livehuddle.app (held until launch): meetings and workshops, forked from livediagram in-tree
+livehuddle/      livehuddle.app: meetings and workshops, forked from livediagram in-tree
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 ```
 

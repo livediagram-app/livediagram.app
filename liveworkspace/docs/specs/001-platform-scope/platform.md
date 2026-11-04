@@ -1,11 +1,10 @@
 # The platform
 
-liveworkspace is the platform four apps stand on: livediagram (Canvas: diagrams, drawing, workshops),
-liveplanner (Plan: boards, sheets, dashboards, forms), livedocuments (Document: articles, slides, infographics) and
-livedesign (Design: logos, wireframes, photos). A person has one account, one Explorer and one set of settings across
-all of them, at liveworkspace.app and on each app's own address. A fifth, livehuddle (Space: meetings and
-workshops), is registered with the services before its launch and listed nowhere yet
-([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)).
+liveworkspace is the platform five apps stand on: livediagram (Canvas: diagrams, drawing, workshops),
+liveplanner (Plan: boards, sheets, dashboards, forms), livedocuments (Document: articles, slides, infographics),
+livedesign (Design: logos, wireframes, photos) and livehuddle (Space: meetings and workshops; launched with Work
+Tracker #189). A person has one account, one Explorer and one set of settings across all of them, at
+liveworkspace.app and on each app's own address.
 
 ## Why one platform
 

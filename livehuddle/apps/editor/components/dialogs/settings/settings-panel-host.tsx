@@ -15,8 +15,8 @@ import { currentBearer } from '@/lib/api/core';
 // account's other settings. The other apps' settings are read and written over liveworkspace's account API through
 // this app's router (`/api/workspace/account`), with the person's access token, as the Explorer panel's teams are;
 // nothing is asked (or loaded) until All is first chosen, and what is read is kept for the page's lifetime.
-// livehuddle is held until launch (liveworkspace/docs/specs/010-site/site.md "Settings", "A held app"): its own
-// catalogue and `livehuddle.app` scope, shown in this panel alone.
+// livehuddle's own catalogue and `livehuddle.app` scope, listed in every app's panel since its launch
+// (liveworkspace/docs/specs/010-site/site.md "Settings").
 export const SETTINGS_APP = settingsPanelApp({
   ...siteOfApp('livehuddle'),
   id: 'livehuddle.app',

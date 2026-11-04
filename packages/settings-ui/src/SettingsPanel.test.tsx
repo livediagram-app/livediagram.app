@@ -167,6 +167,7 @@ describe('SettingsPanel', () => {
       '/settings/livedesign.app',
       '/settings/livediagram.app',
       '/settings/livedocuments.app',
+      '/settings/livehuddle.app',
     ]);
     // Account is the one heading; no app has a group of its own.
     const headings = [...rail().querySelectorAll('[role="group"] > p')].map((p) => p.textContent);
@@ -218,8 +219,8 @@ describe('SettingsPanel', () => {
     );
     renderWithKit(<Host request={request} initial="all" />);
     await waitFor(() => expect(screen.getByRole('group', { name: 'Account' })).toBeTruthy());
-    // No editor here: all four apps are read.
-    expect(calls.filter((c) => c.method === 'GET' && c.path !== '/push/devices')).toHaveLength(4);
+    // No editor here: all five apps are read.
+    expect(calls.filter((c) => c.method === 'GET' && c.path !== '/push/devices')).toHaveLength(5);
     const account = () => within(rail()).getByRole('group', { name: 'Account' });
     fireEvent.click(within(account()).getByRole('button', { name: 'Account' }));
     fireEvent.click(within(account()).getByRole('button', { name: /^Notifications/ }));

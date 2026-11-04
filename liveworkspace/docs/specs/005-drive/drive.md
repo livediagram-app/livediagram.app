@@ -25,10 +25,10 @@ which is gone ([Coming from livediagram's mirror](#coming-from-livediagrams-mirr
   livedocuments, livedesign and livehuddle: the index's personal items and the person's whole folder tree, which
   already holds items from any app. Team items, items shared with them (at any level: Editor, Participant or Viewer),
   and anything only in a browser (This Browser, Offline) are not mirrored.
-- **A held app is mirrored too.** livehuddle, registered before its launch
-  ([Integrating an app](../002-architecture/integrating-an-app.md#registered-before-launch)), is one of the mirrored
-  apps from the start: its Spaces are written and its file opens like any other app's. Until it launches, nothing
-  liveworkspace.app shows names it (the Google Drive help page lists the launched apps).
+- **A held app is mirrored too.** An app registered before its launch
+  ([Integrating an app](../002-architecture/integrating-an-app.md#registered-before-launch)) is one of the mirrored
+  apps from the start: its items are written and its file opens like any other app's, and nothing liveworkspace.app
+  shows names it until it launches. livehuddle was mirrored this way, and its Spaces are since its launch.
 - **Everyone, free.** A deployment without a Google client (below) has no Cloud Sync section: absent, not broken.
 
 ## Principles

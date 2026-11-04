@@ -58,6 +58,7 @@ describe('StatusBoard', () => {
       'liveplanner',
       'livedocuments',
       'livedesign',
+      'livehuddle',
     ]);
     for (const id of ids) expect(host!.querySelector(`#${id}-title`)?.textContent).toContain(id);
   });
@@ -105,6 +106,7 @@ describe('StatusBoard', () => {
       'liveplannerAll up',
       'livedocumentsAll up',
       'livedesign2 down',
+      'livehuddleAll up',
     ]);
   });
 

@@ -27,6 +27,7 @@ const PRODUCTION = [
   'https://www.liveplanner.app',
   'https://www.livedocuments.app',
   'https://www.livedesign.app',
+  'https://www.livehuddle.app',
 ];
 const STAGING = [
   'https://staging.liveworkspace.app',
@@ -34,6 +35,7 @@ const STAGING = [
   'https://staging.liveplanner.app',
   'https://staging.livedocuments.app',
   'https://staging.livedesign.app',
+  'https://staging.livehuddle.app',
 ];
 
 describe("the site switcher's links in each environment", () => {

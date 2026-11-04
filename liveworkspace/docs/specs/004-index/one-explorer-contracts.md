@@ -9,7 +9,7 @@ side imports, so a change here is a change there.
 | Term   | Meaning                                                                                      |
 | ------ | -------------------------------------------------------------------------------------------- |
 | item   | One Canvas, Plan, Document or Design. Its id is a UUID the index gives it when it is made.   |
-| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, or `livehuddle` (held, below).  |
+| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, or `livehuddle` (below).        |
 | kind   | `canvas`, `plan`, `document`, `design` or `space`: one per app, the word people see.         |
 | person | Who is asking: an account (`user_…`) or a guest (`guest_…`). The same id in every app.       |
 | index  | The service at `liveworkspace.app/api/index` and its database. The only record of everything |
@@ -18,10 +18,10 @@ side imports, so a change here is a change there.
 |        | item at a level.                                                                             |
 | level  | `view` < `participate` < `edit`, as every app uses.                                          |
 
-livehuddle (its kind `space`, a person's "Space") is registered before its launch
-([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): the contracts
-and the service take it as an app, and no Explorer lists it (`APP_NAMES` in `@liveworkspace/sites` holds the listed
-apps). The `items` table takes `livehuddle` and `space` since its rebuild (`0009_items_livehuddle.sql`, rehearsed on
+livehuddle (its kind `space`, a person's "Space") was registered before its launch
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)) and is listed since
+it (Work Tracker #189): the contracts and the service take it as an app, and every Explorer lists it (`APP_NAMES` in
+`@liveworkspace/sites` holds the listed apps). The `items` table takes `livehuddle` and `space` since its rebuild (`0009_items_livehuddle.sql`, rehearsed on
 a copy of the data before it deploys: [blueprints/items.md](blueprints/items.md#rebuilding-items)). Until livehuddle's
 launch it has no `INDEX_KEY_LIVEHUDDLE`, so nothing can push one.
 

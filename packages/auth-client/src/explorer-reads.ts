@@ -1,7 +1,7 @@
 // The Explorer's reads from another app (liveworkspace/docs/specs/004-index/one-explorer.md): on an app's own address the Explorer
 // asks as that app, with a token addressed to that app's API, yet it draws every app's items, so it asks each item's
 // own app for its tabs (the Share dialog's tab picker). That read, and only that, accepts a token addressed to any of
-// the four apps' APIs in the same environment, the audiences liveworkspace.app's own token already carries. What the
+// every app's API in the same environment, the audiences liveworkspace.app's own token already carries. What the
 // token may read is unchanged: the route still checks the person may read the item. Previews are no app's any more:
 // they are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md), behind the index, which takes every app's token.
 
@@ -13,8 +13,8 @@ const APP_API_HOSTS = (['production', 'staging'] as const).map((environment) =>
 );
 
 /**
- * Every app's API resource in the environment `resource` belongs to: `https://liveplanner.app/api` gives the four
- * production resources, `https://staging.liveplanner.app/api` the four staging ones. Any other resource (local
+ * Every app's API resource in the environment `resource` belongs to: `https://liveplanner.app/api` gives every
+ * production resource, `https://staging.liveplanner.app/api` every staging one. Any other resource (local
  * development's one shared `http://localhost/api`) is the only one.
  */
 export function appApiResources(resource: string): string[] {

@@ -411,7 +411,7 @@ Every access is wrapped so a blocked storage reads as empty.
 | `SETTINGS_INPUT`              | `'w-full rounded-xl border border-slate-300 bg-white px-3 py-…` | `ProfileEditor.tsx`         |
 | `PROFILE_SECTIONS`            | `(object or list, see file)`                                    | `profile-rows.tsx`          |
 | `SETTINGS_ROW_ATTRIBUTE`      | `'data-settings-row'`                                           | `settings-scroll-anchor.ts` |
-| `SETTINGS_APP_IDS`            | `APP_SITES`' ids that have a catalogue (a held app's never)     | `store.ts`                  |
+| `SETTINGS_APP_IDS`            | `APP_SITES`' ids that have a catalogue (livehuddle's included)  | `store.ts`                  |
 | `TEST_KIT`                    | `(object or list, see file)`                                    | `kit.tsx`                   |
 
 ## Observability

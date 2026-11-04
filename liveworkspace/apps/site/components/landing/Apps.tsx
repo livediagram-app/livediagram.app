@@ -3,7 +3,14 @@ import { lucideCheck } from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
 import { type AppArt, listedApps } from '@/lib/apps';
 import { AppLogo } from './AppLogo';
-import { AppWindow, BoardScene, DesignScene, DiagramScene, DocumentScene } from './AppWindow';
+import {
+  AppWindow,
+  BoardScene,
+  DesignScene,
+  DiagramScene,
+  DocumentScene,
+  HuddleScene,
+} from './AppWindow';
 
 const CheckIcon = lucideGlyph(lucideCheck, 16);
 
@@ -12,6 +19,7 @@ const SCENES: Record<AppArt, { address: string; scene: ReactNode }> = {
   board: { address: 'liveplanner.app/p/launch', scene: <BoardScene /> },
   document: { address: 'livedocuments.app/d/quarterly-review', scene: <DocumentScene /> },
   design: { address: 'livedesign.app/d/northwind', scene: <DesignScene /> },
+  huddle: { address: 'livehuddle.app/d/team-stand-up', scene: <HuddleScene /> },
 };
 
 // The apps (liveworkspace/docs/specs/010-site/site.md "The front door"): one section each, in the shared order,

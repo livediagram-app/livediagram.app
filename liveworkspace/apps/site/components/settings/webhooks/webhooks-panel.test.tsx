@@ -169,8 +169,8 @@ describe('Settings › Webhooks', () => {
     )!;
     // Each app by its logo: its mark and its wordmark, never the name alone.
     const logos = [...apps.lastElementChild!.children];
-    expect(logos).toHaveLength(4);
-    ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'].forEach((app, i) =>
+    expect(logos).toHaveLength(5);
+    ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'].forEach((app, i) =>
       expect(logos[i]!.textContent).toContain(app),
     );
     for (const logo of logos) expect(logo.querySelector('svg')).not.toBeNull();

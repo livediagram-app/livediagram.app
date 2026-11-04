@@ -65,10 +65,11 @@ app whose address the page is on is the one marked; on liveworkspace.app it is l
 
 `@liveworkspace/sites` (`packages/sites`) holds the list: each site's name, URL, one-line pitch and
 accent colour. Every app's switcher reads it, so adding an app is one row there, not an edit in each
-app. It lists livediagram, liveplanner, livedocuments and livedesign (`APP_SITES`). An app registered but not yet
-launched keeps its row in `HELD_APP_SITES` instead, which no switcher reads, so it has no row until its launch moves
-it ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): livehuddle,
-whose row is ready (pitch "Meet and run workshops together", emerald `#10b981`, deep `#047857`, light `#34d399`).
+app. It lists livediagram, liveplanner, livedocuments, livedesign and livehuddle (`APP_SITES`; livehuddle's row,
+pitch "Meet and run workshops together", emerald `#10b981`, deep `#047857`, light `#34d399`, since its launch). An
+app registered but not yet launched keeps its row in `HELD_APP_SITES` instead, which no switcher reads, so it has no
+row until its launch moves it ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch));
+none is held today.
 
 Running locally, every link between the sites stays on this machine: `siteUrl` gives each site its
 port block's first port (`LOCAL_PORTS`: liveworkspace 3000, livediagram 3100, liveplanner 3200,

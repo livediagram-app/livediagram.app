@@ -28,6 +28,8 @@ import { readersReached, repoReaders } from './ci-readers.mjs';
 const [TURBO_BIN, ...TURBO] = (process.env.TURBO_CMD ?? 'pnpm dlx turbo@2.11.10').split(' ');
 
 // Each group: its folders, its big editor app (sharded), its CLI (packed), and how it checks format.
+// A product forked in-tree before its launch can set `held: true` (docs/ci.md): its suites then run only on its own
+// changes, and none of its Workers deploy. None is held today (livehuddle launched with Work Tracker #189).
 const GROUPS = [
   {
     group: 'livediagram',
@@ -57,16 +59,12 @@ const GROUPS = [
     editorDir: 'livedocuments/apps/editor',
     cli: 'livedocuments/apps/cli',
   },
-  // Held until its launch (livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8): its suites run only when
-  // a change touches livehuddle/ itself (or everything runs), never because a shared package it uses changed, its E2E
-  // included; none of its Workers deploy.
   {
     group: 'livehuddle',
     dirs: ['livehuddle/'],
     editor: '@livehuddle/editor',
     editorDir: 'livehuddle/apps/editor',
     cli: 'livehuddle/apps/cli',
-    held: true,
   },
   {
     group: 'platform',
