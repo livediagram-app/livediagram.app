@@ -50,22 +50,19 @@ env:
   BUILD_SKIP_TYPECHECK: '1'
 
 jobs:
-  smoke:
-    name: Smoke shard ${{ matrix.shard }}/${{ strategy.job-total }}
+  # The smoke shards' builds, once per run: the editor's export (and the Explorer's, when the smoke
+  # specs open it) go up as one artifact that every shard downloads, so no shard builds.
+  smoke-build:
+    name: Smoke build
     runs-on: ubuntu-latest
-    # Twice the 5-minute budget: a hung shard stops well before GitHub's six hours.
     timeout-minutes: 10
+    # The shards' container, so the Turbopack cache this job restores and saves builds as it always has.
     container:
       image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001 --ipc=host
     defaults:
       run:
         working-directory: ${{ inputs.product }}
-    strategy:
-      # Every shard reports, so one failing shard never hides another's failures.
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -93,15 +90,61 @@ jobs:
         if: inputs.smoke-explorer
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
 
+      # The run's one guest build saves its cache (on main only).
+      - name: Save build cache
+        uses: ./.github/actions/next-cache-save
+
+      # The static exports the e2e stack serves, at their paths from the repository root; the site's
+      # line matches nothing when it was not built. Most of an export is already compressed (fonts,
+      # images, wasm), so a light zip costs less than it saves.
+      - name: Upload the exports
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.product }}-smoke-build
+          path: |
+            ${{ inputs.product }}/${{ inputs.editor-dir }}/out
+            liveworkspace/apps/site/out
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 1
+          retention-days: 1
+
+  smoke:
+    name: Smoke shard ${{ matrix.shard }}/${{ strategy.job-total }}
+    needs: smoke-build
+    runs-on: ubuntu-latest
+    # Twice the 5-minute budget: a hung shard stops well before GitHub's six hours.
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --user 1001 --ipc=host
+    defaults:
+      run:
+        working-directory: ${{ inputs.product }}
+    strategy:
+      # Every shard reports, so one failing shard never hides another's failures.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up
+        uses: ./.github/actions/e2e-setup
+        with:
+          editor: ${{ inputs.editor }}
+
+      # The Smoke build's exports, back at their paths from the repository root.
+      - name: Download the exports
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.product }}-smoke-build
+
       # Playwright's webServer boots scripts/e2e-stack.mjs (the api worker on local D1 and the static
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard
         run: pnpm --filter ${{ inputs.editor }} test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
-
-      # Every shard builds the same thing: one of them saves it.
-      - name: Save build cache
-        if: matrix.shard == 1
-        uses: ./.github/actions/next-cache-save
 
       - name: Upload report with traces
         if: >-
