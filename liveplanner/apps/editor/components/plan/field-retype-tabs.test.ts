@@ -66,7 +66,12 @@ const TABS = [
         {
           id: 's1',
           questions: [
-            { id: 'q1', type: 'short', prompt: 'Size?', goesTo: { to: 'field', fieldId: 'f-size' } },
+            {
+              id: 'q1',
+              type: 'short',
+              prompt: 'Size?',
+              goesTo: { to: 'field', fieldId: 'f-size' },
+            },
             { id: 'q2', type: 'short', prompt: 'Why?' },
           ],
         },
@@ -86,7 +91,7 @@ describe('the plan’s tabs read for a type change', () => {
   it('counts the filters on the field and takes them off, touching only the tabs that held one', () => {
     expect(countFieldFilters(TABS, [target])).toBe(2);
     expect(countFieldFilters(TABS, [])).toBe(0);
-    const next = tabsWithoutFieldFilters(TABS as Tab[], [target]);
+    const next = tabsWithoutFieldFilters(TABS, [target]);
     expect(next[2]).toBe(TABS[2]);
     expect(countFieldFilters(next, [target])).toBe(0);
     const [b1, sticky] = next[0]!.elements as unknown as [{ planBoard: object }, unknown];

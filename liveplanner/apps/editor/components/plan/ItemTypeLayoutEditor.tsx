@@ -277,7 +277,10 @@ export function ItemTypeLayoutEditor({
           onRetype={(field) => {
             track('Plan', 'Changed', 'BuiltInFieldType');
             const taken = [...fields, ...allCustom.map((f) => f.id)];
-            const id = newCustomFieldId(field.label || BUILT_IN_FIELD_LABELS[editingBuiltIn], taken);
+            const id = newCustomFieldId(
+              field.label || BUILT_IN_FIELD_LABELS[editingBuiltIn],
+              taken,
+            );
             onChange(retypeInDraft(draft, editingBuiltIn, { ...field, id }));
             closeEditing();
           }}

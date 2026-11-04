@@ -43,7 +43,7 @@ export function builtInStartField(
     ...shape,
     ...(shape.options ? { options: [...shape.options] } : {}),
     ...(id === 'assignee' && assigneeNotifies ? { notifies: true } : {}),
-  } as NewField;
+  };
 }
 
 /** Whether `field` is on the built-in's own tile (a rename), not another type. */
@@ -77,10 +77,10 @@ export function useBuiltInEditPlan(opts: {
     const ctx = { people: people ?? [], items };
     const counted = new Map<string, KindChangeOutcome>();
     // The tabs' part, read once: its filters on the field and what stops reading it.
-    let scanned: { filters: number; reads: string[] } | null = null;
+    const memo: { scanned?: { filters: number; reads: string[] } } = {};
     const scan = () => {
-      if (scanned) return scanned;
-      if (!stored || !planTabs) return (scanned = { filters: 0, reads: [] });
+      if (memo.scanned) return memo.scanned;
+      if (!stored || !planTabs) return (memo.scanned = { filters: 0, reads: [] });
       const tabs = planTabs();
       // The catalogue once saved: this type without the built-in.
       const typesAfter = types.map((t) =>
@@ -94,7 +94,7 @@ export function useBuiltInEditPlan(opts: {
         ...planSurfaces(tabs),
         types,
       });
-      return (scanned = { filters, reads });
+      return (memo.scanned = { filters, reads });
     };
     return {
       refusalOf: (pick) => (pick === ownPick ? null : builtInRetypeRefusal(id, shapeOf(pick))),

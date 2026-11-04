@@ -1397,7 +1397,8 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     - <a id="built-in-full-edit"></a>**Built-in fields** (the owner's pick, 2026-11-03, "Full edit"; built
       2026-11-04). Each built-in field on a type but Title gets the pencil too (tooltip "Edit Field", named "Edit
       {Name}"); an inherited field and a field from a newer version keep their lock (edited on the base type, or
-      after a reload).
+      after a reload), and a type inheriting from another reads its base's names, so its own built-ins have no
+      pencil either.
       - **Opening**: Edit Field opens on Shape for the built-in's own tile: Description on Long Text, Estimate on
         Number, Start Date and Due Date on Date, Priority on Choice, Labels on Labels, Assignee on Person, Colour
         on Colour, Checklist on Checklist, Comments on Comments, Votes on Votes, Attachments on Image, and Status

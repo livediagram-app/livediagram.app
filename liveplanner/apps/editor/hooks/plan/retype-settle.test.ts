@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { ItemUndoStep } from './item-undo-journal';
 import { retypeFailedMessage, settleRetype, type SaveAlong } from './retype-settle';
 
 // docs/specs/026-plan/item-types.md "Edit Field": Saving the type, all or none.
@@ -7,7 +8,7 @@ const step = () => ({ undo: vi.fn(), redo: vi.fn() });
 function run(saved: boolean, along: SaveAlong) {
   const typeStep = step();
   const rollbackType = vi.fn();
-  const push = vi.fn();
+  const push = vi.fn<(s: ItemUndoStep) => void>();
   const onError = vi.fn();
   const done = settleRetype({
     saved: Promise.resolve(saved),
@@ -62,7 +63,9 @@ describe('a type change saved all or none', () => {
     expect(settle).not.toHaveBeenCalled();
     expect(r.push).not.toHaveBeenCalled();
     expect(r.onError).toHaveBeenCalledWith(retypeFailedMessage('Size'));
-    expect(retypeFailedMessage('Size')).toBe('Couldn’t change Size’s type, so nothing was changed.');
+    expect(retypeFailedMessage('Size')).toBe(
+      'Couldn’t change Size’s type, so nothing was changed.',
+    );
   });
 
   it('reads a values write that throws as nothing landed', async () => {

@@ -210,7 +210,9 @@ export function NewFieldForm({
                     loss: edit.plan.lossOf(field, PICK_KIND_LABELS[pickOf(field)]),
                     // A built-in on its own tile is renamed; on another it is a new field of that type.
                     builtIn:
-                      edit.builtIn && pickOf(field) === pickOf(edit.field) ? edit.builtIn : undefined,
+                      edit.builtIn && pickOf(field) === pickOf(edit.field)
+                        ? edit.builtIn
+                        : undefined,
                   }
                 : undefined
             }

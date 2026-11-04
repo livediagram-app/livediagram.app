@@ -40,6 +40,7 @@ import {
   AUTOMATIC_CARD_FIELDS,
   type CardLayout,
   type CardSize,
+  typeFieldLabel,
   type CardSlot,
   type Item,
   type ItemTypeDef,
@@ -232,7 +233,8 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
 const customOf = (type: ItemTypeDef, f: CardField) =>
   isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
 const fieldLabel = (type: ItemTypeDef, f: CardField) =>
-  customOf(type, f)?.label || (isCustomCardField(f) ? 'Custom Field' : CARD_FIELD_LABELS[f]);
+  customOf(type, f)?.label ||
+  (isCustomCardField(f) ? 'Custom Field' : typeFieldLabel(type, f, CARD_FIELD_LABELS[f]));
 const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
   const custom = customOf(type, f);
   if (custom)

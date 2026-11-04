@@ -17,6 +17,7 @@ import {
   viewDatesOf,
   viewMeasureOf,
   viewMeasureOptions,
+  builtInFieldLabel,
   type ItemTypeDef,
   type ViewFieldOption,
   type SwimlaneBy,
@@ -173,7 +174,10 @@ export function viewTypesNote(
   if (needs.length === 0) return 'The card types this view charts.';
   const custom = (id: string) =>
     types.flatMap((t) => t.custom ?? []).find((c) => c.id === id)?.label;
-  const names = needs.map((f) => NEED_LABELS[f] ?? custom(f) ?? f);
+  // A built-in by the name the view's types agree on (docs/specs/026-plan/item-types.md "Edit Field").
+  const names = needs.map((f) =>
+    NEED_LABELS[f] ? builtInFieldLabel(f, types, NEED_LABELS[f]) : (custom(f) ?? f),
+  );
   const list =
     names.length === 1 ? `${withArticle(names[0]!)} field` : `${names.join(' and ')} fields`;
   return `The card types this view charts; only those with ${list} are listed.`;

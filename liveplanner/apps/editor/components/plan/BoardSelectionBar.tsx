@@ -6,6 +6,8 @@
 // undo step, one realtime batch). An Editor and a Participant change cards; Archive and Move to Trash are an Editor's.
 import { useState, type ReactNode } from 'react';
 import {
+  boardAddTypes,
+  builtInFieldLabel,
   groupMoves,
   isArchived,
   isFlagged,
@@ -86,6 +88,13 @@ export function BoardSelectionBar({
   const selected = ordered.map((id) => plan.items.get(id)).filter((i): i is Item => !!i);
   const n = selected.length;
   const { types } = plan;
+  // Priority and Labels by the name the board's types agree on (docs/specs/026-plan/item-types.md "Edit Field").
+  const shown = boardAddTypes(setup, types);
+  const names: Record<Menu, string> = {
+    ...MENU_NAMES,
+    priority: builtInFieldLabel('priority', shown, MENU_NAMES.priority),
+    labels: builtInFieldLabel('labels', shown, MENU_NAMES.labels),
+  };
   const canRetire = plan.canEdit;
   const columnName = (s: string) =>
     setup.columns.find((c) => c.status === s)?.name ?? plan.statusNames.get(s) ?? s;
@@ -184,10 +193,10 @@ export function BoardSelectionBar({
           ? button('Assign', <AssignIcon />, toggle('assign'), { menu: 'assign' })
           : null}
         {someOffer(selected, types, 'priority')
-          ? button('Priority', <PriorityIcon />, toggle('priority'), { menu: 'priority' })
+          ? button(names.priority, <PriorityIcon />, toggle('priority'), { menu: 'priority' })
           : null}
         {someOffer(selected, types, 'labels')
-          ? button('Labels', <LabelIcon />, toggle('labels'), { menu: 'labels' })
+          ? button(names.labels, <LabelIcon />, toggle('labels'), { menu: 'labels' })
           : null}
         {button('Set Field', <FieldIcon />, toggle('field'), { menu: 'field' })}
         {button(allFlagged ? 'Remove Flag' : 'Flag', <FlagIcon />, () =>
@@ -226,7 +235,7 @@ export function BoardSelectionBar({
       {open ? (
         <AnchoredPopover
           anchor={open.at}
-          name={MENU_NAMES[open.menu]}
+          name={names[open.menu]}
           width={MENU_PX}
           onClose={() => setOpen(null)}
         >

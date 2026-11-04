@@ -40,7 +40,11 @@ export function renameBuiltIn(d: LayoutDraft, field: ItemFieldId, name: string):
 }
 
 /** The draft with the built-in `field` to become `def` on Save (its own name for the built-in dropped). */
-export function retypeInDraft(d: LayoutDraft, field: ItemFieldId, def: CustomFieldDef): LayoutDraft {
+export function retypeInDraft(
+  d: LayoutDraft,
+  field: ItemFieldId,
+  def: CustomFieldDef,
+): LayoutDraft {
   return { ...renameBuiltIn(d, field, ''), retyped: { ...d.retyped, [field]: def } };
 }
 

@@ -36,7 +36,10 @@ export async function settleRetype(opts: {
   const { along } = opts;
   const [typeOk, values] = await Promise.all([
     opts.saved,
-    (along.values ?? Promise.resolve(NOTHING)).catch((): ValuesWrite => ({ ok: false, step: null })),
+    (along.values ?? Promise.resolve(NOTHING)).catch((): ValuesWrite => ({
+      ok: false,
+      step: null,
+    })),
   ]);
   if (typeOk && values.ok) {
     const canvas = along.settle?.() ?? false;

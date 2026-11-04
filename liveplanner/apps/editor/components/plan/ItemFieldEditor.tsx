@@ -24,6 +24,7 @@ import {
   type ItemFieldId,
   type ItemFieldValue,
   type ItemPatch,
+  typeFieldLabel,
   type ItemPerson,
   type ItemTypeDef,
   type LabelUse,
@@ -64,8 +65,11 @@ const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   comments: 'Comments',
 };
 
+// A field's name on a card of `type`: a custom field's own, the type's name for a built-in, else the panel's short one.
 export function fieldLabel(type: ItemTypeDef, f: string): string {
-  return customFieldOf(type, f)?.label ?? FIELD_LABELS[f as ItemFieldId] ?? f;
+  return (
+    customFieldOf(type, f)?.label ?? typeFieldLabel(type, f, FIELD_LABELS[f as ItemFieldId] ?? f)
+  );
 }
 
 // Fields whose editor is not one labelled control (a label `for` would point nowhere): a custom field of a built-in

@@ -808,21 +808,32 @@ views, forms, types })` → `string[]`, one pass over the given boards, views, f
 fieldId }` on a form whose destination is the type), formulas (`{id}` in a Formula's stored text), rollups and
     lookups (`source`), and one CSV row when any board shows the type. Only places covering the type count.
     `IMPACT_ROWS_SHOWN` 6, then "and N more".
-  - Editor: `ItemTypeLayoutEditor` gives a built-in row (in `RENAMABLE_BUILT_INS`, not inherited) the pencil;
-    `editing` holds its id; `BuiltInEditDialog` (`BuiltInEditDialog.tsx`) is `AddFieldDialog` with `edit: { field,
-plan, onSave, builtIn: { id, role, notifies } }`: `field` is the built-in's shape named `typeFieldLabel`,
-    `plan` is `useEditFieldPlan` with `builtIn` (refusals from `builtInRetypeRefusal`, values read through
-    `builtInValueOf`, loss, filters and impact from the stored type). `NewFieldForm` passes `builtIn` to
-    `AddFieldShape`, which on the built-in's own tile shows `BuiltInShape` (Name with the built-in's name as
-    placeholder, its role line, Notifies for the Assignee, Status's States line) instead of `ShapeOwn`. Save on its
-    own tile writes `fieldLabels` (and `assigneeNotifies`) into the draft; on another tile `retypeBuiltInIn` makes
-    the draft's new custom field (`newCustomFieldId`) and records `{ [newId]: builtInId }` in the draft's `retyped`.
-    `ItemTypeEditor.onSave(type, retyped)` hands it to `PlanSheetsHost`, which adds `builtInRetypePatches` to the
-    custom fields' `retypedValuePatches` and passes `{ values, settle, name }` to `saveType`. The confirm step asks
-    when values are lost, filters come off or the impact has rows.
-  - `edit-field-values.ts` gains the filter count and impact: `countFieldFilters` and `fieldRetypeImpact` over
-    `ctx.planTabs()` (a getter on the Plan context reading the editor's tabs when called, so no render reads them),
-    worked out once per shape with the loss; `lossMessage` adds "N filters on it will be removed.".
+  - `fieldRetypeTargets(before, after, retyped, typesAfter)` (`field-filter-removal.ts`): the targets a save takes
+    filters off, a custom field whose `kind` changed and each built-in in `retyped`. `typeSavePatches(before, after,
+retyped, types, items, ctx)` (`built-in-field-retype.ts`): `retypedValuePatches` and each built-in's
+    `builtInRetypePatches`, merged to one patch per card.
+  - Editor: `ItemTypeLayoutEditor` gives a built-in row (in `RENAMABLE_BUILT_INS`, on a type that inherits nothing,
+    so an heir reads its base's names) the pencil; `editing` holds its id. `BuiltInEditDialog.tsx` is
+    `AddFieldDialog` with `edit: { field, plan, onSave, builtIn: { placeholder, role, notifies } }`: `field` is
+    `builtInStartField(id, name, notifies)`, `plan` is `useBuiltInEditPlan` (`built-in-edit-plan.ts`: refusals from
+    `builtInRetypeRefusal`, the custom field cap's note on the other tiles at the cap, Priority's options, the values
+    counted by `builtInRetypePatches` once per shape, and the filter count and `fieldRetypeImpact` from one scan of
+    `planTabs()` on the first other tile picked; another tile always asks). `NewFieldForm` passes `builtIn` to
+    `AddFieldShape` only on the built-in's own tile, where `BuiltInShape` (Name with the built-in's name as
+    placeholder, its role line or Status's "Its states are set in States.", Notifies for the Assignee through
+    `FieldSwitches`) stands in for `ShapeOwn`, and Save needs only a name. `ValueLoss` gains `reads` (the impact
+    rows, or "Nothing else in the plan reads it.") and `asks`; the confirm is keyed on the message and the rows.
+  - The draft (`LayoutDraft`, `item-type-layout.ts`) gains `fieldLabels` (`renameBuiltIn`) and `retyped`
+    (`retypeInDraft`: built-in id to the custom field it becomes, `draftCustomOf` and `draftCustomFields` reading
+    it as the type's own; the row then edits as a new custom field). `addField` and `removeField` keep the rest of
+    the draft (they used to drop `assigneeNotifies`). `ItemTypeEditor`'s draft folds each still-held entry through
+    `retypeBuiltInIn`, and Save calls `onSave(type, { [newId]: builtInId })`. `PlanSheetsHost` hands it to
+    `typeSaveAlong` (`type-save-along.ts`): `typeSavePatches` for `ctx.reshapeValues`, `fieldRetypeTargets` for
+    `ctx.removeFieldFilters`, the toast's name, and `undefined` when nothing changes type or value.
+  - `edit-field-values.ts` gains the filter count for a custom field (`countFieldFilters` over `planTabs()`, once,
+    only for a new kind) and `valueLoss`/`filtersMessage` ("N filters on it will be removed."). The Plan context
+    gains `planTabs()` (the editor's `tabsRef`, read when called, so no render reads them) and
+    `removeFieldFilters(targets)` (`tabsWithoutFieldFilters` through `commitTabs`, only when one comes off).
 
 ## Tabs
 
@@ -1041,9 +1052,11 @@ cards, children)` adds "{names} will keep a copy of its settings."
   `types` array and field (at most 32 types), memoised in a `WeakMap`, so menus, search fields and CSV headers pay
   it once per catalogue change and a card face never does. Budget test: 10,000 lookups over 32 types inside a CPU
   budget (`built-in-field-labels.test.ts`).
-- The retype scan (`fieldRetypeImpact`, `countFieldFilters`) walks the tabs' elements once per shape picked, no
-  card read; the values pass is `fieldKindChange`'s. Measured on a 2,000-card, 10-tab plan
-  (`field-retype.perf.test.ts`).
+- The retype scan (`fieldRetypeImpact`, `countFieldFilters`) walks the tabs' elements once per dialog, on the first
+  other tile picked, no card read; the values pass is `fieldKindChange`'s, once per shape. Measured on a 2,000-card,
+  10-tab plan (40 boards, 40 views): the scan about 0.75 ms, the values pass about 1.6 ms, held under CPU budgets of
+  50 ms and 100 ms (`field-retype.perf.test.ts`). The save adds one more scan (`removeFieldFilters`) and one more
+  values pass (`typeSavePatches`), once.
 - Add Field's gallery: 33 tiles (25 kinds and 8 variants), each a static sample (no data read), drawn on opening; the search's matching is
   memoised on the search key (`shownCategories`, 33 tiles × a few dozen short strings, well under a millisecond);
   measured in the browser at about 22 ms from the press to the second frame with every tile drawn. Each tile's

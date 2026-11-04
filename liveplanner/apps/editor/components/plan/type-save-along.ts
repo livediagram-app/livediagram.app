@@ -38,7 +38,7 @@ export function typeSaveAlong(
   // The toast names the first field changed: a built-in by its new field's name.
   const changed = (f: CustomFieldDef) => {
     const was = before.custom?.find((w) => w.id === f.id);
-    return !was || changesValues(was, f);
+    return !!was && changesValues(was, f);
   };
   const first = Object.keys(retyped)[0] ?? targets[0]?.field ?? after.custom?.find(changed)?.id;
   const name = after.custom?.find((f) => f.id === first)?.label ?? 'the field';

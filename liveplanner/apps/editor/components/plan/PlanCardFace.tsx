@@ -43,6 +43,7 @@ import {
   itemHasStamp,
   runningOnCard,
   pastDue,
+  typeFieldLabel,
 } from '@liveplanner/items';
 import { RunningTimerPill } from './time/TimerReadouts';
 import { PLAN_HEADING_STYLE, planTextPx } from '@/lib/plan-font';
@@ -248,15 +249,25 @@ export function PlanCardFace({
         ) : null;
       case 'start':
         return typeof start === 'string' ? (
-          <StartPill key={f} start={start} palette={palette} />
+          <StartPill key={f} start={start} palette={palette} name={type.fieldLabels?.start} />
         ) : null;
       case 'due':
         return typeof due === 'string' ? (
-          <DuePill key={f} due={due} done={!!muted} palette={palette} />
+          <DuePill
+            key={f}
+            due={due}
+            done={!!muted}
+            palette={palette}
+            name={typeFieldLabel(type, 'due', 'Due')}
+          />
         ) : null;
       case 'estimate':
         return typeof estimate === 'number' ? (
-          <MetaPill key={f} palette={palette} label={`Estimate ${estimate}`}>
+          <MetaPill
+            key={f}
+            palette={palette}
+            label={`${typeFieldLabel(type, 'estimate')} ${estimate}`}
+          >
             <PlanTypeGlyph glyph="cube" size={11} />
             <span aria-hidden>{estimate}</span>
           </MetaPill>

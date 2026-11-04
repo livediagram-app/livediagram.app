@@ -5,6 +5,7 @@ import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { ItemTypeEditor } from './ItemTypeEditor';
 import { PlanSheetsHost } from './PlanSheetsHost';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
+import type { SaveAlong } from '@/hooks/plan/retype-settle';
 
 // docs/specs/026-plan/item-types.md "Edit Field": a field's pencil opens Add Field's modal on it, to rename it,
 // reshape it or make it another type, saying first what that does to the values cards hold.
@@ -194,9 +195,9 @@ describe('Edit Field', () => {
 
 describe('saving a type whose field changed type', () => {
   function host(canEdit: boolean) {
-    const saveType = vi.fn();
-    const reshapeValues = vi.fn(() => Promise.resolve({ ok: true, step: null }));
-    const removeFieldFilters = vi.fn(() => false);
+    const saveType = vi.fn<(t: ItemTypeDef, along?: SaveAlong) => void>();
+    const reshapeValues = vi.fn((_patches: unknown) => Promise.resolve({ ok: true, step: null }));
+    const removeFieldFilters = vi.fn((_targets: unknown) => false);
     setPlan({ canEdit, itemTypes: { saveType }, reshapeValues, removeFieldFilters });
     const slice = {
       context: plan,
@@ -227,12 +228,12 @@ describe('saving a type whose field changed type', () => {
       { id: CARDS[1]!.id, patch: { clear: ['f-size'] } },
       { id: CARDS[2]!.id, patch: { set: { 'f-size': 7 } } },
     ]);
-    const along = saveType.mock.lastCall![1];
+    const along = saveType.mock.lastCall![1]!;
     expect(along.name).toBe('Size');
     expect(along.values).toBeInstanceOf(Promise);
     // Its filters come off once the type and the values have landed (the type's save runs it).
     expect(removeFieldFilters).not.toHaveBeenCalled();
-    along.settle();
+    along.settle!();
     expect(removeFieldFilters.mock.lastCall![0]).toEqual([
       expect.objectContaining({ field: 'f-size', builtIn: false }),
     ]);

@@ -6,6 +6,7 @@ import type { Tab } from '@liveplanner/project';
 import { ItemTypeEditor } from './ItemTypeEditor';
 import { PlanSheetsHost } from './PlanSheetsHost';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
+import type { SaveAlong } from '@/hooks/plan/retype-settle';
 
 // docs/specs/026-plan/item-types.md "Edit Field": Built-in fields. Each built-in but Title gets the pencil: renamed
 // on its own tile (Notifies for the Assignee), made a custom field on another (saying first what that does to its
@@ -121,9 +122,7 @@ describe('Edit Field on a built-in field', () => {
     const name = within(dialog).getByLabelText('Name') as HTMLInputElement;
     expect(name.placeholder).toBe('Priority');
     fireEvent.change(name, { target: { value: '' } });
-    expect((within(dialog).getByRole('button', { name: 'Save' }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toHaveProperty('disabled', true);
     fireEvent.change(name, { target: { value: 'Urgency' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
     expect(row('Urgency')).toBeTruthy();
@@ -205,9 +204,9 @@ describe('Edit Field on a built-in field', () => {
 
 describe('a type saved with a built-in made a custom field', () => {
   it('moves its values and takes its filters off with the type', () => {
-    const saveType = vi.fn();
-    const reshapeValues = vi.fn(() => Promise.resolve({ ok: true, step: null }));
-    const removeFieldFilters = vi.fn(() => true);
+    const saveType = vi.fn<(t: ItemTypeDef, along?: SaveAlong) => void>();
+    const reshapeValues = vi.fn((_patches: unknown) => Promise.resolve({ ok: true, step: null }));
+    const removeFieldFilters = vi.fn((_targets: unknown) => true);
     setPlan({ canEdit: true, itemTypes: { saveType }, reshapeValues, removeFieldFilters });
     const slice = {
       context: plan,
@@ -229,13 +228,13 @@ describe('a type saved with a built-in made a custom field', () => {
       within(screen.getByRole('dialog', { name: /Task/ })).getByRole('button', { name: 'Save' }),
     );
     const [saved, along] = saveType.mock.lastCall!;
-    const made = saved.custom.find((f: { label: string }) => f.label === 'Priority');
+    const made = saved.custom!.find((f) => f.label === 'Priority')!;
     expect(reshapeValues.mock.lastCall![0]).toEqual([
       { id: CARDS[0]!.id, patch: { set: { [made.id]: 'High' }, clear: ['priority'] } },
       { id: CARDS[1]!.id, patch: { set: { [made.id]: 'Low' }, clear: ['priority'] } },
     ]);
-    expect(along.name).toBe('Priority');
-    expect(along.settle()).toBe(true);
+    expect(along!.name).toBe('Priority');
+    expect(along!.settle!()).toBe(true);
     expect(removeFieldFilters.mock.lastCall![0]).toEqual([
       expect.objectContaining({ field: 'priority', builtIn: true }),
     ]);

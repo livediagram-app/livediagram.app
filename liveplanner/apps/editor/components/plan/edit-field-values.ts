@@ -51,7 +51,13 @@ export function valueLoss(
   const lines = [lossMessage(outcome, label), filtersMessage(filters)].filter(Boolean);
   if (lines.length === 0) return null;
   const { held, trimmed, cleared } = outcome;
-  return { held, trimmed, cleared, message: lines.join(' '), asks: trimmed + cleared + filters > 0 };
+  return {
+    held,
+    trimmed,
+    cleared,
+    message: lines.join(' '),
+    asks: trimmed + cleared + filters > 0,
+  };
 }
 
 // The shape of a tile, as kindChangeRefusal reads it.

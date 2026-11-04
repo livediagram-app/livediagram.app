@@ -21,6 +21,7 @@ import {
   canShowAsPercent,
   type CustomFieldDef,
   type CustomFieldKind,
+  BUILT_IN_FIELD_NAMES,
   type ItemFieldId,
   linkTypesOf,
   withLinkTypes,
@@ -34,25 +35,9 @@ import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
 import { RollupEditor } from './RollupEditor';
 import { track } from '@/lib/telemetry';
 
-export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
-  title: 'Title',
-  description: 'Description',
-  status: 'Status',
-  assignee: 'Assignee',
-  priority: 'Priority',
-  color: 'Colour',
-  labels: 'Labels',
-  estimate: 'Estimate',
-  start: 'Start Date',
-  due: 'Due Date',
-  checklist: 'Checklist',
-  attachments: 'Attachments',
-  votes: 'Votes',
-  comments: 'Comments',
-  archived: 'Archived',
-  flagged: 'Flagged',
-  example: 'Example',
-};
+// The built-ins' own names, Title Case (one table, @liveplanner/items built-in-field-labels.ts); a type's own name for
+// one is read through typeFieldLabel.
+export const BUILT_IN_FIELD_LABELS: Readonly<Record<ItemFieldId, string>> = BUILT_IN_FIELD_NAMES;
 
 export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   text: 'Text',
