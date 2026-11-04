@@ -214,7 +214,9 @@ export async function handleWebhooks(
 
   if (segments.length === 3 && segments[2] === 'test' && method === 'POST') {
     if (row.paused_at !== null) return conflict('webhook_paused');
-    await pingStatement(env.INDEX_DB, id, row.name, now).run();
+    const queued = await pingStatement(env.INDEX_DB, id, row.name, now).run();
+    // Paused since it was read.
+    if (queued.meta.changes === 0) return conflict('webhook_paused');
     return json({ queued: true }, { status: 202 });
   }
 

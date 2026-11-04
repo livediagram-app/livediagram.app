@@ -26,6 +26,7 @@ import {
   DELIVERY_TIMEOUT_MS,
   DISPATCH_BATCH,
   DISPATCH_CONCURRENCY,
+  DISPATCH_MIN_GAP_MS,
   FAILING_PAUSE_AFTER,
   RETRY_DELAYS_MS,
 } from './config';
@@ -364,8 +365,16 @@ export async function dispatch(env: Env, deps: DispatchDeps): Promise<DispatchRe
     );
   }
   if (due.length >= DISPATCH_BATCH) return { ...counts, nextAt: deps.now() };
+  // Only what the due read can take: a pending row on a paused webhook is never sent, so it must not set the alarm
+  // either (it would loop). The due index in order, stopping at the first webhook not paused.
   const next = await db
-    .prepare(`SELECT MIN(next_at) AS next FROM webhook_deliveries WHERE state = 'pending'`)
-    .first<{ next: number | null }>();
-  return { ...counts, nextAt: next?.next ?? null };
+    .prepare(
+      `SELECT d.next_at AS next FROM webhook_deliveries d JOIN webhooks w ON w.id = d.webhook_id
+       WHERE d.state = 'pending' AND w.paused_at IS NULL ORDER BY d.next_at LIMIT 1`,
+    )
+    .first<{ next: number }>();
+  return {
+    ...counts,
+    nextAt: next ? Math.max(next.next, deps.now() + DISPATCH_MIN_GAP_MS) : null,
+  };
 }
