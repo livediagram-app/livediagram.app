@@ -4,47 +4,47 @@ Derived from [Calls kill switch](../calls-kill-switch.md).
 
 ## Domain and naming
 
-| Term        | Identifier                                   | Meaning                                                          |
-| ----------- | -------------------------------------------- | ---------------------------------------------------------------- |
-| Mode        | `CallsMode`: `'on' \| 'audio-only' \| 'off'` | What calls may use Realtime for                                  |
-| Switch key  | `CALLS_MODE_KEY` (`calls-mode`)              | The KV key a person or the poll writes                           |
-| Trip record | `CALLS_BUDGET_KEY` (`calls-budget`)          | `{ month, level, costUsd, at }`: the highest trip this month     |
-| Read        | `callsMode(env)`                             | The mode, cached `CALLS_MODE_CACHE_MS` (5 s) per isolate         |
-| Parse       | `parseCallsMode(raw)`                        | Raw KV value to a mode: none is `on`, unknown is `off`           |
-| Stricter    | `stricterCallsMode(a, b)`                    | The mode that allows less                                        |
-| Allows      | `callsModeAllows(mode, kind)`                | Whether a `'session' \| 'audio' \| 'video' \| 'screen'` may mint |
-| Track kind  | `callTrackKind(trackName)`                   | A track name's media kind (`mic` is `audio`), null if unknown    |
-| Push        | `CallsModeOp` `{ kind: 'calls-mode', mode }` | The room's system op when the mode it last told changes          |
-| Watch       | `CallsModeWatch`                             | The room's throttled read of the switch on each call op          |
+| Term        | Identifier                                      | Meaning                                                          |
+| ----------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| Mode        | `CallsMode`: `'on' \| 'audio-only' \| 'off'`    | What calls may use Realtime for                                  |
+| Switch key  | `CALLS_MODE_KEY` (`calls-mode`)                 | The KV key a person or the poll writes                           |
+| Trip record | `CALLS_BUDGET_KEY` (`calls-budget`)             | `{ month, level, costUsd, at }`: the highest trip this month     |
+| Read        | `callsMode(env)`                                | The mode, cached `CALLS_MODE_CACHE_MS` (5 s) per isolate         |
+| Parse       | `parseCallsMode(raw)`                           | Raw KV value to a mode: none is `on`, unknown is `off`           |
+| Stricter    | `stricterCallsMode(a, b)`                       | The mode that allows less                                        |
+| Allows      | `callsModeAllows(mode, kind)`                   | Whether a `'session' \| 'audio' \| 'video' \| 'screen'` may mint |
+| Track kind  | `callTrackKind(trackName)`                      | A track name's media kind (`mic` is `audio`), null if unknown    |
+| Push        | `CallsModeOp` `{ kind: 'calls-mode', mode }`    | The room's system op when the mode it last told changes          |
+| Watch       | `CallsModeWatch`                                | The room's throttled read of the switch on each call op          |
 | Check       | `CallsCheckOp` `{ kind: 'calls-check', tabId }` | A silent publishing call's nudge for the room to read the switch |
-| Paused      | `CallsOffReason` `'paused'`                  | The switch is off: the gate's reason, and the refusal's          |
-| Media off   | `CallsOffReason` `'audio-only'`              | A video or screen track refused while the switch is audio only   |
-| Cost        | `realtimeCostUsd(bytes)`                     | `max(0, GB − 1,000) × $0.05`                                     |
-| Thresholds  | `budgetThresholds(env)`                      | `{ audioOnlyAtUsd, offAtUsd }` from vars, defaults 10 and 25     |
-| Level       | `budgetLevel(costUsd, thresholds)`           | `'none' \| 'audio-only' \| 'off'` the cost has reached           |
-| Usage       | `fetchRealtimeEgressBytes(...)`              | One GraphQL request: SFU plus TURN egress bytes for the month    |
-| Poll        | `pollCallsBudget(env, now)`                  | The scheduled run: price, trip, record, email                    |
+| Paused      | `CallsOffReason` `'paused'`                     | The switch is off: the gate's reason, and the refusal's          |
+| Media off   | `CallsOffReason` `'audio-only'`                 | A video or screen track refused while the switch is audio only   |
+| Cost        | `realtimeCostUsd(bytes)`                        | `max(0, GB − 1,000) × $0.05`                                     |
+| Thresholds  | `budgetThresholds(env)`                         | `{ audioOnlyAtUsd, offAtUsd }` from vars, defaults 10 and 25     |
+| Level       | `budgetLevel(costUsd, thresholds)`              | `'none' \| 'audio-only' \| 'off'` the cost has reached           |
+| Usage       | `fetchRealtimeEgressBytes(...)`                 | One GraphQL request: SFU plus TURN egress bytes for the month    |
+| Poll        | `pollCallsBudget(env, now)`                     | The scheduled run: price, trip, record, email                    |
 
 ## Modules
 
-| File                                                 | Responsibility                                                                                       |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/calls-mode.ts`           | `CallsMode`, `CallsMediaKind`, `callsModeAllows`, `callTrackKind`, `CallsModeOp`, `parseCallsModeOp` |
-| `apps/api/src/calls/calls-mode.ts`                   | `callsMode`, its cache, `parseCallsMode`, `stricterCallsMode`; re-exports the shared rule            |
-| `apps/api/src/calls/calls-gate.ts`                   | `callsGate(env)`: production, secrets, then the switch; open answers the mode                        |
-| `apps/api/src/calls/calls-mode-watch.ts`             | `CallsModeWatch`: the room's throttled read and its push                                             |
-| `apps/api/src/routes/calls.ts`                       | Every session and track checked with `callsModeAllows`; close allowed while paused                   |
-| `apps/api/src/routes/capabilities.ts`                | `callsEnabled` (gate open or only paused) and `callsMode`                                            |
+| File                                                 | Responsibility                                                                                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/calls-mode.ts`           | `CallsMode`, `CallsMediaKind`, `callsModeAllows`, `callTrackKind`, `CallsModeOp`, `parseCallsModeOp`                            |
+| `apps/api/src/calls/calls-mode.ts`                   | `callsMode`, its cache, `parseCallsMode`, `stricterCallsMode`; re-exports the shared rule                                       |
+| `apps/api/src/calls/calls-gate.ts`                   | `callsGate(env)`: production, secrets, then the switch; open answers the mode                                                   |
+| `apps/api/src/calls/calls-mode-watch.ts`             | `CallsModeWatch`: the room's throttled read and its push                                                                        |
+| `apps/api/src/routes/calls.ts`                       | Every session and track checked with `callsModeAllows`; close allowed while paused                                              |
+| `apps/api/src/routes/capabilities.ts`                | `callsEnabled` (gate open or only paused) and `callsMode`                                                                       |
 | `apps/api/src/document-room/document-room.ts`        | Notes each relayed `avatar-voice` / `call-track`, and each consumed `calls-check`, to its `CallsModeWatch`; broadcasts the push |
-| `apps/editor/lib/calls/calls-store.ts`               | `CallSelf.mode`, `receiveCallsMode(op)`, `onCallsMode`                                               |
-| `apps/editor/lib/calls/proximity-call.ts`            | Ends the call into the paused state on a push or a `paused` refusal                                  |
-| `apps/editor/components/calls/CallClusterButton.tsx` | The **Calls Paused** control                                                                         |
-| `apps/api/src/calls/realtime-usage.ts`               | `fetchRealtimeEgressBytes`, `monthStartUtc`, `realtimeCostUsd`                                       |
-| `apps/api/src/calls/calls-budget.ts`                 | `budgetThresholds`, `budgetLevel`, `pollCallsBudget` and the trip record                             |
-| `apps/api/src/email/templates.ts`                    | `callsBudgetEmail`, kind `CallsBudget`                                                               |
-| `apps/api/src/index.ts`                              | The worker's `scheduled` handler runs `pollCallsBudget`                                              |
-| `apps/api/src/types.ts`                              | `CALLS_SWITCH`, the `CALLS_*` vars and secrets on `Env`                                              |
-| `apps/api/wrangler.toml`                             | The cron, the thresholds, the account id and the (owner-created) KV binding                          |
+| `apps/editor/lib/calls/calls-store.ts`               | `CallSelf.mode`, `receiveCallsMode(op)`, `onCallsMode`                                                                          |
+| `apps/editor/lib/calls/proximity-call.ts`            | Ends the call into the paused state on a push or a `paused` refusal                                                             |
+| `apps/editor/components/calls/CallClusterButton.tsx` | The **Calls Paused** control                                                                                                    |
+| `apps/api/src/calls/realtime-usage.ts`               | `fetchRealtimeEgressBytes`, `monthStartUtc`, `realtimeCostUsd`                                                                  |
+| `apps/api/src/calls/calls-budget.ts`                 | `budgetThresholds`, `budgetLevel`, `pollCallsBudget` and the trip record                                                        |
+| `apps/api/src/email/templates.ts`                    | `callsBudgetEmail`, kind `CallsBudget`                                                                                          |
+| `apps/api/src/index.ts`                              | The worker's `scheduled` handler runs `pollCallsBudget`                                                                         |
+| `apps/api/src/types.ts`                              | `CALLS_SWITCH`, the `CALLS_*` vars and secrets on `Env`                                                                         |
+| `apps/api/wrangler.toml`                             | The cron, the thresholds, the account id and the (owner-created) KV binding                                                     |
 
 ## Constants
 
@@ -100,9 +100,10 @@ from a Viewer or malformed, `room-op-gate.ts`), then noted and never relayed.
 - `ProximityCall` subscribes to `onCallsMode`; a mode that no longer allows a `session`, or a `calls_off` `paused`
   refusal from any route (session, publish, subscribe), ends the call (`pause()`): the same teardown as Leave Audio,
   then phase `off` with mode `off`.
-- `ProximityCall` keeps when it last sent the room anything; a `CALLS_CHECK_MS` (5 s) interval, running while the call
-  is live and publishes a microphone, camera or screen, sends `{ kind: 'calls-check' }` when nothing went for that
-  long. Teardown clears it.
+- `ProximityCall` sends everything to the room through one `send`, which re-arms a `CALLS_CHECK_MS` timeout
+  (`VOICE_REFRESH_MS` plus two voice samples, 5.1 s: just past a talking speaker's level refresh, so a talker never
+  checks). When it fires and the call still publishes a microphone, camera or screen, it sends
+  `{ kind: 'calls-check' }`, which re-arms it. A listener never arms one. Teardown clears it.
 - `CallClusterButton` shows **Calls Paused** whenever the phase is `off` and the mode is `off`; pressing it runs
   `join`, which tries a session. A stopped call (`ended`) never blocks a fresh join.
 - An `aria-live="polite"` region in the control says "Calls are paused" when the paused state appears.

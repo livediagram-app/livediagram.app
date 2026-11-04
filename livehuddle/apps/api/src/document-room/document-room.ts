@@ -1584,6 +1584,12 @@ export class DocumentRoom extends DurableObject<Env> {
           return;
         }
         if (opKind === 'avatar-voice' || opKind === 'call-track') void this.callsWatch.note();
+        // A silent publishing call asks the room to read the kill switch (docs/specs/016-platform/
+        // calls-kill-switch.md "The room tells its clients"): noted, never relayed.
+        if (opKind === 'calls-check') {
+          void this.callsWatch.note();
+          return;
+        }
         if (this.presenceRelay.relay(ws, sender.id, msg.op)) return;
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
       } else {

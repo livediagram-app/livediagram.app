@@ -156,7 +156,8 @@ switch while a call is under way in it:
 - A client in a call that no longer allows it closes it at once: the microphone is released, every subscription and
   the session end. A client not in a call only changes its button.
 - **A silent room still hears within about 5 seconds** (Work Tracker #463). A call that publishes (a microphone, a
-  camera or a screen) and has sent the room nothing for 5 seconds sends a `calls-check` op: no payload but its tab,
+  camera or a screen) and has sent the room nothing for about 5 seconds (just past a talking speaker's level
+  refresh, so someone talking never sends one) sends a `calls-check` op: no payload but its tab,
   never relayed, consumed by the room as one more reason to read the switch (the same 5-second throttle). So a flip
   reaches every call within about 5 seconds of the room's read, plus the switch's own caching, whether or not anyone
   talks. A Viewer, who publishes nothing, sends none (nothing it receives exists without a publisher, whose check
