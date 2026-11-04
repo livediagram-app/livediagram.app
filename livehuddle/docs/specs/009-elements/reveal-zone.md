@@ -1,5 +1,7 @@
 # Reveal zone
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/reveal-zone.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+
 A panel that **covers part of the canvas until someone clicks it**. Quiz answers, a retro column nobody should read before they have written their own, an estimate you don't want anchored by the first number on the canvas.
 
 ## Why

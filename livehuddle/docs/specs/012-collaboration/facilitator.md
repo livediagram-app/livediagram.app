@@ -1,6 +1,8 @@
 # Facilitator
 
-Status: shipped
+Status: shipped. In livehuddle (Work Tracker #423) the baton governs the light meeting tools that stay, the Timer, the
+quick vote and Bring Focus; the polls, reveals, picker and Q&A it names below leave with the Collaborate elements
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
 ## What
 

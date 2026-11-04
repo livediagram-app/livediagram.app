@@ -1,5 +1,7 @@
 # Session button
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/session-button.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Status: **implemented**.
 
 A canvas element that **starts a session tool when pressed**: a countdown timer, a dot vote ([Session tools (timer + voting)](session-tools.md)), or a live poll ([Live poll (ephemeral pulse-check)](live-poll.md)). Its tiles live in the palette's **Collaborate** category: the Timer and the Stopwatch under **Tools**, the Dot vote and the Poll under **Ask**.

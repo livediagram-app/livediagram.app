@@ -1,5 +1,7 @@
 # Presentation mode blueprint
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/012-collaboration/blueprints/presentation-mode.md) is the one to change. Part 2 removes it with its help articles. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Derived from [Presentation mode](../presentation-mode.md): "Motion" (slide moves and the entrance as View
 Transitions) and "Full screen" (refusals logged). The rest of presentation mode predates blueprints.
 

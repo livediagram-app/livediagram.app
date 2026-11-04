@@ -1,5 +1,9 @@
 # Workshop mode blueprint
 
+> **Being re-derived** (Work Tracker #423): [The meeting board](../workshop-mode.md) replaces Workshop mode as the
+> spec. This blueprint describes the code until parts 3 and 4 land, and each of them re-derives the sections it
+> changes (the palette layout, the Session strip, the templates).
+
 Derived from [Workshop mode](../workshop-mode.md) and [Editor modes](../../007-editor/editor-modes.md): Workshop is
 livehuddle's one editor mode, every tab is in it, and there is no switch.
 

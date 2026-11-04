@@ -1,7 +1,9 @@
 # Editor modes
 
-livehuddle has **one editor mode, Workshop** ([Workshop mode](../012-collaboration/workshop-mode.md)). Every tab is
-worked on in Workshop, for everyone, and there is **no mode switch**. livediagram's Diagram and Draw modes are not part
+livehuddle has **one editor mode**, the meeting board, stored as `'workshop'`
+([The meeting board](../012-collaboration/workshop-mode.md)). Every tab is a meeting board, for everyone, and there is
+**no mode switch**. Since Work Tracker #423 it is no longer livediagram's Workshop: the workshop kit, the Collaborate
+elements and the diagram tools leave ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram's Diagram and Draw modes are not part
 of livehuddle: they were cut in step 5.1 of the [Build plan](../005-project-roadmap/build-plan.md) (Work Tracker #182),
 with the elements only they offered ([Purpose](../001-project-vision/purpose.md#boundaries-that-have-moved)).
 
@@ -73,17 +75,18 @@ pages livedesign's.
 
 ## The palette
 
-There is one palette layout, Workshop's (`apps/editor/components/palette/palette-layouts.ts`,
-[Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
+There is one palette layout, the meeting palette (`apps/editor/components/palette/palette-layouts.ts`,
+[The meeting board](../012-collaboration/workshop-mode.md#the-palette)); until part 3 of Work Tracker #423 the code
+still lays out Workshop's.
 
 - **Identity is shared, arrangement is the layout's.** A category's glyph and its default label, blurb and band live
   in the category catalogue (`PALETTE_CATEGORIES`); a tile's identity in the tile catalogue (`PALETTE_TILES`).
 - **A layout entry** names a category and may override its `label`, `description` and `band`, and list its `tiles` by
   id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
 - **Catalogue categories** (My shapes, Icons, Stickers) are bodies with their own content and take no tile list.
-- **Popular** is the landing category: Square, Sticky note, Text,
-  Frame, Arrow, Image, then behind a divider (`DIVIDE`) the openers **Ask**, **Tools**, **Record** and **React**
-  (`palette-openers`), each opening its Collaborate category in a popover under it.
+- **Popular** is the landing category: Sticky note, Text, Frame, Image, Link card, then behind a divider (`DIVIDE`)
+  Room, Meeting Table, Chair, Bring Focus and Avatar Pad. The openers (`palette-openers`) leave with the Collaborate
+  categories they opened (part 3).
 - The tool a tab starts with is **Select**; on a phone **Hand**. An embedded viewer always starts on Hand.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))

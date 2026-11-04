@@ -1,5 +1,7 @@
 # Arrow collision avoidance at draw time
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/008-canvas/arrow-collision-avoidance.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Status: shipped
 
 ## What

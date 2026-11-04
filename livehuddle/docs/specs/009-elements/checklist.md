@@ -1,5 +1,7 @@
 # Checklist
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/checklist.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Checkable to-do rows as a first-class element. It gives agile/retro boards and assigned-action workflows ([Assigned actions](../012-collaboration/assigned-actions.md)) a visual home: a card of tasks whose boxes anyone with edit access can tick, live-synced like everything else.
 
 ## Model: a data shape

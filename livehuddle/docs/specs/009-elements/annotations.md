@@ -1,5 +1,7 @@
 # Annotations
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/annotations.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+
 A lightweight way to pin an explanatory note to a spot on the canvas without
 cluttering it: a small themed circle holding a fixed note glyph. Hover it to
 read its note floating above everything; double-click it to edit the note.
