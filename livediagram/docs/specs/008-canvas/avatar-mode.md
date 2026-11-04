@@ -164,6 +164,9 @@ who is free to talk, who is heads-down, who has stepped away.
 
 - **Set from the panel**: a **Status** row, closed until opened like the rest, with the five choices (**None** and
   the four), its current value in the collapsed header. Every role may set it: it is presence, like the character.
+  The shared status list (`@liveworkspace/avatar`) also knows livehuddle's call status, **Do Not Disturb** (`dnd`,
+  a red dot with a white bar): this product has no calls, so its panel does not offer it, though one on the wire
+  still parses and draws.
 - **Peers see it**: the status rides the avatar presence (`status`), parsed field by field; anything else is no
   status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
 - **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
