@@ -93,13 +93,24 @@ jobs:
           fi
           echo "sha=${base}" >> "${GITHUB_OUTPUT}"
 
+      # The plan's outputs are this workflow's contract, so it runs this workflow's own scripts (from
+      # github.workflow_sha) over the commit being deployed. Run from that commit instead, a deploy of a
+      # commit older than a change to both planned no groups and failed (2026-11-04). Unpacked outside the
+      # checkout, so they don't count as a change to it.
       - name: Plan
         id: plan
         env:
           PLAN_MODE: deploy
           BASE: ${{ steps.base.outputs.sha }}
           HEAD: ${{ inputs.ref }}
-        run: node .github/scripts/ci-plan.mjs > /dev/null
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          scripts="${RUNNER_TEMP}/workflow-scripts"
+          mkdir -p "${scripts}"
+          git cat-file -e "${WORKFLOW_SHA}^{commit}" 2>/dev/null || git fetch -q --depth=1 origin "${WORKFLOW_SHA}"
+          git archive "${WORKFLOW_SHA}" .github/scripts | tar -x -C "${scripts}"
+          node "${scripts}/.github/scripts/ci-plan.mjs" > /dev/null
 
   tier0:
     name: ${{ matrix.label }}

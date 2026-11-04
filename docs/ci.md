@@ -210,7 +210,11 @@ accepts the issuer it signs with, and liveworkspace's bare-domain redirect with 
 **Jobs.** A tier's Workers deploy in a few jobs, not one each: the services and apis in one job, the
 sites in one job per product (liveworkspace's site and accounts together), and the routers in one job.
 The plan names each Worker's group (`deploy-group.mjs`), and each group's job checks out and installs
-once, then deploys its Workers one after another (`node .github/scripts/deploy-group.mjs`). Before
+once, then deploys its Workers one after another (`node .github/scripts/deploy-group.mjs`). The plan and
+the group jobs run the deploy workflows' own `.github/scripts` (from `github.workflow_sha`, the newest
+main) over the commit being deployed, so a change to a workflow and its scripts together can't meet an
+older commit's scripts: on 2026-11-04 the deploys of commits from before the grouped jobs planned no
+groups and failed until main's CI caught up. Before
 2026-11-04 every Worker had a job of its own: a production deploy was about 40 one-minute jobs, each
 waiting for a runner behind pull requests' CI (a median 8.4 minutes, up to 25, measured that day), and
 half of each job was the same checkout and install. Now a full deploy's Workers queue for a runner 8
