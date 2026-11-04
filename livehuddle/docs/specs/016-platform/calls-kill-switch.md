@@ -155,9 +155,18 @@ switch while a call is under way in it:
   system op.
 - A client in a call that no longer allows it closes it at once: the microphone is released, every subscription and
   the session end. A client not in a call only changes its button.
-- A room where nobody talks or arrives sends no ops and so learns nothing new; it needs nothing, because muted and
-  silent speakers send no audio, and the next subscription a walker makes is refused by the mint route, which the
-  client treats exactly like the push.
+- **A silent room still hears within about 5 seconds** (Work Tracker #463). A call that publishes (a microphone, a
+  camera or a screen) and has sent the room nothing for 5 seconds sends a `calls-check` op: no payload but its tab,
+  never relayed, consumed by the room as one more reason to read the switch (the same 5-second throttle). So a flip
+  reaches every call within about 5 seconds of the room's read, plus the switch's own caching, whether or not anyone
+  talks. A Viewer, who publishes nothing, sends none (nothing it receives exists without a publisher, whose check
+  covers it), and the room drops one from a Viewer like its other call ops.
+- **Why a check from the call, not a poll or an alarm.** A poll of `/api/capabilities` would be a Worker request per
+  listener every 5 seconds. An alarm on the room would be a Durable Object alarm and a storage write every 5 seconds
+  per room, and memory the room loses when it hibernates. The check rides the socket each publisher already holds:
+  one inbound message per publisher per 5 seconds of silence (Cloudflare bills inbound WebSocket messages at 20 to 1,
+  so about 36 billed requests per publisher-hour), none while it talks (its levels already reach the room), and no
+  state kept anywhere.
 
 ### Calls Paused
 

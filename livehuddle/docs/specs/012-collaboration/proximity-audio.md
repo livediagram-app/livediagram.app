@@ -113,7 +113,7 @@ A [hide-cursors vote](session-tools.md#hide-participant-cursors-default-on) hide
 
 ## The wire
 
-Two presence ops in `@livehuddle/api-schema` (`call-voice.ts`), each with a field-by-field parser shared by the room
+Three presence ops in `@livehuddle/api-schema` (`call-voice.ts`), each with a field-by-field parser shared by the room
 and the editor:
 
 - `avatar-voice`: `{ kind, tabId, level }`, `level` an integer 0 to 4, 0 meaning stopped. A **sample**, like `avatar`
@@ -125,7 +125,11 @@ and the editor:
   the speaker starts publishing and again whenever a new walker appears on their tab (a late joiner never receives a
   replay), at most once a second. Relayed to the whole room, unbatched.
 
-The room drops either op from a Viewer, and drops one that fails its parser, as it drops a Viewer's `avatar-say`.
+- `calls-check`: `{ kind, tabId }`, sent by a publishing call that has sent the room nothing for 5 seconds, so a
+  silent room still reads the kill switch ([Calls kill switch](../016-platform/calls-kill-switch.md#the-room-tells-its-clients)).
+  Consumed by the room, never relayed.
+
+The room drops any of them from a Viewer, and drops one that fails its parser, as it drops a Viewer's `avatar-say`.
 
 ## The mint route
 

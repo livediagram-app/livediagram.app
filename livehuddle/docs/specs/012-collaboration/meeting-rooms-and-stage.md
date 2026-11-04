@@ -1,8 +1,9 @@
 # Meeting rooms and the stage
 
 Status: **in progress** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
-calls**, is built for staging; the stage, raise hand, Do Not Disturb and the stage's role gate are specified here and
-built in parts 2 to 4. Under the calls kill switch and off in production with the rest of calls
+calls**, and part 2, **the stage under the hood** (the element, its hearing and its role gate, not yet in the palette),
+are built for staging; raise hand and Do Not Disturb (part 3) and the stage's palette tile, settings, template and help
+(part 4) are specified here and built later. Under the calls kill switch and off in production with the rest of calls
 ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
 Plain distance ([Proximity audio](proximity-audio.md#hearing)) suits an open floor, but not every gathering. A meeting
@@ -41,23 +42,39 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
 - A **Virtual Office** template's rooms become its calls with no change to the board: the meeting rooms, the phone
   booths and the kitchen are private, the open floor between them is by distance. The **Coworking Space** and the
   **All-Hands Hall** are each one big room, so everyone inside either hears everyone else inside it (see
-  [Cost](#cost)); the hall's stage changes that in part 2.
+  [Cost](#cost)); the hall's stage changes that once the template stands a Stage on it (part 4).
 
-## The stage (part 2, planned)
+## The stage (part 2, built)
 
-The All-Hands Hall's stage today is only a rug with "Stage" written over it. It becomes a real element.
+The All-Hands Hall's stage today is only a rug with "Stage" written over it. It becomes a real element. Part 2 builds
+the element and its hearing; the palette tile, its settings in the element menu, the hall template's switch from the
+rug and the help come in part 4, so until then a stage arrives only from an agent, the API or a pasted board.
 
-- **A Stage** is an office piece (shape kind `stage`): a raised platform drawn from the room's camera, the floor's
-  fill a little lighter, a front edge you see the face of, and its name ("Stage") on a plate at its front. It is a
-  floor piece like a rug: behind furniture, never blocking, never a destination. Default 360 × 140.
+- **A Stage** is an office piece (shape kind `stage`, [Office](../009-elements/office.md#stage)): a raised platform
+  drawn from the room's camera, the floor's fill a little lighter, a front edge you see the face of, and its name
+  ("Stage") on a plate at its front. It is a floor piece like a rug: behind furniture, never blocking, never a
+  destination. Default 360 × 140.
+- **Standing on it** means your feet are on its top, strictly inside it: the front edge (the face you see) and the
+  outline are off it, as a room's threshold is outside the room. Of two stages overlapping, the smaller holds you.
+  A stage on a hidden layer is no stage, as a hidden room is no room; its rotation is ignored.
 - **Whoever stands on the stage is heard by everyone on the tab**: every walking character in the Space's tab, in any
-  room or none, at full volume and centred (no pan). On the stage, speakers hear each other as one room does.
+  room or none, at full volume and centred (no pan). On the stage, speakers hear each other as one room does (full
+  volume, by side). Several stages on one tab are one stage for hearing: every speaker on any of them reaches the tab
+  and hears the others.
 - **The audience is muted to the stage by default.** While anyone stands on a stage, everyone in the stage's room (or,
-  for a stage in the open, everyone else on the tab) is its **audience**: the stage does not hear them, and they hear
-  each other only by distance, so neighbours can whisper without the hall hearing.
-- **Seen too, if the stage says so.** A stage's **Show Cameras** setting (off by default) lets everyone on the tab
-  receive an on-stage speaker's camera and screen bubbles, within the bubble caps and the kill switch's limits.
-- Walking off the stage ends it at once: you are back to your room's call.
+  for a stage in the open, everyone else on the tab) is its **audience**: the stage does not hear them, and in the
+  stage's room they hear each other only by distance, so neighbours can whisper without the hall hearing. The walls
+  still stand: the hall's audience never hears the corridor, and a stage in the open leaves every meeting room on the
+  tab its own call (its audience on the open floor already hears by distance).
+- **Only someone the stage lets speak is a speaker.** Standing on a stage you may not speak from (the role gate
+  below), you are its audience like anyone in the room.
+- **Seen too, if the stage says so.** A stage's **Show Cameras** setting (`stageCameras`, off by default) lets everyone
+  on the tab receive an on-stage speaker's camera and screen bubbles, within the bubble caps (the nearest six cameras
+  and two screens on screen) and the kill switch's limits. Off, a speaker's bubbles reach only the other speakers on
+  a stage, who hear them as one room; the audience hears without seeing.
+- Walking off the stage ends it at once: you are back to your room's call. Hearing re-decides on the next scene, as
+  it does for a room.
+- **The mic indicator** reads **Live** on the stage while anyone else walks the tab (they all hear you).
 
 ## Raise hand (part 3, planned)
 
@@ -88,9 +105,11 @@ The All-Hands Hall's stage today is only a rug with "Stage" written over it. It 
 | Let a raised hand speak (part 3)            | Yes    | From the stage                | No     |
 | Set Do Not Disturb (part 3)                 | Yes    | Yes                           | Yes    |
 
-- **Who may take the stage** is the stage's own setting, **Who Can Speak**: **Editors** (the default) or **Editors
-  and Participants**. Someone not allowed may still stand on it; they are heard as the audience is, and a line under
-  the call strip says "Only Editors speak from this stage".
+- **Who may take the stage** is the stage's own setting, **Who Can Speak** (`stageSpeakers`): **Editors** (`edit`,
+  the default) or **Editors and Participants** (`take-part`). Someone not allowed may still stand on it; they are
+  heard as the audience is, and (part 4) a line under the call strip says "Only Editors speak from this stage".
+- **Whose level counts** is the one the room stamps on each person's presence from their grant (`role`), never one a
+  browser claims; your own is your session's `can`.
 - A Viewer never speaks anywhere ([Proximity audio](proximity-audio.md#share-roles)); it hears a room or a stage as
   anyone does.
 - Gated in the editor on the session's `can` (never `isReadOnly`), and in the room on the grant's level for the hand
@@ -117,8 +136,8 @@ Video on the stage is under the kill switch's limits ([Calls kill switch](../016
 
 ## Telemetry
 
-Part 1 adds none: hearing is not an act. Later parts: `track('Canvas', 'Used', 'StageSpeak')` on stepping onto a
-stage that carries you, `track('Canvas', 'Used', 'RaiseHand')`, `track('Canvas', 'Used', 'LetSpeak')`, and the status
+Part 1 adds none: hearing is not an act. Part 2: `track('Canvas', 'Used', 'StageSpeak')` when, in a call, you step
+onto a stage that lets you speak (once per stepping on). Part 3: `track('Canvas', 'Used', 'RaiseHand')`, `track('Canvas', 'Used', 'LetSpeak')`, and the status
 change already counted (`AvatarStatus`). Never who, never how long.
 
 ## Out of scope
