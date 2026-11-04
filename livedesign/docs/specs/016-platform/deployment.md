@@ -78,7 +78,9 @@ next time.
 and the MCP Worker (`livedesign-marketing`, `livedesign-live`, `livedesign-help`, `livedesign-mcp`, which bind to the
 api), then the router in front (`livedesign-router`, which binds to all four). A failing tier stops the ones after it.
 
-**One Worker** (the root `deploy-worker.yml`): a static site builds with its build id (`NEXT_PUBLIC_BUILD_ID`, the
+**One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the
+other services and apis, livedesign's sites and MCP in a job of their own, and the router with the other routers,
+each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds with its build id (`NEXT_PUBLIC_BUILD_ID`, the
 [stale-build](stale-builds.md) check) and the hosted build vars; then `wrangler deploy` (with `--env staging` on
 staging); the api adds its hosted vars and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
 

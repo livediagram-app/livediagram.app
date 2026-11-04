@@ -82,7 +82,7 @@ result.
   `@huggingface/transformers` major.
 
 - **Deploys** (`deploy-staging.yml` and `deploy-production.yml`, both calling `deploy.yml`, which calls
-  `deploy-worker.yml` per Worker): see [Deploys](#deploys).
+  `deploy-group.yml` once per group of Workers): see [Deploys](#deploys).
 
 - **CodeQL** (`codeql.yml`): one Analyze job scans the whole repository (Actions and
   JavaScript/TypeScript) on every pull request, every push to `main` and weekly on Mondays, so newly
@@ -206,6 +206,26 @@ apply`), then the sites and MCP Workers, then the routers in front of them. Two 
 (`TIER_OF` in `ci-plan.mjs`): accounts deploys with the sites, once every Worker that checks its tokens
 accepts the issuer it signs with, and liveworkspace's bare-domain redirect with the routers, once
 `www.` answers. A failing tier stops the ones after it.
+
+**Jobs.** A tier's Workers deploy in a few jobs, not one each: the services and apis in one job, the
+sites in one job per product (liveworkspace's site and accounts together), and the routers in one job.
+The plan names each Worker's group (`deploy-group.mjs`), and each group's job checks out and installs
+once, then deploys its Workers one after another (`node .github/scripts/deploy-group.mjs`). Before
+2026-11-04 every Worker had a job of its own: a production deploy was about 40 one-minute jobs, each
+waiting for a runner behind pull requests' CI (a median 8.4 minutes, up to 25, measured that day), and
+half of each job was the same checkout and install. Now a full deploy's Workers queue for a runner 8
+times (1 job, then 6 side by side, then 1) instead of about 40, and each group's job has a limit sized from the
+measured step times: 10 minutes, plus 6 per Worker that builds a site and 2 per other Worker, with 15
+minutes for any one command.
+
+- **Each Worker is visible.** Its output is a log group of its own, named for it, and the job's summary
+  lists every Worker with its result, the step it failed at, and its time.
+- **One failure doesn't hide the rest.** A Worker whose step fails stops there (a failing migration
+  never deploys the code after it), and the group goes on with its other Workers. The job fails at the
+  end when any Worker failed, which stops the tiers after it, as before, and leaves the tag where it was.
+- **A retry is safe.** Re-running a failed job deploys its whole group again, the Workers that
+  succeeded included. That is harmless: `wrangler deploy` of the same commit puts up the same code and
+  vars again, and `wrangler d1 migrations apply` skips the migrations already applied.
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
 product's hosted build vars, and on staging its product's staging MCP address), built from full history for a help site, whose sitemap dates each article by its last commit, and a product api's

@@ -85,7 +85,9 @@ as `*.test.ts`.
 - **Order.** Three tiers, each waiting for the one before: the apis (`livedocuments-api`), then the sites and MCP
   (`marketing`, `editor`, `help`, `mcp`), then the routers. So the editor never calls an api that lacks its routes, the
   mcp's binding to the api exists, and the router's four bindings exist when it deploys.
-- **One Worker** (`deploy-worker.yml`): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID` and the
+- **One Worker** (`deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other
+  services and apis, livedocuments' sites and MCP in a job of their own, and the router with the other routers, each
+  Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID` and the
   hosted build vars); then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production. The
   api has no migration step: it has no D1, and each Durable Object makes its own schema on first use
   ([API app](../015-api/api.md) "Storage").
@@ -112,7 +114,7 @@ profile**.
   `environments.staging`, such as `APP_BASE_URL`, the canonical public origin links are built from
   (`https://www.livedocuments.app` in production, never the apex that redirects to it). An empty per-environment value
   is unset there.
-- **How it is applied.** `deploy-worker.yml` applies it to a Worker that has `scripts/hosted-vars.mjs` (the api): the
+- **How it is applied.** `deploy-group.mjs` applies it to a Worker that has `scripts/hosted-vars.mjs` (the api): the
   sites' builds take `node scripts/hosted-vars.mjs build-env`, and the api's deploy passes each var as
   `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`) with the environment's `--env`. A deploy
   run any other way, such as a fork's own `wrangler deploy`, takes the committed config alone: telemetry off, no caps.
