@@ -1,6 +1,8 @@
 // Who you hear, and how loudly (docs/specs/012-collaboration/proximity-audio.md "Hearing"; blueprint "Hearing"):
 // pure geometry over the positions the room already shares, so the subscriptions, the audio graph and the equaliser
-// all read one answer.
+// all read one answer. Rooms come first (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls"):
+// a room is one call, its walls block sound, and distance decides only in the open.
+import type { CallZoning } from './zones';
 
 /** A speaker within this many canvas px of you, feet to feet, is subscribed. */
 export const HEARING_RADIUS_PX = 260;
@@ -19,8 +21,20 @@ export type Point = { x: number; y: number };
 
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 
+/** Where a peer stands relative to you: 'room' shares your room, 'open' shares the open floor, 'apart' is walled off. */
+export type Together = 'room' | 'open' | 'apart';
+
+/** Whether `id` is in your room, with you in the open, or on the other side of a wall. No zoning: the open. */
+export function togetherWith(id: string, zoning: CallZoning | undefined): Together {
+  const mine = zoning?.self ?? null;
+  const theirs = zoning?.of.get(id) ?? null;
+  if (mine !== theirs) return 'apart';
+  return mine === null ? 'open' : 'room';
+}
+
 /**
- * The speakers heard next: one already heard stays while within the release radius, a new one joins within the
+ * The speakers heard next. A room is one call: everyone in your room is heard whatever the distance, nobody across
+ * a wall ever is. In the open, one already heard stays while within the release radius, a new one joins within the
  * hearing radius. `peers` maps a presence id to its feet; only peers in it (walking, on this tab, with a microphone
  * to hear) are candidates. Returns `prev` itself when nothing changed, so a caller can compare by identity.
  */
@@ -28,16 +42,41 @@ export function nextHeard(
   prev: ReadonlySet<string>,
   self: Point | null,
   peers: ReadonlyMap<string, Point>,
+  zoning?: CallZoning,
 ): ReadonlySet<string> {
   const next = new Set<string>();
   if (self) {
     for (const [id, at] of peers) {
+      const together = togetherWith(id, zoning);
+      if (together === 'apart') continue;
+      if (together === 'room') {
+        next.add(id);
+        continue;
+      }
       const d = distance(self, at);
       if (d <= HEARING_RADIUS_PX || (prev.has(id) && d <= RELEASE_RADIUS_PX)) next.add(id);
     }
   }
   if (next.size === prev.size && [...next].every((id) => prev.has(id))) return prev;
   return next;
+}
+
+/** Whether a peer would hear you now (the mic indicator's Live): your room, or the hearing radius in the open. */
+export function inEarshot(self: Point, at: Point, together: Together): boolean {
+  if (together === 'apart') return false;
+  return together === 'room' || distance(self, at) <= HEARING_RADIUS_PX;
+}
+
+/** How a heard speaker is placed: full volume in a shared room, by distance in the open; panned by side either way. */
+export function placeFor(
+  self: Point,
+  at: Point,
+  together: Together,
+): { gain: number; pan: number } {
+  return {
+    gain: together === 'room' ? 1 : gainAt(distance(self, at)),
+    pan: panAt(at.x - self.x),
+  };
 }
 
 /** The gain at `d` canvas px: 1 within the full-volume radius, then an equal-power fade to 0 at the release radius. */

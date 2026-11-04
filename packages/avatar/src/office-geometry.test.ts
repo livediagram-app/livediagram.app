@@ -10,6 +10,7 @@ import {
   ROOM_DOOR_WIDTH,
   ROOM_WALL,
   roomDoorSpan,
+  roomInterior,
   roomWalls,
 } from './office-geometry';
 
@@ -59,6 +60,24 @@ describe('the room', () => {
     expect(walls[0]!.a.y).toBe(room.y + ROOM_BACK_FACE - ROOM_WALL / 2);
     expect(roomWalls({ ...room, roomDoor: 'none' })).toHaveLength(4);
     expect(roomWalls({ ...room, roomDoor: 'w' }).filter((w) => w.a.x === w.b.x)).toHaveLength(3);
+  });
+
+  it('has its floor inside the walls’ centre lines, the doorway’s threshold included', () => {
+    const inside = roomInterior(room);
+    const walls = roomWalls({ ...room, roomDoor: 's' });
+    // The same lines the walls run along: the side walls' x, the back wall's foot and the front wall's (doorway) y.
+    const vertical = walls.filter((w) => w.a.x === w.b.x).map((w) => w.a.x);
+    const horizontal = walls.filter((w) => w.a.y === w.b.y).map((w) => w.a.y);
+    expect(inside.x).toBe(Math.min(...vertical));
+    expect(inside.x + inside.width).toBe(Math.max(...vertical));
+    expect(inside.y).toBe(Math.min(...horizontal));
+    expect(inside.y + inside.height).toBe(Math.max(...horizontal));
+    expect(inside).toEqual({
+      x: room.x + ROOM_WALL / 2,
+      y: room.y + ROOM_BACK_FACE - ROOM_WALL / 2,
+      width: room.width - ROOM_WALL,
+      height: room.height - ROOM_BACK_FACE,
+    });
   });
 });
 

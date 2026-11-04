@@ -30,8 +30,9 @@ import {
   setCallsMode,
   type CallMedia,
 } from './calls-store';
-import { distance, gainAt, HEARING_RADIUS_PX, nextHeard, panAt, type Point } from './hearing';
+import { inEarshot, nextHeard, placeFor, togetherWith, type Point } from './hearing';
 import { SfuSession, type SfuWant } from './sfu-session';
+import { zoning, type CallZone, type CallZoning } from './zones';
 import {
   silenceVoice,
   SILENT,
@@ -80,12 +81,16 @@ export type CallSignal =
       screen?: CallTrackLocator | null;
     };
 
-/** Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, and the visible area. */
+/**
+ * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, and
+ * the tab's visible Office rooms, each one call (meeting-rooms-and-stage.md "Rooms are calls").
+ */
 export type CallScene = {
   tabId: string;
   self: Point | null;
   walkers: ReadonlyMap<string, Point>;
   view?: ViewRect | null;
+  zones?: readonly CallZone[];
 };
 
 export type ProximityCallInput = {
@@ -134,6 +139,8 @@ export class ProximityCall {
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
   private heard: ReadonlySet<string> = new Set();
   private scene: CallScene = { tabId: '', self: null, walkers: new Map() };
+  // Everyone's room, worked out once per scene and read by hearing, placing and the mic indicator.
+  private zoning: CallZoning = { self: null, of: new Map() };
   private knownWalkers = new Set<string>();
   private locatorSentAt = -Infinity;
   private locatorDue: ReturnType<typeof setTimeout> | null = null;
@@ -434,15 +441,22 @@ export class ProximityCall {
   update(scene: CallScene): void {
     if (this.stopped) return;
     this.scene = scene;
+    this.zoning = zoning(scene.self, scene.walkers, scene.zones ?? []);
     // A walker new to the tab learns where this microphone is.
     let arrived = false;
     for (const id of scene.walkers.keys()) if (!this.knownWalkers.has(id)) arrived = true;
     this.knownWalkers = new Set(scene.walkers.keys());
     if (arrived) this.sendLocator();
     this.keepMicFor(scene.walkers.size > 0);
-    const near = scene.self
-      ? [...scene.walkers.values()].some((at) => distance(scene.self!, at) <= HEARING_RADIUS_PX)
-      : false;
+    let near = false;
+    if (scene.self) {
+      for (const [id, at] of scene.walkers) {
+        if (inEarshot(scene.self, at, togetherWith(id, this.zoning))) {
+          near = true;
+          break;
+        }
+      }
+    }
     setCallSelf({ someoneNear: near });
     this.hear();
   }
@@ -473,7 +487,7 @@ export class ProximityCall {
         candidates.set(id, at);
       }
     }
-    this.heard = nextHeard(this.heard, this.scene.self, candidates);
+    this.heard = nextHeard(this.heard, this.scene.self, candidates, this.zoning);
     setCallSelf({ heard: this.heard });
     const wants: SfuWant[] = [];
     for (const id of this.heard) {
@@ -511,7 +525,9 @@ export class ProximityCall {
     if (!self) return;
     for (const id of this.heard) {
       const at = this.scene.walkers.get(id);
-      if (at) this.graph.place(id, gainAt(distance(self, at)), panAt(at.x - self.x));
+      if (!at) continue;
+      const { gain, pan } = placeFor(self, at, togetherWith(id, this.zoning));
+      this.graph.place(id, gain, pan);
     }
   }
 

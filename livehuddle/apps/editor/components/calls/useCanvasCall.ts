@@ -5,11 +5,13 @@
 // video-and-screen-bubbles.md) sit above the same characters, and the visible area decides which are received.
 import { useMemo } from 'react';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
+import { visibleLayerElements } from '@livehuddle/document';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
 import { DO_NOT_DISTURB, useProximityCall } from '@/lib/calls/useProximityCall';
+import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import type { TalkingBarsPeer } from './TalkingBars';
 
@@ -50,6 +52,13 @@ export function useCanvasCall(deps: {
     [ownerId, documentId, shareCode],
   );
 
+  // Each visible Office room is a call of its own (meeting-rooms-and-stage.md "Rooms are calls"): the rooms the walk
+  // collides with, worked out only when the board or its layers change, never on a step.
+  const zones = useMemo(
+    () => roomZones(visibleLayerElements(props.elements, props.tabLayers)),
+    [props.elements, props.tabLayers],
+  );
+
   const self = inMode ? avatar.pos : null;
   const view = useViewRect(deps.viewport);
   useProximityCall({
@@ -64,6 +73,7 @@ export function useCanvasCall(deps: {
     tabId: props.activeTabId ?? '',
     self,
     walkers: peers,
+    zones,
   });
 
   return {

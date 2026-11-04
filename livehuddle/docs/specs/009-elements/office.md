@@ -36,6 +36,9 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   room is called **Room**.
 - **The walls block** walking exactly as a [Fence](fence.md#blocking) does: same reach, same slide along them, from
   either side; the doorway does not. A character inside a closed room stays inside until it takes a portal.
+- **It is a call of its own** while calls are on: everyone inside hears everyone else inside at full volume, and
+  nobody outside hears them; the walls block sound as they block walking, and the doorway's threshold is the line
+  of the walls ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)).
 - **It is the floor, not a destination**: standing in a room never rings it as the element you are on, and it is
   placed **behind everything** on the tab, so furniture dropped in it stands on its floor. Not aspect locked: a
   room is any shape of rectangle. Default 480 × 320.

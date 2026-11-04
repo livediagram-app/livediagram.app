@@ -8,7 +8,8 @@ page records what that needs, so v1 is built not to stand in its way. Each featu
 ## Audio calls
 
 **Built for staging**: [Proximity audio](../012-collaboration/proximity-audio.md) (Work Tracker #315), within a radius
-in the open; a room as one call and the All-Hands Hall's stage are still ahead.
+in the open, and a room as one call ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md),
+#319 part 1, #436); the All-Hands Hall's stage, raise hand and Do Not Disturb are its later parts.
 
 People near each other on the board hear each other: **proximity audio**. A character's position already rides the
 room ([Avatar mode](../008-canvas/avatar-mode.md#realtime)), so the board can decide

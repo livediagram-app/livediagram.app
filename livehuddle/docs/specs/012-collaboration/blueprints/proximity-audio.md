@@ -23,7 +23,9 @@ session or a failed connection; `live`/`error` → (Leave Audio, leaving the mod
 `micState`: `closed` (no other walker for `MIC_IDLE_CLOSE_MS`, or a listener), `open`, `blocked` (getUserMedia
 refused); `muted` is separate and survives the microphone closing.
 
-**Hearing** (`lib/calls/hearing.ts`, pure): `nextHeard(prev, self, peers)` keeps a peer already heard while its
+**Hearing** (`lib/calls/hearing.ts`, pure): rooms first ([Meeting rooms and the stage](meeting-rooms-and-stage.md)
+blueprint: `nextHeard`'s optional `zoning` hears a shared room whole and never across zones). In the open,
+`nextHeard(prev, self, peers)` keeps a peer already heard while its
 distance is ≤ `RELEASE_RADIUS_PX` and adds one at ≤ `HEARING_RADIUS_PX`; only peers with a locator are candidates.
 `gainAt(d)`: 1 at ≤ `FULL_VOLUME_RADIUS_PX`, `cos(π/2 · (d − full)/(release − full))` to 0 at the release radius.
 `panAt(dx)`: `clamp(dx / HEARING_RADIUS_PX, −1, 1) · MAX_PAN`. `barsOpacity(d, heard)`: 1 when heard, else linear from

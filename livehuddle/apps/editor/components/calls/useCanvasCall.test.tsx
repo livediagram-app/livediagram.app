@@ -18,6 +18,7 @@ const props = {
   onCallSignal: vi.fn(),
   activeTabId: 't1',
   selfParticipant: { color: '#00f' },
+  elements: [],
 } as unknown as CanvasProps;
 
 afterEach(() => vi.clearAllMocks());
@@ -100,5 +101,49 @@ describe('useCanvasCall', () => {
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
     run();
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls": only rooms you can see are calls.
+  it('hands the call the rooms on visible layers as zones, and nothing else', () => {
+    const room = (id: string, layerId: string) => ({
+      id,
+      type: 'shape',
+      shape: 'room',
+      layerId,
+      x: 0,
+      y: 0,
+      width: 480,
+      height: 320,
+    });
+    renderHook(() =>
+      useCanvasCall({
+        props: {
+          ...props,
+          elements: [
+            room('shown', 'a'),
+            room('hidden', 'b'),
+            {
+              id: 'rug',
+              type: 'shape',
+              shape: 'rug',
+              layerId: 'a',
+              x: 0,
+              y: 0,
+              width: 99,
+              height: 99,
+            },
+          ],
+          tabLayers: [
+            { id: 'a', name: 'A' },
+            { id: 'b', name: 'B', visible: false },
+          ],
+        } as unknown as CanvasProps,
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+      }),
+    );
+    const { zones } = hook.useProximityCall.mock.lastCall![0] as { zones: { id: string }[] };
+    expect(zones.map((z) => z.id)).toEqual(['shown']);
   });
 });

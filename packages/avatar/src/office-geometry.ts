@@ -109,6 +109,22 @@ export function roomWalls(el: Rect & { roomDoor?: RoomDoor }): WallSegment[] {
   return out;
 }
 
+/**
+ * The floor inside a room's walls, bounded by the same centre lines `roomWalls` draws (and the doorway's threshold
+ * on that line): where a character counts as in the room (livehuddle's docs/specs/012-collaboration/
+ * meeting-rooms-and-stage.md "Rooms are calls"). Empty (zero or negative size) for a room too small to stand in.
+ */
+export function roomInterior(el: Rect): Rect {
+  const half = ROOM_WALL / 2;
+  const top = el.y + ROOM_BACK_FACE - half;
+  return {
+    x: el.x + half,
+    y: top,
+    width: el.width - ROOM_WALL,
+    height: el.y + el.height - half - top,
+  };
+}
+
 /** The four edges of a box as wall segments (a footprint's outline). */
 export function boxEdges(b: Rect): WallSegment[] {
   const tl = { x: b.x, y: b.y };
