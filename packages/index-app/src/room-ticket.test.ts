@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import {
   earliestRoomGrantDue,
+  openRoomSockets,
   openRoomTicket,
   renewRoomGrant,
   roomGrantDueAt,
@@ -105,6 +106,18 @@ describe("a session's grant in the room", () => {
         ASK,
       ),
     ).toBe(70_000);
+  });
+
+  it('watches only open sockets, so a closed one left listed never re-arms the alarm', () => {
+    const open = { readyState: 1, grantExp: 100_000 };
+    const closing = { readyState: 2, grantExp: 1 };
+    const closed = { readyState: 3, grantExp: 1 };
+    const connecting = { readyState: 0, grantExp: 1 };
+    const live = openRoomSockets([closing, open, closed, connecting]);
+    expect(live).toEqual([open]);
+    // The lapsed grant of the closing socket would put the alarm in the past, every time it rang.
+    expect(earliestRoomGrantDue(live, ASK)).toBe(70_000);
+    expect(openRoomSockets([])).toEqual([]);
   });
 
   it('renews a grant that says the same, and ends a session whose access changed', async () => {

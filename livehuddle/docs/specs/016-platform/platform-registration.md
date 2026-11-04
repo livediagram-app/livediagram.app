@@ -1,6 +1,6 @@
 # Platform registration
 
-Status: **proposed**, awaiting the owner's approval (Work Tracker #99).
+Status: **built** (approved on Work Tracker #99; launched with Work Tracker #189).
 
 What it takes to make livehuddle a liveworkspace app: one account, the One Explorer, media, telemetry, the site
 switcher, CI and deploys, and its own domain. livehuddle reuses every platform capability and adds no service of
@@ -8,8 +8,8 @@ its own (Work Tracker #99: "reuse the platform capabilities as needed").
 
 **Specs first.** Registering an app changes platform code under `packages/` and `liveworkspace/`, which is a platform
 change: it updates [liveworkspace/docs/specs](../../../../liveworkspace/docs/specs/README.md) first, then each
-service's blueprint, then the code (root AGENTS.md). This PR edits no platform spec; it lists below which ones the
-build changes, and in what order.
+service's blueprint, then the code (root AGENTS.md). This spec edited no platform spec; it lists below which ones the
+build changed, and in what order.
 
 ## The platform specs that change
 
@@ -72,7 +72,7 @@ In the order the build makes them (code locations as on `main` today):
 - **Workspace:** `pnpm-workspace.yaml` gains `livehuddle`, `livehuddle/apps/*` and `livehuddle/packages/*`.
 - **Scripts:** a root `dev:huddle` (`turbo run dev --filter=@livehuddle/*`), as `dev:design` is.
 - **Packages:** `@livehuddle/*`.
-- **Layout trees:** README.md and docs/structure.md list `livehuddle/` (this PR adds the planned entry).
+- **Layout trees:** README.md and docs/structure.md list `livehuddle/` (added with the spec, and filled in as the build went).
 
 ## Port block 3500 to 3599
 
@@ -86,7 +86,7 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 
 ## CI
 
-**In place since the code fork (build plan step 3), held until launch:**
+**Added at the code fork (build plan step 3), held until launch:**
 
 - **A fifth group** in `.github/scripts/ci-plan.mjs`: `livehuddle`, folder `livehuddle/`, editor
   `@livehuddle/editor` (sharded), and its CLI (`livehuddle/apps/cli`). The
@@ -118,6 +118,12 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 - **Canvas performance:** livehuddle's probe joins the nightly `canvas-perf.yml`, with an avatar fan-out probe of its
   own ([Build plan](../005-project-roadmap/build-plan.md#risks), R3).
 - **Suites that read other workspaces** declare their `$TURBO_ROOT$` inputs in `turbo.json`, as docs/ci.md requires.
+
+**After launch (build plan step 9, Work Tracker #190):**
+
+- **The drift report**: CI's Plan job runs `.github/scripts/drift-report.mjs` and writes to the run's summary how many
+  files `livediagram/` and `livehuddle/` share identical, changed or in one only, names ignored. Information only, never
+  a gate (docs/ci.md "Drift report").
 
 ## Deploys
 

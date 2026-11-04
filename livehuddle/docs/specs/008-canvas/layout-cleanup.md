@@ -275,7 +275,7 @@ a component's nodes are positioned:
 
 ## The Tidy Up button
 
-Diagram mode has a **Tidy Up** button in the bottom-right cluster, the segment immediately
+The editor has a **Tidy Up** button in the bottom-right cluster, the segment immediately
 **left of Layers** in the Layers and Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up,
 Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
 than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
@@ -283,10 +283,10 @@ strip's other buttons (one open at a time, a second press or a press outside clo
 
 ### Where it shows
 
-- **Diagram mode only.** Draw and Workshop arranged their content another way
-  (strokes, a session board), so the button is not there; the command palette still
-  reaches the tidiers.
-- **On a phone too.** Diagram mode's phone cluster is one row with room for it: Undo and Redo, the
+- **Editors, not embeds.** The button shows for an Editor's session on a tab it can arrange; a Participant
+  and a Viewer are read-only for structure and an embed has no cluster. The command palette reaches the
+  tidiers too.
+- **On a phone too.** The phone cluster is one row with room for it: Undo and Redo, the
   Tidy Up, Layers and Theme strip, then Fit. There is no hover on touch, so a tap on a tile is the
   press; the popover fits the screen's width.
 - **Not in Zen**, not during the welcome flow: the strip itself is hidden there.

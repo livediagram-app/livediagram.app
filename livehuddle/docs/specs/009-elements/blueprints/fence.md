@@ -51,11 +51,11 @@ A fence has no state of its own. Per walking character, every frame of `useAvata
 1. `wanted` = the arrow-key step or `stepTowards` toward the target.
 2. `fenceStep(from, wanted, fences)`:
    - no fences, or no fence refuses → `{ pos: wanted, blocked: false }`;
-   - else, the step projected onto the first refusing fence's direction, if that is at least
-     `FENCE_STALL` long and no fence refuses it → `{ pos: slid, blocked: true }`;
+   - else, the step projected onto the first refusing fence's direction, if that does not stall
+     (`fenceStalled`: under `FENCE_STALL_SHARE` of the wanted step) and no fence refuses it → `{ pos: slid, blocked: true }`;
    - else the furthest point along the step no fence refuses, by `FENCE_APPROACH_STEPS` halvings
      → `{ pos, blocked: true }`.
-3. Blocked, click-walking, and moved less than `FENCE_STALL` → target and arrival callback dropped
+3. Blocked, click-walking, and stalled (`fenceStalled`) → target and arrival callback dropped
    (the walk stops; a shove's `onArrive` never fires).
 4. Arrival (`step.arrived`) counts only for an unblocked step.
 
@@ -232,5 +232,5 @@ click-walk stops against a fence.
 | `FENCE_RAIL_OPACITY`   | 0.78                  | Rails behind posts                              |
 | `FENCE_WOOD`           | `#8a5a33` / `#c08a5b` | Wood brown per paper (D201)                     |
 | `FENCE_REACH`          | 12                    | Feet half-width at Regular size; 8 to 20 (D202) |
-| `FENCE_STALL`          | 0.25                  | Canvas px; below visible motion                 |
+| `FENCE_STALL_SHARE`    | 0.06                  | Share of the step; below it is no progress      |
 | `FENCE_APPROACH_STEPS` | 7                     | 13 px step to 0.1 px                            |

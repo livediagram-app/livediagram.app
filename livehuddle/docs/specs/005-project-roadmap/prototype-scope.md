@@ -4,16 +4,16 @@ The frontend-only prototype phase ended once the API app landed. This spec captu
 
 ## Where we are now
 
-Eight apps, all deployable to Cloudflare Workers (with Static Assets for the five Next.js apps):
+Eight apps, seven deployed as Cloudflare Workers (with Static Assets for the four Next.js sites) and one, the CLI, published to npm:
 
 - **marketing**: static landing site at `/`.
-- **live**: the diagram editor (clean routes, no `/live` prefix). Statically exported Next.js.
-- **telemetry**: public anonymous-events dashboard at `/telemetry`. Statically exported Next.js. Reads aggregate counts from the liveworkspace telemetry service. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
+- **editor**: the space editor (clean routes, no prefix). Statically exported Next.js.
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
-- **community**: the public gallery of shared documents at `/community`. Statically exported Next.js. See [Community](../025-community/community.md).
+- **community**: the public gallery of shared spaces at `/community`. Statically exported Next.js. See [Community](../025-community/community.md).
 - **api**: Cloudflare Worker holding the REST endpoints + one Durable Object per document, its realtime room and its durable store. liveworkspace's index files documents and decides who may open them.
 - **mcp**: Cloudflare Worker at its own host, `mcp.livehuddle.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
-- **router**: Worker that stitches marketing, live, telemetry, help, community and api under one hostname.
+- **router**: Worker that stitches marketing, editor, help, community and api under one hostname, and sends `/telemetry` to liveworkspace's dashboard filtered to livehuddle ([Telemetry](../017-telemetry/telemetry.md)).
+- **cli**: the `livehuddle` command line ([CLI](../015-api/cli.md)).
 
 The editor is real:
 
@@ -72,7 +72,7 @@ The editor is real:
   anyone can search and filter it, open a document read-only (no room, no comments), like it and make their own copy in
   one click. Posts stay live with the document, and moderation is self-serve: enough reports hide a post for
   good, with nobody reviewing by hand.
-- **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the liveworkspace telemetry service. No third-party analytics; no identifiers crossing the wire. Off by default for other deployments (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
+- **Anonymous first-party telemetry** + the public `/telemetry` dashboard (liveworkspace's, filtered to livehuddle). The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the liveworkspace telemetry service. No third-party analytics; no identifiers crossing the wire. Off by default for other deployments (the api's `TELEMETRY_ENABLED` flag + the editor build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **Google Drive sync** (optional, signed-in): liveworkspace's, for every app. A person's canvases are copied to their own Google Drive as `.livehuddle` files in a matching folder tree, names, folders and the bin kept in step both ways by liveworkspace's servers, and "Open with" from Drive. See [Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md).
 - **Never stale after a deploy**: pages are never served from a stale cache, a page still running an earlier build reloads once into the current one, and in-app navigation across a deploy loads in full instead of failing ([Stale builds](../016-platform/stale-builds.md)).
 - **A quiet console**: every decision point logs a fingerprinted trace line, shown in production only when the browser's debug flag asks for it; warnings and errors always show ([Console logging](../003-system-architecture/console-logging.md)).
@@ -94,7 +94,7 @@ The editor is real:
 **Status: Planned.** Not built yet; each item's spec marks what exists today.
 
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
-- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links and the look-only Viewer are built; token levels, ownership as separate powers, server-derived collaboration keys and an answers route are next.
+- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md), and livediagram's [Later](../../../../livediagram/docs/specs/013-workspace/share-roles.md#later), which both products share): Participant links and the look-only Viewer are built; token levels, ownership as separate powers, server-derived collaboration keys and an answers route are next.
 
 ## Later
 

@@ -381,7 +381,7 @@ export function rebindArrowAnchorsAfterMove(
 `bestAnchorTowards` loses its `current` and `avoid` parameters: no caller passes them.
 
 Validation (`validate.ts`): `ANCHORS = new Set<string>(ALL_ANCHORS)`; a pinned endpoint with an
-anchor outside it fails `isValidEndpoint`, which rejects the element (named rejection of the
+anchor outside it fails the pinned-end rule in `validate.ts` (`ANCHORS.has`), which rejects the element (a named rejection of the
 existing validator). The api, the MCP tools and every import path validate through it.
 
 ## Data and persistence

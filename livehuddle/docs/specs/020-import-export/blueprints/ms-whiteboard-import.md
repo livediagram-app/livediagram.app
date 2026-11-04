@@ -294,9 +294,9 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 
 ## Presentation and UX
 
-- Entry point: the Explorer page header's "Import from" toolbar (`ImportFromToolbar`, from
-  `IMPORT_SOURCES`), rendered through `PaneHeader`'s `headerActions` (so it sits left of Help)
-  wherever the section passes `onCreateDocument`. Group: `role="toolbar"`, `aria-label="Import from"`,
+- Entry point: the Explorer page header's "Import from" toolbar (`ImportToolbar` in `@liveworkspace/explorer`, from
+  `IMPORT_SOURCES`), rendered through the pane header's `actions` (so it sits left of Help)
+  wherever the pane is in a personal place. Group: `role="toolbar"`, `aria-label="Import from"`,
   Help's outline style (`rounded-lg border px-1 py-0.5 text-xs`, the same height), the muted label
   hidden below `sm`. Each button: 24 px icon, `aria-label="Import from <name>"`, the `Tooltip` with
   `<name>`, `focus-visible` ring; it calls the source's open (`openMicrosoftWhiteboardImport`).

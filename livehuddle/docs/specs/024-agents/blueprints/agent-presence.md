@@ -60,7 +60,7 @@ Scope, by file:
 | `apps/editor/components/primitives/ParticipantAvatar.tsx`                                                                   | The status line in the hover card and the accessible name                                                                                               |
 | `apps/editor/components/dialogs/CollaboratorsDialog.tsx`                                                                    | The status line on a row; no Follow and no facilitator button on an agent row                                                                           |
 | `apps/editor/components/canvas/AgentFocusOverlay.tsx` (+ test), `CanvasElementsLayer.tsx`, `EditorView.tsx`                 | `AgentFocusOverlay` beneath the remote cursors, fed by `AgentFocusContext`                                                                              |
-| `apps/telemetry/app/catalogue/`                                                                                             | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
+| `liveworkspace/apps/site/app/telemetry/` (livehuddle has no dashboard yet, [Telemetry](../../017-telemetry/telemetry.md))   | The `Present` series on the Agent stack the agent-changesets blueprint adds, once livehuddle's catalogue exists                                         |
 | `packages/api-schema/src/index.ts`                                                                                          | `MAX_PARTICIPANT_NAME_LEN`, `MAX_COLOR_LEN`, moved from `apps/api/src/limits.ts` so the editor clamps to them                                           |
 
 ## Domain and naming
@@ -76,7 +76,7 @@ Scope, by file:
 | Refresh         | `refreshAgentPresence`, room mode `refresh`                              | A changeset extending the entry, keeping status and focus               |
 | Person tag      | `personTag`, `personTagFor`, `X-Verified-Person`                         | Opaque per-document stand-in for an owner id, held inside the room only |
 | Joins           | `AgentPresence.joins`, `AgentPresence.self`, `AgentPresence.person`      | Which roster sessions are the same person as the agent, per recipient   |
-| Thread verbs    | reply, resolve, reopen (`CommentVerb`)                                   | The comment endpoints beside add and delete-own                         |
+| Thread verbs    | reply, resolve, reopen (`ThreadVerb` in `comment-routes.ts`)             | The comment endpoints beside add and delete-own                         |
 | Thread listing  | `DocumentCommentThread`, `CommentListStatus` (`open`, `resolved`, `all`) | One thread across the document, with its element's ref and label        |
 | Comment's token | `Comment.tokenId`                                                        | The token a comment was posted with; audit only                         |
 | Effective level | `AgentPresence.role`                                                     | The level the gates resolve for the token on this document (PR27)       |
@@ -278,7 +278,7 @@ write that moved a token off another tab, a clear and a sweep that removed anyth
 `expiresAt` broadcasts nothing, since `expiresAt` is not on the wire, and one that would move it by less than
 `AGENT_PRESENCE_STAMP_MS` writes nothing either (PR38). Every write ends in `armAlarm()`:
 `storage.setAlarm(min(deadlines))`, or `storage.deleteAlarm()`
-when there is none. `startFacilitatorGrace` calls `armAlarm()` instead of setting the alarm itself, and `alarm()`
+when there is none. `RoomFacilitator.startGrace` calls `armAlarm()` instead of setting the alarm itself, and `alarm()`
 sweeps entries, judges the baton unchanged, then calls `armAlarm()` (PR29).
 
 `room-client.ts`: `putAgentPresence(env, liveDoc, body)` returns the room's answer or throws `RoomUnavailableError`;
@@ -343,7 +343,7 @@ none, and the room pins it on the session attachment as `personTag`.
   stack shows its owner's agent.
 - `buildAgentFocusByElement(agents, activeId, elementIds)` returns `Map<elementId, { name, color }[]>` for entries on
   the active tab, ids missing from the tab skipped, once per person. It reaches the canvas through `AgentFocusContext`,
-  apart from `remoteSelectionsByElement`, and never reaches `isElementHeldByOther`.
+  apart from `remoteSelectionsByElement`, and never reaches `lockedByOther`.
 - `withoutAgentRows(rows)` drops agent rows for the roll call and the Collaborators count.
 - `apiSetThreadResolved(ownerId, documentId, tabId, commentId, resolved, shareCode)`: a session that may participate
   but not edit calls it from `resolveThread` / `unresolveThread` with the thread's first comment id, as its add calls

@@ -9,35 +9,35 @@ types of [Telemetry](../../017-telemetry/telemetry.md). The code sites it answer
 `docs/research/access-levels/current-abilities.md`. The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `SRn`.
 
-The spec's [Later](../share-roles.md#later) items (token levels, ownership powers, collaboration keys pinned per
+livediagram's [Later](../../../../../livediagram/docs/specs/013-workspace/share-roles.md#later) items (token levels, ownership powers, collaboration keys pinned per
 socket, the answers route, a look-only Viewer) are not derived here; their earlier draft is in git history
 (`70a6f843f`).
 
 ## Scope, by file
 
-| File                                                                                                           | Role                                                                                           |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/access-levels.ts` (new)                                                            | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`         |
-| `packages/api-schema/src/index.ts`                                                                             | `ShareRole` becomes an alias of `AccessLevel`                                                  |
-| `packages/api-schema/src/room-messages.ts`                                                                     | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                     |
-| `packages/document/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
-| `packages/document/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
-| `packages/document/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes, responses and ideas only                                   |
-| `../liveworkspace/apps/index/migrations/0001_index.sql`                                                        | A `level` column on `share_links`                                                              |
-| `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                    | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                   |
-| `apps/api/src/routes/context.ts`                                                                               | Gates compare levels on the index's grant                                                      |
-| `apps/api/src/routes/context.ts`                                                                               | `gateParticipate` is the Participant check                                                     |
-| `../liveworkspace/apps/index/src/sharing.ts`                                                                   | The index's share route takes three levels                                                     |
-| `apps/api/src/adder-key.ts` (new)                                                                              | `adderKeyFor(documentId, ownerId)`                                                             |
-| `apps/api/src/routes/document-room-routes.ts`                                                                  | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`       |
-| `apps/api/src/document-room/document-room.ts`, `room-op-gate.ts`, `document-room-rules.ts`                     | Level on the session; op gate by class; participant `el` ops through the tab write queue       |
-| `apps/api/src/participant-write.ts` (new)                                                                      | `writeParticipantOps`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
-| `packages/agent-verbs/src/mcp/*`                                                                               | `share_document.role` takes three levels, default `participate`                                |
-| `apps/editor/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                              |
-| `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                   |
-| `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                        | Three cards                                                                                    |
-| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                     | Participating pill                                                                             |
-| `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                   | Participant badge; Participate chip                                                            |
+| File                                                                                                           | Role                                                                                          |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/access-levels.ts` (new)                                                            | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
+| `packages/api-schema/src/index.ts`                                                                             | `ShareRole` becomes an alias of `AccessLevel`                                                 |
+| `packages/api-schema/src/room-messages.ts`                                                                     | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
+| `packages/document/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets   |
+| `packages/document/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
+| `packages/document/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes, responses and ideas only                                  |
+| `../liveworkspace/apps/index/migrations/0001_index.sql`                                                        | A `level` column on `share_links`                                                             |
+| `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                    | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                  |
+| `apps/api/src/routes/context.ts`                                                                               | Gates compare levels on the index's grant                                                     |
+| `apps/api/src/routes/context.ts`                                                                               | `gateParticipate` is the Participant check                                                    |
+| `../liveworkspace/apps/index/src/sharing.ts`                                                                   | The index's share route takes three levels                                                    |
+| `apps/api/src/adder-key.ts` (new)                                                                              | `adderKeyFor(documentId, ownerId)`                                                            |
+| `apps/api/src/routes/document-room-routes.ts`                                                                  | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`      |
+| `apps/api/src/document-room/document-room.ts`, `room-op-gate.ts`, `document-room-rules.ts`                     | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
+| `apps/api/src/participant-write.ts` (new)                                                                      | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
+| `packages/agent-verbs/src/mcp/*`                                                                               | `share_document.role` takes three levels, default `participate`                               |
+| `apps/editor/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
+| `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
+| `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                        | Three cards                                                                                   |
+| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                     | Participating pill                                                                            |
+| `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                   | Participant badge; Participate chip                                                           |
 
 ## Domain and naming
 
@@ -80,7 +80,7 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
    `update` or `remove`. A `reorder` is dropped.
 2. **Queue.** The op joins the room's tab write queue (`tabWriteQueue`, the Q&A board's queue renamed, SR2), so
    participant writes and Q&A writes on a document run one at a time.
-3. **Write.** `writeParticipantOps(env, { documentId, tabId, ops: [op], adderKey })` reads the stored tab, runs
+3. **Write.** `writeParticipantOp(env, { documentId, tabId, ops: [op], adderKey })` reads the stored tab, runs
    `applyParticipantOp` and compare-and-swaps the result (up to `TAB_CAS_MAX_ATTEMPTS`).
 4. **Relay.** An `applied` op is sequenced from the sender to everyone but the sender when it equals what the sender
    sent, and to everyone including the sender when the rule changed it (SR3). A `refused` op sends the sender its
@@ -333,7 +333,7 @@ lands in a new document, where no adder key matches it.
 - `addedBy` is derived from the caller's identity on the document and the document id, so it cannot be turned back
   into an owner id and differs per document; a Participant cannot claim another's element by writing `addedBy`
   (the rule keeps the stored value).
-- A Participant's dots and answers carry a client-chosen key, as an Editor's do today ([Later](../share-roles.md#later)).
+- A Participant's dots and answers carry a client-chosen key, as an Editor's do today ([Later](../../../../../livediagram/docs/specs/013-workspace/share-roles.md#later)).
 - Rate: room frames ride `OP_RATE_CAP`; each applied op is one read and one compare-and-swap in the document's SQLite.
 
 ## Performance and limits

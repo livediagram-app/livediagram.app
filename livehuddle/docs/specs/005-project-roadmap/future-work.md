@@ -8,8 +8,8 @@ page records what that needs, so v1 is built not to stand in its way. Each featu
 ## Audio calls
 
 People near each other on the board hear each other: **proximity audio**. A character's position already rides the
-room ([Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md#realtime)), so the board can decide
-who hears whom: everyone in the same [room](../../../../livediagram/docs/specs/009-elements/office.md#room), or within
+room ([Avatar mode](../008-canvas/avatar-mode.md#realtime)), so the board can decide
+who hears whom: everyone in the same [room](../009-elements/office.md#room), or within
 a radius in the open, and everyone in the All-Hands Hall hearing the stage.
 
 ## Video calls
@@ -42,6 +42,8 @@ must never relay audio or video.
 
 TURN and SFU usage is billed by traffic on the Cloudflare account, unlike everything livehuddle does in v1. It needs
 the owner's decision on spend and limits before it is built ([Open decisions](open-decisions.md) D4).
+The owner set them on Work Tracker #316: calls go to audio only at $10 a month above the free tier and off at $25,
+through one switch a person or a scheduled budget poll can flip ([Calls kill switch](../016-platform/calls-kill-switch.md)).
 
 ## Share roles
 

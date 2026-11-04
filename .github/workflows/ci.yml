@@ -61,6 +61,13 @@ jobs:
           HEAD: ${{ github.sha }}
         run: node .github/scripts/ci-plan.mjs
 
+      # How far livehuddle's copy of livediagram has drifted (docs/ci.md "Drift report"), in the job
+      # summary. Information only: it never fails the run.
+      - name: Drift report
+        continue-on-error: true
+        timeout-minutes: 1
+        run: node .github/scripts/drift-report.mjs
+
   checks:
     name: Checks (${{ matrix.group }})
     needs: plan

@@ -37,7 +37,7 @@ Scope, by file:
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
 | `packages/document/src/pen-colours.ts`                                    | `hexOklch` for the colour rules                                                                   |
 | `packages/document/src/stock-colours.ts`                                  | `resolveStockColours` draws `penTextColour`                                                       |
-| `apps/editor/lib/quick-style-pen.ts`                                      | `tabCustomColours` reads text, path and arrow colours too                                         |
+| `packages/document/src/snap-colours.ts`                                   | `snappableCustomColours` reads text, path and arrow colours too                                   |
 
 ## Domain and naming
 
@@ -451,7 +451,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 - `resolveStockColours`: after `penColour` (stroke), `penTextColour` sets `textColor` when unset
   (its version for the canvas surface). Every renderer resolves it (the canvas through
   `stock-colour-projector.ts`, exports through `export-as-seen.ts`, the api's thumbnails and MCP images).
-- `tabCustomColours`: the custom colours held in the snap's field table (`SNAP_COLOUR_FIELDS`,
+- `snappableCustomColours`: the custom colours held in the snap's field table (`SNAP_COLOUR_FIELDS`,
   which gains rows for paths, text boxes and the labels of unfilled shapes and arrows), so the
   custom section and the snap agree.
 - Quick style: a stock name on an element marks no theme swatch; applying a stroke clears

@@ -8,8 +8,8 @@
 // The plan's triggers fill `outbox` with a key per changed thing (plan-schema.ts), in the same transaction as the
 // write, so no write path can forget one and a save makes no network call. The room's alarm drains it on idle,
 // at most once a minute per plan (plan-room.ts FLUSH_MIN_GAP_MS), then deletes the keys it pushed. A key written
-// again meanwhile has a new id and stays for the next drain; a drain that fails keeps every key it did not push
-// and retries a minute later.
+// again meanwhile has a new id and stays for the next drain. A key whose push fails stays and waits a minute,
+// doubling to an hour; one refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts).
 
 import {
   collabIndexRowsFromElements,
@@ -20,8 +20,10 @@ import {
 import {
   capCollabPush,
   drainIndexOutbox,
+  dueOutboxRows,
   editedOf,
-  type OutboxRow,
+  readOutbox,
+  settleOutbox,
 } from '@liveworkspace/index-app';
 import {
   COLLAB_CARDS_TAB,
@@ -207,19 +209,17 @@ export type DrainResult = { keys: number; pushes: number; more: boolean };
 
 export { DRAIN_TABS } from '@liveworkspace/index-app';
 
-// One drain: the outbox's keys, pushed to the index by @liveworkspace/index-app's drainIndexOutbox. Answers what
-// it pushed; throws when a push fails (keeping its keys), so the alarm retries. Without an index configured the
-// keys are dropped. Beside the pushes, a Form tab's name and heading go on its form link.
+// One drain: the outbox's keys whose wait is over, pushed to the index by @liveworkspace/index-app's
+// drainIndexOutbox. Answers what it pushed. A push that fails keeps its keys, each counting the attempt and waiting
+// longer (settleOutbox); one refused for good, or failed too often, is parked. Without an index configured the keys
+// are dropped. Beside the pushes, a Form tab's name and heading go on its form link.
 export async function drainOutbox(
   env: PlanEnv,
   planId: string,
   client: IndexAppClient | null = indexAppClient(env),
 ): Promise<DrainResult> {
-  const all = (
-    await env.PLAN_DB.prepare('SELECT id, kind, key FROM outbox WHERE plan_id = ? ORDER BY id')
-      .bind(planId)
-      .all<OutboxRow>()
-  ).results;
+  const now = Date.now();
+  const all = dueOutboxRows(await readOutbox(env.PLAN_DB, PLAN_OUTBOX, planId), now);
   // The pictures the cards hold go to the media service (image-refs.ts), the rest to the index.
   const imageKeys = all.filter((r) => r.kind === IMAGES_OUTBOX_KIND).map((r) => r.id);
   const rows = all.filter((r) => r.kind !== IMAGES_OUTBOX_KIND);
@@ -264,20 +264,16 @@ export async function drainOutbox(
     await Promise.all(formTabs.map((tabId) => pushFormInbox(env, planId, tabId)));
   }
   const done = [...outcome.done];
-  const failures = [...outcome.failures];
+  const failed = [...outcome.failed];
   let pushes = outcome.pushes;
   if (imageKeys.length > 0) {
     try {
       if (await pushImageRefs(env, planId)) pushes++;
       done.push(...imageKeys);
     } catch (error) {
-      failures.push(error);
+      failed.push({ ids: imageKeys, error });
     }
   }
-  if (done.length > 0)
-    await env.PLAN_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')
-      .bind(JSON.stringify(done))
-      .run();
-  if (failures.length > 0) throw failures[0];
+  await settleOutbox(env.PLAN_DB, PLAN_OUTBOX, planId, all, { done, failed }, now);
   return { keys: done.length, pushes, more: outcome.more };
 }

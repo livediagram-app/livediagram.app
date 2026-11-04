@@ -56,7 +56,13 @@ editor views.
 PlanContext.tsx          context: items, types, item types slice, status, self, people, canEdit,
                          canEditCards, canVote, presence, actions
 PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, themed palette, radius and font,
-                         columns and rows grid, cards, keyboard, Add card per cell, the card menu
+                         columns and rows grid, cards, keyboard, Add card per cell, the card menu. The scroll body
+                         has no top padding (a scroll box's padding insets where `sticky top-0` sticks); the grid
+                         carries the heads' 12 px rest gap as `pt-3` (not in a slot), so it scrolls away and a stuck
+                         head sits flush (spec "Column heads stick flush"); pure CSS, no scroll listener
+column-part.ts           `columnPartStyle` (`--plan-col-bg`, `--plan-col-ink`) for a cell; `columnHeadStyle` adds
+                         `--plan-col-under: palette.surface`, so `.plan-col` (globals.css) mixes the 85% colour onto
+                         the board's solid paper rather than `transparent`: PlanColumnHeader and CollapsedColumnHead
 edge-auto-scroll.ts      (hooks/plan) `edgeScrollStep` (quadratic ramp in the edge zone, constant under reduced
                          motion) and `clampScrollStep`; `useEdgeAutoScroll(bodyRef, (maximised || filled) && (drag ||
                          incoming))` follows window pointermove and steps `scrollLeft` once a frame while in a zone
@@ -795,6 +801,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Rule                                                           | Test                                                                                                                                                           |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Done columns: names, flags, older boards, settling             | `packages/items/src/done-columns.test.ts`                                                                                                                      |
+| Column heads stick flush, solid on the board's paper           | `apps/editor/components/plan/PlanBoardView.sticky-heads.test.tsx`                                                                                              |
 | Set-up edits                                                   | `apps/editor/components/plan/board-setup-edits.test.ts`                                                                                                        |
 | Sort Cards: levels, kinds, no value last, rank ties, read back | `packages/items/src/board-sort.test.ts`, `board.test.ts`                                                                                                       |
 | Sort Cards: 1,000 cards a column within budget                 | `packages/items/src/board-sort.test.ts`                                                                                                                        |

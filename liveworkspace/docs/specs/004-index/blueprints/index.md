@@ -234,10 +234,13 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `warn`  | `[internal] notice failed`                          | `internal.ts`          |
 | `warn`  | `[internal] person merge failed`                    | `internal.ts`          |
 | `warn`  | `[notify-email] skipped … ${String(emails`          | `notifier.ts`          |
+| `warn`  | `[outbox] parked`                                   | `outbox.ts`            |
+| `warn`  | `[outbox] push failed`                              | `outbox.ts`            |
 | `warn`  | `[notify-email] the sender allowance could not be`  | `notify-claims.ts`     |
 | `warn`  | `[room-purge] did not reach the room`               | `purge.ts`             |
 | `info`  | `[room-purge] purged`                               | `purge.ts`             |
 | `warn`  | `[tab-shares] leave failed`                         | `tab-shares.ts`        |
+| `warn`  | `[tab-shares] parked`                               | `tab-shares.ts`        |
 | `warn`  | `[tab-shares] send failed`                          | `tab-shares.ts`        |
 | `warn`  | `[teams] accounts unreachable; the claim stands`    | `teams.ts`             |
 | `error` | `[teams] create_failed`                             | `teams.ts`             |
@@ -552,6 +555,9 @@ Migrations, in order:
 | `FLUSH_RETRY_MS`                | `60_000`                                                                               | `outbox.ts`                           |
 | `DRAIN_TABS`                    | `50`                                                                                   | `outbox.ts`                           |
 | `PUSH_CONCURRENCY`              | `6`                                                                                    | `outbox.ts`                           |
+| `OUTBOX_MAX_ATTEMPTS`           | `12`                                                                                   | `outbox.ts`                           |
+| `RETRY_MAX_MS`                  | `60 * 60_000`                                                                          | `outbox.ts`                           |
+| `FINAL_STATUSES`                | `new Set([400, 403, 413, 422])`                                                        | `outbox.ts`                           |
 | `ROOM_PURGE_TIMEOUT_MS`         | `3_000`                                                                                | `purge.ts`                            |
 | `ROOM_PURGE_CONCURRENCY`        | `10`                                                                                   | `purge.ts`                            |
 | `BULK_PURGE_MAX`                | `100`                                                                                  | `purge.ts`                            |

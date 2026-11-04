@@ -16,7 +16,7 @@ import {
   takeColumnSettingsRequestOf,
 } from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
-import { columnPartStyle } from './column-part';
+import { columnHeadStyle } from './column-part';
 import { COLUMN_ATTR } from './column-move-flip';
 import { COLUMN_HEAD_ATTR, columnMoveKey, type ColumnReorder } from './column-drag';
 import { plural } from '@liveplanner/project';
@@ -100,10 +100,10 @@ export function PlanColumnHeader({
       style={
         reorder
           ? ({
-              ...columnPartStyle(palette),
+              ...columnHeadStyle(palette),
               '--plan-col-focus': palette.focus,
             } as React.CSSProperties)
-          : columnPartStyle(palette)
+          : columnHeadStyle(palette)
       }
       onClick={
         onFrame

@@ -3,13 +3,16 @@ import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
   earliestRoomGrantDue,
+  openRoomSockets,
+  flushAfterWrite,
   ItemDb,
-  nextFlushAt,
+  nextOutboxFlushAt,
+  outboxDueAt,
   type ItemHeadSync,
   recordItemEditor,
   renewRoomGrant,
   roomGrantStep,
-  owesShares,
+  sharesDueAt,
   ShareSchedule,
   type ExportCommentsResult,
   type ExportQuery,
@@ -268,8 +271,8 @@ export class DocumentRoom extends DurableObject<Env> {
   private flushAt: number | null = null;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's once a
   // minute, since it is a call to another document rather than a push.
-  private readonly shares = new ShareSchedule(
-    () => this.schemaReady && owesShares(this.state.storage.sql),
+  private readonly shares = new ShareSchedule(() =>
+    this.schemaReady ? sharesDueAt(this.state.storage.sql) : null,
   );
   private lastFlushAt = 0;
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
@@ -408,7 +411,9 @@ export class DocumentRoom extends DurableObject<Env> {
     this.ensureSchema();
     const row = sql.exec('SELECT id FROM document LIMIT 1').toArray()[0];
     if (typeof row?.id === 'string' && this.documentId === null) this.documentId = row.id;
-    if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
+    // Anything owed goes now, or when its wait after a failure is over (index-app outbox.ts).
+    const due = outboxDueAt(sql);
+    if (due !== null) this.flushAt = Math.max(Date.now(), due);
     this.shares.restore();
     // The Community post's next check (community-post.ts), from when it last asked.
     const post = sql
@@ -454,10 +459,10 @@ export class DocumentRoom extends DurableObject<Env> {
     }
     // A shared tab's holders get their copy on idle (tab-shares.ts).
     if (this.shares.noteWrite()) this.armAlarm();
-    if (this.flushAt !== null) return;
-    if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
-    const now = Date.now();
-    this.flushAt = nextFlushAt(now, this.lastFlushAt);
+    // A drain set far off, for a key in backoff, gives way to the key just written.
+    const at = flushAfterWrite(this.state.storage.sql, this.flushAt, Date.now(), this.lastFlushAt);
+    if (at === null) return;
+    this.flushAt = at;
     this.armAlarm();
   }
 
@@ -497,16 +502,13 @@ export class DocumentRoom extends DurableObject<Env> {
       // A big import's tabs go a batch at a time, back to back, not a minute apart.
       if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
     } catch (error) {
+      // The drain itself failed (a read, say): a push that fails is counted on its keys instead.
       console.warn('[document-outbox] push failed', { documentId, error: String(error) });
       this.flushAt = Date.now() + FLUSH_RETRY_MS;
     }
-    // Anything written while the push was in flight goes next time.
-    if (
-      this.flushAt === null &&
-      this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0
-    ) {
-      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
-    }
+    // Anything written while the push was in flight goes next time; a key that failed, when its wait is over.
+    if (this.flushAt === null)
+      this.flushAt = nextOutboxFlushAt(this.state.storage.sql, Date.now(), this.lastFlushAt);
   }
 
   // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28).
@@ -772,11 +774,11 @@ export class DocumentRoom extends DurableObject<Env> {
     let closed = 0;
     for (const code of codes) {
       const op = { kind: reason === 'rescoped' ? 'share-rescoped' : 'share-revoked', code };
-      const before = this.state.getWebSockets().length;
+      const before = openRoomSockets(this.state.getWebSockets()).length;
       this.broadcastSystemOp(op);
       this.closeSessionsOfChangedLink(op);
       await this.clearAgentsFor(op);
-      closed += before - this.state.getWebSockets().length;
+      closed += before - openRoomSockets(this.state.getWebSockets()).length;
     }
     return closed;
   }
@@ -928,7 +930,7 @@ export class DocumentRoom extends DurableObject<Env> {
 
   private nextGrantDue(): number | null {
     return earliestRoomGrantDue(
-      this.state.getWebSockets().map((ws) => this.readSession(ws)),
+      openRoomSockets(this.state.getWebSockets()).map((ws) => this.readSession(ws)),
       ROOM_GRANT_ASK_BEFORE_MS,
     );
   }
@@ -936,7 +938,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // Ask the sessions whose grant is about to lapse, and close those whose grant has.
   private checkGrants(now: number): void {
     let lapsed = 0;
-    for (const ws of this.state.getWebSockets()) {
+    for (const ws of openRoomSockets(this.state.getWebSockets())) {
       const s = this.readSession(ws);
       const step = roomGrantStep(s, now, ROOM_GRANT_ASK_BEFORE_MS);
       if (step === 'lapsed') {

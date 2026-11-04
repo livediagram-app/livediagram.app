@@ -331,6 +331,12 @@ Where each is set, so a setting lives with what it changes, never in one central
   width, so a wide column suits a busy stage.
 - **Column heads stand clear of the board's header**: 12 px of the board's surface sits between the header and the
   row of column heads (not on a slot board), so they read as separate things.
+- **Column heads stick flush**: scrolling down a board, its column heads (a collapsed column's too) stay at the top
+  of the board's body. The 12 px that stands them clear at rest scrolls away with the cards, so a stuck head sits
+  flush under the board's header with no strip of cards showing above it, and there is no jump between the two: the
+  gap simply scrolls out. A head is solid: its colour (85%, as a cell's) is laid on the board's own paper rather than
+  over what is behind it, so a card scrolling under a stuck head never shows through it, in any theme or finish,
+  light or dark. A slot board's heads already rest flush and are solid.
 - **Column heads**: a column's head reads count first: its count badge (the count, or "3 / 4" against a WIP limit,
   amber when over), then its name, then Collapse Column and its cog at the right.
 - **Column hover**: the column under the pointer says so, barely: its head and cells (a collapsed column's strip
@@ -1266,7 +1272,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
     Square under the Professional finish. Where the browser has no such styling (Firefox), a thin bar in the same
     colours.
   - **See-through surface**: the board's own surface (the room round its columns and under its header) is 80% solid
-    and its columns' heads and cells 85%, so the tab's canvas, its colour or pattern, shows faintly through both. The
+    and its columns' cells 85%, so the tab's canvas, its colour or pattern, shows faintly through both (a column's
+    head is solid, "Column heads stick flush", so a card under a stuck head never shows through). The
     cards stay solid, so their text reads exactly as on a solid board. A board in a Dashboard slot keeps a solid
     surface. What shows through is the tab's canvas alone: a board filling its Board tab hides the canvas's
     elements behind it (its own copy there), and a maximised one hides the selection box drawn behind it.

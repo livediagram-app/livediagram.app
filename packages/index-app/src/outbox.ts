@@ -6,8 +6,10 @@
 // The item keeps an outbox in its own SQLite: a key per changed thing, written in the same transaction as the
 // change (by triggers, or by the app's own writes), so no write path can forget one and a save makes no network call.
 // The room's alarm drains it on idle, at most once a minute (`nextFlushAt`), and deletes the keys it pushed. A key
-// written again meanwhile has a new id and stays for the next drain; a drain that fails keeps every key it did not
-// push and retries a minute later.
+// written again meanwhile has a new id and stays for the next drain. A key whose push fails stays, counts the attempt
+// and waits longer each time (a minute, doubling, at most an hour); one the index refuses for good, or one that
+// failed OUTBOX_MAX_ATTEMPTS times, is parked: kept and never sent again, until a write to the same thing replaces it
+// (one-explorer-contracts.md "When a push fails").
 //
 // Kinds: `summary` (key ''), `tab` (key: the tab id), `edit` (key: `<person>@<time>`, one per person), `card_moved`
 // (key: a plan card's move as JSON, for webhooks: liveworkspace/docs/specs/004-index/webhooks.md "What it sends").
@@ -40,7 +42,89 @@ export const PUSH_CONCURRENCY = 6;
 export const nextFlushAt = (now: number, lastFlushAt: number): number =>
   Math.max(now + FLUSH_IDLE_MS, lastFlushAt + FLUSH_MIN_GAP_MS);
 
-export type OutboxRow = { id: number; kind: string; key: string };
+// `attempts` and `retry_at` (when it may go again, ms) count a key's failed pushes; a row stored before they existed
+// reads as 0, never tried.
+export type OutboxRow = {
+  id: number;
+  kind: string;
+  key: string;
+  attempts?: number | null;
+  retry_at?: number | null;
+};
+
+// ---------- When a push fails --------------------------------------------------------------------------------
+
+// Pushes a key may fail before it is parked: with the waits below, about six hours of trying, so an outage of an
+// afternoon heals by itself.
+export const OUTBOX_MAX_ATTEMPTS = 12;
+// The longest wait between two tries of a key.
+export const RETRY_MAX_MS = 60 * 60_000;
+// Answers that say the push itself is wrong (malformed, not this app's to write, too large, unprocessable): sending
+// it again changes nothing, so its keys are parked at once. A 404 is done (the item is gone); anything else (401,
+// 408, 429, 5xx, a network failure) is tried again later.
+export const FINAL_STATUSES: ReadonlySet<number> = new Set([400, 403, 413, 422]);
+
+// How long a key waits after its `attempts`-th failure: a minute, doubling, at most RETRY_MAX_MS.
+export const retryDelayMs = (attempts: number): number =>
+  Math.min(FLUSH_RETRY_MS * 2 ** Math.max(0, attempts - 1), RETRY_MAX_MS);
+
+// What a failed push means for its keys: `gone` done, `final` parked, `retry` tried again after a wait. The
+// index's client keeps no Retry-After, so a 429 waits its turn like any other failure.
+export type PushFailureKind = 'gone' | 'final' | 'retry';
+export function pushFailureOf(err: unknown): PushFailureKind {
+  if (!(err instanceof IndexError)) return 'retry';
+  if (err.status === 404) return 'gone';
+  return FINAL_STATUSES.has(err.status) ? 'final' : 'retry';
+}
+
+// The schema step that gives an app's outbox tables (`outbox`, and tab-shares.ts's `share_outbox`) their attempt
+// count and next try: plain ALTERs, so the app appends it as a versioned step of its own, which runs once. Every row
+// already there reads as never tried.
+export function outboxRetrySchema(tables: readonly string[] = ['outbox', 'share_outbox']): string {
+  return tables
+    .map(
+      (table) => `
+ALTER TABLE ${table} ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ${table} ADD COLUMN retry_at INTEGER NOT NULL DEFAULT 0;`,
+    )
+    .join('');
+}
+
+// When the earliest key the table owes may go (ms; 0 for a key never tried), or null when it owes nothing but
+// parked keys. One read over the table, which holds a key per changed thing.
+export function outboxDueAt(sql: SqlExec, table = 'outbox'): number | null {
+  const row = sql
+    .exec(`SELECT MIN(retry_at) AS due FROM ${table} WHERE attempts < ?`, OUTBOX_MAX_ATTEMPTS)
+    .toArray()[0];
+  return typeof row?.due === 'number' ? row.due : null;
+}
+
+// When the room drains next, after a drain (or a wake, `lastFlushAt` 0), or null when nothing is owed: on idle, at
+// most once a minute, and never before the earliest key's wait is over.
+export function nextOutboxFlushAt(
+  sql: SqlExec,
+  now: number,
+  lastFlushAt: number,
+  table = 'outbox',
+): number | null {
+  const due = outboxDueAt(sql, table);
+  return due === null ? null : Math.max(nextFlushAt(now, lastFlushAt), due);
+}
+
+// After a write, with `armed` the drain the room has set (or null): the drain to set instead, or null to keep it. A
+// drain set at the usual pace stays without a read; one set far off, for a key in backoff, gives way to the key
+// just written, which goes at the usual pace.
+export function flushAfterWrite(
+  sql: SqlExec,
+  armed: number | null,
+  now: number,
+  lastFlushAt: number,
+  table = 'outbox',
+): number | null {
+  if (armed !== null && armed <= now + FLUSH_MIN_GAP_MS) return null;
+  const at = nextOutboxFlushAt(sql, now, lastFlushAt, table);
+  return at === null || (armed !== null && armed <= at) ? null : at;
+}
 
 // ---------- Who edited ---------------------------------------------------------------------------------------
 
@@ -132,12 +216,17 @@ export type OutboxSource = {
   onSummary?: (ownerId: string, at: number) => Promise<void>;
 };
 
-// `done`: the row ids pushed (or no longer pushed), to delete. `failures`: pushes that failed; their keys stay.
-// `more`: keys were left for the next drain.
-export type DrainOutcome = { done: number[]; failures: unknown[]; pushes: number; more: boolean };
+// A push that failed: the row ids it carried, and why.
+export type OutboxFailure = { ids: number[]; error: unknown };
 
-// An item the index does not hold (never made there, or purged) takes no push: the key is done.
-const gone = (err: unknown) => err instanceof IndexError && err.status === 404;
+// `done`: the row ids pushed (or no longer pushed), to delete. `failed`: pushes that failed, whose keys stay for
+// settleOutbox to count. `more`: keys were left for the next drain.
+export type DrainOutcome = {
+  done: number[];
+  failed: OutboxFailure[];
+  pushes: number;
+  more: boolean;
+};
 
 async function inBatches(tasks: (() => Promise<void>)[]): Promise<void> {
   for (let i = 0; i < tasks.length; i += PUSH_CONCURRENCY) {
@@ -154,7 +243,7 @@ export async function drainIndexOutbox(
   client: IndexAppClient | null,
   source: OutboxSource,
 ): Promise<DrainOutcome> {
-  if (rows.length === 0) return { done: [], failures: [], pushes: 0, more: false };
+  if (rows.length === 0) return { done: [], failed: [], pushes: 0, more: false };
   const tabs = new Set(
     rows
       .filter((r) => r.kind === 'tab')
@@ -180,7 +269,7 @@ export async function drainIndexOutbox(
       (r.kind !== CARD_MOVED_KIND || moved.has(r.id)),
   );
   const done: number[] = [];
-  const failures: unknown[] = [];
+  const failed: OutboxFailure[] = [];
   const tasks: (() => Promise<void>)[] = [];
   const edits: { id: number; event: AppTimelineEvent }[] = [];
   const moves: { id: number; move: CardMove }[] = [];
@@ -192,8 +281,9 @@ export async function drainIndexOutbox(
         if (client) await send();
         done.push(...ids);
       } catch (err) {
-        if (gone(err)) done.push(...ids);
-        else failures.push(err);
+        // An item the index does not hold (never made there, or purged) takes no push: the key is done.
+        if (pushFailureOf(err) === 'gone') done.push(...ids);
+        else failed.push({ ids, error: err });
       }
     });
 
@@ -241,7 +331,101 @@ export async function drainIndexOutbox(
     );
   }
   await Promise.all([inBatches(tasks), activity]);
-  return { done, failures, pushes: tasks.length, more: pending.length < rows.length };
+  return { done, failed, pushes: tasks.length, more: pending.length < rows.length };
+}
+
+// ---------- Reading and settling the app's outbox ------------------------------------------------------------
+
+// The slice of D1 (or an item's D1-shaped facade, item-db.ts) the outbox uses.
+export type OutboxDb = Pick<D1Database, 'prepare' | 'batch'>;
+export type OutboxTable = { table: string; itemColumn: string };
+
+// The keys an item owes, oldest first, parked ones left out. Some may be waiting out a failure: `dueOutboxRows`
+// picks the ones a drain sends now.
+export async function readOutbox(
+  db: OutboxDb,
+  outbox: OutboxTable,
+  itemId: string,
+): Promise<OutboxRow[]> {
+  const { table, itemColumn } = outbox;
+  return (
+    await db
+      .prepare(
+        `SELECT id, kind, key, attempts, retry_at FROM ${table}
+          WHERE ${itemColumn} = ? AND attempts < ? ORDER BY id`,
+      )
+      .bind(itemId, OUTBOX_MAX_ATTEMPTS)
+      .all<OutboxRow>()
+  ).results;
+}
+
+export const dueOutboxRows = (rows: readonly OutboxRow[], now: number): OutboxRow[] =>
+  rows.filter((r) => (r.attempts ?? 0) < OUTBOX_MAX_ATTEMPTS && (r.retry_at ?? 0) <= now);
+
+// After a drain at `now`, in one batch: deletes the keys done and counts each failed key's attempt. A key then
+// waits retryDelayMs; one refused for good (FINAL_STATUSES), or failed OUTBOX_MAX_ATTEMPTS times, is parked, with a
+// log line. `rows` are the rows the drain sent, for their attempts so far.
+export async function settleOutbox(
+  db: OutboxDb,
+  outbox: OutboxTable,
+  itemId: string,
+  rows: readonly OutboxRow[],
+  outcome: { done: readonly number[]; failed: readonly OutboxFailure[] },
+  now: number,
+): Promise<{ retried: number; parked: number }> {
+  const { table } = outbox;
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const done = [...outcome.done];
+  // Row ids by the attempts and next try they take, so a drain's failures are a statement or two.
+  const updates = new Map<string, { attempts: number; retryAt: number; ids: number[] }>();
+  let retried = 0;
+  let parked = 0;
+  for (const failure of outcome.failed) {
+    const kind = pushFailureOf(failure.error);
+    if (kind === 'gone') {
+      done.push(...failure.ids);
+      continue;
+    }
+    const parkedKinds: string[] = [];
+    let waiting = 0;
+    for (const id of failure.ids) {
+      const attempts = kind === 'final' ? OUTBOX_MAX_ATTEMPTS : (byId.get(id)?.attempts ?? 0) + 1;
+      const park = attempts >= OUTBOX_MAX_ATTEMPTS;
+      const retryAt = park ? 0 : now + retryDelayMs(attempts);
+      const slot = `${attempts}:${retryAt}`;
+      const update = updates.get(slot) ?? { attempts, retryAt, ids: [] };
+      update.ids.push(id);
+      updates.set(slot, update);
+      if (park) parkedKinds.push(byId.get(id)?.kind ?? 'unknown');
+      else waiting++;
+    }
+    const error = String(failure.error);
+    if (waiting > 0) console.warn('[outbox] push failed', { itemId, keys: waiting, error });
+    if (parkedKinds.length > 0) {
+      const reason = kind === 'final' ? 'refused' : 'attempts';
+      const kinds = [...new Set(parkedKinds)];
+      console.warn('[outbox] parked', { itemId, reason, kinds, keys: parkedKinds.length, error });
+    }
+    retried += waiting;
+    parked += parkedKinds.length;
+  }
+  const statements: D1PreparedStatement[] = [];
+  if (done.length > 0)
+    statements.push(
+      db
+        .prepare(`DELETE FROM ${table} WHERE id IN (SELECT value FROM json_each(?))`)
+        .bind(JSON.stringify(done)),
+    );
+  for (const u of updates.values())
+    statements.push(
+      db
+        .prepare(
+          `UPDATE ${table} SET attempts = ?, retry_at = ? WHERE id IN (SELECT value FROM json_each(?))`,
+        )
+        .bind(u.attempts, u.retryAt, JSON.stringify(u.ids)),
+    );
+  if (statements.length > 0) await db.batch(statements);
+  return { retried, parked };
 }
 
 // ---------- The outbox table ----------------------------------------------------------------------------------

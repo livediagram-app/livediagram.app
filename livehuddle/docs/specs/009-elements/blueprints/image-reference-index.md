@@ -17,7 +17,7 @@ Scope, by file (all under `apps/api/`):
 | `src/document-room/document-schema.ts`  | `image_refs`, and the outbox triggers that key a change to it                                 |
 | `src/document-room/document-outbox.ts`  | The push: the placement grants, then the whole set to the media service                       |
 | `src/db/image-grants.ts`                | Placement grants, in the document's own SQLite, through `@liveworkspace/index-app`            |
-| `src/db/documents.ts`                   | `purgeDocumentRows` deletes a purged canvas's cached snapshots                                |
+| `src/db/documents.ts`                   | `purgeDocumentPreviews` has the media service delete a purged canvas's previews               |
 | `src/image-refs/writer-census.test.ts`  | Fails when SQL writing `tabs` appears outside the known writers                               |
 
 ## Domain and naming
@@ -166,17 +166,17 @@ service's answer. None is owner-keyed, so neither account deletion nor an owner 
 
 ## Errors and edge cases
 
-| Case                                                   | Handling                                                                 |
-| ------------------------------------------------------ | ------------------------------------------------------------------------ |
-| `imageId` is a `data:` URI or longer than 128          | Not a reference                                                          |
-| Two elements place the same image                      | One row (primary key); `imageRefIds` is distinct                         |
-| `elements` is an object, or missing                    | No references, on both extractors                                        |
-| Corrupt body with no usable id                         | Warned with `(0 ids)`; nothing written                                   |
-| Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps |
-| Tab deleted                                            | Its references go with it; the next push sends the smaller set           |
-| Image deleted from the gallery, references left behind | Harmless; they go when the element does                                  |
-| A push fails                                           | Its keys stay; the next drain, a minute later, sends the whole set again |
-| No `MEDIA_KEY`                                         | The index is still maintained; nothing is sent to the media service      |
+| Case                                                   | Handling                                                                                                                   |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `imageId` is a `data:` URI or longer than 128          | Not a reference                                                                                                            |
+| Two elements place the same image                      | One row (primary key); `imageRefIds` is distinct                                                                           |
+| `elements` is an object, or missing                    | No references, on both extractors                                                                                          |
+| Corrupt body with no usable id                         | Warned with `(0 ids)`; nothing written                                                                                     |
+| Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps                                                   |
+| Tab deleted                                            | Its references go with it; the next push sends the smaller set                                                             |
+| Image deleted from the gallery, references left behind | Harmless; they go when the element does                                                                                    |
+| A push fails                                           | Its keys stay; the next drain, a minute later and doubling to an hour, sends the whole set again; parked after 12 failures |
+| No `MEDIA_KEY`                                         | The index is still maintained; nothing is sent to the media service                                                        |
 
 ## Security and trust
 

@@ -47,6 +47,7 @@ import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
 import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspace-proxy';
 import type { Env } from './types';
+import { pollCallsBudget } from './calls/calls-budget';
 
 export { DocumentRoom, PersonStore };
 
@@ -406,6 +407,11 @@ const worker = {
       },
     );
     return withServerRelease(response, env.BUILD_ID);
+  },
+  // The calls budget poll (docs/specs/016-platform/calls-kill-switch.md), the worker's one cron. It never throws, and
+  // does nothing without the CALLS_SWITCH binding and the analytics token.
+  async scheduled(controller: ScheduledController, env: Env, executionCtx: ExecutionContext) {
+    executionCtx.waitUntil(pollCallsBudget(env, new Date(controller.scheduledTime)));
   },
 } satisfies ExportedHandler<Env>;
 

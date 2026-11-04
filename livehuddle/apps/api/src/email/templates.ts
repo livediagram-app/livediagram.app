@@ -56,7 +56,8 @@ export type EmailKind =
   | 'Mentioned'
   | 'FormResponse'
   | 'FormSuspended'
-  | 'AccountDeleted';
+  | 'AccountDeleted'
+  | 'CallsBudget';
 
 export type RenderedEmail = {
   kind: EmailKind;
@@ -400,5 +401,46 @@ export function firstShareEmail(env: Env): RenderedEmail {
       ),
     }),
     unsubscribeUrl: profilePath(env),
+  };
+}
+
+// docs/specs/016-platform/calls-kill-switch.md "The email": the budget poll tripped the calls switch. Sent to the
+// owner's CALLS_ALERT_TO alone, once per level per month. Every figure is the worker's own, so nothing here is
+// anyone's content.
+export function callsBudgetEmail(
+  env: Env,
+  trip: {
+    level: 'audio-only' | 'off';
+    usageGb: number;
+    costUsd: number;
+    thresholdUsd: number;
+    mode: 'on' | 'audio-only' | 'off';
+  },
+): RenderedEmail {
+  const paused = trip.level === 'off' ? 'Calls are paused' : 'Calls are audio only';
+  const what =
+    trip.level === 'off'
+      ? 'No new call can start, and the Space, its chat and its avatars carry on as before.'
+      : 'Calls carry on with audio; no new video or screen share can start. The Space, its chat and its avatars carry on as before.';
+  const gb = Math.round(trip.usageGb).toLocaleString('en-US');
+  const cost = trip.costUsd.toFixed(2);
+  const threshold = trip.thresholdUsd.toFixed(2);
+  return {
+    kind: 'CallsBudget',
+    subject: `livehuddle calls: ${paused.toLowerCase()} (Realtime at $${cost} this month)`,
+    html: shell(env, {
+      heading: paused,
+      preheader: `Realtime usage reached $${cost} above the free tier this month.`,
+      intro: `Cloudflare Realtime has used ${gb} GB this month, $${cost} above the free 1,000 GB, which reached the $${threshold} threshold. ${what}`,
+      points: [
+        `The calls switch now says <strong>${trip.mode}</strong>.`,
+        'The budget poll never turns calls back on. When you are ready, run this from <code>livehuddle/apps/api</code>:',
+        '<code>corepack pnpm exec wrangler kv key put --binding CALLS_SWITCH --remote calls-mode on</code> (add <code>--env staging</code> for staging)',
+      ],
+      outro:
+        'You will not hear about this level again this month. The thresholds are CALLS_AUDIO_ONLY_AT_USD and CALLS_OFF_AT_USD in the api worker’s settings.',
+      footer:
+        'You’re receiving this because this address is set as livehuddle’s calls budget contact.',
+    }),
   };
 }

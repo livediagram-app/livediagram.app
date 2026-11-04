@@ -226,7 +226,7 @@ the element is on the active tab, of the kind the dialog edits, and the session 
 stops being true (a collaborator deletes the element, an undo takes it away, the tab changes, the element locks, the
 session turns read-only), the dialog **closes**, rather than hiding with its element still named, so it never
 reopens by itself when the element, the lock or the role comes back (`useCloseVanishedDialogs`, with each dialog's own
-check). Edit Outline closes itself the same way (`useMindOutline`).
+check).
 
 ## Toasts
 
