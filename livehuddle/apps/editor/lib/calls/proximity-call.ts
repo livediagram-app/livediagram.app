@@ -7,7 +7,6 @@
 // video-and-screen-bubbles.md): published on demand, received as bubbles from the people heard and on screen.
 import {
   CALL_SCREEN_TRACK_NAME,
-  CALL_TRACK_NAME,
   CALL_VIDEO_TRACK_NAME,
   callsModeAllows,
   type CallTrackLocator,
