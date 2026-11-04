@@ -43,12 +43,17 @@ that is not shared (a This Browser Space, or one with no room) has nobody to tal
 ## Hearing
 
 Every speaker publishes their microphone once (ingress is free). Each listener subscribes only to the speakers in
-earshot, from the positions the room already shares in the `avatar` op:
+earshot, from the positions the room already shares in the `avatar` op.
+
+**Rooms come first** ([Meeting rooms and the stage](meeting-rooms-and-stage.md#rooms-are-calls-part-1-built), Work
+Tracker #319, #436): an [Office Room](../009-elements/office.md#room) is a call of its own. Inside one, you hear
+everyone in the same room at full volume whatever the distance, and nobody outside it; walls block sound fully. The
+rules below are for the open floor, outside every room:
 
 - **Hearing radius: 260 canvas px**, feet to feet. A speaker inside it is subscribed.
 - **Release radius: 300 canvas px.** A subscribed speaker is let go only beyond it, so somebody standing on the edge
   does not flicker in and out.
-- **Volume fades with distance**: full within 90 canvas px, then an equal-power fade to silence at the release
+- **Volume fades with distance** (in the open; full in a shared room): full within 90 canvas px, then an equal-power fade to silence at the release
   radius, so letting go of a speaker makes no audible step.
 - **Pans by position**: a speaker to your left is heard on the left, up to 80% of the way at the hearing radius.
 - Volume and pan glide over 120 ms as people walk, so steps are never heard.
@@ -63,8 +68,9 @@ earshot, from the positions the room already shares in the `avatar` op:
   Alone on a tab for 15 seconds, the microphone closes (the browser's recording light goes out) and the button says so;
   it opens again the moment somebody arrives.
 - **The mic indicator** on the button shows, at a glance:
-  - **Live** (a soft brand ring and your own small level meter): somebody is in earshot and hears you.
-  - **Nobody Near**: your microphone is open but nobody is within the hearing radius; your equaliser still shows to
+  - **Live** (a soft brand ring and your own small level meter): somebody is in earshot and hears you (in a room,
+    anyone else in it).
+  - **Nobody Near**: your microphone is open but nobody hears you (in the open, nobody within the hearing radius); your equaliser still shows to
     the people further away.
   - **Muted** (a struck-through microphone).
   - **Mic Blocked** (amber): the browser refused the microphone; the hover card says how to allow it. You still hear
@@ -96,8 +102,9 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
 
 ### Do Not Disturb
 
-[Do Not Disturb](../008-canvas/avatar-mode.md#status) (Work Tracker #319) still shows **your** bars to others but
-hides **theirs** from you. Until #319 lands, the hook takes a `doNotDisturb` flag that is always false.
+[Do Not Disturb](meeting-rooms-and-stage.md#do-not-disturb-part-3-planned) (Work Tracker #319, part 3) still shows
+**your** bars to others but hides **theirs** from you, and closes every subscription. Until that part lands, the hook
+takes a `doNotDisturb` flag that is always false.
 
 ## Hide cursors
 
@@ -169,8 +176,8 @@ someone's bars. Never who, never how long, never anything heard.
 
 ## Out of scope
 
-- Room walls deciding who hears whom (an [Office](../009-elements/office.md) room as one call), the All-Hands Hall's
-  stage: [Future work](../005-project-roadmap/future-work.md). Video and screen sharing ride the same call:
+- Rooms as calls, the stage, raise hand and Do Not Disturb have their own spec:
+  [Meeting rooms and the stage](meeting-rooms-and-stage.md). Video and screen sharing ride the same call:
   [Video and screen share bubbles](video-and-screen-bubbles.md).
 - Muting someone else (an Editor's act in the future-work role table) and per-person volume.
 - Any recording, transcript or history: nothing said is stored anywhere.

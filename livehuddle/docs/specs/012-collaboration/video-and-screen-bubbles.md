@@ -11,7 +11,8 @@ again. Both kinds share one bubble.
 ## Who sees what
 
 Video and screens ride the call exactly as voices do: you see the bubbles of the people you hear
-([Hearing](proximity-audio.md#hearing): within 260 canvas px, let go beyond 300), and nobody else. Nothing is sent to
+([Hearing](proximity-audio.md#hearing): everyone in your [room](meeting-rooms-and-stage.md#rooms-are-calls-part-1-built),
+or in the open within 260 canvas px, let go beyond 300), and nobody else. A room's cameras and screens stay in it. Nothing is sent to
 someone out of earshot, so a bubble costs nothing until somebody walks up.
 
 On top of earshot, a bubble is received only while it can be seen:
