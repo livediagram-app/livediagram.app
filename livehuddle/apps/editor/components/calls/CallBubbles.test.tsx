@@ -7,7 +7,9 @@ import {
   setCallMaximised,
   setCallMedia,
 } from '@/lib/calls/calls-store';
-import { CallBubbles } from './CallBubbles';
+import { CallBubbles, useCallBubbleRects } from './CallBubbles';
+import { renderHook } from '@testing-library/react';
+import type { BubbleRect } from '@/lib/calls/bubble-layout';
 import { mediaTitle } from './MediaBubble';
 
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
@@ -75,6 +77,78 @@ describe('CallBubbles', () => {
     expect(group.style.transition).toContain('left 100ms');
     rerender(<CallBubbles peers={[peer('p1', 'Sam', 3000)]} self={null} />);
     expect(group.style.transition).toBe('');
+  });
+
+  // "Close together" (#468).
+  describe('close together', () => {
+    const rowOf = (container: HTMLElement, id: string) =>
+      container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubbles-row]`)!;
+    const nudge = (row: HTMLElement) =>
+      Number(/translateX\((-?[\d.]+)px\)/.exec(row.style.transform)![1]);
+
+    it('slides two people side by side apart, tails still on their heads, and hands on where they went', () => {
+      const rects = { current: [] as readonly BubbleRect[] };
+      const { container, rerender, unmount } = render(
+        <CallBubbles
+          peers={[peer('p1', 'Sam', 100), peer('p2', 'Kim', 140)]}
+          self={null}
+          rectsRef={rects}
+        />,
+      );
+      expect(rects.current).toEqual([]);
+      act(() => {
+        setCallMedia('p1', 'video', stream('a'));
+        setCallMedia('p2', 'video', stream('b'));
+      });
+      const sam = nudge(rowOf(container, 'p1'));
+      const kim = nudge(rowOf(container, 'p2'));
+      expect(sam).toBeLessThan(0);
+      expect(kim).toBeCloseTo(-sam);
+      const tail = rowOf(container, 'p1').querySelector<HTMLElement>('[data-call-bubble-tail]')!;
+      expect(tail.style.transform).toContain(`calc(-50% + ${-sam}px)`);
+      expect(rects.current).toHaveLength(2);
+      expect(rects.current[0]!.right).toBeLessThanOrEqual(rects.current[1]!.left);
+      // Walking past each other, a little: no swap.
+      rerender(
+        <CallBubbles
+          peers={[peer('p1', 'Sam', 150), peer('p2', 'Kim', 140)]}
+          self={null}
+          rectsRef={rects}
+        />,
+      );
+      expect(nudge(rowOf(container, 'p1'))).toBeLessThan(0);
+      // Well past: they swap.
+      rerender(
+        <CallBubbles
+          peers={[peer('p1', 'Sam', 200), peer('p2', 'Kim', 140)]}
+          self={null}
+          rectsRef={rects}
+        />,
+      );
+      expect(nudge(rowOf(container, 'p1'))).toBeGreaterThan(0);
+      act(() => resetCallMedia());
+      expect(rects.current).toEqual([]);
+      unmount();
+      expect(rects.current).toEqual([]);
+    });
+
+    it('moves your own camera with everyone else’s', () => {
+      const { container } = render(<CallBubbles peers={[peer('p1', 'Sam', 20)]} self={self} />);
+      act(() => {
+        setCallMedia('p1', 'video', stream('a'));
+        setCallMedia('self', 'video', stream('c'));
+      });
+      expect(nudge(rowOf(container, 'self'))).toBeLessThan(0);
+      expect(nudge(rowOf(container, 'p1'))).toBeGreaterThan(0);
+    });
+
+    it('makes one rects ref per canvas', () => {
+      const { result, rerender } = renderHook(() => useCallBubbleRects());
+      const first = result.current;
+      rerender();
+      expect(result.current).toBe(first);
+      expect(first.current).toEqual([]);
+    });
   });
 
   it('maximises on a press, counts it, and restores from the button, Escape and the backdrop', () => {

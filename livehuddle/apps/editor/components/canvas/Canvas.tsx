@@ -82,7 +82,7 @@ import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/u
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
-import { CallBubbles } from '@/components/calls/CallBubbles';
+import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
@@ -314,6 +314,8 @@ function CanvasView(props: CanvasProps) {
       height: mainSize.height,
     },
   });
+  // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
+  const callBubbleRects = useCallBubbleRects();
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
   // transform fragment, pivoted on the content centre — see
@@ -732,7 +734,7 @@ function CanvasView(props: CanvasProps) {
             {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
             <TalkingBars {...call.bars} />
             {/* Camera and screen bubbles above the characters (docs/specs/012-collaboration/video-and-screen-bubbles.md). */}
-            <CallBubbles {...call.bubbles} />
+            <CallBubbles {...call.bubbles} rectsRef={callBubbleRects} />
             {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
             <AvatarPadArrivals arrivals={padArrivals} />
             {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
@@ -745,6 +747,8 @@ function CanvasView(props: CanvasProps) {
                 view={{ offsetX: viewportOffset.x, width: mainSize.width }}
                 peers={props.remoteAvatars}
                 self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
+                // Speech rises clear of camera and screen bubbles (video-and-screen-bubbles.md "Close together").
+                obstacles={callBubbleRects}
                 composer={
                   speech.composerOpen && avatar.pos
                     ? {
