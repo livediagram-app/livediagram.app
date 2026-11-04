@@ -30,6 +30,22 @@ describe('elementsIssue', () => {
     );
   });
 
+  // docs/specs/009-elements/links-and-notes-retired.md
+  it('refuses an element link or note, which are retired, and keeps a link card its link', () => {
+    for (const extra of [{ note: 'n' }, { noteRich: [] }, { link: { kind: 'tab', tabId: 't' } }])
+      expect(elementsIssue([box(extra)])).toContain('element links and notes are retired');
+    const card = {
+      id: 'c',
+      type: 'link-card',
+      x: 0,
+      y: 0,
+      width: 300,
+      height: 120,
+      link: { kind: 'url', url: 'https://example.com' },
+    };
+    expect(elementsIssue([card])).toBeNull();
+  });
+
   it('refuses a text size off the scale', () => {
     expect(elementsIssue([box({ textSize: 'xl' })])).toBe(
       'element "b1": textSize "xl" is not one of sm, md, lg, scale.',

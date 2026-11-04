@@ -1,16 +1,8 @@
-// The chrome the two rich-text toolbars share: the toggle button's classes,
-// the divider between groups, and the run-format toggles themselves.
-//
-// The label toolbar (RichTextToolbar) and the note toolbar (NoteFormatToolbar)
-// already share their block-type dropdown, for the reason ToolbarDropdown
-// states: a second copy would drift on the first behaviour fix. These three
-// pieces had drifted the other way — they were copied, and the note toolbar's
-// own comment said so ("Same h-8 w-8 button as the label toolbar so the two
-// read as one system"). A comment promising two files stay alike is a job for
-// one file.
-//
-// `noFocusSteal` belongs to this same family and already lives in
-// ToolbarDropdown; the note toolbar had re-declared it rather than importing.
+// The rich-text toolbar's chrome: the toggle button's classes, the divider
+// between groups, and the run-format toggles themselves. It was shared with
+// the element note toolbar, retired with element notes
+// (docs/specs/009-elements/links-and-notes-retired.md), and stays one file so
+// a second rich-text toolbar would reuse it rather than copy it.
 
 import {
   BoldIcon,

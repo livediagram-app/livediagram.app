@@ -5,12 +5,14 @@
 import { upgradeStores } from './legacy-offline-store';
 import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livedesign/ui';
 import type { OfflineDesignRecord } from './offline-store';
+import { APP_ITEMS } from '@liveworkspace/sites';
 
-const DB_NAME = 'livedesign-offline';
+// The names are the registry's, which the Explorer page deletes a This Browser item by.
+const DB_NAME = APP_ITEMS.livedesign.offlineStore.db;
 // Version 2 renamed the object store (docs/specs/006-design/offline-mode.md);
 // ./legacy-offline-store moves every record across.
 const DB_VERSION = 2;
-const STORE = 'designs';
+const STORE = APP_ITEMS.livedesign.offlineStore.store;
 
 // What a read-modify-write gets: the stored record (undefined when there is none), and what it
 // answers: the record to store, 'delete' to remove it, or undefined to write nothing. Synchronous, because IndexedDB

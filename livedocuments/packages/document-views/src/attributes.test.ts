@@ -28,7 +28,9 @@ describe('attributesOf (VW14)', () => {
     expect(printed(shapeAt('square', 'x', 0, 0))).toBe('');
   });
 
-  it('prints every attribute in order', () => {
+  // Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): a shape's stored ones
+  // print nothing.
+  it('prints every attribute in order, and no stored element link or note', () => {
     const el = {
       ...shapeAt('square', 'x', 0, 0),
       iconId: 'server',
@@ -38,14 +40,15 @@ describe('attributesOf (VW14)', () => {
       note: 'Owns the order lifecycle and is the source of truth for order state.',
       commentThread: { comments: [comment], resolved: true },
     } as Element;
-    expect(printed(el)).toBe(
-      'icon=server link=https://stripe.com/docs/api locked action="Fix retries" @Sam done ' +
-        'note="Owns the order lifecycle and is the source of"… comments=1 resolved',
-    );
+    expect(printed(el)).toBe('icon=server locked action="Fix retries" @Sam done comments=1 resolved');
   });
 
-  it('prints links to tabs, elements and documents (VW28)', () => {
-    const link = (l: object) => printed({ ...shapeAt('square', 'x', 0, 0), link: l } as Element);
+  it("prints a link card's and a video's link, to tabs, elements and documents (VW28)", () => {
+    const link = (l: object) =>
+      printed({ ...shapeAt('square', 'x', 0, 0), type: 'link-card', link: l } as unknown as Element);
+    expect(
+      printed({ ...shapeAt('square', 'x', 0, 0), type: 'video', link: { kind: 'url', url: 'https://youtu.be/x' } } as unknown as Element),
+    ).toBe('link=https://youtu.be/x');
     expect(link({ kind: 'tab', tabId: '51c9abcd' })).toBe('link=tab:51c9');
     expect(link({ kind: 'element', tabId: '51c9abcd', elementId: 'e4a8-1' })).toBe(
       'link=tab:51c9#e4a8-1',
@@ -71,6 +74,7 @@ describe('attributesOf (VW14)', () => {
       alt: 'A diagram of the whole checkout platform, end to end',
     } as unknown as Element;
     expect(printed(image)).toBe('alt="A diagram of the whole checkout platform, end to"…');
+    expect(printed({ ...image, alt: undefined } as unknown as Element)).toBe('');
   });
 
   it('prints an action without an assignee, quoting a spaced name (VW29)', () => {

@@ -64,7 +64,6 @@ const fillValues = (el: Element) =>
 function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): string {
   switch (alias) {
     case 'label':
-    case 'note':
       return '<text>';
     case 'shape':
       return '<shape kind>';
@@ -82,7 +81,15 @@ function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): s
   }
 }
 
-const HIDDEN_FIELDS: ReadonlySet<string> = new Set(['id', 'type', ...LIVE_ELEMENT_FIELDS]);
+// Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): never offered. A link
+// card's and a video's link is their content, named by their own kind's fields.
+const HIDDEN_FIELDS: ReadonlySet<string> = new Set([
+  'id',
+  'type',
+  'note',
+  'noteRich',
+  ...LIVE_ELEMENT_FIELDS,
+]);
 
 // A shape's stored fields cover every shape kind at once, more than one kind's budget: a shape names the fields
 // every shape uses, then its kind's own (its content, as the MCP's schema describes it).
@@ -103,7 +110,6 @@ export const SHAPE_COMMON_FIELDS = [
   'opacity',
   'rotation',
   'shadow',
-  'link',
   'iconId',
   'padding',
 ] as const;
@@ -153,7 +159,10 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {
   if (el.type === 'shape') return [...SHAPE_COMMON_FIELDS, ...(SHAPE_KIND_FIELDS[kind] ?? [])];
-  return ELEMENT_FIELD_NAMES[el.type].filter((f) => !HIDDEN_FIELDS.has(f));
+  const ownLink = el.type === 'link-card' || el.type === 'video';
+  return ELEMENT_FIELD_NAMES[el.type].filter(
+    (f) => !HIDDEN_FIELDS.has(f) && (f !== 'link' || ownLink),
+  );
 }
 
 // One kind's format, or null for a kind `add` and `connect` do not know.

@@ -232,10 +232,12 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   **Delete**, asked first and for good, since nothing else holds the item: the same verbs and confirmation as the
   panel's This Browser rows. The confirmation says it deletes only this browser's copy, the one there is, and that
   nothing in the account changes (`thisBrowserDeleteCopy`, the editors' handed-over Delete words it the same). Every
-  host has `remove`, so Delete is never missing in one app and there in another: the editor's panel deletes in place
-  (its offline store's delete); the page, which can't reach the app's offline store, asks on the page and then hands
-  over to the editor (`?convert=delete`, below), which deletes it without asking again and comes back to
-  `/explorer/offline`. Each row says when it last changed in relative words ("Changed 3 hours ago"), its full date
+  host has `remove`, so Delete is never missing in one app and there in another, and both delete **in place**: the
+  person stays where they pressed it (This Browser's view, Home's Jump Back In, the Trash drop) and the item leaves
+  the list there, with no page opened and none left (owner, 2026-11-04: Delete used to open the item in the editor,
+  delete it and come back). The editor's panel uses its offline store's delete; the page, on the app's own address
+  and so the same origin, deletes the record itself (`removeThisBrowserRecord`, @liveworkspace/explorer/this-browser,
+  below). Each row says when it last changed in relative words ("Changed 3 hours ago"), its full date
   and time in the browser's locale on hover (`title`), as the panel's rows do; with none, the page and the panel both
   say "Nothing is kept only in this browser." The view takes the filter lens like My Work (the field and chip
   row), matched in the browser over the list, since the index never sees these items.
@@ -249,13 +251,23 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   names, and hears it change. liveworkspace.app can't read it, as it can't read the list.
 - **Take Offline, Sync and Delete.** Where the app's editor runs them (the registry's `offlineConversions`), each of
   the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live This
-  Browser row has **Sync** for a person signed in and **Delete** for anyone. Only the app can write its offline
-  store: in the editor's panel all three run in place; the page hands over to the app's editor at the item's own
-  address (`<itemPath><id>?convert=take-offline|sync|delete&item=<id>`, `thisBrowserConvertHref`), which takes the
-  request out of the address, checks the item is the person's to move (or, for Delete, one this browser keeps), asks
-  them to confirm, and runs the app's own conversion or delete. The page's Delete has already asked, on the page: it
-  leaves a note for that one item in this tab's session storage (`markThisBrowserDeleteConfirmed`), and the editor
-  takes the note (once, for that item) in place of asking again. A link without the note asks first. A request that
+  Browser row has **Sync** for a person signed in and **Delete** for anyone. Take Offline and Sync copy an item's
+  content, which only the app's code knows, so in the editor's panel they run in place and the page hands them over
+  to the app's editor at the item's own address (`<itemPath><id>?convert=take-offline|sync&item=<id>`,
+  `thisBrowserConvertHref`), which takes the request out of the address, checks the item is the person's to move,
+  asks them to confirm, and runs the app's own conversion. **Delete runs on the page**, in place: removing a record
+  needs no knowledge of what it holds. The registry names each app's offline store (`offlineStore`: its IndexedDB
+  database, which is also the name of the app's offline-ids BroadcastChannel, and its object store; the editors read
+  their names from it, so the two never drift). `removeThisBrowserRecord(app, id)` opens that database at whatever
+  version it is (never creating or upgrading it), deletes the one record in a single transaction, tells the app's open
+  editor tabs on its channel (`{ kind: 'remove', id }`, as the editor's own delete does) so none keeps routing writes
+  to it, drops it from This Browser's list (so every view hears it go) and its rows from the Inbox snapshot. It goes
+  for good, as the editor's This Browser delete does; nothing goes to a trash. Where the record can't be removed that
+  way (the database or store isn't there yet, an editor not opened since an upgrade renamed its store, or IndexedDB
+  fails), Delete falls back to the hand-over: the page leaves a note for that one item in this tab's session storage
+  (`markThisBrowserDeleteConfirmed`) and opens the item's address with `?convert=delete`, and the editor takes the
+  note (once, for that item) in place of asking again, deletes it and comes back to `/explorer/offline`. A
+  `?convert=delete` link without the note asks first. A request that
   reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on to the
   editor the same way. A link alone never moves or deletes anything.
 - **This Browser in Jump Back In.** An opened This Browser item is one card among Home's others, the same size and
@@ -264,7 +276,7 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   tinted in the accent of the app that owns it (`LocalPreview`): the same picture on its This Browser rows, on the page
   and in the panel. The **This Browser** badge, in teal (no app's accent and no status colour, with its icon and words), says where it lives; the tint says whose it is. It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
   (signed in, as This Browser's rows offer it: in place in the panel, handed over to the editor on the page) and,
-  where the host has `remove`, **Delete**, asked first (in place in the panel, handed over on the page). It drags as
+  where the host has `remove`, **Delete**, asked first and in place (the card leaves Jump Back In where it was). It drags as
   the others do, and each target means what it can for an item the account doesn't hold. On the **Trash** it is
   deleted for good after a confirmation, since nothing else holds it; a host without `remove` (none today, kept for
   a host that can't reach the app's editor) makes the drop say so and offer Open, as the Trash's This Browser group

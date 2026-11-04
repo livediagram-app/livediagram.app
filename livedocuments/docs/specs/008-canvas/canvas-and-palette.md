@@ -914,6 +914,12 @@ over. There is no Caption: small print sits below the slider's 24, and a Caption
 | Paragraph  | 24 px | Regular       | Wraps at 600 px | Pilcrow     |
 | Quote      | 30 px | Italic        | Wraps at 600 px | Quote       |
 
+**On a slide, a style spans the slide.** A text style tapped onto a slide (or a double-click there) is **80%** of the
+slide's width, centred across it (a 10% margin each side) and wrapping there, its height a line, so every title,
+heading and paragraph on a deck starts at the same left edge and lines up without measuring. Its top-to-bottom place
+is where it was tapped. A drag still sets its own width, and off a slide (an infographic, a flashcard, an article, the
+canvas) a tap keeps the table's box above (owner, 2026-11-04).
+
 A tap drops the style's box centred on the tap (never the selected element's size); a drag sets its width, so it
 wraps there. The tab's default text size does not apply to a style: the style is the size asked for. Telemetry stays
 `Element · Added · Text` for every style.
@@ -1163,6 +1169,10 @@ The menu renders through a **portal** to `document.body` so it isn't clipped by 
 Tabs are **draggable** via the native HTML5 drag API. Dragging a tab over another shows a ring around the drop target; releasing reorders the source to the target's position.
 
 ## Element links
+
+**Retired in livedocuments 2026-11-04** ([links-and-notes-retired.md](../009-elements/links-and-notes-retired.md)): kept for the record and for the other products.
+
+Link cards and videos keep their own link.
 
 Any element can carry a **link**: to another **tab**, another **document**, or an **external URL** (`ElementLink` kinds `tab` / `document` / `element` / `url`). Clicking the link jumps to the tab, opens the document, or opens the URL in a new tab (`noopener`).
 

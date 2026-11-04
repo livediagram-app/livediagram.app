@@ -32,6 +32,18 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Canvas', 'Changed', 'Crosshatch')).toBe(false);
   });
 
+  it('retires element links and notes in livedocuments, keeping link cards\' Element·Linked', () => {
+    for (const action of ['Added', 'Changed', 'Deleted', 'Opened']) {
+      expect(isRetiredEvent('Note', action, null)).toBe(true);
+    }
+    expect(isRetiredEvent('Note', 'Used', 'Bold')).toBe(true);
+    expect(isRetiredEvent('Help', 'Opened', 'notes')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'links')).toBe(true);
+    expect(isRetiredEvent('Help', 'Opened', 'linking-tabs')).toBe(true);
+    expect(isRetiredEvent('Element', 'Linked', 'Url')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Linked', null)).toBe(false);
+  });
+
   it('retires the Tab Window, its tour and its help article, not the other tours', () => {
     expect(isRetiredEvent('Element', 'Added', 'TabWindow')).toBe(true);
     expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);

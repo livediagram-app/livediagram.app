@@ -175,14 +175,8 @@ export function EditorContextMenuHost() {
     setTableHeaderRowSelected,
     setTableHeaderColumnSelected,
     setTableZebraSelected,
-    openNote,
     openComments,
     openAssignAction,
-    beginEdit,
-    duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
-    toggleLockSelected,
     deleteSelected,
   } = useEditorContext();
   // The selection the menu acts on, read from the store while a menu is open: a closed menu never
@@ -401,17 +395,9 @@ export function EditorContextMenuHost() {
       onToggleTableHeaderRow={setTableHeaderRowSelected}
       onToggleTableHeaderColumn={setTableHeaderColumnSelected}
       onToggleTableZebra={setTableZebraSelected}
-      onOpenNote={openNote}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}
-      elementActions={{
-        onEditText: beginEdit,
-        onDuplicate: duplicateSelected,
-        onStackFront: stackSelectedFront,
-        onStackBack: stackSelectedBack,
-        onToggleLock: toggleLockSelected,
-        onDelete: deleteSelected,
-      }}
+      onDeleteElement={deleteSelected}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

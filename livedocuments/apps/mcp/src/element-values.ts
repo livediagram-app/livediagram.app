@@ -36,9 +36,20 @@ function fieldsLike(key: string, fields: readonly string[]): string[] {
     .slice(0, NEAREST_FIELDS_MAX);
 }
 
+// Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): an element sent with one is
+// refused, as an edit operation's `set` refuses it. A link card's and a video's link is their own content.
+function retiredField(el: Rec): string | null {
+  if (el.note !== undefined) return 'note';
+  if (el.noteRich !== undefined) return 'noteRich';
+  if (el.link !== undefined && el.type !== 'link-card' && el.type !== 'video') return 'link';
+  return null;
+}
+
 // Why one element cannot be written as given, or null. `where` names it in the sentence.
 function elementIssue(el: Rec, where: string): string | null {
   if (!isElementType(el.type)) return null; // the validator names a missing or unknown type
+  const retired = retiredField(el);
+  if (retired) return `${where}: "${retired}": element links and notes are retired.`;
   const fields: readonly string[] = ELEMENT_FIELD_NAMES[el.type];
   for (const key of Object.keys(el)) {
     if (fields.includes(key)) continue;

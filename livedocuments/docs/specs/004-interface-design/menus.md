@@ -135,7 +135,7 @@ element or add one:
 - **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note") and the Toolbar strip's **Add Page**. A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@livedocuments/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add
   Point", "Add Stat".
-- **Buttons drawn on an element**: the element menu's quick bar ("Stack Front", "Add Text").
+- **Buttons drawn on an element**: the element menu's quick bar ("Assign Action", "Add Comment").
 - **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
   "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
 - **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select

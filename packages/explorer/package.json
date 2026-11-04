@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./this-browser": "./src/this-browser.ts",
+    "./this-browser-record": "./src/this-browser-record.ts",
     "./inbox-actions": "./src/inbox-actions.ts",
     "./local-preview": "./src/explorer/LocalPreview.tsx",
     "./conversion-handoff": "./src/conversion-handoff.ts",
@@ -43,6 +44,7 @@
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^30.1.2",
     "oxlint": "^1.90.0",
     "react": "^19.3.1",

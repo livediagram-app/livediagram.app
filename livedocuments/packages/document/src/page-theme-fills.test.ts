@@ -50,7 +50,9 @@ describe('page-theme-fills: the backgrounds that are the theme’s own', () => {
   });
 
   it('leaves an animated background in colours of someone’s own, and a page with only a pattern', () => {
-    const own: PageFill = { ...motionFill(ocean, 'mesh', 'deep'), from: '#123456' };
+    const motion = motionFill(ocean, 'mesh', 'deep');
+    if (motion.kind !== 'gradient') throw new Error('an animated background is a gradient');
+    const own: PageFill = { ...motion, from: '#123456' };
     expect(followedFill(own, ocean, forest)).toBeUndefined();
     expect(
       followedFill({ kind: 'gradient', from: '#123456', to: '#654321', angle: 160 }, ocean, forest),

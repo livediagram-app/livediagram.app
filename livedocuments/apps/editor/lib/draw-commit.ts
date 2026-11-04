@@ -1,4 +1,4 @@
-import { isFixedSizeShape } from '@livedocuments/document';
+import { isFixedSizeShape, layOutPages, pageAt, pagesOf } from '@livedocuments/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -178,14 +178,40 @@ export function buildDrawnComponent(
   };
 }
 
+// A text style on a slide spans this share of the slide's width, centred (canvas-and-palette.md "On a slide, a style
+// spans the slide").
+export const SLIDE_TEXT_SPAN = 0.8;
+
+/** The slide a canvas point lies on, if the tab has pages and the point is on a slide. */
+export function slideAt(
+  tab: Pick<Tab, 'pages' | 'pageOrientation'> | undefined,
+  x: number,
+  y: number,
+): { x: number; width: number } | undefined {
+  if (!tab?.pages) return undefined;
+  const page = pageAt(layOutPages(pagesOf(tab)), { x, y });
+  return page?.kind === 'slide' ? page.rect : undefined;
+}
+
 /** A new text in a style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"), centred on a canvas point,
- *  left aligned. */
+ *  left aligned; on a slide (`slide`, its rect), 80% of its width and centred across it, wrapping there. */
 export function presetTextAt(
   x: number,
   y: number,
   preset: TextPresetId = DEFAULT_TEXT_PRESET,
+  slide?: { x: number; width: number },
 ): TextElement {
   const made = createPresetText(x, y, preset);
+  if (slide) {
+    const width = Math.round(slide.width * SLIDE_TEXT_SPAN);
+    return {
+      ...made,
+      x: slide.x + (slide.width - width) / 2,
+      y: y - made.height / 2,
+      width,
+      sizing: 'wrap',
+    };
+  }
   return { ...made, x: x - made.width / 2, y: y - made.height / 2 };
 }
 
@@ -197,8 +223,9 @@ function buildDrawnText(
   startY: number,
   endX: number,
   endY: number,
+  slide?: { x: number; width: number },
 ): TextElement {
-  const tapped = presetTextAt(startX, startY, preset);
+  const tapped = presetTextAt(startX, startY, preset, slide);
   if (isDrawTap(startX, startY, endX, endY)) return tapped;
   const box = drawnDragBox({ type: 'text' }, startX, startY, endX, endY);
   return { ...tapped, x: box.x, y: box.y, width: box.width, sizing: 'wrap' };
@@ -223,7 +250,14 @@ export function buildDrawnBoxed(
 ) {
   // A text style is its own size and alignment, whatever is selected and whatever the tab's text size.
   if (intent.type === 'text') {
-    const text = buildDrawnText(intent.preset, startX, startY, endX, endY);
+    const text = buildDrawnText(
+      intent.preset,
+      startX,
+      startY,
+      endX,
+      endY,
+      slideAt(activeTab, startX, startY),
+    );
     return {
       ...text,
       ...deriveNewBoxedColours(text, {

@@ -15,7 +15,6 @@ function handlers(): CommandHandlers {
     renumberSteps: vi.fn(),
     setMarker: vi.fn(),
     addComment: vi.fn(),
-    editNote: vi.fn(),
     createTab: vi.fn(),
     renameDocument: vi.fn(),
     deleteDocument: vi.fn(),
@@ -113,7 +112,7 @@ describe('buildEditorCommands — selection commands', () => {
     );
     // Single-only commands stay hidden for a multi-selection.
     expect(out).not.toContain('rotate-90');
-    expect(out).not.toContain('note');
+    expect(out).not.toContain('comment');
   });
 
   it('ranks selection commands ahead of the document/tab commands', () => {
@@ -121,7 +120,7 @@ describe('buildEditorCommands — selection commands', () => {
     expect(out.indexOf('delete')).toBeLessThan(out.indexOf('create-tab'));
   });
 
-  it('offers rotate/note/comment for a single boxed element', () => {
+  it('offers rotate and comment for a single boxed element, and no note (element notes are retired)', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true });
     expect(out).toEqual(
       expect.arrayContaining([
@@ -129,16 +128,16 @@ describe('buildEditorCommands — selection commands', () => {
         'rotate-180',
         'rotate-270',
         'rotate-0',
-        'note',
         'comment',
       ]),
     );
+    expect(out).not.toContain('note');
   });
 
   // A margin note never rotates.
-  it('offers note and comment but no Rotate for an element that does not turn', () => {
+  it('offers comment but no Rotate for an element that does not turn', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: false });
-    expect(out).toEqual(expect.arrayContaining(['note', 'comment']));
+    expect(out).toContain('comment');
     expect(out).not.toContain('rotate-90');
     expect(out).not.toContain('rotate-0');
   });

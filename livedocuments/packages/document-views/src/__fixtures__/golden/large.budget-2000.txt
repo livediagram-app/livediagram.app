@@ -165,4 +165,4 @@ table dc85
 sticky 57a2 "Payment retries are not idempotent yet!" comments=2 open
 table 80a2
 sticky 5573 "Payment retries are not idempotent yet!" comments=2 open
-… notes hidden; attributes hidden; 13 elements in stack 82f7 hidden; 13 elements in stack 6b96 hidden; 13 elements in stack 9914 hidden; 13 elements in 1 other container hidden: view --only 82f7
+… attributes hidden; 13 elements in stack 82f7 hidden; 13 elements in stack 6b96 hidden; 13 elements in stack 9914 hidden; 13 elements in 1 other container hidden: view --only 82f7

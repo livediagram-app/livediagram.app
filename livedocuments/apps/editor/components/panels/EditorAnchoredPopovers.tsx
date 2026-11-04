@@ -5,17 +5,11 @@ import dynamic from 'next/dynamic';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { isBoxed } from '@livedocuments/document';
 
-import { track } from '@/lib/telemetry';
-import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 const CommentThreadPopover = dynamic(
   () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
-  { ssr: false },
-);
-const NotePopover = dynamic(
-  () => import('@/components/notes/NotePopover').then((m) => m.NotePopover),
   { ssr: false },
 );
 const ActionPopover = dynamic(
@@ -27,10 +21,10 @@ const AssignActionDialog = dynamic(
   { ssr: false },
 );
 
-// Popovers anchored to a specific canvas element: the comment thread and
-// the per-element note editor. Each resolves its target off the active tab
-// and reads everything from EditorContext, so EditorView just renders
-// <EditorAnchoredPopovers />. Both bypass the autosave path for view-role
+// Popovers anchored to a specific canvas element: the comment thread (the
+// note editor is retired, docs/specs/009-elements/links-and-notes-retired.md).
+// It resolves its target off the active tab and reads everything from
+// EditorContext, so EditorView just renders <EditorAnchoredPopovers />. It bypasses the autosave path for view-role
 // visitors, persisting directly through the dedicated comment endpoints.
 export function EditorAnchoredPopovers() {
   const {
@@ -46,9 +40,6 @@ export function EditorAnchoredPopovers() {
     resolveThread,
     unresolveThread,
     closeComments,
-    noteOpenId,
-    setNote,
-    closeNote,
     actionPopoverOpenId,
     closeActionPopover,
     assignActionFor,
@@ -88,7 +79,6 @@ export function EditorAnchoredPopovers() {
     [commentThreadOpenId, closeComments, isBoxed],
     [actionPopoverOpenId, closeActionPopover, (el) => isBoxed(el) && !!el.action],
     [assignActionFor, closeAssignActionDialog, isBoxed],
-    [noteOpenId, closeNote, isBoxed],
   ]);
 
   return (
@@ -196,34 +186,6 @@ export function EditorAnchoredPopovers() {
                 }}
                 onSubmit={(input) => saveAction(target.id, input, assignActionId)}
                 onClose={closeAssignActionDialog}
-              />
-            );
-          })()
-        : null}
-      {noteOpenId !== null
-        ? (() => {
-            const target = activeTab.elements.find((el) => el.id === noteOpenId && isBoxed(el));
-            if (!target || !isBoxed(target)) return null;
-            return (
-              <NotePopover
-                elementId={target.id}
-                initial={target.note ?? ''}
-                initialRuns={target.noteRich}
-                readOnly={isReadOnly}
-                onCommit={(next, runs) => {
-                  // Compare the CANONICAL forms (the same normalisation
-                  // `setNote` stores), so reopening a note and clicking away
-                  // reports nothing, and a formatting-only edit — which
-                  // leaves the plain mirror identical — still reports.
-                  const prev = canonicalNote(target.note ?? '', target.noteRich);
-                  const now = canonicalNote(next, runs);
-                  setNote(target.id, next, runs);
-                  if (noteFieldsEqual(prev, now)) return;
-                  if (!prev.note) track('Note', 'Added');
-                  else if (!now.note) track('Note', 'Deleted');
-                  else track('Note', 'Changed');
-                }}
-                onClose={closeNote}
               />
             );
           })()

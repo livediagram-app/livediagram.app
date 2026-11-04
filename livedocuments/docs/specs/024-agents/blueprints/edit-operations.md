@@ -196,9 +196,9 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 
 | Alias        | Element types                                                     | Writes                                                                                                    | Values                                                                                               |
 | ------------ | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `label`      | every type with a `label` field                                   | `label`                                                                                                   | text; on a shape over `GRAPH_LABEL_MAX`, capped into the note; on an arrow, cut (EO18)               |
+| `label`      | every type with a `label` field                                   | `label`                                                                                                   | text; on a shape over `GRAPH_LABEL_MAX`, cut (notes are retired); on an arrow, cut (EO18)               |
 | `icon`       | every type with an `iconId` field and no `icon` of its own        | `iconId`                                                                                                  | graph input's name for the icon, read as `iconId` and checked as it is                               |
-| `note`       | every type with a `note` field                                    | `note`                                                                                                    | text                                                                                                 |
+| `note`       | retired 2026-11-04 (../../009-elements/links-and-notes-retired.md) | refused: `invalid_value`, "element links and notes are retired"                                         | (none)                                                                                               |
 | `shape`      | `shape`                                                           | `shape`                                                                                                   | a shape kind; off-vocabulary coerced by `coerceShapeKind`, warning `shape_coerced`                   |
 | `fill`       | types whose `themeColourFields` include `fillColor`, and `sticky` | `fillColor` + `fillSwatch` (sticky: + `textColor`)                                                        | a theme slot, or `#rgb` / `#rrggbb`, or on a sticky a sticky preset name                             |
 | `stroke`     | every type with a `strokeColor` field                             | `strokeColor`; clears `strokeSwatch`                                                                      | a colour: hex (warning `colour_overrides_theme` where the theme colours it) or a marker colour name  |
@@ -227,8 +227,8 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   `fillColor`, `strokeColor` or `textColor` hex on a themed element warns the same way (EO21). Anything else is
   `invalid_value` listing the slot names (or, on a sticky, the preset names).
 - **Labels.** `applyLabel(el, text)`: on a shape, `capLabel(text)`; when cut, `label` is the heading and the
-  whole text, whitespace collapsed, is prepended to the note the element ends with (`"<full>\n\n<note>"`), as
-  a graph node's label over `GRAPH_LABEL_MAX` does; warning `label_capped`. On an arrow, `capLabel(text).label`, warning `label_capped`. Other
+  rest is dropped (element notes are retired, ../../009-elements/links-and-notes-retired.md); warning
+  `label_capped`, "the rest was cut". On an arrow, `capLabel(text).label`, warning `label_capped`. Other
   types keep the text as given (EO18).
 - **Fit to label.** After a `set` that changes a shape's `label` (or `text` / `shape`), when the shape has no
   `fixedSize`, its `textSize` is not `scale`, and `labelBoxSize(label, shape)` exceeds its box, the box grows to
@@ -588,7 +588,7 @@ Text, two spaces after the ref, `·` between changes:
 | Removed          | `- n7  square "Pay"`, a cascaded arrow `- a4  arrow n3→n7 (pinned to n7)`         |
 | Moved, not named | `» n4 n5 n6  +0,+100 (make room)`; `» n5 n6 n7 t1  laid out (flow, down)`         |
 | Container        | `f2  +verify -n5`                                                                 |
-| Warning          | `! label_capped  n3 label kept as "Orders service"; the full text is in its note` |
+| Warning          | `! label_capped  n3 label kept as "Orders service"; the rest was cut` |
 
 - **Order** (EO42): `+ ~ -` lines in the order operations first touched the element; then `»` lines, one per
   distinct delta and reason, refs in element order; then container lines in element order; then warnings in order.

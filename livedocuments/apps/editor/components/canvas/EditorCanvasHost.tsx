@@ -182,7 +182,6 @@ export function EditorCanvasHost() {
     reopenAction,
     openCellLinkPicker,
     openComments,
-    openNote,
     pendingDraw,
     redo,
     remoteCursorRows,
@@ -707,7 +706,6 @@ export function EditorCanvasHost() {
             onFollowLink={followLink}
             onOpenComments={openComments}
             onOpenAction={openActionPopover}
-            onOpenNote={openNote}
             onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
             onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
             imageContext={imageContext}

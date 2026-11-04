@@ -157,6 +157,10 @@ export type AppItems = {
   // `thisBrowserConvertHref`): it asks the person to confirm and moves the item with the app's own offline code.
   // False: the Explorer offers neither.
   offlineConversions: boolean;
+  // The app's offline store (liveworkspace/docs/specs/004-index/one-explorer.md "Take Offline, Sync and Delete"): its
+  // IndexedDB database (also its offline-ids BroadcastChannel's name) and object store. The editor opens them by these
+  // names, and the Explorer page on the app's address deletes a This Browser item from them in place.
+  offlineStore: OfflineStore;
   // Its share link: `${url}${sharePath}<code>`.
   sharePath: string;
   // What the Share dialog offers beyond a link's address, as the app serves it (address patterns on its site).
@@ -219,6 +223,9 @@ const shareOf = (tabsPath: string, alt: string, communityPath: string | null = n
 /** Where an app serves an item's Community post to its owner. */
 const itemCommunityPath = (itemsSegment: string) => `/api/${itemsSegment}/:id/community`;
 
+/** An app's offline store: its IndexedDB database (and offline-ids channel) and the object store of its items. */
+export type OfflineStore = { db: string; store: string };
+
 export const APP_ITEMS: Record<AppName, AppItems> = {
   livediagram: {
     site: 'livediagram.app',
@@ -229,6 +236,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/explorer/offline',
     offlineConversions: true,
+    offlineStore: { db: 'livediagram-offline', store: 'documents' },
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: '/api/shape-libraries',
@@ -249,6 +257,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/explorer/offline',
     offlineConversions: true,
+    offlineStore: { db: 'liveplanner-offline', store: 'projects' },
     sharePath: '/project/shared?s=',
     imagesPath: null,
     shapeLibrariesPath: null,
@@ -265,6 +274,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/explorer/offline',
     offlineConversions: true,
+    offlineStore: { db: 'livedocuments-offline', store: 'documents' },
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
@@ -281,6 +291,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/explorer/offline',
     offlineConversions: true,
+    offlineStore: { db: 'livedesign-offline', store: 'designs' },
     sharePath: '/design/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
@@ -301,6 +312,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     newPath: '/new',
     offlinePath: '/explorer/offline',
     offlineConversions: true,
+    offlineStore: { db: 'livehuddle-offline', store: 'documents' },
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: '/api/shape-libraries',

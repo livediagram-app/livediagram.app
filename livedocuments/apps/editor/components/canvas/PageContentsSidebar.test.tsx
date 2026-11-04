@@ -104,6 +104,13 @@ describe('PageContentsSidebar', () => {
     expect(screen.queryByText('3 pages')).toBeNull();
   });
 
+  it('centres each picture in the strip, so a page narrower than a slide sits in the middle', () => {
+    show();
+    const slots = document.querySelectorAll('[data-contents-film-frame]');
+    expect(slots.length).toBeGreaterThan(0);
+    for (const s of slots) expect(s.className).toContain('justify-center');
+  });
+
   it('sits flush to the left with no header and no drag; its foot is Add Page with Minimise to its right', () => {
     show();
     const aside = screen.getByRole('complementary', { name: 'Contents' });

@@ -7,9 +7,9 @@
 // before the wrapper stops propagation). The trigger preventDefaults mousedown
 // so the editor keeps its selection while the menu is open.
 //
-// Shared by the label toolbar (RichTextToolbar) and the note toolbar
-// (NoteFormatToolbar) — they host the same block-type picker (docs/specs/009-elements/block-type-picker.md) and a
-// second copy of this would drift on the first behaviour fix.
+// Used by the label toolbar (RichTextToolbar) for the block-type picker
+// (docs/specs/009-elements/block-type-picker.md); one copy, so a second toolbar
+// reuses it rather than drifting from it.
 
 import { useRef, useState } from 'react';
 import { ChevronDownIcon, HoverCard, useClickOutside } from '@livedocuments/ui';

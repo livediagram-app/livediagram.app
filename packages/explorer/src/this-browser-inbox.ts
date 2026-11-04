@@ -129,6 +129,21 @@ export function writeInboxSnapshot(
   notify(app);
 }
 
+/** The snapshot without one item's rows: that item has just been deleted from this browser (the Explorer page's
+ *  in-place Delete), so its actions and threads leave the Inbox at once rather than when the app next works it out. */
+export function dropInboxItem(app: App, itemId: string, store: Storage | null = storage()): void {
+  const snapshot = readInboxSnapshot(app, store);
+  if (!snapshot) return;
+  const actions = snapshot.rows.actions.filter((a) => a.itemId !== itemId);
+  const threads = snapshot.rows.threads.filter((t) => t.itemId !== itemId);
+  if (
+    actions.length === snapshot.rows.actions.length &&
+    threads.length === snapshot.rows.threads.length
+  )
+    return;
+  writeInboxSnapshot(app, snapshot.ownerIds, { actions, threads }, store);
+}
+
 /** No snapshot: the app holds no offline items, or nothing it read is for anyone. */
 export function dropInboxSnapshot(app: App, store: Storage | null = storage()): void {
   try {

@@ -38,8 +38,9 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 - **Values** use the document's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
   `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the quick style panel offers
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
-  a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
-  label over 40 characters keeps the heading and moves the full text into the note; an arrow's
+  a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `line=angled`. A shape's
+  label over 40 characters keeps the heading and the rest is cut (`note=`, `noteRich=` and an element's `link=` are
+  refused: element links and notes are retired, [links-and-notes-retired.md](../009-elements/links-and-notes-retired.md)); an arrow's
   label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.

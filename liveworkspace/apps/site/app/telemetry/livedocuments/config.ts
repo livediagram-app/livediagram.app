@@ -63,7 +63,6 @@ import {
   MULTIPLAYER_SESSIONS,
   NEW_VERSION_PROMPT,
   NEW_VISITORS,
-  NOTES,
   OFFLINE_MODE,
   ONBOARDING_TOURS,
   ORGANISATION,
@@ -242,7 +241,8 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
     groups: [
       {
         title: 'Editing tools',
-        metrics: [NOTES, ASSIGNED_ACTIONS, ORGANISATION],
+        // Notes left with element notes (docs/specs/009-elements/links-and-notes-retired.md).
+        metrics: [ASSIGNED_ACTIONS, ORGANISATION],
       },
       {
         title: 'More editing',

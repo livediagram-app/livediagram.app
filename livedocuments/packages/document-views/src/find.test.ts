@@ -13,7 +13,6 @@ describe('findView (R17, VW35)', () => {
     const { text, json } = findView(checkout(), 'pay');
     await expect(text).toMatchFileSnapshot(golden('checkout.find-pay.txt'));
     expect(json.matches.map((m) => [m.ref, m.field, m.path])).toEqual([
-      ['146b', 'note', ['c991']],
       ['e4a8', 'label', ['c991']],
       ['480a', 'cell', []],
       ['0c84', 'label', []],

@@ -145,7 +145,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Work with what is on your pages: place, select, link, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 22,
+    articleCount: 20,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements', 'Layers and Locking'],
   },
@@ -154,7 +154,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one document: organise, link, and move between tabs of pages.',
-    articleCount: 9,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -1254,15 +1254,6 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
-    slug: 'linking-tabs',
-    title: 'Linking Across Tabs',
-    description:
-      'Turn an element into a jump point to another tab, another document, or a web address.',
-    keywords: 'jump navigation cross reference hyperlink go to connect',
-    category: 'Tabs',
-    categorySlug: 'tabs',
-  },
-  {
     slug: 'side-by-side',
     title: 'Side by Side Tabs',
     description:
@@ -1341,17 +1332,6 @@ export const articles: Article[] = [
       'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-  },
-  {
-    slug: 'links',
-    title: 'Links',
-    description:
-      'Make a shape, text, sticky note, image or table a link to another tab, document or the web.',
-    keywords:
-      'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Basics',
   },
   {
     slug: 'explorer-page',
@@ -1575,17 +1555,6 @@ export const articles: Article[] = [
     keywords: 'tidy align arrange auto grid organise organize straighten',
     category: 'Tools',
     categorySlug: 'tools',
-  },
-  {
-    slug: 'notes',
-    title: 'Notes',
-    description:
-      'Attach a longer written note to any element, formatted and out of sight until opened.',
-    keywords:
-      'note notes memo remark caveat detail context description rich text formatting bold italic underline heading bullet numbered list link popover badge resources',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Text and Notes',
   },
   {
     slug: 'layer-order',

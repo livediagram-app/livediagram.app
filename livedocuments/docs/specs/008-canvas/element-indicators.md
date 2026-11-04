@@ -1,5 +1,7 @@
 # Element indicators
 
+In livedocuments the **link** and **note** marks are retired (2026-11-04, [links-and-notes-retired.md](../009-elements/links-and-notes-retired.md)): only the action and comment marks draw.
+
 The marks on an element that say it carries something you cannot otherwise see: a **link**, a
 **note**, an open assigned **action** ([Assigned actions](../012-collaboration/assigned-actions.md))
 or unresolved **comments**.

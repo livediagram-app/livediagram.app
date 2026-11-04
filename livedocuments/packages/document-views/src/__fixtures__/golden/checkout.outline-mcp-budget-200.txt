@@ -9,4 +9,4 @@ cloud e6d7 "Stripe"
 square cb02 "Order"
 table 480a
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
-… notes hidden; attributes hidden; 7 elements in stack 048c hidden; 13 elements in stack c991 hidden: read_document {"only":"c991"}
+… attributes hidden; 7 elements in stack 048c hidden; 13 elements in stack c991 hidden: read_document {"only":"c991"}

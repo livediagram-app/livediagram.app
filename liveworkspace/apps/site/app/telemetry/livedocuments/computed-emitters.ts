@@ -372,13 +372,21 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
   'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
+  // A phone's Appearance (docs/specs/007-editor/pages-mode.md "Beside the cog"): opening it, then the row's own control.
+  'apps/editor/components/canvas/PageAppearanceButton.tsx UI·Opened': {
+    values: [
+      'PageAppearance',
+      'PageArticleStyleButton',
+      'ThemePicker',
+      'PageArticleTextButton',
+      'PageLayoutsButton',
+      'PageBackgroundButton',
+    ],
+    open: 'the Appearance sheet, or the row it opened',
+  },
   'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',
-  },
-  'apps/editor/components/notes/useNoteRichTextSession.ts Note·Used': {
-    values: ['Bold', 'Italic', 'List', 'Heading'],
-    open: 'the rich-text command a note applied',
   },
   'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
     values: ['IconSearch', 'TechSearch', 'StickerSearch'],

@@ -962,6 +962,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|PageContentsJump': "Someone went to a page from Pages mode's Contents list.",
   'UI|Used|PageSwipe':
     'Someone turned to the next or previous page in Pages mode with a short pan or a flick, the view gliding onto it.',
+  'UI|Used|PrintPage': 'Someone printed the page in view from Export.',
+  'UI|Used|PrintDocument': 'Someone printed the whole document, every tab, from Export.',
   'UI|Used|StackNav':
     'Someone turned a stack of pages (flashcards, or a tab stacked from Contents Options) to the previous or next page with the Previous or Next on the page in front.',
   'UI|Used|PageContentsReorder':

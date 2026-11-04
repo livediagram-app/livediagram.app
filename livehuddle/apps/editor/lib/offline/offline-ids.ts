@@ -11,9 +11,11 @@ import { reportApiWarning } from '../api/error-report';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { OfflineStoreUnavailableError, offlineBackend } from './offline-backend';
 import { publishThisBrowser } from './this-browser';
+import { APP_ITEMS } from '@liveworkspace/sites';
 
 // The channel the tabs of one browser tell each other about offline ids on.
-export const OFFLINE_IDS_CHANNEL = 'livehuddle-offline';
+// The app's offline database's name, which the Explorer page tells a delete on too (the registry's offlineStore).
+export const OFFLINE_IDS_CHANNEL = APP_ITEMS.livehuddle.offlineStore.db;
 
 // One change to the set of offline ids, as broadcast to the other tabs.
 export type OfflineIdChange = { kind: 'add' | 'remove'; id: string };

@@ -198,7 +198,6 @@ export type ShowSelectedView = { header: ViewHeader; selected: Omit<ShowView, 'h
 
 export const FIND_FIELDS = [
   'label',
-  'note',
   'edge',
   'cell',
   'item',

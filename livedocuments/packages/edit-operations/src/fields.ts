@@ -1,7 +1,8 @@
 // Fields onto an element (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values"):
-// the spec's aliases (`label note shape fill text line`) or any stored field of the element's type.
-// `null` unsets. Identity, live fields and prototype keys are refused. A shape's long label is capped
-// into its note once every field is written, so it moves into the note the element ends with.
+// the spec's aliases (`label shape fill text line`) or any stored field of the element's type.
+// `null` unsets. Identity, live fields, prototype keys and element links and notes (retired,
+// docs/specs/009-elements/links-and-notes-retired.md) are refused. A long label is capped once every field is
+// written.
 
 import type { EditRejection, EditWarning } from '@livedocuments/api-schema';
 import {
@@ -35,7 +36,6 @@ import { iconsLike, isIconId } from '@liveworkspace/icons/search';
 // unchanged; `font` is a stored field name already.
 const FIELD_ALIASES = [
   'label',
-  'note',
   'shape',
   'fill',
   'stroke',
@@ -70,6 +70,13 @@ const FORMER_FIELDS: Readonly<Partial<Record<Element['type'], readonly string[]>
   freehand: ['points', 'pressures'],
 };
 const LIVE_HINT = "comments go through the comment commands; responses and ideas are people's";
+// Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): a stored one is kept but
+// never written. A link card's and a video's link is their own content, not an attachment, so it stays theirs.
+const RETIRED_HINT = 'element links and notes are retired';
+const retiredField = (el: Element, key: string) =>
+  key === 'note' ||
+  key === 'noteRich' ||
+  (key === 'link' && el.type !== 'link-card' && el.type !== 'video');
 
 const hasField = (el: Element, field: string) => isElementFieldName(el.type, field);
 
@@ -78,7 +85,6 @@ export function aliasesOf(el: Element): Alias[] {
   return FIELD_ALIASES.filter((alias) => {
     switch (alias) {
       case 'label':
-      case 'note':
         return hasField(el, alias);
       case 'shape':
         return el.type === 'shape';
@@ -149,6 +155,7 @@ export function writeFieldsOnto<T extends Element>(
       given === 'icon' && hasField(el, 'iconId') && !hasField(el, 'icon') ? 'iconId' : given;
     if (PROTOTYPE_KEYS.has(key)) return unknownField(operation, kindOf(el), key, stored, aliases);
     if (IDENTITY_FIELDS.has(key)) return invalidValue(operation, key, value, 'cannot be changed');
+    if (retiredField(el, key)) return invalidValue(operation, key, value, RETIRED_HINT);
     if (LIVE_FIELDS.has(key))
       return invalidValue(
         operation,
@@ -194,17 +201,14 @@ export function writeFieldsOnto<T extends Element>(
   }
   let capped = false;
   if (typeof label === 'string') {
-    const note = 'note' in patch ? patch.note : Reflect.get(el, 'note');
-    const write = applyLabel(el, label, typeof note === 'string' ? note : undefined);
+    const write = applyLabel(el, label);
     patch.label = write.label;
-    if (write.note !== undefined) patch.note = write.note;
     if (write.capped) {
       capped = true;
-      const where = el.type === 'arrow' ? 'the rest was cut' : 'the full text is in its note';
       warnings.push({
         code: 'label_capped',
         ref,
-        message: `${ref} label kept as ${JSON.stringify(write.label)}; ${where}`,
+        message: `${ref} label kept as ${JSON.stringify(write.label)}; the rest was cut`,
       });
     }
   }
@@ -265,7 +269,6 @@ function writeAlias(
   const text = (rule: string) => invalidValue(operation, alias, value, rule);
   switch (alias) {
     case 'label':
-    case 'note':
       if (value !== null && typeof value !== 'string')
         return text('text, in quotes when it has spaces');
       patch[alias] = value;

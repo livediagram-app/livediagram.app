@@ -369,7 +369,8 @@ export type ShapeElement = {
   // element, no author / timestamp / multi-message structure, just a
   // small document the user can leave on any shape / text / sticky to
   // capture private context. Empty string strips the field on commit
-  // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
+  // so persisted JSON stays clean. Retired in livedocuments
+  // (docs/specs/009-elements/links-and-notes-retired.md): kept on stored documents, never shown or written.
   note?: string;
   // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
@@ -467,7 +468,8 @@ export type TextElement = {
   // element, no author / timestamp / multi-message structure, just a
   // small document the user can leave on any shape / text / sticky to
   // capture private context. Empty string strips the field on commit
-  // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
+  // so persisted JSON stays clean. Retired in livedocuments
+  // (docs/specs/009-elements/links-and-notes-retired.md): kept on stored documents, never shown or written.
   note?: string;
   // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
@@ -709,7 +711,8 @@ export type StickyElement = {
   // element, no author / timestamp / multi-message structure, just a
   // small document the user can leave on any shape / text / sticky to
   // capture private context. Empty string strips the field on commit
-  // (see `setNote` in useEditorNotes.ts) so persisted JSON stays clean.
+  // so persisted JSON stays clean. Retired in livedocuments
+  // (docs/specs/009-elements/links-and-notes-retired.md): kept on stored documents, never shown or written.
   note?: string;
   // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,

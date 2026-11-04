@@ -131,8 +131,7 @@ const STYLE_FIELDS =
   'width and style included, so it outranks a "strokeStyle" given with it; ghost and outline are dashed, dotted ' +
   'and dash-dot as named: theme, soft, ' +
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
-  'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
-  'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
+  'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
   '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
   '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
   '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
@@ -541,7 +540,7 @@ export const updateDocumentShape = {
         'inside:<stack>, align:<x>, at:x,y; inside:<stack> right-of:<x> places beside x in that stack. A box placed ' +
         'beside one inside a stack joins it (the stack grows); to stay outside, place it against the ' +
         'stack itself (below:<stack>), with align:<x> to line it up with a member (below:<stack> align:<x>). ' +
-        'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
+        'Keys: label= shape= fill=theme|red|orange|yellow|green|blue|' +
         'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg|<px> (24-72 on a text or a shape, 6-48 else) border=solid|dashed|' +
         'dotted line=…, or any stored field by name. Values with spaces are quoted: label="Sign in". ' +
         'Coordinates are relative to the content origin, as the layout view prints them.',

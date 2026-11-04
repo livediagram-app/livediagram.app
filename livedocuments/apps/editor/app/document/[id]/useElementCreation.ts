@@ -16,7 +16,7 @@ import {
   withVariantColours,
 } from '@livedocuments/document';
 import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import { buildDrawnBoxed, presetTextAt } from '@/lib/draw-commit';
+import { buildDrawnBoxed, presetTextAt, slideAt } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
@@ -356,7 +356,7 @@ export function useElementCreation(opts: {
     // which read as "double-click does nothing".
     if (editsBlocked) return;
     // A Paragraph, left aligned (docs/specs/008-canvas/canvas-and-palette.md "Text element").
-    const el = presetTextAt(x, y);
+    const el = presetTextAt(x, y, undefined, slideAt(activeTab, x, y));
     commitTabs((ts) =>
       ts.map((t) =>
         t.id === activeId ? { ...t, elements: [...t.elements, el], templateChosen: true } : t,

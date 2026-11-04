@@ -117,6 +117,19 @@ const TAB_WINDOW_EVENTS = new Set([
 ]);
 const TAB_WINDOW_HELP_ID = 'tab-windows';
 
+// Element links and notes (removed 2026-11-04, livedocuments docs/specs/009-elements/links-and-notes-retired.md):
+// the whole `Note` category (added, changed, deleted, opened, and its rich-text commands) and the Links, Notes and
+// Linking Across Tabs help articles. Link cards and videos keep their links, so Element·Linked carries on.
+const LINKS_AND_NOTES_HELP_IDS = new Set(['links', 'notes', 'linking-tabs']);
+
+function isRetiredLinksAndNotes(category: string, action: string, type: string | null): boolean {
+  if (category === 'Note') return true;
+  return (
+    (category === 'Help' || (category === 'UI' && action === 'Opened')) &&
+    LINKS_AND_NOTES_HELP_IDS.has(type ?? '')
+  );
+}
+
 function isRetiredTabWindow(category: string, action: string, type: string | null): boolean {
   if (TAB_WINDOW_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && (type ?? '').startsWith('TabWindowTour')) return true;
@@ -142,6 +155,7 @@ const SLIDE_DECK_PANEL_EVENTS = new Set([
 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredTabWindow(category, action, type)) return true;
+  if (isRetiredLinksAndNotes(category, action, type)) return true;
   if (SLIDE_DECK_PANEL_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (ISOMETRIC_VIEW.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (

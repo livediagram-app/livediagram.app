@@ -25,3 +25,12 @@
 # on Pages.
 /pages/tab-windows /pages/ 301
 /pages/tab-windows/ /pages/ 301
+
+# Element links and notes retired on 2026-11-04 (docs/specs/009-elements/links-and-notes-retired.md); their articles'
+# old URLs land on their sections.
+/canvas/links /canvas/ 301
+/canvas/links/ /canvas/ 301
+/canvas/notes /canvas/ 301
+/canvas/notes/ /canvas/ 301
+/tabs/linking-tabs /tabs/ 301
+/tabs/linking-tabs/ /tabs/ 301

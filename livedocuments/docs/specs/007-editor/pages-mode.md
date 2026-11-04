@@ -1320,7 +1320,8 @@ Both show the same list:
   searches the pages.
 - **The list**: every page in row order, one row each: its number, a live thumbnail of the page as
   it is (its background, motion still, and everything on it, drawn by the same renderer as the
-  exports' thumbnails, 16:9, A4 or square as the page is), and its name: its own, else
+  exports' thumbnails, 16:9, A4 or square as the page is; in the sidebar a page narrower than a slide, such as
+  a portrait A4, sits centred in the row's picture space), and its name: its own, else
   its title, else its place ("Page 3"). A slide's or an infographic's title is the first line of
   its biggest words, the topmost (then leftmost) where two are as big, cut at 60 characters
   (`lib/page-title.ts`), read as the tab's words settle rather than on every frame of a drag or

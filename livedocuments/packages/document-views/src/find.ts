@@ -45,7 +45,6 @@ function searchedTexts(el: Element): [FindField, string[]][] {
   const thread = threadOf(el);
   return [
     ['label', strings([textField(el, 'label')])],
-    ['note', strings([textField(el, 'note')])],
     ['cell', strings(rows)],
     [
       'item',

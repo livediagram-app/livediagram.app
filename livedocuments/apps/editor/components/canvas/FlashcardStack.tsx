@@ -44,19 +44,23 @@ export function FlashcardStackSheets({
             aria-hidden
             {...{ [GIF_OMIT_ATTR]: '' }}
             data-flashcard-behind=""
-            // A flip eases each card to its new place in the fan (keyed by its page, so it moves, never redraws).
-            className={`pointer-events-none absolute origin-center transition-[left,top,transform] duration-200 ease-out motion-reduce:transition-none ${
+            // A flip eases each card to its new place in the fan (keyed by its page, so it moves, never redraws): its
+            // offset and tilt are a transform from the card in front's place, so only they ease. The stack itself
+            // stands where the card in front does, which moves a whole page as the view does on every flip; easing
+            // left and top slid every card in from a page away, as if the stack flickered out and back.
+            className={`pointer-events-none absolute origin-center transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none [--edge:rgb(15_23_42/0.28)] dark:[--edge:rgb(255_255_255/0.26)] ${
               page.background?.fill ? '' : 'bg-white dark:bg-slate-900'
             }`}
             style={{
-              left: sheet.rect.x,
-              top: sheet.rect.y,
+              left: card.rect.x,
+              top: card.rect.y,
               width: sheet.rect.width,
               height: sheet.rect.height,
-              transform: `rotate(${sheet.turn}deg)`,
+              transform: `translate(${sheet.rect.x - card.rect.x}px, ${sheet.rect.y - card.rect.y}px) rotate(${sheet.turn}deg)`,
               opacity: sheet.opacity,
-              // Barely there: an edge, not a weight.
-              boxShadow: '0 1px 2px rgb(15 23 42 / 0.06)',
+              // An edge, not a weight: a fine line that reads on a white card over a light canvas (where a faded white
+              // sheet alone vanished) and on a dark one, and a soft lift under it.
+              boxShadow: '0 0 0 1px var(--edge), 0 2px 6px -2px rgb(15 23 42 / 0.16)',
               ...pageSheetStyle(page.background),
             }}
           ></div>

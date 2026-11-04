@@ -1,7 +1,7 @@
 tab agent-tab "Services" · 12 elements: 7 boxes, 5 arrows · 1 page: 1 infographic (view pages)
 stack services "Services" direction=row
-  square orders "Orders service" note="Owns the order lifecycle and is the source of"… → payments "charge", orders-db, event-bus "OrderPlaced"
-  stadium event-bus "Event bus" note="Kafka, 3 brokers, 7-day retention." → inventory, notification
+  square orders "Orders service" → payments "charge", orders-db, event-bus "OrderPlaced"
+  stadium event-bus "Event bus" → inventory, notification
   square payments "Payments service"
   square inventory "Inventory service"
   square notification "Notification worker"

@@ -15,7 +15,7 @@ describe('label-overflow', () => {
       label: 'An extremely long label that cannot possibly fit in this small box',
     });
     expect(of(lint(tabOf(small)), 'label-overflow')[0]!.fix).toBe(
-      'set b label="<text>" note="<text>"',
+      'set b label="<shorter text>"',
     );
   });
 

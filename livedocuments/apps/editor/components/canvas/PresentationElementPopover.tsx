@@ -3,14 +3,12 @@
 // What one element has to say, shown during a presentation (docs/specs/012-collaboration/presentation-mode.md).
 //
 // The rule the whole mode runs on is READ ANYTHING, CHANGE NOTHING. Clicking
-// an element mid-presentation opens this: its note, its comment thread, and
-// its assigned actions. Nothing here is editable and there is no composer, so
+// an element mid-presentation opens this: its comment thread and its assigned
+// actions (element notes are retired,
+// docs/specs/009-elements/links-and-notes-retired.md). Nothing here is
+// editable and there is no composer, so
 // a presenter can show the room the objection somebody left on the box they
 // are pointing at, and cannot answer it from the projector.
-//
-// This is a different thing from the HUD's notes popover, and they never
-// overlap: the HUD's carries the SLIDE's presenter note (what you mean to
-// say), this one carries the ELEMENT's (what the document records about it).
 //
 // It reuses the Comment panel's thread (CommentBubbles) rather than growing a
 // third rendering of a comment thread, with no delete handler and no self, so
@@ -27,7 +25,6 @@ import {
 import { CloseIcon } from '@livedocuments/ui';
 
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
-import { NoteRichText } from '@/components/notes/NoteRichText';
 import { useRelativeNow } from '@/lib/relative-time';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -44,14 +41,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 /**
  * Does this element carry anything worth opening a popover for?
  *
- * Arrows are excluded because they carry none of the three fields: a note, a
- * comment thread and an assigned action all live on boxed elements. Clicking
+ * Arrows are excluded because they carry neither field: a comment thread and
+ * an assigned action live on boxed elements. Clicking
  * an arrow mid-presentation therefore falls through to advancing the slide,
  * which is the right outcome rather than an empty card.
  */
 export function hasReadableDetail(element: Element): element is BoxedElement {
   if (!isBoxed(element)) return false;
-  if (element.note?.trim()) return true;
   if (activeCommentCount(element.commentThread) > 0) return true;
   return elementActions(element).length > 0;
 }
@@ -67,7 +63,6 @@ export function PresentationElementPopover({
   onClose: () => void;
 }) {
   const now = useRelativeNow();
-  const note = element.note?.trim();
   const comments = activeCommentCount(element.commentThread);
   // The action assigned to this element (docs/specs/012-collaboration/assigned-actions.md).
   const actions = elementActions(element);
@@ -81,8 +76,8 @@ export function PresentationElementPopover({
     <div
       role="dialog"
       aria-label={`Details for ${element.label?.trim() || 'this element'}`}
-      // Stops the surface's click-to-advance underneath: reading a note must
-      // never cost you a slide.
+      // Stops the surface's click-to-advance underneath: reading a comment
+      // must never cost you a slide.
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       className="pointer-events-auto fixed z-[70] flex max-h-[60vh] w-80 flex-col gap-3 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
@@ -101,16 +96,6 @@ export function PresentationElementPopover({
           <CloseIcon size={12} />
         </button>
       </div>
-
-      {note ? (
-        <Section title="Note">
-          <div className="text-[11px] leading-snug text-slate-600 dark:text-slate-300">
-            {/* The same renderer the note popover uses, so formatting made
-                in the editor survives onto the projector (docs/specs/009-elements/rich-text-notes.md). */}
-            <NoteRichText note={element.note} noteRich={element.noteRich} />
-          </div>
-        </Section>
-      ) : null}
 
       {comments > 0 ? (
         <Section title={comments === 1 ? '1 comment' : `${comments} comments`}>

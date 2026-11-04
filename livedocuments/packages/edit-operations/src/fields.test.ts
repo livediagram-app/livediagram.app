@@ -53,9 +53,10 @@ const nextOf = (out: FieldsWrite) => out.next as unknown as Record<string, unkno
 describe('aliasesOf', () => {
   it('gives each element the aliases its type takes, style keys included', () => {
     const style = ['stroke', 'text-color', 'border'];
-    expect(aliasesOf(square)).toEqual(['label', 'note', 'shape', 'fill', ...style, 'text']);
+    expect(aliasesOf(square)).toEqual(['label', 'shape', 'fill', ...style, 'text']);
     expect(aliasesOf(arrow)).toEqual(['label', ...style, 'text', 'line']);
-    expect(aliasesOf(text)).toEqual(['label', 'note', ...aliasesOf(text).slice(2)]);
+    expect(aliasesOf(text)[0]).toBe('label');
+    expect(aliasesOf(text)).not.toContain('note');
     expect(aliasesOf(image)).toContain('label');
   });
 
@@ -101,7 +102,6 @@ describe('writeFieldsOnto', () => {
     const out = write(square, {
       label: 'Sign in',
       text: 'lg',
-      note: null,
       fill: 'blue',
       opacity: 0.5,
     });
@@ -112,8 +112,7 @@ describe('writeFieldsOnto', () => {
       fillSwatch: 5,
       opacity: 0.5,
     });
-    expect(nextOf(out)).not.toHaveProperty('note');
-    expect(out.written).toEqual(['label', 'text', 'note', 'fill', 'opacity']);
+    expect(out.written).toEqual(['label', 'text', 'fill', 'opacity']);
     expect(out.warnings).toEqual([]);
   });
 
@@ -173,32 +172,27 @@ describe('writeFieldsOnto', () => {
     expect(write(stickyEl, { textColor: '#000' }).warnings).toEqual([]);
   });
 
-  it('caps a long shape label into the note it ends with, and warns', () => {
-    const out = write(square, {
-      label: 'Orders service which creates and tracks every order',
-      note: 'Given',
-    });
-    expect(nextOf(out)).toMatchObject({
-      label: 'Orders service',
-      note: 'Orders service which creates and tracks every order\n\nGiven',
-    });
+  // Element notes are retired (docs/specs/009-elements/links-and-notes-retired.md): the rest is cut, the stored note
+  // left as it was.
+  it('caps a long label, cutting the rest, and warns', () => {
+    const out = write(square, { label: 'Orders service which creates and tracks every order' });
+    expect(nextOf(out)).toMatchObject({ label: 'Orders service', note: 'Old' });
     expect(out.capped).toBe(true);
-    expect(out.warnings[0]!.message).toBe(
-      'n3 label kept as "Orders service"; the full text is in its note',
-    );
+    expect(out.warnings[0]!.message).toBe('n3 label kept as "Orders service"; the rest was cut');
     const onArrow = write(arrow, { label: 'Orders service which creates and tracks every order' });
     expect(onArrow.warnings[0]!.message).toBe(
       'a1 label kept as "Orders service"; the rest was cut',
     );
-    expect(
-      write(square, { label: 'Message queue for asynchronous events now' }).next,
-    ).toMatchObject({
-      note: 'Message queue for asynchronous events now\n\nOld',
-    });
-    const bare = { ...square, note: undefined } as Element;
-    expect(
-      write(bare, { label: 'Message queue for asynchronous events now', note: null }).next,
-    ).toMatchObject({ note: 'Message queue for asynchronous events now' });
+  });
+
+  it('refuses element links and notes, which are retired, but keeps a link card and a video their link', () => {
+    for (const fields of [{ note: 'x' }, { note: null }, { noteRich: null }, { link: null }] as Fields[])
+      expect(refusal(square, fields).details[0]).toContain('element links and notes are retired');
+    const url = { kind: 'url', url: 'https://example.com' };
+    for (const type of ['link-card', 'video']) {
+      const own = { id: 'c', type, x: 0, y: 0, width: 200, height: 100 } as unknown as Element;
+      expect(nextOf(write(own, { link: url }))).toMatchObject({ link: url });
+    }
   });
 
   it('refuses identity, live and prototype fields, and keys the type lacks', () => {

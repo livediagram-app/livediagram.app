@@ -37,14 +37,6 @@ export const FOLDERS_RENAMED = chart(
   'A folder of tab pills renamed inside one document.',
 );
 
-export const NOTES_DELETED = chart(
-  'Note',
-  'Deleted',
-  'Notes Deleted',
-  'A note cleared from an element.',
-  { rising: 'neutral' },
-);
-
 export const ACTIONS_EDITED = chart(
   'Action',
   'Changed',
@@ -104,15 +96,6 @@ export const LAYERS_MERGED = chart(
   'Layers Merged',
   'A layer merged into the one above or below.',
   { types: ['MergedDown', 'MergedUp'] },
-);
-
-export const NOTES_EDITED = chart('Note', 'Changed', 'Notes Edited', 'A written note changed.');
-
-export const NOTE_FORMATTING = chart(
-  'Note',
-  'Used',
-  'Note Formatting',
-  'Rich-text formatting used inside a note.',
 );
 
 export const TABS_UNFILED = chart(
@@ -226,6 +209,15 @@ export const STACK_NAV = chart(
   { types: ['StackNav'], rising: 'neutral' },
 );
 
+// Print (docs/specs/020-import-export/print.md): Export's Print, the scope in the type.
+export const PRINTS = chart(
+  'UI',
+  'Used',
+  'Prints',
+  'Pages printed from Export: the page in view, or the whole document.',
+  { types: ['PrintPage', 'PrintDocument'], rising: 'good' },
+);
+
 // Building pages: a layout placed, a page duplicated or moved.
 export const PAGE_BUILDING = chart(
   'Tab',
@@ -334,6 +326,7 @@ export const PAGE_WORK: MetricStack = {
     PAGE_SWIPES,
     FLASHCARD_FLIPS,
     STACK_NAV,
+    PRINTS,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
@@ -407,22 +400,6 @@ export const LAYERS_FEATURE: MetricStack = {
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
 // different subjects: see the type note in docs/specs/017-telemetry/telemetry.md's Folder entry.
-
-export const NOTES_ADDED: Metric = {
-  category: 'Note',
-  action: 'Added',
-  type: null,
-  title: 'Notes Added',
-  blurb: "An element's note went from empty to written.",
-};
-
-export const NOTES_OPENED: Metric = {
-  category: 'Note',
-  action: 'Opened',
-  type: null,
-  title: 'Notes Opened',
-  blurb: 'The note popover was opened, to read as well as to write.',
-};
 
 export const ACTIONS_ASSIGNED: Metric = {
   category: 'Action',
@@ -517,14 +494,6 @@ export const TABS_FILED: Metric = {
   title: 'Tabs Filed',
   blurb:
     'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
-};
-
-export const NOTES: MetricStack = {
-  stack: true,
-  title: 'Notes',
-  blurb: 'Notes written on elements, and opened to read or edit.',
-  members: [NOTES_ADDED, NOTES_OPENED, NOTES_DELETED, NOTES_EDITED, NOTE_FORMATTING],
-  headline: NOTES_ADDED,
 };
 
 export const ASSIGNED_ACTIONS: MetricStack = {

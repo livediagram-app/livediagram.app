@@ -24,7 +24,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'using-tabs': '#3b82f6',
   comments: '#f59e0b',
   'live-presence': '#06b6d4',
-  links: '#10b981',
   images: '#ec4899',
   'explorer-page': '#64748b',
   'explorer-panel': '#64748b',
@@ -113,7 +112,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'shape-markers': '#f59e0b',
   // Canvas guides
   'follow-along': '#06b6d4',
-  notes: '#eab308',
   'layer-order': '#2563eb',
   size: '#0284c7',
   rotation: '#7c3aed',
@@ -144,7 +142,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'team-spaces': '#a855f7',
   'image-gallery': '#ec4899',
   'tab-folders': '#3b82f6',
-  'linking-tabs': '#10b981',
   'add-to-document': '#6366f1',
   'import-tabs': '#0891b2',
   tags: '#e11d48',

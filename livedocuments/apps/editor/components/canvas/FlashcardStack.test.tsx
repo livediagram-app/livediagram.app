@@ -32,6 +32,25 @@ describe('the cards behind', () => {
     }
   });
 
+  // flashcards.md "The cards behind": a flip moves the stack a page with the view, so only the fan eases.
+  it('stands every card behind at the card in front, its fan place a transform, so a flip eases only the fan', () => {
+    const at = (front: LaidOutPage, behind: readonly LaidOutPage[]) => [
+      ...render(
+        <FlashcardStackSheets card={front} behind={behind} />,
+      ).container.querySelectorAll<HTMLElement>('[data-flashcard-behind]'),
+    ];
+    const sheets = at(cards[0]!, cards.slice(1));
+    for (const s of sheets) {
+      expect(s.style.left).toBe(`${cards[0]!.rect.x}px`);
+      expect(s.style.top).toBe(`${cards[0]!.rect.y}px`);
+      expect(s.style.transform).toMatch(
+        /^translate\(-?[\d.]+px, -?[\d.]+px\) rotate\(-?[\d.]+deg\)$/,
+      );
+      expect(s.className).toContain('transition-[transform,opacity]');
+      expect(s.className).not.toMatch(/transition-\[[^\]]*\b(left|top)\b/);
+    }
+  });
+
   // flashcards.md "The card in front stands out".
   it('lifts the card in front off the fan, with a rim that suits its background, only while cards stand behind', () => {
     const lift = (card: LaidOutPage, behind: readonly LaidOutPage[]) =>

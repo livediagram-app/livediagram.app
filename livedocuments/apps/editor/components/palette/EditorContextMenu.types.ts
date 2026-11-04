@@ -1,5 +1,4 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
-import type { ElementMenuActions } from './ElementMenuQuickBar';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -324,15 +323,14 @@ export type EditorContextMenuProps = {
   // Commit + hover-preview pair.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   // Assigned actions (docs/specs/012-collaboration/assigned-actions.md): the Collaborate category's Assign Action
   // tile, shown for everyone (signed-out users can self-assign). Opens
   // the assign dialog (no action yet) or the action popover (one exists).
   onAssignAction: (elementId: string) => void;
-  // The Element actions row (Edit Text, Duplicate, Stack Front / Back, Lock, Delete), first in the element menu
-  // (docs/specs/008-canvas/element-menu-quick-bar.md): livedocuments has no selection toolbar, so they live here.
-  elementActions?: ElementMenuActions;
+  // The quick bar's Delete, at its right (docs/specs/008-canvas/element-menu-quick-bar.md): deletes the selection,
+  // which the right-click that opened the menu made this element.
+  onDeleteElement?: () => void;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters

@@ -89,7 +89,6 @@ export type CommandHandlers = {
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;
-  editNote: () => void;
   createTab: () => void;
   renameDocument: () => void;
   deleteDocument: () => void;

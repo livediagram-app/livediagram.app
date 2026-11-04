@@ -86,7 +86,6 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
-import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
@@ -486,10 +485,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ownerId: selfParticipant.id,
     passwordGated: sharePasswordGate !== null,
   });
-
-  // Per-element note popover (state + open/close/setNote handlers)
-  // lives in useEditorNotes. Invoked further down, after `commit`
-  // exists.
 
   // Right-click context menu state (cursor position + element-scoped
   // vs tab-scoped mode). See useEditorContextMenu.
@@ -2005,11 +2000,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sessionShareCode,
   });
 
-  // Per-element note popover (single plain-text paragraph; see
-  // packages/document BoxedElement.note). State + handlers in
-  // useEditorNotes.
-  const { noteOpenId, openNote, closeNote, setNote } = useEditorNotes({ commit });
-
   // --- Element CRUD --------------------------------------------------------
 
   // Draw-to-size + polygon tooling (pendingDraw state machine +
@@ -2108,8 +2098,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     deleteMultiSelected,
     narrowMultiSelection,
     duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
     spawnConnectSelected,
   } = useElementSelectionActions({
     currentSelectionIds,
@@ -2775,7 +2763,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     closeComments,
     closeContextMenu,
     closeImagePicker,
-    closeNote,
     commentRows,
     commentThreadOpenId,
     commentThreadOpenCell,
@@ -2798,8 +2785,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     duplicateMultiSelected,
     duplicateSelected,
     // Intra-layer z-order for the selection popover (docs/specs/006-document/layers.md).
-    stackSelectedFront,
-    stackSelectedBack,
     duplicateTab,
     embedMode,
     fitToScreen,
@@ -2852,10 +2837,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     nameConfirmed,
     narrowMultiSelection,
     newDocument,
-    noteOpenId,
     openComments,
     openDocument,
-    openNote,
     participantsByTab,
     pendingDraw,
     redo,
@@ -3029,7 +3012,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFillColorSelected,
     setLinkPickerOpenForId,
     setLoadingDocument,
-    setNote,
     setOpacitySelected,
     setShadowSelected,
     setPaddingSelected,

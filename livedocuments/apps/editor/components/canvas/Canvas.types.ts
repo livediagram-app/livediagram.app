@@ -380,7 +380,6 @@ export type CanvasProps = {
   // read-only sessions too — visitors may read an action; the popover
   // gates its mutations itself.
   onOpenAction: (elementId: string) => void;
-  onOpenNote?: (elementId: string) => void;
   // Drop a palette icon onto a shape: set its inline iconId and the
   // position (which side of the text) derived from where it was dropped.
   // Optional so read-only / pre-identity Canvas mounts can omit it.

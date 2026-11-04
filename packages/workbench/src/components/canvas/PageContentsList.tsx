@@ -341,7 +341,8 @@ function FilmRow({ row, here, thumb, badges, tools }: RowProps) {
         {tools}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <span className="flex" style={{ width: FILM_MAX_W }}>
+        {/* A page narrower than the slot (a portrait page, a card) sits in its middle, not at its left. */}
+        <span className="flex justify-center" data-contents-film-frame="" style={{ width: FILM_MAX_W }}>
           <Picture thumb={thumb} w={w} h={h} here={here} large aside={!!row.setAside} />
         </span>
         <span className="flex min-w-0 flex-col pl-0.5" style={{ width: FILM_MAX_W }}>

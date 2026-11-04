@@ -103,10 +103,13 @@ side by side shows its cards in a row, as slides stand, with no fan, footer nav 
   and turning a little further the deeper it sits (`FLASHCARD_FAN`: 2 degrees for the nearest, up to 5 for the
   furthest, nudged at most 13 px), so their corners show all round the card, not only below it. They **recede, never
   compete**: each is in its own background's tone but see-through, the nearest at 50% opacity and each further back
-  6% fainter (never below 20%), with only a hairline shadow, so the card in front is the one thing at full strength. Up to **6** show (`FLASHCARD_STACK_MAX`), so the more
+  6% fainter (never below 20%), each drawn with a fine edge (a 1 px line, dark on a light canvas and light on a dark
+  one) and a soft shadow, so a white card behind a white card still shows on a light canvas, and the card in front is the one thing at full strength. Up to **6** show (`FLASHCARD_STACK_MAX`), so the more
   cards are still to come the fuller the fan; the last card has none behind it. The fan is set by depth, never by
   chance, so it looks the same every time; on a flip each card eases to its new place in the fan (200 ms,
-  ease-out; at once under reduced motion). The cards behind are a view: they take no presses and are never
+  ease-out; at once under reduced motion): only its offset, tilt and fade ease. The stack stands where the card
+  in front does and moves with the view, so the cards behind never slide across from the page the view left: on a
+  flip only the card coming to the front, and the one joining the back, change. The cards behind are a view: they take no presses and are never
   exported. The presenter's note cards keep their own small straight stack.
 - **The card in front stands out**: however strong the backgrounds (a dark or busy card over cards of the same tone),
   its edge reads: it casts a soft shadow onto the fan and wears a thin rim just outside its edge (1.5 canvas px,

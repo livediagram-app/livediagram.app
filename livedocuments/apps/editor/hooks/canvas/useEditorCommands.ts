@@ -40,7 +40,6 @@ const INERT_HANDLERS: CommandHandlers = {
   renumberSteps: noop,
   setMarker: noop,
   addComment: noop,
-  editNote: noop,
   createTab: noop,
   renameDocument: noop,
   deleteDocument: noop,
@@ -94,7 +93,6 @@ export function useEditorCommands(open: boolean): {
     setArrowFlowSelected,
     setMarkerSelected,
     openComments,
-    openNote,
     addTab,
     deleteDocument,
     setShareDialogOpen,
@@ -220,9 +218,6 @@ export function useEditorCommands(open: boolean): {
     // Never on a Plan item.
     addComment: () => {
       if (selectedId) openComments(selectedId);
-    },
-    editNote: () => {
-      if (selectedId) openNote(selectedId);
     },
     createTab: addTab,
     renameDocument: requestRenameDocument,

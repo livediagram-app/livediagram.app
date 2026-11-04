@@ -44,7 +44,9 @@ type OutlineOptions = {
   door?: ViewDoor;
 };
 
-// Full detail, notes dropped, attributes dropped (an open comment count kept).
+// Full detail, notes dropped, attributes dropped (an open comment count kept). Element notes are retired
+// (docs/specs/009-elements/links-and-notes-retired.md) and never print, so level 1 reads as level 0 and the ladder
+// skips it: it would hide nothing.
 type Level = 0 | 1 | 2;
 const LEVELS: readonly Level[] = [0, 1, 2];
 
@@ -204,7 +206,7 @@ function elisionOf(
   fullTokens: number,
   door: ViewDoor,
 ) {
-  const dropped = (['notes', 'attributes'] as const).slice(0, fit.level);
+  const dropped = fit.level === 2 ? (['attributes'] as const) : [];
   const collapsed = [...fit.collapsed]
     .sort((a, b) => a.index - b.index)
     .map((c) => ({
@@ -252,8 +254,6 @@ function fitOutline(
     );
   };
   if (tokens(full) <= budget) return { fit: full, state: 'full', fullTokens };
-  const notes: Fit = { ...full, level: 1 };
-  if (tokens(notes) <= budget) return { fit: notes, state: 'notes-dropped', fullTokens };
   const attributes: Fit = { ...full, level: 2 };
   if (tokens(attributes) <= budget)
     return { fit: attributes, state: 'attributes-dropped', fullTokens };
@@ -274,7 +274,7 @@ function fitOutline(
   const inside = new Uint8Array(entries.length);
   let hiddenLength = 0;
   let restElements = 0;
-  const dropped = ['notes', 'attributes'];
+  const dropped = ['attributes'];
   const collapsedTokens = () => {
     const named = collapsed.slice(0, ELISION_CONTAINERS_NAMED).map((c) => ({
       ref: model.refs.refOf(c.node.el.id),

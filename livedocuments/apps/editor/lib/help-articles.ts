@@ -49,16 +49,14 @@ export const HELP_ARTICLES = {
   markdownImport: 'tools/markdown-import',
   // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
   findAndReplace: 'tools/find-and-replace',
-  linkingTabs: 'tabs/linking-tabs',
   // Teams
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   changingTheme: 'canvas/themes/changing-theme',
   choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
-  // Links / activity / comments
+  // Activity / comments
   pagesTour: 'pages/pages-tour',
-  links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
   assignedActions: 'collaboration/assigned-actions',
@@ -197,10 +195,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Markdown import',
     description: 'How a Markdown file becomes an article.',
   },
-  linkingTabs: {
-    title: 'Learn about linking tabs',
-    description: 'How linking to another tab works.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
@@ -216,10 +210,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   choosingFonts: {
     title: 'Learn about fonts',
     description: 'Tips for choosing a typeface and text size for a tab.',
-  },
-  links: {
-    title: 'Learn about links',
-    description: 'Linking elements to tabs, documents, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
