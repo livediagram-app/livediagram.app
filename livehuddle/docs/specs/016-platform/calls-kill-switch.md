@@ -117,8 +117,8 @@ state while it is off (an Editor's and a Participant's Join Audio, a Viewer's Li
 ### What each mode allows
 
 One rule, `callsModeAllows(mode, kind)`, decides every mint, for a `session` or a track of one kind: `audio`,
-`video` or `screen`. A track's kind comes from its name (`callTrackKind`): the microphone (`mic`) is audio; video
-(#317) and screen sharing (#318) add their own names and kinds, and get this rule for free.
+`video` or `screen`. A track's kind comes from its name (`callTrackKind`): the microphone (`mic`) is audio, the camera
+(`cam`, #317) video and a shared screen (`screen`, #318) screen.
 
 | Mode         | Session | Audio | Video | Screen |
 | ------------ | ------- | ----- | ----- | ------ |
@@ -172,8 +172,9 @@ push, or from a refused mint):
   paused".
 - Text, avatars, the equaliser bars already on screen and the Space carry on.
 
-`audio-only` changes nothing visible while calls are audio alone; video (#317) and screen sharing (#318) show their
-own "Video is paused" state from the same mode.
+`audio-only` leaves audio as it is; the camera and Share Screen buttons ([Video and screen share
+bubbles](../012-collaboration/video-and-screen-bubbles.md#the-kill-switch), #317 and #318) read **Video Paused**, a
+camera or share that was on stops, and every bubble closes.
 
 ### Sign-in to publish
 
@@ -183,6 +184,6 @@ part like anyone else.
 
 ### Later
 
-The per-person cap on video bubbles received and the screen share's resolution and frame-rate caps belong to video
-(#317) and screen sharing (#318), which add those media. A maximum call length is not set: the TURN credentials
+The per-person cap on video bubbles received (the nearest 6) and the screen share's resolution and frame-rate caps
+(1080p, 5 to 15 fps) are set in [Video and screen share bubbles](../012-collaboration/video-and-screen-bubbles.md). A maximum call length is not set: the TURN credentials
 already last 4 hours, and the budget poll guards the month.

@@ -90,6 +90,15 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     { edit: [true, true], participate: [true, true], view: [false, false] },
   );
 
+  // Video and screen share bubbles (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles"):
+  // useCanvasCall's `canSpeak` (the camera) reads `can.takePart`; EditorCanvasHost's `canShareScreen` reads
+  // `gates.shape`. Seeing and maximising a bubble has no gate: everyone in a call sees the people near them.
+  expectPerLevel(
+    'Turn on a camera, share a screen',
+    (level) => [gatesFor(level).takePart, gatesFor(level).shape],
+    { edit: [true, true], participate: [true, false], view: [false, false] },
+  );
+
   // Pushing, sitting and a drink are the character's own presence: in Avatar mode, which every role has, with no
   // gate of their own (EditorCanvasHost wires `onAvatarPush` and the seat and drink for every session).
   expectPerLevel(

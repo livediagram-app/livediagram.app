@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { callActions, callSelf, resetCallSelf } from './calls-store';
+import { callActions, callSelf, resetCallSelf, setCallSelf } from './calls-store';
 import { useProximityCall, type ProximityCallDeps } from './useProximityCall';
 
 const caps = vi.hoisted(() => ({ apiGetCapabilities: vi.fn() }));
@@ -14,6 +14,8 @@ const calls = vi.hoisted(() => ({
     start: ReturnType<typeof vi.fn>;
     stop: ReturnType<typeof vi.fn>;
     toggleMute: ReturnType<typeof vi.fn>;
+    toggleCamera: ReturnType<typeof vi.fn>;
+    toggleScreen: ReturnType<typeof vi.fn>;
     ended: boolean;
   }[],
   fail: false,
@@ -24,6 +26,8 @@ vi.mock('./proximity-call', () => ({
     start = vi.fn(async () => {});
     stop = vi.fn();
     toggleMute = vi.fn();
+    toggleCamera = vi.fn(async () => {});
+    toggleScreen = vi.fn(async () => {});
     ended = false;
     constructor() {
       if (calls.fail) throw new Error('chunk');
@@ -150,5 +154,34 @@ describe('useProximityCall', () => {
     await act(async () => {});
     act(() => callActions()!.join());
     expect(calls.made).toHaveLength(0);
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Telemetry" and "Share roles".
+  it('drives the camera and the share, counting each start, and says who may share', async () => {
+    mount({ canShare: true, view: { x: 0, y: 0, width: 100, height: 100 } });
+    await waitFor(() => expect(callSelf().available).toBe(true));
+    expect(callSelf().canShare).toBe(true);
+    // Nothing to drive before joining.
+    act(() => callActions()!.toggleCamera());
+    act(() => callActions()!.toggleScreen());
+    expect(telemetry.track).not.toHaveBeenCalled();
+    act(() => callActions()!.join());
+    await waitFor(() => expect(calls.made).toHaveLength(1));
+    const call = calls.made[0]!;
+    expect(call.update).toHaveBeenCalledWith(
+      expect.objectContaining({ view: { x: 0, y: 0, width: 100, height: 100 } }),
+    );
+    act(() => callActions()!.toggleCamera());
+    act(() => callActions()!.toggleScreen());
+    expect(call.toggleCamera).toHaveBeenCalledTimes(1);
+    expect(call.toggleScreen).toHaveBeenCalledTimes(1);
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'CameraOn');
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'ScreenShare');
+    // Turning them off is not counted.
+    telemetry.track.mockClear();
+    act(() => setCallSelf({ camera: 'on', screen: 'on' }));
+    act(() => callActions()!.toggleCamera());
+    act(() => callActions()!.toggleScreen());
+    expect(telemetry.track).not.toHaveBeenCalled();
   });
 });

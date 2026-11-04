@@ -44,6 +44,8 @@ export type CanvasProps = {
   participantPalette?: boolean;
   // A read-only session that still takes part (a Participant): it casts dots in a vote (docs/specs/013-workspace/share-roles.md).
   takePart?: boolean;
+  // An Editor: may share a screen in a call (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles").
+  canShareScreen?: boolean;
   // Which elements a read-only session may still drag (a Participant's stickies and its own adds); absent, none.
   canMove?: (el: Element) => boolean;
   // Which elements' words a read-only session may still write (a Participant's); absent, none.

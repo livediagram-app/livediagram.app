@@ -17,10 +17,16 @@ a radius in the open, and everyone in the All-Hands Hall hearing the stage.
 
 ## Video calls
 
+**Built for staging**: [Video and screen share bubbles](../012-collaboration/video-and-screen-bubbles.md) (Work
+Tracker #317), a camera bubble above the character for the people in earshot, maximised on a press.
+
 A small camera tile beside a character, or a face in the character's head, for the people one is talking to; the
 same proximity rule picks whose video is sent.
 
 ## Screen sharing
+
+**Built for staging**: [Video and screen share bubbles](../012-collaboration/video-and-screen-bubbles.md) (Work
+Tracker #318), as a bubble above the sharer rather than a frame on the board (the card's choice); an Editor's act.
 
 One person shares a screen or a window into a frame on the board (an Editor's act, like Bring Focus), and everyone in
 range watches it there.
