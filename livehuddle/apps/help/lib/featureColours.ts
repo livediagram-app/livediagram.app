@@ -23,6 +23,8 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'using-tabs': '#3b82f6',
   comments: '#f59e0b',
   'live-presence': '#06b6d4',
+  'proximity-audio': '#0ea5e9',
+  'cameras-and-screen-sharing': '#8b5cf6',
   links: '#10b981',
   images: '#ec4899',
   'explorer-page': '#64748b',
