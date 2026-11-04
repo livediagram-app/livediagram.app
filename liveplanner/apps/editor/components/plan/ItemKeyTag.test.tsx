@@ -36,13 +36,12 @@ describe('ItemKeyTag', () => {
     expect(screen.queryByRole('button', { name: 'Copied #3' })).toBeNull();
   });
 
-  // docs/specs/004-interface-design/touch-targets.md: the tag is 22px tall, so on a touch screen its tap area
-  // reaches 44px vertically (only: the type picker sits 8px to its left), from a positioned host.
+  // docs/specs/004-interface-design/touch-targets.md: the tag is about 26 by 22px, so on a touch screen its tap area
+  // reaches 44px both ways (the owner's decision, 2026-11-01), from a positioned host.
   it('takes a 44px tap area on a touch screen', () => {
     render(<ItemKeyTag itemKey={5} />);
     const tag = screen.getByRole('button', { name: 'Copy card number #5' });
-    expect(tag.className.split(' ')).toEqual(
-      expect.arrayContaining(['relative', 'touch-target-y']),
-    );
+    expect(tag.className.split(' ')).toEqual(expect.arrayContaining(['relative', 'touch-target']));
+    expect(tag.className.split(' ')).not.toContain('touch-target-y');
   });
 });

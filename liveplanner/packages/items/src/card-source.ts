@@ -92,7 +92,7 @@ export function cardSourceOf(
   opts: {
     statusNames?: ReadonlyMap<string, string>;
     version?: number;
-    // The boards' done rule, for a Rollup's Count Done (none without it).
+    // The boards' done rule, for a Rollup's Count Done (0 without it).
     isDone?: IsDoneStatus;
   } = {},
 ): CardSourceShape {
