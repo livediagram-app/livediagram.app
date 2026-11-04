@@ -161,7 +161,7 @@ describe('RoomCalls hearing (#483)', () => {
     const ms = cpuMsOf(() => {
       for (let n = 0; n < 100; n++) calls.hearing('S0', asks);
     });
-    // 100 subscribes of 16 tracks in a room of 100. Measured about 8 ms on a laptop (about 80 µs a subscribe).
+    // 100 subscribes of 16 tracks in a room of 100. Measured 31 ms CPU on a loaded laptop (about 0.3 ms a subscribe).
     expect(ms).toBeLessThan(cpuBudgetMs(150));
   });
 });
@@ -218,19 +218,34 @@ describe('RoomCalls let-speak (#495)', () => {
 });
 
 describe('RoomCalls stopped shares (#469)', () => {
-  it("keeps a stopped screen from new viewers until the sharer's call says it is off", () => {
+  it("keeps a stopped screen from new viewers until the sharer's call says it is off, or shares anew", () => {
     const sessions = [s('ed', 'edit', 'S-ed'), s('sharer', 'edit', 'S-sh')];
     const { calls, walk } = setup(sessions);
     walk('ed', 100, 100);
     walk('sharer', 200, 100);
+    const sharing = (token: string | null) =>
+      calls.noteTrack('sharer', {
+        kind: 'call-track',
+        tabId: 't',
+        track: null,
+        screen: token ? { sessionId: 'S-sh', trackName: 'screen', token } : null,
+      });
+    // Nothing shared yet: nothing to stop.
+    calls.stopShare('sharer');
+    sharing('k1');
+    expect(calls.hearing('S-ed', [screen('S-sh')])).toEqual(['heard']);
     calls.stopShare('sharer');
     expect(calls.hearing('S-ed', [screen('S-sh'), mic('S-sh')])).toEqual(['stopped', 'heard']);
-    // Still sharing: the stop stands.
-    const locator = { sessionId: 'S-sh', trackName: 'screen', token: 'k' };
-    calls.noteTrack('sharer', { kind: 'call-track', tabId: 't', track: null, screen: locator });
+    // Still sharing the same screen: the stop stands.
+    sharing('k1');
     calls.noteTrack('sharer', { kind: 'junk' });
     expect(calls.hearing('S-ed', [screen('S-sh')])).toEqual(['stopped']);
-    calls.noteTrack('sharer', { kind: 'call-track', tabId: 't', track: null, screen: null });
+    sharing(null);
+    expect(calls.hearing('S-ed', [screen('S-sh')])).toEqual(['heard']);
+    // A new share after a stop is a new screen.
+    sharing('k2');
+    calls.stopShare('sharer');
+    sharing('k3');
     expect(calls.hearing('S-ed', [screen('S-sh')])).toEqual(['heard']);
   });
 
@@ -239,6 +254,12 @@ describe('RoomCalls stopped shares (#469)', () => {
     const { calls, walk } = setup(sessions);
     walk('ed', 100, 100);
     walk('sharer', 200, 100);
+    calls.noteTrack('sharer', {
+      kind: 'call-track',
+      tabId: 't',
+      track: null,
+      screen: { sessionId: 'S-sh', trackName: 'screen', token: 'k' },
+    });
     calls.stopShare('sharer');
     calls.forget('sharer');
     expect(calls.hearing('S-ed', [screen('S-sh')])).toEqual(['unplaced']);

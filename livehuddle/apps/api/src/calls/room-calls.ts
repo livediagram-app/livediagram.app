@@ -77,7 +77,9 @@ export class RoomCalls {
   private readonly placed = new Map<string, Placed>();
   private readonly raised = new Set<string>();
   private readonly letBy = new Map<string, string>();
-  private readonly stopped = new Set<string>();
+  // A sharer → the screen they last said they share (its token), and → the one an Editor stopped.
+  private readonly screens = new Map<string, string>();
+  private readonly stopped = new Map<string, string>();
   private readonly tabs = new Map<string, { rev: number; calls: TabCalls }>();
 
   constructor(host: RoomCallsHost) {
@@ -108,10 +110,13 @@ export class RoomCalls {
     this.letBy.delete(from);
   }
 
-  /** A sharer's `call-track`: once it says the screen is off, a stop an Editor sent is done with. */
+  /** A sharer's `call-track`: once it names no screen, or a new one, a stop an Editor sent is done with. */
   noteTrack(from: string, op: unknown): void {
     const track = parseCallTrack(op);
-    if (track && !track.screen) this.stopped.delete(from);
+    if (!track) return;
+    if (track.screen) this.screens.set(from, track.screen.token);
+    else this.screens.delete(from);
+    if (this.stopped.get(from) !== track.screen?.token) this.stopped.delete(from);
   }
 
   /**
@@ -126,9 +131,10 @@ export class RoomCalls {
     return true;
   }
 
-  /** An Editor stopped `targetId`'s share: no new viewer until their call says the screen is off. */
+  /** An Editor stopped `targetId`'s share: no new viewer of that screen until their call says it is off. */
   stopShare(targetId: string): void {
-    this.stopped.add(targetId);
+    const screen = this.screens.get(targetId);
+    if (screen !== undefined) this.stopped.set(targetId, screen);
   }
 
   /** A session left: its position, hand and stop go with it. */
@@ -136,6 +142,7 @@ export class RoomCalls {
     this.placed.delete(presenceId);
     this.raised.delete(presenceId);
     this.letBy.delete(presenceId);
+    this.screens.delete(presenceId);
     this.stopped.delete(presenceId);
   }
 

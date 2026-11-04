@@ -147,6 +147,8 @@ describe('the room and the calls checks', () => {
     await vi.waitFor(() => expect(sharer.attachment.callSession).toBe('S-sh'));
     walk(ed, 100, 100);
     walk(sharer, 150, 100);
+    const shared = { sessionId: 'S-sh', trackName: 'screen', token: 'k' };
+    say(sharer, { kind: 'call-track', tabId: 't', track: null, screen: shared });
     for (const s of [ed, pt, sharer]) s.sent.length = 0;
     const op = { kind: 'call-stop-share', tabId: 't', targetId: 'sharer' };
     say(pt, op);

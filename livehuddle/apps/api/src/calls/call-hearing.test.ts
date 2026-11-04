@@ -177,7 +177,7 @@ describe('cost', () => {
     const ms = cpuMsOf(() => {
       for (let n = 0; n < 100; n++) for (let i = 1; i <= 16; i++) hearingVerdict(w, 'p0', `p${i}`);
     });
-    // 1,600 verdicts. Measured about 3 ms on a laptop (about 2 µs each).
+    // 1,600 verdicts. Measured 31 ms CPU on a loaded laptop (about 19 µs each, warm-up included).
     expect(ms).toBeLessThan(cpuBudgetMs(60));
   });
 });
