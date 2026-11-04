@@ -91,3 +91,22 @@ describe('newResponsesBoard', () => {
     expect(form.destination).toMatchObject({ tabId: board.id, typeId: 'bug' });
   });
 });
+
+describe('newFormFor', () => {
+  it('keeps one identity as the tabs and the commit change, since every card reads it (plan-board.md "A busy board")', () => {
+    const props = (tabs: Tab[]) => ({
+      activeId: 'f',
+      tabs,
+      commitTabs: vi.fn(),
+      tickTabs: vi.fn(),
+      itemTypes: { types: [], saveType: vi.fn() },
+      statusNames: new Map<string, string>(),
+    });
+    const { result, rerender } = renderHook((p: ReturnType<typeof props>) => useFormActions(p), {
+      initialProps: props([formTab({})]),
+    });
+    const first = result.current.newFormFor;
+    rerender(props([formTab({}), { ...formTab({}), id: 'g' }]));
+    expect(result.current.newFormFor).toBe(first);
+  });
+});

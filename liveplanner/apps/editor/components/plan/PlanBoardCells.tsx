@@ -4,7 +4,7 @@
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
 import { planCardCursor } from './board-cursors';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useGapMotion } from './useGapMotion';
 import { itemVoteKey } from '@liveplanner/project';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
@@ -119,8 +119,10 @@ export function LaneRow({
   );
 }
 
-// One card in a cell: a focusable list item that the pointer picks up in Plan mode.
-export function PlanBoardCard({
+// One card in a cell: a focusable list item that the pointer picks up in Plan mode. Memoised: its board hands it
+// stable handlers and a palette kept by value, so a board render that changes nothing it shows (a Tab Style change, a
+// drag over another column) skips it (docs/specs/026-plan/plan-board.md "A busy board").
+export const PlanBoardCard = memo(function PlanBoardCard({
   item,
   palette,
   placeholderBefore,
@@ -161,7 +163,7 @@ export function PlanBoardCard({
   // This person may pick the card up (an Editor, a Participant): the hand shows only then (board-cursors.ts).
   canMove: boolean;
   onPress: (id: string, e: React.PointerEvent<HTMLElement>) => void;
-  onOpen: () => void;
+  onOpen: (id: string) => void;
   onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => void;
   // A right-click (or the context-menu key) on the card, at a screen point.
   onMenu: (item: Item, at: { x: number; y: number }) => void;
@@ -215,7 +217,7 @@ export function PlanBoardCard({
         }}
         onDoubleClick={(e) => {
           e.stopPropagation();
-          onOpen();
+          onOpen(item.id);
         }}
         onKeyDown={(e) => onKey(item, e)}
         onContextMenu={(e) => {
@@ -269,7 +271,7 @@ export function PlanBoardCard({
       </div>
     </>
   );
-}
+});
 
 // The card under the pointer while it is dragged, over everything (portalled to the body).
 export function PlanDragGhost({

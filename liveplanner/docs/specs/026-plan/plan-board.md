@@ -331,6 +331,12 @@ Where each is set, so a setting lives with what it changes, never in one central
   width, so a wide column suits a busy stage.
 - **Column heads stand clear of the board's header**: 12 px of the board's surface sits between the header and the
   row of column heads (not on a slot board), so they read as separate things.
+- **Column heads stick flush**: scrolling down a board, its column heads (a collapsed column's too) stay at the top
+  of the board's body. The 12 px that stands them clear at rest scrolls away with the cards, so a stuck head sits
+  flush under the board's header with no strip of cards showing above it, and there is no jump between the two: the
+  gap simply scrolls out. A head is solid: its colour (85%, as a cell's) is laid on the board's own paper rather than
+  over what is behind it, so a card scrolling under a stuck head never shows through it, in any theme or finish,
+  light or dark. A slot board's heads already rest flush and are solid.
 - **Column heads**: a column's head reads count first: its count badge (the count, or "3 / 4" against a WIP limit,
   amber when over), then its name, then Collapse Column and its cog at the right.
 - **Column hover**: the column under the pointer says so, barely: its head and cells (a collapsed column's strip
@@ -1218,7 +1224,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
     Square under the Professional finish. Where the browser has no such styling (Firefox), a thin bar in the same
     colours.
   - **See-through surface**: the board's own surface (the room round its columns and under its header) is 80% solid
-    and its columns' heads and cells 85%, so the tab's canvas, its colour or pattern, shows faintly through both. The
+    and its columns' cells 85%, so the tab's canvas, its colour or pattern, shows faintly through both (a column's
+    head is solid, "Column heads stick flush", so a card under a stuck head never shows through). The
     cards stay solid, so their text reads exactly as on a solid board. A board in a Dashboard slot keeps a solid
     surface. What shows through is the tab's canvas alone: a board filling its Board tab hides the canvas's
     elements behind it (its own copy there), and a maximised one hides the selection box drawn behind it.
@@ -1237,6 +1244,29 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 - A selected board or Plan card has no quick-connect pluses: its cards are its content, not nodes to chain from.
   With no plus to clear, its selection toolbar sits close above it (the 16 px gap read-only views use, not 48 px).
   Only boxed elements close the gap this way: an arrow keeps 48 px, as its move frame sits in that gap.
+
+## A busy board
+
+<a id="busy-board"></a>A board showing more than 100 cards is **busy**. A Tab Style pick (a look, a theme, a finish, a
+typeface, a size, a canvas setting) on a busy board applies at once: on a 2,000-card board the pick paints within
+about a tenth of a second for a finish, a typeface, a size or the canvas, and within about a fifth of a second for a
+theme, with the page answering throughout.
+
+- **Cards redraw only for what they show.** A pick that changes nothing on a card (a finish, a typeface, a size, the
+  canvas) redraws no card: the finish's shadows and the lettering reach the cards from the board's own styling. A
+  theme or the canvas turning light or dark redraws each card once. An edit anywhere else in the plan (a save, a
+  peer's change to another tab) redraws no card either.
+- **Its parts snap rather than ease.** The colour ease ([Eased changes](../011-theme/canvas-and-theme-dialog.md#eased-changes))
+  is skipped inside a busy board: easing every chip of hundreds of cards held the page for seconds a pick. The board's
+  own surface and the rest of the canvas still ease. A board of 100 cards or fewer eases as before.
+- **Cards out of view wait.** A busy board's cards out of view are not styled or laid out until they come near the
+  view, and each keeps its last drawn height meanwhile (one never drawn takes the usual height of its size), so the
+  board scrolls as before. Where a browser cannot draw a card's shadow, ring and hover glow past its own box while
+  doing so, it draws every card as before.
+- **Marker draws what is in view.** Marker's hand-drawn parts on a busy board are drawn on the cards in view, up to the
+  usual limit; a card scrolled into view takes them the next time the board settles after a change.
+- **Sketch keeps the board.** Picking Sketch, or leaving it, keeps the board as it is (its scroll, its collapsed
+  columns): only its drawing changes.
 
 ## Both elements everywhere
 

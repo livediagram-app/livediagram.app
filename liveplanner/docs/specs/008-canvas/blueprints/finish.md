@@ -315,14 +315,16 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
   foreignObjects and the marker body held; each part kept with its line removed, its marker after it, in its own
   transform), called by `svgBoxed` by `faceFinishOf`.
 - Canvas: the wrapper carries `data-face-finish` and `FaceFinishProvider` (`useFaceFinish`, `useFaceShadow` for
-  inline shadows); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
+  inline shadows; a Plan card's own shadows are emptied by face-finish.css instead, so a finish change redraws no card); `app/face-finish.css` squares (`border-radius`, SVG `rect` `rx`/`ry` but `[data-finish-pill]`),
   flattens (`--tw-shadow`, hover `--tw-translate-y`) and thins (`border-2`, `stroke-width="2"`) under Professional and
   hides each redrawn part's own line under Marker (`[data-marker-drawn]`, `[data-marker-rules]`).
   `useFaceFinishPass(rootRef, finish, id)` re-takes on settle (`watchUntilSettled` with `ignore` for its own
   changes, `resize`, and once fonts load): Professional marks SVG pills `data-finish-pill`; Marker draws each
   positioned bordered HTML box (and the face's own box) as an `<svg data-marker-ink>` inside it, each SVG part as a
   `<g data-marker-ink>` after it, and a `[data-marker-grid]` (a table)'s cell borders joined into whole rules
-  (`marker-grid-rules.ts`; the marks it sets are named in `face-finish-marks.ts`).
+  (`marker-grid-rules.ts`; the marks it sets are named in `face-finish-marks.ts`). A take skips a busy board's card
+  whose contents the browser skips (`offScreenCard`: `checkVisibility` with `contentVisibilityAuto` on its first child;
+  plan-board.md "A busy board").
   - A take sets `data-marker-taking` on the root for its whole length; face-finish.css holds `transition: none` under
     it, and reads a hovered `.plan-card-hover` at its resting `--card-line`. It reads every part first (sizes, computed
     style, the part's drawing) and only then runs each part's write (its ink, `data-marker-drawn`, isolation), then

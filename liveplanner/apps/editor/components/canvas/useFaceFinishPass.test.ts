@@ -53,6 +53,26 @@ describe('drawMarkerFace', () => {
     expect(root.querySelector('[data-marker-ink]')).toBeNull();
   });
 
+  it('skips a busy board card the browser is not drawing, and draws one it is (plan-board.md "A busy board")', () => {
+    const root = face(
+      `<div data-plan-card="" id="off"><div>${card()}</div></div><div data-plan-card="" id="on"><div>${card()}</div></div>`,
+    );
+    const shown = (el: Element) => el.closest('[data-plan-card]')?.id === 'on';
+    Object.defineProperty(HTMLElement.prototype, 'checkVisibility', {
+      configurable: true,
+      value(this: HTMLElement) {
+        return shown(this);
+      },
+    });
+    try {
+      expect(drawMarkerFace(root, 'el')).toBe(1);
+      expect(root.querySelector('#on [data-marker-ink]')).not.toBeNull();
+      expect(root.querySelector('#off [data-marker-ink]')).toBeNull();
+    } finally {
+      delete (HTMLElement.prototype as { checkVisibility?: unknown }).checkVisibility;
+    }
+  });
+
   it('never reads into a kept part or the hand-drawn body', () => {
     const root = face(`<div data-finish-keep="">${card()}</div>`);
     expect(drawMarkerFace(root, 'el')).toBe(0);

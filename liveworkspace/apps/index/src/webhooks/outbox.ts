@@ -170,13 +170,15 @@ export function mentionsStatement(
     );
 }
 
-/** Send Test's `ping`, due now. */
+/** Send Test's `ping`, due now, written only while the webhook is not paused (no row written: it was paused). The
+ *  check is in the statement, so a pause landing after the route read the webhook can't leave a row behind. */
 export function pingStatement(db: D1Database, webhookId: string, name: string, now = Date.now()) {
   queued++;
   return db
     .prepare(
       `INSERT INTO webhook_deliveries (webhook_id, event_id, type, app, item_id, title, occurred_at, next_at)
-       VALUES (?1, ?2, 'ping', 'liveworkspace', NULL, ?3, ?4, ?4)`,
+       SELECT ?1, ?2, 'ping', 'liveworkspace', NULL, ?3, ?4, ?4
+       WHERE EXISTS (SELECT 1 FROM webhooks WHERE id = ?1 AND paused_at IS NULL)`,
     )
     .bind(webhookId, `ping:${crypto.randomUUID()}`, name, now);
 }

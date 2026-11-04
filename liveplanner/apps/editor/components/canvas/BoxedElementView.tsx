@@ -394,6 +394,9 @@ function BoxedElementViewImpl({
       <FaceFinishProvider finish={faceFinish ?? 'flexible'}>
         <SketchFace
           active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
+          // A board keeps one tree in and out of Sketch, so the pick never remounts its cards (a busy board's
+          // thousands, its scroll and its collapsed columns with them; docs/specs/026-plan/plan-board.md "A busy board").
+          keepTree={element.type === 'shape' && element.shape === 'plan-board'}
         >
           <AccentEdgeOverlay
             element={withTagAccent(element, tagColours)}

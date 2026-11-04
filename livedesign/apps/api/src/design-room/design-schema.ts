@@ -11,7 +11,7 @@
 // stores nothing. Versioned by `_design_schema`; a later change adds a step to STEPS, never edits one.
 
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
-import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
+import { migrationSchema, outboxRetrySchema, tabSharesSchema } from '@liveworkspace/index-app';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -284,7 +284,12 @@ CREATE TABLE IF NOT EXISTS component_refs (
 CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component_id);
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
+// Each outbox key's failed pushes and next try, on `outbox` and `share_outbox` (@liveworkspace/index-app outbox.ts
+// outboxRetrySchema; liveworkspace/docs/specs/004-index/one-explorer-contracts.md "When a push fails"). Plain ALTERs,
+// run once by the version row; every key already there reads as never tried.
+const V6 = outboxRetrySchema();
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6];
 
 export const DESIGN_SCHEMA_VERSION = STEPS.length;
 

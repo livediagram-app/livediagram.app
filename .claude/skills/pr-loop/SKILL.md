@@ -94,7 +94,9 @@ merge origin/main`. Verify `git diff origin/main HEAD` equals `git diff origin/<
    checks for the push; if it fails only on flakes, `push --no-verify` and mention it. It skips itself while
    another push's checks run on the machine.
 
-`not-ready` and `do-not-merge` PRs still get steps 1-5; the labels only block merging.
+`not-ready` and `do-not-merge` PRs still get steps 1-5; the labels only block merging. Never remove a
+`not-ready` label from a PR whose description has an unticked **Before merging** Owner step: only the owner
+clears those.
 
 6. **Watch it through to mergeable.** A push is not the end: arm a Monitor (`timeout_ms: 1800000`) on the pushed
    PRs running `.claude/skills/pr-loop/watch-prs.sh <pr>...`. It polls every ~60s and prints one line per PR the

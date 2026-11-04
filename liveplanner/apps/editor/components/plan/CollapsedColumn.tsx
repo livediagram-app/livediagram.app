@@ -10,7 +10,7 @@ import { Tooltip } from '@liveplanner/ui';
 import { plural } from '@liveplanner/project';
 import { COLUMN_ATTR, STRIP_ATTR } from './column-move-flip';
 import type { PlanPalette } from './plan-palette';
-import { columnPartStyle } from './column-part';
+import { columnHeadStyle, columnPartStyle } from './column-part';
 import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 // The strip's cell button lays the name out as a column that wraps (docs/specs/026-plan/plan-board.md "Collapse
@@ -115,7 +115,7 @@ export function CollapsedColumnHead({
     <div
       {...{ [COLUMN_ATTR]: column.id, [STRIP_ATTR]: '' }}
       className="plan-col sticky top-0 z-[1] flex flex-col items-center rounded-[var(--plan-col-r,8px)] px-1.5 pb-1.5 pt-2"
-      style={columnPartStyle(palette)}
+      style={columnHeadStyle(palette)}
     >
       <div
         className="mb-1.5 h-1 w-full rounded-full"

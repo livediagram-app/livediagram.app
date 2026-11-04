@@ -114,8 +114,9 @@ Defaults: `tab_name ''`, `participant_ids '[]'`, `mentioned_ids '[]'`, `latest_a
 `SUMMARY_MAX_BYTES` 2048, `COLLAB_MAX_THREADS` 500, `COLLAB_MAX_ACTIONS` 500, `COLLAB_CARDS_TAB` `'~cards'`,
 `COLLAB_EVENTS_MAX` 100 (`packages/index-client`); `LABEL_MAX` 200, `TEXT_MAX` 500, `COLOR_MAX` 32, `PEOPLE_MAX` 100,
 `RESPONSES_MAX` 10,000,000 (`collab-push.ts`); `INBOX_LIMIT_DEFAULT` 100 (`config.ts`); `FUTURE_SLACK_MS` 5 min
-(`timeline.ts`); `FLUSH_IDLE_MS` 2 s, `FLUSH_MIN_GAP_MS` 60 s, `FLUSH_RETRY_MS` 60 s, `DRAIN_TABS` 50,
-`PUSH_CONCURRENCY` 6 (`outbox.ts`); `FORM_PLACE_TTL_MS` 60 s, `FORM_PLACE_CACHE_MAX` 1,000 (`forms.ts`).
+(`timeline.ts`); `FLUSH_IDLE_MS` 2 s, `FLUSH_MIN_GAP_MS` 60 s, `FLUSH_RETRY_MS` 60 s (a key's first wait after a
+failure, doubling to `RETRY_MAX_MS` 1 h), `OUTBOX_MAX_ATTEMPTS` 12, `FINAL_STATUSES` 400, 403, 413, 422, `DRAIN_TABS`
+50, `PUSH_CONCURRENCY` 6 (`outbox.ts`); `FORM_PLACE_TTL_MS` 60 s, `FORM_PLACE_CACHE_MAX` 1,000 (`forms.ts`).
 
 ## Defaults ledger
 

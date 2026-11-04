@@ -1,13 +1,20 @@
 import { DatabaseSync } from 'node:sqlite';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ItemDb } from './item-db';
+import {
+  FLUSH_IDLE_MS,
+  OUTBOX_MAX_ATTEMPTS,
+  outboxRetrySchema,
+  RETRY_MAX_MS,
+  retryDelayMs,
+} from './outbox';
 import { linkSharedTab, mayLinkTabs, type TabLinkAccess } from './tab-link';
 import {
   createTabShares,
   DRAIN_SHARES,
   MAX_TAB_HOLDERS,
-  owesShares,
   ShareSchedule,
+  sharesDueAt,
   tabSharesSchema,
   type ShareDb,
   type ShareMessage,
@@ -34,6 +41,7 @@ CREATE TABLE item_tabs (
 CREATE TABLE stats (tab_id TEXT PRIMARY KEY REFERENCES tabs (id) ON DELETE CASCADE, bytes INTEGER NOT NULL);
 CREATE TABLE granted (image_id TEXT PRIMARY KEY);
 ${tabSharesSchema()}
+${outboxRetrySchema(['share_outbox'])}
 `;
 
 const statsOf = (db: ShareDb, tab: SharedTabBody) =>
@@ -133,7 +141,7 @@ function world() {
     });
   const drain = async (...ids: string[]) => {
     for (const id of ids) {
-      while (owesShares(nodeSql(get(id).raw))) {
+      while ((sharesDueAt(nodeSql(get(id).raw)) ?? Infinity) <= Date.now()) {
         const { failed } = await shares.drain(get(id).db, id, send(id));
         if (failed > 0) break;
       }
@@ -178,6 +186,11 @@ function withTab(w: ReturnType<typeof world>, id: string, data = '{"v":"from A"}
 }
 
 describe('a tab shared between items', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   it('links the tab into another item: the same tab, at the end of its order', async () => {
     const w = world();
     withTab(w, 'A');
@@ -298,7 +311,7 @@ describe('a tab shared between items', () => {
     expect(w.owed('A')).toBe(0);
   });
 
-  it('keeps a failed send for the next drain', async () => {
+  it('keeps a failed send, and sends it once its wait is over', async () => {
     const w = world();
     withTab(w, 'A');
     withTab(w, 'B', '{}', 'own');
@@ -308,10 +321,75 @@ describe('a tab shared between items', () => {
     const failing = async () => {
       throw new Error('unreachable');
     };
-    expect(await shares.drain(w.get('A').db, 'A', failing)).toMatchObject({ sent: 0, failed: 1 });
+    const now = Date.now();
+    expect(await shares.drain(w.get('A').db, 'A', failing, now)).toMatchObject({
+      sent: 0,
+      failed: 1,
+    });
     expect(w.owed('A')).toBe(1);
-    await w.drain('A');
+    expect(sharesDueAt(nodeSql(w.get('A').raw))).toBe(now + retryDelayMs(1));
+    // Before the wait is over the holder is not called at all.
+    w.calls.length = 0;
+    expect(await shares.drain(w.get('A').db, 'A', w.send('A'), now + 59_999)).toEqual({
+      sent: 0,
+      failed: 0,
+      more: false,
+    });
+    expect(w.calls).toEqual([]);
+    await shares.drain(w.get('A').db, 'A', w.send('A'), now + retryDelayMs(1));
     expect(w.dataOf('B')).toBe('{"v":"x"}');
+    expect(w.owed('A')).toBe(0);
+  });
+
+  it('backs off from a holder that keeps failing, parks its key, and sends again on the next write', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    const start = Date.now();
+    const w = world();
+    withTab(w, 'A');
+    withTab(w, 'B', '{}', 'own');
+    await w.link('B', 't1', 'A');
+    await w.save('A', '{"v":"x"}');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let calls = 0;
+    const failing = async () => {
+      calls++;
+      throw new Error('receiver down');
+    };
+    const db = w.get('A').db;
+    const sql = nodeSql(w.get('A').raw);
+    // The room's alarm: one ShareSchedule, woken when it says, for a day.
+    const schedule = new ShareSchedule(() => sharesDueAt(sql));
+    schedule.restore();
+    const waits: number[] = [];
+    while (schedule.at !== null && schedule.at < start + 86_400_000) {
+      vi.setSystemTime(schedule.at);
+      const now = Date.now();
+      await schedule.send(() => shares.drain(db, 'A', failing));
+      if (schedule.at !== null) waits.push(schedule.at - now);
+    }
+    // Twelve calls to the other room in about six hours, not one a minute all day.
+    expect(calls).toBe(OUTBOX_MAX_ATTEMPTS);
+    expect(waits).toEqual(
+      Array.from({ length: OUTBOX_MAX_ATTEMPTS - 1 }, (_, i) => retryDelayMs(i + 1)),
+    );
+    expect(Math.max(...waits)).toBe(RETRY_MAX_MS);
+    expect(schedule.at).toBeNull();
+    expect(warn).toHaveBeenLastCalledWith(
+      '[tab-shares] parked',
+      expect.objectContaining({ itemId: 'A', to: 'B', attempts: OUTBOX_MAX_ATTEMPTS }),
+    );
+    // Parked: kept, but owed to nobody, so nothing wakes the room for it.
+    expect(w.owed('A')).toBe(1);
+    expect(sharesDueAt(sql)).toBeNull();
+    expect(schedule.noteWrite()).toBe(false);
+    // The next write to the tab replaces the parked key, and it goes on idle.
+    await w.save('A', '{"v":"y"}');
+    expect(schedule.noteWrite()).toBe(true);
+    expect(schedule.at).toBe(Date.now() + FLUSH_IDLE_MS);
+    vi.setSystemTime(schedule.at!);
+    await schedule.send(() => shares.drain(db, 'A', w.send('A')));
+    expect(w.dataOf('B')).toBe('{"v":"y"}');
+    expect(w.owed('A')).toBe(0);
   });
 
   it('carries the app’s extra beside a body (the images the sender may serve)', async () => {
@@ -449,15 +527,20 @@ describe('cost', () => {
 });
 
 describe('ShareSchedule', () => {
-  it('sends on idle after a write, again a minute after a failure, and keeps what was written meanwhile', async () => {
-    let owed = false;
+  afterEach(() => vi.restoreAllMocks());
+
+  it('sends on idle after a write, when a failed key’s wait is over, and keeps what was written meanwhile', async () => {
+    let due: number | null = null;
     let now = 1_000;
     const schedule = new ShareSchedule(
-      () => owed,
+      () => due,
       () => now,
     );
+    // Nothing owed: nothing armed.
     expect(schedule.noteWrite()).toBe(false);
-    owed = true;
+    schedule.restore();
+    expect(schedule.at).toBeNull();
+    due = 0;
     expect(schedule.noteWrite()).toBe(true);
     expect(schedule.at).toBe(3_000);
     expect(schedule.noteWrite()).toBe(false);
@@ -465,21 +548,48 @@ describe('ShareSchedule', () => {
     expect(schedule.due(3_000)).toBe(true);
     now = 3_000;
     vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // A key failed: the next send is when its wait is over.
+    due = 63_000;
     await schedule.send(async () => ({ sent: 0, failed: 1, more: false }));
     expect(schedule.at).toBe(63_000);
+    // A drain that throws tries again in a minute.
     await schedule.send(async () => {
       throw new Error('down');
     });
     expect(schedule.at).toBe(63_000);
     await schedule.send(async () => ({ sent: 50, failed: 0, more: true }));
     expect(schedule.at).toBe(5_000);
+    // Written while the send was in flight: on idle.
+    due = 0;
     await schedule.send(async () => ({ sent: 1, failed: 0, more: false }));
     expect(schedule.at).toBe(5_000);
-    owed = false;
+    due = null;
     await schedule.send(async () => ({ sent: 1, failed: 0, more: false }));
     expect(schedule.at).toBeNull();
-    owed = true;
+    // After a wake: now, or when the earliest wait is over.
+    due = 0;
     schedule.restore();
     expect(schedule.at).toBe(3_000);
+    due = 900_000;
+    schedule.restore();
+    expect(schedule.at).toBe(900_000);
+  });
+
+  it('gives way to a fresh write when armed far off for a key in backoff', () => {
+    let due: number | null = 3_600_000;
+    const now = 0;
+    const schedule = new ShareSchedule(
+      () => due,
+      () => now,
+    );
+    schedule.restore();
+    expect(schedule.at).toBe(3_600_000);
+    // A write that leaves only the waiting key owed changes nothing.
+    expect(schedule.noteWrite()).toBe(false);
+    expect(schedule.at).toBe(3_600_000);
+    // A fresh key goes on idle.
+    due = 0;
+    expect(schedule.noteWrite()).toBe(true);
+    expect(schedule.at).toBe(FLUSH_IDLE_MS);
   });
 });

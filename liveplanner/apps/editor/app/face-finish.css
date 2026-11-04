@@ -35,6 +35,13 @@
   --tw-inset-shadow: 0 0 #0000 !important;
 }
 
+/* A Plan card's own shadows (PlanCardFace's --card-shadow and --card-hover-shadow, globals.css .plan-card) go too, set
+ * here rather than by the card so a finish change restyles a busy board without redrawing a card. */
+:is([data-face-finish='professional'], [data-face-finish='marker']) .plan-card {
+  --card-shadow: 0 0 #0000 !important;
+  --card-hover-shadow: 0 0 #0000 !important;
+}
+
 /* No hover lift: a part that rises under the pointer stays put. */
 [data-face-finish='professional']
   :is([class*='hover:-translate-y'], [class*='hover:translate-y']):hover,
