@@ -221,7 +221,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Offline store       | `apps/editor/lib/offline/offline-store.ts`                                           | unchanged (already migrates)                                                        |
 | MCP server          | `packages/document/src/element-normalise.ts`, `tools.ts`                             | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
 | Drive import door   | `apps/api/src/document-room/document-file.ts`                                        | unchanged: imports create through the api                                           |
-| Templates           | `packages/templates/src/template-builders-sailboat.ts`, `template-sailboat-scene.ts` | unchanged: `createFreehand`                                                         |
+| Templates           | none since Work Tracker #423 part 3 (the Sailboat, the one drawn template, left)      | unchanged: `createFreehand`                                                         |
 | Shape recognition   | `apps/editor/lib/recognition-preview.ts`, `recogniseBoardStroke`                     | unchanged: reads the live stroke, not an element                                    |
 | Polygon tool        | `useCanvasPolygonGesture.ts`                                                         | unchanged: `createFreehand`                                                         |
 | Highlighter, pencil | `commit-freehand.ts`                                                                 | unchanged: `createFreehand`                                                         |
