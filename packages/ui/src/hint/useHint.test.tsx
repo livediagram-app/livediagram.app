@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   HINT_CLOSE_GRACE_MS,
   HINT_LONG_PRESS_MS,
+  HINT_TOUCH_COMPAT_MS,
   HINT_TOUCH_LINGER_MS,
   PREVIEW_OPEN_DELAY_MS,
   PREVIEW_WARMUP_MS,
@@ -11,6 +12,7 @@ import {
   type HintKind,
 } from './hint-constants';
 import { resetHintRegistry } from './hint-registry';
+import { resetTouches } from './input-modality';
 import { useHint } from './useHint';
 
 function Harness({
@@ -72,6 +74,7 @@ function focusVisible(visible: boolean) {
 }
 
 beforeEach(() => {
+  resetTouches();
   vi.useFakeTimers();
 });
 
@@ -151,6 +154,27 @@ describe('useHint, preview on pointer', () => {
     focusVisible(true);
     render(<Harness kind="preview" />);
     fireEvent.focus(button());
+    expect(tip()).not.toBeNull();
+  });
+});
+
+describe('useHint, the mouse echo of a tap', () => {
+  // A tap closes a dialog; the browser then sends mouse events to the control now under the finger.
+  it('opens nothing on a mouse pointerenter right after a touch', () => {
+    render(<Harness kind="tooltip" />);
+    fireEvent.pointerDown(document.body, touch);
+    fireEvent.pointerUp(document.body, touch);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS + 100);
+    expect(tip()).toBeNull();
+  });
+
+  it('opens on a mouse once the touch is long past', () => {
+    render(<Harness kind="tooltip" />);
+    fireEvent.pointerDown(document.body, touch);
+    advance(HINT_TOUCH_COMPAT_MS + 1);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS);
     expect(tip()).not.toBeNull();
   });
 });
