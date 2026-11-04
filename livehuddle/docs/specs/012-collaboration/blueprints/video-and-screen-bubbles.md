@@ -29,14 +29,14 @@ heard and seen at once. `want(entries)` takes `{ locator, layer? }`; a camera en
 `tracks/update`) instead of a resubscribe. `publishTrack(name, track, init)` publishes once per name and later swaps
 the track (`replaceTrack`, `null` while off), so turning a camera off and on never renegotiates.
 
-**The call** (`lib/calls/proximity-call.ts`): `toggleCamera()` opens the camera (`getUserMedia` at
+**The call** (`lib/calls/call-video.ts`, driven by `proximity-call.ts`): `toggleCamera()` opens the camera (`getUserMedia` at
 `CAMERA_CONSTRAINTS`), publishes it with `CAMERA_ENCODINGS` (`f` then `h`), stores it as your own media and sends the
 `call-track` op with `video`; off stops the track, swaps `null` in and sends `video: null`. `toggleScreen()` opens
 `getDisplayMedia` at `SCREEN_CONSTRAINTS`, sets `contentHint = 'detail'`, publishes with one encoding
 (`SCREEN_MAX_BITRATE`, `SCREEN_MAX_FPS`) and stops on the track's `ended` (the browser's own Stop) as on the button.
 A mode that no longer allows `video` or `screen` stops both and drops every bubble. A `visibilitychange` re-picks.
 
-**State** (`lib/calls/calls-store.ts`): `CallPeer` gains `video` and `screen` locators. A separate media store holds
+**State** (`lib/calls/calls-store.ts`): `CallPeer` gains `video` and `screen` locators. A separate media store (`calls-media-store.ts`) holds
 the streams the bubbles draw (`callMedia()`: presence id → `{ video?, screen? }`, `self` for your own), and the
 maximised bubble (`setCallMaximised`). Maximising a bubble that is not received any more clears it.
 

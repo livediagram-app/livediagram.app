@@ -82,7 +82,7 @@ you may speak, else `view`). Each `update` works out the zoning, then the stagin
 the heard set without the unseen speakers, and places by `togetherWith` as before. Stepping onto a stage that carries
 you tracks `StageSpeak` once until you step off.
 
-**Levels** (`calls-store.ts`): `setCallLevels(participants)` keeps each peer's stamped `role` from every presence
+**Levels** (`calls-hands-store.ts`): `setCallLevels(participants)` keeps each peer's stamped `role` from every presence
 list (`useRoomConnection`'s `roomPresence`), notifying the call (`onCallLevels`, which re-stages the scene it holds)
 only when a level changed. The room already stamps `role` from the grant in `helloPresence`
 (`apps/api/src/document-room-rules.ts`), so the wire is unchanged.
@@ -97,7 +97,7 @@ every socket unbatched (not a sample kind), and delivers `avatar-let-speak` to t
 `avatar-push` (`sendToPresence`), dropping one aimed at nobody. The room cannot place people, so whether the presser
 stands on a stage is left to the browsers.
 
-**Hands in the store** (`calls-store.ts`): `receiveCallOp` keeps a peer's `avatar-hand` as a `CallHand` (`raised`
+**Hands in the store** (`calls-hands-store.ts`): `receiveCallOp` keeps a peer's `avatar-hand` as a `CallHand` (`raised`
 false deletes it; a first raise stamps `at`, a later op keeps it, so the order is the order hands went up), at most
 `HANDS_MAX` (`ROOM_MAX_CONNECTIONS`, 100) at once. Hands go with `forgetCallPeer`, `pruneCallPeers` and
 `resetCallPeers`, so leaving the mode, a dropped socket or the room closing lowers them. `receiveLetSpeak(from, op)`
@@ -237,6 +237,6 @@ let-speak fails the check, and `[calls] hand` on each raise and lower.
 Part 1 adds no constant: the interior comes from the room's own `ROOM_WALL` and `ROOM_BACK_FACE`. Part 2 adds
 `STAGE_FRONT` (24, the front face), `STAGE_FLOOR` (`#fbf7ef` on light paper, `#3a3430` on dark) and
 `DEFAULT_STAGE_SPEAKERS` (`edit`), in `packages/document/src/office.ts`. Part 3 adds `HANDS_MAX` (the room's
-`ROOM_MAX_CONNECTIONS`, 100: one hand a connection) in `calls-store.ts`, `PRESENCE_ID_MAX` (64, the room's other id
+`ROOM_MAX_CONNECTIONS`, 100: one hand a connection) in `calls-hands-store.ts`, `PRESENCE_ID_MAX` (64, the room's other id
 bound) in `call-hand.ts`, and the Do Not Disturb colour `#e11d48` (rose 600, apart from In a Meeting's red
 `#ef4444` by its bar).
