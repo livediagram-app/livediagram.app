@@ -49,6 +49,38 @@ describe('useWalkIn', () => {
     expect(setViewportOffset).toHaveBeenCalledWith({ x: 500 - feet.x, y: 400 - feet.y });
   });
 
+  it('nudges the view up when the spot is on screen but behind the bottom chrome', () => {
+    // 1000 x 800 canvas: a button whose spot lands 40px above the bottom edge, inside the 120px follow margin.
+    const b = box(448, 0);
+    const feet = below(b);
+    const shifted = box(448, 800 - 40 - feet.y);
+    const { setViewportOffset } = setup(shifted);
+    expect(setViewportOffset).toHaveBeenCalledWith({ x: 0, y: -80 });
+  });
+
+  it('reads the current offset back from the wrapper, at any zoom', () => {
+    const spawnAtRef = { current: null as AvatarPoint | null };
+    const setViewportOffset = vi.fn();
+    const b = box(100, 100);
+    const feet = below(b);
+    // Zoom 2, wrapper translated by (-50, -40) canvas px: the spot sits at y = (feet.y - 40) * 2 on screen.
+    const wrapperTop = -40 * 2;
+    const mainHeight = (feet.y - 40) * 2 + 20;
+    renderHook(() =>
+      useWalkIn({
+        walkIn: { button: b, seq: 1 },
+        scale: SCALE,
+        spawnAtRef,
+        mainRef: { current: el(rect(0, 0, 1000, mainHeight)) },
+        wrapperRef: { current: el(rect(-100, wrapperTop, 1000, 800)) },
+        viewportZoom: 2,
+        setViewportOffset,
+      }),
+    );
+    // 20px from the bottom: 100px short of the margin, 50 canvas px at zoom 2.
+    expect(setViewportOffset).toHaveBeenCalledWith({ x: -50, y: -40 - 50 });
+  });
+
   it('does nothing without a request', () => {
     const { spawnAtRef, setViewportOffset } = setup(null);
     expect(spawnAtRef.current).toBeNull();

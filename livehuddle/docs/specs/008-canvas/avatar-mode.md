@@ -259,7 +259,9 @@ walking too, and a board somebody gives a pad or a Walk In button becomes one th
   is a new visit.
 - **Where.** On the tab's pad when it has one ([Entering on a pad](#entering-on-a-pad)); otherwise just below its
   first Avatar button in layer order, as a press of it would ([Entering from a button](#entering-from-a-button)),
-  the view centring on that spot when it is off screen.
+  the view centring on that spot when it is off screen, and, when it is on screen but within the walk's follow
+  margin of an edge (behind the bottom-right cluster, say), moving just far enough to bring it in, as the walk's
+  camera follow does.
 - **Who.** Every role: Editor, Participant and Viewer alike, because walking writes nothing
   ([Share roles](../013-workspace/share-roles.md)). Speaking still follows [Who may speak](#who-may-speak).
 - **Not in an embed.** The read-only embed view ([Embeds](../013-workspace/embeds.md)) opens on Hand as before: it

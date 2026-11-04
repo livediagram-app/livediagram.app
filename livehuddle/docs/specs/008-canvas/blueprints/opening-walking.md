@@ -41,7 +41,9 @@ Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different featur
 5. It calls `openWalking()`: selection cleared, then `useCanvasTool.openWalking`.
 6. `useWalkIn`, a layout effect on `seq`, sets `spawnAtRef` to `avatarSpawnBelow(button, scale)` (the spot a press of
    the button would use, at your character's Size, so the figure stands clear of the button's label) before
-   `useAvatarWalk`'s enter effect runs, and centres the view on the spot when the spot is outside the canvas.
+   `useAvatarWalk`'s enter effect runs, centres the view on the spot when the spot is outside the canvas, and nudges
+   the view by `followCorrection` when the spot is on the canvas but inside `AVATAR_FOLLOW_MARGIN` of an edge (the
+   current offset read back from the wrapper's box).
 7. A template landing calls `onLanded(tabId)`, which removes the tab from `judged`; the next render with its new
    elements judges it again.
 
@@ -117,4 +119,5 @@ Opening walking fires no `Canvas·Used·AvatarMode`; a pick from the picker or s
 ## Defaults ledger
 
 - Judged once per visit, kept in memory, not stored (the spec says "once per visit").
-- The view recentres only when the spot is outside the canvas, so a fitted template is not moved.
+- The view recentres only when the spot is outside the canvas, so a fitted template is not moved; a spot inside the
+  follow margin moves it only by that margin's shortfall, so the character is never left behind the chrome.
