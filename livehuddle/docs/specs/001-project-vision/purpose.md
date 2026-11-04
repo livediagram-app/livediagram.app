@@ -102,8 +102,13 @@ spec that moved it.
   slide decks, building a deck, presenting, the Page element, and the diagram tools left over from Workshop (shapes,
   arrows and lines, the Draw tools, the Layout containers but the frame, tables, charts, the components and the
   embeds) leave livehuddle; livediagram keeps them all. What stays: Spaces, avatars, rooms, calls, the Timer, the
-  quick vote and Bring Focus, and light content (sticky notes, text, images, stickers, icons, link cards, frames).
+  quick vote, Bring Focus and the Reaction Pads, and light content (sticky notes, text, images, stickers, icons, link cards, frames).
   The full list, and the build part that removes each, is [Not in livehuddle](../002-project-scope/not-in-livehuddle.md).
+- **Reaction Pads stay** (owner, 2026-11-04, Work Tracker #423): the five pads are a light meeting tool, a burst for a
+  good moment in a room, so they stay in the meeting palette's React category while the other Collaborate elements go
+  ([Reaction Pad](../009-elements/reaction-pad.md)). Pencil, highlighter and the video and website embeds still leave.
+- **Decks, presenting and the Page are gone** (Work Tracker #423, part 2): nothing in livehuddle offers them; a
+  document's stored deck is kept untouched and a stored Page still draws.
 
 ## Why it matters
 

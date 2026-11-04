@@ -1,8 +1,8 @@
 # Palette top-level categories and bands
 
 Status: shipped. **In livehuddle, the categories and bands are the meeting palette's** (Work Tracker #423,
-[The meeting board](../012-collaboration/workshop-mode.md#the-palette)): Popular; Write, Frame; Navigate, Selection
-Mode; Icons, Stickers, Media. The Collaborate band, its six categories, the Structure and Dynamic bands and the
+[The meeting board](../012-collaboration/workshop-mode.md#the-palette)): Popular; Write, Frame; Navigate, React,
+Selection Mode; Icons, Stickers, Media. The Collaborate band, its six categories, the Structure and Dynamic bands and the
 Session category below are livediagram's Workshop layout, which livehuddle's code carries until part 3; the mechanics
 (flat categories, rows, search, the pickers, group count badges) stay.
 

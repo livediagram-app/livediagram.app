@@ -1,8 +1,8 @@
 # Presentation mode
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/presentation-mode.md) is the one to change. Part 2 removes it with its help articles. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 2): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/presentation-mode.md) is the one to read and change. livehuddle offers no Slide Deck tool, panel or command, no Present button, no presenting shortcut and no Presenting settings, and its help has no articles on them (their addresses redirect to Follow Along). A document's stored deck (the `presentation` field) is kept as it is: the api and the offline store carry it, the editor neither reads nor writes it, so a save never drops it and livediagram can still present it. The deck model (`packages/document/src/slide-deck.ts`) stays for the api's redaction and migration. The rest of this page records what livehuddle had.
 
-> **Status: implemented.** The deck model and its pure helpers live in
+> **Status: removed from livehuddle; implemented in livediagram.** In livediagram, the deck model and its pure helpers live in
 > `packages/document/src/slide-deck.ts`, persistence in the document's own
 > `presentation` column (`document-room/document-schema.ts`), and the editor surface in `useSlideDeck.ts`,
 > `SlideDeckPanel.tsx`, `PresentationHost.tsx`, `PresentationOverlay.tsx`,
@@ -224,7 +224,7 @@ the Deck) and **While Presenting** (Show Position, Keep Controls Visible, Hide t
 Slide Budget).
 
 The person's own, not a property of the document: one `presentation` object in their preferences
-(`lib/presentation-config.ts` reads and writes it, trusting it only once parsed), so the settings follow a
+(livediagram's `presentation-config.ts` reads and writes it, trusting it only once parsed), so the settings follow a
 signed-in account and stay in this browser for a guest. Until the first change, what this browser kept before
 (its old device-local key) is read, so nobody loses their choices in the move.
 
@@ -272,7 +272,7 @@ The deck itself IS shared: a teammate opening the document sees your slides and 
 
 Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the sixth tool panel, built like `EraserPanel` / `FormatPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
-The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which keeps them in the person's preferences. Laser and Spotlight need nothing new at all: they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
+The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in livediagram's `presentation-config.ts`, which keeps them in the person's preferences. Laser and Spotlight need nothing new at all: they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
 
 ## Telemetry
 

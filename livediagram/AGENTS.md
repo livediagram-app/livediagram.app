@@ -282,18 +282,19 @@ each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-proj
 - **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
   Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
   (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
-- **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the facilitator baton
-  and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`).
+- **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the Reaction Pads, the
+  facilitator baton and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`,
+  `docs/specs/009-elements/reaction-pad.md`).
 - **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
 - **The Spaces templates**: Virtual Office, Coworking Space, Team Pod and All-Hands Hall (`packages/templates`,
   `docs/specs/012-collaboration/virtual-office-template.md`).
 - **Share roles on a board**: what a Participant may do (`docs/specs/013-workspace/share-roles.md`).
 
 **Leaving livehuddle** (Work Tracker #423, [Not in livehuddle](../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md)):
-the retro and workshop templates, the quizzes and games, every Collaborate element (polls, quizzes, Q&A, agendas,
-reveals and the rest), the Session strip's Poll, the Session button, the Workshop tour, Presentation mode and the Slide
-Deck, the Page element and the diagram tools. These are livediagram's alone. Until #423's code parts land livehuddle
-still carries copies of them: a fix to one lands in livediagram only, and livehuddle's copy is left for deletion.
+the retro and workshop templates, the quizzes and games, every Collaborate element but the Reaction Pads (polls,
+quizzes, Q&A, agendas, reveals and the rest), the Session strip's Poll, the Session button, the Workshop tour, the
+diagram tools, and (gone since part 2) Presentation mode, the Slide Deck and the Page element. These are livediagram's
+alone. Until #423's code parts land livehuddle still carries copies of the rest: a fix to one lands in livediagram only, and livehuddle's copy is left for deletion.
 
 The rules:
 

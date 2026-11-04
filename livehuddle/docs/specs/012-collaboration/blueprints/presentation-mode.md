@@ -1,6 +1,6 @@
 # Presentation mode blueprint
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/012-collaboration/blueprints/presentation-mode.md) is the one to change. Part 2 removes it with its help articles. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 2): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/012-collaboration/blueprints/presentation-mode.md) is the one to read and change. livehuddle offers no Slide Deck tool, panel or command, no Present button, no presenting shortcut and no Presenting settings, and its help has no articles on them (their addresses redirect to Follow Along). A document's stored deck (the `presentation` field) is kept as it is: the api and the offline store carry it, the editor neither reads nor writes it, so a save never drops it and livediagram can still present it. The deck model (`packages/document/src/slide-deck.ts`) stays for the api's redaction and migration. The rest of this page records what livehuddle had.
 
 Derived from [Presentation mode](../presentation-mode.md): "Motion" (slide moves and the entrance as View
 Transitions) and "Full screen" (refusals logged). The rest of presentation mode predates blueprints.
@@ -50,7 +50,7 @@ exit.
 ## Interfaces and contracts
 
 ```ts
-// apps/editor/components/canvas/slide-transition.ts
+// livediagram: slide-transition.ts
 export const SLIDE_TRANSITION_TYPES: readonly [
   'slide-in',
   'slide-forward',
@@ -82,7 +82,7 @@ export function whenScreenSettles(ready: () => void): () => void;
 
 ## Performance and limits
 
-Measured by `apps/editor/e2e/perf/slide-transition.perf.ts` at a 4x CPU slowdown on 100-element slides: a key paints
+Measured by livediagram's `slide-transition.perf.ts` at a 4x CPU slowdown on 100-element slides: a key paints
 in under 16 ms and the longest task stays under the earlier DOM copy's (about 112 ms). The probe is the regression
 check; a build that loses either is a defect.
 
@@ -104,15 +104,15 @@ Reduced motion (either source) cuts. The slide announcer, focus and the HUD's co
 
 ## Testing
 
-| Rule                                   | Test                                                                                     |
-| -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Types per transition and direction     | `slide-transition.test.ts`: `slideTransitionType`                                        |
-| A move runs in a typed transition      | `PresentationHost.test.tsx`: `addTransitionType` called with the move's type             |
-| Reduced motion and None start none     | `PresentationHost.test.tsx`                                                              |
-| Quick steps all land                   | `PresentationHost.test.tsx`: three steps before a commit land three slides on            |
-| The entrance waits, then reveals typed | `PresentationHost.test.tsx` with `whenScreenSettles` driven                              |
-| Refusals are logged                    | `PresentationOverlay.test.tsx`                                                           |
-| It moves, lands and stays fast         | `e2e/presentation-mode.spec.ts`; `e2e/perf/slide-transition.perf.ts` (Chromium, Firefox) |
+| Rule                                   | Test                                                                                         |
+| -------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Types per transition and direction     | `slide-transition.test.ts`: `slideTransitionType`                                            |
+| A move runs in a typed transition      | `PresentationHost.test.tsx`: `addTransitionType` called with the move's type                 |
+| Reduced motion and None start none     | `PresentationHost.test.tsx`                                                                  |
+| Quick steps all land                   | `PresentationHost.test.tsx`: three steps before a commit land three slides on                |
+| The entrance waits, then reveals typed | `PresentationHost.test.tsx` with `whenScreenSettles` driven                                  |
+| Refusals are logged                    | `PresentationOverlay.test.tsx`                                                               |
+| It moves, lands and stays fast         | livediagram's `presentation-mode.spec.ts` and `slide-transition.perf.ts` (Chromium, Firefox) |
 
 ## Constants and configuration
 

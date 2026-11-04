@@ -280,8 +280,8 @@ type UserPreferences = {
   // Counts every element tour as taken while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
-  // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
-  // browser kept before they followed the account, else the defaults.
+  // livediagram's to read and write (Settings › Editor › Presenting there). livehuddle has no presenting since Work
+  // Tracker #423 part 2: it never reads or writes the key, and the blob carries it through untouched.
   presentation?: Record<string, unknown>;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
@@ -480,9 +480,8 @@ and the dialog stays as the one complete, browsable index of them.
   (`MovablePanel`'s `onReset`, shown once the panel has left its default
   corner), which is the only non-preference thing the popovers held.
 
-  The **Slide Deck** popover stays: its contents (auto-advance, speed,
-  transition, slide size, loop, hide pointer) are deck state rather than user
-  preferences, so they have no home in Settings and should not get one.
+  livehuddle has no Slide Deck popover since Work Tracker #423 part 2
+  ([Presentation mode](../012-collaboration/presentation-mode.md)).
 
 - **Settings dialog**: `apps/editor/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
@@ -557,9 +556,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
-  readout nested under it while the mode is on; with the sub-category
-  **Presenting** (the presenter settings: Slides, Playback and While Presenting,
-  [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
+  readout nested under it while the mode is on; no Presenting sub-category since Work Tracker #423 part 2), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
@@ -591,7 +588,7 @@ and the dialog stays as the one complete, browsable index of them.
   would otherwise carry in a gear popover live here, and only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** holds **Presenting**; a category with no rows is never
+  spec); a category with no rows is never
   shown. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
@@ -638,7 +635,7 @@ and the dialog stays as the one complete, browsable index of them.
   toolbar button, take Lucide map and Lucide palette; Notifications and
   API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers", "in Editor › Presenting", "in Account ›
+  it by path ("in Panels › Layers", "in Account ›
   API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
