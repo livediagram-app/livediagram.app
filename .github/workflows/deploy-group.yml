@@ -74,4 +74,12 @@ jobs:
           LABEL: ${{ inputs.label }}
           ENVIRONMENT: ${{ inputs.environment }}
           REF: ${{ inputs.ref }}
-        run: node .github/scripts/deploy-group.mjs
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        # This workflow's own script, as in deploy.yml's plan: its inputs are this workflow's contract.
+        run: |
+          set -euo pipefail
+          scripts="${RUNNER_TEMP}/workflow-scripts"
+          mkdir -p "${scripts}"
+          git cat-file -e "${WORKFLOW_SHA}^{commit}" 2>/dev/null || git fetch -q --depth=1 origin "${WORKFLOW_SHA}"
+          git archive "${WORKFLOW_SHA}" .github/scripts | tar -x -C "${scripts}"
+          node "${scripts}/.github/scripts/deploy-group.mjs"
