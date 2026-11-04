@@ -13,19 +13,19 @@ const HOVER_CARD = '[role="tooltip"][data-hint="hover-card"]';
 // Well under the 1 s delay, and well over a frame: "instant" means this.
 const INSTANT_MS = 300;
 
-// A captioned Square tile, in the strip's Search popover: the category flyouts' tiles show their names, so the
+// A captioned Sticky Note tile, in the strip's Search popover: the category flyouts' tiles show their names, so the
 // tooltip lives on Search's captioned tiles (the palette tile grid, as More's were).
 const SEARCH = '[data-toolbar-search]';
 const squareTile = (page: Page) =>
-  page.locator(SEARCH).getByRole('button', { name: 'Add Square', exact: true });
+  page.locator(SEARCH).getByRole('button', { name: 'Add Sticky Note', exact: true });
 
 // A blank document with the quick tour out of the way (its dialog would cover
-// the palette mid-hover), and the strip's Search open on "square".
+// the palette mid-hover), and the strip's Search open on "sticky".
 async function openEditor(page: Page) {
   await startBlankDocument(page);
   await dismissQuickTour(page);
   await page.getByRole('button', { name: 'Search elements' }).click();
-  await page.locator(SEARCH).getByRole('textbox', { name: 'Search elements' }).fill('square');
+  await page.locator(SEARCH).getByRole('textbox', { name: 'Search elements' }).fill('sticky');
   await expect(squareTile(page)).toBeVisible();
 }
 
@@ -53,7 +53,7 @@ test.describe('Tooltip on a palette tile', () => {
 
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: 1_500 });
-    await expect(tooltip).toHaveText('Add Square');
+    await expect(tooltip).toHaveText('Add Sticky Note');
     expectNoPageErrors(pageErrors);
   });
 
@@ -65,7 +65,7 @@ test.describe('Tooltip on a palette tile', () => {
 
     const tooltip = page.locator(TOOLTIP);
     await expect(tooltip).toBeVisible({ timeout: INSTANT_MS });
-    await expect(tooltip).toHaveText('Add Square');
+    await expect(tooltip).toHaveText('Add Sticky Note');
 
     await page.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);

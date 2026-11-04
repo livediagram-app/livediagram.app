@@ -1,5 +1,10 @@
 # Shape libraries
 
+> **Leaving livehuddle** (Work Tracker #423): the palette's **My shapes** category left with the other diagram
+> tools in part 3 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), so no library's shapes are placed
+> from livehuddle's palette. Its draw.io import and the Explorer's Shape Libraries page leave with the importers in
+> part 4. livediagram keeps all of it.
+
 A **shape library** is a named set of reusable shapes that belongs to a person: a draw.io library (the
 "preset" kept in a draw.io scratchpad or a Drive file) brought into livehuddle, its shapes ready to
 place on any tab from the palette's **My shapes** category. Importing several libraries gives several,

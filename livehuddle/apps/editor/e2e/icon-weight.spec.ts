@@ -61,7 +61,7 @@ test.describe('Chrome glyph weight', () => {
   }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await startBlankDocument(page);
-    const glyph = (await paletteTile(page, 'Add Square')).locator('svg.lvd-glyph').first();
+    const glyph = (await paletteTile(page, 'Add Sticky Note')).locator('svg.lvd-glyph').first();
     await expect(glyph).toHaveAttribute('stroke-width', '1.25');
     const child = glyph.locator('> *').first();
     await expect

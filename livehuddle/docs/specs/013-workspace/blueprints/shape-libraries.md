@@ -206,7 +206,7 @@ CREATE TABLE shape_libraries (
 | Insert: centred, fresh ids, connections, one commit, selection, read-only; consecutive clicks line up and never cover, a moved or deleted insert frees its spot, drops keep their point | `apps/editor/hooks/canvas/useLibraryShapeInsert.test.ts`                            |
 | Drop: the MIME reaches the host with the point                                                                                                                                          | `usePaletteDrop.test.ts`                                                            |
 | Previews: every shape as SVG, 404 for a missing library                                                                                                                                 | `apps/api/src/routes/shape-libraries.test.ts`                                       |
-| End to end: import a synthesised library, place two shapes whose boxes do not overlap, rename, delete                                                                                   | `apps/editor/e2e/shape-libraries.spec.ts`                                           |
+| End to end: gone with the palette's My shapes (Work Tracker #423 part 3); livediagram keeps it                                                                                          | none in livehuddle                                                                  |
 
 ## Constants and configuration
 

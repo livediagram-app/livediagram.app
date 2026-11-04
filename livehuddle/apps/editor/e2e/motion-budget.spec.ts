@@ -88,16 +88,16 @@ async function toggle(page: Page, name: string): Promise<void> {
 }
 
 async function tourTheChrome(page: Page): Promise<void> {
-  await (await paletteTile(page, 'Add Square')).click();
+  await (await paletteTile(page, 'Add Sticky Note')).click();
   await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
-  const square = page.getByRole('img', { name: 'Square', exact: true });
+  const square = page.getByRole('img', { name: 'Sticky note', exact: true });
   await expect(square).toHaveCount(1);
   await page.waitForTimeout(400);
 
   await toggle(page, 'Selection mode');
   // A category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
   await openAndClose(page, () =>
-    page.locator('[data-category-bar-button][aria-label="Layout"]').click(),
+    page.locator('[data-category-bar-button][aria-label="Frame"]').click(),
   );
   await toggle(page, 'Fit to screen');
   // The Explorer popover, and the Space menu on its Current space card.

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, openStartBlank, test } from './fixtures';
+import { expect, expectNoPageErrors, openStartBlank, seedTab, test } from './fixtures';
 
 // A swatch row never wraps and is never clipped (docs/specs/008-canvas/quick-style-panel.md "Where
 // it sits"): the panel's width counts the targets, their gaps, the padding and the border exactly.
@@ -44,9 +44,14 @@ test.describe('swatch rows', () => {
   test('a shape’s colour rows sit on one line, unclipped', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await openStartBlank(page);
-    await page.keyboard.press('Escape');
-    await page.keyboard.press('o');
-    await page.mouse.click(500, 400);
+    // A stored circle: livehuddle's palette draws no shapes (Work Tracker #423), but a stored one selects and styles.
+    await seedTab(page, [
+      { id: 'c', type: 'shape', shape: 'circle', x: 400, y: 300, width: 120, height: 120 },
+    ]);
+    await page
+      .locator('[data-canvas-a11y-root]')
+      .getByRole('img', { name: 'Circle', exact: true })
+      .click();
     await expect(panel(page)).toBeVisible();
     const rows = await rowsFit(page);
     expect(rows.find((r) => r.name === 'Stroke')?.count).toBe(9);

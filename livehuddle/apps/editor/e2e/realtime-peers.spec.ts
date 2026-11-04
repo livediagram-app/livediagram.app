@@ -44,7 +44,9 @@ async function openAs(
   return page;
 }
 
-const squares = (page: Page) => page.locator(CANVAS).getByRole('img', { name: /Square/ });
+// The seeded square and the sticky notes each peer adds.
+const squares = (page: Page) =>
+  page.locator(CANVAS).getByRole('img', { name: /^(Square|Sticky note)$/ });
 
 test('two peers see each other, edit live, and every edit is kept', async ({
   page,
@@ -104,14 +106,14 @@ test('two peers see each other, edit live, and every edit is kept', async ({
 
   // A peer's edit reaches the owner live.
   await (
-    await paletteTile(peerPage, 'Add Square')
+    await paletteTile(peerPage, 'Add Sticky Note')
   ).dragTo(peerPage.locator(CANVAS), { targetPosition: { x: 700, y: 500 } });
   await peerPage.keyboard.press('Escape');
   await expect(squares(ownerPage)).toHaveCount(2);
 
   // The owner edits too; the autosave keeps both, and a reload shows both.
   await (
-    await paletteTile(ownerPage, 'Add Square')
+    await paletteTile(ownerPage, 'Add Sticky Note')
   ).dragTo(ownerPage.locator(CANVAS), {
     targetPosition: { x: 300, y: 600 },
   });
