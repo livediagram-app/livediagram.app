@@ -407,7 +407,7 @@ function tourTracksSwitch(
   };
 }
 
-type TourSeenKey = 'workshopTourSeen' | 'avatarTourSeen' | 'elementToursSeen';
+type TourSeenKey = 'avatarTourSeen' | 'elementToursSeen';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -830,13 +830,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      tourSwitch('workshopTourSeen', {
-        label: 'Workshop Tour',
-        event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
-        description: 'In Workshop.',
-        helpArticle: 'workshopTour',
-      }),
       tourSwitch('avatarTourSeen', {
         label: 'Avatar Tour',
         event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },

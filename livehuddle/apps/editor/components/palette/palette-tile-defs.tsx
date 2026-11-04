@@ -448,7 +448,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Text',
     description: 'Text element. Double-click to edit.',
     shortcut: 'T',
-    dividerAfter: true,
     action: { type: 'text' },
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>

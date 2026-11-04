@@ -19,7 +19,6 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
@@ -164,15 +163,11 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): turning its row on from off and closing
-  // reruns the tour in place, as the footer's Start Tour button does.
-  const workshopTourSeen = settings.workshopTourSeen === true;
-  const workshopTourSeenAtOpen = useRef(workshopTourSeen);
-  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Workshop tour's.
+  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): turning its row on from off and closing reruns the
+  // tour in place, as the footer's Start Tour button does.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {
-    if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     onClose();
   };

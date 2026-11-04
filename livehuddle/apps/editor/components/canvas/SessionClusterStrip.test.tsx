@@ -103,10 +103,17 @@ describe('SessionClusterStrip', () => {
     expect(vote.textContent).toContain('2');
   });
 
-  it('leaves Poll out where the mode does not offer it', () => {
-    strip({ offersPoll: false, pollRunning: true });
+  // The meeting board (docs/specs/012-collaboration/workshop-mode.md "The Session strip"): Timer and Vote, no Poll.
+  it('leaves Poll out where the strip does not offer it, while no poll runs', () => {
+    strip({ offersPoll: false });
     expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
     expect(screen.getByRole('button', { name: 'Open Timer' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Start a Vote' })).toBeTruthy();
+  });
+
+  it('still shows a poll a stored Poll card started, so it can be read and ended', () => {
+    strip({ offersPoll: false, pollRunning: true });
+    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
   });
 });
 
@@ -139,8 +146,8 @@ describe('Pages: a running Vote or Poll only', () => {
 });
 
 describe('sessionStripTools', () => {
-  it('offers all three in Workshop, none in Diagram or Draw', () => {
-    expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true, poll: true });
+  it('offers Timer and Vote on a meeting board, none in Diagram or Draw', () => {
+    expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true, poll: false });
     expect(sessionStripTools(undefined)).toBeNull();
     expect(sessionStripTools('diagram')).toBeNull();
     expect(sessionStripTools('draw')).toBeNull();
@@ -169,15 +176,29 @@ describe('stripSegmentGone', () => {
     const at = { readOnly: false, running: all };
     expect(stripSegmentGone({ ...at, segment: 'session-vote', tools: null })).toBe(true);
     expect(
-      stripSegmentGone({ ...at, segment: 'session-poll', tools: { ...all, poll: false } }),
+      stripSegmentGone({
+        ...at,
+        segment: 'session-poll',
+        tools: { ...all, poll: false },
+        running: idle,
+      }),
     ).toBe(true);
   });
 
+  it('keeps a running poll’s popover open where the strip does not offer Poll', () => {
+    expect(
+      stripSegmentGone({ segment: 'session-poll', tools: workshop, readOnly: false, running: all }),
+    ).toBe(false);
+  });
+
   it("keeps an editor's idle popover open where the strip offers starting one", () => {
-    for (const segment of ['session-timer', 'session-vote', 'session-poll'] as const)
+    for (const segment of ['session-timer', 'session-vote'] as const)
       expect(stripSegmentGone({ segment, tools: workshop, readOnly: false, running: idle })).toBe(
         false,
       );
+    expect(
+      stripSegmentGone({ segment: 'session-poll', tools: workshop, readOnly: false, running: idle }),
+    ).toBe(true);
   });
 
   it("closes a view role's popover when its tool ends", () => {

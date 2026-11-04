@@ -9,7 +9,7 @@ export const CATEGORY_BANDS: Record<number, string> = {
   1: 'Structure',
   2: 'Decorate',
   3: 'Dynamic',
-  // Workshop mode's session kit (docs/specs/012-collaboration/workshop-mode.md "The palette"): the
-  // six Collaborate categories, under the name the elements go by rather than Dynamic.
-  6: 'Collaborate',
+  // The meeting palette's Navigate, React and Selection Mode (docs/specs/012-collaboration/workshop-mode.md "The
+  // palette"): what a Space is walked round, met in and celebrated with.
+  6: 'Meet',
 };

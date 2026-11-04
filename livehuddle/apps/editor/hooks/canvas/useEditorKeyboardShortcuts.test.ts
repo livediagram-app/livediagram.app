@@ -67,9 +67,7 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
-  it('binds Pencil to P and number 7, and Frame to F', () => {
-    expect(fired(EDIT_KEYS, 'p')).toBe('pencil');
-    expect(fired(EDIT_KEYS, '7')).toBe('pencil');
+  it('binds Frame to F', () => {
     expect(fired(EDIT_KEYS, 'f')).toBe('shape:frame');
   });
 
@@ -78,23 +76,16 @@ describe('EDIT_KEYS (mutating tools / element adds)', () => {
     expect(fired(EDIT_KEYS, '0')).toBe('tool:eraser');
   });
 
-  it('maps the flowchart shape letters and their Excalidraw number aliases', () => {
-    expect(fired(EDIT_KEYS, 'r')).toBe('shape:square');
-    expect(fired(EDIT_KEYS, '2')).toBe('shape:square');
-    expect(fired(EDIT_KEYS, 'o')).toBe('shape:circle');
-    expect(fired(EDIT_KEYS, '4')).toBe('shape:circle');
-    expect(fired(EDIT_KEYS, 'd')).toBe('shape:diamond');
-    expect(fired(EDIT_KEYS, '3')).toBe('shape:diamond');
-    expect(fired(EDIT_KEYS, 'c')).toBe('shape:cylinder');
-    expect(fired(EDIT_KEYS, 'g')).toBe('shape:parallelogram');
-  });
-
-  it('binds Text (T / 8), Note (N), and Arrow (A / 5)', () => {
+  it('binds Text (T / 8) and Note (N)', () => {
     expect(fired(EDIT_KEYS, 't')).toBe('text');
     expect(fired(EDIT_KEYS, '8')).toBe('text');
     expect(fired(EDIT_KEYS, 'n')).toBe('sticky');
-    expect(fired(EDIT_KEYS, 'a')).toBe('arrow');
-    expect(fired(EDIT_KEYS, '5')).toBe('arrow');
+  });
+
+  // docs/specs/012-collaboration/workshop-mode.md "The palette": the diagram tools' keys left with the tools.
+  it('binds no diagram tool: no pencil, shape pen, flowchart shape or arrow key', () => {
+    for (const key of ['p', 'r', 'o', 'd', 'c', 'g', 'a', '2', '3', '4', '5', '6', '7'])
+      expect(EDIT_KEYS[key], key).toBeUndefined();
   });
 
   it('no longer binds Hexagon to H (H is the Hand tool now)', () => {

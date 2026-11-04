@@ -172,7 +172,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'workshop',
-    label: 'Workshop',
+    label: 'Sandstone',
     description: 'Sand, Marker, soft grid',
     theme: 'sand',
     finish: 'marker',

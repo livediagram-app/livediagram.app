@@ -119,7 +119,7 @@ describe('CanvasThemeDialog home', () => {
     'Doodle',
     'Editorial',
     'Midnight',
-    'Workshop',
+    'Sandstone',
     'Poster',
     'Graph Paper',
     'Daydream',

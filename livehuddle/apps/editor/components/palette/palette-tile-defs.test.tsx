@@ -79,6 +79,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-navigate': 15,
   // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).
   layout: 0,
+  // The meeting palette's Frame, filled by the layout with the frame alone (docs/specs/012-collaboration/workshop-mode.md).
+  frame: 0,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
   participate: 0,
 };

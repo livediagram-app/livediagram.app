@@ -37,7 +37,7 @@ describe('TAB_LOOKS', () => {
       'Editorial',
       'Midnight',
       'Poster',
-      'Workshop',
+      'Sandstone',
       'Graph Paper',
       'Daydream',
       'Engineer',
