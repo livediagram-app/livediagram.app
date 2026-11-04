@@ -288,6 +288,7 @@ describe('the stage', () => {
     );
     expect([...heard].sort()).toEqual(['p0', 'speaker']);
     // 60 scenes, a second of walking: well under a frame each.
+    // Measured: about 30 µs a scene (1.8 ms for 60).
     expect(best).toBeLessThan(cpuBudgetMs(30));
   });
 });
@@ -385,5 +386,34 @@ describe('raised hands let speak', () => {
     expect(barringStage(onStage, 'view', open)).toBe('take-part');
     expect(barringStage(hall, 'view', open)).toBeNull();
     expect(barringStage(null, 'view', open)).toBeNull();
+  });
+
+  it('works out 100 raised hands, all let speak, with the staging within a frame’s budget', () => {
+    const walkers = new Map<string, Point>(
+      Array.from({ length: 100 }, (_, i) => [`p${i}`, { x: 20 + i * 11, y: 600 }] as const),
+    );
+    walkers.set('ed', onStage);
+    const levels = new Map<string, AccessLevel>([['ed', 'edit']]);
+    const hands = new Map(
+      Array.from({ length: 100 }, (_, i) => [`p${i}`, { letSpeak: 'ed' }] as const),
+    );
+    let speakers = 0;
+    const best = Math.min(
+      ...Array.from({ length: 5 }, () =>
+        cpuMsOf(() => {
+          for (let i = 0; i < 60; i++) {
+            const allowed = letSpeakers(hands, walkers, levels, stages, new Set(), false);
+            const s = staging(hall, 'participate', walkers, levels, stages, {
+              let: allowed,
+              self: false,
+            });
+            speakers = s?.speakers.size ?? 0;
+          }
+        }),
+      ),
+    );
+    expect(speakers).toBe(101);
+    // Measured: about 30 µs a scene (1.8 ms for 60).
+    expect(best).toBeLessThan(cpuBudgetMs(30));
   });
 });

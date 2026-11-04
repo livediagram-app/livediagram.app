@@ -6,7 +6,7 @@
 // above the strip on a stage you may not speak from.
 import { lucideHand, lucideMic } from '@liveworkspace/icons/lucide';
 import type { IconPrim } from '@liveworkspace/icons';
-import { lucideGlyph } from '@livehuddle/ui';
+import { CountBadge, lucideGlyph } from '@livehuddle/ui';
 import type { CallActions, CallSelf } from '@/lib/calls/calls-store';
 import { Segment } from './CallSegment';
 
@@ -84,12 +84,13 @@ export function HandSegment({ self, actions }: { self: CallSelf; actions: CallAc
         icon={
           <span className="relative flex">
             <HandIcon />
-            <span
-              aria-hidden
-              className="absolute -top-1.5 -right-2 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-amber-400 px-0.5 text-[9px] leading-none font-bold text-amber-950 tabular-nums"
+            <CountBadge
+              background="#fbbf24"
+              color="#451a03"
+              className="absolute -top-2 -right-2.5 tabular-nums ring-2 ring-white dark:ring-slate-900"
             >
               {self.handsUp > 99 ? '99+' : self.handsUp}
-            </span>
+            </CountBadge>
           </span>
         }
         tone="hand"

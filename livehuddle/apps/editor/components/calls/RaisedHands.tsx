@@ -32,7 +32,7 @@ export function handBadgeAt(at: Point, scale: number): Point {
 const FACE =
   'flex size-[22px] items-center justify-center rounded-full shadow-md ring-2 ring-white dark:ring-slate-900';
 const RAISED = 'bg-amber-400 text-amber-950';
-const SPEAKING = 'bg-brand-600 text-white';
+const SPEAKING = 'bg-brand-700 text-white';
 
 function Badge({ speaking }: { speaking: boolean }) {
   return (

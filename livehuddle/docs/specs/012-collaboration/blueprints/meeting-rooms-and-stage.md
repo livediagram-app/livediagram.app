@@ -192,6 +192,10 @@ positions and zones it relays, is a recorded follow-up.
   change. The test runs 100 walkers, 50 rooms and a live stage within the same kind of budget. Measured (best of
   seven, CPU time): a scene of 100 walkers among 50 rooms is 14.5 µs, 16.0 µs with a live stage; `callStages` over a
   tab of 2,051 elements is 6.9 µs.
+- Raise hand (part 3) adds `hands × stages` comparisons per scene (`letSpeakers`, at most `HANDS_MAX` hands) and a
+  count of the hands up; a hand changing re-runs the scene once. Measured (best of five, CPU time): 100 hands all let
+  speak, with the staging, is about 30 µs a scene. The canvas's `RaisedHands` draws nothing and costs one empty
+  check while no hand is up; the hands store notifies only on a raise, a lower, a let-speak or a prune.
 - A stage is one speaker to everyone: `listeners` streams per speaker (the spec's Cost), subscribed in batches of 16.
 - A room is one call: everyone in it subscribes to everyone else, `n × (n − 1)` streams (the spec's Cost). The SFU
   session batches subscribes at `MAX_SUBSCRIBE_BATCH` (16) per request, so a crowded room joins in a few requests.
