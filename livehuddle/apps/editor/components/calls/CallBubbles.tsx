@@ -24,6 +24,7 @@ import {
   tailShift,
   type BubbleBox,
   type BubbleRect,
+  type BubbleView,
 } from '@/lib/calls/bubble-layout';
 import { track } from '@/lib/telemetry';
 import { MaximisedBubble } from './MaximisedBubble';
@@ -54,23 +55,28 @@ function Group({
   at,
   scale,
   dx,
+  dy,
   glideMs,
   walking,
   streams,
   name,
   color,
+  onStopShare,
 }: {
   id: string;
   at: Point;
   scale: number;
   // Canvas px nudged sideways, clear of the bubbles beside it.
   dx: number;
+  // Canvas px lifted onto a wrapped row (negative), or 0.
+  dy: number;
   glideMs: number;
   walking: boolean;
   streams: CallMediaStreams;
   // Null for your own.
   name: string | null;
   color: string;
+  onStopShare?: () => void;
 }) {
   const placed = useRef<HTMLDivElement>(null);
   const from = useRef(at);
@@ -96,12 +102,14 @@ function Group({
         className="relative flex items-end motion-reduce:transition-none"
         style={{
           gap: BUBBLE_GAP_PX,
-          transform: `translateX(${dx}px)`,
+          transform: `translate(${dx}px, ${dy}px)`,
           transition: NUDGE_TRANSITION,
         }}
       >
-        {/* The tail: points down at the head, so a bubble nudged aside still says whose it is. Under the bubbles. */}
+        {/* The tail: points down at the head, so a bubble nudged aside still says whose it is. Under the bubbles.
+            Hidden on a wrapped row, whose head is under another row. */}
         <span
+          hidden={dy !== 0}
           aria-hidden
           data-call-bubble-tail
           className="absolute -bottom-[5px] left-1/2 size-[10px] rounded-[2px] motion-reduce:transition-none"
@@ -123,6 +131,7 @@ function Group({
               color={color}
               // Your own camera is a mirror, as every video call shows it; others see it the right way round.
               mirrored={name === null && media === 'video'}
+              onStopShare={onStopShare}
               onMaximise={() => {
                 track('Canvas', 'Used', 'BubbleMaximise');
                 setCallMaximised({ id, media });
@@ -140,7 +149,12 @@ export function CallBubbles(props: {
   self: { at: Point; scale: number; color: string } | null;
   // Filled with where the bubbles were laid out, for the speech bubbles (useCallBubbleRects).
   rectsRef?: RefObject<readonly BubbleRect[]>;
+  // The visible canvas across, in canvas px: a row of bubbles wider than it wraps.
+  view?: BubbleView | null;
+  // An Editor's Stop Sharing on someone else's screen (video-and-screen-bubbles.md "Share roles").
+  onStopShare?: (id: string) => void;
 }) {
+  const { onStopShare } = props;
   const media = useCallMedia();
   const own = media.get(SELF_MEDIA_ID);
   const boxes: BubbleBox[] = [];
@@ -155,7 +169,7 @@ export function CallBubbles(props: {
   // The left-to-right order sticks between layouts, so passing people swap sides once, not back and forth. Adjusted
   // during render: the order a layout hands back is already stable, so this settles in one extra render.
   const [order, setOrder] = useState<readonly string[]>([]);
-  const layout = layoutBubbles(boxes, order);
+  const layout = layoutBubbles(boxes, order, props.view);
   if (layout.order.length !== order.length || layout.order.some((id, i) => id !== order[i])) {
     setOrder(layout.order);
   }
@@ -183,11 +197,13 @@ export function CallBubbles(props: {
             at={p.at}
             scale={p.scale}
             dx={layout.dx.get(p.id) ?? 0}
+            dy={layout.dy.get(p.id) ?? 0}
             glideMs={p.glideMs}
             walking={p.walking}
             streams={streams}
             name={p.name}
             color={p.color}
+            onStopShare={onStopShare ? () => onStopShare(p.id) : undefined}
           />
         );
       })}
@@ -197,6 +213,7 @@ export function CallBubbles(props: {
           at={props.self.at}
           scale={props.self.scale}
           dx={layout.dx.get(SELF_MEDIA_ID) ?? 0}
+          dy={layout.dy.get(SELF_MEDIA_ID) ?? 0}
           glideMs={0}
           walking={false}
           streams={own}
@@ -206,6 +223,7 @@ export function CallBubbles(props: {
       ) : null}
       <MaximisedBubble
         media={media}
+        onStopShare={onStopShare}
         nameOf={(id) => {
           if (id === SELF_MEDIA_ID) return { name: null, color: props.self?.color ?? '#64748b' };
           const peer = names.get(id);

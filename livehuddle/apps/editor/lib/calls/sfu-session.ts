@@ -6,6 +6,7 @@
 // or layer change is reconciled against what is wanted when it runs, so a speaker who walks in and out while a request
 // is in flight costs no stale call.
 import {
+  CALL_NOT_HEARD,
   CALL_TRACK_NAME,
   CALL_VIDEO_TRACK_NAME,
   type CallLayer,
@@ -27,6 +28,12 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 /** The most tracks asked for in one request (the api's MAX_SUBSCRIBE_BATCH). */
 export const SUBSCRIBE_BATCH = 16;
+/**
+ * A track the room said you may not hear yet (`not_heard`: positions lag, docs/specs/012-collaboration/
+ * meeting-rooms-and-stage.md "Trust") is asked for again after this long, doubling while it is refused.
+ */
+export const NOT_HEARD_RETRY_MS = 2000;
+export const NOT_HEARD_RETRY_MAX_MS = 16_000;
 
 /** A track to receive: whose, which, and for a camera the layer (the small one when absent). */
 export type SfuWant = CallSubscribeLocator;
@@ -47,6 +54,8 @@ export type SfuEvents = {
   onPaused: () => void;
   // The kill switch allows audio alone: a camera or screen request was refused with `audio-only`.
   onAudioOnly?: () => void;
+  // The room said a track is not heard yet: the call proves its session again before the retry.
+  onNotHeard?: () => void;
 };
 
 type Subscription = { mid: string; locator: CallTrackLocator; layer: CallLayer | undefined };
@@ -69,6 +78,9 @@ export class SfuSession {
   private readonly senders = new Map<string, RTCRtpSender>();
   // Locators Realtime refused (a session that ended): not asked for again until the owner sends a new one.
   private readonly refused = new Set<string>();
+  // Track key → the wait before asking again, for tracks the room said are not heard yet; a key here is held back.
+  private readonly notHeard = new Map<string, number>();
+  private readonly held = new Set<string>();
   private readonly caller: CallsCaller;
   private readonly events: SfuEvents;
 
@@ -157,7 +169,9 @@ export class SfuSession {
   private joining(): SfuWant[] {
     const out: SfuWant[] = [];
     for (const [key, l] of this.wanted) {
-      if (!this.subscribed.has(key) && !this.refused.has(refusalKey(l))) out.push(l);
+      if (!this.subscribed.has(key) && !this.refused.has(refusalKey(l)) && !this.held.has(key)) {
+        out.push(l);
+      }
     }
     return out;
   }
@@ -200,16 +214,25 @@ export class SfuSession {
     });
     const answer = await apiCallTracks(this.caller, { ...this.proof, subscribe });
     // Answered in order; a locator without a usable answer counts as refused, so it is never asked for in a loop.
+    let notHeard = false;
     locators.forEach((l, i) => {
-      const mid = answer.tracks[i]?.errorCode ? undefined : answer.tracks[i]?.mid;
+      const key = keyOf(l);
+      const errorCode = answer.tracks[i]?.errorCode;
+      if (errorCode === CALL_NOT_HEARD) {
+        this.holdBack(key);
+        notHeard = true;
+        return;
+      }
+      const mid = errorCode ? undefined : answer.tracks[i]?.mid;
       if (!mid) {
         this.refused.add(refusalKey(l));
         return;
       }
-      const key = keyOf(l);
+      this.notHeard.delete(key);
       this.subscribed.set(key, { mid, locator: l, layer: layerOf(l) });
       this.byMid.set(mid, key);
     });
+    if (notHeard) this.events.onNotHeard?.();
     if (answer.requiresImmediateRenegotiation && answer.sessionDescription) {
       await this.pc.setRemoteDescription(answer.sessionDescription);
       await this.pc.setLocalDescription(await this.pc.createAnswer());
@@ -259,6 +282,17 @@ export class SfuSession {
   /** This browser's locator for one of its tracks (the microphone unless named), shared in its `call-track` op. */
   locator(trackToken: string, trackName: CallTrackName = CALL_TRACK_NAME): CallTrackLocator {
     return { sessionId: this.sessionId, trackName, token: trackToken };
+  }
+
+  // Hold a not-heard track back, then ask again: the wait doubles while the room keeps saying no.
+  private holdBack(key: string): void {
+    const wait = this.notHeard.get(key) ?? NOT_HEARD_RETRY_MS;
+    this.notHeard.set(key, Math.min(wait * 2, NOT_HEARD_RETRY_MAX_MS));
+    this.held.add(key);
+    setTimeout(() => {
+      this.held.delete(key);
+      if (!this.closed) this.want([...this.wanted.values()]);
+    }, wait);
   }
 
   close(): void {

@@ -44,6 +44,12 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
   booths and the kitchen are private, the open floor between them is by distance. The **Coworking Space** and the
   **All-Hands Hall** are each one big room, so everyone inside either hears everyone else inside it (see
   [Cost](#cost)); the hall's stage changes that once the template stands a Stage on it (part 4).
+- **A big room hears its talkers** (#482). In a room where you would hear more than 8 people, you receive the 3
+  nearest of them and anyone in the room who talked in the last 30 seconds (at most the 8 who talked last), rather
+  than everyone. Somebody quiet who starts talking from across the room is heard within about half a second, so the
+  first word or two may be lost; the people beside you are always heard from the first word. One of the nearest
+  stays received until two others are nearer, so walking past nobody makes them flicker. Rooms of 9 or fewer are
+  unchanged. See [Cost](#cost).
 
 ## The stage (part 2, built)
 
@@ -148,23 +154,43 @@ screen reader hears it once on stepping on.
   anyone does.
 - Gated in the editor on the session's `can` (never `isReadOnly`), and in the room on the grant's level for the hand
   and let-speak ops (part 3), as the room gates `avatar-voice` and `call-track`: a Viewer's `avatar-hand` or
-  `avatar-let-speak` reaches nobody. Whether the person pressing Let Speak stands on a stage is checked in the
-  browsers (the room does not place people), as hearing is.
+  `avatar-let-speak` reaches nobody. **The room checks Let Speak too** (#495): a let-speak (or a Done) reaches its
+  hand only from an Editor, or from someone the room places on a stage that lets them speak (their last shared
+  position on the tab, on the tab's stored stages, with the same small margin the hearing check allows); any other
+  is dropped and logged. Each browser still checks it as before.
 
 ## Trust
 
-Hearing is decided in each browser, from positions every walker already shares, as distance is: the room relays
-positions and the mint route lets any session in the Space subscribe to a microphone published in it. A browser that
-ignores the rule could still subscribe to a microphone in a room it is not in. The rooms, stage and hands are for
-arranging a meeting, not for keeping a secret from someone with edit access to the code; a server-side check (the
-mint route asking the room who may hear whom) is a follow-up, recorded on the card.
+Hearing is decided in each browser, from positions every walker already shares, and **checked again on the server**
+(#483) whenever a browser subscribes, so a modified browser cannot listen in on a room it is not in:
+
+- **The room tells the mint route who may hear whom.** A call proves its session to the room once it starts (the
+  `call-session` op, [Proximity audio](proximity-audio.md#the-wire)), so the room knows which session is whose. Every
+  subscribe asks the room, for each track, whether the subscriber may hear its publisher now: from both people's last
+  shared positions on the same tab, the tab's visible rooms and stages as last saved, and the hands let speak.
+- **Allowed** when the two share a room, or both stand in the open within earshot, or the publisher speaks from a
+  stage that lets them, or has been let speak by someone who still may. A camera or screen follows the same answer
+  (bubbles follow hearing).
+- **Conservative, so nobody is silenced by mistake.** Positions on the server lag the screen by a step or two, so the
+  check allows a margin: 160 canvas px beyond the release radius in the open, and 64 canvas px either side of a wall
+  or a stage's edge. Someone pressed against a wall's outside may therefore be allowed to subscribe; nobody further
+  off is. A room drawn or moved in the last few seconds counts once it is saved. If the room does not know a
+  position yet (just after it starts), it allows for its first minute.
+- **A refusal is never an error.** The track is refused alone (`not_heard`); the call asks again after 2 seconds
+  while it still wants it, and proves its session again, so a refusal from a stale position heals itself. Each
+  refusal is logged on the server and counted in the browser that met it, so false refusals show.
+- The rooms, stage and hands arrange a meeting; the check stops listening in from elsewhere on the board. It cannot
+  stop someone from walking their character into a room in plain sight, which everyone sees.
 
 ## Cost
 
 A room is one call, so everyone in it receives everyone else's microphone: a room of `n` people is `n × (n − 1)`
-streams, about 0.018 GB per stream-hour. Four in a meeting room is 12 streams, about 0.2 GB an hour ($0.01). The
-Coworking Space's open floor with 30 people is 870 streams, about 16 GB an hour, about $0.78 an hour once past the
-free 1,000 GB a month; the same 30 spread round the floor in the open would hear only their neighbours.
+streams, about 0.018 GB per stream-hour. Four in a meeting room is 12 streams, about 0.2 GB an hour ($0.01). Without a
+cap, the Coworking Space's open floor with 30 people would be 870 streams, about 16 GB an hour, about $0.78 an hour
+once past the free 1,000 GB a month. A big room hears its talkers (#482), so the same 30 with two people talking is
+at most about 150 streams (each listener's 3 nearest and the 2 talkers; 143 measured), about 2.7 GB an hour, about
+$0.14 an hour,
+close to the 30 spread round the floor in the open hearing only their neighbours.
 
 A stage (part 2) is one speaker to everyone: about 0.018 GB per listener-hour, so a hall of 100 is about $0.09 an
 hour, and its audience whispers by distance, so a big hall costs what a stage costs plus the whispering, not `n²`.
@@ -179,5 +205,6 @@ change already counted (`AvatarStatus`). Never who, never how long.
 ## Out of scope
 
 - Walls that damp rather than block (#436 asked; the owner chose rooms as calls).
-- Muting someone else, and per-person volume ([Proximity audio](proximity-audio.md#out-of-scope)).
+- Muting someone else, and per-person volume ([Proximity audio](proximity-audio.md#out-of-scope)). An Editor may stop
+  someone else's screen share ([Video and screen share bubbles](video-and-screen-bubbles.md#share-roles)).
 - Recording a stage, or any transcript.
