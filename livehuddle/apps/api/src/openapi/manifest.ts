@@ -254,7 +254,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents',
     segment: 'documents',
     tag: 'Documents',
-    summary: "List the caller's documents (metadata only, no tab contents).",
+    summary: "List the caller's Spaces (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: {
@@ -272,7 +272,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Create a document, optionally seeding it with tabs and filing it in a team and/or folder. ' +
+      'Create a Space, optionally seeding it with tabs and filing it in a team and/or folder. ' +
       'An invalid placement refuses the whole create by name (placement_invalid, team_forbidden, ' +
       'folder_not_found, folder_scope_mismatch) or a malformed intent (intent_invalid); nothing is ' +
       'written.',
@@ -327,8 +327,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         intent: {
           type: ['object', 'null'],
           description:
-            'What the new document is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
-            "With no choice of place, the document lands in the caller's default folder for it: " +
+            'What the new Space is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
+            "With no choice of place, the Space lands in the caller's default folder for it: " +
             'the tab kind default, else the template family default, else the mode default, else ' +
             'the root of My Work. Malformed: intent_invalid (400).',
           properties: {
@@ -345,8 +345,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         markUsed: {
           type: 'boolean',
           description:
-            'Whether making the document counts as a use of it for the caller, so it joins their ' +
-            'Jump back in at once. Default true; send false when making many documents in one go ' +
+            'Whether making the Space counts as a use of it for the caller, so it joins their ' +
+            'Jump back in at once. Default true; send false when making many Spaces in one go ' +
             '(the editor does for an import of more than one), so they wait until opened. Not a ' +
             'boolean: 400 invalid markUsed.',
         },
@@ -362,12 +362,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Get a document (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
+      'Get a Space (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: DOCUMENT_VIEW_QUERY,
     responseSchema: wrap('document', 'Document'),
-    textResponse: { description: 'With `view=overview`: the document and one line per tab.' },
+    textResponse: { description: 'With `view=overview`: the Space and one line per tab.' },
     statuses: [200, 400, 401, 404, 410],
   },
   {
@@ -375,7 +375,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Update a document name and/or tab order.',
+    summary: 'Update a Space name and/or tab order.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -394,7 +394,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Move a document to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
+      'Move a Space to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -402,7 +402,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'permanent',
         required: false,
         description:
-          '"true" deletes the document for good instead of moving it to the Trash; also purges one already in the Trash.',
+          '"true" deletes the Space for good instead of moving it to the Trash; also purges one already in the Trash.',
       },
     ],
     statuses: [204, 401, 403, 404, 410],
@@ -412,7 +412,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/shared-tabs',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Count the tabs a delete would leave in other documents.',
+    summary: 'Count the tabs a delete would leave in other Spaces.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('sharedTabs', 'SharedTabsSummary'),
@@ -424,7 +424,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "The canvas's tabs alone, in order: id, name and kind, without their content. Read-gated like GET /documents/{id}; a tab's share link sees its own tab alone. What the Share dialog's tab picker reads.",
+      "The Space's tabs alone, in order: id, name and kind, without their content. Read-gated like GET /documents/{id}; a tab's share link sees its own tab alone. What the Share dialog's tab picker reads.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: {
@@ -452,7 +452,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/copy',
     segment: 'documents',
     tag: 'Documents',
-    summary: "Duplicate a document into the caller's files.",
+    summary: "Duplicate a Space into the caller's files.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField } },
@@ -493,7 +493,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Changesets',
     summary:
-      'Change one tab with a changeset: ordered edit operations or one replace, applied atomically, shown live to everyone with the tab open, credited to you and revertable. Pass the base you read (rev and element fingerprints) to refuse a write over a change made since. A whole-tab replace on a tab id the document lacks creates that tab.',
+      'Change one tab with a changeset: ordered edit operations or one replace, applied atomically, shown live to everyone with the tab open, credited to you and revertable. Pass the base you read (rev and element fingerprints) to refuse a write over a change made since. A whole-tab replace on a tab id the Space lacks creates that tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -508,7 +508,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/changesets',
     segment: 'documents',
     tag: 'Changesets',
-    summary: "A document's changesets, newest first.",
+    summary: "A Space's changesets, newest first.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -546,7 +546,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}/name',
     segment: 'documents',
     tag: 'Documents',
-    summary: `Rename one tab. Advances the tab's revision and reaches everyone with the document open. Stored shortened to ${NAME_MAX_LENGTH} characters.`,
+    summary: `Rename one tab. Advances the tab's revision and reaches everyone with the Space open. Stored shortened to ${NAME_MAX_LENGTH} characters.`,
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField }, required: ['name'] },
@@ -558,7 +558,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Delete one tab from a document.',
+    summary: 'Delete one tab from a Space.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],
@@ -569,7 +569,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Add to Document: share a tab another of your documents holds (`from`) with this one. Both keep the tab, and an edit in either reaches the other.',
+      'Add to Another Space: share a tab another of your Spaces holds (`from`) with this one. Both keep the tab, and an edit in either reaches the other.',
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
@@ -690,7 +690,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "The comment threads across the document, in tab and outline order, with each element's ref and label. status=open (default), resolved or all.",
+      "The comment threads across the Space, in tab and outline order, with each element's ref and label. status=open (default), resolved or all.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'status', required: false, description: 'open (default), resolved or all.' }],
@@ -703,7 +703,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "Apply one action to a Q&A board element. Readers may add and vote; running the board needs edit access. The voter and author are derived from the caller, never read from the body. A guest's upvote answers 429 vote_limit once its network holds the most guest voters the document takes.",
+      "Apply one action to a Q&A board element. Readers may add and vote; running the board needs edit access. The voter and author are derived from the caller, never read from the body. A guest's upvote answers 429 vote_limit once its network holds the most guest voters the Space takes.",
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',
@@ -762,7 +762,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/community',
     segment: 'documents',
     tag: 'Community',
-    summary: "The document's Community post, in any state, or null (owner only).",
+    summary: "The Space's Community post, in any state, or null (owner only).",
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -777,7 +777,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Community',
     summary:
-      'Publish the document to Community, or save its listing (signed-in owner; not a team document, not password protected).',
+      'Publish the Space to Community, or save its listing (signed-in owner; not a team Space, not password protected).',
     auth: 'clerk',
     requestSchema: ref('CommunityPostInput'),
     responseSchema: wrap('post', 'CommunityOwnPost'),
@@ -788,7 +788,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/community',
     segment: 'documents',
     tag: 'Community',
-    summary: 'Remove the document from Community (owner only).',
+    summary: 'Remove the Space from Community (owner only).',
     auth: 'guest-or-clerk',
     statuses: [204, 400, 401, 403, 404, 409, 410, 502],
   },
@@ -939,7 +939,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/images/usage',
     segment: 'images',
     tag: 'Images',
-    summary: 'Map each image to the documents that reference it.',
+    summary: 'Map each image to the Spaces that reference it.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: { type: 'object' },
@@ -1024,7 +1024,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/shape-libraries/{id}',
     segment: 'shape-libraries',
     tag: 'Shape libraries',
-    summary: 'Delete a shape library. Placed shapes stay in their documents.',
+    summary: 'Delete a shape library. Placed shapes stay in their Spaces.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 404],
@@ -1129,7 +1129,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/share/{code}',
     segment: 'share',
     tag: 'Sharing',
-    summary: 'Resolve a share code to a document and the granted role.',
+    summary: 'Resolve a share code to a Space and the granted role.',
     auth: 'public',
     query: [{ name: 'password', required: false, description: 'Required when the link is gated.' }],
     responseSchema: {
@@ -1215,7 +1215,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'The documents the caller may restore: their personal Trash and every joined team Trash, newest first.',
+      'The Spaces the caller may restore: their personal Trash and every joined team Trash, newest first.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('trash', 'TrashedDocument'),
@@ -1227,7 +1227,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'Empty the personal Trash of canvases, or one team Trash with team=<id> (joined members only).',
+      'Empty the personal Trash of Spaces, or one team Trash with team=<id> (joined members only).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'team', required: false, description: 'Empty this team Trash instead.' }],
@@ -1244,7 +1244,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'Restore a document from the Trash to its folder, or the root of its space when that folder is gone.',
+      'Restore a Space from the Trash to its folder, or the root of its space when that folder is gone.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('document', 'Document'),
@@ -1255,7 +1255,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/trash/{id}',
     segment: 'trash',
     tag: 'Trash',
-    summary: 'Delete a document in the Trash for good.',
+    summary: 'Delete a Space in the Trash for good.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 400, 401, 404],
@@ -1279,7 +1279,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'account',
     tag: 'Account',
     summary:
-      'With the code emailed to it, delete the signed-in account and all of its data (documents, tokens, ...).',
+      'With the code emailed to it, delete the signed-in account and all of its data (Spaces, tokens, ...).',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -1349,7 +1349,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Whether a joined teammate can open a document the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
+      'Whether a joined teammate can open a Space the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
     auth: 'clerk',
     responseSchema: {
       type: 'object',
@@ -1364,7 +1364,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Email a joined teammate that an action on a document element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
+      'Email a joined teammate that an action on an element in a Space was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -1384,7 +1384,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The document must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
+      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The Space must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -1408,7 +1408,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams/{id}/library',
     segment: 'teams',
     tag: 'Teams',
-    summary: "Get a team's shared folder tree and documents (joined member).",
+    summary: "Get a team's shared folder tree and Spaces (joined member).",
     auth: 'clerk',
     tokenUsable: true,
     responseSchema: {
@@ -1469,7 +1469,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      "Mint a single-use, one-minute ticket that opens a document, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
+      "Mint a single-use, one-minute ticket that opens a Space, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'WorkbenchTicketRequest',
@@ -1484,7 +1484,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      "Redeem a ticket for a workbench session: the person's editor on that one document, or in their workspace. The ticket is the credential.",
+      "Redeem a ticket for a workbench session: the person's editor on that one Space, or in their workspace. The ticket is the credential.",
     auth: 'public',
     requestSchema: 'WorkbenchSessionRequest',
     responseSchema: 'WorkbenchSessionResponse',
@@ -1612,7 +1612,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'migration',
     tag: 'Migration',
     summary:
-      "Move a This Browser document's Pages, Plan and design tabs to their apps as the caller's; answers the parts and the tabs it keeps. Safe to repeat. 502 with the parts that landed when a handoff failed.",
+      "Move a This Browser Space's Pages, Plan and design tabs to their apps as the caller's; answers the parts and the tabs it keeps. Safe to repeat. 502 with the parts that landed when a handoff failed.",
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',

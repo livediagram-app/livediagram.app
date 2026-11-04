@@ -6,17 +6,17 @@
 import { EMPTY_DOCUMENT_STALE_DAYS, TRASH_REASONS } from '@livehuddle/api-schema';
 import { z } from 'zod';
 
-const url = z.string().describe('Link that opens the document in the livehuddle editor.');
+const url = z.string().describe('Link that opens the Space in the livehuddle editor.');
 const documentId = z.string().describe('The document id.');
 const tabId = z.string().describe('The tab id.');
 
 export const findDocumentsOutput = {
-  count: z.number().int().describe('How many documents matched.'),
+  count: z.number().int().describe('How many Spaces matched.'),
   documents: z
     .array(
       z.object({
         id: documentId,
-        name: z.string().describe('The document name.'),
+        name: z.string().describe('The Space name.'),
         updatedAt: z.number().describe('When it was last saved, as a ms epoch.'),
         library: z
           .string()
@@ -29,7 +29,7 @@ export const findDocumentsOutput = {
 
 export const readDocumentOutput = {
   id: documentId,
-  name: z.string().describe('The document name.'),
+  name: z.string().describe('The Space name.'),
   tab: z
     .object({
       id: tabId,
@@ -47,7 +47,7 @@ export const readDocumentOutput = {
     .describe('The tab that was read.'),
   tabs: z
     .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
-    .describe('Every tab of the document, in order: pass one as tabId to read it.'),
+    .describe('Every tab of the Space, in order: pass one as tabId to read it.'),
   url,
 };
 
@@ -88,9 +88,7 @@ export const listTemplatesOutput = {
 
 export const createDocumentOutput = {
   id: documentId,
-  documentId: documentId.describe(
-    'The document id again, under the name the other tools take it by.',
-  ),
+  documentId: documentId.describe('The Space id again, under the name the other tools take it by.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
   tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
@@ -139,9 +137,7 @@ export const addTabOutput = {
 
 export const updateDocumentOutput = {
   id: documentId,
-  documentId: documentId.describe(
-    'The document id again, under the name the other tools take it by.',
-  ),
+  documentId: documentId.describe('The Space id again, under the name the other tools take it by.'),
   tabId: tabId.describe('The tab that was edited.'),
   url,
   ...changesetAnswer,
@@ -160,25 +156,25 @@ export const shareDocumentOutput = {
 export const renameDocumentOutput = {
   renamed: z
     .enum(['document', 'tab'])
-    .describe('Whether the document or one of its tabs was renamed.'),
+    .describe('Whether the Space or one of its tabs was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   id: documentId.optional().describe('The renamed document id (document renames).'),
   tabId: tabId.optional().describe('The renamed tab id (tab renames).'),
-  url: url.optional().describe('Link that opens the document (document renames).'),
+  url: url.optional().describe('Link that opens the Space (Space renames).'),
 };
 
 export const deleteDocumentOutput = {
   deleted: z
     .enum(['document', 'tab'])
-    .describe('Whether the document or one of its tabs was deleted.'),
+    .describe('Whether the Space or one of its tabs was deleted.'),
   documentId,
   tabId: tabId.optional().describe('The deleted tab id (tab deletes).'),
-  trashed: z.boolean().optional().describe('True when the document went to the Trash.'),
+  trashed: z.boolean().optional().describe('True when the Space went to the Trash.'),
   restorableForDays: z
     .number()
     .int()
     .optional()
-    .describe('Days the document can be restored with restore_document before it is purged.'),
+    .describe('Days the Space can be restored with restore_document before it is purged.'),
 };
 
 export const listTrashOutput = {
@@ -186,7 +182,7 @@ export const listTrashOutput = {
     .array(
       z.object({
         id: documentId,
-        name: z.string().describe('The document name.'),
+        name: z.string().describe('The Space name.'),
         library: z
           .string()
           .describe('Whose Trash: "personal", or the name of the team (or "team").'),
@@ -199,7 +195,7 @@ export const listTrashOutput = {
         purgeAt: z.string().describe('When it is purged for good, as an ISO timestamp.'),
       }),
     )
-    .describe('The documents that can still be restored.'),
+    .describe('The Spaces that can still be restored.'),
 };
 
 export const restoreDocumentOutput = {
