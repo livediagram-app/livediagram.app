@@ -135,6 +135,8 @@ describe('Edit Field on a built-in field', () => {
   it('sets the Assignee’s Notifies with its name', () => {
     const onSave = editor();
     const dialog = openEdit('Assignee');
+    // Only the settings it really has: Notifies, never Required.
+    expect(within(dialog).queryByRole('switch', { name: /Required/ })).toBeNull();
     fireEvent.click(within(dialog).getByRole('switch', { name: /Notifies/ }));
     fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'Owner' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));

@@ -40,6 +40,7 @@ import {
   CurrencySelect,
   RatingScaleSelect,
   FieldSwitches,
+  NotifiesSwitch,
 } from './ItemTypeFieldForms';
 import { LinksToPicker, linkTypeNames } from './LinksToPicker';
 import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
@@ -347,7 +348,10 @@ function BuiltInShape({
         </p>
       </div>
       {of.notifies ? (
-        <FieldSwitches field={{ kind: 'person', notifies: field.notifies }} onChange={set} />
+        <NotifiesSwitch
+          field={{ kind: 'person', notifies: field.notifies }}
+          onChange={(notifies) => set({ notifies })}
+        />
       ) : null}
     </div>
   );
