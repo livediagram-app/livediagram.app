@@ -28,6 +28,7 @@ import { colorForKey } from '@/lib/identity';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import type { CollabDeepLink } from '@/lib/collab-deep-link';
 import type { PlanItems } from './usePlanItems';
 import { PLAN_SWEEP_MAX_TABS } from './usePlanTabSweep';
@@ -286,17 +287,21 @@ export function useLinkedActionCards(deps: {
     };
   }, [tabNamesKey]);
 
-  const showOnCanvas = (item: Item) => {
-    const link = cardLink(item);
-    if (!link) return;
-    const at = live.current.placed.find((p) => p.action.id === link.recordId);
-    track('Action', 'Opened', 'Canvas');
-    live.current.arrive({
-      at: { tabId: at?.tabId ?? link.tabId, elementId: at?.elementId ?? link.elementId },
-      open: 'action',
-      itemId: null,
-    });
-  };
+  // One identity, as placeOf keeps: it rides in the Plan context, and a new one each render redrew every card of every
+  // board on any edit (docs/specs/026-plan/plan-board.md "A busy board").
+  const { showOnCanvas } = useStableCallbacks({
+    showOnCanvas: (item: Item) => {
+      const link = cardLink(item);
+      if (!link) return;
+      const at = live.current.placed.find((p) => p.action.id === link.recordId);
+      track('Action', 'Opened', 'Canvas');
+      live.current.arrive({
+        at: { tabId: at?.tabId ?? link.tabId, elementId: at?.elementId ?? link.elementId },
+        open: 'action',
+        itemId: null,
+      });
+    },
+  });
 
   return {
     board,

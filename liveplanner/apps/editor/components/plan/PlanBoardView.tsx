@@ -17,7 +17,8 @@ import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { markPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cornerRadiusPx, type ShapeElement } from '@liveplanner/project';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { cornerRadiusPx, planOwnColoursOf, type ShapeElement } from '@liveplanner/project';
 import {
   CARD_FIELDS,
   ITEM_TYPES,
@@ -82,7 +83,7 @@ import { planBoardKey } from './plan-board-keys';
 import { groupColumnMoves } from './board-selection';
 import { BoardSelectionBar } from './BoardSelectionBar';
 import { useBoardSelection } from '@/hooks/plan/useBoardSelection';
-import { planBandTint, planOwnColours, planPalette } from './plan-palette';
+import { planBandTint, planPalette } from './plan-palette';
 import { columnPartStyle } from './column-part';
 import { columnTones } from './column-tones';
 import { useCardSpotlight } from './useCardSpotlight';
@@ -93,6 +94,10 @@ import { FocusElementButton } from './FocusElementButton';
 
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
+// A board showing more cards than this is busy (docs/specs/026-plan/plan-board.md "A busy board"): a Tab Style change
+// snaps its parts rather than easing them, and its cards out of view skip their styling and layout until they come
+// into view (globals.css `data-plan-busy`).
+const PLAN_BUSY_CARDS = 100;
 // A board's surface, 80% solid so the tab's canvas shows faintly through it.
 const boardSurface = (surface: string) => `color-mix(in srgb, ${surface} 80%, transparent)`;
 
@@ -128,8 +133,15 @@ export function PlanBoardView({
   const textScale = usePlanTextScale();
   const surface = useCanvasSurface();
   const branchColours = useCanvasBranchColours();
-  // The board's theme and style colours (docs/specs/026-plan/plan-board.md "Theme and style").
-  const palette = planPalette(surface, planOwnColours(element));
+  // The board's theme and style colours (docs/specs/026-plan/plan-board.md "Theme and style"), kept by value: a
+  // render that leaves them alone (a finish, a typeface, a backdrop) hands every card the same palette, so no card
+  // redraws for it (plan-board.md "A busy board").
+  const { fillColor, strokeColor, textColor, colorPreset } = element;
+  const palette = useMemo(
+    () =>
+      planPalette(surface, planOwnColoursOf({ fillColor, strokeColor, textColor, colorPreset })),
+    [surface, fillColor, strokeColor, textColor, colorPreset],
+  );
   const radiusPx = cornerRadiusPx(
     element.borderRadius,
     element.width,
@@ -186,6 +198,7 @@ export function PlanBoardView({
     () => (setup ? projectBoard(setup, items, applied, types, statusNames) : null),
     [setup, items, applied, types, statusNames],
   );
+  const busy = (projection?.total ?? 0) > PLAN_BUSY_CARDS;
   // The statuses a column can be made for: the boards', any a card is in and the card types' Default States
   // (docs/specs/026-plan/plan-board.md "The column picker").
   const pickable = useMemo(
@@ -371,38 +384,10 @@ export function PlanBoardView({
     !!setup && !!projection && plan?.status !== 'loading',
     projection?.columns.reduce((n, c) => n + c.count, 0) ?? 0,
   );
-  if (!setup || !projection) {
-    return (
-      <div
-        className="absolute inset-0 flex items-center justify-center rounded-xl border text-[13px]"
-        style={{
-          backgroundColor: palette.surface,
-          borderColor: palette.border,
-          color: palette.muted,
-        }}
-      >
-        This board&rsquo;s set-up can&rsquo;t be read.
-      </div>
-    );
-  }
-
-  const lanes = projection.lanes;
-  // On a multi-colour theme each column takes the next of its colours (plan-board.md "Columns in the theme's colours").
-  const tones = columnTones(setup.columns, branchColours, palette);
-  const toneOf = (id: string) => tones.get(id) ?? { palette, bar: undefined };
-  // A collapsed column names itself once, in the first open swimlane's part of its strip.
-  const firstOpenLane = lanes.findIndex((l) => !collapsed.has(l.key));
-  const withLanes = projection.swimlanes;
-  const self = plan?.self ?? null;
-  const loading = plan?.status === 'loading';
-  const empty = !loading && projection.total === 0;
-  // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
-  const addTypes = boardAddTypes(setup, types);
-
-  const columnName = (s: string) => setup.columns.find((c) => c.status === s)?.name ?? s;
+  const columnName = (s: string) => setup?.columns.find((c) => c.status === s)?.name ?? s;
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
-    if (!plan) return;
+    if (!plan || !setup || !projection) return;
     // A sorted board's first field, named when Shift+Up/Down cannot reorder.
     const first = setup.sortBy?.[0]?.field;
     const sortedBy = first ? (boardSortFieldOf(first, plan.types)?.label ?? first) : undefined;
@@ -469,6 +454,54 @@ export function PlanBoardView({
     }
   };
 
+  // The card handlers behind callbacks that keep their identity across renders, each reading this render's: a card
+  // (PlanBoardCard, memoised) redraws only when what it shows changes, never because its board drew again, so a Tab
+  // Style change on a busy board redraws no card it leaves alone (plan-board.md "A busy board").
+  const latest = useLatest({ onCardPress, onCardKey, plan, cancelPress: drag.cancelPress });
+  const cardHandlers = useMemo(
+    () => ({
+      onPress: (id: string, e: React.PointerEvent<HTMLElement>) =>
+        latest.current.onCardPress(id, e),
+      onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => latest.current.onCardKey(item, e),
+      onOpen: (id: string) => latest.current.plan?.openItem(id),
+      onMenu: (it: Item, at: { x: number; y: number }) => setMenu({ itemId: it.id, at }),
+      onLongPress: (it: Item, at: { x: number; y: number }) => {
+        // The held press opens the menu instead of becoming a drag or a click.
+        latest.current.cancelPress();
+        setMenu({ itemId: it.id, at });
+      },
+    }),
+    [latest],
+  );
+
+  if (!setup || !projection) {
+    return (
+      <div
+        className="absolute inset-0 flex items-center justify-center rounded-xl border text-[13px]"
+        style={{
+          backgroundColor: palette.surface,
+          borderColor: palette.border,
+          color: palette.muted,
+        }}
+      >
+        This board&rsquo;s set-up can&rsquo;t be read.
+      </div>
+    );
+  }
+
+  const lanes = projection.lanes;
+  // On a multi-colour theme each column takes the next of its colours (plan-board.md "Columns in the theme's colours").
+  const tones = columnTones(setup.columns, branchColours, palette);
+  const toneOf = (id: string) => tones.get(id) ?? { palette, bar: undefined };
+  // A collapsed column names itself once, in the first open swimlane's part of its strip.
+  const firstOpenLane = lanes.findIndex((l) => !collapsed.has(l.key));
+  const withLanes = projection.swimlanes;
+  const self = plan?.self ?? null;
+  const loading = plan?.status === 'loading';
+  const empty = !loading && projection.total === 0;
+  // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
+  const addTypes = boardAddTypes(setup, types);
+
   // A slot board sizes its columns from its measured width (slot-board.ts), its cards Minimal when they are narrow.
   const slotBoard = look.columns === 'slot';
   const slotUnit = slotBoard ? slotColumnUnit(bodySize?.width ?? null, setup.columns) : null;
@@ -517,6 +550,7 @@ export function PlanBoardView({
     <div
       ref={boardRef}
       data-plan-board={element.id}
+      data-plan-busy={busy ? (cardSize ?? 'detailed') : undefined}
       role="region"
       aria-label={setup.title}
       // `isolate`: the sticky column heads stack inside the board, never over another element.
@@ -896,19 +930,13 @@ export function PlanBoardView({
                                   presence={plan?.presence.get(item.id)}
                                   interactive={interactive}
                                   canMove={canEditCards}
-                                  onPress={onCardPress}
-                                  onOpen={() => plan?.openItem(item.id)}
-                                  onKey={onCardKey}
-                                  onMenu={(it, at) => setMenu({ itemId: it.id, at })}
+                                  onPress={cardHandlers.onPress}
+                                  onOpen={cardHandlers.onOpen}
+                                  onKey={cardHandlers.onKey}
+                                  onMenu={cardHandlers.onMenu}
                                   cardVote={cardVote}
                                   {...(interactive && canEditCards
-                                    ? {
-                                        onLongPress: (it: Item, at: { x: number; y: number }) => {
-                                          // The held press opens the menu instead of becoming a drag or a click.
-                                          drag.cancelPress();
-                                          setMenu({ itemId: it.id, at });
-                                        },
-                                      }
+                                    ? { onLongPress: cardHandlers.onLongPress }
                                     : {})}
                                 />
                               ))}

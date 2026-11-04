@@ -180,9 +180,26 @@ export function liftAccent(color: string): string {
 // reaches 3:1 on that card, else leaned toward white on a dark card and black on a light one until it does. Measured on
 // the board's card, not the neutral one, so a type's colour still reads on a coloured theme's card.
 export function accentOn(color: string, palette: Pick<PlanPalette, 'card'>): string {
-  if (!hex(color) || !hex(palette.card)) return color;
-  const away = isLightColor(palette.card) ? '#000000' : '#ffffff';
-  return leanUntil(color, away, [palette.card], ACCENT_CONTRAST);
+  return remembered(`a|${color}|${palette.card}`, () => {
+    if (!hex(color) || !hex(palette.card)) return color;
+    const away = isLightColor(palette.card) ? '#000000' : '#ffffff';
+    return leanUntil(color, away, [palette.card], ACCENT_CONTRAST);
+  });
+}
+
+// What accentOn and chipInkOn answered, by their colours: every card of a board asks the same few (its types', its
+// labels', its priorities' on the board's one card colour), and working each out afresh on every card took about
+// 100 ms a redraw of a 2,000-card board (docs/specs/026-plan/plan-board.md "A busy board"). Bounded: emptied when full,
+// so a session of theme picks never grows it past PLAN_INK_MEMO_MAX.
+export const PLAN_INK_MEMO_MAX = 2048;
+const inkMemo = new Map<string, string>();
+function remembered(key: string, work: () => string): string {
+  const known = inkMemo.get(key);
+  if (known !== undefined) return known;
+  if (inkMemo.size >= PLAN_INK_MEMO_MAX) inkMemo.clear();
+  const answer = work();
+  inkMemo.set(key, answer);
+  return answer;
 }
 
 // How much of its colour a chip's fill takes over the card (plan-card-parts.tsx `tint`).
@@ -191,12 +208,14 @@ export const PLAN_CHIP_TINT = 0.14;
 // Coloured words on a card (a type chip's name, a label, the priority's name, a due pill): as chosen where they reach
 // 4.5:1 on their chip (the colour's tint over the card), else leaned toward the card's ink until they do.
 export function chipInkOn(color: string, palette: Pick<PlanPalette, 'card' | 'text'>): string {
-  if (!hex(color) || !hex(palette.card) || !hex(palette.text)) return color;
-  for (let share = 0; share < 1; share += MUTED_STEP) {
-    const ink = share === 0 ? color : mixHex(palette.text, color, share);
-    if (contrastRatio(ink, mixHex(ink, palette.card, PLAN_CHIP_TINT)) >= INK_CONTRAST) return ink;
-  }
-  return palette.text;
+  return remembered(`c|${color}|${palette.card}|${palette.text}`, () => {
+    if (!hex(color) || !hex(palette.card) || !hex(palette.text)) return color;
+    for (let share = 0; share < 1; share += MUTED_STEP) {
+      const ink = share === 0 ? color : mixHex(palette.text, color, share);
+      if (contrastRatio(ink, mixHex(ink, palette.card, PLAN_CHIP_TINT)) >= INK_CONTRAST) return ink;
+    }
+    return palette.text;
+  });
 }
 
 // A Percent field's bar on a card face (docs/specs/026-plan/item-types.md "Percent"): its size, its fill (the board's

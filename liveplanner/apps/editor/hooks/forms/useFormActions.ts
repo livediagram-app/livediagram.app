@@ -108,6 +108,7 @@ export function useFormActions({
     openTab,
     makeSheet,
     retitleSheets,
+    commitAnyTabs,
   });
   const commitTabs = useCallback(
     (map: (ts: Tab[]) => Tab[]) =>
@@ -191,7 +192,7 @@ export function useFormActions({
       });
       // A Blank form takes the board's first card type and first column (planFormStart, given the board).
       const made: Tab = { ...formTab, form: { ...plan.form, heading: name } };
-      commitAnyTabs((ts) => {
+      live.current.commitAnyTabs((ts) => {
         const at = ts.findIndex((t) => t.id === boardTab.id);
         const next = [...ts];
         next.splice(at + 1, 0, made);
@@ -204,7 +205,9 @@ export function useFormActions({
       live.current.openTab?.(made.id);
       track('Form', 'Created', 'FromBoard');
     },
-    [commitAnyTabs, live],
+    // One identity for the editor's life: it rides in the Plan context, and a new one each render redrew every card
+    // of every board on any edit (docs/specs/026-plan/plan-board.md "A busy board").
+    [live],
   );
 
   const changeForm = useCallback<FormActions['changeForm']>(

@@ -1237,6 +1237,29 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   With no plus to clear, its selection toolbar sits close above it (the 16 px gap read-only views use, not 48 px).
   Only boxed elements close the gap this way: an arrow keeps 48 px, as its move frame sits in that gap.
 
+## A busy board
+
+<a id="busy-board"></a>A board showing more than 100 cards is **busy**. A Tab Style pick (a look, a theme, a finish, a
+typeface, a size, a canvas setting) on a busy board applies at once: on a 2,000-card board the pick paints within
+about a tenth of a second for a finish, a typeface, a size or the canvas, and within about a fifth of a second for a
+theme, with the page answering throughout.
+
+- **Cards redraw only for what they show.** A pick that changes nothing on a card (a finish, a typeface, a size, the
+  canvas) redraws no card: the finish's shadows and the lettering reach the cards from the board's own styling. A
+  theme or the canvas turning light or dark redraws each card once. An edit anywhere else in the plan (a save, a
+  peer's change to another tab) redraws no card either.
+- **Its parts snap rather than ease.** The colour ease ([Eased changes](../011-theme/canvas-and-theme-dialog.md#eased-changes))
+  is skipped inside a busy board: easing every chip of hundreds of cards held the page for seconds a pick. The board's
+  own surface and the rest of the canvas still ease. A board of 100 cards or fewer eases as before.
+- **Cards out of view wait.** A busy board's cards out of view are not styled or laid out until they come near the
+  view, and each keeps its last drawn height meanwhile (one never drawn takes the usual height of its size), so the
+  board scrolls as before. Where a browser cannot draw a card's shadow, ring and hover glow past its own box while
+  doing so, it draws every card as before.
+- **Marker draws what is in view.** Marker's hand-drawn parts on a busy board are drawn on the cards in view, up to the
+  usual limit; a card scrolled into view takes them the next time the board settles after a change.
+- **Sketch keeps the board.** Picking Sketch, or leaving it, keeps the board as it is (its scroll, its collapsed
+  columns): only its drawing changes.
+
 ## Both elements everywhere
 
 - Both are general-tab elements: they exist in every mode and in exports, and only input differs by mode.
