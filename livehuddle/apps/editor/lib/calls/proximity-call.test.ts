@@ -9,17 +9,24 @@ import {
   resetCallMedia,
   resetCallPeers,
   resetCallSelf,
+  setCallLevels,
   setCallMaximised,
   setCallsMode,
 } from './calls-store';
 import {
+  CALLS_CHECK_MS,
   CAMERA_ENCODINGS,
+  LOCATOR_RESEND_MS,
   MIC_IDLE_CLOSE_MS,
   ProximityCall,
   SCREEN_CONSTRAINTS,
   type CallSignal,
 } from './proximity-call';
+import { callStages } from './stage';
 import { roomZones } from './zones';
+
+const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
+vi.mock('@/lib/telemetry', () => telemetry);
 
 const sfu = vi.hoisted(() => ({
   instances: [] as {
@@ -703,5 +710,176 @@ describe('ProximityCall in rooms', () => {
     call.update({ ...roomScene({ x: 0, y: 0 }, [['corridor', 300, 420]]), self: null });
     expect(callSelf().someoneNear).toBe(false);
     call.stop();
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage" (Work Tracker #319 part 2): a hall with a stage
+// along its back, and a meeting room beside it.
+describe('ProximityCall with a stage', () => {
+  const loc = (id: string, trackName: string) => ({ sessionId: `${id}s`, trackName, token: 't' });
+  const elements = [
+    { id: 'hall', type: 'shape', shape: 'room', x: 0, y: 0, width: 1200, height: 800 },
+    { id: 'meeting', type: 'shape', shape: 'room', x: 1300, y: 0, width: 400, height: 300 },
+  ];
+  const zones = roomZones(elements);
+  const stageAt = (over: Record<string, unknown> = {}) =>
+    callStages(
+      [
+        {
+          id: 'stage',
+          type: 'shape',
+          shape: 'stage',
+          x: 420,
+          y: 40,
+          width: 360,
+          height: 140,
+          ...over,
+        },
+      ],
+      zones,
+    );
+  const hallScene = (
+    self: { x: number; y: number },
+    walkers: [string, number, number][],
+    stages = stageAt(),
+  ) => ({
+    tabId: 't1',
+    self,
+    walkers: new Map(walkers.map(([id, x, y]) => [id, { x, y }])),
+    zones,
+    stages,
+  });
+  const publish = (id: string) =>
+    receiveCallOp(id, {
+      kind: 'call-track',
+      tabId: 't1',
+      track: loc(id, 'mic'),
+      video: loc(id, 'cam'),
+    });
+
+  it('hears an Editor on the stage from the meeting room, full and centred, and not their camera', async () => {
+    setCallLevels([
+      { id: 'speaker', role: 'edit' },
+      { id: 'colleague', role: 'participate' },
+    ]);
+    const { call } = makeCall();
+    await call.start();
+    publish('speaker');
+    publish('colleague');
+    call.update(
+      hallScene({ x: 1320, y: 50 }, [
+        ['speaker', 600, 120],
+        ['colleague', 1680, 280],
+      ]),
+    );
+    const s = sfu.instances[0]!;
+    expect(callSelf().heard).toEqual(new Set(['speaker', 'colleague']));
+    // The stage's camera stays with the stage; the meeting room's colleague is seen as before.
+    expect(s.want).toHaveBeenLastCalledWith([
+      loc('speaker', 'mic'),
+      loc('colleague', 'mic'),
+      loc('colleague', 'cam'),
+    ]);
+    s.events.onTrack('speakers', 'mic', {});
+    expect(graph.place).toHaveBeenCalledWith('speaker', 1, 0);
+    // Show Cameras: the stage's camera reaches the tab too.
+    call.update(
+      hallScene(
+        { x: 1320, y: 50 },
+        [
+          ['speaker', 600, 120],
+          ['colleague', 1680, 280],
+        ],
+        stageAt({ stageCameras: true }),
+      ),
+    );
+    const wanted = s.want.mock.calls.at(-1)![0] as unknown[];
+    expect(wanted).toHaveLength(4);
+    expect(wanted).toEqual(
+      expect.arrayContaining([loc('speaker', 'cam'), loc('colleague', 'cam')]),
+    );
+    call.stop();
+  });
+
+  it('follows the room’s levels: a Participant speaks only once the stage, or their level, allows it', async () => {
+    setCallLevels([{ id: 'p', role: 'participate' }]);
+    const { call } = makeCall();
+    await call.start();
+    publish('p');
+    const corridor = { x: 100, y: 900 };
+    call.update(hallScene(corridor, [['p', 600, 120]]));
+    expect(callSelf().heard).toEqual(new Set());
+    // Their level rises (a new grant): the call re-stages the scene it holds.
+    setCallLevels([{ id: 'p', role: 'edit' }]);
+    expect(callSelf().heard).toEqual(new Set(['p']));
+    // The same presence list again changes nothing.
+    setCallLevels([{ id: 'p', role: 'edit' }]);
+    expect(callSelf().heard).toEqual(new Set(['p']));
+    call.stop();
+  });
+
+  it('on the stage: Live to the whole tab, deaf to the audience, and StageSpeak once per stepping on', async () => {
+    setCallLevels([{ id: 'audience', role: 'participate' }]);
+    const { call } = makeCall({ canShare: true });
+    await call.start();
+    publish('audience');
+    const walkers: [string, number, number][] = [['audience', 640, 300]];
+    call.update(hallScene({ x: 600, y: 120 }, walkers));
+    expect(callSelf()).toMatchObject({ someoneNear: true, heard: new Set() });
+    call.update(hallScene({ x: 610, y: 120 }, walkers));
+    expect(telemetry.track).toHaveBeenCalledTimes(1);
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'StageSpeak');
+    // Off the stage, in the hall: back to the room, the audience heard again.
+    call.update(hallScene({ x: 600, y: 400 }, walkers));
+    expect(callSelf().heard).toEqual(new Set(['audience']));
+    call.update(hallScene({ x: 600, y: 120 }, walkers));
+    expect(telemetry.track).toHaveBeenCalledTimes(2);
+    call.stop();
+  });
+});
+
+// docs/specs/016-platform/calls-kill-switch.md "The room tells its clients" (Work Tracker #463).
+describe('ProximityCall in a silent room', () => {
+  afterEach(() => graph.micLevel.mockReturnValue(0.05));
+
+  it('asks the room to read the switch every 5 s of silence, and a flip lands within one check', async () => {
+    // Nobody talks: the microphone hears nothing, so no level goes to the room.
+    graph.micLevel.mockReturnValue(0);
+    const { call, sent } = makeCall();
+    await call.start();
+    call.update(scene([['p1', 100]]));
+    // The locator goes out again for the new walker, a second after the first.
+    vi.advanceTimersByTime(LOCATOR_RESEND_MS);
+    expect(sent.at(-1)?.kind).toBe('call-track');
+    sent.length = 0;
+    vi.advanceTimersByTime(CALLS_CHECK_MS - 1);
+    expect(sent).toEqual([]);
+    vi.advanceTimersByTime(1);
+    expect(sent).toEqual([{ kind: 'calls-check' }]);
+    vi.advanceTimersByTime(CALLS_CHECK_MS);
+    expect(sent).toEqual([{ kind: 'calls-check' }, { kind: 'calls-check' }]);
+    // The room read the switch on that check and pushed the flip: the call ends into Calls Paused.
+    receiveCallsMode('system', { kind: 'calls-mode', mode: 'off' });
+    expect(callSelf()).toMatchObject({ phase: 'off', mode: 'off' });
+    sent.length = 0;
+    vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
+    expect(sent).toEqual([]);
+  });
+
+  it('sends no check while its levels reach the room, and none from a listener', async () => {
+    graph.micLevel.mockReturnValue(0.05);
+    const { call, sent } = makeCall();
+    await call.start();
+    // Talking: a level goes at least every few seconds, and each one lets the room read the switch on its own.
+    vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
+    expect(sent.some((s) => s.kind === 'avatar-voice')).toBe(true);
+    expect(sent.filter((s) => s.kind === 'calls-check')).toEqual([]);
+    call.stop();
+
+    const listener = makeCall({ canSpeak: false });
+    await listener.call.start();
+    vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
+    expect(listener.sent).toEqual([]);
+    listener.call.stop();
   });
 });

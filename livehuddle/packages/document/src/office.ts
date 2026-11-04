@@ -352,7 +352,10 @@ export function stageParts(width: number, height: number): FurniturePart[] {
     if (y > 4 && y < top - 4 && width > 16) parts.push(path('rail', `M8 ${y}H${width - 8}`));
   }
   parts.push(rect('face', 0, top, width, F, 3));
-  const plate = Math.min(width - 16, Math.max(STAGE_PLATE_MIN, Math.min(STAGE_PLATE_MAX, width * 0.4)));
+  const plate = Math.min(
+    width - 16,
+    Math.max(STAGE_PLATE_MIN, Math.min(STAGE_PLATE_MAX, width * 0.4)),
+  );
   parts.push(
     rect(
       'panel',

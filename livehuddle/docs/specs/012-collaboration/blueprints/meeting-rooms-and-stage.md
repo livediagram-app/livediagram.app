@@ -136,7 +136,9 @@ positions and zones it relays, is a recorded follow-up.
 - Zoning is `walkers × rooms` comparisons once per scene update (at most once a frame while anyone walks), then hearing
   is linear in walkers as before. The test walks 100 walkers through 50 rooms within a CPU budget.
 - Staging adds `walkers × stages` comparisons per update; `callStages` runs only when the elements, layers or rooms
-  change. The test runs 100 walkers, 50 rooms and a live stage within the same kind of budget.
+  change. The test runs 100 walkers, 50 rooms and a live stage within the same kind of budget. Measured (best of
+  seven, CPU time): a scene of 100 walkers among 50 rooms is 14.5 µs, 16.0 µs with a live stage; `callStages` over a
+  tab of 2,051 elements is 6.9 µs.
 - A stage is one speaker to everyone: `listeners` streams per speaker (the spec's Cost), subscribed in batches of 16.
 - A room is one call: everyone in it subscribes to everyone else, `n × (n − 1)` streams (the spec's Cost). The SFU
   session batches subscribes at `MAX_SUBSCRIBE_BATCH` (16) per request, so a crowded room joins in a few requests.

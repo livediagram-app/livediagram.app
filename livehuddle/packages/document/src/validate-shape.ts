@@ -308,7 +308,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   { field: 'chairFacing', valid: isChairFacing, rule: 'a chair facing' },
   { field: 'roomDoor', valid: isRoomDoor, rule: 'a room doorway (n, e, s, w or none)' },
-  { field: 'stageSpeakers', valid: isStageSpeakers, rule: 'who may speak from a stage (edit or take-part)' },
+  {
+    field: 'stageSpeakers',
+    valid: isStageSpeakers,
+    rule: 'who may speak from a stage (edit or take-part)',
+  },
   flag('stageCameras'),
   {
     field: 'responses',

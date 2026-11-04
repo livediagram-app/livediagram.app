@@ -58,6 +58,7 @@ import {
   receiveCallOp,
   receiveCallsMode,
   resetCallPeers,
+  setCallLevels,
 } from '@/lib/calls/calls-store';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 
@@ -284,6 +285,8 @@ export function useRoomConnection(opts: {
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
+      // And who may speak from a stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles").
+      setCallLevels(participants);
       nameByPresenceRef.current = new Map(participants.map((p) => [p.id, p.name] as const));
       setLivePresence(
         participants.map((p) => ({

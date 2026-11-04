@@ -13,6 +13,7 @@ import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } fr
 import type { ViewRect } from './bubbles';
 import type { Point } from './hearing';
 import type { CallScene, CallSignal, ProximityCall } from './proximity-call';
+import type { CallStage } from './stage';
 import type { CallZone } from './zones';
 
 // Do Not Disturb (Work Tracker #319) hides other people's bars from you; until it lands, nobody is in it.
@@ -40,9 +41,12 @@ export type ProximityCallDeps = {
   view?: ViewRect | null;
   // The tab's visible Office rooms, each one call (meeting-rooms-and-stage.md "Rooms are calls").
   zones?: readonly CallZone[];
+  // The tab's visible stages, each heard by the whole tab (meeting-rooms-and-stage.md "The stage").
+  stages?: readonly CallStage[];
 };
 
 const NO_ZONES: readonly CallZone[] = [];
+const NO_STAGES: readonly CallStage[] = [];
 
 // Whether this deployment has calls, paused or not; the kill switch's mode goes to the store (Calls Paused).
 function useCallsEnabled(wanted: boolean): boolean {
@@ -77,8 +81,9 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       walkers: new Map(deps.walkers.map((w) => [w.id, w.at])),
       view: deps.view ?? null,
       zones: deps.zones ?? NO_ZONES,
+      stages: deps.stages ?? NO_STAGES,
     }),
-    [deps.tabId, deps.self, deps.walkers, deps.view, deps.zones],
+    [deps.tabId, deps.self, deps.walkers, deps.view, deps.zones, deps.stages],
   );
   const sceneRef = useRef(scene);
   // The buttons read the latest props and positions through these, so their actions stay stable.

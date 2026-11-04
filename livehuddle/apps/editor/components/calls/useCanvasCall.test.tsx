@@ -104,7 +104,7 @@ describe('useCanvasCall', () => {
   });
 
   // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls": only rooms you can see are calls.
-  it('hands the call the rooms on visible layers as zones, and nothing else', () => {
+  it('hands the call the rooms and stages on visible layers, and nothing else', () => {
     const room = (id: string, layerId: string) => ({
       id,
       type: 'shape',
@@ -132,6 +132,8 @@ describe('useCanvasCall', () => {
               width: 99,
               height: 99,
             },
+            { ...room('stage', 'a'), shape: 'stage', x: 40, y: 40, width: 360, height: 140 },
+            { ...room('hidden stage', 'b'), shape: 'stage', width: 360, height: 140 },
           ],
           tabLayers: [
             { id: 'a', name: 'A' },
@@ -143,7 +145,12 @@ describe('useCanvasCall', () => {
         avatarScale: 1,
       }),
     );
-    const { zones } = hook.useProximityCall.mock.lastCall![0] as { zones: { id: string }[] };
+    const { zones, stages } = hook.useProximityCall.mock.lastCall![0] as {
+      zones: { id: string }[];
+      stages: { id: string; zone: string | null }[];
+    };
     expect(zones.map((z) => z.id)).toEqual(['shown']);
+    // And the stages you can see, each with the room it stands in (the same spec's "The stage").
+    expect(stages.map((s) => [s.id, s.zone])).toEqual([['stage', 'shown']]);
   });
 });

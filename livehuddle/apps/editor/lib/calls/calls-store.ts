@@ -4,12 +4,15 @@
 // the room connection, the canvas and the chrome share it without threading it through the editor's state. Memory
 // only: nothing here is written anywhere. Video and screen bubbles (docs/specs/012-collaboration/
 // video-and-screen-bubbles.md) add each peer's camera and screen locators, the streams the bubbles draw, and the one
-// bubble this viewer has maximised.
+// bubble this viewer has maximised. The stage (meeting-rooms-and-stage.md "The stage") adds each peer's level, as the
+// room stamped it on their presence, for who may speak from one.
 import { useSyncExternalStore } from 'react';
 import {
   parseAvatarVoice,
   parseCallsModeOp,
   parseCallTrack,
+  parseStoredLevel,
+  type AccessLevel,
   type CallsMode,
   type CallTrackLocator,
   type VoiceLevel,
@@ -106,6 +109,8 @@ const maximisedListeners = createListeners();
 let media: ReadonlyMap<string, CallMediaStreams> = new Map();
 let maximised: CallMaximised | null = null;
 let peerNotifyDue: ReturnType<typeof setTimeout> | null = null;
+let levels: ReadonlyMap<string, AccessLevel> = new Map();
+const levelListeners = createListeners();
 
 const now = () => performance.now();
 
@@ -258,6 +263,32 @@ export function resetCallPeers(): void {
   peers = new Map();
   publishPeers();
   trackListeners.notify();
+  setCallLevels([]);
+}
+
+// --- Levels, for the stage (meeting-rooms-and-stage.md "Share roles") ---------------------------------------------
+
+/**
+ * Every peer's level from the room's presence list: the `role` the room stamps from each grant, never one a browser
+ * claims. A missing or unknown one is a Viewer's. Listeners hear only when a level changed.
+ */
+export function setCallLevels(participants: readonly { id: string; role?: unknown }[]): void {
+  const next = new Map<string, AccessLevel>();
+  for (const p of participants) next.set(p.id, parseStoredLevel(p.role));
+  if (next.size === levels.size && [...next].every(([id, level]) => levels.get(id) === level))
+    return;
+  levels = next;
+  levelListeners.notify();
+}
+
+/** Each peer's level by presence id (the call reads this when it works out the stage). */
+export function callLevels(): ReadonlyMap<string, AccessLevel> {
+  return levels;
+}
+
+/** Subscribe to a peer's level changing (the running call re-stages). */
+export function onCallLevels(listener: () => void): () => void {
+  return levelListeners.subscribe(listener);
 }
 
 // --- The bubbles' streams and the maximised one (docs/specs/012-collaboration/video-and-screen-bubbles.md) ---------

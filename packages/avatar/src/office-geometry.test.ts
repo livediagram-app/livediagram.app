@@ -23,7 +23,7 @@ describe('the office pieces', () => {
   });
 
   it('lays the room, the rug and the Avatar Pad on the floor', () => {
-    expect(['room', 'rug', 'avatar-pad'].every(isFloorShape)).toBe(true);
+    expect(['room', 'rug', 'avatar-pad', 'stage'].every(isFloorShape)).toBe(true);
     expect(isFloorShape('plant')).toBe(false);
   });
 

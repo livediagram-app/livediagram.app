@@ -3,12 +3,14 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   callActions,
+  callLevels,
   callMaximised,
   callMedia,
   callPeers,
   callSelf,
   forgetCallPeer,
   levelNow,
+  onCallLevels,
   onCallMaximised,
   onCallsMode,
   onCallTracks,
@@ -19,6 +21,7 @@ import {
   resetCallPeers,
   resetCallSelf,
   setCallActions,
+  setCallLevels,
   setCallMaximised,
   setCallMedia,
   setCallSelf,
@@ -200,5 +203,40 @@ describe('calls store bubbles', () => {
     expect(callMaximised()).toBeNull();
     // Nothing to empty: still fine.
     resetCallMedia();
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles": whose level lets them speak from a stage.
+describe('calls store levels', () => {
+  it('keeps each peer’s stamped level, an unknown or missing one a Viewer’s, and tells only of a change', () => {
+    const heard = vi.fn();
+    const off = onCallLevels(heard);
+    setCallLevels([
+      { id: 'a', role: 'edit' },
+      { id: 'b', role: 'participate' },
+      { id: 'c', role: 'admin' },
+      { id: 'd' },
+    ]);
+    expect([...callLevels()]).toEqual([
+      ['a', 'edit'],
+      ['b', 'participate'],
+      ['c', 'view'],
+      ['d', 'view'],
+    ]);
+    expect(heard).toHaveBeenCalledTimes(1);
+    setCallLevels([
+      { id: 'a', role: 'edit' },
+      { id: 'b', role: 'participate' },
+      { id: 'c' },
+      { id: 'd', role: 'view' },
+    ]);
+    expect(heard).toHaveBeenCalledTimes(1);
+    setCallLevels([{ id: 'a', role: 'participate' }]);
+    expect(heard).toHaveBeenCalledTimes(2);
+    // The room closing forgets them.
+    resetCallPeers();
+    expect(callLevels().size).toBe(0);
+    expect(heard).toHaveBeenCalledTimes(3);
+    off();
   });
 });

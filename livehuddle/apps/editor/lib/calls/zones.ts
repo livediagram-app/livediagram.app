@@ -3,6 +3,7 @@
 // the tab's visible elements, the call works out everyone's zone once per scene.
 import { roomInterior } from '@liveworkspace/avatar/office-geometry';
 import type { Point } from './hearing';
+import type { CallStaging } from './stage';
 
 /** A room's floor as the call reads it: the box inside its walls' centre lines, and its area for nesting. */
 export type CallZone = {
@@ -14,10 +15,14 @@ export type CallZone = {
   readonly area: number;
 };
 
-/** Your zone and every walker's (by presence id): a room's id, or null for the open floor. */
+/**
+ * Your zone and every walker's (by presence id): a room's id, or null for the open floor. With anyone on a stage,
+ * the staging too (meeting-rooms-and-stage.md "The stage"; stage.ts).
+ */
 export type CallZoning = {
   readonly self: string | null;
   readonly of: ReadonlyMap<string, string | null>;
+  readonly stage?: CallStaging;
 };
 
 type ZoneSource = {
