@@ -14,6 +14,7 @@ import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useStat
 import { drinkFrom, DRINK_HOLD_MS, isSeatingShape, type DrinkKind } from '../office-geometry';
 import { isSceneShape, type AvatarSceneElement, type SceneShapeOf } from '../scene';
 import {
+  clearOfFences,
   fenceReachFor,
   fenceSegments,
   fenceStalled,
@@ -299,9 +300,13 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       const sy = r.wrapper.top + p.y * viewportZoom;
       return sx >= r.main.left && sx <= r.main.right && sy >= r.main.top && sy <= r.main.bottom;
     };
+    // Put down clear of every fence and room wall (docs/specs/009-elements/fence.md "What does not walk"): a spawn on a
+    // wall's line otherwise opened the character standing in the wall (Work Tracker #437).
+    const reach = fenceReachFor(avatarScale(config.size));
     const place = (point: AvatarPoint) => {
-      posRef.current = point;
-      setPos(point);
+      const clear = clearOfFences(point, fences, reach);
+      posRef.current = clear;
+      setPos(clear);
       setFacing('down');
     };
     // An Avatar Pad on the tab (docs/specs/009-elements/avatar-pad.md "Starting on the pad") is the board's
@@ -333,6 +338,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     if (!centre) return;
     const current = posRef.current;
     if (!(current && onScreen(current))) place(centre);
+    // The remembered spot stays, unless a wall was put over it while the mode was off.
+    else if (clearOfFences(current, fences, reach) !== current) place(current);
   });
   useEffect(() => {
     enterOrLeave(active);
