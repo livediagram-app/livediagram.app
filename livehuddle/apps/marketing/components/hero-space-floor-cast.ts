@@ -181,8 +181,8 @@ const WIDE: FloorStage = {
       // to stand-up, and goes back to his desk.
       floorBeats: [
         { stay: 14.5, face: 'up' },
-        { to: { x: 590, y: 720 } },
-        { stay: 6.4, face: 'right' },
+        { to: { x: 604, y: 720 } },
+        { stay: 6.1, face: 'right' },
         { stay: 3, face: 'right', say: 'Right behind you' },
         { to: { x: 322, y: 720 } },
         { stay: 0.1, face: 'up' },
