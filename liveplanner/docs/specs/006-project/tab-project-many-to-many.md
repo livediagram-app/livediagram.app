@@ -72,7 +72,7 @@ way. `tabs` holds the body ([Per-tab storage](per-tab-storage.md)).
   deletion) sends each holder of each of its shared tabs a `leave` first. A holder that misses one answers `gone`
   the next time it is sent the tab, and is dropped then; so is any holder that no longer holds it.
 - **Trash.** Trashing a plan changes none of this: its shared tabs stay in step until it is purged.
-- **Failures.** A send that fails stays in `share_outbox` and is retried a minute later.
+- **Failures.** A send that fails stays in `share_outbox` and is tried again after a wait that starts at a minute and doubles, at most an hour, so a holder that keeps failing is not called every minute; after 12 failures it is parked (kept, not sent, `[tab-shares] parked`) until the next write to the tab replaces it ([one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#when-a-push-fails)).
 
 Cross-plan realtime is not part of this: a plan open in another window shows another holder's write on
 reload, as it always did.

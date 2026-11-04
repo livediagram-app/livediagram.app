@@ -9,8 +9,8 @@
 // The document's triggers fill `outbox` with a key per changed thing (document-schema.ts), in the same transaction
 // as the write, so no write path can forget one and a save makes no network call. The room's alarm drains it on
 // idle, at most once a minute (document-room.ts), then deletes the keys it pushed. A key written again meanwhile has
-// a new id and stays for the next drain; a drain that fails keeps every key it did not push and retries a minute
-// later.
+// a new id and stays for the next drain. A key whose push fails stays and waits a minute, doubling to an hour; one
+// refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts).
 
 import {
   collabIndexRowsFromElements,
@@ -21,8 +21,11 @@ import {
 import {
   capCollabPush,
   drainIndexOutbox,
+  dueOutboxRows,
   editedOf,
-  type OutboxRow,
+  type OutboxFailure,
+  readOutbox,
+  settleOutbox,
 } from '@liveworkspace/index-app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { MEDIA_REFS_PER_DOCUMENT_MAX } from '@liveworkspace/media';
@@ -240,20 +243,17 @@ export type DrainResult = { keys: number; pushes: number; more: boolean };
 export { DRAIN_TABS } from '@liveworkspace/index-app';
 
 // One drain: the outbox's keys, pushed to the index by @liveworkspace/index-app's drainIndexOutbox and the images to
-// the media service. Answers what it pushed; throws when a push fails (keeping its keys), so the alarm retries.
+// the media service, the keys whose wait is over. Answers what it pushed. A push that fails keeps its keys, each
+// counting the attempt and waiting longer (settleOutbox); one refused for good, or failed too often, is parked.
 // Without an index configured the index's keys are dropped.
 export async function drainOutbox(
   env: DocumentEnv,
   documentId: string,
   client: IndexAppClient | null = indexAppClient(env),
 ): Promise<DrainResult> {
-  const rows = (
-    await env.DOCUMENT_DB.prepare(
-      'SELECT id, kind, key FROM outbox WHERE document_id = ? ORDER BY id',
-    )
-      .bind(documentId)
-      .all<OutboxRow>()
-  ).results;
+  const now = Date.now();
+  const live = await readOutbox(env.DOCUMENT_DB, DOCUMENT_OUTBOX, documentId);
+  const rows = dueOutboxRows(live, now);
   const imageRows = rows.filter((r) => r.kind === 'images').map((r) => r.id);
   // Who saved since the last drain: one person is who resolved or closed what this push shows turned so.
   const editors = new Set(
@@ -261,7 +261,7 @@ export async function drainOutbox(
   );
   const soleEditor = editors.size === 1 ? ([...editors][0] ?? null) : null;
   const indexRows = rows.filter((r) => r.kind !== 'images');
-  const failures: unknown[] = [];
+  const failed: OutboxFailure[] = [];
   const done: number[] = [];
   let imagesPushed = false;
 
@@ -289,23 +289,20 @@ export async function drainOutbox(
       ? pushImageRefs(
           env,
           documentId,
-          rows.filter((r) => r.kind === 'edit').map((r) => r.key),
+          // Every editor key still owed, those waiting out a failure too: they wrote since the last push.
+          live.filter((r) => r.kind === 'edit').map((r) => r.key),
         ).then(
           (sent) => {
             imagesPushed = sent;
             done.push(...imageRows);
           },
-          (err: unknown) => void failures.push(err),
+          (error: unknown) => void failed.push({ ids: imageRows, error }),
         )
       : null,
   ]);
   done.push(...outcome.done);
-  failures.push(...outcome.failures);
-  if (done.length > 0)
-    await env.DOCUMENT_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')
-      .bind(JSON.stringify(done))
-      .run();
-  if (failures.length > 0) throw failures[0];
+  failed.push(...outcome.failed);
+  await settleOutbox(env.DOCUMENT_DB, DOCUMENT_OUTBOX, documentId, rows, { done, failed }, now);
   return {
     keys: done.length,
     pushes: outcome.pushes + (imagesPushed ? 1 : 0),

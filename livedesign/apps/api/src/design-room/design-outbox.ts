@@ -8,8 +8,8 @@
 // The design's triggers fill `outbox` with a key per changed thing (design-schema.ts), in the same transaction as the
 // write, so no write path can forget one and a save makes no network call. The room's alarm drains it on idle,
 // at most once a minute per design (design-room.ts FLUSH_MIN_GAP_MS), then deletes the keys it pushed. A key written
-// again meanwhile has a new id and stays for the next drain; a drain that fails keeps every key it did not push
-// and retries a minute later.
+// again meanwhile has a new id and stays for the next drain. A key whose push fails stays and waits a minute,
+// doubling to an hour; one refused for good, or failed 12 times, is parked (@liveworkspace/index-app outbox.ts).
 
 import {
   collabIndexRowsFromElements,
@@ -20,8 +20,10 @@ import {
 import {
   capCollabPush,
   drainIndexOutbox,
-  type OutboxRow,
+  dueOutboxRows,
+  readOutbox,
   reportOwnerActivity,
+  settleOutbox,
 } from '@liveworkspace/index-app';
 import { COMMUNITY_LISTED_QUERY } from '@liveworkspace/community/app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
@@ -166,19 +168,18 @@ export type DrainResult = { keys: number; pushes: number; more: boolean };
 
 export { DRAIN_TABS } from '@liveworkspace/index-app';
 
-// One drain: the outbox's keys, pushed to the index by @liveworkspace/index-app's drainIndexOutbox, and a 'media'
-// key to the media service. Answers what it pushed; throws when a push fails (keeping its keys), so the alarm
-// retries. Without an index configured the index's keys are dropped.
+// One drain: the outbox's keys whose wait is over, pushed to the index by @liveworkspace/index-app's
+// drainIndexOutbox, and a 'media' key to the media service. Answers what it pushed. A push that fails keeps its keys,
+// each counting the attempt and waiting longer (settleOutbox); one refused for good, or failed too often, is parked.
+// Without an index configured the index's keys are dropped.
 export async function drainOutbox(
   env: DesignEnv,
   designId: string,
   client: IndexAppClient | null = indexAppClient(env),
 ): Promise<DrainResult> {
-  const rows = (
-    await env.DESIGN_DB.prepare('SELECT id, kind, key FROM outbox WHERE design_id = ? ORDER BY id')
-      .bind(designId)
-      .all<OutboxRow>()
-  ).results;
+  const now = Date.now();
+  const live = await readOutbox(env.DESIGN_DB, DESIGN_OUTBOX, designId);
+  const rows = dueOutboxRows(live, now);
   const media = rows.filter((r) => r.kind === 'media');
   const outcome = await drainIndexOutbox(
     designId,
@@ -204,7 +205,7 @@ export async function drainOutbox(
     },
   );
   const done = [...outcome.done];
-  const failures = [...outcome.failures];
+  const failed = [...outcome.failed];
   let pushes = outcome.pushes;
   if (media.length > 0) {
     // The images the design places now, its whole set, to the media service (src/media.ts), once the ones whose
@@ -214,20 +215,17 @@ export async function drainOutbox(
     try {
       if (mediaClient(env)) {
         const images = await designImageIds(env, designId);
-        const editorKeys = rows.filter((r) => r.kind === 'edit').map((r) => r.key);
+        // Every editor key still owed, those waiting out a failure too: they wrote since the last push.
+        const editorKeys = live.filter((r) => r.kind === 'edit').map((r) => r.key);
         await grantPlacedImages(env, designId, images, editorKeys, Date.now());
         await pushDesignMediaRefs(env, designId, images);
       }
       done.push(...media.map((r) => r.id));
       pushes += 1;
-    } catch (err) {
-      failures.push(err);
+    } catch (error) {
+      failed.push({ ids: media.map((r) => r.id), error });
     }
   }
-  if (done.length > 0)
-    await env.DESIGN_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')
-      .bind(JSON.stringify(done))
-      .run();
-  if (failures.length > 0) throw failures[0];
+  await settleOutbox(env.DESIGN_DB, DESIGN_OUTBOX, designId, rows, { done, failed }, now);
   return { keys: done.length, pushes, more: outcome.more };
 }

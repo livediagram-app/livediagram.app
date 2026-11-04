@@ -4,12 +4,14 @@ import {
   openRoomSockets,
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
+  flushAfterWrite,
   type ItemHeadSync,
-  nextFlushAt,
-  owesShares,
+  nextOutboxFlushAt,
+  outboxDueAt,
   recordItemEditor,
   renewRoomGrant,
   roomGrantStep,
+  sharesDueAt,
   ShareSchedule,
 } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
@@ -277,8 +279,8 @@ export class DocumentRoom extends DurableObject<Env> {
   private draining = false;
   // The next send to the other holders of its shared tabs (tab-shares.ts): on idle, not held to the outbox's
   // once a minute, since it is a call to another document rather than a push.
-  private readonly shares = new ShareSchedule(
-    () => this.schemaReady && owesShares(this.state.storage.sql),
+  private readonly shares = new ShareSchedule(() =>
+    this.schemaReady ? sharesDueAt(this.state.storage.sql) : null,
   );
   // The next daily upkeep (persisted, so a wake keeps the day).
   private maintenanceAt: number | null = null;
@@ -426,7 +428,9 @@ export class DocumentRoom extends DurableObject<Env> {
     this.ensureSchema();
     const row = sql.exec('SELECT id FROM document LIMIT 1').toArray()[0];
     if (typeof row?.id === 'string' && this.documentId === null) this.documentId = row.id;
-    if (this.owesIndex()) this.flushAt = Date.now();
+    // Anything owed goes now, or when its wait after a failure is over (index-app outbox.ts).
+    const due = outboxDueAt(sql);
+    if (due !== null) this.flushAt = Math.max(Date.now(), due);
     this.shares.restore();
     const post = sql
       .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
@@ -488,8 +492,10 @@ export class DocumentRoom extends DurableObject<Env> {
     }
     const now = Date.now();
     if (this.shares.noteWrite()) this.armAlarm();
-    if (this.flushAt !== null || !this.owesIndex()) return;
-    this.flushAt = nextFlushAt(now, this.lastFlushAt);
+    // A drain set far off, for a key in backoff, gives way to the key just written.
+    const at = flushAfterWrite(this.state.storage.sql, this.flushAt, now, this.lastFlushAt);
+    if (at === null) return;
+    this.flushAt = at;
     this.armAlarm();
   }
 
@@ -513,15 +519,14 @@ export class DocumentRoom extends DurableObject<Env> {
       // A big import's tabs go a batch at a time, back to back, not a minute apart.
       if (more) this.flushAt = Date.now() + FLUSH_IDLE_MS;
     } catch (error) {
+      // The drain itself failed (a read, say): a push that fails is counted on its keys instead.
       console.warn('[document-outbox] push failed', { documentId, error: String(error) });
       this.flushAt = Date.now() + FLUSH_RETRY_MS;
     } finally {
       this.draining = false;
     }
-    // Anything written while the push was in flight goes next time.
-    if (this.flushAt === null && this.owesIndex()) {
-      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
-    }
+    // Anything written while the push was in flight goes next time; a key that failed, when its wait is over.
+    if (this.flushAt === null) this.flushAt = this.indexFlushAt();
   }
 
   // Send the other holders of its shared tabs what they are owed (tab-shares.ts). A failure keeps it for later.
@@ -544,13 +549,12 @@ export class DocumentRoom extends DurableObject<Env> {
     } finally {
       this.draining = false;
     }
-    if (this.flushAt === null && this.owesIndex()) {
-      this.flushAt = nextFlushAt(Date.now(), this.lastFlushAt);
-    }
+    if (this.flushAt === null) this.flushAt = this.indexFlushAt();
   }
 
-  private owesIndex(): boolean {
-    return this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0;
+  // When the outbox next drains, or null when it owes nothing (index-app outbox.ts nextOutboxFlushAt).
+  private indexFlushAt(): number | null {
+    return nextOutboxFlushAt(this.state.storage.sql, Date.now(), this.lastFlushAt);
   }
 
   // The document's daily upkeep, once a day per document with content: changesets past their retention go (CS28).
