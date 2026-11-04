@@ -39,7 +39,8 @@ spread over parallel jobs so the wall time is the slowest job, not the sum:
 
 | Job                 | Builds                                                                           | Runs                                                                                                    |
 | ------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Smoke shard i/6** | live, and liveworkspace's site (the Explorer)                                    | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Smoke build**     | live, and liveworkspace's site (the Explorer)                                    | nothing: uploads the exports the shards serve                                                           |
+| **Smoke shard i/3** | nothing: downloads the Smoke build's exports                                     | `test:e2e:smoke --shard=i/3`: a third of the `chromium` project's tests                                 |
 | **Sites audit**     | live, help, then marketing                                                       | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
 | **Signed-in specs** | live with sign-in on (`build:signed-in`), and liveworkspace's site (`build:e2e`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
@@ -83,19 +84,23 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   awaited) and clicks at `onPage(page, fx, fy)`, a point on the first page (`pagePoint`, the same point in window
   coordinates, for a spec that draws with `page.mouse`). `e2e/server-new.test.ts` holds
   every spec that seeds through the api to it.
-- **Sharded** (`--shard=i/6`, the matrix in `e2e-product.yml`): Playwright splits the `chromium` project's
-  tests evenly by count across six jobs; each boots its own stack, so shards share nothing.
-- **Shards sized to the floor, not beyond.** Every shard pays about two minutes before its first
-  test (container, install, the live build), and the Sites audit, which cannot be split, takes
-  about 4.5 minutes. The shard count is the smallest that keeps the slowest shard within that
-  floor: more shards finish no sooner, and each takes one of the account's 20 concurrent runner
-  slots that every other pull request's run waits on. When the suite grows past the floor, the
-  shard count grows with it.
+- **Sharded** (`--shard=i/3`, the matrix in `e2e-product.yml`): Playwright splits the `chromium` project's
+  tests evenly by count across three jobs; each boots its own stack on the same exports, so shards
+  share nothing but the build.
+- **Built once per run.** The Smoke build job builds the guest editor (and the Explorer, where the
+  smoke specs open it) once, saves its build cache, and uploads the static exports as one
+  artifact (`livedesign-smoke-build`, kept a day); each shard downloads it instead of building.
+- **Shards sized to the floor, not beyond.** Every shard still pays about a minute before its first
+  test (container, install, the download), and the Sites audit, which cannot be split, takes
+  about 4.5 minutes. The shard count is the smallest that keeps the slowest shard near that floor
+  within its 5-minute budget: more shards finish little sooner, pay that minute again, and each takes
+  one of the account's 20 concurrent runner slots that every other pull request's run waits on.
+  When the suite grows past the budget, the shard count grows with it.
 - **No type check in the builds**: `e2e-product.yml` sets `BUILD_SKIP_TYPECHECK=1`, so `next build` skips its
   own type check (`typescriptConfig()` in `@liveworkspace/next-config`, shared by the five Next
   apps). CI's Checks job already type-checks every app with `tsc --noEmit` against the
   same tsconfig; repeating it cost each live build about 40 seconds. Deploys leave it unset.
-- **A warm build cache**: each job restores Turbopack's build cache (`.next/cache`) from the latest
+- **A warm build cache**: each job that builds restores Turbopack's build cache (`.next/cache`) from the latest
   run on `main` before it builds, so it compiles only what changed
   (`.github/actions/next-cache-restore`, the one place its key is made). Only runs on `main` save it,
   keyed by version, lockfile and commit, one copy per set of builds (`livedesign-live`,
@@ -149,7 +154,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    - serve liveworkspace's Explorer at `/explorer/*` and its assets at `/_liveworkspace/*` from
      `liveworkspace/apps/site/out` when that site is built, as the router's `routeToWorkspace`
      (`@liveworkspace/sites/workspace-proxy`) does; the live app has no Explorer pages of its own. Without the build
-     they answer a logged 404, so only the specs that open the Explorer page need it (CI builds it for the smoke
+     they answer a logged 404, so only the specs that open the Explorer page need it (CI builds it once for the smoke
      shards);
    - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
