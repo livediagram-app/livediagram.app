@@ -683,6 +683,25 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   card's own type always first among them in catalogue order; one choice draws the plain label, as a Viewer's), title
   input, field rows in the type's order, description textarea, checklist, footer "Created by (disc) X" and "Edited by (disc) Y, 2m", the disc `PersonDisc`.
 
+- A busy board (spec "A busy board"; `PlanBoardView` `PLAN_BUSY_CARDS`): the board root carries
+  `data-plan-busy` (its card size, `detailed` when unset) past that many shown cards (`projection.total`).
+  `app/globals.css` then gives each `[data-plan-card]` `content-visibility: auto`, `contain-intrinsic-size: auto 132px`
+  (`44px` under `minimal`) and `overflow-clip-margin: 24px`, inside `@supports (overflow-clip-margin: 1px)` so a
+  browser that would clip the card's shadow, presence ring and hover glow at its box draws every card as before; and
+  `:root.lvd-style-transition [data-plan-busy] *` turns every transition off for the moment of a Tab Style change.
+- Card redraws: `PlanBoardCard` is `memo`; `PlanBoardView` hands it a `palette` kept by value (`useMemo` on the
+  surface and the element's `fillColor` / `strokeColor` / `textColor` / `colorPreset`) and `cardHandlers` of one
+  identity (`useLatest` of `onCardPress`, `onCardKey`, the plan and `drag.cancelPress`; `onOpen(id)` takes the card's
+  id). `PlanCardFace` reads no finish: `--card-shadow` and `--card-hover-shadow` are always set, and
+  `app/face-finish.css` empties both on `.plan-card` under `[data-face-finish]` Professional and Marker. The
+  `PlanContextValue` keeps its identity across editor renders: `useFormActions` `newFormFor` reads its inputs
+  through `useLatest` and `useLinkedActionCards` `showOnCanvas` is a `useStableCallbacks` wrapper, since every card
+  reads the context.
+  `accentOn` and `chipInkOn` (`@liveplanner/project` `plan-palette.ts`) remember their answers by colour
+  (`PLAN_INK_MEMO_MAX` entries, emptied when full).
+- `BoxedElementView` renders a `plan-board` element's `SketchFace` with `keepTree`, so a finish change never
+  remounts the board.
+
 ## Accessibility
 
 - Board is a `region` named by its title; each column a `list` labelled "In Progress, 3 items, WIP limit 4";
@@ -872,6 +891,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `ITEM_TRAIL_MAX`           | 8                  | Spec; bounds the trail's memory; 2–20                                       |
 | `FIT_GLIDE_MS`             | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`                  |
 | `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                            |
+| `PLAN_BUSY_CARDS`          | 100                | Spec "A busy board"; the ease cost ~6 ms a card a pick past it; 50-200      |
+| `PLAN_INK_MEMO_MAX`        | 2048               | Bounds the card ink memo; a board asks for tens; 256-8192                   |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to

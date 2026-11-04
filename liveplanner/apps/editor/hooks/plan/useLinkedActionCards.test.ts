@@ -330,6 +330,15 @@ describe('useLinkedActionCards', () => {
     expect(h.result.current.placeOf({ ...cardFor(a), fields: {} })).toBeNull();
   });
 
+  it('keeps placeOf and showOnCanvas through a render that changes neither (plan-board.md "A busy board")', () => {
+    const a = action('a1');
+    const h = setUp({ tabs: [canvas([a]), boardTab], items: [cardFor(a)] });
+    const { placeOf, showOnCanvas } = h.result.current;
+    h.rerenderWith([cardFor(a)]);
+    expect(h.result.current.placeOf).toBe(placeOf);
+    expect(h.result.current.showOnCanvas).toBe(showOnCanvas);
+  });
+
   it('offers no board link without a board', () => {
     const h = setUp({ tabs: [canvas([action('a1')])] });
     expect(h.result.current.openOnBoard).toBeNull();

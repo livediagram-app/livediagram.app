@@ -47,8 +47,6 @@ import {
 } from '@liveplanner/items';
 import { RunningTimerPill } from './time/TimerReadouts';
 import { PLAN_HEADING_STYLE, planTextPx } from '@/lib/plan-font';
-import { finishFaceShadows } from '@liveplanner/project';
-import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
 import { planBlocking } from './blocking';
 import { customFieldText } from './custom-field-text';
@@ -144,7 +142,6 @@ export function PlanCardFace({
   headAction,
 }: PlanCardFaceProps) {
   const plan = usePlan();
-  const faceFinish = useFaceFinish();
   const type = typeOverride ?? typeIn(plan?.types ?? ITEM_TYPES, item.type);
   // Leaned until it reads on the card: Project's black on a dark card, Idea's yellow on a light one.
   const accent = accentOn(type.color, palette);
@@ -211,19 +208,18 @@ export function PlanCardFace({
       {hasRepeat(item) ? <RepeatMark color={palette.muted} /> : null}
     </>
   );
-  // Flat under Professional and Marker (docs/specs/008-canvas/finish.md "Faces"); a presence ring still shows.
-  const shadows = finishFaceShadows(faceFinish);
+  // Flat under Professional and Marker (docs/specs/008-canvas/finish.md "Faces"): app/face-finish.css empties both
+  // shadows there, from the face's finish, so a finish change restyles the cards without redrawing one
+  // (docs/specs/026-plan/plan-board.md "A busy board"). A presence ring still shows.
   const frame = {
     '--card-bg': palette.card,
     '--card-line': palette.cardBorder,
     '--card-ink': palette.text,
     '--card-ring': ring ?? '0 0 #0000',
-    '--card-shadow': shadows ? REST_SHADOW : '0 0 #0000',
+    '--card-shadow': REST_SHADOW,
     '--card-accent': accent,
     // Under the pointer: a shadow tinted with the type's colour, the card staying put (globals.css plan-card-hover).
-    '--card-hover-shadow': shadows
-      ? `0 1px 2px rgba(15,23,42,0.06), 0 4px 10px -6px rgba(15,23,42,0.2), 0 10px 20px -12px color-mix(in srgb, ${accent} 25%, transparent)`
-      : '0 0 #0000',
+    '--card-hover-shadow': `0 1px 2px rgba(15,23,42,0.06), 0 4px 10px -6px rgba(15,23,42,0.2), 0 10px 20px -12px color-mix(in srgb, ${accent} 25%, transparent)`,
     opacity: muted ? 0.7 : 1,
   } as React.CSSProperties;
   const presenceTag = presence ? <PresenceTag name={presence.name} color={presence.color} /> : null;

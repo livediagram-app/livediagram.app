@@ -221,7 +221,9 @@ Undo puts every tab back."
 Options do not preview on hover (tried and removed: the canvas changing under a passing pointer was distracting); a
 click applies. Each pick **eases** the canvas's colours (background, fill, outline, text) over 250 ms instead of
 snapping (`../packages/workbench/src/lib/tab-style-ease.ts`); the transition is switched on only for the moment of the change (a class on the
-root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps.
+root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps. Inside a busy board
+(more than 100 cards, [A busy board](../026-plan/plan-board.md#busy-board)) the parts snap too, the board's own
+surface still easing: easing every chip of hundreds of cards held the page for seconds a pick.
 
 ### Text panel
 
