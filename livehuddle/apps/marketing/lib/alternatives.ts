@@ -57,7 +57,7 @@ const LIST: Alternative[] = [
       'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the board itself, so the follow-ups leave the meeting with an owner.',
-      '39 templates, from five retro formats and Lean Coffee to town halls, quizzes and offices to walk round.',
+      '5 templates: a blank Space, and offices, team pods and halls to walk round.',
     ],
     sections: [
       {
@@ -158,7 +158,7 @@ const LIST: Alternative[] = [
       'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
-      '39 templates, from retrospectives in five formats to quizzes, party games and offices to walk round.',
+      '5 templates: a blank Space, and offices, team pods and halls to walk round.',
       'A free REST API, a command line and an MCP server, so scripts and AI assistants can read and change your Spaces.',
       'MIT-licensed, with portable exports, so your sessions never depend on one vendor.',
     ],
@@ -195,7 +195,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new sessions, start from one of the 39 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new sessions, start from one of the 5 templates.',
       },
       {
         q: 'Does livehuddle work with Figma?',
