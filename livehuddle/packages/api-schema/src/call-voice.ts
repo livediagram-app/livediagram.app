@@ -70,6 +70,8 @@ export type CallSessionResponse = {
   trackToken?: string;
   iceServers: CallIceServer[];
   canSpeak: boolean;
+  // The calls kill switch's mode as the session was minted (never `off`: that refuses the session).
+  mode: 'on' | 'audio-only';
 };
 
 export type CallSessionDescription = { type: 'offer' | 'answer'; sdp: string };
@@ -106,4 +108,6 @@ export type CallCloseRequest = CallSessionProof & { mids: string[]; sdp?: string
 /** Why the calls routes refuse: off (and why), a listener publishing, a malformed request, Realtime failing. */
 export type CallsErrorCode =
   'calls_off' | 'calls_listen_only' | 'invalid_call_request' | 'calls_upstream';
-export type CallsOffReason = 'production' | 'unconfigured';
+// `paused` and `audio-only` are the calls kill switch's (docs/specs/016-platform/calls-kill-switch.md "The mint
+// route"): everything is paused, or this track's media is while calls are audio only.
+export type CallsOffReason = 'production' | 'unconfigured' | 'paused' | 'audio-only';

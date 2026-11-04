@@ -8,7 +8,7 @@ import { apiGetCapabilities } from '@/lib/api/capabilities';
 import type { CallsCaller } from '@/lib/api/calls';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { callSelf, resetCallSelf, setCallActions, setCallSelf } from './calls-store';
+import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } from './calls-store';
 import type { Point } from './hearing';
 import type { CallScene, CallSignal, ProximityCall } from './proximity-call';
 
@@ -33,13 +33,16 @@ export type ProximityCallDeps = {
   walkers: readonly { id: string; at: Point }[];
 };
 
+// Whether this deployment has calls, paused or not; the kill switch's mode goes to the store (Calls Paused).
 function useCallsEnabled(wanted: boolean): boolean {
   const [enabled, setEnabled] = useState(false);
   useEffect(() => {
     if (!wanted) return;
     let live = true;
     void apiGetCapabilities().then((caps) => {
-      if (live) setEnabled(caps.callsEnabled === true);
+      if (!live) return;
+      setEnabled(caps.callsEnabled === true);
+      if (caps.callsMode) setCallsMode(caps.callsMode);
     });
     return () => {
       live = false;
@@ -86,8 +89,8 @@ export function useProximityCall(deps: ProximityCallDeps): void {
         const { caller, send, canSpeak } = latest.current;
         if (!caller || !send) return;
         if (callRef.current) {
-          // Join again after a failure starts fresh; a running call is left alone.
-          if (callSelf().phase !== 'error') return;
+          // Join again after a failure, or after a pause ended the call, starts fresh; a running call is left alone.
+          if (!callRef.current.ended && callSelf().phase !== 'error') return;
           callRef.current.stop();
           callRef.current = null;
         }

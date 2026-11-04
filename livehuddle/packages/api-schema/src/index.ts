@@ -16,6 +16,7 @@ import type { ShareLinkExpiry, ShareRole } from '@liveworkspace/api-schema/share
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
 import type { EditorMode, Tab } from '@livehuddle/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
+import type { CallsMode } from './calls-mode';
 
 export type {
   AvatarClothing,
@@ -262,9 +263,11 @@ export type CapabilitiesResponse = {
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
-  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"): true only while the calls
-  // gate is open (never on production until the kill switch, and only with the Realtime secrets set). Absent is off.
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"): true when this deployment
+  // has calls (never on production yet, and only with the Realtime secrets set), paused or not. Absent is off.
   callsEnabled?: boolean;
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): `off` shows Calls Paused. Absent is `on`.
+  callsMode?: CallsMode;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is
@@ -284,6 +287,7 @@ export * from './page-views';
 export * from './poll';
 export * from './room-messages';
 export * from './call-voice';
+export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

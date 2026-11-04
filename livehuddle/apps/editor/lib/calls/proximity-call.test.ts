@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CallsApiError } from '@/lib/api/calls';
-import { callSelf, receiveCallOp, resetCallPeers, resetCallSelf } from './calls-store';
+import {
+  callSelf,
+  receiveCallOp,
+  receiveCallsMode,
+  resetCallPeers,
+  resetCallSelf,
+} from './calls-store';
 import { MIC_IDLE_CLOSE_MS, ProximityCall, type CallSignal } from './proximity-call';
 
 const sfu = vi.hoisted(() => ({
@@ -9,6 +15,7 @@ const sfu = vi.hoisted(() => ({
       onTrack: (p: string, s: unknown) => void;
       onTrackEnded: (p: string) => void;
       onFailed: () => void;
+      onPaused: () => void;
     };
     publish: ReturnType<typeof vi.fn>;
     replaceMic: ReturnType<typeof vi.fn>;
@@ -68,6 +75,7 @@ const session = {
   trackToken: 'tt',
   iceServers: [],
   canSpeak: true,
+  mode: 'on',
 };
 
 function micStream() {
@@ -246,5 +254,47 @@ describe('ProximityCall', () => {
     await started;
     expect(getUserMedia).not.toHaveBeenCalled();
     expect(callSelf().phase).toBe('off');
+  });
+
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
+  describe('the kill switch', () => {
+    it('ends a live call quietly into Calls Paused when the room says calls are off', async () => {
+      const { call, sent, mic } = makeCall();
+      await call.start();
+      call.update(scene([['p1', 100]]));
+      expect(callSelf().phase).toBe('live');
+      // Audio only leaves an audio call alone.
+      receiveCallsMode('system', { kind: 'calls-mode', mode: 'audio-only' });
+      expect(callSelf().phase).toBe('live');
+      receiveCallsMode('system', { kind: 'calls-mode', mode: 'off' });
+      expect(callSelf()).toMatchObject({ phase: 'off', mode: 'off', mic: 'closed' });
+      expect(call.ended).toBe(true);
+      expect(mic.track.stop).toHaveBeenCalled();
+      expect(sfu.instances.at(-1)!.close).toHaveBeenCalled();
+      expect(sent.at(-1)).toEqual({ kind: 'call-track', track: null });
+    });
+
+    it('a paused session refusal is no error, and the session says the mode', async () => {
+      api.apiCallSession.mockRejectedValueOnce(new CallsApiError(503, 'calls_off', 'paused'));
+      const first = makeCall();
+      await first.call.start();
+      expect(callSelf()).toMatchObject({ phase: 'off', mode: 'off' });
+      expect(first.call.ended).toBe(true);
+      api.apiCallSession.mockResolvedValueOnce({ ...session, mode: 'audio-only' });
+      const { call } = makeCall();
+      await call.start();
+      expect(callSelf()).toMatchObject({ phase: 'live', mode: 'audio-only' });
+      call.stop();
+    });
+
+    it('a paused publish or subscribe ends the call the same way', async () => {
+      const { call } = makeCall();
+      await call.start();
+      sfu.instances.at(-1)!.events.onPaused();
+      expect(callSelf()).toMatchObject({ phase: 'off', mode: 'off' });
+      // Already ended: a second refusal changes nothing.
+      sfu.instances.at(-1)!.events.onPaused();
+      expect(call.ended).toBe(true);
+    });
   });
 });

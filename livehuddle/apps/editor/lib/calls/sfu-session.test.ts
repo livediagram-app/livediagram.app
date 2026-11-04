@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CallsApiError } from '@/lib/api/calls';
 import { SfuSession, SUBSCRIBE_BATCH } from './sfu-session';
 
 const api = vi.hoisted(() => ({
@@ -7,7 +8,10 @@ const api = vi.hoisted(() => ({
   apiCallRenegotiate: vi.fn(),
   apiCallClose: vi.fn(),
 }));
-vi.mock('@/lib/api/calls', () => api);
+vi.mock('@/lib/api/calls', async (load) => ({
+  ...(await load<typeof import('@/lib/api/calls')>()),
+  ...api,
+}));
 
 type Listener = (e: unknown) => void;
 class FakePc {
@@ -54,7 +58,13 @@ class FakePc {
 }
 
 const caller = { ownerId: 'o', documentId: 'd', shareCode: null };
-const session = { sessionId: 'me', sessionToken: 'tok', iceServers: [], canSpeak: true };
+const session = {
+  sessionId: 'me',
+  sessionToken: 'tok',
+  iceServers: [],
+  canSpeak: true,
+  mode: 'on' as const,
+};
 const loc = (id: string) => ({ sessionId: id, trackName: 'mic', token: 't' });
 const settle = () => new Promise((r) => setTimeout(r, 0));
 
@@ -83,7 +93,7 @@ afterEach(() => {
 });
 
 function open() {
-  const events = { onTrack: vi.fn(), onTrackEnded: vi.fn(), onFailed: vi.fn() };
+  const events = { onTrack: vi.fn(), onTrackEnded: vi.fn(), onFailed: vi.fn(), onPaused: vi.fn() };
   const sfu = new SfuSession(caller, session, events);
   return { sfu, events, pc: FakePc.last };
 }
@@ -188,6 +198,19 @@ describe('SfuSession', () => {
     pc.iceConnectionState = 'failed';
     pc.listeners.get('iceconnectionstatechange')!({});
     expect(events.onFailed).toHaveBeenCalledTimes(1);
+  });
+
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
+  it('says so when a step is refused because calls are paused, and only then', async () => {
+    const { sfu, events } = open();
+    api.apiCallTracks.mockRejectedValueOnce(new CallsApiError(503, 'calls_off', 'unconfigured'));
+    sfu.want([loc('a')]);
+    await settle();
+    expect(events.onPaused).not.toHaveBeenCalled();
+    api.apiCallTracks.mockRejectedValueOnce(new CallsApiError(503, 'calls_off', 'paused'));
+    sfu.want([loc('b')]);
+    await settle();
+    expect(events.onPaused).toHaveBeenCalledTimes(1);
   });
 
   it('closes every subscription and does nothing after', async () => {

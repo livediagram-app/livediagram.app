@@ -41,6 +41,7 @@ export async function handleCapabilities(ctx: RouteContext): Promise<Response> {
   if (request.method !== 'GET') {
     return methodNotAllowed();
   }
+  const calls = await callsGate(env);
   return json({
     // docs/specs/014-identity/profile-and-email-notifications.md: the editor app hides the email-notification toggles when
     // the deployment has no EMAIL binding (they'd do nothing). Same gate docs/specs/014-identity/transactional-email.md uses.
@@ -48,9 +49,15 @@ export async function handleCapabilities(ctx: RouteContext): Promise<Response> {
     // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every app. A
     // deploy without the liveworkspace Community service's key has none to show (by default).
     communityEnabled: communityEnabled(env) && communityServiceConfigured(env),
-    // docs/specs/012-collaboration/proximity-audio.md "Turning calls on": the calls gate the mint route asks, so the
-    // editor shows audio controls exactly when a session would be minted.
-    callsEnabled: (await callsGate(env)).open,
+    // docs/specs/012-collaboration/proximity-audio.md "Turning calls on": the calls gate the mint route asks. A
+    // deployment with calls shows the audio controls even while the kill switch pauses them (Calls Paused), so
+    // `callsMode` says which (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
+    callsEnabled: calls.open || calls.reason === 'paused',
+    ...(calls.open
+      ? { callsMode: calls.mode }
+      : calls.reason === 'paused'
+        ? { callsMode: 'off' as const }
+        : {}),
     ...cliCapabilities(ctx),
   });
 }

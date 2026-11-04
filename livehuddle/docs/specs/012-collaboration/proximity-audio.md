@@ -1,7 +1,7 @@
 # Proximity audio
 
-Status: **built for staging** (Work Tracker #315). Off in production until the calls kill switch (Work Tracker #316)
-is live; see [Turning calls on](#turning-calls-on).
+Status: **built for staging** (Work Tracker #315), under the calls kill switch (Work Tracker #316). Still off in
+production; see [Turning calls on](#turning-calls-on).
 
 People in a Space talk by walking up to each other. You hear the characters near yours and nobody else; the voice
 fades as they walk away and sits left or right of you as they stand. A character too far away to hear still shows
@@ -135,8 +135,9 @@ TURN key, and makes every call on the browser's behalf, after checking the calle
 - `PUT /api/documents/:id/calls/renegotiate`: the browser's answer to an offer the SFU made.
 - `PUT /api/documents/:id/calls/close`: stop subscriptions or the microphone, by `mid`.
 
-Every route answers **503 `calls_off`** while calls are off, **404** without a grant on the Space, and **403
-`calls_listen_only`** for a Viewer's publish.
+Every route answers **503 `calls_off`** while calls are off (close excepted while the kill switch alone pauses
+them), **404** without a grant on the Space, and **403 `calls_listen_only`** for a Viewer's publish. The kill switch
+checks every session and track against its mode ([Calls kill switch](../016-platform/calls-kill-switch.md#wired-in)).
 
 ## Turning calls on
 
@@ -144,10 +145,15 @@ Calls are on only where everything below holds; the editor learns it from `/api/
 shows no audio controls otherwise.
 
 - **Never in production yet.** The mint route refuses every session on the production deployment
-  (`www.livehuddle.app`), whatever is configured, until the kill switch (#316) is live. #316 replaces this with its
-  switch.
+  (`www.livehuddle.app`), whatever is configured. The kill switch (#316) is a further gate beside this flag, not its
+  replacement; lifting the flag is a later, deliberate change.
 - **The secrets are set**: the Realtime app's id and token, and a TURN key's id and API token. They are the owner's to
   create; unset, calls are off.
+- **The kill switch allows it** ([Calls kill switch](../016-platform/calls-kill-switch.md)): `off` pauses calls, and
+  the controls read **Calls Paused** rather than going away; `audio-only` leaves audio as it is.
+
+`/api/capabilities` answers `callsEnabled` (this deployment has calls: not production, secrets set) and `callsMode`
+(the switch: `on`, `audio-only` or `off`).
 
 ## Cost
 

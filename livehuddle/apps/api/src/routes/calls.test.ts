@@ -6,13 +6,24 @@ import type { AccessLevel } from '@livehuddle/api-schema';
 import type { Env } from '../types';
 import type { ItemGrant } from '../index-service';
 import { sealSessionToken, sealTrackToken } from '../calls/call-tokens';
+import { resetCallsModeCache } from '../calls/calls-mode';
+import { fakeKv } from '../calls/fake-kv';
 import { makeTestRouteContext } from './test-route-context';
 
 let grant: ItemGrant | null | Response = null;
 vi.mock('./document-grant', () => ({
   resolveDocumentGrant: vi.fn(async () => grant),
 }));
-const { handleCallRoutes, MAX_SUBSCRIBE_BATCH } = await import('./calls');
+// What kind of media a track name carries: the real table, unless a test plays a video track through the route.
+const trackKinds = vi.hoisted(() => ({ asVideo: false }));
+vi.mock('../calls/calls-mode', async (load) => {
+  const real = await load<typeof import('../calls/calls-mode')>();
+  return {
+    ...real,
+    callTrackKind: (name: string) => (trackKinds.asVideo ? 'video' : real.callTrackKind(name)),
+  };
+});
+const { handleCallRoutes, MAX_SUBSCRIBE_BATCH, mediaRefused } = await import('./calls');
 
 const SECRETS = {
   REALTIME_APP_ID: 'app1',
@@ -41,6 +52,8 @@ let upstream: Upstream[] = [];
 let answer: (url: string) => Response;
 
 beforeEach(() => {
+  resetCallsModeCache();
+  trackKinds.asVideo = false;
   grant = grantAt('participate');
   upstream = [];
   answer = (url) => {
@@ -159,6 +172,7 @@ describe('POST session', () => {
       sessionToken: (await speakerProof()).sessionToken,
       trackToken: (await locator(DOC, 'sess1')).token,
       canSpeak: true,
+      mode: 'on',
       iceServers: [
         { urls: ['stun:stun.cloudflare.com:3478'] },
         { urls: 'turn:turn.cloudflare.com:443?transport=tcp', username: 'u', credential: 'c' },
@@ -341,5 +355,112 @@ describe('PUT renegotiate and close', () => {
       expect((await call('PUT', 'close', body)).status).toBe(400);
     }
     expect(upstream).toEqual([]);
+  });
+});
+
+// The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "The mint route"): every session and track
+// is checked against its mode, after the production flag and the secrets.
+describe('the kill switch', () => {
+  const withMode = (mode: string) => ({ ...SECRETS, CALLS_SWITCH: fakeKv({ 'calls-mode': mode }) });
+
+  it('pauses every session, publish, subscribe and renegotiation while off, and asks Realtime nothing', async () => {
+    const env = withMode('off');
+    const proof = await speakerProof();
+    const refused = [
+      await call('POST', 'session', undefined, env),
+      await call('POST', 'tracks', { ...proof, publish: { sdp: 'v=0', mid: '0' } }, env),
+      await call('POST', 'tracks', { ...proof, subscribe: [await locator()] }, env),
+      await call('PUT', 'renegotiate', { ...proof, sdp: 'v=0 answer' }, env),
+    ];
+    for (const res of refused) {
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: 'calls_off', reason: 'paused' });
+    }
+    expect(upstream).toEqual([]);
+  });
+
+  it('still closes tracks while paused: closing never costs', async () => {
+    const res = await call(
+      'PUT',
+      'close',
+      { ...(await listenerProof()), mids: ['1'] },
+      withMode('off'),
+    );
+    expect(res.status).toBe(200);
+    expect(upstream.map((u) => u.body)).toEqual([{ tracks: [{ mid: '1' }], force: true }]);
+  });
+
+  it('holds production and unset secrets before the switch, close included', async () => {
+    const proof = await listenerProof();
+    const production = { ...withMode('off'), APP_BASE_URL: 'https://www.livehuddle.app' };
+    const res = await call('PUT', 'close', { ...proof, mids: ['1'] }, production);
+    expect(await res.json()).toEqual({ error: 'calls_off', reason: 'production' });
+    const bare = await call('PUT', 'close', { ...proof, mids: ['1'] }, { CALLS_SWITCH: fakeKv() });
+    expect(await bare.json()).toEqual({ error: 'calls_off', reason: 'unconfigured' });
+    expect(upstream).toEqual([]);
+  });
+
+  it('mints audio while audio only, and says so on the session', async () => {
+    const env = withMode('audio-only');
+    const session = (await (await call('POST', 'session', undefined, env)).json()) as {
+      mode: string;
+    };
+    expect(session.mode).toBe('audio-only');
+    const publish = await call(
+      'POST',
+      'tracks',
+      { ...(await speakerProof()), publish: { sdp: 'v=0', mid: '0' } },
+      env,
+    );
+    expect(publish.status).toBe(200);
+    const subscribe = await call(
+      'POST',
+      'tracks',
+      { ...(await listenerProof()), subscribe: [await locator()] },
+      env,
+    );
+    expect(subscribe.status).toBe(200);
+  });
+
+  it('checks every publish and subscribe by its track kind: video is refused while audio only', async () => {
+    trackKinds.asVideo = true;
+    const env = withMode('audio-only');
+    const refused = [
+      await call(
+        'POST',
+        'tracks',
+        { ...(await speakerProof()), publish: { sdp: 'v=0', mid: '0' } },
+        env,
+      ),
+      await call(
+        'POST',
+        'tracks',
+        { ...(await listenerProof()), subscribe: [await locator()] },
+        env,
+      ),
+    ];
+    for (const res of refused) {
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: 'calls_off', reason: 'audio-only' });
+    }
+    expect(upstream).toEqual([]);
+    // With calls on, the same tracks go through.
+    resetCallsModeCache();
+    const on = await call(
+      'POST',
+      'tracks',
+      { ...(await listenerProof()), subscribe: [await locator()] },
+      withMode('on'),
+    );
+    expect(on.status).toBe(200);
+  });
+
+  it('refuses a track whose kind the mode does not allow, or that no call publishes (video and screen add theirs)', async () => {
+    expect(mediaRefused('on', ['mic'])).toBeNull();
+    expect(mediaRefused('audio-only', ['mic'])).toBeNull();
+    const refusal = mediaRefused('audio-only', ['mic', 'cam']);
+    expect(refusal?.status).toBe(503);
+    expect(await refusal?.json()).toEqual({ error: 'calls_off', reason: 'audio-only' });
+    expect(mediaRefused('on', ['nobody-publishes-this'])?.status).toBe(503);
   });
 });

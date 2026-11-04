@@ -14,7 +14,7 @@ Derived from [Proximity audio](../proximity-audio.md). Paths are livehuddle's; `
 | session token | `sessionToken`                                       | Private proof a Realtime session is the caller's              |
 | track token   | `CallTrackLocator.token`                             | Public proof a publishing session belongs to this Space       |
 | earshot       | `HEARING_RADIUS_PX`, `RELEASE_RADIUS_PX`             | Subscribe inside the first, let go outside the second         |
-| calls gate    | `callsGate(env)`                                     | The api's one decision whether calls are on (#316 extends it) |
+| calls gate    | `callsGate(env)`                                     | The api's one decision whether calls are on, the switch last  |
 
 ## Behaviour and state
 
@@ -63,14 +63,15 @@ Wire ops (`packages/api-schema/src/call-voice.ts`):
 
 Routes (`apps/api/src/routes/calls.ts`), each JSON:
 
-| Route                                      | Body                                                                                           | Answer                                                                               |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `POST /api/documents/:id/calls/session`    | none                                                                                           | `CallSessionResponse { sessionId, sessionToken, iceServers, canSpeak, trackToken? }` |
-| `POST /api/documents/:id/calls/tracks`     | `{ sessionId, sessionToken, publish: { sdp, mid } }` or `{ …, subscribe: CallTrackLocator[] }` | `CallTracksResponse { sessionDescription?, requiresImmediateRenegotiation, tracks }` |
-| `PUT /api/documents/:id/calls/renegotiate` | `{ sessionId, sessionToken, sdp }`                                                             | `{ ok: true }`                                                                       |
-| `PUT /api/documents/:id/calls/close`       | `{ sessionId, sessionToken, mids, sdp? }`                                                      | `CallTracksResponse`                                                                 |
+| Route                                      | Body                                                                                           | Answer                                                                                     |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `POST /api/documents/:id/calls/session`    | none                                                                                           | `CallSessionResponse { sessionId, sessionToken, iceServers, canSpeak, mode, trackToken? }` |
+| `POST /api/documents/:id/calls/tracks`     | `{ sessionId, sessionToken, publish: { sdp, mid } }` or `{ …, subscribe: CallTrackLocator[] }` | `CallTracksResponse { sessionDescription?, requiresImmediateRenegotiation, tracks }`       |
+| `PUT /api/documents/:id/calls/renegotiate` | `{ sessionId, sessionToken, sdp }`                                                             | `{ ok: true }`                                                                             |
+| `PUT /api/documents/:id/calls/close`       | `{ sessionId, sessionToken, mids, sdp? }`                                                      | `CallTracksResponse`                                                                       |
 
-Rejections: `503 { error: 'calls_off', reason: 'production' | 'unconfigured' }`; `404` without a grant; `410` trashed;
+Rejections: `503 { error: 'calls_off', reason: 'production' | 'unconfigured' | 'paused' | 'audio-only' }` (the
+last two from the [kill switch](../../016-platform/blueprints/calls-kill-switch.md#wired-in-part-2)); `404` without a grant; `410` trashed;
 `403 { error: 'calls_listen_only' }` for a listener's publish or a listener-signed session; `400 { error:
 'invalid_call_request' }` for a malformed body, a bad session token, a bad track token, more than
 `MAX_SUBSCRIBE_BATCH` (16) locators or a `trackName` other than `mic`; `502 { error: 'calls_upstream' }` when Realtime
@@ -88,7 +89,10 @@ held frames for one step. The editor's store is memory only and empties on leavi
 ## Errors and edge cases
 
 - Calls off, or no shared room: no controls; the store stays `off`.
-- Session refused (`calls_off` after capabilities said on): phase `error`, the button reads **Audio Unavailable**.
+- Session refused (`calls_off` after capabilities said on): phase `error`, the button reads **Audio Unavailable**;
+  with reason `paused` it is no error: phase `off`, mode `off`, the button reads **Calls Paused**.
+- The kill switch pauses calls mid-call (the room's `calls-mode` op, or a `paused` refusal): the call ends as Leave
+  Audio does, into **Calls Paused**.
 - Microphone refused: `micState: 'blocked'`, joined as a listener; the button says how to allow it.
 - Connection fails (`iceconnectionstate` `failed`): phase `error`, Leave and Join again start fresh.
 - A locator for a session that ended: the subscribe's per-track error is ignored; the peer is retried only when it
