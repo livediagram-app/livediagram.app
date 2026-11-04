@@ -44,7 +44,9 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
 
   // The agent writes; the person sees it arrive, outlined, with a toast naming them.
   expect((await agentSubmits(page, s, paymentBox)).status()).toBe(200);
-  await expect(page.getByText('Payment service', { exact: true })).toBeVisible();
+  // The square on the canvas: the Pages list draws each page's content too, so the bare text is there twice.
+  const square = page.getByRole('img', { name: 'Square "Payment service"' });
+  await expect(square).toBeVisible();
   await expect(page.locator('[data-reveal-id="payments"]')).toBeVisible();
   const toast = page
     .getByRole('status')
@@ -54,7 +56,7 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
 
   // Show frames what changed.
   await toast.getByRole('button', { name: "Show Webber Takken's changes" }).click();
-  await expect(page.getByText('Payment service', { exact: true })).toBeInViewport();
+  await expect(square).toBeInViewport();
   // The outline goes after its reveal time; the toast stays.
   await expect(page.locator('[data-reveal-id="payments"]')).toHaveCount(0, { timeout: 5_000 });
   await expect(toast).toBeVisible();
@@ -73,12 +75,12 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
   // Ctrl+Z undoes the person's own square, never the agent's change.
   await page.keyboard.press('ControlOrMeta+z');
   await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api', 'payments']);
-  await expect(page.getByText('Payment service', { exact: true })).toBeVisible();
+  await expect(square).toBeVisible();
 
   // The toast's Undo reverts the changeset, for the person and in storage.
   await toast.getByRole('button', { name: "Undo Webber Takken's changes" }).click();
   await expect(page.getByRole('status').filter({ hasText: /^Undone/ })).toBeVisible();
-  await expect(page.getByText('Payment service', { exact: true })).toHaveCount(0);
+  await expect(square).toHaveCount(0);
   await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api']);
   expect(pageErrors).toEqual([]);
 });
