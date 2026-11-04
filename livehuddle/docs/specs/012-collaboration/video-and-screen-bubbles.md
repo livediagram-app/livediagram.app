@@ -40,10 +40,10 @@ The camera is published once with two encodings, and each viewer's subscription 
 simulcast: `preferredRid` per subscriber, changed with `tracks/update`, confirmed in the Realtime docs on
 2026-11-04):
 
-| Layer | RID | Size              | Bitrate     | Used for                       |
-| ----- | --- | ----------------- | ----------- | ------------------------------ |
-| Small | `h` | 640×360 at most   | 300 kbps    | Every bubble                   |
-| Large | `f` | 1280×720 at most  | 1.5 Mbps    | A bubble this viewer maximised |
+| Layer | RID | Size             | Bitrate  | Used for                       |
+| ----- | --- | ---------------- | -------- | ------------------------------ |
+| Small | `h` | 640×360 at most  | 300 kbps | Every bubble                   |
+| Large | `f` | 1280×720 at most | 1.5 Mbps | A bubble this viewer maximised |
 
 Maximising switches only that viewer's subscription to the large layer; restoring switches it back. Everyone else
 keeps the small layer. A bubble never steps up to the large layer by itself: if the small layer is unavailable it
@@ -88,12 +88,12 @@ One bubble for both kinds, drawn in the canvas layer so it zooms and slides with
 
 From [Future work](../005-project-roadmap/future-work.md#share-roles) and [Proximity audio](proximity-audio.md#share-roles):
 
-| Act                                        | Editor | Participant | Viewer |
-| ------------------------------------------ | ------ | ----------- | ------ |
-| See bubbles of the people near you         | Yes    | Yes         | Yes    |
-| Maximise and restore a bubble (your view)  | Yes    | Yes         | Yes    |
-| Turn on a camera                           | Yes    | Yes         | No     |
-| Share a screen                             | Yes    | No          | No     |
+| Act                                       | Editor | Participant | Viewer |
+| ----------------------------------------- | ------ | ----------- | ------ |
+| See bubbles of the people near you        | Yes    | Yes         | Yes    |
+| Maximise and restore a bubble (your view) | Yes    | Yes         | Yes    |
+| Turn on a camera                          | Yes    | Yes         | No     |
+| Share a screen                            | Yes    | No          | No     |
 
 - A camera is taking part, like speaking: an Editor's or a Participant's, guests included, no sign-in.
 - Sharing a screen is an Editor's act (Future work's role table). The card asked for the bubble above the sharer in

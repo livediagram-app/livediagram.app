@@ -75,9 +75,13 @@ describe('proximity audio wire (proximity-audio.md "The wire")', () => {
       parseCallTrack({ kind: 'call-track', tabId: 't', track: locator, video: null, screen: null }),
     ).toEqual({ kind: 'call-track', tabId: 't', track: locator, video: null, screen: null });
     // Each slot names its own track, and a malformed slot refuses the op.
-    expect(parseCallTrack({ kind: 'call-track', tabId: 't', track: null, video: screen })).toBeNull();
+    expect(
+      parseCallTrack({ kind: 'call-track', tabId: 't', track: null, video: screen }),
+    ).toBeNull();
     expect(parseCallTrack({ kind: 'call-track', tabId: 't', track: null, screen: cam })).toBeNull();
-    expect(parseCallTrack({ kind: 'call-track', tabId: 't', track: null, video: 'cam' })).toBeNull();
+    expect(
+      parseCallTrack({ kind: 'call-track', tabId: 't', track: null, video: 'cam' }),
+    ).toBeNull();
   });
 
   it('knows the track names and the two layers', () => {

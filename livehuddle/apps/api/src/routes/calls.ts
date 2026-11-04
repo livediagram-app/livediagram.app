@@ -134,7 +134,10 @@ async function provenLocators(
     const locator = parseCallTrackLocator(entry);
     if (!locator) return null;
     const layer = (entry as { layer?: unknown }).layer;
-    if (layer !== undefined && (locator.trackName !== CALL_VIDEO_TRACK_NAME || !isCallLayer(layer))) {
+    if (
+      layer !== undefined &&
+      (locator.trackName !== CALL_VIDEO_TRACK_NAME || !isCallLayer(layer))
+    ) {
       return null;
     }
     if (
@@ -155,7 +158,8 @@ function remoteTrack(locator: CallSubscribeLocator): RealtimeRemoteTrack {
     sessionId: locator.sessionId,
     trackName: locator.trackName,
   };
-  if (locator.trackName === CALL_VIDEO_TRACK_NAME) track.simulcast = simulcastFor(locator.layer ?? 'h');
+  if (locator.trackName === CALL_VIDEO_TRACK_NAME)
+    track.simulcast = simulcastFor(locator.layer ?? 'h');
   return track;
 }
 
@@ -265,7 +269,12 @@ async function layer(
   if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_SUBSCRIBE_BATCH) return invalid();
   const tracks: (RealtimeRemoteTrack & { mid: string })[] = [];
   for (const entry of raw as unknown[]) {
-    const t = entry as { mid?: unknown; sessionId?: unknown; trackName?: unknown; layer?: unknown } | null;
+    const t = entry as {
+      mid?: unknown;
+      sessionId?: unknown;
+      trackName?: unknown;
+      layer?: unknown;
+    } | null;
     if (
       !t ||
       !isMid(t.mid) ||

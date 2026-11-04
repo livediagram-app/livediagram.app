@@ -13,9 +13,7 @@ export const CALL_VIDEO_TRACK_NAME = 'cam';
 /** A shared screen's (docs/specs/012-collaboration/video-and-screen-bubbles.md "The screen share"). */
 export const CALL_SCREEN_TRACK_NAME = 'screen';
 export type CallTrackName =
-  | typeof CALL_TRACK_NAME
-  | typeof CALL_VIDEO_TRACK_NAME
-  | typeof CALL_SCREEN_TRACK_NAME;
+  typeof CALL_TRACK_NAME | typeof CALL_VIDEO_TRACK_NAME | typeof CALL_SCREEN_TRACK_NAME;
 export const CALL_TRACK_NAMES: readonly CallTrackName[] = [
   CALL_TRACK_NAME,
   CALL_VIDEO_TRACK_NAME,

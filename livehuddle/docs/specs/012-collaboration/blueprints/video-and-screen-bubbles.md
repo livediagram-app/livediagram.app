@@ -5,15 +5,15 @@ Derived from [Video and screen share bubbles](../video-and-screen-bubbles.md). B
 
 ## Domain and naming
 
-| Term          | Identifier                                               | Meaning                                                   |
-| ------------- | -------------------------------------------------------- | --------------------------------------------------------- |
-| media kind    | `CallMedia` (`'video' \| 'screen'`)                      | What a bubble shows                                       |
-| track names   | `CALL_VIDEO_TRACK_NAME` (`cam`), `CALL_SCREEN_TRACK_NAME` (`screen`) | Beside the microphone's `mic`                 |
-| layer         | `CallLayer` (`'h' \| 'f'`)                               | The camera's small and large simulcast encodings          |
-| camera state  | `CallSelf.camera`: `off`, `starting`, `on`, `blocked`    | This browser's camera                                     |
-| screen state  | `CallSelf.screen`: `off`, `starting`, `on`                | This browser's share                                      |
-| maximised     | `CallMaximised` `{ id, media }` or null                  | The one bubble this viewer has opened large (`id` `self` for your own) |
-| seen          | `pickSeen(…)`                                            | The bubbles received: earshot, on screen, nearest, capped |
+| Term         | Identifier                                                           | Meaning                                                                |
+| ------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| media kind   | `CallMedia` (`'video' \| 'screen'`)                                  | What a bubble shows                                                    |
+| track names  | `CALL_VIDEO_TRACK_NAME` (`cam`), `CALL_SCREEN_TRACK_NAME` (`screen`) | Beside the microphone's `mic`                                          |
+| layer        | `CallLayer` (`'h' \| 'f'`)                                           | The camera's small and large simulcast encodings                       |
+| camera state | `CallSelf.camera`: `off`, `starting`, `on`, `blocked`                | This browser's camera                                                  |
+| screen state | `CallSelf.screen`: `off`, `starting`, `on`                           | This browser's share                                                   |
+| maximised    | `CallMaximised` `{ id, media }` or null                              | The one bubble this viewer has opened large (`id` `self` for your own) |
+| seen         | `pickSeen(…)`                                                        | The bubbles received: earshot, on screen, nearest, capped              |
 
 ## Behaviour and state
 
@@ -46,7 +46,7 @@ maximised bubble (`setCallMaximised`). Maximising a bubble that is not received 
   `parseCallTrack` with each locator's `trackName` held to its slot (`parseCallTrackLocator(v, name)`).
 - `CallTracksRequest.publish` gains `trackName?: CallTrackName`. A subscribe locator may carry `layer?: CallLayer`.
 - `PUT /api/documents/:id/calls/layer`: `CallLayerRequest = { sessionId, sessionToken, tracks: { mid, sessionId,
-  trackName, layer }[] }`, at most `MAX_SUBSCRIBE_BATCH`, `trackName` `cam` only. Answers `CallTracksResponse`.
+trackName, layer }[] }`, at most `MAX_SUBSCRIBE_BATCH`, `trackName` `cam` only. Answers `CallTracksResponse`.
 - New refusal: `403 { error: 'calls_editor_only' }` for a screen publish without an Editor's grant.
 - `TRACK_KINDS` (`calls-mode.ts`): `mic` audio, `cam` video, `screen` screen.
 
@@ -95,28 +95,28 @@ restores, focus moves to Restore on open and back to the bubble on close. The sh
 
 ## Testing
 
-| Rule                                                             | Test                                                      |
-| ---------------------------------------------------------------- | --------------------------------------------------------- |
-| Locators held to their slot; video and screen fields             | `../packages/api-schema/src/call-voice.test.ts`           |
-| Track kinds for `cam` and `screen`                               | `../packages/api-schema/src/calls-mode.test.ts`           |
-| Publish by name and role; layer route; audio-only refusals       | `apps/api/src/routes/calls.test.ts`                       |
-| Simulcast subscribe and `tracks/update` shapes                   | `apps/api/src/calls/realtime-api.test.ts`                 |
-| Room drops a non-Editor's screen locator                         | `apps/api/src/room-op-gate.test.ts`                       |
-| Earshot, viewport, hidden tab, caps, maximised kept              | `apps/editor/lib/calls/bubbles.test.ts`                   |
-| Keys per track, layer change, publish by name                    | `apps/editor/lib/calls/sfu-session.test.ts`               |
-| Camera and share on and off, ended, audio-only stops them        | `apps/editor/lib/calls/proximity-call.test.ts`            |
-| Strip segments per role, Video Paused                            | `apps/editor/components/calls/CallClusterButton.test.tsx` |
-| Bubble, maximise, restore, Escape, sharing bar                   | `apps/editor/components/calls/*.test.tsx`                 |
+| Rule                                                       | Test                                                      |
+| ---------------------------------------------------------- | --------------------------------------------------------- |
+| Locators held to their slot; video and screen fields       | `../packages/api-schema/src/call-voice.test.ts`           |
+| Track kinds for `cam` and `screen`                         | `../packages/api-schema/src/calls-mode.test.ts`           |
+| Publish by name and role; layer route; audio-only refusals | `apps/api/src/routes/calls.test.ts`                       |
+| Simulcast subscribe and `tracks/update` shapes             | `apps/api/src/calls/realtime-api.test.ts`                 |
+| Room drops a non-Editor's screen locator                   | `apps/api/src/room-op-gate.test.ts`                       |
+| Earshot, viewport, hidden tab, caps, maximised kept        | `apps/editor/lib/calls/bubbles.test.ts`                   |
+| Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`               |
+| Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`            |
+| Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallClusterButton.test.tsx` |
+| Bubble, maximise, restore, Escape, sharing bar             | `apps/editor/components/calls/*.test.tsx`                 |
 
 ## Constants and configuration
 
-| Constant                 | Value      | Why                                               |
-| ------------------------ | ---------- | ------------------------------------------------- |
-| `MAX_VIDEO_BUBBLES`      | 6          | The card's cap: the nearest six                   |
-| `MAX_SCREEN_BUBBLES`     | 2          | A screen is about three bubbles of traffic        |
-| `BUBBLE_VIEW_MARGIN_PX`  | 120        | An edge bubble does not flicker                   |
-| `BUBBLE_WIDTH_PX`        | 120        | Readable at 100%, small beside a character        |
-| `CAMERA_CONSTRAINTS`     | 1280×720, 24 fps ideal | The large layer's source              |
-| `CAMERA_ENCODINGS`       | `f` 1.5 Mbps; `h` scale 2, 300 kbps | The card's cost figures  |
-| `SCREEN_CONSTRAINTS`     | ≤1920×1080, 5 to 15 fps | The card's cap                       |
-| `SCREEN_MAX_BITRATE`     | 1 Mbps     | About 0.45 GB per viewer-hour                     |
+| Constant                | Value                               | Why                                        |
+| ----------------------- | ----------------------------------- | ------------------------------------------ |
+| `MAX_VIDEO_BUBBLES`     | 6                                   | The card's cap: the nearest six            |
+| `MAX_SCREEN_BUBBLES`    | 2                                   | A screen is about three bubbles of traffic |
+| `BUBBLE_VIEW_MARGIN_PX` | 120                                 | An edge bubble does not flicker            |
+| `BUBBLE_WIDTH_PX`       | 120                                 | Readable at 100%, small beside a character |
+| `CAMERA_CONSTRAINTS`    | 1280×720, 24 fps ideal              | The large layer's source                   |
+| `CAMERA_ENCODINGS`      | `f` 1.5 Mbps; `h` scale 2, 300 kbps | The card's cost figures                    |
+| `SCREEN_CONSTRAINTS`    | ≤1920×1080, 5 to 15 fps             | The card's cap                             |
+| `SCREEN_MAX_BITRATE`    | 1 Mbps                              | About 0.45 GB per viewer-hour              |
