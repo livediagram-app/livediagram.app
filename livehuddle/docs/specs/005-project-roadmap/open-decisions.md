@@ -1,6 +1,7 @@
 # Open decisions for the owner
 
-Status: **open**, for the owner's answer on this PR (Work Tracker #99).
+Status: **settled**. Every decision below was answered and built (Work Tracker #99 to #190); only D8's last owner steps
+(Work Tracker #395) are still open.
 
 Each decision has lettered options and a recommendation. Where the card or its thread already decided, the decision is
 recorded as settled rather than asked again.
@@ -8,7 +9,7 @@ recorded as settled rather than asked again.
 ## Settled by the card and its thread
 
 - **Spec first, then fork livediagram** (thread, 2026-10-31: "write the livehuddle product spec first ... then build
-  by forking livediagram"). This PR is the spec.
+  by forking livediagram"). The spec came first (Work Tracker #99), then the [Build plan](build-plan.md)'s steps.
 - **livediagram keeps avatar mode, the Navigate elements and the Spaces templates** (card: "Don't remove these
   capabilities from livediagram"). livehuddle gets its own copy, and what can be shared moves to `packages/`.
 - **Documents are Durable Objects, not D1** (card). One Durable Object per space, no D1
@@ -18,6 +19,8 @@ recorded as settled rather than asked again.
 - **The focus is collaboration, workshops and meetings** (card) ([Purpose](../001-project-vision/purpose.md)).
 
 ## D1. How the fork is shaped
+
+**Settled: (a)** (built; `livehuddle/.forked-from` names the commit).
 
 - (a) In-tree fork of livediagram (`livehuddle/` beside the others, `.forked-from`), cut down to Workshop, as
   livedocuments and livedesign were made.
@@ -30,6 +33,8 @@ tools for a smaller product; (c) is not a product of its own and fights "livedia
 side.
 
 ## D2. Does all of Workshop mode go to livehuddle?
+
+**Settled: (a)** (built: livehuddle carries all of Workshop, [Workshop mode](../012-collaboration/workshop-mode.md)).
 
 - (a) All of Workshop: the Session strip, every Collaborate element, facilitation, the session templates.
 - (b) Only Avatar mode, the Navigate elements, Bring Focus and the Spaces.
@@ -53,6 +58,8 @@ repositories).
 other app's does ([Platform registration](../016-platform/platform-registration.md)).
 
 ## D4. Audio, video and screen sharing
+
+**Settled: (a)** (v1 shipped without them; [Future work](future-work.md)).
 
 - (a) Out of v1. Specify them next, after v1 ships, with TURN and Cloudflare Realtime's SFU, once the owner has set a
   spend limit.
@@ -123,4 +130,4 @@ Turnstile and Google sign-in, and the MCP KV namespaces. Left (Work Tracker #395
    sign-in), as was done for www.
 5. **Billing:** accept a fifth product's Durable Object usage on the account's Workers plan; later, decide TURN and SFU
    spend (D4).
-6. **Approve this spec.** Building starts only after.
+6. **Approve this spec.** Done: the owner approved it on Work Tracker #99 and the build followed.

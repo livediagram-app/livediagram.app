@@ -1,11 +1,12 @@
 # Build plan
 
-Status: **proposed**, awaiting the owner's approval (Work Tracker #99). Nothing here starts until the spec is
-approved.
+Status: **built**. The owner approved it on Work Tracker #99, every step below has shipped, and step 9 folded the specs
+back to the code (Work Tracker #190). What remains is the owner's D8 steps (Work Tracker #395) and keeping the two
+products from drifting (below).
 
 How livehuddle gets built: by forking livediagram in-tree and cutting it down to Workshop, as livedocuments and
 livedesign were made, after the code both products will need has moved to `packages/`. The thread on Work Tracker #99
-settled the route: spec first (this PR), then build by forking livediagram.
+settled the route: spec first, then build by forking livediagram.
 
 ## How the earlier forks were done
 
@@ -104,7 +105,7 @@ and help (Work Tracker #187).
 ### 8. CI, deploys and launch
 
 **Built** (Work Tracker #189): the hold lifted and everything below is in the code; it deploys once the owner's
-remaining D8 steps (Work Tracker #395) are done and the PR merges.
+remaining D8 steps (Work Tracker #395) are done (the PR, #1251, merged).
 
 - The CI group, E2E and canvas-perf entries, deploy tiers ([Platform registration](../016-platform/platform-registration.md#ci)).
 - Staging on `staging.livehuddle.app` once the owner's DNS and secrets are in (D8).
@@ -114,7 +115,9 @@ remaining D8 steps (Work Tracker #395) are done and the PR merges.
 
 ### 9. Fold back
 
-The specs reconciled to what shipped, blueprints derived from them, every path and symbol checked.
+**Done** (Work Tracker #190): the specs reconciled to what shipped, blueprints derived from them, every cited path,
+link, anchor and backticked symbol checked against livehuddle's code and the shared `packages/`; both products'
+AGENTS.md carry the drift rules below; and the drift report runs in CI.
 
 ## What livediagram keeps
 
@@ -136,9 +139,25 @@ Two copies of Workshop mode will drift. Four rules keep that small:
    made twice.
 3. **A fix to a feature both products have lands in both, in the same PR**, or moves the code to `packages/` first.
    Both products' AGENTS.md say so, with the list of shared features.
-4. **A drift report**: a script counting identical, changed and one-only files between `livediagram/` and
-   `livehuddle/` with the product names ignored, in the shape of docs/structure.md's liveplanner table, run in CI as
-   information (never a gate), so the owner can see the copies diverge and pick the next extraction.
+4. **A drift report**: `.github/scripts/drift-report.mjs` counts identical, changed and one-only files between
+   `livediagram/` and `livehuddle/` with the product names ignored, per app and package, in the shape of
+   docs/structure.md's liveplanner table. CI's Plan job writes it to every run's summary as information, never a gate
+   (the root [docs/ci.md](../../../../docs/ci.md#drift-report)), so the owner can see the copies diverge and pick the
+   next extraction.
+
+The report at step 9 (2026-11-04), the rows with the most changed files:
+
+|                     | identical | changed | only in livediagram | only in livehuddle |
+| ------------------- | --------- | ------- | ------------------- | ------------------ |
+| `apps/editor`       | 1,875     | 464     | 325                 | 13                 |
+| `apps/help`         | 133       | 249     | 25                  | 3                  |
+| `docs/specs`        | 207       | 221     | 33                  | 9                  |
+| `packages/document` | 388       | 106     | 88                  | 1                  |
+| All files           | 3,581     | 1,369   | 841                 | 43                 |
+
+Of the editor's 464 changed files, about 300 lost code for a cut feature, about 100 say Space, and the other 60 or so
+are mostly Prettier re-wrapping a line the longer or shorter name moved; the help centre and the specs changed as
+products, as expected.
 
 ## Rough size
 

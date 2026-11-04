@@ -52,7 +52,9 @@ result.
 
 ## Workflows
 
-- **CI** (`ci.yml`), on every pull request and every push to `main`. Per group:
+- **CI** (`ci.yml`), on every pull request and every push to `main`. Its Plan job also writes the
+  [Drift report](#drift-report) between livediagram and livehuddle to the run's summary, as
+  information. Per group:
   - **Checks:** lint and type check of the affected workspaces, and a format check (each product's
     own `format:check`; the platform's Prettier over `packages/`, `liveworkspace/`, `docs/`,
     `.github/` and the root files).
@@ -112,6 +114,19 @@ the pre-push hook) fails a change that adds `performance.now()` to a test file. 
 for a pass of their own, and so is a copy of one: a line another product already has at the same path
 (a fork, such as livehuddle's of livediagram) isn't new. A line that truly needs the wall clock says why
 in a `wall-clock:` comment.
+
+## Drift report
+
+livehuddle was forked in-tree from livediagram and both carry Workshop mode, so the two copies drift
+as each changes on its own. The Plan job's **Drift report** step (`.github/scripts/drift-report.mjs`)
+compares `livediagram/` and `livehuddle/` file by file, with the product names ignored (`livediagram`
+and `livehuddle` in any case, in paths and contents, read as one word), and writes to the run's
+summary how many files are identical, changed or in one product only, per app and package, with
+`docs/specs` and the rest of `docs` as rows of their own. It reads only the files git tracks, each
+once (about 11,000 files in about 0.4 seconds), and it informs and never gates: it always exits 0 and
+the step has `continue-on-error`. The owner reads it to pick the next extraction to `packages/`
+(livehuddle's [Build plan](../livehuddle/docs/specs/005-project-roadmap/build-plan.md#keeping-the-two-products-from-drifting));
+both products' AGENTS.md list the features they share. Locally: `node .github/scripts/drift-report.mjs`.
 
 ## Coverage report
 

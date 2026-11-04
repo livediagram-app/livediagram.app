@@ -8,8 +8,8 @@ page records what that needs, so v1 is built not to stand in its way. Each featu
 ## Audio calls
 
 People near each other on the board hear each other: **proximity audio**. A character's position already rides the
-room ([Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md#realtime)), so the board can decide
-who hears whom: everyone in the same [room](../../../../livediagram/docs/specs/009-elements/office.md#room), or within
+room ([Avatar mode](../008-canvas/avatar-mode.md#realtime)), so the board can decide
+who hears whom: everyone in the same [room](../009-elements/office.md#room), or within
 a radius in the open, and everyone in the All-Hands Hall hearing the stage.
 
 ## Video calls

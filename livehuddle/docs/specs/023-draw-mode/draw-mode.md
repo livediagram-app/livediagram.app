@@ -48,11 +48,12 @@ The tools tune **rules**, never the document model: strokes are `freehand` eleme
   - **Each width is pictured the same wherever it is chosen** (the marker's popover and the quick
     style panel's Marker width row, `PenWidthIcon`): as a line in six even steps, thinnest first,
     not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
-- **The markers outside Draw mode:** the Toolbar strip's Search offers Marker 1, 2 and 3 in the
-  other modes ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), each
-  as this browser last set it. Picking one picks the pen up exactly as the dock does (the same pen
-  intent, colour, width and recognition), held until another tool, Escape or a mode switch puts it
-  down. Its colour and width are changed here, in Draw mode, not from the search.
+- **The markers in Workshop:** the palette's Tools group offers Marker 1, 2 and 3 as tiles, and the Toolbar
+  strip's Search finds them ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), each
+  as this browser last set it. Picking one picks the pen up exactly as the dock did (the same pen
+  intent, colour, width and recognition), held until another tool or Escape puts it
+  down. Its colour and width are changed in the quick style panel (Marker colour, Marker width), not from the
+  search.
 - **Right-clicking a pen resets it** to how it started (its starting colour
   and Medium), without picking it up; a pen already as it started is left
   alone. The context-menu key and Shift+F10 on the focused button do the same.
@@ -96,7 +97,7 @@ The tools tune **rules**, never the document model: strokes are `freehand` eleme
   stay as drawn**: a stroke keeps the exact colour it was drawn in; only
   strokes drawn after this record a named colour.
 - **A pen stays in hand.** After a stroke the pen is still armed (unlike the
-  Diagram palette's one-shot pens, [Highlighter](../008-canvas/highlighter.md)
+  palette's one-shot pens, [Highlighter](../008-canvas/highlighter.md)
   among them): the next drag draws again, and the stroke just drawn is not selected. Select, Escape or
   another tool puts it down.
 - **Ink like Excalidraw's, with pressure.** A pen stroke is drawn the way
@@ -154,7 +155,7 @@ The tools tune **rules**, never the document model: strokes are `freehand` eleme
   is drawn, and no snapping of the first point to a neighbour. Guides and
   snapping stay for shapes and lines from the Shapes flyout.
 - **Strokes stay open.** A whiteboard stroke that ends near its start is not
-  closed and filled when it lands, as a pencil sketch in Diagram mode is: an
+  closed and filled when it lands, as a pencil sketch is: an
   "o" written on a board is ink, not a shape. Only the **Fill** tool closes
   one, on purpose: a press inside a loop whose ends meet closes and fills it,
   keeping its ink as the outline ([Fill tool](fill-tool.md)).
@@ -188,16 +189,13 @@ The tools tune **rules**, never the document model: strokes are `freehand` eleme
   hand** (nothing selected) the panel styles what it draws next, captioned
   "Next rectangle", "Next arrow", "Next text box"; a choice there changes
   nothing on the board and dresses every later mark of that kind. Restyling
-  a drawn shape teaches its kind the same way, as in Diagram mode. Clear
+  a drawn shape teaches its kind the same way. Clear
   styles with a tool in hand puts its kind back to plain ink. Line and arrow
   share one remembered style, as all arrows do.
-- Draw mode keeps **its own style memory**, apart from Diagram mode's:
-  whiteboarding is a different activity, so Draw mode's styles never dress a
-  Diagram mode shape, nor Diagram mode's a Draw mode one, for any shape kind,
-  tool style or restyle, in the same document or another. Leaving Draw mode
-  puts its shape, line or arrow tool down, as it puts a pen down, so Diagram
-  mode never previews or names its next shape the Draw way; the panel's
-  "Next rectangle" always shows the style of the mode you are in.
+- The whiteboard tools keep **their own style memory** (the `board:` keys of `style-memory.ts`), apart from the
+  palette's: styles chosen for a whiteboard tool never dress a shape from the palette, nor the palette's a
+  whiteboard tool's, for any shape kind, tool style or restyle, in the same document or another. livehuddle
+  has no whiteboard dock (`useEditorState` holds `drawMode = false`), so the `board:` memory is not written today.
 - A **recognised** shape (see [Shape recognition](#shape-recognition)) is
   different: it is a pen stroke tidied up, so it keeps that pen's colour and
   weight.
@@ -243,12 +241,11 @@ The tools tune **rules**, never the document model: strokes are `freehand` eleme
 
 ## Text boxes
 
-A text box made in Draw mode **hugs its text**: its box, and so its selection
+A text box made with the whiteboard tools **hugs its text**: its box, and so its selection
 ring and handles, sit just around the words, with only enough padding to grab
 and read it comfortably. Hugging is stored on the text box as its **sizing**
-([A text box's sizing](../007-editor/editor-modes.md)), so the box hugs in
-both editor modes and for everyone; a text box made in Diagram mode is a fixed
-box and does not.
+([A text box's sizing](../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)), so the box hugs
+for everyone; a text box made from the palette is a fixed box and does not.
 
 - **Padding:** 4 canvas px left and right, 2 px top and bottom, around the
   text's own line box. Nothing else is added: no default width or height.
@@ -262,9 +259,9 @@ box and does not.
   the same way, so it wraps from then on; its height stays hugging the text.
   The top and bottom handles leave its sizing alone. With Shift (the aspect
   ratio rule) the text size scales with the box instead (`textScale`). This
-  holds in Diagram mode too: a hugging box keeps hugging.
+  holds wherever the box is edited: a hugging box keeps hugging.
 - An empty hugging text box is removed when it is left, by clicking away or by Escape.
-- A text box on a whiteboard saved before editor modes hugs as it did: one
+- A text box on a whiteboard saved with a hugging size hugs as it did: one
   placed with a click fits its words, any other wraps at its width.
 - Existing text boxes keep their size until edited or resized; then they hug.
 - Notes (stickies) keep their fixed note size.
@@ -306,7 +303,7 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
 ## Nothing animates in
 
 A whiteboard is still: a stroke, shape, sticky or text box appears exactly as
-drawn, with none of the pop-in a new element gets in Diagram mode. It is
+drawn, with none of the pop-in a new element gets from the palette. It is
 still an element, selectable and movable like any other. An animation the
 author sets on an element on purpose still plays.
 
@@ -324,18 +321,14 @@ author sets on an element on purpose still plays.
   fragment.
 - A stroke the browser cancels (`pointercancel`, for example when the system
   takes the touch over) is discarded.
-- A stroke the tab leaves Draw mode during (one's own Shift+D or switch, a
-  collaborator's switch, an undo or redo that switches) is finished first: it
-  lands as drawn so far ([Editor modes](../007-editor/editor-modes.md)
-  "Everyone follows a switch"). Putting the pen down mid-stroke (Escape,
-  another tool) discards it.
+- Putting the pen down mid-stroke (Escape, another tool) discards it.
 - Only the pointer that started a stroke draws it; another finger landing
   meanwhile is a pinch or pan, never part of the stroke.
 - Palm rejection beyond this is the browser's; no timing heuristics.
 
 ## Eraser
 
-The eraser offers **both** modes, switched in its flyout:
+The eraser offers **both** modes (Stroke and Partial, not editor modes), switched in its flyout:
 
 - **Stroke** (default): touching a stroke removes the whole stroke. It is the
   existing eraser in Sweep mode, with one difference: a stroke counts as
@@ -438,21 +431,19 @@ The eraser offers **both** modes, switched in its flyout:
   synced preferences as `drawPattern`
   ([User preferences](../007-editor/user-preferences.md)) and **Grid** until
   chosen. It is never stored on the tab, so choosing it changes nothing for
-  anyone else, and it is the pattern of every tab that person works on in Draw
-  mode ([One look](../007-editor/editor-modes.md#one-look)).
-- In Diagram mode the tab's own stored pattern shows again, shared by
+  anyone else, and it is the pattern of every tab that person works on with a whiteboard
+  dock. Without a dock, the tab's own stored pattern shows, shared by
   everyone. Exports, thumbnails and api or MCP images always use the tab's
   stored pattern.
 - The pattern is painted in the canvas's pattern colour and scales with zoom,
-  as the canvas grid does in Diagram mode.
+  as the canvas grid does.
 
 ## Appearance
 
-Draw mode has **one look with Diagram mode**
-([One look](../007-editor/editor-modes.md#one-look)): the tab's theme, its
-canvas colour and its elements look the same in either mode and to every
-collaborator. A mode changes what is written into new content and the
-pattern behind it, never the colour of what is already there.
+The whiteboard tools have **one look with the rest of the board**
+([Editor modes](../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)): the tab's theme, its
+canvas colour and its elements look the same to every collaborator, whichever tool drew them. A tool
+changes what is written into new content, never the colour of what is already there.
 
 - **The canvas** is the tab's own: its theme's canvas, or the custom
   background colour when one is set. On the Default theme, which follows the
@@ -466,19 +457,18 @@ pattern behind it, never the colour of what is already there.
   either Default canvas (WCAG 2.2 AA). It is stored by name (`ink`) like Grey and the
   eight hued stock colours.
 - **Marker 1** draws in Ink, and so does any pen stroke or text box with no
-  colour of its own, in both modes. Markers 2 and 3 keep the colour they drew
+  colour of its own. Markers 2 and 3 keep the colour they drew
   with.
-- **What Draw mode makes is written in Ink.** A shape, line, arrow or path
+- **What the whiteboard tools make is written in Ink.** A shape, line, arrow or path
   from the dock (and a shape or line a stroke is recognised as) is stored
   with an Ink outline by name and no fill (a shape's label in Ink too), so it
-  looks the same in Diagram mode.
+  looks the same wherever it is opened.
 - **Stock colours are drawn for the canvas.** Every colour stored by name is
   drawn in its version for the canvas it sits on: the light version on a
   light canvas, the dark version on a dark one. On the Default theme that is
   the reader's appearance; on a theme with a fixed canvas, that canvas. The
   dock's and the quick style panel's swatches show the same versions.
-- **The accent** of the editor's chrome follows the tab's theme, as in
-  Diagram mode.
+- **The accent** of the editor's chrome follows the tab's theme.
 
 ## Snap colours
 
@@ -489,7 +479,7 @@ light and dark boards like everything drawn with the stock colours.
 
 - **Where:** a **Colours** section, the last of the dock's Settings
   flyout, after Drawing (the flyout opens on the board side of the dock,
-  wherever [the dock sits](#where-the-dock-sits)), shown **only while the board has custom colours it
+  wherever the dock sits), shown **only while the board has custom colours it
   can snap**. It names how many ("3 custom colours"), shows them as small
   swatches (at most eight, most recently drawn first, as the quick style
   panel's custom section does), and offers one button: **Snap to stock
@@ -520,9 +510,9 @@ light and dark boards like everything drawn with the stock colours.
 
 ## Keyboard shortcuts
 
-On a whiteboard the plain-key shortcuts are the dock's, and only these
-(Diagram mode's other element and mode keys, the laser on K and so on, do
-not apply: a whiteboard has no palette to mirror):
+With the whiteboard dock, the plain-key shortcuts are the dock's, and only these
+(the other element keys, the laser on K and so on, do not apply: a whiteboard has no
+palette to mirror). livehuddle shows no dock, so these keys are not bound there today:
 
 | Key    | Tool                                                    |
 | ------ | ------------------------------------------------------- |
@@ -559,7 +549,7 @@ box selected, typing a character still edits it rather than switching tool;
 any other selection (a shape just drawn, a line, a stroke) leaves the key to
 the dock, so R then O draws a rectangle and then an ellipse.
 View-role visitors get V and Escape only. A Participant also keeps its palette's keys (N, T and 9,
-[The Participant palette](../013-workspace/share-roles.md#the-participant-palette)), which arm its tiles here as on any
+[Share roles](../013-workspace/share-roles.md)), which arm its tiles here as on any
 tab, never the dock's tools. Each dock button and Shapes option
 with a key shows it small in its bottom-right corner, as the Toolbar strip does (a tool bar is
 where people learn the keys), and carries it in `aria-keyshortcuts`.
@@ -582,7 +572,7 @@ Preset-enum events only, never content, under a `Draw` category (named `Whiteboa
 
 | Event                     | Action                                    | Type                                                     |
 | ------------------------- | ----------------------------------------- | -------------------------------------------------------- |
-| A whiteboard created      | `Created`                                 | `Template` (wizard), `NewTab`, `Import`                  |
+| A whiteboard imported     | `Created`                                 | `Import`                                                 |
 | A pen picked              | `Selected`                                | `Main`, `Second`, `Third`                                |
 | A shape picked in search  | `Selected`                                | `ShapeSearch` (never the kind)                           |
 | A shape pinned / unpinned | `Changed`                                 | `ShapePinned`, `ShapeUnpinned` (never the kind)          |
@@ -599,10 +589,9 @@ through the ordinary `Element` / `Added` events.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 
-One article, **Draw mode** (`/help/canvas/draw-mode/`; the old `/help/canvas/whiteboards/`
-redirects to it): choosing the mode from the switch beside the menu button, an empty tab's start or Shift+D, starting a
-drawing, the dock, pens, pen versus touch, the two erasers, shape recognition, backgrounds, light
-and dark and snapping custom colours. Registered per
+No article of its own: Draw mode's article went with the mode. The Eraser key is in
+[Keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/); pens, the path tool, the fill tool and the two erasers have no
+help text yet. A new article registers per
 [Register a help article](../../instructions/register-a-help-article.md).
 
 ## Non-goals

@@ -131,7 +131,7 @@ of their steps ask the person to try things.
   step's target lands and again when a heal brings it back, never while the step is up, so the person can scroll away.
 - **A target has to render to count.** Chrome a surface hides can stay in the DOM (`display:none`), so an
   anchor with no client rects is treated as absent: it is never clicked and never measured. That is the safety
-  net; the step list itself is filtered up front (`tourStepsFor`, by viewport and tab kind) so the "N of M"
+  net; the step list itself is built up front from the tour's context (`workshopTourSteps({ canShare })`, `avatarTourSteps({ canSpeak, mobile })`) so the "N of M"
   count stays honest instead of a hidden step burning its timeout mid-tour.
 - **What counts as a dialog** is one signal, the modal guard (`../packages/workbench/src/lib/modal-guard.ts`): a count of open modal
   dialogs, fed by the editor's `Dialog` (so every dialog built on it counts with no extra work) and by the

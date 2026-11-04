@@ -62,7 +62,7 @@ stays a pure REST/WS surface.
   changes are needed** for the tools themselves.
 - **Reuses `packages/document`** headless: element factories, `validate.ts`
   (`isValidTab`/`isValidElement`), `auto-layout.ts` (`autoLayoutElements`,
-  `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise--inline-image-render)).
+  `isLayoutCandidate`), and a new pure SVG renderer ([§5](#5-visualise-inline-image-render)).
   This is the reuse-over-duplication rule: the MCP must not re-implement layout,
   validation, geometry, or theme-colour resolution.
 - **Routing + deploy.** Served at **`mcp.livehuddle.app`** (its own hostname,
@@ -223,7 +223,7 @@ Wraps `GET /api/documents/:id` + `GET /api/documents/:id/tabs/:tabId?view=outlin
 tab's [outline view](../024-agents/document-views.md), about a tenth of the element JSON, with
 the refs the edit tools take (`format: "json"` returns the elements instead), plus the deep-link
 `url`. With `image: true` it also attaches an inline **PNG** of the tab as MCP image content
-([§5](#5-visualise--inline-image-render)); without it a read costs no image tokens. So "show me my auth-flow diagram" → `find_documents` →
+([§5](#5-visualise-inline-image-render)); without it a read costs no image tokens. So "show me my auth-flow diagram" → `find_documents` →
 `read_document` with `image: true` renders it inline. Its structured result carries the tab's `rev`,
 which `update_document` takes back as the base of its ops ([§4.4](#44-update_document)).
 It also takes `view` (`outline`, `graph`, `layout`, `comments`, `show`, `find`), `budget` (8,000 tokens unless
@@ -384,7 +384,7 @@ size, uploadedAt }], more }`, newest first, `query` matching the name, `limit` 2
 in bytes. An id is what an `image` element's `imageId` takes. Names are often a camera's or a screenshot tool's
 ("Screenshot 2026-10-12 at 14.03.png"), so `image: true` adds a **contact sheet**: one PNG of the listed images (the
 first 12), each drawn to fit a cell above its place in the list and its name, through the same image embedding as
-the preview ([§5](#5-visualise--inline-image-render)). The sheet spends the preview's picture budget itself, from the
+the preview ([§5](#5-visualise-inline-image-render)). The sheet spends the preview's picture budget itself, from the
 sizes and dimensions the gallery lists: it draws pictures in order only while they stay within it, and each one past
 that keeps a placeholder captioned "too large to draw here", and its bytes are not fetched. The gallery is the caller's own (`GET /api/images`, owner
 only): a teammate's uploads are not in it. Read-only, so a read-only token may call it. A deployment without image
@@ -468,7 +468,7 @@ every box ("CTO" drawn as wide as "Platform and site reliability"). An
 unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.md)
 "Node boxes and text").
 
-**The graph look** (what makes graph input read like a template, the flowchart template being the yardstick):
+**The graph look** (what makes graph input read like a template, the look of livediagram's flowchart template being the yardstick (livehuddle ships none; the graph tool is shared)):
 
 - **Boxes are template-sized.** A box is at least 180×64 (a diamond 180×104, wider than tall; a circle stays round),
   wider for a longer label, never the 120×120 square the editor's palette starts a square at. The labelled boxes of
@@ -584,7 +584,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 **Layout choices** (defaults in brackets):
 
 - `direction` (auto): `down` (ranks top to bottom) or `right` (left to right), for `flow` and `tree` alike. Auto is
-  `down` for a flowchart (it reads down the page, as the template does) and for a graph of more than 150 nodes; any
+  `down` for a flowchart (it reads down the page) and for a graph of more than 150 nodes; any
   other flow is laid out both ways and keeps the one whose aspect is nearer a landscape page (3:2). A tree's auto is
   `down`, a hierarchy; `right` puts its roots at the left and each generation in a column to the right of the one
   before, every parent centred beside its own children, its angled lines bending across rather than down, and no
@@ -595,7 +595,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   arrowheads, since a tree shows belonging, unless an edge asks with `ends`; a graph node takes no `role`, since
   livehuddle has no person card), `mindmap`, livediagram's mind map, is refused naming the styles there are (livehuddle has no mind node, [Editor modes](../007-editor/editor-modes.md)), `lanes` a swimlane diagram (each group
   a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
-  wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
+  wide as the longest title needs up to the shared swimlane look's, the columns 48 px apart); the flow runs left to right across the lanes and
   a node outside every group gets an unnamed lane), `sequence` is refused as `mindmap` is (there is no sequence diagram), `storm` is not a style (livehuddle has no Event Storming board), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
   out alike; an edge between stops that are not ring neighbours, as a star's spokes are, goes round the outside of the
@@ -1007,7 +1007,7 @@ returns on success. A successful result carries that object twice: as
 prose, and serialised as the first text block, for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_document`, `create_document`, `add_tab`,
-`update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
+`update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise-inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
 and no `structuredContent`; MCP exempts errors from the output schema. Every mistake the caller can fix is
 such a result, never a thrown protocol error: the `registerTool` wrapper answers an api 4xx in words (by its

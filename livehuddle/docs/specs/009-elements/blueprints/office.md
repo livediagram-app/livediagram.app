@@ -52,7 +52,7 @@ Derived from [Office](../office.md).
   their `facing` (`MEETING_TABLE_VIEW.tableSeats` spreads them); `Canvas.onWalkIntoChair` sits with `seatFor`, which
   takes `seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(el)]`. `turnedSeatingBox` never turns a table.
 - **Drinks**: `arriveOn` calls `onWalkIntoDrink(el)` when `drinkFrom(el.shape)`. `Canvas` then calls
-  `avatar.giveDrink(kind)`, bumps `machineAnswer` for that element, and tracks the use. `giveDrink` sets
+  `avatar.giveDrink(kind)`, calls `answerMachine` (`lib/machine-answer.ts`) for that element, and tracks the use. `giveDrink` sets
   `holdingRef`, sets `drink = { kind, seq + 1 }` and publishes an idle snapshot; an effect keyed on `drink` puts
   it down after `DRINK_HOLD_MS` (publishing again). Leaving the mode clears it.
 - **The answer**: `MachineAnswer` animates three bubbles or drips with the Web Animations API on each bump, two

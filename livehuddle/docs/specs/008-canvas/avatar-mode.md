@@ -251,7 +251,7 @@ A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops th
 
 ## Entering on a pad
 
-An [Avatar Pad](../009-elements/avatar-pad.md) is the board's entrance. While the tab has one, every entry into the mode puts the character on it (the pad nearest the view's centre, if there are several), centres the view on it when it is off screen, and plays the arrival beam in the person's colour. Placing or moving a pad never moves a character already walking. The pure choice (`pickSpawnPad`, `padSpawnPoint`) lives in `../packages/avatar/src/pad.ts`; the arrivals (yours and peers', derived from presence) in `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`, drawn by `AvatarPadArrivals.tsx`.
+An [Avatar Pad](../009-elements/avatar-pad.md) is the board's entrance. While the tab has one, every entry into the mode puts the character on it (the pad nearest the view's centre, if there are several), centres the view on it when it is off screen, and plays the arrival beam in the person's colour. Placing or moving a pad never moves a character already walking. The pure choice (`pickSpawnPad`, `padEntry`) lives in `../packages/avatar/src/pad.ts`; the arrivals (yours and peers', derived from presence) in `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`, drawn by `AvatarPadArrivals.tsx`.
 
 ## Where the code lives
 

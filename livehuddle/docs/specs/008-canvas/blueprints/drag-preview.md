@@ -31,7 +31,7 @@ drags for collaborators.
 | --------------- | ------------------ | ------------------------------------------------------------------------------------------------------------- |
 | Preview         | `DragOverlay`      | `{ tabId, changed: Map<id, Element>, removed: Set<id>, added: { el, after: id \| null }[] }`                  |
 | Virtual tab     | `virtualTab(tab)`  | The active tab with the local overlay applied: what the drag logic reads mid-gesture                          |
-| Peer preview    | `PeerDragPreview`  | One peer's overlay: `{ presenceId, tabId, patches, at }`                                                      |
+| Peer preview    | `setPeerPreview`   | One peer's overlay, kept by presence id: `{ tabId, patches }`                                                 |
 | Patch           | `DragPreviewPatch` | `{ id }` plus the geometry a gesture changes (below)                                                          |
 | Affected arrows | `affectedArrows`   | Arrows previewed themselves, pinned to a changed element, or whose bounds meet a changed box's old or new box |
 | Ride            | `ridingElements`   | The elements the preview only translates, each with its `RideOffset` `{ dx, dy }`                             |
@@ -125,7 +125,7 @@ arrowLinks, stackedIds)`: a changed boxed element whose every field but `x` and 
   `[data-ride-id="<id>"]` node of each riding id and `''` on the nodes of ids no longer riding. It
   queries the root once per set of riding ids (and again when a node it holds is disconnected, as
   when React replaced it), and writes a node only when its offset changed. Tagged nodes:
-  `BoxedElementView`'s root, the arrow `<svg data-arrow-svg>`, `ElementGrips`' portalled box and
+  `BoxedElementView`'s root, the arrow `<svg data-arrow-svg>`, `BoxGripsPortal`'s portalled box and
   `ArrowGripsPortal`'s `<g>`. React never sets `translate`.
 - Dropping the offsets: when the preview ends, the store keeps them while the layer draws the same
   `drawnElements` they were written over; the layout effect of the render that draws another board
@@ -137,8 +137,8 @@ arrowLinks, stackedIds)`: a changed boxed element whose every field but `x` and 
 - The selection chrome derives the selection (bounds, union resize, quick-connect pluses) from
   `applyOverlay(elements, overlay)` while a preview lasts, so the union handles follow a
   multi-resize: `useCanvasSelectionView(input, tabId)` reads `usePreviewedElements` itself, so
-  `Canvas` does not render for a preview frame. `Canvas`'s `plusBlocked` reads the document's
-  elements; the pluses are hidden while a selection moves.
+  `Canvas` does not render for a preview frame. the selection's `showPlus` (`lib/canvas-selection.ts`)
+  hides the pluses while a selection moves.
 
 ### Live drags (part two)
 

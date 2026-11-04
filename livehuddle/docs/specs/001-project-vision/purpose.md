@@ -1,6 +1,6 @@
 # Purpose
 
-Status: **proposed**, awaiting the owner's approval (Work Tracker #99).
+Status: **built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190).
 
 livehuddle is a web app where teams **meet, run workshops and collaborate together, in one shared space, in real
 time**. Everyone in the meeting has a character on the board, walks to the room or the topic they are talking about,
@@ -14,15 +14,15 @@ rather than quietly describing a product that no longer exists.
 
 livediagram grew three things that are about people being together rather than about diagrams:
 
-- [Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md): a pixel character for everyone in the
+- [Avatar mode](../008-canvas/avatar-mode.md): a pixel character for everyone in the
   room, who walks, sits, talks in speech bubbles, waves and shows a status.
 - The **Navigate** elements: portals, chairs, desks, sofas, fences, Avatar Pads, link cards and the
-  [office pieces](../../../../livediagram/docs/specs/009-elements/office.md) (rooms, meeting tables, plants,
+  [office pieces](../009-elements/office.md) (rooms, meeting tables, plants,
   bookshelves, water coolers, coffee machines, rugs).
-- The **Spaces** templates ([Virtual Office and space templates](../../../../livediagram/docs/specs/012-collaboration/virtual-office-template.md)):
+- The **Spaces** templates ([Virtual Office and space templates](../012-collaboration/virtual-office-template.md)):
   Virtual Office, Coworking Space, Team Pod and All-Hands Hall.
 
-Around them sits [Workshop mode](../../../../livediagram/docs/specs/012-collaboration/workshop-mode.md), the kit that
+Around them sits [Workshop mode](../012-collaboration/workshop-mode.md), the kit that
 runs a session: timers, votes, polls, quizzes, Q&A, agendas, reveals, the facilitator baton and Bring Focus.
 
 In livediagram these are one mode among three, reached through a Selection Mode button on a board, and a person

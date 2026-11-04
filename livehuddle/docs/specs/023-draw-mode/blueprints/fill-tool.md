@@ -96,7 +96,7 @@ shows its hint (`toast.info`) and reports `FillMissed`; `canRecolour(el)` false 
 - `pickFill`: `setCanvasTool('select')`, `beginDraw({ type: 'fill', fill })`, telemetry.
 - `setFill(next)`: no-op for the same colour; stores it; re-arms the intent when the bucket is in
   hand; telemetry.
-- The intent is whiteboard-only (`isWhiteboardOnlyIntent`), so a diagram tab puts it down, and held
+- The intent is whiteboard-only (`isWhiteboardOnlyIntent`), so a board without the whiteboard tools puts it down, and held
   (`isHeldToolIntent`), so it shows no one-shot banner; it is not `isHeldPenIntent`, so the
   finger-pans rule does not apply to it.
 

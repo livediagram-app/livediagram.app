@@ -3,21 +3,21 @@
 Derived from [The badge](../badge.md) and [The step number](../step-number.md). Defaults in
 [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                                                                                      | Role                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/document/src/chip.ts`                                                                                           | `ChipLook`, `chipColours`, `badgeSize`, step numbering, `renumberSteps`  |
-| `packages/document/src/attachment.ts`                                                                                     | `AttachPoint`, `canHost`, `attachPointXY`, `settleChips`, `withAttached` |
-| `packages/document/src/shape-kind.ts`, `validate.ts`                                                                      | `'badge'`, `'step'`                                                      |
-| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                        | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                     |
-| `packages/document/src/shape-factory.ts`                                                                                  | Sizes and starting content                                               |
-| `packages/document/src/colors.ts`                                                                                         | Both in `SELF_PAINTING_SHAPES`                                           |
-| `packages/document/src/layers.ts`                                                                                         | `paintTier`: an attached chip paints in the top tier                     |
-| `packages/document/src/duplicate.ts`                                                                                      | `attachedTo` follows a copied host, else the copy is detached            |
-| `packages/document/src/svg-render-chip.ts`                                                                                | `svgChip`: the headless body                                             |
-| `apps/editor/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` at the commit choke point, after flowcharts    |
-| `apps/editor/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                     |
-| `apps/editor/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                        |
-| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached` beside `withSheetCharts`                                  |
+| File                                                                                                                      | Role                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/chip.ts`                                                                                           | `ChipLook`, `chipColours`, `badgeSize`, step numbering, `renumberSteps`                                                   |
+| `packages/document/src/attachment.ts`                                                                                     | `AttachPoint`, `canHost`, `attachPointXY`, `settleChips`, `withAttached`                                                  |
+| `packages/document/src/shape-kind.ts`, `validate.ts`                                                                      | `'badge'`, `'step'`                                                                                                       |
+| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                        | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                                                                      |
+| `packages/document/src/shape-factory.ts`                                                                                  | Sizes and starting content                                                                                                |
+| `packages/document/src/colors.ts`                                                                                         | Both in `SELF_PAINTING_SHAPES`                                                                                            |
+| `packages/document/src/layers.ts`                                                                                         | `paintTier`: an attached chip paints in the top tier                                                                      |
+| `packages/document/src/duplicate.ts`                                                                                      | `attachedTo` follows a copied host, else the copy is detached                                                             |
+| `packages/document/src/svg-render-chip.ts`                                                                                | `svgChip`: the headless body                                                                                              |
+| `apps/editor/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` (through `settleChipsInTabs`, `lib/settle-tabs.ts`) at the commit choke point, after flowcharts |
+| `apps/editor/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                                                                      |
+| `apps/editor/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                                                                         |
+| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached`                                                                                                            |
 
 ## Domain and naming
 
@@ -38,8 +38,8 @@ Banned: "pin" (the comment pin), "dock" (legacy docks), "group".
 ### Settling (`settleChips(prev, next)`)
 
 Runs at the editor's commit choke point for every tab a commit changed, in `element-normalise` for agent
-writes (with `prev = []`), and on the output of `buildTemplate` and `buildPageLayout` (with `prev = []` and
-`attachLoose: false`, as a stored board reads), so a template or layout lands settled in previews and agent creates. Returns `next` itself when nothing changes and when `next` holds no chip.
+writes (with `prev = []`), and on the output of `buildTemplate` (with `prev = []` and
+`attachLoose: false`, as a stored board reads), so a template lands settled in previews and agent creates. Returns `next` itself when nothing changes and when `next` holds no chip.
 
 For each chip in `next`, in order:
 
@@ -63,8 +63,7 @@ about the host's centre by `host.rotation` degrees.
 
 ### Carry and copies
 
-`withAttached(elements, ids)`: `ids` plus every chip attached to an element in `ids`. Composed beside
-`withSheetCharts` in the drag, nudge, copy and duplicate paths, so a host's chips move in its drag preview and copy
+`withAttached(elements, ids)`: `ids` plus every chip attached to an element in `ids`. Composed in the drag, nudge, copy and duplicate paths, so a host's chips move in its drag preview and copy
 with it. Deletion needs no path of its own (settling removes orphans of a deleted host).
 
 `duplicate.ts`: `attachedTo` maps to the host's copy when the host was copied; otherwise both fields are deleted.

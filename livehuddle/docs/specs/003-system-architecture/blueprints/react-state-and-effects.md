@@ -6,16 +6,16 @@ effect events, `useLatest`, the clocks) are enforced by the hooks lint and need 
 
 ## Domain and naming
 
-| Term                | Identifier                                          | Meaning                                                                 |
-| ------------------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
-| Browser-only render | `use(browser())`                                    | Suspends during the static prerender; never in the browser              |
-| Prerender fallback  | the nearest `<Suspense fallback>`                   | What the exported HTML holds where a browser-only component sits        |
-| Transition type     | `addTransitionType(type)`                           | Why a transition runs; a surface keys its View Transition classes by it |
-| Surface boundary    | `<ViewTransition default="none" update={…}>`        | The one place a surface's View Transition is declared                   |
-| Reduced motion      | `prefersReducedMotion()`                            | The OS setting or the in-app preference (`.reduce-motion` on `<html>`)  |
-| Asked-for state     | `asked` (a ref beside the handler)                  | What a handler last asked for while React holds its transition          |
-| Fragment ref        | `<Fragment ref>`, `FragmentInstance`                | A group handle on a component's children, with no wrapper node          |
-| Build year          | `process.env.NEXT_PUBLIC_BUILD_YEAR` (`BUILD_YEAR`) | The year the site was built, inlined at build time                      |
+| Term                | Identifier                                   | Meaning                                                                 |
+| ------------------- | -------------------------------------------- | ----------------------------------------------------------------------- |
+| Browser-only render | `use(browser())`                             | Suspends during the static prerender; never in the browser              |
+| Prerender fallback  | the nearest `<Suspense fallback>`            | What the exported HTML holds where a browser-only component sits        |
+| Transition type     | `addTransitionType(type)`                    | Why a transition runs; a surface keys its View Transition classes by it |
+| Surface boundary    | `<ViewTransition default="none" update={…}>` | The one place a surface's View Transition is declared                   |
+| Reduced motion      | `prefersReducedMotion()`                     | The OS setting or the in-app preference (`.reduce-motion` on `<html>`)  |
+| Asked-for state     | `asked` (a ref beside the handler)           | What a handler last asked for while React holds its transition          |
+| Fragment ref        | `<Fragment ref>`, `FragmentInstance`         | A group handle on a component's children, with no wrapper node          |
+| Build year          | `process.env.NEXT_PUBLIC_BUILD_YEAR`         | The year the site was built, inlined at build time                      |
 
 ## Behaviour and state
 
@@ -33,7 +33,7 @@ page) never suspends whole: its URL reads use an external store whose server sna
 | `CanvasThemeDialog` (`useBrushAnchor`)                                            | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
 | `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`         | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
 | `apps/editor/app/document/[id]/page.tsx`, `apps/editor/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
-| `CardFinderPanel` (`finePointer`)                                                 | `(pointer: fine)`                   | `useMediaQuery('(pointer: fine)')`                                                |
+| `apps/editor/components/start/StartPanel.tsx` (search focus)                      | `(pointer: fine)`                   | `window.matchMedia` in the mount effect that focuses the search box               |
 | `arrow-handles.tsx` (`COARSE_POINTER`)                                            | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
 | `EditorContextMenu` (`anchorBottom`)                                              | `innerHeight`                       | `useViewportHeight()`                                                             |
 | `StartAgainTray` (`pillPlace` default argument)                                   | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
@@ -87,7 +87,7 @@ export function ViewTransition(props: {
 
 - A `<Suspense>` placed for `use(browser())` takes a fallback with the final box's size and no text a screen reader
   would announce twice.
-- `BUILD_YEAR` is a four-digit string; read as `process.env.NEXT_PUBLIC_BUILD_YEAR ?? ''` so a test without it renders
+- `NEXT_PUBLIC_BUILD_YEAR` is a four-digit string; read as `process.env.NEXT_PUBLIC_BUILD_YEAR ?? ''` so a test without it renders
   no year rather than a wrong one.
 
 ## Errors and edge cases
@@ -131,7 +131,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Browser-only sites render in the browser | Each site's component test renders the browser value; a server render shows the fallback         |
 | No `typeof window` in render             | `apps/editor/render-browser-globals.test.ts`: `.tsx` and `use*.ts` guard only where allow-listed |
-| Footer year from the build               | `packages/ui` SiteFooter test renders `BUILD_YEAR`, and no year without it                       |
+| Footer year from the build               | `packages/ui` SiteFooter test renders `NEXT_PUBLIC_BUILD_YEAR`, and no year without it           |
 | Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
 | Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
 | Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`, `LayerRowMenu.test.tsx`: focus and anchor with no bare node             |
