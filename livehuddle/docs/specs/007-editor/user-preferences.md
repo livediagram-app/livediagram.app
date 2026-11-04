@@ -266,10 +266,8 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md). True once a run has ended
-  // (completed or skipped; written as a run starts too). While true the footer's Start Tour button
-  // does not offer the tour; Settings' Tours › "Workshop Tour" row (inverted) clears it, and turning
-  // it on and closing Settings reruns the tour when it could run. Missing / undefined === not seen.
+  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md). The tour left livehuddle
+  // (Work Tracker #423, part 3): the field is kept as stored data, never read or rewritten, with no migration.
   workshopTourSeen?: boolean;
   // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
@@ -719,8 +717,7 @@ and the dialog stays as the one complete, browsable index of them.
   PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
   meaning.
 
-  **Workshop Tour** is inverted against `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md))
-  and **Avatar Tour** against `avatarTourSeen` ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
+  **Avatar Tour** is inverted against `avatarTourSeen` ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with it turned on from off reruns it when it is on offer where you are. There is no Workshop Tour row: the tour left livehuddle ([Workshop tour](../012-collaboration/workshop-tour.md)).
 
   Below those tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built

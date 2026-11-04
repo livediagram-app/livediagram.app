@@ -1,7 +1,6 @@
 # Templates by mode
 
-Status: **approved, being built** (Work Tracker #423, part 3). Until part 3 lands the code still ships the thirty-nine
-templates livehuddle forked down to; the catalogue below is the target.
+Status: **shipped** (Work Tracker #423, part 3).
 
 Every template opens on a meeting board, livehuddle's one [editor mode](editor-modes.md)
 ([The meeting board](../012-collaboration/workshop-mode.md)). They wait on an empty tab in Start a Space
@@ -35,8 +34,8 @@ untitled.
   **All-Hands Hall** (`all-hands-hall`), in the one **Virtual Spaces** category ([Virtual Office
   template](../012-collaboration/virtual-office-template.md)).
 - Start a Space shows them as one group under Recommended, as every start does ([Start
-  diagramming](start-diagramming.md) "Recommended and groups"); with one category it has no rail of groups.
-- **Leaving** (part 3): the Retrospectives family (`retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`,
+  diagramming](start-diagramming.md) "Recommended and groups"); the rail holds Virtual Spaces and Recommended.
+- **Gone** (part 3): the Retrospectives family (`retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`,
   `sailboat`), `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, the
   dot-vote boards (`affinity-map`, `prioritization-matrix`, `risk-matrix`), the fill-in-together boards
   (`incident-postmortem`, `user-persona`, `empathy-map`, `journey`, `objectives-planner`, `roadmap`, `raci-matrix`,

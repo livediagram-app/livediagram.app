@@ -1,8 +1,8 @@
 # The meeting board (Workshop mode in the code)
 
-Status: **approved, being built** (Work Tracker #423, owner, 2026-11-04). Until its parts land, the code still offers
-all of livediagram's Workshop mode; [Not in livehuddle](../002-project-scope/not-in-livehuddle.md) lists what leaves
-and which part removes it.
+Status: **approved, being built** (Work Tracker #423, owner, 2026-11-04). Parts 2 and 3 are done: the palette,
+the Session strip, the templates and the help are the meeting board's. Part 4 deletes the leaving code
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
 Every tab of a Space is a **meeting board**: a floor to walk round, meet on and leave a few notes on. It is
 livehuddle's one [editor mode](../007-editor/editor-modes.md), stored as `'workshop'` because the code was forked from
@@ -78,15 +78,18 @@ The meeting palette is livehuddle's one palette, in order:
   website embeds.
 - **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Layout, Data, Components, Ask, Tools or Record. A connector or a flowchart shape is a diagram tool: livediagram's.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows
-  **Write, Frame · Navigate, React, Selection Mode · Icons, Stickers, Media**: no Popular, no Session category.
+  **Write, Frame · Navigate, React, Modes · Icons, Stickers, Media**: no Popular, no Session category. Selection
+  Mode reads **Modes** on the bar, since a bar name is one word (`barLabel`); its flyout and the palette keep the full
+  name. Navigate's flyout heads its two groups **Around the Space** (from Portal) and **Office Pieces** (from Room).
 - The Toolbar strip's **Search** finds only what the palette offers: an element livehuddle no longer offers is not
   placed from anywhere ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)).
 - A **Participant** gets sticky notes, text and an image, as before ([Share roles](#share-roles)).
 
 ## The Session strip
 
-`sessionStripTools(mode)` gives **Timer** and **Vote** on every tab ([Session tools](session-tools.md)). Poll leaves
-with the other Collaborate tools.
+`sessionStripTools(mode)` gives **Timer** and **Vote** on every tab ([Session tools](session-tools.md)). Poll left
+with the other Collaborate tools: its button shows only while a stored Poll card's poll is running, so whoever
+started it can end it, and offers no new poll.
 
 - The quick vote is the dot vote: dots on the sticky notes, images and link cards in a room, with
   [vote privacy](session-tools.md#vote-privacy) and [layer scope](vote-layer-scope.md) as they are.

@@ -28,6 +28,12 @@ flyout of its tiles:
 
 ## The category bar
 
+> **In livehuddle** (Work Tracker #423, part 3): the bar is the meeting palette's
+> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write, Frame · Navigate, React, Modes ·
+> Icons, Stickers, Media**. There is no Shapes, Draw, Layout, Ask, Session or Data button and no Session browse; the
+> bar's mechanics below (hover intent, the keyboard, the flyouts, names fit or go) are livehuddle's as written, and
+> the categories they name are livediagram's.
+
 The strip shows the palette's **categories** rather than one category's tiles, the way
 the Icons category always showed its groups: the strip is a short row of named places, and each holds its tiles in
 a flyout. Finding a tile is one look along the bar, not a trip through a picker, and the strip never changes width
@@ -140,6 +146,12 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 (`BrowseMemory`); a query is not kept.
 
 ## Search: every element type
+
+> **In livehuddle** (Work Tracker #423, part 3): Search finds only what the meeting palette offers, its element
+> tiles plus Icons and Stickers. There is no **Elsewhere** accordion, no search-only tile (`SEARCH_ONLY_TILE_IDS` is
+> empty) and no Draw markers: an element livehuddle no longer offers is placed from nowhere. The hover text reads
+> "Find any element in the palette by name. Shortcut: S." The `ToolbarSearchOtherModes` and
+> `ToolbarSearchUnavailable` events no longer fire. Everything else below holds.
 
 A strip shows one category at a time, so finding an element means knowing which category holds it.
 **Search** finds it by name instead, across every category.

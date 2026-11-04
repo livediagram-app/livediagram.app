@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 - ./blueprints/README.md - when implementing a collaboration spec from its blueprint
 - ./presentation-mode.md - (Gone from livehuddle, Work Tracker #423 part 2; the stored deck is kept) when working on Presentation mode: Full-screen slide deck of author-picked element sets, each slide from one tab, built and run from a Slide Deck panel
-- ./workshop-tour.md - (Leaving livehuddle, Work Tracker #423) when working on the Workshop tour: the optional guided tour on the footer's Start Workshop Tour button on any tab the person may edit
+- ./workshop-tour.md - (Gone from livehuddle, Work Tracker #423 part 3) when the Workshop tour or its stored `workshopTourSeen` comes up: what part 3 removed and kept
 - ./workshop-mode.md - when working on the meeting board (Workshop mode in the code): livehuddle's one editor mode, the meeting palette (light content, Navigate, Selection Mode), the Session strip's Timer and Vote, the five templates, and what left with Work Tracker #423
 - ./proximity-audio.md - when working on Proximity audio: hearing the characters near yours in a Space over Cloudflare Realtime, the talking equaliser above characters out of earshot, Join Audio, mute and the calls mint route
 - ./meeting-rooms-and-stage.md - when working on who hears whom beyond distance: Office rooms as calls (walls block sound), the Stage, raise hand, Do Not Disturb and who may take the stage

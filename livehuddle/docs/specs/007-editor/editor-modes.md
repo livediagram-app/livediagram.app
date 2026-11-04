@@ -76,8 +76,7 @@ pages livedesign's.
 ## The palette
 
 There is one palette layout, the meeting palette (`apps/editor/components/palette/palette-layouts.ts`,
-[The meeting board](../012-collaboration/workshop-mode.md#the-palette)); until part 3 of Work Tracker #423 the code
-still lays out Workshop's.
+[The meeting board](../012-collaboration/workshop-mode.md#the-palette)), since part 3 of Work Tracker #423.
 
 - **Identity is shared, arrangement is the layout's.** A category's glyph and its default label, blurb and band live
   in the category catalogue (`PALETTE_CATEGORIES`); a tile's identity in the tile catalogue (`PALETTE_TILES`).
@@ -85,8 +84,8 @@ still lays out Workshop's.
   id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
 - **Catalogue categories** (My shapes, Icons, Stickers) are bodies with their own content and take no tile list.
 - **Popular** is the landing category: Sticky note, Text, Frame, Image, Link card, then behind a divider (`DIVIDE`)
-  Room, Meeting Table, Chair, Bring Focus and Avatar Pad. The openers (`palette-openers`) leave with the Collaborate
-  categories they opened (part 3).
+  Room, Meeting Table, Chair, Bring Focus and Avatar Pad. No category holds an opener; the `palette-openers` module
+  waits, unused, for part 4 to delete it with the Collaborate code.
 - The tool a tab starts with is **Select**; on a phone **Hand**. An embedded viewer always starts on Hand.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))

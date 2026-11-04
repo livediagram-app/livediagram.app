@@ -1,8 +1,9 @@
 # Tours and the Start Tour button
 
 How every tour in the editor is offered and run: the footer's **Start Tour** button, the engine the tours share, how a
-step reads and moves, and the look. The tours themselves are the [Workshop tour](../012-collaboration/workshop-tour.md),
-the [Avatar tour](../008-canvas/avatar-tour.md), the [element tours](element-tours.md) and [Show Me](show-me.md).
+step reads and moves, and the look. The tours themselves are the [Avatar tour](../008-canvas/avatar-tour.md), the
+[element tours](element-tours.md) and [Show Me](show-me.md). The Workshop tour left livehuddle (Work Tracker #423,
+[Workshop tour](../012-collaboration/workshop-tour.md)).
 livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Diagram and Draw,
 [Editor modes](editor-modes.md)).
 
@@ -107,7 +108,7 @@ of their steps ask the person to try things.
 
 - **One engine, every tour.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
   Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared by the
-  [Workshop tour](../012-collaboration/workshop-tour.md), the avatar, element and Show Me tours;
+  avatar, element and Show Me tours;
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (a Show Me step's Mashup tile), and an anchorless card's `prepare` runs
   too. The last card's words (`TourCardCopy`) are a prop. The engine, the stage, the
