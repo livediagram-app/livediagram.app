@@ -24,7 +24,9 @@ export function ScreenShareBar() {
             <span className="absolute inset-0 rounded-full bg-rose-400 opacity-75 motion-safe:animate-ping" />
             <span className="relative size-2.5 rounded-full bg-rose-500" />
           </span>
-          <span className="truncate font-medium">You are sharing your screen</span>
+          {/* A phone has room for the short form beside Stop Sharing; the long one would cut off. */}
+          <span className="truncate font-medium phone:hidden">You are sharing your screen</span>
+          <span className="hidden truncate font-medium phone:inline">Sharing your screen</span>
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
