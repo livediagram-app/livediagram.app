@@ -107,4 +107,10 @@ describe('text-overflow', () => {
       of(lint(tabOf({ ...axis, rotation: 0 } as Element, label)), 'text-overflow'),
     ).toHaveLength(1);
   });
+
+  it('passes two texts on the same rows side by side', () => {
+    expect(
+      of(lint(tabOf(text('l', 0, 0, 'Left'), text('r', 400, 0, 'Right'))), 'text-overflow'),
+    ).toEqual([]);
+  });
 });
