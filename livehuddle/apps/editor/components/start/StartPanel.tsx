@@ -42,6 +42,7 @@ import {
   startPanelJustLeft,
 } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
+import { focusIsFree } from '@liveworkspace/workbench/lib/focus-is-free';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
@@ -115,10 +116,11 @@ export function StartPanel<C extends string>({
   const [query, setQuery] = useState(() => takeStartQuery());
   const rail = useRef<HTMLDivElement>(null);
   // Ready to type into on a desktop (a fine pointer), so a letter typed finds a card rather than a canvas shortcut; a
-  // phone's keyboard is not raised unasked.
+  // phone's keyboard is not raised unasked. Only while focus is free: the panel's code loads when it is first drawn,
+  // so on a busy machine it can arrive after a menu was opened from the keyboard, and it never takes focus from one.
   const searchInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (window.matchMedia?.('(pointer: fine)').matches)
+    if (window.matchMedia?.('(pointer: fine)').matches && focusIsFree())
       searchInput.current?.focus({ preventScroll: true });
   }, []);
   // On a phone the panel is a sheet risen from the bottom edge; one that can close drags down to close (Dialog's
