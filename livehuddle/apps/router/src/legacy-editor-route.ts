@@ -28,6 +28,7 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // tables, charts, code, components and embeds) left livehuddle too (Work Tracker #423 part 3): each lands on the
 // nearest article that stays (Session Tools, the Avatar Tour, Meeting Elements, Comments, Assigned Actions, Where each
 // tool lives, Frames, Write Elements, Images, Notes or Adding Elements), and the older names that led to them follow.
+// Auto Layout, which arranges shapes by their arrows, lands on Layout Cleanup (Work Tracker #494).
 // The Self-Hosting category was retired; its pages land on the help centre home (an empty target). The old addresses are
 // links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
@@ -144,6 +145,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'palette/tools/tables': 'palette/write',
   'canvas/annotations': 'canvas/notes',
   'getting-started/adding-shapes-and-arrows': 'canvas/the-canvas/adding-elements',
+  'tools/layout-cleanup/auto-layout': 'tools/layout-cleanup',
   'self-hosting': '',
   'self-hosting/self-hosting-overview': '',
   'self-hosting/deploying-livehuddle': '',

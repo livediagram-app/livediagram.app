@@ -946,41 +946,6 @@ export function ImportWarning() {
   );
 }
 
-/** Before/after cleanup: scattered shapes on the left, snapped into tidy rows and columns on the
- *  right. */
-export function CleanupBeforeAfter() {
-  return (
-    <Scene w={420} h={210}>
-      <Label x={14} y={22} size={10} weight={700} tone="muted">
-        BEFORE
-      </Label>
-      {/* Scattered, misaligned */}
-      <Shape x={20} y={40} w={56} h={30} kind="rect" />
-      <Shape x={108} y={64} w={56} h={30} kind="rect" />
-      <Shape x={44} y={104} w={56} h={30} kind="rect" />
-      <Shape x={128} y={132} w={56} h={30} kind="rect" />
-      <Arrow from={[76, 55]} to={[108, 75]} tone="muted" />
-      <Arrow from={[60, 70]} to={[60, 104]} tone="muted" />
-      <Arrow from={[142, 94]} to={[152, 132]} tone="muted" />
-
-      {/* Divider arrow */}
-      <Arrow from={[196, 105]} to={[226, 105]} kind="straight" />
-
-      <Label x={246} y={22} size={10} weight={700} tone="muted">
-        AFTER
-      </Label>
-      {/* Snapped to a tidy grid */}
-      <Shape x={250} y={48} w={56} h={30} kind="rect" accent />
-      <Shape x={332} y={48} w={56} h={30} kind="rect" accent />
-      <Shape x={250} y={120} w={56} h={30} kind="rect" accent />
-      <Shape x={332} y={120} w={56} h={30} kind="rect" accent />
-      <Arrow from={[306, 63]} to={[332, 63]} />
-      <Arrow from={[278, 78]} to={[278, 120]} />
-      <Arrow from={[360, 78]} to={[360, 120]} />
-    </Scene>
-  );
-}
-
 /** A locked tab: the padlock sits before its name in the tab bar. */
 export function LockedTab() {
   const barY = 78;

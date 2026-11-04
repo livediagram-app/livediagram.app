@@ -1,5 +1,5 @@
 // Tools-category illustrations (docs/specs/018-help/help-app.md): zen mode, light/dark
-// mode, Markdown import, and the two layout tidiers (Auto-Align, Auto Layout).
+// mode, Markdown import, and Layout Cleanup's Auto-Align.
 // Composed only from the shared primitives so the house style holds.
 
 import { useId } from 'react';
@@ -412,20 +412,33 @@ export function MarkdownToTree() {
 
 // --- Layout cleanup ---------------------------------------------------------
 
-/** Before/after for the layout tidiers: a scattered, mis-sized jumble of
- *  shapes tidied into a neat layout. */
+/** Before/after for Auto-align: a scattered, mis-sized handful of sticky notes snapped into neat rows on the grid. */
 export function CleanupBeforeAfter() {
+  // [x, y, w, h, fill] before, then the same notes after: sizes rounded to the grid, edges shared.
+  const before: [number, number, number, number, string][] = [
+    [26, 40, 58, 52, 'fill-amber-100'],
+    [96, 34, 64, 56, 'fill-emerald-100'],
+    [30, 112, 62, 50, 'fill-rose-100'],
+    [104, 118, 56, 58, 'fill-violet-100'],
+  ];
+  const after: [number, number, number, number, string][] = [
+    [246, 44, 60, 56, 'fill-amber-100'],
+    [326, 44, 60, 56, 'fill-emerald-100'],
+    [246, 120, 60, 56, 'fill-rose-100'],
+    [326, 120, 60, 56, 'fill-violet-100'],
+  ];
+  const note = ([x, y, w, h, fill]: [number, number, number, number, string], i: number) => (
+    <g key={i}>
+      {/* Square corners and no border, as a sticky draws by default. */}
+      <rect x={x} y={y} width={w} height={h} className={fill} />
+      <rect x={x} y={y} width={w} height={h} className="fill-slate-900/5" />
+      <TextBar x={x + 9} y={y + 16} w={w - 22} />
+      <TextBar x={x + 9} y={y + 28} w={w - 30} tone="faint" />
+    </g>
+  );
   return (
     <Scene w={420} h={220}>
-      {/* Messy, left */}
-      {/* The same four shapes and three arrows as the right, off-grid and mis-sized. */}
-      <Shape x={24} y={44} w={60} h={30} label="A" />
-      <Shape x={124} y={30} w={50} h={44} kind="circle" label="C" />
-      <Shape x={38} y={118} w={46} h={40} label="B" />
-      <Shape x={116} y={134} w={70} h={26} accent label="D" />
-      <Arrow from={[84, 57]} to={[124, 54]} tone="muted" />
-      <Arrow from={[58, 74]} to={[60, 118]} tone="muted" />
-      <Arrow from={[84, 142]} to={[116, 146]} tone="muted" />
+      {before.map(note)}
       {/* Divider */}
       <line
         x1={210}
@@ -436,14 +449,7 @@ export function CleanupBeforeAfter() {
         strokeWidth={1.5}
         strokeDasharray="4 4"
       />
-      {/* Tidied, right */}
-      <Shape x={252} y={48} w={64} h={36} label="A" />
-      <Shape x={252} y={110} w={64} h={36} label="B" />
-      <Shape x={352} y={46} w={40} h={40} kind="circle" label="C" />
-      <Shape x={340} y={110} w={64} h={36} accent label="D" />
-      <Arrow from={[316, 66]} to={[352, 66]} />
-      <Arrow from={[316, 128]} to={[340, 128]} />
-      <Arrow from={[284, 84]} to={[284, 110]} />
+      {after.map(note)}
     </Scene>
   );
 }
@@ -481,56 +487,6 @@ export function AutoAlignGrid() {
       {/* Snapped: corners on the grid, sides on grid lines. */}
       <Shape x={80} y={64} w={80} h={42} accent label="A" />
       <Shape x={240} y={128} w={80} h={42} accent label="B" />
-    </Scene>
-  );
-}
-
-/** Auto Layout: a scattered arrow graph relaid into clean left-to-right ranks, shown
- *  before/after with the command's name. */
-export function AutoLayoutTidy() {
-  return (
-    <Scene w={420} h={230}>
-      {/* Tangled, left */}
-      <Shape x={28} y={40} w={50} h={28} label="1" />
-      <Shape x={118} y={90} w={50} h={28} label="2" />
-      <Shape x={36} y={150} w={50} h={28} label="3" />
-      <Shape x={132} y={32} w={50} h={28} label="4" />
-      {/* The same three arrows as the right (1 to 4, 1 to 2, 2 to 3), scattered. */}
-      <Arrow from={[78, 52]} to={[132, 46]} tone="muted" />
-      <Arrow from={[64, 68]} to={[126, 90]} tone="muted" />
-      <Arrow from={[124, 118]} to={[80, 150]} tone="muted" />
-      {/* Auto Layout arrow */}
-      <g transform="translate(196 108)">
-        <rect
-          x={0}
-          y={-12}
-          width={28}
-          height={24}
-          rx={7}
-          className="fill-brand-500 stroke-brand-600"
-          strokeWidth={1.5}
-        />
-        <path
-          d="M8 0 h12 M15 -5 l5 5 l-5 5"
-          className="stroke-white"
-          strokeWidth={2}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
-      <Label x={210} y={86} size={9} weight={700} anchor="middle" tone="accent">
-        Auto Layout
-      </Label>
-      {/* Laid out in layers, right */}
-      {/* Ranks run left to right, the way the shapes were spread: 1, then its children 4 and 2, then 3. */}
-      <Shape x={244} y={100} w={44} h={30} label="1" />
-      <Shape x={312} y={60} w={44} h={30} label="4" />
-      <Shape x={312} y={140} w={44} h={30} accent label="2" />
-      <Shape x={372} y={140} w={44} h={30} label="3" />
-      <Arrow from={[288, 115]} to={[312, 75]} kind="elbow" />
-      <Arrow from={[288, 115]} to={[312, 155]} kind="elbow" />
-      <Arrow from={[356, 155]} to={[372, 155]} />
     </Scene>
   );
 }
