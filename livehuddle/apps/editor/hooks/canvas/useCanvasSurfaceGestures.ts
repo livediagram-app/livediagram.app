@@ -254,6 +254,9 @@ export function useCanvasSurfaceGestures({
     // on ANY button, so we swallow the secondary button too. Middle-mouse
     // (pan) and held-Space (temporary pan) fall through untouched.
     if (canvasTool === 'avatar' && !spaceHeldRef.current && e.button !== 1) {
+      // A talker's bars are a button of their own (docs/specs/012-collaboration/proximity-audio.md): its press walks
+      // over, so it is not a walk to the spot under it.
+      if (e.target instanceof Element && e.target.closest('[data-talking-bars]')) return;
       focusCanvas();
       e.preventDefault();
       e.stopPropagation();

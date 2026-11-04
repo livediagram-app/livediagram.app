@@ -148,6 +148,8 @@ export function EditorCanvasHost() {
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
+    broadcastCallSignal,
+    callsRoom,
     avatarShove,
     walkIn,
     fireReaction,
@@ -562,6 +564,8 @@ export function EditorCanvasHost() {
             // shoves it; their own client decides what to do with the request.
             onAvatarPush={broadcastAvatarPush}
             onAvatarSay={broadcastAvatarSay}
+            // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): only with a room to talk in.
+            onCallSignal={callsRoom ? broadcastCallSignal : undefined}
             avatarShove={avatarShove}
             walkIn={walkIn}
             onFireReaction={can.takePart ? fireReaction : undefined}

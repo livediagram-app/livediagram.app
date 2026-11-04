@@ -69,6 +69,7 @@ earshot, from the positions the room already shares in the `avatar` op:
   - **Muted** (a struck-through microphone).
   - **Mic Blocked** (amber): the browser refused the microphone; the hover card says how to allow it. You still hear
     everyone.
+  - **Mic Off**: nobody else is on your tab, so the microphone is closed until somebody arrives.
 - The hover card names the state in words; the button's label is the action it takes.
 
 ## The talking equaliser

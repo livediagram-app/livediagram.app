@@ -113,6 +113,11 @@ held frames for one step. The editor's store is memory only and empties on leavi
   room of more than 10 it adds bytes to frames the walkers already cause, never frames. Bound: 4 per second per
   speaker. The room test walks and talks 100 people and holds frames per socket at one a step and the room's CPU
   under its budget; the probe (`apps/api/scripts/avatar-fanout-probe`, `PROBE_TALK=1`) measures it on workerd.
+  Measured 2026-11-04 (a shared machine at a load of about 22 on 10 cores, so CPU is noisy): 100 walkers, 1,009
+  frames a second silent and 879 all talking, 29.9 and 30.2 MB/s, room CPU 56% and 53%; 32 walkers, 559 and 439
+  frames a second, 5.2 and 4.4 MB/s, 32% and 29%. Talking adds no frames.
+- `SfuSession.want` runs on every step anyone walks and returns at once while the subscribed set is the wanted one;
+  a locator Realtime refuses is never asked for again in a loop.
 - The hearing check runs on each change of `remoteAvatars` (at most once a frame), linear in walkers.
 - Bars animate in CSS from a level custom property; a level change re-renders one bar group.
 - The calls code loads only when someone presses Join Audio (`loadProximityCall`), so the canvas chunk gains only the
@@ -123,8 +128,11 @@ held frames for one step. The editor's store is memory only and empties on leavi
 - The cluster control, beside Avatar: **Join Audio** (headphones; Viewer: **Listen In**), then a strip of
   **Mute**/**Unmute** (mic, struck mic when muted, amber struck mic when blocked) with the indicator, and
   **Leave Audio** (headphones struck). Named beside the icon on a wide desktop, icon alone narrower.
-- Bars: three 3 px rounded bars, 2 px apart, 12 px tall at most, the speaker's colour, 6 px above the name chip;
-  drawn at reading size whatever the zoom.
+- Bars: three 3 px rounded bars, 2 px apart, 12 px tall at most, the speaker's colour, 6 px above the name chip
+  (`components/calls/TalkingBars.tsx`). They live in the canvas layer and zoom with the characters and their chips,
+  and slide with a walking character's glide (`avatarGlides`), landing at once on a jump.
+- The microphone's resting state when nobody else is on the tab reads **Mic Off** ("it opens when somebody
+  arrives"); a Viewer's reads **Listening**.
 
 ## Accessibility
 
@@ -151,6 +159,10 @@ token. The editor logs through `debugLog('calls', …)`.
 | Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`              |
 | Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`                |
 | A vote no longer hides characters                             | `apps/editor/app/document/[id]/usePresenceRows.test.tsx` |
+| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`           |
+| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`              |
+| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`        |
+| A vote keeps sending characters, speech and audio             | `apps/editor/hooks/collab/useEditorBroadcast.test.tsx`   |
 
 ## Constants and configuration
 

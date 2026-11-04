@@ -82,6 +82,8 @@ import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/u
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
+import { TalkingBars } from '@/components/calls/TalkingBars';
+import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 
@@ -297,6 +299,13 @@ function CanvasView(props: CanvasProps) {
     viewportZoom,
     setViewportOffset,
     readZoom,
+  });
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): the call and its equaliser.
+  const call = useCanvasCall({
+    props,
+    canvasTool,
+    avatar,
+    avatarScale: avatarScale(avatarLook.config.size),
   });
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
@@ -713,6 +722,8 @@ function CanvasView(props: CanvasProps) {
                 onStand={avatar.standUp}
               />
             ) : null}
+            {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
+            <TalkingBars {...call.bars} />
             {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
             <AvatarPadArrivals arrivals={padArrivals} />
             {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your

@@ -58,6 +58,9 @@ type PresenceRowsDeps = {
   // useEditorBroadcast applies the matching gate on the outbound side.
   // Presenting sets it too, inbound only (docs/specs/012-collaboration/presentation-mode.md).
   cursorsHidden: boolean;
+  // Peers' characters are withheld only while presenting: a hide-cursors vote hides cursors alone
+  // (docs/specs/008-canvas/avatar-mode.md "Realtime"), so a room keeps walking and talking through it.
+  avatarsHidden: boolean;
 };
 
 export function usePresenceRows(deps: PresenceRowsDeps) {
@@ -80,6 +83,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     // from state so our trail never lags a change we just made.
     selfLaserConfig,
     cursorsHidden,
+    avatarsHidden,
   } = deps;
 
   // Per-element remote-selection map. Looks up each participant id
@@ -178,16 +182,15 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       selfLaserConfig,
     ],
   );
-  // Peer characters for the avatar layer (docs/specs/008-canvas/avatar-mode.md). Gated by the same
-  // hide-cursors vote as cursors: a walking character is a position on the
-  // canvas, so withholding cursors while showing avatars would leak exactly
-  // what the vote hides.
+  // Peer characters for the avatar layer (docs/specs/008-canvas/avatar-mode.md). Not gated by the hide-cursors vote
+  // (owner, 2026-11-03): it hides cursors only, so characters, their bubbles and proximity audio carry on through
+  // it. A presenter still sees nobody else's.
   const remoteAvatarRows = useMemo(
     () =>
-      cursorsHidden
+      avatarsHidden
         ? []
         : buildRemoteAvatarRows(remoteAvatars, livePresenceById, selfParticipant.id, activeId),
-    [cursorsHidden, remoteAvatars, livePresenceById, selfParticipant.id, activeId],
+    [avatarsHidden, remoteAvatars, livePresenceById, selfParticipant.id, activeId],
   );
   const remoteSelectionsByElement = useMemo(
     () =>
