@@ -273,13 +273,28 @@ export function optionsFromValues(
 // The cards a type's field is on: the type's own and those of the types inheriting the field from it.
 export type FieldCards = { field: string; typeIds: ReadonlySet<string> };
 
-/** Each value a field holds on the plan's cards, in the plan's order. */
-export function* fieldValues(items: Iterable<Item>, on: FieldCards): Generator<ItemFieldValue> {
+// How a stored value reads as its shape holds it: a built-in's own (a Priority's id read as its name,
+// built-in-field-retype.ts); a custom field's as stored.
+export type ValueReader = (raw: ItemFieldValue | undefined) => ItemFieldValue | undefined;
+
+/** Each value a field holds on the plan's cards, in the plan's order (each read by `read`, when given). */
+export function* fieldValues(
+  items: Iterable<Item>,
+  on: FieldCards,
+  read?: ValueReader,
+): Generator<ItemFieldValue> {
   for (const item of items) {
     if (!on.typeIds.has(item.type)) continue;
-    const v = item.fields[on.field];
+    const v = read ? read(item.fields[on.field]) : item.fields[on.field];
     if (holdsValue(v)) yield v!;
   }
+}
+
+// A built-in field becoming a custom one (built-in-field-retype.ts): its values move to `into` (a new field id), each
+// read by `read` first, and leave the built-in's key.
+export interface ValueMove {
+  into: string;
+  read?: ValueReader;
 }
 
 export interface KindChangeOutcome {
@@ -302,14 +317,18 @@ export function fieldKindChange(
   items: Iterable<Item>,
   on: FieldCards,
   ctx: KindChangeContext = {},
+  move?: ValueMove,
 ): KindChangeOutcome {
   const out: KindChangeOutcome = { held: 0, trimmed: 0, cleared: 0, patches: [] };
   const rich = richFieldOf(on.field);
   const dropRich = from.kind === 'longtext' && to.kind !== 'longtext';
   const seen = new Map<string, ValueChange>();
+  // Moving: every value held leaves the old key, and what is kept lands under `into`.
+  const into = move?.into ?? on.field;
+  const leave = move ? [on.field] : [];
   for (const item of items) {
     if (!on.typeIds.has(item.type)) continue;
-    const value = item.fields[on.field];
+    const value = move?.read ? move.read(item.fields[on.field]) : item.fields[on.field];
     const hasRich = dropRich && item.fields[rich] !== undefined;
     if (!holdsValue(value)) {
       if (hasRich) out.patches.push({ id: item.id, patch: { clear: [rich] } });
@@ -327,17 +346,18 @@ export function fieldKindChange(
       made.kind === 'rewritten' && JSON.stringify(made.value) === JSON.stringify(value)
         ? KEPT
         : made;
-    const clear = hasRich ? [rich] : [];
+    const clear = [...leave, ...(hasRich ? [rich] : [])];
     if (change.kind === 'kept') {
-      if (clear.length) out.patches.push({ id: item.id, patch: { clear } });
+      if (move) out.patches.push({ id: item.id, patch: { set: { [into]: value! }, clear } });
+      else if (clear.length) out.patches.push({ id: item.id, patch: { clear } });
     } else if (change.kind === 'cleared') {
       out.cleared += 1;
-      out.patches.push({ id: item.id, patch: { clear: [on.field, ...clear] } });
+      out.patches.push({ id: item.id, patch: { clear: move ? clear : [on.field, ...clear] } });
     } else {
       if (change.trimmed) out.trimmed += 1;
       out.patches.push({
         id: item.id,
-        patch: { set: { [on.field]: change.value }, ...(clear.length ? { clear } : {}) },
+        patch: { set: { [into]: change.value }, ...(clear.length ? { clear } : {}) },
       });
     }
   }

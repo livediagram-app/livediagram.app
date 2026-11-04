@@ -1,6 +1,7 @@
 // Plan views (docs/specs/026-plan/plan-views.md): the view kinds a 'plan-view' element shows, the size each
 // starts at, and what every view reads: the project's live cards and the phase each status sits in. Pure;
 // the charts' own models are plan-view-gantt.ts and plan-view-charts.ts.
+import { builtInFieldLabel } from './built-in-field-labels';
 import type { Item } from './item';
 import { itemStatus } from './item';
 import type { BoardWidgetKind } from './board-widgets';
@@ -241,7 +242,9 @@ export function breakdownTitle(
   const name =
     grouping.by === 'field'
       ? (laneFieldOf(grouping.field, types)?.label ?? 'Field')
-      : (GROUPING_NAMES[grouping.by] ?? 'Field');
+      : grouping.by === 'assignee' || grouping.by === 'priority'
+        ? builtInFieldLabel(grouping.by, types, GROUPING_NAMES[grouping.by])
+        : (GROUPING_NAMES[grouping.by] ?? 'Field');
   return `Cards by ${name}`;
 }
 

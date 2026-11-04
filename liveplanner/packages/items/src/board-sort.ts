@@ -1,6 +1,7 @@
 // Sort Cards (docs/specs/026-plan/plan-board.md "The board set-up"): a board orders each column's cards by up to two
 // fields, then by rank. Pure: the board's projection runs it, the menu lists what it can sort by, and the agents'
 // listing orders a column's cards the same way.
+import { builtInFieldLabel } from './built-in-field-labels';
 import type { Item } from './item';
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
 import { calculatedResultOf, hasResult } from './calculated-result';
@@ -90,6 +91,10 @@ const BUILT_IN_SORT_FIELDS: Readonly<Record<BuiltInSortField, BoardSortField>> =
   updatedAt: { id: 'updatedAt', label: STAMP_FIELD_LABELS.updatedAt, kind: 'date' },
 };
 
+// A built-in sort field named as the board's types name it (a stamp keeps its own name).
+const namedIn = (f: BoardSortField, types: readonly ItemTypeDef[]): BoardSortField =>
+  isStampField(f.id) ? f : { ...f, label: builtInFieldLabel(f.id, types, f.label) };
+
 const isBuiltIn = (field: string): field is BuiltInSortField =>
   (BOARD_SORT_BUILT_INS as readonly string[]).includes(field);
 
@@ -99,7 +104,7 @@ export function boardSortFieldsOf(types: readonly ItemTypeDef[]): BoardSortField
   const out: BoardSortField[] = BOARD_SORT_BUILT_INS.filter(
     // The stamps with any type at all: every type offers them.
     (f) => (isStampField(f) ? types.length > 0 : types.some((t) => t.fields.includes(f))),
-  ).map((f) => BUILT_IN_SORT_FIELDS[f]);
+  ).map((f) => namedIn(BUILT_IN_SORT_FIELDS[f], types));
   for (const t of types)
     for (const c of t.custom ?? []) {
       const kind = BOARD_SORT_KINDS.includes(c.kind) ? sortKindOf(c.kind) : formulaSortKind(c);
@@ -116,7 +121,7 @@ export function boardSortFieldOf(
   id: string,
   types: readonly ItemTypeDef[],
 ): BoardSortField | undefined {
-  if (isBuiltIn(id)) return BUILT_IN_SORT_FIELDS[id];
+  if (isBuiltIn(id)) return namedIn(BUILT_IN_SORT_FIELDS[id], types);
   for (const t of types) {
     const c = customFieldOf(t, id);
     if (c && BOARD_SORT_KINDS.includes(c.kind))

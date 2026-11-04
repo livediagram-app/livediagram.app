@@ -2,6 +2,7 @@
 // The board stores only its set-up; what it shows is computed here from the
 // item store, so every board (and the api's tab scoping) reads items the same way.
 
+import { builtInFieldLabel } from './built-in-field-labels';
 import { itemColourOf } from './item-colour';
 import { ITEM_TYPE_PATTERN } from './limits';
 import { readBoardWidgets, type BoardWidgetId } from './board-widgets';
@@ -294,6 +295,7 @@ const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
   { id: 'start', label: 'Start Date', kind: 'date' },
   { id: 'due', label: 'Due Date', kind: 'date' },
 ];
+const BUILT_IN_LANE_IDS: ReadonlySet<string> = new Set(BUILT_IN_LANE_FIELDS.map((f) => f.id));
 // The four stamps every type offers (docs/specs/026-plan/items.md "Created and Last Edited").
 const STAMP_LANE_FIELDS: readonly LaneField[] = STAMP_FIELDS.map((id) => ({
   id,
@@ -335,14 +337,17 @@ export function laneFieldsOf(types: readonly ItemTypeDef[], withMulti = false): 
   return everyLaneField(types, withMulti).filter((f) =>
     f.readOnly
       ? types.length > 0
-      : !BUILT_IN_LANE_FIELDS.includes(f) || types.some((t) => t.fields.includes(f.id)),
+      : !BUILT_IN_LANE_IDS.has(f.id) || types.some((t) => t.fields.includes(f.id)),
   );
 }
 
 // Every field a board could lane by, offered or not: what a board already laned by a field looks it up in. The
 // stamps come after the built-ins, before the custom fields.
 function everyLaneField(types: readonly ItemTypeDef[], withMulti = false): LaneField[] {
-  const out: LaneField[] = [...BUILT_IN_LANE_FIELDS, ...STAMP_LANE_FIELDS];
+  const out: LaneField[] = [
+    ...BUILT_IN_LANE_FIELDS.map((f) => ({ ...f, label: builtInFieldLabel(f.id, types, f.label) })),
+    ...STAMP_LANE_FIELDS,
+  ];
   for (const t of types)
     for (const c of t.custom ?? []) {
       if (withMulti && c.kind === 'multichoice' && t.fields.includes(c.id)) {

@@ -2,6 +2,7 @@
 // "Cards by Field"): the date fields a Gantt chart and the calendars read, and the number Cards by Field adds up.
 // Each reads the built-in field until the view picks another of its kind; a picked field no type offers any more
 // reads as the built-in again. Pure.
+import { builtInFieldLabel } from './built-in-field-labels';
 import type { Item } from './item';
 import type { CustomFieldDef, ItemTypeDef } from './item-types';
 
@@ -75,7 +76,8 @@ export function viewDateOptions(
   types: readonly ItemTypeDef[],
   role: 'start' | 'due',
 ): ViewFieldOption[] {
-  const builtIn = BUILT_IN_DATE_OPTIONS[role];
+  const own = BUILT_IN_DATE_OPTIONS[role];
+  const builtIn = { ...own, label: builtInFieldLabel(own.id, types, own.label) };
   const custom = customDefsOf(types, DATE_KINDS).map((c) => ({ id: c.id, label: c.label }));
   return [...(offers(types, builtIn.id) ? [builtIn] : []), ...custom];
 }
@@ -100,7 +102,9 @@ export function viewDatesOf(
 // What Cards by Field can add up: Estimate (when a type offers it), then every custom Number field.
 export function viewMeasureOptions(types: readonly ItemTypeDef[]): ViewFieldOption[] {
   return [
-    ...(offers(types, 'estimate') ? [{ id: 'estimate', label: 'Estimate' }] : []),
+    ...(offers(types, 'estimate')
+      ? [{ id: 'estimate', label: builtInFieldLabel('estimate', types, 'Estimate') }]
+      : []),
     ...customOfKind(types, 'number'),
   ];
 }
@@ -134,7 +138,7 @@ export function measureCountLabel(total: number, measure: ViewFieldOption): stri
 
 // A date field's short name, as an announcement says it ("its Start too", "its Kickoff too").
 export function viewDateName(types: readonly ItemTypeDef[], id: string): string {
-  if (id === BUILT_IN_DATES.start) return 'Start';
-  if (id === BUILT_IN_DATES.due) return 'Due';
+  if (id === BUILT_IN_DATES.start) return builtInFieldLabel(id, types, 'Start');
+  if (id === BUILT_IN_DATES.due) return builtInFieldLabel(id, types, 'Due');
   return customDefsOf(types, DATE_KINDS).find((o) => o.id === id)?.label ?? 'date';
 }

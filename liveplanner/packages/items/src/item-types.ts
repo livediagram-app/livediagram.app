@@ -265,6 +265,9 @@ export interface ItemTypeDef {
   display?: Partial<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>>;
   // The Assignee does not tell its person (docs/specs/026-plan/item-types.md "Notifies"). Kept only as false.
   assigneeNotifies?: boolean;
+  // Its own names for built-in fields (docs/specs/026-plan/item-types.md "Edit Field": Built-in fields), by built-in
+  // field id, read through typeFieldLabel and builtInFieldLabel (built-in-field-labels.ts); absent is their own.
+  fieldLabels?: Partial<Record<ItemFieldId, string>>;
   // The custom Colour field its cards take their colour from ("Fields by role"); absent is the built-in Colour.
   colourField?: string;
   // The base type it inherits from, by id (docs/specs/026-plan/item-types.md "Inherited types"; type-inheritance.ts):
