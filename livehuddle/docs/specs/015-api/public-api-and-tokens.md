@@ -169,7 +169,7 @@ source changes.
 ### 3.4 Access: full read + write, with an optional read-only flag
 
 > **Status: Planned.** Not built yet; today a token carries the read-only flag described below. The plan: the
-> read-only flag becomes a token level (view, participate or edit), one vocabulary with share links ([Share roles](../013-workspace/share-roles.md#later)). Read-only tokens become view tokens; the
+> read-only flag becomes a token level (view, participate or edit), one vocabulary with share links ([Share roles](../013-workspace/share-roles.md), and livediagram's [Later](../../../../livediagram/docs/specs/013-workspace/share-roles.md#later), which both products share). Read-only tokens become view tokens; the
 > rest become edit tokens.
 
 A token grants its owner's **full** access: read AND write, the same surface
@@ -467,7 +467,7 @@ hardening landed first:
    UI ([§3.6](#36-management-the-settings-dialogs-api-tokens-category)); it
    replaced the original Explorer "API tokens" page ([§3.7](#37-without-optional-services)).
 5. ✅ Wire token resolution into `resolveOwner`; enforce the read-only flag
-   ([§3.4](#34-access--full-read--write-with-an-optional-read-only-flag)).
+   ([§3.4](#34-access-full-read--write-with-an-optional-read-only-flag)).
 6. ✅ **Docs + help, shipped WITH the feature** (help articles describe live
    features and must be registered; see the help-centre rule in `AGENTS.md`,
    so this copy lands when the feature does, not before):
@@ -492,7 +492,7 @@ hardening landed first:
 Finer-grained scopes (per-document / per-folder grants, per-verb permissions)
 and any billing or quota tiers (the product has no paid tier:
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope that DID land is
-the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
+the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 OAuth / third-party app authorization landed in [MCP server](mcp-server.md).)
 Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.

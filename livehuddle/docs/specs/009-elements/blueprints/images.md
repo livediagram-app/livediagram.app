@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/api/src/thumbnail.ts`                             | `loadEmbeddedImages` for the drawing the export door gives the previews |
 | `apps/api/wrangler.toml`                                | `MEDIA_KEY` note (no bucket of its own)                                 |
 | `apps/api/hosted-vars.json`                             | Hosted livehuddle.app's `MEDIA_URL` per environment                     |
-| `apps/editor/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
+| `apps/editor/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, …                  |
 | `apps/editor/lib/upload-image.ts`                       | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
 | `apps/editor/hooks/canvas/useEditorImages.ts`           | Picker state, attach, detach, place-from-gallery                        |
 | `apps/editor/hooks/canvas/useClipboard.ts`              | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
@@ -207,8 +207,7 @@ A null or `data:` id references nothing.
   (401) or failing (5xx) answers the same 503.
 - The editor withholds `onAddImage` when the deployment has no images, which hides every
   `needsImage` tile (`tools:image`, avatar, hero) and the `9` shortcut. It learns this from
-  `GET /api/capabilities` through the proposed field `imagesEnabled` `[QB1]`; the endpoint
-  reports only `emailEnabled`.
+  `apiListImages` answering `null` (the 503); `GET /api/capabilities` reports only `emailEnabled`.
 
 ## Interfaces and contracts
 
@@ -305,8 +304,8 @@ hex), `X-Image-Width`, `X-Image-Height`, `X-Image-Original-Name` (optional).
 Client mapping (`UPLOAD_ERROR_MESSAGES`): `gallery_full`, `unsupported_type`, `file_too_large`,
 `images_unavailable` map to fixed copy; `payload_too_large`, `malformed_jpeg` and
 `upload_conflict` show the raw `ApiError` message (GB6). The import pipeline maps the same
-tokens separately through `failureFromUploadError` (GB6). `apiListImages` and `apiImageUsage`
-read a 503 as `null` and `{}`.
+tokens separately through `failureFromUploadError` (GB6). `apiListImages`
+reads a 503 as `null`.
 
 ## Data and persistence
 

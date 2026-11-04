@@ -3,6 +3,7 @@ import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
   earliestRoomGrantDue,
+  openRoomSockets,
   ItemDb,
   nextFlushAt,
   type ItemHeadSync,
@@ -772,11 +773,11 @@ export class DocumentRoom extends DurableObject<Env> {
     let closed = 0;
     for (const code of codes) {
       const op = { kind: reason === 'rescoped' ? 'share-rescoped' : 'share-revoked', code };
-      const before = this.state.getWebSockets().length;
+      const before = openRoomSockets(this.state.getWebSockets()).length;
       this.broadcastSystemOp(op);
       this.closeSessionsOfChangedLink(op);
       await this.clearAgentsFor(op);
-      closed += before - this.state.getWebSockets().length;
+      closed += before - openRoomSockets(this.state.getWebSockets()).length;
     }
     return closed;
   }
@@ -928,7 +929,7 @@ export class DocumentRoom extends DurableObject<Env> {
 
   private nextGrantDue(): number | null {
     return earliestRoomGrantDue(
-      this.state.getWebSockets().map((ws) => this.readSession(ws)),
+      openRoomSockets(this.state.getWebSockets()).map((ws) => this.readSession(ws)),
       ROOM_GRANT_ASK_BEFORE_MS,
     );
   }
@@ -936,7 +937,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // Ask the sessions whose grant is about to lapse, and close those whose grant has.
   private checkGrants(now: number): void {
     let lapsed = 0;
-    for (const ws of this.state.getWebSockets()) {
+    for (const ws of openRoomSockets(this.state.getWebSockets())) {
       const s = this.readSession(ws);
       const step = roomGrantStep(s, now, ROOM_GRANT_ASK_BEFORE_MS);
       if (step === 'lapsed') {

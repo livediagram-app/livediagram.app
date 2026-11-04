@@ -42,7 +42,7 @@ Scope, by file:
 - `straight`, or `curved` without `curvePoints`: `bow`. `t` = the grab's projection parameter on
   the chord (straight) or the nearest of 64 samples of the quadratic (curved).
 - `curved` with `curvePoints`: `insert` at the index of the nearest segment of
-  `[from, ...anchors, to]`, the rule `addCurvePoint` used.
+  `[from, ...anchors, to]`.
 - `angled`: `slide` of the nearest segment of `arrowPathPolyline`; its unit direction is stored.
 
 **Apply** (`applyArrowBend(plan, delta)`), pure, from the start snapshot:

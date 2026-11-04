@@ -355,7 +355,9 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
   editor answers `{kind: "grant", grant}` with a fresh one. A fresh grant saying the same moves the lapse
   on; one with another level or tab closes the socket (4005) so it reconnects as what it now is; none in
-  time closes it (4007). Revoking a link closes the sockets that link admitted.
+  time closes it (4007). Revoking a link closes the sockets that link admitted. Only open sockets count: one the
+  room has closed can stay listed until its peer answers the close (a laptop asleep never does), and it has nothing
+  left to ask or lapse, so it never sets the room's alarm.
 
 ### An item's tabs
 

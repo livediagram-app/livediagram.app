@@ -12,7 +12,7 @@ animation it used to share with the cut kinds are its own:
   "Milestone n" (the when placeholder "When", `noteNoun`). `CONCEPT_LABEL_MAX` 60, `CONCEPT_NOTE_MAX` 40.
   `withWebRows(el, { conceptRows })` (`packages/document/src/web-components.ts`) trims and collapses each string,
   slices the array to the max and ignores a write below the min. An empty note stores `undefined`.
-- **Writes:** `withConceptAnim(el, anim | null)`, `withConceptAnimSpeed`, `withConceptAnimRepeat`, through the
+- **Writes:** `withConceptAnim(el, { anim?, speed?, repeat? })`, through the
   menu's generic style ops; telemetry `ConceptAnim`, rows `ConceptRows` (the web rows setter).
 - **Animation** (CSS, `apps/editor/app/canvas-motion.css`): each row carries `--i`, the face `--n` and
   `--lvd-concept-speed`. `build`: `lvd-concept-build` per row, 0.45 s × speed, delay `--i * 0.18 s × speed`, `both`;
@@ -25,27 +25,27 @@ animation it used to share with the cut kinds are its own:
 
 Scope, by file:
 
-| File                                                     | Role                                                                                     |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/document/src/shape-kind.ts`                    | `ShapeKind` includes `'timeline-rail'`                                                   |
-| `packages/document/src/concept.ts`                       | `ConceptShape` includes it; `CONCEPT_ROWS['timeline-rail']`; `conceptDrawsNotes` is true |
-| `packages/document/src/concept-timeline.ts`              | `timelineLayout(w, h, n)`: the pure layout the face and the export share                 |
-| `packages/document/src/svg-render-timeline.ts`           | `svgTimeline`: the headless render                                                       |
-| `packages/document/src/svg-render-timeline.ts`           | `svgTimeline`, the Timeline's export                                                     |
-| `packages/document/src/shape-factory.ts`                 | `SHAPE_DEFAULT_SIZE['timeline-rail']` (720 × 240); `createShape` starting milestones     |
-| `packages/document/src/element-normalise.ts`             | `normaliseConcept`, `railToTimeline`: point fields into milestones                       |
-| `packages/document/src/element-types.ts`                 | `ShapeElement.railCount`, `railLabels`: read once, never written                         |
-| `packages/document/src/validate.ts`, `validate-shape.ts` | The kind in the vocabulary; `railLabels` bounded by `dataArray`; `conceptRows` bounded   |
-| `packages/document/src/data-shapes.ts`                   | `isRailShape(kind)`                                                                      |
-| `packages/document/src/colors.ts`                        | `SELF_PAINTING_SHAPES` entry: no Border controls                                         |
-| `apps/editor/components/canvas/ConceptFace.tsx`          | Routes a Timeline to `ConceptTimelineBody`                                               |
-| `apps/editor/components/canvas/ConceptTimelineBody.tsx`  | The canvas face: spine, arrowhead, a `ConceptRowLayer` per milestone                     |
-| `apps/editor/components/canvas/element-variant.ts`       | Borderless wrapper via `SELF_PAINTING_SHAPES`                                            |
-| `apps/editor/components/canvas/QuickConnectPluses.tsx`   | The ring's Add Milestone                                                                 |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `tools:timeline`, section `concepts`                                                |
-| `apps/editor/lib/palette-tile-keywords.ts`               | Search words for the tile                                                                |
-| `apps/editor/lib/element-tours.ts`                       | `elementTourKindOf`: `'timeline'`                                                        |
-| `packages/document-views/src/content-summary.ts`         | The outline's summary of a Timeline's rows                                               |
+| File                                                     | Role                                                                                               |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `packages/document/src/shape-kind.ts`                    | `ShapeKind` includes `'timeline-rail'`                                                             |
+| `packages/document/src/concept.ts`                       | `ConceptShape` includes it; `CONCEPT_ROWS['timeline-rail']` (with a `noteNoun`, so it draws notes) |
+| `packages/document/src/concept-timeline.ts`              | `timelineLayout(w, h, n)`: the pure layout the face and the export share                           |
+| `packages/document/src/svg-render-timeline.ts`           | `svgTimeline`: the headless render                                                                 |
+| `packages/document/src/svg-render-timeline.ts`           | `svgTimeline`, the Timeline's export                                                               |
+| `packages/document/src/shape-factory.ts`                 | `SHAPE_DEFAULT_SIZE['timeline-rail']` (720 × 240); `createShape` starting milestones               |
+| `packages/document/src/element-normalise.ts`             | `normaliseConcept`, `railToTimeline`: point fields into milestones                                 |
+| `packages/document/src/element-types.ts`                 | `ShapeElement.railCount`, `railLabels`: read once, never written                                   |
+| `packages/document/src/validate.ts`, `validate-shape.ts` | The kind in the vocabulary; `railLabels` bounded by `dataArray`; `conceptRows` bounded             |
+| `packages/document/src/data-shapes.ts`                   | `isRailShape(kind)`                                                                                |
+| `packages/document/src/colors.ts`                        | `SELF_PAINTING_SHAPES` entry: no Border controls                                                   |
+| `apps/editor/components/canvas/ConceptFace.tsx`          | Routes a Timeline to `ConceptTimelineBody`                                                         |
+| `apps/editor/components/canvas/ConceptTimelineBody.tsx`  | The canvas face: spine, arrowhead, a `ConceptRowLayer` per milestone                               |
+| `apps/editor/components/canvas/element-variant.ts`       | Borderless wrapper via `SELF_PAINTING_SHAPES`                                                      |
+| `apps/editor/components/canvas/QuickConnectPluses.tsx`   | The ring's Add Milestone                                                                           |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `tools:timeline`, section `concepts`                                                          |
+| `apps/editor/lib/palette-tile-keywords.ts`               | Search words for the tile                                                                          |
+| `apps/editor/lib/element-tours.ts`                       | `elementTourKindOf`: `'timeline'`                                                                  |
+| `packages/document-views/src/content-summary.ts`         | The outline's summary of a Timeline's rows                                                         |
 
 ## Domain and naming
 

@@ -68,7 +68,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 
 - `iconWeight` is optional and persisted with the element like `iconSize`. Absent means `regular`. No migration.
 - Documents saved before this change render at 1.25px instead of 2px. This is the intended refinement.
-- The format painter copies `iconWeight` (format group `size`). Change summaries list it under `ICON_KEYS`.
+- The format painter copies `iconWeight` (format group `size`). Change summaries list it under the `icon` kind (`packages/edit-operations/src/element-format.ts`).
 
 ## Errors and edge cases
 

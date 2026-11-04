@@ -1,5 +1,11 @@
 # Draw mode, round one: blueprint
 
+> **Draw mode is gone** ([Editor modes](../../007-editor/editor-modes.md)): livehuddle has the one mode, Workshop,
+> no mode switch and no whiteboard dock (`useEditorState` holds `drawMode = false`), and Blank Whiteboard left the
+> catalogue with step 5.4. What follows is the engine Workshop still reaches (the marker pens from the palette, the
+> path tool, the fill tool, the eraser, shape recognition, hugging text boxes). Where it speaks of entering or
+> leaving Draw mode, of the dock, or of a Draw card in the wizard, it describes behaviour no board offers any more.
+
 Derived from [Draw mode](../draw-mode.md), with [Editor modes](../../007-editor/editor-modes.md) (and
 its blueprint (removed with Draw mode; see [Editor modes](../../007-editor/editor-modes.md))) for how Draw mode is entered, left and
 stored, [Highlighter](../../008-canvas/highlighter.md) for the marker recipe,
@@ -12,7 +18,7 @@ Scope, by file:
 
 | File                                                                | Role                                                                      |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `packages/document/src/editor-mode.ts`                              | `EditorMode`; Draw mode is `mode === 'draw'` (editor-modes blueprint)     |
+| `packages/document/src/editor-mode.ts`                              | `EditorMode`, only `'workshop'` here; Draw mode is gone                   |
 | `packages/document/src/whiteboard.ts`                               | Tokens, backgrounds, `WHITEBOARD_INKED_SHAPES`, `nearestBorderStroke`     |
 | `packages/document/src/whiteboard-stroke.ts`                        | Stroke geometry: `strokeTouchesBrush`, `eraseStrokePart`                  |
 | `packages/document/src/pen-stroke.ts`                               | The pen's ink: perfect-freehand options, outline path, centre line        |
@@ -50,8 +56,6 @@ Scope, by file:
 | `apps/editor/components/canvas/CanvasChrome.tsx` and friends        | Hidden chrome; the dock's mount                                           |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`              | Pen versus touch; the eraser frame                                        |
 | `apps/editor/components/canvas/useCanvasDrawGesture.ts`             | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
-| `apps/editor/components/palette/NewDocumentWizard.tsx`              | The Draw mode card (Blank Whiteboard); no theme step                      |
-| `apps/help/app/canvas/draw-mode/page.mdx`                           | Help article, registered in `packages/help-registry`                      |
 
 ## Domain and naming
 
@@ -82,22 +86,16 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 
 ### Mode
 
-- Draw mode is the person's effective editor mode on a general tab
-  (editor-modes blueprint (removed with Draw mode)): `useEditorState` derives
-  `drawMode = editorMode.mode === 'draw'` and hands it to every gate below. A tab stored with
-  `kind: 'whiteboard'` is migrated on read to a general tab that opens in Draw.
+- There is no Draw mode: `useEditorState` holds `const drawMode = false` and hands it to every gate below, so
+  the dock and its gates never open. A tab stored with `kind: 'whiteboard'` is migrated on read to a general tab
+  (`legacy-whiteboard-tab.ts`) and opens in Workshop.
 
 ### Creation
 
-- `templateCanvasOverrides('whiteboard')` returns `{ opensIn: 'draw', backgroundPattern: WHITEBOARD_DEFAULT_PATTERN }`
-  (`'graph'`, Grid, the tab's Diagram pattern): every creation path (the /new wizard, a start on a
-  tab, the MCP worker) goes through it.
-  `buildTemplate('whiteboard', …)` returns `[]`. Category: `design` (nominal, like Blank: the picker
-  shows it only as a quick-pick) (D1).
-- The wizard's Draw card creates a Blank Whiteboard at once, on the `brand` theme (`NewDocumentWizard`).
-- `chooseTemplate` (a start's pick, Blank Whiteboard found from another mode's search included) tracks
-  `Draw / Created / NewTab` when `kind === 'whiteboard'` and releases the tab's pinned opening mode, so its maker enters Draw; the /new
-  route tracks `Draw / Created / Template`.
+- Blank Whiteboard (`whiteboard`) left the template catalogue with step 5.4: a link, an agent or a seed naming it
+  is answered as any unknown kind is, with Blank Space ([Templates by mode](../../007-editor/templates-by-mode.md#the-blank)).
+  The creation paths this section once described (the wizard's Draw card, `Draw / Created / NewTab`,
+  `Draw / Created / Template`) are gone; only `Draw / Created / Import` (an imported whiteboard) is tracked.
 
 ### Dock state
 
@@ -128,7 +126,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
     synced `drawPattern` preference (never the tab) and tracks `Background<Name>`.
 - Changing a pen's colour or width updates `pens[p]`, re-arms the intent when `p` is held, and tracks
   `Whiteboard / Changed / PenColour` or `PenWidth` (a pen is reported by its place, never its colour).
-- **Entering Draw mode** (a new active tab in Draw mode, or a switch into it; editable, no Draw
+- **Entering Draw mode** (no board does now; a new active tab in Draw mode, or a switch into it; editable, no Draw
   intent armed, tool `select` or `pan`) arms the active pen when the tab has no elements, and leaves
   `select` in hand when it has any (D2). The hook keys this on the pair of tab id and `drawMode`.
   On a switch a palette-armed intent is cancelled and a held eraser is put down.
@@ -160,13 +158,13 @@ thicker (2 → `medium`, 4 → `thick`, 8 → `extra-thick`).
 ### Ink by name
 
 There is no display projection: what Draw mode makes is written with its colours, so it looks the
-same in Diagram mode and to every collaborator ([One look](../../007-editor/editor-modes.md#one-look)).
+same wherever it is opened and to every collaborator ([Editor modes](../../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)).
 
 - `boardShape(el)` (`apps/editor/lib/whiteboard-tool.ts`): a shape gets `penColour: 'ink'`,
   `penTextColour: 'ink'` and `fillColor: 'transparent'`; a path `penColour: 'ink'` and no fill; an
   arrow or line `penColour: 'ink'`. Applied by `useShapeDrawing` and the drawn-arrow builder in Draw
   mode, before `styleNewElement`.
-- A pen stroke and a text box with no colour of their own draw in Ink in both modes; nothing is
+- A pen stroke and a text box with no colour of their own draw in Ink; nothing is
   written for them.
 - Every colour stored by name is drawn in its version for the canvas surface
   (`resolveStockColours(el, surface)`, `packages/document/src/stock-colours.ts`), through
@@ -242,7 +240,7 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
 Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whiteboard`):
 
 - `ToolbarPalette`, `QuickStylePanel`, the Theme & canvas brush,
-  `ThemeModeBanner`, `EmptyCanvasBanner`, the tool panels (`eraser`, `format`): not
+  `EmptyCanvasBanner`, the tool panels (`eraser`, `format`): not
   rendered.
 - The Explorer menu button leaves the strip for its corner on a phone (`menuInStrip` false).
 - The draw-mode banner does not show for a held pen (`isHeldPenIntent`).
@@ -260,16 +258,14 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
   picker, `docs/specs/004-interface-design/colour-picker.md`): `view.pen` is
   `strokesPenStyle(selected, palette)` (pen strokes: `freehand` with `penWidth`, not a highlight,
   unlocked; captioned "Marker stroke" / "N marker strokes"), else `heldPenStyle(pen, palette)` when
-  nothing is selected and `whiteboardDock.tool === 'pen'`. `PenPalette = { board, ink, custom }`:
-  the viewer's appearance, its ink and `tabCustomColours(activeTab.elements)`.
+  nothing is selected and `whiteboardDock.tool === 'pen'`. `PenPalette = { board, ink }`:
+  the viewer's appearance and its ink.
   - Marker colour: Ink, then `PEN_COLOUR_NAMES` (Blue, Red, Orange, Yellow, Green, Teal, Violet,
     Pink),
     each swatch `penColourCss(colour, board, ink)`, for the strokes and for Marker 2 or 3 in hand;
     Marker 1: Ink alone, so every pen has both rows.
-  - **Custom colours** (`testId` `quick-style-marker-custom`), only when `custom` is not empty:
-    `tabCustomColours` walks the tab's elements from the last (the most recently drawn) and takes
-    the `#rrggbb` `strokeColor` of pen strokes, shapes and lines, lower-cased and deduplicated, at most
-    `TAB_CUSTOM_COLOURS_MAX` (8). No Remove there: it reflects the tab.
+  - **Custom colours** are one press deeper, in More colours (the document's own, `Tab.customColours`, at most
+    `CUSTOM_COLOURS_MAX`); the row itself holds only stock colours.
   - Both colour rows are `QuickRadioRow` with `columns = QUICK_ROW_TARGETS` (10, More colours
     included): a grid of
     24 px columns, touching, so a shorter row lines up
@@ -316,7 +312,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   (`LEGACY_PEN_COLOURS`) read as their names; anything else or a missing colour, the pen's default;
   the main pen is always the ink. Existing strokes are untouched.
 - Labels: `colourLabel` "Ink", "Blue", "#ff6b00"; the pen button "Marker 2, blue, medium".
-- Resolved colour everywhere the pen shows: the dock glyph (`DrawingToolsGroup`), the cursor
+- Resolved colour everywhere the pen shows: the palette tile's glyph (`PenGlyph`), the cursor
   (`useWhiteboardPenCursor`, the Settings cursor previews), the live ink and recognition preview
   (`WhiteboardPenPreview`), each through `penColourCss(colour, appearance, ink)`; the draw-intent
   default cursor uses the light version.
@@ -340,7 +336,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
 ### Shapes flyout hover, Settings flyout
 
 - The Shapes button opens its flyout on `pointerenter` (not touch) as a hover flyout; leaving the
-  button or the flyout schedules a close after `HOVER_CLOSE_MS` (250 ms, `useHoverClose`), cancelled
+  button or the flyout schedules a close after `HOVER_CLOSE_MS` (250 ms, `useHoverCloseTimer` in `@liveworkspace/workbench`), cancelled
   by entering either. A press on a hover flyout makes it sticky. Its search field takes the focus
   even on a hover, the one exception (the whiteboard-dock blueprint (removed with Draw mode) "Flyouts").
 - The Settings flyout (`hideTitle`, accessible name "Settings", opened by the cog on a press only)
@@ -1044,7 +1040,6 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | `PEN_STOCK_CONTRAST`            | 6                               | D29              | 4.5 to 7        |
 | `PEN_MIN_CONTRAST`              | 3                               | WCAG 1.4.11      | 3               |
 | `YOUR_COLOURS_MAX`              | 12 (`lib/document-colours.ts`)  | colour-picker.md | fixed           |
-| `TAB_CUSTOM_COLOURS_MAX`        | 8                               | spec             | panel width     |
 | Custom picker start             | `#3b82f6`                       | mock             | any hex         |
 | perfect-freehand `size`         | `width / (2 · sin(π/4))`        | calibration      | derived         |
 | perfect-freehand `easing`       | `t => sin(t · π / 2)`           | Excalidraw       |                 |

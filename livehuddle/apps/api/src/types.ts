@@ -147,6 +147,20 @@ export type Env = {
   REALTIME_APP_TOKEN?: string;
   TURN_KEY_ID?: string;
   TURN_KEY_API_TOKEN?: string;
+  // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): the KV namespace holding `calls-mode`
+  // (on, audio-only, off) and the budget poll's trip record. Absent, calls read as on and the poll does nothing.
+  CALLS_SWITCH?: KVNamespace;
+  // The budget poll's thresholds, in dollars a month above Realtime's free tier ([vars]; defaults 10 and 25).
+  CALLS_AUDIO_ONLY_AT_USD?: string;
+  CALLS_OFF_AT_USD?: string;
+  // The Cloudflare account whose Realtime usage the poll prices ([vars]).
+  CALLS_USAGE_ACCOUNT_ID?: string;
+  // A Cloudflare API token with Account Analytics: Read alone (a secret). Unset, the poll does nothing.
+  CALLS_ANALYTICS_TOKEN?: string;
+  // Where a trip's email goes (a secret, so the address stays out of the repo). Unset, a trip sends no email.
+  CALLS_ALERT_TO?: string;
+  // Staging rehearsal only: a usage figure in GB the poll uses in place of the analytics request.
+  CALLS_USAGE_TEST_GB?: string;
 };
 
 // The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the

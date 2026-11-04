@@ -1,22 +1,22 @@
 # v1 scope
 
-Status: **proposed**, awaiting the owner's approval (Work Tracker #99).
+Status: **built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190).
 
 What livehuddle's first release holds, what it leaves out, and which apps it ships. Every feature named here comes
-over from livediagram at the fork and **behaves as livediagram's spec says** unless this page says otherwise; the
-forked spec then becomes livehuddle's own ([Build plan](../005-project-roadmap/build-plan.md)). livediagram keeps all
+over from livediagram at the fork and **behaves as its forked spec in this tree says** unless this page says otherwise;
+each links to livehuddle's own copy ([Build plan](../005-project-roadmap/build-plan.md)). livediagram keeps all
 of it ([What livediagram keeps](../005-project-roadmap/build-plan.md#what-livediagram-keeps)).
 
 ## Domain language
 
-| Term            | Means                                                                                                        | Not                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| **space**       | What a person makes, opens and shares in livehuddle: tabs of boards, stored as one document                  | a Spaces template; a room; a document (the API's word) |
-| **board**       | One tab of a space: a canvas in Workshop's look                                                              | a liveplanner board of cards                           |
-| **room**        | The [Room](../../../../livediagram/docs/specs/009-elements/office.md#room) element, walls with a doorway     | the realtime room (the Durable Object everyone joins)  |
-| **character**   | A person's figure in [Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md)             | their profile picture, the Avatar element tile         |
-| **session**     | The activity a group runs on a board (a retro, a stand-up, a quiz); never a stored thing                     | a meeting call; a share session                        |
-| **facilitator** | Whoever holds the baton ([Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)) | anyone who opened the space first                      |
+| Term            | Means                                                                                       | Not                                                    |
+| --------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **space**       | What a person makes, opens and shares in livehuddle: tabs of boards, stored as one document | a Spaces template; a room; a document (the API's word) |
+| **board**       | One tab of a space: a canvas in Workshop's look                                             | a liveplanner board of cards                           |
+| **room**        | The [Room](../009-elements/office.md#room) element, walls with a doorway                    | the realtime room (the Durable Object everyone joins)  |
+| **character**   | A person's figure in [Avatar mode](../008-canvas/avatar-mode.md)                            | their profile picture, the Avatar element tile         |
+| **session**     | The activity a group runs on a board (a retro, a stand-up, a quiz); never a stored thing    | a meeting call; a share session                        |
+| **facilitator** | Whoever holds the baton ([Facilitator](../012-collaboration/facilitator.md))                | anyone who opened the space first                      |
 
 "Space" is the noun, settled as D6 (a) in [Open decisions](../005-project-roadmap/open-decisions.md)
 ([Domain language](../003-system-architecture/domain-language.md#space)). The API keeps the word `document` for a space (as livediagram and livedocuments do), so the platform's
@@ -26,21 +26,21 @@ of it ([What livediagram keeps](../005-project-roadmap/build-plan.md#what-livedi
 
 ### 1. Avatar mode, first-class
 
-All of [Avatar mode](../../../../livediagram/docs/specs/008-canvas/avatar-mode.md): the character and its Avatar
+All of [Avatar mode](../008-canvas/avatar-mode.md): the character and its Avatar
 panel (gender, clothing, hair, size, randomise), walking by click, tap and arrow keys, hopping, the five Behaviours
 and five Reactions with their keys, Status (Available, Focusing, In a Meeting, Away), speech bubbles and the
-composer, pushing, sitting ([Chair](../../../../livediagram/docs/specs/009-elements/chair.md)), drinks, fences and
+composer, pushing, sitting ([Chair](../009-elements/chair.md)), drinks, fences and
 room walls, the follow camera, and the realtime `avatar`, `avatar-push` and `avatar-say` presence ops.
 
 What changes in livehuddle (settled as D7 (a) in [Open decisions](../005-project-roadmap/open-decisions.md);
 the rules in [Avatar mode](../008-canvas/avatar-mode.md#where-it-lives)):
 
 - **The picker offers Avatar.** In livediagram the walk is reachable only through a
-  [Selection Mode button](../../../../livediagram/docs/specs/009-elements/mode-button.md) on the board, because a
+  [Selection Mode button](../009-elements/mode-button.md) on the board, because a
   diagram tool should not push a character at someone drawing. In a meeting app walking is the point, so the
   Selection Mode picker lists **Avatar** beside Select and Hand, and the Selection Mode button still works.
 - **A Spaces board opens walking.** A tab that offers the walk (it holds an
-  [Avatar Pad](../../../../livediagram/docs/specs/009-elements/avatar-pad.md) or a Selection Mode button set to
+  [Avatar Pad](../009-elements/avatar-pad.md) or a Selection Mode button set to
   Avatar, as every Spaces template's **Walk In** button is) puts you in Avatar mode the first time it is shown in a
   visit, for every role: on its pad when it has one, otherwise just below its first such button. Leaving the mode
   is yours to keep for the rest of the visit.
@@ -49,38 +49,38 @@ the rules in [Avatar mode](../008-canvas/avatar-mode.md#where-it-lives)):
 ### 2. The Navigate elements
 
 Every tile of Workshop's **Navigate** category, and the office pieces the palette lists with them: Portal
-([Portal element](../../../../livediagram/docs/specs/009-elements/portal-element.md)), Bring Focus
-([Bring Focus](../../../../livediagram/docs/specs/012-collaboration/bring-focus.md)), Chair, Desk and Sofa
-([Chair](../../../../livediagram/docs/specs/009-elements/chair.md)), Fence
-([Fence](../../../../livediagram/docs/specs/009-elements/fence.md)), Avatar Pad
-([Avatar Pad](../../../../livediagram/docs/specs/009-elements/avatar-pad.md)), Link card
-([Link cards](../../../../livediagram/docs/specs/009-elements/link-cards.md)), and Room, Meeting Table, Plant,
-Bookshelf, Water Cooler, Coffee Machine and Rug ([Office](../../../../livediagram/docs/specs/009-elements/office.md)).
+([Portal element](../009-elements/portal-element.md)), Bring Focus
+([Bring Focus](../012-collaboration/bring-focus.md)), Chair, Desk and Sofa
+([Chair](../009-elements/chair.md)), Fence
+([Fence](../009-elements/fence.md)), Avatar Pad
+([Avatar Pad](../009-elements/avatar-pad.md)), Link card
+([Link cards](../009-elements/link-cards.md)), and Room, Meeting Table, Plant,
+Bookshelf, Water Cooler, Coffee Machine and Rug ([Office](../009-elements/office.md)).
 With them come the Selection Mode buttons and the five
-[Reaction pads](../../../../livediagram/docs/specs/009-elements/reaction-pad.md).
+[Reaction pads](../009-elements/reaction-pad.md).
 
 ### 3. The Spaces templates
 
-[Virtual Office, Coworking Space, Team Pod and All-Hands Hall](../../../../livediagram/docs/specs/012-collaboration/virtual-office-template.md),
+[Virtual Office, Coworking Space, Team Pod and All-Hands Hall](../012-collaboration/virtual-office-template.md),
 unchanged, as the **first** row of livehuddle's start screen and template picker rather than a group after Meetings.
 
 ### 4. All of Workshop mode, as the only mode
 
-[Workshop mode](../../../../livediagram/docs/specs/012-collaboration/workshop-mode.md) is livehuddle's one editor
+[Workshop mode](../012-collaboration/workshop-mode.md) is livehuddle's one editor
 mode, so there is no mode switch and no mode in the interface: every board is a Workshop board.
 
 - **The palette** is Workshop's: Popular; Shapes, My shapes, Write, Draw; Layout; Ask, Tools, Record, React,
   Selection Mode, Navigate; Icons, Stickers, Media; Data.
 - **The Session strip**, with Timer, Vote and Poll
-  ([Session tools](../../../../livediagram/docs/specs/012-collaboration/session-tools.md)).
+  ([Session tools](../012-collaboration/session-tools.md)).
 - **Every Collaborate element**: dot vote, live poll, quiz, the estimate scales, temperature check, idea box, Q&A
   board; timer, stopwatch, reveal zone, done check, picker; comment panel, action card, agenda, decision record, roll
   call; the reaction pads.
-- **Facilitation**: the [facilitator baton](../../../../livediagram/docs/specs/012-collaboration/facilitator.md),
+- **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md),
   Bring Focus, hide-cursors votes.
 - **The session templates**: the retrospectives, town hall, lean coffee, crazy eights, meeting agenda, workshop board,
   brainstorm, the dot-vote boards, the fill-in-together boards, and the
-  [quizzes and games](../../../../livediagram/docs/specs/012-collaboration/quiz-and-game-templates.md), plus Blank
+  [quizzes and games](../012-collaboration/quiz-and-game-templates.md), plus Blank
   Workshop as livehuddle's blank ("Untitled Space").
 
 Why all of it ([Open decisions](../005-project-roadmap/open-decisions.md) D2): the card asks for a product built
@@ -90,9 +90,9 @@ facilitator who has to go back to livediagram for a vote has been sent away from
 ### 5. Collaboration
 
 Realtime editing with per-element merge and an ordered room, live cursors and selections, the presence stack,
-[follow-me](../../../../livediagram/docs/specs/012-collaboration/follow-me-viewport.md), comments with
-[mentions](../../../../livediagram/docs/specs/012-collaboration/comment-mentions.md),
-[assigned actions](../../../../livediagram/docs/specs/012-collaboration/assigned-actions.md), the laser and the
+[follow-me](../012-collaboration/follow-me-viewport.md), comments with
+[mentions](../012-collaboration/comment-mentions.md),
+[assigned actions](../012-collaboration/assigned-actions.md), the laser and the
 spotlight. All as livediagram has them.
 
 ### 6. Workspace, identity and the platform
@@ -108,7 +108,7 @@ spotlight. All as livediagram has them.
 - Google Drive sync for signed-in people, liveworkspace's for every app
   ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)): each Space they own is a
   `.livehuddle` file in their Drive, kept in step (owner, 2026-11-02).
-- The [Timeline](../../../../livediagram/docs/specs/013-workspace/timeline.md), undo and redo.
+- The [Timeline](../013-workspace/timeline.md), undo and redo.
 
 ### 7. The platform-wide features
 

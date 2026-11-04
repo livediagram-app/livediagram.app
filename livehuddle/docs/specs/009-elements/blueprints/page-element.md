@@ -96,8 +96,8 @@ States per line: at rest, editing (`focus` → `editing = true`).
    (D93); call `onCommit` only when the value changed.
 5. `setPageHeading(id, field, value)` commits through history on `MASTHEAD_SHAPES` only; an empty
    value stores `undefined`.
-6. A committed change emits `track('Element', 'Changed', <token>)` with the proposed token
-   `PageHeading` [QD16]; `setPageHeading` emits no telemetry.
+6. A committed change emits `track('Element', 'Changed', <token>)` with the proposed
+   page-heading token [QD16]; `setPageHeading` emits no telemetry.
 7. An empty line shows its placeholder ("Title" / "Subtitle") at 40% opacity (D92), so the
    masthead keeps its height.
 
@@ -219,8 +219,8 @@ The code emits no log here (GD1). Target fingerprint:
 | --- | --------------------------------- | --------------- | ---------------------------------------------------- |
 | O1  | `InlineTextLine` commit truncates | `console.debug` | `[page] heading truncated field=<f> from=<n> to=200` |
 
-Telemetry: `Element` / `Added` / `Page`. Masthead edits emit nothing; the proposed token
-`PageHeading` [QD16] would report a committed change as `Element` / `Changed`.
+Telemetry: `Element` / `Added` / `Page`. Masthead edits emit nothing; the proposed
+page-heading token [QD16] would report a committed change as `Element` / `Changed`.
 
 ## Testing
 

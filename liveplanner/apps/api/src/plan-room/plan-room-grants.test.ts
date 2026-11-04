@@ -20,6 +20,8 @@ type FakeSocket = {
   sent: string[];
   attachment: unknown;
   closed: { code: number; reason: string } | null;
+  // 1 open, 2 closing, 3 closed: as the runtime's, a socket the room closed stays listed until its peer answers.
+  readyState: number;
   send: (data: string) => void;
   serializeAttachment: (value: unknown) => void;
   deserializeAttachment: () => unknown;
@@ -28,18 +30,19 @@ type FakeSocket = {
 
 function room() {
   const sockets: FakeSocket[] = [];
+  const alarms: number[] = [];
   const store = new Map<string, unknown>();
   const state = {
     id: { name: 'P', toString: () => 'P' },
     acceptWebSocket: (ws: FakeSocket) => void sockets.push(ws),
-    getWebSockets: () => sockets.filter((s) => !s.closed),
+    getWebSockets: () => sockets.filter((s) => s.readyState !== 3),
     storage: {
       get: async (key: string) => store.get(key),
       put: async (key: string, value: unknown) => void store.set(key, value),
       delete: async (key: string) => store.delete(key),
       list: async ({ prefix }: { prefix: string }) =>
         new Map([...store].filter(([key]) => key.startsWith(prefix))),
-      setAlarm: async () => {},
+      setAlarm: async (at: number) => void alarms.push(at),
       deleteAlarm: async () => {},
       deleteAll: async () => store.clear(),
     },
@@ -57,10 +60,14 @@ function room() {
       sent: [],
       attachment: null,
       closed: null,
+      readyState: 1,
       send: (data) => void ws.sent.push(data),
       serializeAttachment: (value) => void (ws.attachment = value),
       deserializeAttachment: () => ws.attachment,
-      close: (code, reason) => void (ws.closed = { code, reason }),
+      close: (code, reason) => {
+        ws.closed = { code, reason };
+        ws.readyState = 2;
+      },
     };
     plan.acceptSession(
       ws as unknown as WebSocket,
@@ -75,7 +82,7 @@ function room() {
     );
     return ws;
   };
-  return { plan, join };
+  return { plan, join, alarms };
 }
 
 const kinds = (ws: FakeSocket) => ws.sent.map((raw) => (JSON.parse(raw) as { kind: string }).kind);
@@ -171,6 +178,23 @@ describe('a session grant', () => {
     vi.setSystemTime(T0 + 600_000);
     await plan.alarm();
     expect(ws.closed?.code).toBe(GRANT_LAPSED_CLOSE);
+  });
+
+  // A lapsed session whose peer never answers the close (a laptop asleep) stays in getWebSockets(), still holding
+  // the lapsed grant. Counting it re-armed the alarm in the past, and the alarm fired back to back for hours.
+  it('lets a lapsed session go: a closed socket still listed never re-arms the alarm in the past', async () => {
+    const { plan, join, alarms } = room();
+    const ws = join({ expMs: T0 + 600_000 });
+    vi.setSystemTime(T0 + 600_000);
+    await plan.alarm();
+    expect(ws.closed?.code).toBe(GRANT_LAPSED_CLOSE);
+    expect(ws.readyState).toBe(2);
+
+    alarms.length = 0;
+    ws.closed = null;
+    await plan.alarm();
+    expect(ws.closed).toBeNull();
+    expect(alarms.filter((at) => at <= Date.now())).toEqual([]);
   });
 });
 

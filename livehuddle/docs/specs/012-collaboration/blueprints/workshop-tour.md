@@ -25,7 +25,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent,
   another (`useActiveTour()`) is active. The tour never starts on its own.
 - **Rerun:** `WORKSHOP_TOUR_RELAUNCH_EVENT` starts it when it is on offer; elsewhere it is ignored.
 - **No offer, no chain.** The host never offers the tour on entering Workshop (no delay, no welcome card), and no
-  other tour carries it: `TourStage` / `TourPopover` have no `outroChoice`, and `workshopTourSeen` is written only by
+  other tour carries it: `TourStage` / `TourPopover` offer no hand-off to another tour, and `workshopTourSeen` is written only by
   this tour.
 - **One tour at a time:** each of `WorkshopTourHost` (and the
   avatar and element tours) treats any other

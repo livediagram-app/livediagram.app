@@ -99,6 +99,17 @@ export function roomGrantDueAt(hold: RoomGrantHold | null, askBeforeMs: number):
   return hold.renewAsked ? hold.grantExp : hold.grantExp - askBeforeMs;
 }
 
+// The sockets the grant clock watches: the open ones. A socket the room has closed (its grant lapsed, its access
+// changed) can stay in `getWebSockets()` until its peer answers the close, and a laptop asleep never does. Its grant
+// is still the lapsed one, so counting it re-arms the room's alarm in the past and the alarm fires back to back until
+// the connection finally drops. It has nothing left to ask or lapse, so it is skipped.
+export const ROOM_SOCKET_OPEN = 1; // WebSocket.OPEN
+export function openRoomSockets<W extends { readyState: number }>(sockets: Iterable<W>): W[] {
+  const open: W[] = [];
+  for (const ws of sockets) if (ws.readyState === ROOM_SOCKET_OPEN) open.push(ws);
+  return open;
+}
+
 // The earliest of many sessions' due moments.
 export function earliestRoomGrantDue(
   holds: Iterable<RoomGrantHold | null>,

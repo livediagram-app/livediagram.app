@@ -114,7 +114,7 @@ person who just wants to read or work without the movement had no way to turn th
 - Settings: a `hideCursors` row (its own kind, like `shortcuts`) in the Collaborate category.
 - Where cursors are drawn: `CursorsDrawnContext` / `useCursorsDrawn` in `hooks/collab/useHideCursors` (true
   unless an editor says otherwise). `HideCursorsFooter` draws the modal's footer only when true; the Settings row's
-  `available` reads `cursorsDrawn` off the row context; `settingsOfferedHere` drops the row from the editor's search.
+  `available` reads `cursorsDrawn` off the row context; `visibleCategories` then drops the row from the Settings dialog and its search.
 - Telemetry: `UI` / `Toggled` / `HideCursorsOn` / `HideCursorsOff`, sent before the write, from either place.
 
 ## 3. Cursors Step Aside

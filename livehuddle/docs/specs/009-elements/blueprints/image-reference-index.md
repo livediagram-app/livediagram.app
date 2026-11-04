@@ -17,7 +17,7 @@ Scope, by file (all under `apps/api/`):
 | `src/document-room/document-schema.ts`  | `image_refs`, and the outbox triggers that key a change to it                                 |
 | `src/document-room/document-outbox.ts`  | The push: the placement grants, then the whole set to the media service                       |
 | `src/db/image-grants.ts`                | Placement grants, in the document's own SQLite, through `@liveworkspace/index-app`            |
-| `src/db/documents.ts`                   | `purgeDocumentRows` deletes a purged canvas's cached snapshots                                |
+| `src/db/documents.ts`                   | `purgeDocumentPreviews` has the media service delete a purged canvas's previews               |
 | `src/image-refs/writer-census.test.ts`  | Fails when SQL writing `tabs` appears outside the known writers                               |
 
 ## Domain and naming

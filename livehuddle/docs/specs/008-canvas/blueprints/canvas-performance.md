@@ -115,7 +115,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
-  `PhotoDraftRing` and `PhotoMatchedBadge` (`photo-badges.tsx`), `RichTextEditor` (mounted only
+  `RichTextEditor` (mounted only
   while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A stroke's
   hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that
   path reads the zoom, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
@@ -144,8 +144,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   the editor hands the store down as one stable prop, and only `CanvasChrome` reads it
   (`useSnapGuides`), so a new set renders that chrome alone.
 - The elements themselves are listed by `CanvasElementList`, memoised, with every prop
-  identity-stable across editor renders that change nothing it draws (`useInsertShift` returns one
-  object while its answers hold). A press or a release that renders the editor (the drag state
+  identity-stable across editor renders that change nothing it draws. A press or a release that renders the editor (the drag state
   beginning or ending) renders the layer but walks none of the board's element slots.
 - Invariant: between the press and the release of a move, the editor root, `Canvas` and the element
   layer do not render; at the press and the release, the element list does not render unless an
@@ -202,9 +201,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### Layout reads outside gesture frames
 
 - `useCanvasClientOrigin(wrapperRef, active, viewKey)` measures the wrapper on activating and when
-  `viewKey` changes, never after every commit. `CanvasChrome` derives `viewKey` from the pan
-  offset, the zoom and `<main>`'s size, and hands it to `CanvasGuideOverlay`, `CanvasDrawPreview`
-  and `TimelineLanesOverlay`; a move's frames keep it, so alignment guides read no layout.
+  `viewKey` changes, never after every commit. `useCanvasViewKey` derives `viewKey` from the pan
+  offset, the zoom and `<main>`'s size, and `CanvasGuideOverlay` and `CanvasDrawPreview` read it; a move's frames keep it, so alignment guides read no layout.
 - The Quick Style panel's placement re-runs on `transitionend` only from the panel or an obstacle.
 
 ### The Map draws settled elements

@@ -243,11 +243,11 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
 
 ### 10. Vertex properties (`boxedProps`, `textProps`)
 
-1. `fillColor`: `hex` → `paperColour(hex, 'fill')`; `none` → `'transparent'`; `unset` → omitted. Unset colours stay omitted by the spec's operator decision (default colours and the white page follow the tab theme); this applies to every colour map below.
-   `paperColour(hex, role)` (`colour.ts`): OKLCH of the hex (`sceneOklch`); `role` `ink` (text,
-   stroke, arrow) with `l ≤ INK_MAX_LIGHTNESS` and `c ≤ INK_MAX_CHROMA` → unset; `role` `fill` with
-   `l ≥ PAPER_MIN_LIGHTNESS` and `c ≤ PAPER_MAX_CHROMA` → unset; else the hex. Memoised per hex.
-2. `strokeColor`: `hex` → `paperColour(hex, 'ink')`; `none` → `strokeWidth: 'none'`.
+1. `fillColor`: `hex` → `hexFill`; `none` → `'transparent'`; `unset` → omitted. Unset colours stay omitted by the spec's operator decision (default colours and the white page follow the tab theme); this applies to every colour map below.
+   `readInk` / `readFill` (`colour.ts`) read the OKLCH of the hex (`sceneOklch`); `hexInk` (text, stroke, arrow) with
+   `l ≤ INK_MAX_LIGHTNESS` and `c ≤ INK_MAX_CHROMA` → unset; `hexFill` with
+   `l ≥ PAPER_MIN_LIGHTNESS` and `c ≤ PAPER_MAX_CHROMA` → unset; else the hex.
+2. `strokeColor`: `hex` → `hexInk`; `none` → `strokeWidth: 'none'`.
 3. `strokeWidth` px → nearest of `BORDER_STROKE_PX` (`thin` 1, `medium` 2, `thick` 4,
    `extra-thick` 7), ties to the thinner (D17); `0` → `'none'`. Absent → `thin` (draw.io's 1 px, D18).
 4. `dashed=1` → `dashed`; with `dashPattern` `"a b ..."` where every dash (the odd entries), in px
@@ -271,7 +271,7 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
    joined by `\n`, omitted when empty.
 10. Text: `readLabel`; `label = plain` (omitted when empty); `richText = runs` when the kind carries
     rich text (shape, text, sticky). `fontStyle` bits → `textBold` / `textItalic` / `textUnderline` /
-    `textStrikethrough`. `fontColor` hex → `paperColour(hex, 'ink')` → `textColor`. A run colour the
+    `textStrikethrough`. `fontColor` hex → `hexInk` → `textColor`. A run colour the
     same way. `overflow` `hidden` or `fill`: the label keeps its first `fitLines(rect, size)`
     lines (`floor((boxHeight · scale − 2 · PADDING_PX.sm) / (labelFontPx(size) · LABEL_LINE_HEIGHT))`,
     at least 1; `TextOptions.boxHeight` from the shape, text, sticky and labelled-box builders),
@@ -398,7 +398,7 @@ DRAWIO_DEFAULT_MARKER_SIZE) + strokeWidth`; the preset whose `arrowheadLengthPx(
 strokeWidth)` (`@livehuddle/document`, the canvas marker's own size) is nearest `L`, omitted at
     `medium`. `arrowhead-approximated` += 1 when either head is not exact, or both ends carry heads
     of different shapes.
-12. **Stroke.** `strokeColor` hex → `paperColour(hex, 'ink')` (`none` → `opacity: 0`, D19);
+12. **Stroke.** `strokeColor` hex → `hexInk` (`none` → `opacity: 0`, D19);
     `strokeWidth` px → `strokeWidth` (number, default 1, omitted at 2). `dashed` / `dashPattern` as
     vertices. `opacity` as vertices (no paper blend: an arrow has no fill). `link` as step 10.8.
 13. **Labels.** Parts: the edge's own label, then each visible child vertex's with `edgeLabel` or
@@ -457,7 +457,7 @@ rect), centred, after the image; the image keeps `alt`.
 
 Marks: `mxgraph.basic.x` and `umlDestroy` → line-art `x`, `mxgraph.basic.tick` → `check`, `strokeColor` (else
 `fillColor`) hex as the icon's stroke, `icon-substituted` += 1. `endState` → `circle`, `fillColor`
-(default `#000000` → `paperColour`), `strokeColor` the ring, `strokeWidth: 'thick'`. `curlyBracket`
+(default `#000000`, run through the fill rule), `strokeColor` the ring, `strokeWidth: 'thick'`. `curlyBracket`
 → a headless `arrow` along the brace's spine (vertical through the box's middle, or horizontal
 when `direction` is `north` / `south`), `shape-approximated` += 1.
 

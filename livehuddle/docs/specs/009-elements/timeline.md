@@ -74,8 +74,8 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
 
 ## Colours
 
-The milestones are drawn in the accent (the element's stroke) over its fill. Each row's text takes the readable colour
-for what it sits on (`readableColour`). A theme switch carries all of it, since it is derived from the stroke and fill.
+The milestones are drawn in the accent (the element's stroke) over its fill. Each row's text takes the element's text colour
+(`defaultTextColor` for its surface unless set). A theme switch carries all of it, since it is derived from the stroke and fill.
 
 ## Animation
 

@@ -1,6 +1,6 @@
 # Draw mode blueprint defaults
 
-One row per default applied where a spec is silent or qualitative.
+One row per default applied where a spec is silent or qualitative. Draw mode is gone ([Editor modes](../../007-editor/editor-modes.md)): D1 (the Whiteboard template), D2 (entering Draw mode) and D33 (the dock beside the mode switch) describe behaviour no board offers any more.
 
 | #   | Blueprint            | Spec silence                                                         | Default applied                                                                                                                                                               |
 | --- | -------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

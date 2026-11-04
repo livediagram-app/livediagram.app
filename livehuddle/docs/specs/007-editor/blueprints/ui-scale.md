@@ -99,7 +99,7 @@ screen-px length it writes on that root or a descendant with `toSurfacePx`.
   the canvas when zoomed, so the card stays centred; `top` is restated as
   `toSurfacePx(12)`. The More popover sits inside the zoomed root but does not
   scale: it spreads `uiUnscaleStyle(scale)` (`zoom: 1 / scale`, nothing at 1),
-  so its effective zoom is 1 and `moreRight` (screen px), its `w-[26rem]` and
+  so its effective zoom is 1 and its measured `right` offset (screen px), its `w-[26rem]` and
   its `max-h-[calc(100dvh-14rem)]` all apply as written.
 - **`SnapWidth`**: divides measured widths by the element's
   `currentCSSZoom` (1 where unsupported), so it writes surface px.
