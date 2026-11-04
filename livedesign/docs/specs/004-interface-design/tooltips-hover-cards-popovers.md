@@ -39,9 +39,10 @@ A control has at most one hint. If a hover card is present, it carries the name 
   row of controls, for as long as it arrives within **500 ms** of the last tooltip closing. Scanning a
   toolbar reads each name without paying the wait each time.
 - **Opens instantly on keyboard focus.** Focus that is not keyboard-visible (a click, a dialog
-  focusing its first control, a dialog handing focus back to its opener after a tap) does not open it.
-  Focus that follows a touch or mouse press, with no key pressed since, is never keyboard focus: a phone
-  that taps Join in a dialog must not find the Settings tooltip up when focus returns.
+  focusing its first control) does not open it.
+- **A tap is not a hover.** After a touch, phones and emulators send the control under the finger a mouse
+  `pointerenter` of their own. A mouse event within **1 s** of a touch is that echo and opens nothing: a
+  phone that taps Join in a dialog must not find the Settings tooltip up when the dialog closes over it.
 - **The name only**, on one line where it fits, in the interface's small text. It may wrap; it never
   truncates.
 - **Inverse pill.** On light pages, a dark pill (slate 900) with white text and a small pointer
