@@ -42,8 +42,8 @@ export function exportEmail(baseUrl: string, email: ExportEmail) {
     ? `${email.teamName}’s liveworkspace data is ready`
     : 'Your liveworkspace data is ready';
   const lead = email.teamName
-    ? `Everything ${email.teamName} owns in livediagram, liveplanner, livedocuments and livedesign is ready to download, as one zip of ${readableSize(email.bytes)}.`
-    : `Everything you own in livediagram, liveplanner, livedocuments and livedesign is ready to download, as one zip of ${readableSize(email.bytes)}.`;
+    ? `Everything ${email.teamName} owns in livediagram, liveplanner, livedocuments, livedesign and livehuddle is ready to download, as one zip of ${readableSize(email.bytes)}.`
+    : `Everything you own in livediagram, liveplanner, livedocuments, livedesign and livehuddle is ready to download, as one zip of ${readableSize(email.bytes)}.`;
   const rule = `The link works for ${DAYS} days, and only when you’re signed in as ${email.to}.`;
   const readme = 'The README inside says what each folder holds and how to bring an item back.';
   const text = [lead, '', `Download it: ${email.link}`, '', rule, readme, '', FOOTER].join('\n');
