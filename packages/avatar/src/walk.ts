@@ -9,22 +9,34 @@ import { hasSceneBox, isSceneShape, type AvatarSceneElement } from './scene';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.
-// How far below a Selection Mode button the character appears when that button
-// is what put you in Avatar mode (docs/specs/009-elements/mode-button.md): clear of the button's own box, so
-// it reads as standing in front of it rather than on top of it.
+// The space between a Selection Mode button's bottom edge and the top of the character's head when that button is
+// what put you in Avatar mode (docs/specs/009-elements/mode-button.md): the whole figure stands clear of the button,
+// so it reads as standing in front of it and never hides the button's label.
 export const AVATAR_SPAWN_GAP = 12;
 
-// Where pressing a Selection Mode button should put the character on entry (docs/specs/008-canvas/avatar-mode.md
-// "Entering from a button"): feet just below the button, centred on it. Null for a button of another mode, and for
-// a press made IN Avatar mode, which leaves it: a spawn point set then outlived the walk, so the next entry from
-// the palette put the character back at the button.
+type ButtonBox = { x: number; y: number; width: number; height: number };
+
+// Where a character of size `scale` stands to be just below `button` (docs/specs/008-canvas/avatar-mode.md "Entering
+// from a button"): centred on it, its head AVATAR_SPAWN_GAP under the button's bottom edge. The position is the feet,
+// so the figure's height goes in too: with the gap alone, a Regular figure stood over the button and hid its label.
+export function avatarSpawnBelow(button: ButtonBox, scale: number): AvatarPoint {
+  return {
+    x: button.x + button.width / 2,
+    y: button.y + button.height + AVATAR_SPAWN_GAP + avatarFigureHeight(scale),
+  };
+}
+
+// Where pressing a Selection Mode button should put a character of size `scale` on entry: just below the button
+// (avatarSpawnBelow). Null for a button of another mode, and for a press made IN Avatar mode, which leaves it: a spawn
+// point set then outlived the walk, so the next entry from the palette put the character back at the button.
 export function avatarSpawnFromButton(
-  button: { x: number; y: number; width: number; height: number; mode?: string },
+  button: ButtonBox,
   buttonMode: string,
   currentTool: string,
+  scale: number,
 ): AvatarPoint | null {
   if (buttonMode !== 'avatar' || currentTool === 'avatar') return null;
-  return { x: button.x + button.width / 2, y: button.y + button.height + AVATAR_SPAWN_GAP };
+  return avatarSpawnBelow(button, scale);
 }
 
 // How far a shoved character slides, in canvas px (docs/specs/008-canvas/avatar-mode.md). Far enough to be
@@ -75,6 +87,12 @@ export const AVATAR_VIEW_BOX = `${-SLACK_UNITS} ${-HEADROOM_UNITS} ${GRID_W + SL
 // it so the box hugs the character instead of framing mostly empty space.
 const PORTRAIT_TOP_UNITS = 4;
 export const AVATAR_PORTRAIT_VIEW_BOX = `0 ${-PORTRAIT_TOP_UNITS} ${GRID_W} ${GRID_H + PORTRAIT_TOP_UNITS}`;
+
+// How far the standing figure reaches above its feet at a given scale, tallest hair included: the portrait's top, so
+// whatever stands that far above the feet clears every hairstyle.
+export function avatarFigureHeight(scale = 1): number {
+  return (AVATAR_HEIGHT + PORTRAIT_TOP_UNITS * AVATAR_UNIT) * scale;
+}
 
 // Size of that cropped portrait in px at a given scale, for the preview's own
 // box (the walking box above is deliberately much bigger).

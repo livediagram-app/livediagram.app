@@ -77,6 +77,7 @@ export function useCanvasAvatar({
   // "Opening walking"); declared before the walk, whose entry reads it.
   useWalkIn({
     walkIn: props.walkIn,
+    scale: avatarScale(avatarLook.config.size),
     spawnAtRef: avatarSpawnRef,
     mainRef,
     wrapperRef,
@@ -84,8 +85,13 @@ export function useCanvasAvatar({
     setViewportOffset,
   });
   const pressModeButton = (element: ShapeElement) => {
-    // Feet just below the button, centred on it, and only for a press that enters the mode.
-    const spawn = avatarSpawnFromButton(element, element.mode ?? DEFAULT_BUTTON_MODE, canvasTool);
+    // The whole figure just below the button, centred on it, and only for a press that enters the mode.
+    const spawn = avatarSpawnFromButton(
+      element,
+      element.mode ?? DEFAULT_BUTTON_MODE,
+      canvasTool,
+      avatarScale(avatarLook.config.size),
+    );
     if (spawn) avatarSpawnRef.current = spawn;
     props.onPressModeButton?.(element);
   };

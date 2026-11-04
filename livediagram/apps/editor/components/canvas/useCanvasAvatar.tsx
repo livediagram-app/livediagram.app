@@ -73,8 +73,13 @@ export function useCanvasAvatar({
   // later entry from the palette spawns at the viewport centre as before.
   const avatarSpawnRef = useRef<AvatarPoint | null>(null);
   const pressModeButton = (element: ShapeElement) => {
-    // Feet just below the button, centred on it, and only for a press that enters the mode.
-    const spawn = avatarSpawnFromButton(element, element.mode ?? DEFAULT_BUTTON_MODE, canvasTool);
+    // The whole figure just below the button, centred on it, and only for a press that enters the mode.
+    const spawn = avatarSpawnFromButton(
+      element,
+      element.mode ?? DEFAULT_BUTTON_MODE,
+      canvasTool,
+      avatarScale(avatarLook.config.size),
+    );
     if (spawn) avatarSpawnRef.current = spawn;
     props.onPressModeButton?.(element);
   };
