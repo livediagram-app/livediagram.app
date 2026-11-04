@@ -97,7 +97,12 @@ import {
 import { communityService, communityServiceConfigured } from '../community-service';
 import { anonymiseDocument } from './document-anonymise';
 import { drawDocument } from '../thumbnail';
-import { ItemDb, type ExportQuery, type ExportResult } from '@liveworkspace/index-app';
+import {
+  ItemDb,
+  type ExportCommentsResult,
+  type ExportQuery,
+  type ExportResult,
+} from '@liveworkspace/index-app';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
 import {
   exportDocumentCopy,
@@ -115,6 +120,7 @@ import {
   RELAYED_SAMPLE_KINDS,
   type RelaySession,
 } from '@liveworkspace/api-kit/room-presence-relay';
+import { exportDocumentComments } from './document-comments';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -743,6 +749,15 @@ export class DocumentRoom extends DurableObject<Env> {
     this.bindDocument(documentId);
     if (!this.hasSchema()) return { status: 'not_found' };
     return exportDocumentFile(this.requireEnv(), documentId, query.ifVersion);
+  }
+
+  // The export door's `comments` format (liveworkspace/docs/specs/003-accounts/data-export.md "The apps' doors",
+  // document-comments.ts): every thread in the Space with its real authors, for the data export. A Space never
+  // started is not found, and asking does not start it.
+  async exportComments(documentId: string): Promise<ExportCommentsResult> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return { status: 'not_found' };
+    return exportDocumentComments(this.requireEnv(), documentId);
   }
 
   // A new canvas from a Drive file (routes/internal-file.ts read it): its tabs land as a copy's do, and it starts as
