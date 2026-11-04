@@ -18,7 +18,14 @@
 // DRAIN_SHARES messages, one Durable Object call each, reading each body once however many holders it goes to. A tab
 // is held by at most MAX_TAB_HOLDERS items, so one write fans out to at most MAX_TAB_HOLDERS - 1 calls.
 
-import { FLUSH_IDLE_MS, FLUSH_RETRY_MS, type SqlExec } from './outbox';
+import {
+  FLUSH_IDLE_MS,
+  FLUSH_RETRY_MS,
+  OUTBOX_MAX_ATTEMPTS,
+  outboxDueAt,
+  retryDelayMs,
+  type SqlExec,
+} from './outbox';
 
 // The items one tab may be held by at once, the first included. Each join tells every earlier holder, so a tab held
 // by n items has sent about n²/2 small `join` messages over its life, and a write to it is n - 1 calls.
@@ -43,7 +50,8 @@ CREATE TABLE IF NOT EXISTS tab_shares (
 --   body:  the tab's current name and body, read when sent
 --   join:  member now holds the tab too
 --   leave: this item no longer holds the tab
--- A key written again is deleted and inserted under a new id, so a drain in flight keeps it.
+-- A key written again is deleted and inserted under a new id, so a drain in flight keeps it. The app's next step,
+-- outbox.ts outboxRetrySchema, adds each key's failed sends (attempts) and next try (retry_at).
 CREATE TABLE IF NOT EXISTS share_outbox (
   id      INTEGER PRIMARY KEY,
   kind    TEXT    NOT NULL CHECK (kind IN ('body', 'join', 'leave')),
@@ -141,6 +149,7 @@ type ShareRow = {
   tab_id: string;
   to_item: string;
   member: string;
+  attempts?: number | null;
 };
 
 export function createTabShares<E>(config: TabSharesConfig<E>) {
@@ -400,14 +409,24 @@ export function createTabShares<E>(config: TabSharesConfig<E>) {
   // ---------- Sending ----------------------------------------------------------------------------------------
 
   // Send what share_outbox holds, one message per call, each to the item it is for. A message sent is deleted by the
-  // id read, so one written again meanwhile stays; one that failed stays for the next drain; a holder that answered
-  // `gone` is dropped, with whatever else was waiting for it about that tab.
-  async function drain(env: E, itemId: string, send: ShareSend): Promise<ShareDrain> {
+  // id read, so one written again meanwhile stays; a holder that answered `gone` is dropped, with whatever else was
+  // waiting for it about that tab. One that failed stays and waits (outbox.ts retryDelayMs: a minute, doubling, at
+  // most an hour), so a holder that keeps failing is not called every minute; after OUTBOX_MAX_ATTEMPTS failures it
+  // is parked, kept but never sent, until a write to the tab replaces it. Only keys whose wait is over go.
+  async function drain(
+    env: E,
+    itemId: string,
+    send: ShareSend,
+    now: number = Date.now(),
+  ): Promise<ShareDrain> {
     const db = config.db(env);
     const rows = (
       await db
-        .prepare('SELECT id, kind, tab_id, to_item, member FROM share_outbox ORDER BY id LIMIT ?')
-        .bind(DRAIN_SHARES + 1)
+        .prepare(
+          `SELECT id, kind, tab_id, to_item, member, attempts FROM share_outbox
+            WHERE attempts < ? AND retry_at <= ? ORDER BY id LIMIT ?`,
+        )
+        .bind(OUTBOX_MAX_ATTEMPTS, now, DRAIN_SHARES + 1)
         .all<ShareRow>()
     ).results;
     const more = rows.length > DRAIN_SHARES;
@@ -428,12 +447,15 @@ export function createTabShares<E>(config: TabSharesConfig<E>) {
         try {
           [answer = 'ok'] = await send(row.to_item, [message]);
         } catch (error) {
-          console.warn('[tab-shares] send failed', {
-            itemId,
-            to: row.to_item,
-            kind: row.kind,
-            error: String(error),
-          });
+          const attempts = (row.attempts ?? 0) + 1;
+          const park = attempts >= OUTBOX_MAX_ATTEMPTS;
+          const log = { itemId, to: row.to_item, kind: row.kind, attempts, error: String(error) };
+          if (park) console.warn('[tab-shares] parked', log);
+          else console.warn('[tab-shares] send failed', log);
+          await db
+            .prepare('UPDATE share_outbox SET attempts = ?, retry_at = ? WHERE id = ?')
+            .bind(attempts, park ? 0 : now + retryDelayMs(attempts), row.id)
+            .run();
           failed += 1;
           continue;
         }
@@ -523,33 +545,42 @@ export function shareLeaveStatements(db: ShareDb, tabId: string): D1PreparedStat
   ];
 }
 
-// Whether the item's SQLite owes another holder anything (the room arms its share send from this).
-export function owesShares(sql: SqlExec): boolean {
-  return sql.exec('SELECT 1 FROM share_outbox LIMIT 1').toArray().length > 0;
+// When the item's SQLite next owes another holder something (ms; 0 for a key never tried), or null when it owes
+// nothing but parked keys. The room arms its share send from this.
+export function sharesDueAt(sql: SqlExec): number | null {
+  return outboxDueAt(sql, 'share_outbox');
 }
 
 // When the room next sends its shared tabs' holders what they are owed: on idle after a write (FLUSH_IDLE_MS), not
-// held to the index outbox's once a minute, since it is a call to another item rather than a push; a minute after a
-// failure. The room reads `at` into its one alarm, and runs `send` from the alarm when `due`.
+// held to the index outbox's once a minute, since it is a call to another item rather than a push; after a failure,
+// when the earliest key's wait is over (`drain`). The room reads `at` into its one alarm, and runs `send` from the
+// alarm when `due`. `dueAt` is sharesDueAt over the room's SQLite (null before its schema).
 export class ShareSchedule {
   at: number | null = null;
-  private readonly owes: () => boolean;
+  private readonly dueAt: () => number | null;
   private readonly now: () => number;
 
-  constructor(owes: () => boolean, now: () => number = Date.now) {
-    this.owes = owes;
+  constructor(dueAt: () => number | null, now: () => number = Date.now) {
+    this.dueAt = dueAt;
     this.now = now;
   }
 
-  // After a wake: anything still owed goes now.
+  // After a wake: anything owed goes now, or when its wait is over.
   restore(): void {
-    if (this.owes()) this.at = this.now();
+    const due = this.dueAt();
+    if (due !== null) this.at = Math.max(this.now(), due);
   }
 
-  // A write happened: true when it armed a send (the room then re-arms its alarm).
+  // A write happened: true when it armed a send (the room then re-arms its alarm). A send set on idle stays without
+  // a read; one set far off, for a key in backoff, gives way to the key just written.
   noteWrite(): boolean {
-    if (this.at !== null || !this.owes()) return false;
-    this.at = this.now() + FLUSH_IDLE_MS;
+    const now = this.now();
+    if (this.at !== null && this.at <= now + FLUSH_IDLE_MS) return false;
+    const due = this.dueAt();
+    if (due === null) return false;
+    const at = Math.max(now + FLUSH_IDLE_MS, due);
+    if (this.at !== null && this.at <= at) return false;
+    this.at = at;
     return true;
   }
 
@@ -561,20 +592,23 @@ export class ShareSchedule {
     this.at = null;
   }
 
-  // One drain; a failure keeps what was owed and tries again in a minute, more to send goes on idle.
+  // One drain; more to send goes on idle, a key that failed when its wait is over, and a drain that threw tries
+  // again in a minute.
   async send(drain: () => Promise<ShareDrain>): Promise<ShareDrain | null> {
     this.at = null;
     let result: ShareDrain | null = null;
     try {
       result = await drain();
-      if (result.failed > 0) this.at = this.now() + FLUSH_RETRY_MS;
-      else if (result.more) this.at = this.now() + FLUSH_IDLE_MS;
+      if (result.more) this.at = this.now() + FLUSH_IDLE_MS;
     } catch (error) {
       console.warn('[tab-shares] send failed', { error: String(error) });
       this.at = this.now() + FLUSH_RETRY_MS;
     }
-    // Anything written while the send was in flight goes next time.
-    if (this.at === null && this.owes()) this.at = this.now() + FLUSH_IDLE_MS;
+    // What failed goes when its wait is over; anything written while the send was in flight goes on idle.
+    if (this.at === null) {
+      const due = this.dueAt();
+      if (due !== null) this.at = Math.max(this.now() + FLUSH_IDLE_MS, due);
+    }
     return result;
   }
 }
