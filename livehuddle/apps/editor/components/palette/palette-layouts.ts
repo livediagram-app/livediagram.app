@@ -125,12 +125,12 @@ const WORKSHOP: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    // Words and notes, then a table and a checklist to keep them in. No Page or Annotation.
+    // Words and notes, then a table and a checklist to keep them in. No Annotation (and no Page: gone, #423 part 2).
     {
       id: 'write',
       description: 'Text, sticky notes, tables and checklists.',
       tiles: [
-        ...tilesExcept('write', 'tools:page', 'tools:annotation'),
+        ...tilesExcept('write', 'tools:annotation'),
         DIVIDE,
         'tools:table',
         'tools:checklist',

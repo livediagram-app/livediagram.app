@@ -441,26 +441,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
-    // surface, and the group reads shortest-to-longest from there. Called
-    // Page, not Document, so the palette and the selection toolbar agree —
-    // and so it never collides with the Shapes tab's flowchart "document".
-    id: 'tools:page',
-    blurb: 'A paper-shaped page for prose',
-    section: 'tools',
-    toolGroup: 'write',
-    label: 'Add Page',
-    caption: 'Page',
-    description: 'A paper-sized surface for rich text. Double-click to write.',
-    action: { type: 'shape', kind: 'page' },
-    icon: (
-      <Glyph size={18} units={18}>
-        <rect x="3.5" y="1.5" width="11" height="15" rx="1.5" />
-        <path d="M6 5.5h6M6 8.5h6M6 11.5h3.5" />
-      </Glyph>
-    ),
-  },
-  {
     id: 'tools:text',
     blurb: 'A free-standing text label',
     section: 'tools',

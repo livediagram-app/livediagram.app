@@ -129,7 +129,8 @@ export async function apiSaveDocumentMeta(
     name?: string;
     tabs?: { id: string; folder?: string }[];
     tabIds?: string[];
-    // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised. Absent leaves the stored deck alone,
+    // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised. livehuddle's editor never sends it
+    // since Work Tracker #423 part 2, so a stored deck is kept. Absent leaves the stored deck alone,
     // which is what every save that isn't about the deck sends; null clears
     // it. JSON.stringify drops an undefined field, so "absent" travels as
     // absent rather than as null.

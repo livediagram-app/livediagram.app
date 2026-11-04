@@ -184,9 +184,7 @@ describe('settings catalogue', () => {
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
       );
-      // A presenter switch writes the one `presentation` object (lib/presentation-config).
-      const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
-      expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
+      expect(changed, row.key).toEqual(own[row.key] ?? [row.key]);
     }
   });
 
@@ -344,12 +342,11 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests Presenting under Editor, directly after it', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['presenting']);
-    const at = ids.indexOf('editor');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  // livehuddle has no presenting (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2).
+  it('offers no Presenting settings', () => {
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor')).toEqual([]);
+    const keys = SETTINGS_CATEGORIES.flatMap((c) => c.rows.map((r) => r.key ?? ''));
+    expect(keys.filter((k) => k.startsWith('presentation'))).toEqual([]);
   });
 
   it('keeps every setting that acts in both modes on Editor itself', () => {

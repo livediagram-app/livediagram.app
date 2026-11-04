@@ -61,7 +61,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   popular: 0,
   shapes: 13,
   build: 7,
-  write: 5,
+  write: 4,
   draw: 6,
   icons: 0,
   stickers: 0,

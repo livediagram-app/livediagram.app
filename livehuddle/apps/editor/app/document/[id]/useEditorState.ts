@@ -15,7 +15,6 @@ import {
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
-import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { useKeyboardAvoidance } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
 import {
   useCallback,
@@ -29,8 +28,6 @@ import {
 import {
   stampTabKind,
   isBoxed,
-  resolveSlide,
-  slideFrame,
   stampNewElementLayers,
   voteHidesCursors,
   elementActions,
@@ -52,8 +49,6 @@ import { quickSwatches } from '@livehuddle/document';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
-import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
@@ -126,13 +121,11 @@ import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
-import { useSlideDeck } from './useSlideDeck';
-import { slideFitOptions } from '@/lib/presentation-config';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
 import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
@@ -357,7 +350,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     defaultPan: embedMode,
     tabId: activeId,
   });
-  useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -413,18 +405,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         tool === 'spotlight' ||
         tool === 'isometric')
     ) {
-      return;
-    }
-    // A slide deck spans tabs, so a tab-scoped session has none
-    // (docs/specs/013-workspace/tab-scoped-share-links.md): the server withholds it and refuses writes.
-    if (tool === 'slide-deck' && tabScopeRef.current !== null) {
-      toast.info("The slide deck isn't shared with you");
-      return;
-    }
-    // Desktop-only (docs/specs/012-collaboration/presentation-mode.md): the pickers
-    // already hide it on a phone, so this catches any path that still asks.
-    if (tool === 'slide-deck' && isMobileViewportSync()) {
-      toast.info('Slide Deck is only available on a larger screen');
       return;
     }
     // Spotlight and Avatar mode (docs/specs/008-canvas/avatar-mode.md) are both non-editing presenter
@@ -566,15 +546,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // into the returned view-model below, so the explicit return doesn't
   // re-list these.
   const persistence = useEditorPersistence({ toast });
-  const {
-    setSaveStatus,
-    setSavedAt,
-    documentName,
-    setDocumentName,
-    documentPresentation,
-    setDocumentPresentation,
-    setImportError,
-  } = persistence;
+  const { setSaveStatus, setSavedAt, documentName, setDocumentName, setImportError } = persistence;
   // Realtime presence state (who's connected + their cursors / selections
   // / laser trails / tab focus). See usePresenceState; the room writes it
   // via the setters, the presence-row builders read the values.
@@ -848,7 +820,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setActiveId,
       setDocumentId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentNotFound,
       setLoadError,
       setDocumentTrashed: documentTrashed.setDocumentTrashed,
@@ -1300,150 +1271,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [broadcastFocusHere, livePresence, remoteViewports, activeId, zoomRef, toast],
   );
 
-  // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
-  // presentation Start runs. Placed after the viewport because presenting
-  // frames each slide through it.
-  const slideDeck = useSlideDeck({
-    prefs: userPreferences,
-    // Built on this render's preferences: moved onto the freshest before the whole blob is written.
-    commitPrefs: (next) =>
-      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
-    tabs,
-    activeTabId: activeId,
-    setActiveId,
-    readSelection,
-    setSelectedId,
-    setMultiSelectedIds,
-    isReadOnly,
-    saveDeck: (serialised) => {
-      if (!hydrated || !documentId) return;
-      setDocumentPresentation(serialised);
-      void apiSaveDocumentMeta(
-        selfParticipant.id,
-        { id: documentId, presentation: serialised },
-        sessionShareCode,
-      ).catch(() => {
-        // Best-effort, like every other metadata write: the deck is in
-        // state either way and the next edit retries.
-      });
-    },
-    loadAllTabs,
-  });
-  // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
-  // the document changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
-  // is read at that moment (an effect event), not depended on.
-  const hydrateStoredDeck = useEffectEvent(() => slideDeck.hydrateDeck(documentPresentation));
-  const hasStoredDeck = documentPresentation !== null;
-  useEffect(() => {
-    hydrateStoredDeck();
-  }, [hasStoredDeck, documentId]);
-
-  // What the presentation is showing right now, if anything.
-  const presentingStep =
-    slideDeck.presentingAt !== null ? slideDeck.runnable[slideDeck.presentingAt] : undefined;
-  // The slide's elements, resolved fresh every render so an edit landing
-  // underneath a presentation shows through (references, never copies).
-  const presentingElements = useMemo(
-    () => (presentingStep ? resolveSlide(presentingStep.slide, presentingStep.tab) : null),
-    [presentingStep],
-  );
-
-  // Where the editor was looking before the deck took over, so exiting puts it
-  // back. Without this you left a presentation zoomed to whatever the last
-  // slide needed — often 250% on one box — and had to hunt around the canvas.
-  const [preShowView, setPreShowView] = useState<{ tabId: string } | null>(null);
-  const presenting = slideDeck.presentingAt !== null;
-  // Captured on the way in, restored on the way out: state adjusted during render on the transition
-  // (docs/specs/003-system-architecture/react-state-and-effects.md), so the restore lands in the same
-  // commit as the exit instead of one frame later.
-  const [wasPresenting, setWasPresenting] = useState(presenting);
-  if (presenting !== wasPresenting) {
-    setWasPresenting(presenting);
-    if (presenting) {
-      setPreShowView({ tabId: activeId });
-    } else if (preShowView) {
-      setPreShowView(null);
-      setActiveId(preShowView.tabId);
-    }
-  }
-  // The view itself (it lives in the viewport store, docs/specs/008-canvas/blueprints/viewport-store.md,
-  // never written during render) is captured as a deck starts and put back as it ends, in a layout
-  // effect: before the exit paints, and declared before the slide fit below, so the capture is the
-  // view from before the first slide was framed.
-  const viewBeforeShow = useRef<View | null>(null);
-  useLayoutEffect(() => {
-    if (presenting) {
-      viewBeforeShow.current = viewport.get();
-      return;
-    }
-    if (viewBeforeShow.current) {
-      viewport.setView(viewBeforeShow.current);
-      viewBeforeShow.current = null;
-    }
-  }, [presenting, viewport]);
-  // Every editor keyboard surface is off while a deck is running (docs/specs/012-collaboration/presentation-mode.md).
-  // The overlay owns the keyboard then — it consumes the keys it uses, but
-  // everything else fell straight through to the editor, so pressing G in
-  // front of a room armed a parallelogram on a canvas you cannot draw on.
-  // Gated here rather than by swallowing keys in the overlay: this is the
-  // switch the shortcut hooks already have, and it covers a surface added
-  // later without anybody remembering to.
-  const keyboardEnabled = shortcutsEnabled && !presenting;
-  // Presenting moves the editor to the slide's tab and frames the slide. Both
-  // are ordinary view state, and the effect above puts them back on exit.
-  //
-  // A LAYOUT effect, not an ordinary one: the canvas has already been handed
-  // the new slide's elements by the time this runs, so fitting after paint
-  // showed one frame of the new content under the OLD slide's camera. That is
-  // the flash of "small in the corner" a deferred fit produces.
-  const presentingSlideId = presentingStep?.slide.id;
-  const presentingTabId = presentingStep?.tab.id;
-  const [framedSlideId, setFramedSlideId] = useState(presentingSlideId);
-  if (presentingSlideId !== framedSlideId) {
-    setFramedSlideId(presentingSlideId);
-    if (presentingTabId !== undefined && presentingTabId !== activeId) setActiveId(presentingTabId);
-  }
-  // A slide fills the screen by default. The editor's own fit caps at 100%
-  // because a sparse canvas blown up looks broken in a workspace; a slide is
-  // the only thing on a projector, so a one-box slide SHOULD be a big box —
-  // unless the presenter has picked "Actual size" from the cog.
-  // A slide frames to what it shows (slideFrame).
-  const frameSlide = useEffectEvent(() => {
-    if (!presentingStep) return;
-    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, slideFitOptions(slideDeck.config));
-  });
-  const slideZoom = slideDeck.config.zoom;
-  useLayoutEffect(() => {
-    if (presentingElements) frameSlide();
-  }, [presentingSlideId, presentingElements, slideZoom]);
-
-  // ...and fit again whenever the canvas CHANGES SIZE while presenting.
-  //
-  // Entering a presentation changes the size of the very box the fit measures,
-  // and all of it lands after the effect above: the browser goes fullscreen,
-  // and the header and tab bar leave with the zen treatment. Fitting against
-  // the pre-presentation rect centred slide one on a viewport that no longer
-  // existed by the time it painted, so it arrived shoved into a corner with
-  // its top clipped.
-  //
-  // A ResizeObserver rather than a window `resize` listener, because hiding
-  // the chrome changes the canvas's height without the WINDOW changing size at
-  // all. This covers that, fullscreen arriving late, fullscreen being refused,
-  // an ordinary resize, and a phone rotating.
-  const refitSlide = useEffectEvent(() => {
-    if (!presentingStep) return;
-    const bounds = slideFrame(presentingStep.slide, presentingStep.tab);
-    if (bounds) fitToBounds(bounds, slideFitOptions(slideDeck.config));
-  });
-  useEffect(() => {
-    const node = canvasMainRef.current;
-    if (!presenting || !node || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => refitSlide());
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [presenting, canvasMainRef]);
-
   // Publish where WE are looking, on change (docs/specs/012-collaboration/follow-me-viewport.md). Unsolicited by design
   // — see the RoomOp comment — and throttled to ~10 Hz inside the broadcaster,
   // so an idle participant sends nothing at all.
@@ -1572,10 +1399,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteAvatars,
     localLaserTrail,
     selfLaserConfig: laserPen.config,
-    // A presenter sees nobody else's cursor, laser or character: it is their screen on a projector
-    // (docs/specs/012-collaboration/presentation-mode.md). Inbound only; our own laser still broadcasts.
-    cursorsHidden: voteCursorsHidden || presenting,
-    avatarsHidden: presenting,
+    cursorsHidden: voteCursorsHidden,
   });
   // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
   // whoever is present on any tab — the order the Collaborators modal uses, so
@@ -2744,7 +2568,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // traversal while the canvas surface is focused, plus SR live-region
   // announcements on selection changes. See useCanvasA11y.
   useCanvasA11y({
-    enabled: keyboardEnabled,
+    enabled: shortcutsEnabled,
     elements: activeTab.elements,
     selection: selectionStore,
     editingId,
@@ -2997,7 +2821,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onToggleZen: toggleZenMode,
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
-    enabled: keyboardEnabled,
+    enabled: shortcutsEnabled,
     // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
     whiteboard: whiteboardDock.whiteboard
       ? {
@@ -3072,12 +2896,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     boardSceneInsert,
     insertLibraryShape,
     ...panelLayout,
-    // Presenting wears the zen chrome treatment (docs/specs/012-collaboration/presentation-mode.md → docs/specs/007-editor/zen-mode.md): header,
-    // tab bar, panels and palette all gone, so a projector shows the document
-    // rather than the workbench. An OVERRIDE of the spread above rather than a
-    // write to zen state, so exiting a presentation restores whatever zen the
-    // user actually had.
-    zenMode: panelLayout.zenMode || slideDeck.presentingAt !== null,
     ...dialogs,
     ...uiState,
     ...persistence,
@@ -3284,17 +3102,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openCellLinkPicker,
     applyCellLink,
     activeTabLoadState,
-    // Slide deck (docs/specs/012-collaboration/presentation-mode.md): the whole surface in one object, like livePoll —
-    // nothing outside the panel and the overlay reads into it.
-    slideDeck,
     commentMentions,
     commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
-    // What the presentation is showing, or null. The canvas renders THESE
-    // instead of the tab's elements while it is non-null, which is what makes
-    // a slide a slide.
-    presentingElements,
     livePresence,
     // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
     // rather than a dozen flattened keys, since nothing else reads into it.

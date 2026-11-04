@@ -29,8 +29,6 @@ export function makeSeedFetchedDocument(deps: {
   noteChangesetSeen: (tabId: string, rev: number) => void;
   setActiveId: SetState<string>;
   setDocumentName: SetState<string>;
-  // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
-  setDocumentPresentation: SetState<string | null>;
   setDocumentOwnerColor: SetState<string | null>;
   setDocumentOwnerId: SetState<string | null>;
   setDocumentOwnerName: SetState<string | null>;
@@ -50,7 +48,6 @@ export function makeSeedFetchedDocument(deps: {
     noteChangesetSeen,
     setActiveId,
     setDocumentName,
-    setDocumentPresentation,
     setDocumentOwnerColor,
     setDocumentOwnerId,
     setDocumentOwnerName,
@@ -112,7 +109,6 @@ export function makeSeedFetchedDocument(deps: {
     lastSavedTabsRef.current = placeholderTabs;
     lastSavedNameRef.current = fetched.name;
     setDocumentName(fetched.name);
-    setDocumentPresentation(fetched.presentation ?? null);
     // Prefer the tab id pinned in the URL fragment (#t=<id>) when
     // it points at a real loaded tab — round-trips the user back
     // to whichever tab they last had open before a refresh.

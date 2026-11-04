@@ -81,7 +81,6 @@ export function useIdentityBootstrap(opts: {
     setActiveId: SetState<string>;
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
-    setDocumentPresentation: SetState<string | null>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The document is in the Trash (docs/specs/013-workspace/trash.md).
@@ -154,7 +153,6 @@ export function useIdentityBootstrap(opts: {
       setActiveId,
       setDocumentId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentNotFound,
       setLoadError,
       setDocumentTrashed,
@@ -193,7 +191,6 @@ export function useIdentityBootstrap(opts: {
       noteChangesetSeen,
       setActiveId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentOwnerColor,
       setDocumentOwnerId,
       setDocumentOwnerName,

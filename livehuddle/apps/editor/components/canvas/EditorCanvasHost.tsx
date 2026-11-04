@@ -3,7 +3,6 @@
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { sessionToolsForSurface } from '@/components/canvas/SessionClusterStrip';
-import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { roleGates } from '@/lib/editor-capabilities';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -41,7 +40,6 @@ import {
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
-import { useStableObject } from '@liveworkspace/workbench/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
@@ -64,10 +62,6 @@ export function EditorCanvasHost() {
     activeTabLoadState,
     activeTabLocked,
     commitElements,
-    presentingElements,
-    slideDeck,
-    slideDeckPanelPosition,
-    setSlideDeckPanelPosition,
     layers,
     activeLayerId,
     layerInertIds,
@@ -409,9 +403,8 @@ export function EditorCanvasHost() {
   const surface = canvasSurface(backdrop.backgroundColor);
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
-  const shownElements = presentingElements ?? activeTab.elements;
   const canvasElements = projectStockColours(
-    shownElements,
+    activeTab.elements,
     surface,
     themeViewMap(activeTab.theme, appearance),
     {
@@ -494,16 +487,15 @@ export function EditorCanvasHost() {
   });
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
-  const stableSlideDeck = useStableObject(slideDeck);
   const activeTheme = getTheme(activeTab.theme);
   return (
     // The tab's theme for faces that dress in it unstored (the image placeholder).
     <CanvasThemeProvider theme={activeTheme}>
       {/* The tab's tag colours (docs/specs/009-elements/tag-colours.md), for the cards that render them. */}
       <TagColoursProvider tab={activeTab}>
-        {/* Presenting shows the slide as the audience sees it: no indicators or lock badges on its elements
-          (docs/specs/008-canvas/element-indicators.md "Unchanged"). */}
-        <SuppressElementIndicators when={presentingElements != null}>
+        {/* Presenting's indicator suppression went with it (Work Tracker #423 part 2). A fragment keeps the canvas
+          props' indentation until part 4 unwraps it, so a branch editing them still merges. */}
+        <>
           <Canvas
             tabName={activeTab.name}
             tabSummaries={tabSummaries}
@@ -535,10 +527,6 @@ export function EditorCanvasHost() {
               track('Canvas', 'Zoomed', 'Fit');
             }}
             setViewportOffset={setViewportOffset}
-            // Presenting (docs/specs/012-collaboration/presentation-mode.md) narrows the canvas to one slide's elements. The
-            // real canvas still draws them — a slide has to respond to clicks and
-            // carry live element state, and there is then exactly one thing that
-            // knows how an element looks.
             elements={canvasElements}
             tabLayers={activeTab.layers}
             editorMode={editorMode.mode}
@@ -787,11 +775,6 @@ export function EditorCanvasHost() {
             formatPanelPosition={formatPanelPosition}
             onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
             onResetFormatPanel={() => setFormatPanelPosition(null)}
-            // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): the deck itself plus its panel's placement.
-            slideDeck={stableSlideDeck}
-            slideDeckPanelPosition={slideDeckPanelPosition}
-            onMoveSlideDeckPanel={(x, y) => setSlideDeckPanelPosition({ x, y })}
-            onResetSlideDeckPanel={() => setSlideDeckPanelPosition(null)}
             onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
             onResetEraserPanel={() => setEraserPanelPosition(null)}
             onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
@@ -1087,7 +1070,7 @@ export function EditorCanvasHost() {
               onClose={() => setLockedMenu(null)}
             />
           ) : null}
-        </SuppressElementIndicators>
+        </>
       </TagColoursProvider>
     </CanvasThemeProvider>
   );
