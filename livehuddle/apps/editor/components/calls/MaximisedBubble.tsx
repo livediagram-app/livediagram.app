@@ -1,7 +1,7 @@
 'use client';
 
 // A bubble opened large (docs/specs/012-collaboration/video-and-screen-bubbles.md "Maximised"): a panel over the
-// canvas, at most 1280 px wide and 90% of the window, with its person's name and Restore. The canvas stays live behind
+// canvas, at most 1280 px wide and 90% of the window, its person's name and Restore in a bar above the picture. The canvas stays live behind
 // a soft dim; Restore, Escape or the backdrop put it back. Outside the canvas's transform, so it never zooms.
 import { useRef } from 'react';
 import { lucideMinimize2 } from '@liveworkspace/icons/lucide';
@@ -57,16 +57,10 @@ function Panel({
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          className="relative w-full max-w-[min(1280px,calc((90dvh-1rem)*16/9))] overflow-hidden rounded-2xl bg-slate-950 shadow-2xl ring-1 ring-white/10 motion-safe:animate-card-rise"
+          className="relative w-full max-w-[min(1280px,calc((90dvh-4.25rem)*16/9))] overflow-hidden rounded-2xl bg-slate-950 shadow-2xl ring-1 ring-white/10 motion-safe:animate-card-rise"
         >
-          <div className="aspect-video w-full">
-            <MediaVideo
-              stream={stream}
-              fit="contain"
-              mirrored={who.name === null && media === 'video'}
-            />
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-3 bg-gradient-to-b from-slate-950/75 to-transparent p-3 pb-8">
+          {/* A bar of its own above the picture, never over it: a shared screen's own title sits at its top. */}
+          <div className="flex h-13 items-center justify-between gap-3 border-b border-white/10 px-3">
             <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-white">
               <span
                 aria-hidden
@@ -78,11 +72,18 @@ function Panel({
             <button
               type="button"
               onClick={restore}
-              className="pointer-events-auto flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-white/12 px-3 text-sm font-medium text-white ring-1 ring-white/15 backdrop-blur transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-white/25"
+              className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white ring-1 ring-white/15 transition hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:bg-white/25"
             >
               <RestoreIcon />
               Restore
             </button>
+          </div>
+          <div className="aspect-video w-full">
+            <MediaVideo
+              stream={stream}
+              fit="contain"
+              mirrored={who.name === null && media === 'video'}
+            />
           </div>
         </div>
       </div>

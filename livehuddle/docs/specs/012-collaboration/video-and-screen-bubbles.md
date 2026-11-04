@@ -56,7 +56,8 @@ waits for it.
 - Capped for cost and clarity: up to **1920×1080 at 5 to 15 frames a second**, tuned for text (`contentHint`
   `detail`), at most **1 Mbps**, one layer.
 - The sharer sees a clear **"You are sharing your screen"** bar at the top of the canvas with a **Stop Sharing**
-  button, and a small bubble of their own share above their head.
+  button ("Sharing your screen" on a phone, so it never cuts off), and a small bubble of their own share above
+  their head.
 - Viewers in earshot see the share as a bubble above the sharer, next to their camera bubble when both are on, and
   maximise it the same way.
 - **It stops** when the sharer presses Stop Sharing (the bar or the strip), when they stop it from the browser's own
@@ -78,7 +79,8 @@ One bubble for both kinds, drawn in the canvas layer so it zooms and slides with
 ### Maximised
 
 - The bubble opens into a large panel over the canvas (at most 1280 px wide, 16:9, never more than 90% of the window),
-  with the person's name, the kind, and a **Restore** button. The canvas stays live behind a soft dimmed backdrop.
+  with the person's name, the kind, and a **Restore** button in a bar above the picture (never over it, where a
+  shared screen's own title sits). The canvas stays live behind a soft dimmed backdrop.
 - **Restore**, Escape, or pressing the backdrop puts it back. One bubble is maximised at a time: maximising another
   restores the first.
 - If its person walks out of earshot, stops the camera or share, or leaves, the panel closes by itself.
