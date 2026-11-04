@@ -107,7 +107,7 @@ export const HELP_ARTICLES = {
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-space',
+  yourFirstSpace: 'getting-started/your-first-space',
   templates: 'canvas/templates',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
@@ -377,7 +377,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Offline Mode',
     description: 'Spaces saved only in this browser, and how to sync them.',
   },
-  yourFirstDiagram: {
+  yourFirstSpace: {
     title: 'Learn about your first Space',
     description: 'A short walkthrough of opening your first Space and meeting in it.',
   },
