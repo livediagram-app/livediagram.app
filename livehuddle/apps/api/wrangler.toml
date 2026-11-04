@@ -108,11 +108,9 @@ crons = ["*/15 * * * *"]
 # The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): the `calls-mode` key (on, audio-only, off)
 # and the budget poll's trip record. Flip it with
 #   corepack pnpm exec wrangler kv key put --binding CALLS_SWITCH --remote calls-mode off
-# TODO(owner, Work Tracker #316): create the namespace (`wrangler kv namespace create livehuddle-calls-switch`),
-# put its id here and uncomment. Until then calls read as on and the poll does nothing.
-# [[kv_namespaces]]
-# binding = "CALLS_SWITCH"
-# id = "<livehuddle-calls-switch id>"
+[[kv_namespaces]]
+binding = "CALLS_SWITCH"
+id = "9d41805f30a64ee9924394c304ddc875" # livehuddle-calls-switch
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -337,10 +335,9 @@ name = "EMAIL"
 
 # The calls switch, restated because bindings don't inherit: staging's own namespace, so a rehearsal never flips
 # production's calls.
-# TODO(owner, Work Tracker #316): create `livehuddle-calls-switch-staging`, put its id here and uncomment.
-# [[env.staging.kv_namespaces]]
-# binding = "CALLS_SWITCH"
-# id = "<livehuddle-calls-switch-staging id>"
+[[env.staging.kv_namespaces]]
+binding = "CALLS_SWITCH"
+id = "a4a1dde286e1495e91a798641bc2d4b6" # livehuddle-calls-switch-staging
 
 
 # The four ACCOUNTS_* / API_RESOURCE values and
