@@ -6,5 +6,6 @@ Follow the references below only as needed; never upfront.
 - ./stale-builds.md - when implementing or changing the live build id, full page loads while stale, or the chunk-load safety net
 - ./nextjs.md - when implementing or changing `@liveworkspace/next-config`, an app's `next.config.ts`, the dev cache or the Next/React versions
 - ./trusted-types.md - when implementing or changing the Trusted Types header, its policies, the boot script or a `dangerouslySetInnerHTML` site
+- ./calls-kill-switch.md - when implementing or changing the calls switch, `callsMode()`, the budget poll or its email
 - ./DEFAULTS.md - when a platform blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a platform blueprint covers

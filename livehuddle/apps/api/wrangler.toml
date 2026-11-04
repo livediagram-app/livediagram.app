@@ -32,6 +32,14 @@ EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.livehuddle.app"
 
+# The calls kill switch's budget poll (docs/specs/016-platform/calls-kill-switch.md). Settings, not code: the monthly
+# Realtime cost above the free 1,000 GB that trips calls to audio only, then off (the owner's $10 and $25), and the
+# account whose usage is priced. CALLS_ANALYTICS_TOKEN (Account Analytics: Read) and CALLS_ALERT_TO (where a trip's
+# email goes) are secrets; without the token, or without the CALLS_SWITCH namespace below, the poll does nothing.
+CALLS_AUDIO_ONLY_AT_USD = "10"
+CALLS_OFF_AT_USD = "25"
+CALLS_USAGE_ACCOUNT_ID = "851be7d244b76a6557bcbe6c4ded80f5"
+
 # No bucket: images are liveworkspace's media service's (MEDIA_KEY below), and snapshots and share cards
 # its previews (liveworkspace/docs/specs/006-media/previews.md). The bytes uploaded before that move are still in the previous
 # Cloudflare account's livehuddle-images bucket, until they are migrated into the media service.
@@ -90,8 +98,21 @@ new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
 tag = "v2"
 deleted_classes = ["WorkbenchStore"]
 
-# No scheduled jobs: each canvas keeps itself (its Durable Object's alarm: the index outbox, the Community check,
-# the daily upkeep) and each person's stores keep theirs. Teams, tokens and the Trash are liveworkspace's.
+# One scheduled job: the calls budget poll every 15 minutes (docs/specs/016-platform/calls-kill-switch.md "The budget
+# poll"). Everything else keeps itself: each canvas through its Durable Object's alarm (the index outbox, the
+# Community check, the daily upkeep) and each person's stores theirs. Teams, tokens and the Trash are liveworkspace's.
+# `triggers` is inherited, so staging runs the same cron.
+[triggers]
+crons = ["*/15 * * * *"]
+
+# The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): the `calls-mode` key (on, audio-only, off)
+# and the budget poll's trip record. Flip it with
+#   corepack pnpm exec wrangler kv key put --binding CALLS_SWITCH --remote calls-mode off
+# TODO(owner, Work Tracker #316): create the namespace (`wrangler kv namespace create livehuddle-calls-switch`),
+# put its id here and uncomment. Until then calls read as on and the poll does nothing.
+# [[kv_namespaces]]
+# binding = "CALLS_SWITCH"
+# id = "<livehuddle-calls-switch id>"
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -250,6 +271,12 @@ EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livehuddle.app"
 
+# The calls budget poll's settings, as production's (both price the same account's usage). To rehearse a trip
+# without spending, set CALLS_USAGE_TEST_GB here (for example "1300" trips audio only, "1600" off) and deploy.
+CALLS_AUDIO_ONLY_AT_USD = "10"
+CALLS_OFF_AT_USD = "25"
+CALLS_USAGE_ACCOUNT_ID = "851be7d244b76a6557bcbe6c4ded80f5"
+
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
 # scopes a namespace per script, and `livehuddle-api-staging` is a different
 # script, so these are already separate counters. Renumbering them would
@@ -307,6 +334,13 @@ deleted_classes = ["WorkbenchStore"]
 # people production would (docs/specs/016-platform/staging-environment.md), from the same sender.
 [[env.staging.send_email]]
 name = "EMAIL"
+
+# The calls switch, restated because bindings don't inherit: staging's own namespace, so a rehearsal never flips
+# production's calls.
+# TODO(owner, Work Tracker #316): create `livehuddle-calls-switch-staging`, put its id here and uncomment.
+# [[env.staging.kv_namespaces]]
+# binding = "CALLS_SWITCH"
+# id = "<livehuddle-calls-switch-staging id>"
 
 
 # The four ACCOUNTS_* / API_RESOURCE values and

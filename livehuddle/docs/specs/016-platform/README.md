@@ -13,4 +13,5 @@ Follow the references below only as needed; never upfront.
 - ./secure-context.md - when an API is secure-context only (`crypto.randomUUID`, `crypto.subtle`, the clipboard) or the editor runs in an embed on an http page or an http instance on a LAN: the randomUUID boot shim, the SHA-256 fallback and what still needs HTTPS
 - ./trusted-types.md - when adding `dangerouslySetInnerHTML`, an inline script, a third-party script or a response header: the enforced Trusted Types header, the two policies, third parties and violations
 - ./installable-app.md - when working on installing the app to a home screen or the push-only service worker: the manifest (start at the Explorer), its icons, `/push-worker.js` with no fetch handler, iPhone's Add to Home Screen
+- ./calls-kill-switch.md - when working on the cost of calls: the KV switch (on, audio only, off) the Realtime mint route reads, the scheduled budget poll of Realtime usage, its thresholds, the owner email and the billing backstop
 - ./blueprints/README.md - when implementing or changing a platform feature from its blueprint
