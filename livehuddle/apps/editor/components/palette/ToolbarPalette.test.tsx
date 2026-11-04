@@ -198,7 +198,7 @@ describe('ToolbarPalette', () => {
       for (const [q, gone] of [
         ['marker', /^Marker \d/],
         ['cylinder', /^Add Cylinder$/],
-        ['pie chart', /^Add Pie Chart$/],
+        ['lane', /^Add Lane$/],
         ['poll', /^Add Poll$/],
       ] as const) {
         type(popover, q);

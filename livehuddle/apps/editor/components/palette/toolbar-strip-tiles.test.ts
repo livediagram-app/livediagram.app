@@ -67,7 +67,6 @@ describe('stripTilesFor', () => {
   // "Fixed dividers": each category's groups, between the tiles shown.
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
-    ['write', ['tools:text']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
     ['media', ['media:embed-website']],
     ['data', ['data:legend']],
@@ -89,14 +88,14 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // Workshop's Popular divides after the text (the third tile). With room
-    // for 4.26 tiles, four tiles and that divider (4.2) fit.
+    // The meeting palette's Popular divides after the link card (the fifth tile). With room
+    // for 6.26 tiles, six tiles and that divider (6.2) fit.
     const popular = { ...NONE, tiles: workshopPopular };
-    const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
-    expect(roomy.tiles).toHaveLength(4);
-    expect([...roomy.dividersAfter]).toEqual(['tools:text']);
-    // Without the slack the divider costs the fourth tile, as before.
-    expect(stripTilesFor('popular', { ...popular, limit: 4 }).tiles).toHaveLength(3);
+    const roomy = stripTilesFor('popular', { ...popular, limit: 6.26 });
+    expect(roomy.tiles).toHaveLength(6);
+    expect([...roomy.dividersAfter]).toEqual(['tools:link-card']);
+    // Without the slack the divider costs the sixth tile, as before.
+    expect(stripTilesFor('popular', { ...popular, limit: 6 }).tiles).toHaveLength(5);
   });
 
   it('drops the dividers before any tile when only the tiles fit', () => {

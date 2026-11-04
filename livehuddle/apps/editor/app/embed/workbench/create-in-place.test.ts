@@ -11,10 +11,16 @@ const HOME = { kind: 'explorer', node: { kind: 'home' } } as const;
 
 describe('createInPlaceOf', () => {
   it('takes the wizard href’s place and template first', () => {
+    expect(createInPlaceOf('/new?folder=f1&template=team-pod', ORIGIN, HOME)).toEqual({
+      folderId: 'f1',
+      teamId: null,
+      templateKind: 'team-pod',
+    });
+    // A template that left (Work Tracker #423) is no template: the create starts blank.
     expect(createInPlaceOf('/new?folder=f1&template=retrospective', ORIGIN, HOME)).toEqual({
       folderId: 'f1',
       teamId: null,
-      templateKind: 'retrospective',
+      templateKind: null,
     });
     expect(createInPlaceOf('/new?team=t1', ORIGIN, HOME)).toEqual({
       folderId: undefined,
