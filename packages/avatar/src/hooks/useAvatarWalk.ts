@@ -300,8 +300,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       const sy = r.wrapper.top + p.y * viewportZoom;
       return sx >= r.main.left && sx <= r.main.right && sy >= r.main.top && sy <= r.main.bottom;
     };
-    // Put down clear of every fence and room wall (docs/specs/009-elements/fence.md "What does not walk"): a spawn on a
-    // wall's line otherwise opened the character standing in the wall (Work Tracker #437).
+    // Put down clear of the fences and room walls it lands beside (docs/specs/009-elements/fence.md "What does not
+    // walk"): a spawn inside a wall's reach otherwise opened held there, where a click past the wall did nothing
+    // (Work Tracker #437). One put down in a wall itself stays, free to walk off either side.
     const reach = fenceReachFor(avatarScale(config.size));
     const place = (point: AvatarPoint) => {
       const clear = clearOfFences(point, fences, reach);
@@ -338,7 +339,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     if (!centre) return;
     const current = posRef.current;
     if (!(current && onScreen(current))) place(centre);
-    // The remembered spot stays, unless a wall was put over it while the mode was off.
+    // The remembered spot stays, unless a wall was put beside it while the mode was off.
     else if (clearOfFences(current, fences, reach) !== current) place(current);
   });
   useEffect(() => {

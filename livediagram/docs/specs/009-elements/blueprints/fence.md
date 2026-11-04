@@ -71,11 +71,12 @@ Invariants:
 
 - **I1:** no blocking state is written to the document, the room, the index or undo.
 - **I2:** a character outside every fence's reach never ends a frame inside one.
-- **I3:** a character inside a fence's reach can always move away from it; one within `FENCE_ON_LINE` can also
-  cross it, toward a click on either side.
+- **I3:** a character inside a fence's reach can always move away from it; one within `FENCE_ON_LINE` is not
+  held at all, so it can also cross it, toward a click on either side.
 - **I4:** teleports (portal), seating snaps and spawns do not pass through `fenceStep`. Entering the mode
-  places the character through `clearOfFences` (nudged out of every reach to the side its feet were on, or left
-  where it is when no nudge clears every reach in `FENCE_CLEAR_ROUNDS`).
+  places the character through `clearOfFences`: off each fence whose reach it is inside but not within
+  `FENCE_ON_LINE` of, to the side its feet were on; left where it is when a nudge would cross another fence or
+  `FENCE_CLEAR_ROUNDS` nudges do not clear it.
 - **I5:** no walk ends within `FENCE_ON_LINE` of a line: it is under every size's reach, so only a spawn or an
   edit (a fence or room moved onto a character) puts one there.
 
@@ -134,7 +135,7 @@ export function fenceStep(
   fences: readonly FenceSegment[],
   reach?: number,
 ): { pos: FencePoint; blocked: boolean };
-export const FENCE_ON_LINE = FENCE_REACH / 2;
+export const FENCE_ON_LINE = 8;
 export function clearOfFences(
   p: FencePoint,
   fences: readonly FenceSegment[],
@@ -163,7 +164,7 @@ export function clearOfFences(
 | --- | ------------------------------------ | -------------------------------------------------------- |
 | E1  | Fence dropped on a character         | Character may step away, never across (I3)               |
 | E1b | Character on the line (a wall)       | Crosses toward a click on either side (I3, I5)           |
-| E1c | Mode entered with feet in a reach    | Nudged clear to the near side (I4)                       |
+| E1c | Mode entered beside a wall, in reach | Nudged clear to the side the feet were on (I4)           |
 | E2  | Gap between fence ends `< 2 * reach` | Sealed                                                   |
 | E3  | Diagonal walk into a fence           | Slides along it                                          |
 | E4  | Click-walk target behind a fence     | Slides toward the target's foot, then stops on stall     |
@@ -248,7 +249,7 @@ click-walk stops against a fence.
 | `FENCE_RAIL_OPACITY`   | 0.78                  | Rails behind posts                              |
 | `FENCE_WOOD`           | `#8a5a33` / `#c08a5b` | Wood brown per paper (D201)                     |
 | `FENCE_REACH`          | 12                    | Feet half-width at Regular size; 8 to 20 (D202) |
-| `FENCE_ON_LINE`        | 6                     | Reach / 2; under Small's 9.2 px, walk-proof     |
+| `FENCE_ON_LINE`        | 8                     | Under Small's 9.2 px reach, so walk-proof       |
 | `FENCE_CLEAR_ROUNDS`   | 4                     | Entry nudges; a corner needs two                |
 | `FENCE_STALL`          | 0.25                  | Canvas px; below visible motion                 |
 | `FENCE_APPROACH_STEPS` | 7                     | 13 px step to 0.1 px                            |

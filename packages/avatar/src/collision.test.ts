@@ -13,7 +13,7 @@ import {
   type FenceSegment,
 } from './collision';
 import { AVATAR_SIZES, avatarScale } from './config';
-import { boxEdges, roomWalls } from './office-geometry';
+import { roomWalls } from './office-geometry';
 import { stepTowards } from './walk';
 
 // docs/specs/009-elements/fence.md "Blocking"
@@ -66,20 +66,20 @@ describe('fenceRefuses', () => {
     expect(fenceRefuses({ x: 220, y: 20 }, { x: 220, y: -20 }, across)).toBe(false);
   });
 
-  it('lets a character inside the reach step away but not across', () => {
-    expect(fenceRefuses({ x: 100, y: 8 }, { x: 100, y: 12 }, across)).toBe(false);
-    expect(fenceRefuses({ x: 100, y: 8 }, { x: 100, y: -4 }, across)).toBe(true);
-    expect(fenceRefuses({ x: 100, y: 8 }, { x: 100, y: 6 }, across)).toBe(true);
+  it('lets a character inside the reach, beside the fence, step away but not across', () => {
+    expect(fenceRefuses({ x: 100, y: 10 }, { x: 100, y: 12 }, across)).toBe(false);
+    expect(fenceRefuses({ x: 100, y: 10 }, { x: 100, y: -4 }, across)).toBe(true);
+    expect(fenceRefuses({ x: 100, y: 10 }, { x: 100, y: 8 }, across)).toBe(true);
   });
 
   it('lets a character on the fence itself step off it to either side', () => {
-    expect(FENCE_ON_LINE).toBe(FENCE_REACH / 2);
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: -4 }, across)).toBe(false);
     expect(fenceRefuses({ x: 100, y: -4 }, { x: 100, y: 1 }, across)).toBe(false);
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: 2 }, across)).toBe(false);
     expect(fenceRefuses({ x: 100, y: 4 }, { x: 100, y: 10 }, across)).toBe(false);
-    // Just past half the reach it is beside the fence again, held on its own side.
-    expect(fenceRefuses({ x: 100, y: 6 }, { x: 100, y: 2 }, across)).toBe(true);
+    expect(fenceRefuses({ x: 100, y: 7.9 }, { x: 100, y: -4 }, across)).toBe(false);
+    // From FENCE_ON_LINE out it is beside the fence, held on its own side.
+    expect(fenceRefuses({ x: 100, y: FENCE_ON_LINE }, { x: 100, y: 4 }, across)).toBe(true);
   });
 
   it('keeps on-the-fence closer than any size’s reach, so no walk can end there and cross', () => {
@@ -241,7 +241,7 @@ describe('a character overlapping a room’s wall', () => {
   }
 
   it('click-walks into the room from feet just outside the wall’s line', () => {
-    for (const dx of [-5, -3, -1, 0, 1, 3, 5]) {
+    for (const dx of [-7, -5, -3, -1, 0, 1, 3, 5, 7]) {
       const from = { x: left + dx, y: 300 };
       expect(clickWalk(from, { x: 300, y: 300 })).toEqual({
         pos: { x: 300, y: 300 },
@@ -276,42 +276,44 @@ describe('clearOfFences', () => {
     expect(clearOfFences(p, [])).toBe(p);
   });
 
-  it('nudges a point inside the reach straight off the fence, to the side it was on', () => {
-    expect(clearOfFences({ x: 100, y: 4 }, [across])).toEqual({ x: 100, y: FENCE_REACH + 0.5 });
-    expect(clearOfFences({ x: 100, y: -4 }, [across])).toEqual({
+  it('leaves a point in a fence itself where it is, free to walk off either side', () => {
+    for (const y of [-7, -4, 0, 4, 7]) {
+      const p = { x: 100, y };
+      expect(clearOfFences(p, [across])).toBe(p);
+    }
+  });
+
+  it('nudges a point beside a fence, inside its reach, straight off it to the side it was on', () => {
+    expect(clearOfFences({ x: 100, y: 10 }, [across])).toEqual({ x: 100, y: FENCE_REACH + 0.5 });
+    expect(clearOfFences({ x: 100, y: -8 }, [across])).toEqual({
       x: 100,
       y: -(FENCE_REACH + 0.5),
     });
-    expect(clearOfFences({ x: 100, y: 4 }, [across], 20)).toEqual({ x: 100, y: 20.5 });
-  });
-
-  it('nudges a point exactly on the line square off it', () => {
-    const p = clearOfFences({ x: 100, y: 0 }, [across]);
-    expect(p.x).toBeCloseTo(100, 9);
-    expect(Math.abs(p.y)).toBeCloseTo(FENCE_REACH + 0.5, 9);
-    const dot = { a: { x: 50, y: 50 }, b: { x: 50, y: 50 } };
-    expect(clearOfFences({ x: 50, y: 50 }, [dot])).toEqual({ x: 50, y: 50 + FENCE_REACH + 0.5 });
+    expect(clearOfFences({ x: 100, y: 10 }, [across], 20)).toEqual({ x: 100, y: 20.5 });
+    // Past the end of the fence: off its end, the way the feet were.
+    const p = clearOfFences({ x: 208, y: 6 }, [across]);
+    expect(pointSegmentDistance(p, across)).toBeCloseTo(FENCE_REACH + 0.5, 9);
+    expect(p.x).toBeGreaterThan(208);
+    // A fence of no length (a post): straight away from it.
+    const post = { a: { x: 50, y: 50 }, b: { x: 50, y: 50 } };
+    expect(clearOfFences({ x: 60, y: 50 }, [post])).toEqual({ x: 50 + FENCE_REACH + 0.5, y: 50 });
   });
 
   it('clears both walls of a room’s corner', () => {
     const walls = roomWalls({ x: 0, y: 0, width: 400, height: 300 });
-    const p = clearOfFences({ x: 7, y: 33 }, walls);
+    const p = clearOfFences({ x: 15, y: 41 }, walls);
     for (const w of walls) expect(pointSegmentDistance(p, w)).toBeGreaterThanOrEqual(FENCE_REACH);
-    expect(p.x).toBeGreaterThan(5);
-    expect(p.y).toBeGreaterThan(31);
+    expect(p).toEqual({ x: 17.5, y: 43.5 });
   });
 
-  it('never nudges a point through another fence: out of a box too small to stand in', () => {
-    const p = { x: 5, y: 5 };
-    expect(clearOfFences(p, boxEdges({ x: 0, y: 0, width: 10, height: 10 }))).toBe(p);
+  it('never nudges a point through another fence', () => {
+    const p = { x: 100, y: 9 };
+    expect(clearOfFences(p, [across, { a: { x: 0, y: 11 }, b: { x: 200, y: 11 } }])).toBe(p);
   });
 
   it('leaves a point no nudge can clear (a gap narrower than a character) where it was', () => {
-    const narrow: FenceSegment[] = [
-      { a: { x: 0, y: 0 }, b: { x: 200, y: 0 } },
-      { a: { x: 0, y: 20 }, b: { x: 200, y: 20 } },
-    ];
-    const p = { x: 100, y: 5 };
+    const narrow: FenceSegment[] = [across, { a: { x: 0, y: 22 }, b: { x: 200, y: 22 } }];
+    const p = { x: 100, y: 11 };
     expect(clearOfFences(p, narrow)).toBe(p);
   });
 
@@ -321,7 +323,7 @@ describe('clearOfFences', () => {
       b: { x: i * 30 + 20, y: 500 },
     }));
     const spent = cpuMsOf(() => {
-      for (let i = 0; i < 60; i++) clearOfFences({ x: 59_990, y: 505 }, fences);
+      for (let i = 0; i < 60; i++) clearOfFences({ x: 59_990, y: 510 }, fences);
     });
     expect(spent / 60).toBeLessThan(cpuBudgetMs(4));
   });
