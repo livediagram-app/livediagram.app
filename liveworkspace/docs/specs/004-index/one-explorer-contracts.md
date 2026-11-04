@@ -453,6 +453,9 @@ never tried.
 - **The room's alarm** drains on idle and at most once a minute, and never before the earliest key's wait is over;
   a drain sends only the keys whose wait is over, so a key in backoff never holds back a fresh one. With nothing
   owed but parked keys, the alarm is not set for the outbox at all.
+- **The room's one alarm** is the earliest of everything the room has due (the outbox, its shared tabs, grants to ask
+  for or lapse, the Community check, upkeep), and never sooner than a second from now, whatever is due
+  ([architecture.md](../002-architecture/architecture.md#a-durable-objects-alarm)).
 
 A tab shared between items (each app's `tab-<item>-many-to-many.md`) keeps the same count on `share_outbox`: a
 send the other holder fails waits a minute, doubling, at most an hour, and is parked after 12 failures

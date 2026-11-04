@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ROOM_ALARM_FLOOR_MS } from '@liveworkspace/api-kit/room-alarm';
 import { GRANT_LAPSED_CLOSE, ROOM_GRANT_ASK_BEFORE_MS } from '@livediagram/api-schema';
 import { DocumentRoom } from './document-room';
 
@@ -118,5 +119,26 @@ describe('a session grant', () => {
     await document.alarm();
     expect(ws.closed).toBeNull();
     expect(alarms.filter((at) => at <= Date.now())).toEqual([]);
+  });
+});
+
+// A time already due must never fire the alarm back to back (liveworkspace/docs/specs/002-architecture/architecture.md
+// "A Durable Object's alarm"): the room arms it a second from now instead.
+describe('the room alarm', () => {
+  it('arms a time stuck in the past a second from now, never at once', async () => {
+    const { document, join, alarms } = room();
+    const ws = join(T0 + 600_000);
+    // A socket that stays open after the room closes it (a bug of the kind that once looped the alarm): its lapsed
+    // grant stays due, in the past, on every arm.
+    ws.close = (code, reason) => void (ws.closed = { code, reason });
+    vi.setSystemTime(T0 + 600_000);
+    await document.alarm();
+    expect(ws.closed?.code).toBe(GRANT_LAPSED_CLOSE);
+    expect(alarms.at(-1)).toBe(T0 + 600_000 + ROOM_ALARM_FLOOR_MS);
+
+    // Still stuck when that alarm fires a second later: the next waits another second, never at once.
+    vi.setSystemTime(T0 + 600_000 + ROOM_ALARM_FLOOR_MS);
+    await document.alarm();
+    expect(alarms.at(-1)).toBe(T0 + 600_000 + 2 * ROOM_ALARM_FLOOR_MS);
   });
 });

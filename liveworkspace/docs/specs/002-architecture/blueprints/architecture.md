@@ -34,6 +34,21 @@ exceeded timeout`, `internal error while starting up D1 DB storage`, `D1 DB rese
 3. Anything else: `console.error('api error route=<route>', err)`, `reportCrash()` (a throw there logs
    `[telemetry] crash report failed` and is swallowed), then `500 { error: 'internal_error' }`.
 
+### A Durable Object's alarm (`packages/api-kit/src/room-alarm.ts`)
+
+- `roomAlarmAt(due, now)`: `max(due, now + ROOM_ALARM_FLOOR_MS)`.
+- `armRoomAlarm(storage, due, now)`: drops the nulls in `due`; none left, `deleteAlarm()`; else
+  `setAlarm(roomAlarmAt(min(due), now))`. It keeps the time it set per `storage` object (a `WeakMap`, so a woken
+  object starts empty) and skips the call when the time is the same and still ahead (or both are "none"). Answers the
+  time set, or null. Each room's `armAlarm` (livediagram, livedocuments, livehuddle `document-room.ts`, livedesign
+  `design-room.ts`, liveplanner `plan-room.ts`) hands it its list. A room's `purge` deletes the alarm itself and the
+  remembered time stays: the purged room has nothing left to arm, so at worst a still-ahead baton or agent time is
+  skipped on an empty room.
+- The index's `WebhookDispatcher.alarm` sets `roomAlarmAt(nextAt, now)`; the Drive mirror's `nextPassAt` floors
+  its time the same way (it was `max(now, …)`), before `alarm` compares it with the alarm already set.
+- Left at now, on purpose: `kick()`, Drive's `connect`, `check` and folder adoption, the export's `start` and its next
+  chunk.
+
 A handler that catches broadly and would turn an outage into another answer rethrows it first: status's snapshot read
 (else an empty status, edge-cached), accounts' session read (else `401 signed_out`) and Drive's open and import (else
 `502 google_failed`).
@@ -190,6 +205,9 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
 | `packages/sites/src/workspace-proxy.test.ts` (22)                                            | every router's forwards: routes, cookies, loop guard, visitor address, redirects, the status page                                                      |
 | `packages/sites/src/previews-proxy.test.ts` (3)                                              | the previews forward and the share link's picture doors                                                                                                |
 | `packages/api-kit/src/request-failure.test.ts` (23)                                          | D1 and Durable Object outages named, bugs left to the 500, the answers and their logs, the guard (held at 100%)                                        |
+| `packages/api-kit/src/room-alarm.test.ts`                                                    | the floor, the earliest time, none due, a repeat skipped, a time passed or changed set again (held at 100%)                                            |
+| each room's `*-grants.test.ts`                                                               | a time stuck in the past arms the alarm a second from now, and again a second on once it fires                                                         |
+| index `webhooks/dispatch.test.ts`, Drive `mirror/pass.test.ts`                               | the dispatcher's next alarm and the next pass, already past, set a second from now                                                                     |
 | `<app>/apps/api/src/request-failure.test.ts` (4 each)                                        | an outage and a bug before any route (the token lookup) and inside one, CORS and the release on the answer                                             |
 | each service's `request-failure.test.ts`, `index.test.ts`, `api.test.ts` or `routes.test.ts` | its D1 or mirror outage answered 503 with its own headers and route words, through `unavailableD1()` (`@liveworkspace/api-kit/testing/unavailable-d1`) |
 
@@ -205,6 +223,8 @@ Each service's own tests are in its blueprint.
 `WORKSPACE_ORIGIN` and `INDEX_ORIGIN` vars. `UNAVAILABLE_RETRY_AFTER_SECONDS` 5
 (`packages/api-kit/src/request-failure.ts`): the `Retry-After` of every storage and accounts outage; long enough for a
 short D1 or Durable Object reset, short enough that a caller's retry lands soon after one; safe from 1 to 60.
+`ROOM_ALARM_FLOOR_MS` 1,000 (`packages/api-kit/src/room-alarm.ts`): the soonest any re-armed alarm goes; it caps a
+stuck time at one alarm a second, and every wait it can add to is seconds or more already; safe from 100 to 5,000.
 
 ## Defaults ledger
 
