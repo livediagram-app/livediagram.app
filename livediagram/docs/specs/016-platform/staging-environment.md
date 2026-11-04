@@ -172,7 +172,7 @@ A deploy writes no secret, so they survive every deploy
 ## One workflow body, two callers
 
 The monorepo's root `deploy.yml` holds the whole deploy as a reusable workflow taking the
-environment as an input, each Worker through `deploy-worker.yml`; `deploy-staging.yml`
+environment as an input, each group of Workers through `deploy-group.yml`; `deploy-staging.yml`
 and `deploy-production.yml` are thin callers ([Deployment](deployment.md) "Deploy"). A
 staging environment whose deploy has drifted from production's tests nothing.
 

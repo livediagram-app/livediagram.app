@@ -110,7 +110,9 @@ everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and
    a new editor never calls an api that lacks its routes and the mcp worker's binding to the api exists.
 3. **Routers**: `liveplanner-router`, whose service bindings target the workers above.
 
-`deploy-worker.yml` deploys each Worker: its build when it serves static assets (the help site from full history,
+`deploy-group.mjs` deploys each Worker, run by `deploy-group.yml` for each group of Workers (the api with the other
+services and apis, liveplanner's sites and MCP in a job of their own, the router with the other routers, each Worker
+after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): its build when it serves static assets (the help site from full history,
 since its sitemap dates each article by its last commit), then `pnpm exec wrangler deploy`, with `--env staging` on
 staging. A save that fails while old and new versions briefly serve side by side is retried on its own
 ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)). A plan's schema only moves forward (a

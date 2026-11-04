@@ -115,7 +115,7 @@ Every person is a liveworkspace identity sent as `Authorization: Bearer`: a gues
 
 ## Deployment
 
-livedesign deploys from the monorepo's root `.github/workflows/` to the liveworkspace Cloudflare account ([docs/ci.md](../../../docs/ci.md) "Deploys"). One reusable workflow (`deploy.yml`, each Worker through `deploy-worker.yml`) deploys an environment: its plan diffs the commit against the environment's `deployed/<environment>` tag, asks Turborepo which workspaces that reaches, and deploys only those Workers, in three tiers, each waiting for the one before: the services and apis (`livedesign-api` first, so live and mcp can bind to it), then the sites, then the router in front.
+livedesign deploys from the monorepo's root `.github/workflows/` to the liveworkspace Cloudflare account ([docs/ci.md](../../../docs/ci.md) "Deploys"). One reusable workflow (`deploy.yml`, each group of Workers through `deploy-group.yml`) deploys an environment: its plan diffs the commit against the environment's `deployed/<environment>` tag, asks Turborepo which workspaces that reaches, and deploys only those Workers, in three tiers, each waiting for the one before: the services and apis (`livedesign-api` first, so live and mcp can bind to it), then the sites, then the router in front.
 
 |         | Production                                                       | Staging                                                            |
 | ------- | ---------------------------------------------------------------- | ------------------------------------------------------------------ |

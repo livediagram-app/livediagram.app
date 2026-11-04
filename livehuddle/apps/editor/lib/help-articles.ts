@@ -64,6 +64,8 @@ export const HELP_ARTICLES = {
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
+  // The call strip's `?` (CallClusterButton); the article links on to Cameras and Screen Sharing.
+  proximityAudio: 'collaboration/proximity-audio',
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   // Standing panels.
@@ -386,6 +388,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   livePresence: {
     title: 'Learn about live presence',
     description: 'Who is in the canvas, where they are, and following them.',
+  },
+  proximityAudio: {
+    title: 'Learn about calls',
+    description: 'Talking with the people near you, your microphone, cameras and screen sharing.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',

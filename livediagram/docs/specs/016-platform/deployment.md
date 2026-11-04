@@ -76,7 +76,7 @@ The root `deploy.yml` (reusable) deploys one environment, and two thin callers r
 2. **Sites and MCP**: `livediagram-marketing`, `livediagram-editor`, `livediagram-help`, `livediagram-community` and `livediagram-mcp`, so a new editor never calls an api that lacks its routes, and the community's and mcp's bindings to the api exist.
 3. **Routers**: `livediagram-router`, whose service bindings target the five workers above.
 
-**One Worker** (the root `deploy-worker.yml`): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars; on staging, the staging MCP origin too). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
+**One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other services and apis, livediagram's sites and MCP in a job of their own, and the router with the other routers, each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars; on staging, the staging MCP origin too). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
 
 **What a deploy writes.** Code and plain vars. Secrets are set on each Worker with `wrangler secret put` and survive a deploy (see [Credentials and secrets](#credentials-and-secrets)).
 

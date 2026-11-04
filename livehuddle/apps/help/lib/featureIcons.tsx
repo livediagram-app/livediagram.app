@@ -5,6 +5,7 @@ import {
   lucideFilePlus,
   lucideFolder,
   lucideFootprints,
+  lucideHeadphones,
   lucideLayoutGrid,
   lucideLink,
   lucideLocateFixed,
@@ -16,6 +17,7 @@ import {
   lucideTimer,
   lucideToggleRight,
   lucideUsers,
+  lucideVideo,
   lucideVote,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livehuddle/ui';
@@ -272,6 +274,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" />
       <circle cx="18" cy="6" r="2.5" />
+    </Glyph>
+  ),
+  // Calls: the headphones the call strip shows a listener, and the camera its Camera button shows.
+  'proximity-audio': (
+    <Glyph>
+      <Prims prims={lucideHeadphones} />
+    </Glyph>
+  ),
+  'cameras-and-screen-sharing': (
+    <Glyph>
+      <Prims prims={lucideVideo} />
     </Glyph>
   ),
   links: (

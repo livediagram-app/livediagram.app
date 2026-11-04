@@ -40,6 +40,21 @@ describe('CallClusterButton', () => {
     expect(container.innerHTML).toBe('');
   });
 
+  // docs/specs/018-help/contextual-help-links.md: the strip ends in the calls article's `?`, whatever its state.
+  it('links the calls article from the strip before joining, once in, and while paused', () => {
+    render(<CallClusterButton />);
+    const help = () => screen.getByRole<HTMLAnchorElement>('link', { name: 'Learn about calls' });
+    show({});
+    expect(help().getAttribute('href')).toBe('/help/collaboration/proximity-audio/');
+    expect(help().target).toBe('_blank');
+    show({ phase: 'live', mic: 'open', someoneNear: true });
+    expect(help()).toBeTruthy();
+    show({ canSpeak: false, phase: 'live' });
+    expect(help()).toBeTruthy();
+    show({ mode: 'off' });
+    expect(help()).toBeTruthy();
+  });
+
   it('offers Join Audio to a speaker and Listen In to a Viewer', () => {
     render(<CallClusterButton />);
     show({});

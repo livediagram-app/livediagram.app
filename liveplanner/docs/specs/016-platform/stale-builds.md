@@ -88,7 +88,7 @@ back, so a later failure on the page can still reload once.
 
 ## Knowing which build is live
 
-- **The build id** is the commit the deploy built (the commit `deploy-worker.yml` checks out), baked into the editor's static export as
+- **The build id** is the commit the deploy built (the commit `deploy-group.yml` checks out), baked into the editor's static export as
   `NEXT_PUBLIC_BUILD_ID` (and exposed in every page as `<meta name="liveplanner-build">`) and given to the api worker as `BUILD_ID`, in the same deploy run. A build
   without one (local development, a preview that sets neither) disables this layer; the safety
   net still works.

@@ -6,7 +6,8 @@
 // you, and Leave Audio. While the calls kill switch pauses calls: Calls Paused, calm, never an error, and a press tries
 // again (docs/specs/016-platform/calls-kill-switch.md "Calls Paused"). Nothing at all while calls are off or there is
 // nobody to talk to. Once in, the camera and Share Screen sit beside the microphone (docs/specs/012-collaboration/
-// video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone.
+// video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone. In every state the strip
+// ends in a `?` to the calls article (docs/specs/018-help/contextual-help-links.md).
 import type { ReactNode } from 'react';
 import {
   lucideHeadphoneOff,
@@ -30,6 +31,7 @@ import {
   type CallActions,
   type CallSelf,
 } from '@/lib/calls/calls-store';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ScreenShareBar } from './ScreenShareBar';
 
 const MicIcon = lucideGlyph(lucideMic, 16);
@@ -122,6 +124,18 @@ function Segment(props: {
   );
 }
 
+// The strip's last segment: the calls article (docs/specs/018-help/contextual-help-links.md), the one help link a
+// control with no panel or popover of its own can carry. The shared `?`, sized to the strip's height and parted from
+// the button before it by the strip's hairline.
+function CallHelpLink() {
+  return (
+    <HelpArticleLink
+      article="proximityAudio"
+      className="!h-11 !w-9 !rounded-none border-l border-slate-100 !text-[15px] dark:border-slate-800"
+    />
+  );
+}
+
 // A soft ring round the microphone while somebody hears you, breathing with your own level.
 function LiveRing({ level }: { level: number }) {
   return (
@@ -172,6 +186,7 @@ function CallControl({
           onClick={actions.join}
           disabled={trying}
         />
+        <CallHelpLink />
       </ClusterStrip>
     );
   }
@@ -197,6 +212,7 @@ function CallControl({
           disabled={joining}
           tone={self.phase === 'error' ? 'warn' : 'rest'}
         />
+        <CallHelpLink />
       </ClusterStrip>
     );
   }
@@ -244,6 +260,7 @@ function CallControl({
         onClick={actions.leave}
         divided
       />
+      <CallHelpLink />
     </ClusterStrip>
   );
 }
