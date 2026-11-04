@@ -408,7 +408,9 @@ function guest(request: Request, env: Env, config: Configured | null): Response 
   // No accounts site to ask: straight back, saying so, and the page carries on without a guest identity.
   if (!config) {
     const fragment = new URLSearchParams({ error: 'guest_not_configured', state }).toString();
-    return redirect(`${back}#${fragment}`, []);
+    // A path, not appOrigin: the browser stays on the address it is on. Locally the router hands this worker its own
+    // address, so without AUTH_ORIGIN an absolute URL would leave the app for the api worker (a 404 page).
+    return redirect(`/auth/guest#${fragment}`, []);
   }
   return redirect(
     guestHandoffUrl({

@@ -304,7 +304,7 @@ describe('GET /api/auth/guest', () => {
     const res = await call('/api/auth/guest?state=abcdefgh12', { env: {} as Env });
     expect(res.status).toBe(302);
     expect(res.headers.get('Location')).toBe(
-      'https://lp.example/auth/guest#error=guest_not_configured&state=abcdefgh12',
+      '/auth/guest#error=guest_not_configured&state=abcdefgh12',
     );
   });
 
