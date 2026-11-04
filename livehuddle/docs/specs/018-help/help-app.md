@@ -4,7 +4,11 @@
 > livehuddle, with their help registry entries, figures and links, and redirects their addresses to the nearest article
 > that stays ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), listed with the other retired articles
 > under [Renamed articles](#renamed-articles). Part 2 has removed the slide deck, presenting and Page articles. Part 5
-> rewrites the About and Getting Started articles for meeting in Spaces.
+> rewrites the About and Getting Started articles for meeting in Spaces. Work Tracker #494 retired Auto Layout and
+> rewrote the articles that still taught shapes and arrows (Shape Libraries, the draw.io and tab imports, Layout
+> Cleanup, Animating Elements, Copy and Paste, Default Folders, Filters and the CLI) for what a Space holds; an
+> import still brings a diagram's shapes and arrows in as they were, and those articles say so rather than teach
+> drawing them.
 
 A standalone help centre at `/help`, modelled on the Manager Toolkit help centre but with livehuddle's information architecture, content, and brand.
 
@@ -334,6 +338,7 @@ These features left livehuddle on purpose, and their articles with them; each ol
 | `/help/selection-modes/slide-deck/presenter-controls/` | `/help/canvas/follow-along/`             | The same                                                                            |
 | `/help/tips-and-tricks/presenting-well/`               | `/help/canvas/follow-along/`             | The same                                                                            |
 | `/help/palette/tools/pages/`                           | `/help/palette/write/`                   | The Page element left livehuddle (Work Tracker #423); the other Write elements stay |
+| `/help/tools/layout-cleanup/auto-layout/`              | `/help/tools/layout-cleanup/`            | Auto Layout arranges shapes by their arrows, which a Space no longer draws (#494)   |
 
 The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`, and so does a bare `/self-hosting/…` that lost its `/help` prefix.
 

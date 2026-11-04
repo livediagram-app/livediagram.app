@@ -11,8 +11,8 @@ open, from the [Timeline](timeline.md)). The view, its states and its telemetry 
 
 ## What livehuddle gives it
 
-- **Its words.** On livehuddle's address the hero greets by the reader's local hour, then asks "what are you
-  drawing today?" (`heroWords` for the Canvas kind), its status pill counts canvases in every space the person is in (My Work and each team, each canvas once), and its search field's button
+- **Its words.** On livehuddle's address the hero greets by the reader's local hour, then asks "who are you
+  meeting today?" (`heroWords` for the Space kind), its status pill counts Spaces in every space the person is in (My Work and each team, each Space once), and its search field's button
   is **New Space**, the `/new` flow ([Explorer structure](explorer-structure.md#what-livehuddle-lends-it)).
 - **What it makes.** The hero shows livehuddle's four Spaces, a **Virtual Office**, a **Team Pod**, a **Coworking
   Space** and an **All-Hands Hall**, each its floor plan with a few avatars in it, drawn in livehuddle's green, that
