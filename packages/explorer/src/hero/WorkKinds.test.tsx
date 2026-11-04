@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { BRAND_APPS } from '@liveworkspace/brand';
 import { type App } from '@liveworkspace/index-client';
 import { APP_NAMES } from '@liveworkspace/sites';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { WorkKinds, defaultTemplateHref } from './WorkKinds';
 import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
@@ -10,10 +11,9 @@ import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
 // kinds, one per app under All, every set built the same way, each tile in its own app's colours and starting its
 // template.
 
-// The apps with a drawn set: every listed app but livehuddle, whose Spaces pictures are still to come.
-const APPS = APP_NAMES.filter((app) => app !== 'livehuddle');
+const APPS = APP_NAMES;
 
-const EXPECTED: Partial<Record<App, { labels: string[]; templates: string[] }>> = {
+const EXPECTED: Record<App, { labels: string[]; templates: string[] }> = {
   livediagram: {
     labels: ['Flowchart', 'Mind Map', 'Whiteboard', 'Workshop'],
     templates: ['flowchart', 'mindmap', 'whiteboard', 'blank-session'],
@@ -29,6 +29,10 @@ const EXPECTED: Partial<Record<App, { labels: string[]; templates: string[] }>> 
   livedesign: {
     labels: ['Logo', 'App Wireframe', 'Web Wireframe', 'Photo'],
     templates: ['blank-logo', 'blank-wireframe-phone', 'blank-wireframe-browser', 'photo-edit'],
+  },
+  livehuddle: {
+    labels: ['Virtual Office', 'Team Pod', 'Coworking Space', 'All-Hands Hall'],
+    templates: ['virtual-office', 'team-pod', 'coworking-space', 'all-hands-hall'],
   },
 };
 
@@ -56,12 +60,12 @@ describe('WorkKinds', () => {
     const set = screen.getByRole('region', { name: 'What you can make' });
     expect(set.getAttribute('data-work-kinds')).toBe(app);
     const tiles = tilesOf(container);
-    expect(tiles.map((t) => t.textContent)).toEqual(EXPECTED[app]!.labels);
+    expect(tiles.map((t) => t.textContent)).toEqual(EXPECTED[app].labels);
     expect(tiles.map((t) => t.getAttribute('data-work-app'))).toEqual(Array(4).fill(app));
     expect(tiles.map((t) => t.getAttribute('href'))).toEqual(
-      EXPECTED[app]!.templates.map((t) => href(app, t)),
+      EXPECTED[app].templates.map((t) => href(app, t)),
     );
-    for (const [i, label] of EXPECTED[app]!.labels.entries())
+    for (const [i, label] of EXPECTED[app].labels.entries())
       expect(within(set).getByRole('link', { name: `New ${label}` })).toBe(tiles[i]);
     // Each draws in its own app's colours, set on the tile for the picture's `brand` classes.
     for (const t of tiles) {
@@ -70,30 +74,52 @@ describe('WorkKinds', () => {
     }
   });
 
-  it('builds every app’s set, and All’s, the same way: one layout, size and spacing', () => {
-    const shapes = [...APPS.map((app) => [app, false] as const), [APPS[0]!, true] as const].map(
-      ([app, all]) => {
-        const { container, unmount } = render(
-          <WorkKinds app={app} all={all} templateHref={href} />,
-        );
-        const s = shape(container.firstElementChild as HTMLElement);
-        unmount();
-        return s;
-      },
-    );
+  it('builds every app’s set the same way: one layout, size and spacing', () => {
+    const shapes = APPS.map((app) => {
+      const { container, unmount } = render(
+        <WorkKinds app={app} all={false} templateHref={href} />,
+      );
+      const s = shape(container.firstElementChild as HTMLElement);
+      unmount();
+      return s;
+    });
     expect(new Set(shapes).size).toBe(1);
     for (const app of APPS) expect(WORK_KINDS[app]).toHaveLength(WORK_KINDS_PER_APP);
+  });
+
+  it('lays an app’s four two by two from lg, and All’s five in one row below lg and three over two from lg', () => {
+    const { container: one } = render(
+      <WorkKinds app="livehuddle" all={false} templateHref={href} />,
+    );
+    expect(one.querySelector('ul')!.className).toContain('grid-cols-4 lg:grid-cols-2');
+    const { container: all } = render(<WorkKinds app="livehuddle" all templateHref={href} />);
+    const grid = all.querySelector('ul')!.className;
+    expect(grid).toContain('grid-cols-5');
+    expect(grid).toContain('lg:grid-cols-6');
+    expect(grid).toContain('lg:[&>li]:col-span-2');
+    expect(grid).toContain('lg:[&>li:nth-child(4)]:col-start-2');
+    // Every tile is the same tile as an app's own: only the grid differs.
+    const tile = (root: HTMLElement) => shape(root.querySelector('li')!);
+    expect(tile(all)).toBe(tile(one));
   });
 
   it('shows one per app under All, each in that app’s colours and named by its kind', () => {
     const { container } = render(<WorkKinds app="liveplanner" all templateHref={href} />);
     const tiles = tilesOf(container);
     expect(tiles.map((t) => t.getAttribute('data-work-app'))).toEqual([...APPS]);
-    expect(tiles.map((t) => t.textContent)).toEqual(['Canvas', 'Plan', 'Document', 'Design']);
+    expect(tiles).toHaveLength(5);
+    expect(tiles.map((t) => t.textContent)).toEqual([
+      'Canvas',
+      'Plan',
+      'Document',
+      'Design',
+      'Space',
+    ]);
     expect(tiles.map((t) => t.getAttribute('href'))).toEqual(
-      APPS.map((app) => href(app, EXPECTED[app]!.templates[0]!)),
+      APPS.map((app) => href(app, EXPECTED[app].templates[0]!)),
     );
     expect(tiles[0]!.getAttribute('aria-label')).toBe('New Canvas in livediagram');
+    expect(tiles[4]!.getAttribute('aria-label')).toBe('New Space in livehuddle');
     expect(tiles.map((t) => t.style.getPropertyValue('--wk-500'))).toEqual(
       APPS.map((app) => BRAND_APPS[app].ramp[500]),
     );
@@ -135,32 +161,23 @@ describe('WorkKinds', () => {
       }
       unmount();
     }
-    expect(workTiles('livediagram', true)).toHaveLength(WORK_KINDS_PER_APP);
+    expect(workTiles('livediagram', true)).toHaveLength(APP_NAMES.length);
   });
 
   it('keeps each set small: a bounded count of SVG elements, drawn quickly', () => {
     const counts: number[] = [];
-    const started = performance.now();
-    for (const app of APPS) {
-      const { container, unmount } = render(
-        <WorkKinds app={app} all={false} templateHref={href} />,
-      );
-      counts.push(container.querySelectorAll('svg *').length);
-      unmount();
-    }
-    const elapsed = performance.now() - started;
-    // The heaviest set today (livediagram's, with the whiteboard's dot grid) draws 121; a picture that grows
-    // past this budget is a picture to simplify, as the hero draws on every Home.
+    const ms = cpuMsOf(() => {
+      for (const app of APPS) {
+        const { container, unmount } = render(
+          <WorkKinds app={app} all={false} templateHref={href} />,
+        );
+        counts.push(container.querySelectorAll('svg *').length);
+        unmount();
+      }
+    });
+    // The heaviest sets today (livehuddle's floor plans, livediagram's with the whiteboard's dot grid) draw under 200;
+    // a picture that grows past this budget is a picture to simplify, as the hero draws on every Home.
     for (const n of counts) expect(n).toBeLessThan(200);
-    expect(elapsed).toBeLessThan(1000);
-  });
-});
-
-describe('an app with no pictures yet (livehuddle)', () => {
-  it('has no tile under All and an empty set of its own, until its kinds are drawn', () => {
-    expect(APP_NAMES).toContain('livehuddle');
-    expect(workTiles('livediagram', true).map((t) => t.app)).toEqual(APPS);
-    expect(WORK_KINDS.livehuddle).toEqual([]);
-    expect(workTiles('livehuddle', false)).toEqual([]);
+    expect(ms).toBeLessThan(cpuBudgetMs(1000));
   });
 });

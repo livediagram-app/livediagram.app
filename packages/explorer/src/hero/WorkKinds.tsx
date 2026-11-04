@@ -86,8 +86,15 @@ function Tile({ tile, all, href }: { tile: WorkTile; all: boolean; href: string 
   );
 }
 
-/** The hero's set: the app's kinds, or one per app under All. Two by two in the hero's right column from `lg`, four
- *  across under the search field below that, a phone included. */
+// The set's grid: an app's four two by two in the hero's right column from `lg` and four across below it, a phone
+// included; All's five one row of five below `lg` and three over two from `lg`, the two centred (a six-column grid, each
+// tile two columns wide, the fourth starting at the second), so every tile keeps one size and spacing.
+const GRID = {
+  app: 'grid-cols-4 lg:grid-cols-2',
+  all: 'grid-cols-5 lg:grid-cols-6 lg:[&>li]:col-span-2 lg:[&>li:nth-child(4)]:col-start-2',
+} as const;
+
+/** The hero's set: the app's kinds, or one per app under All (GRID). */
 export function WorkKinds({
   app,
   all,
@@ -107,7 +114,7 @@ export function WorkKinds({
       >
         {WORK_KINDS_COPY.heading}
       </h2>
-      <ul className="grid grid-cols-4 gap-2 sm:gap-3 lg:grid-cols-2">
+      <ul className={`grid ${all ? GRID.all : GRID.app} gap-2 sm:gap-3`}>
         {tiles.map((tile) => (
           <li key={`${tile.app}:${tile.kind.id}`} className="min-w-0">
             <Tile tile={tile} all={all} href={hrefOf(tile.app, tile.kind.template)} />
