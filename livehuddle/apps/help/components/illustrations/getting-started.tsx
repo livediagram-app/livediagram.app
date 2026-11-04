@@ -3,7 +3,17 @@
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Label, Avatar } from '@liveworkspace/help-site/art/primitives';
+import { lucideCloud } from '@liveworkspace/icons/lucide';
+import { Prims } from '@livehuddle/ui';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Label,
+  Avatar,
+  Button,
+} from '@liveworkspace/help-site/art/primitives';
+import { Switch } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 /** Quick-connect: a selected shape shows + buttons on its sides; clicking one opens a card of
  *  icon buttons (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins
@@ -263,6 +273,144 @@ export function KeyboardEssentials() {
       <Label x={175} y={125} anchor="middle" size={10} weight={700} tone="muted">
         Space, hold and drag to pan
       </Label>
+    </Scene>
+  );
+}
+
+// The chips under "Templates on its start": the first three Virtual Spaces (NewSpaceSummary.tsx START_TEMPLATE_TITLES).
+const START_CHIPS = ['Virtual Office', 'Coworking Space', 'Team Pod'];
+
+/** The New Space wizard at /new, as a signed-in person sees it (apps/editor/components/palette/NewDocumentWizard.tsx
+ *  and NewSpaceSummary.tsx): the heading and its line, the Blank Space that Create makes with the templates waiting
+ *  on its start, the Sync Space to Server switch, and Open Existing Space, Skip and Create. */
+export function NewSpaceWizard() {
+  const x = 30;
+  const w = 360;
+  const inX = x + 18;
+  const inW = w - 36;
+  const chipWidths = START_CHIPS.map((t) => Math.round(t.length * 4.9 + 16));
+  const chipLefts = chipWidths.map(
+    (_, i) => inX + 12 + chipWidths.slice(0, i).reduce((a, b) => a + b + 5, 0),
+  );
+  return (
+    <Scene w={420} h={306}>
+      <rect x={0} y={0} width={420} height={306} className="fill-slate-900/10" />
+      <rect
+        x={x}
+        y={10}
+        width={w}
+        height={286}
+        rx={14}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {/* Header: the title and its line, then Help and Close. */}
+      <Label x={inX} y={34} size={15} weight={700} tone="strong">
+        New Space
+      </Label>
+      <Label x={inX} y={53} size={10} tone="muted">
+        A place for your team to meet, plan and run sessions.
+      </Label>
+      <Label x={x + w - 44} y={33} anchor="middle" size={12} weight={700} tone="muted">
+        ?
+      </Label>
+      <Label x={x + w - 20} y={33} anchor="middle" size={14} tone="muted">
+        ×
+      </Label>
+      <line x1={x} y1={68} x2={x + w} y2={68} className="stroke-slate-100" strokeWidth={1.2} />
+      {/* What Create makes. */}
+      <rect
+        x={inX}
+        y={82}
+        width={inW}
+        height={118}
+        rx={12}
+        className="fill-brand-50 stroke-slate-200"
+        strokeWidth={1}
+      />
+      <rect x={inX + 12} y={94} width={30} height={30} rx={8} className="fill-brand-700" />
+      <g
+        transform={`translate(${inX + 18} ${100}) scale(0.75)`}
+        className="stroke-white help-art-as-drawn"
+        fill="none"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M3 3.5H21" />
+        <rect x="4.5" y="3.5" width="15" height="12" rx="1" />
+        <path d="M8 8H16M8 11.5H13" />
+        <path d="M12 15.5V21M8 15.5L5.5 21M16 15.5L18.5 21" />
+      </g>
+      <Label x={inX + 54} y={101} size={12} weight={700} tone="strong">
+        Blank Space
+      </Label>
+      <Label x={inX + 54} y={117} size={9.5} tone="body">
+        Opens on its start, with templates and the
+      </Label>
+      <Label x={inX + 54} y={129} size={9.5} tone="body">
+        session tools ready.
+      </Label>
+      <line
+        x1={inX + 12}
+        y1={142}
+        x2={inX + inW - 12}
+        y2={142}
+        className="stroke-slate-200"
+        strokeWidth={1}
+      />
+      <Label x={inX + 12} y={154} size={8.5} weight={600} tone="muted">
+        TEMPLATES ON ITS START
+      </Label>
+      {START_CHIPS.map((t, i) => {
+        const cw = chipWidths[i] ?? 0;
+        const cx = chipLefts[i] ?? 0;
+        return (
+          <g key={t}>
+            <rect
+              x={cx}
+              y={162}
+              width={cw}
+              height={18}
+              rx={9}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1}
+            />
+            <Label x={cx + cw / 2} y={171.5} anchor="middle" size={9} tone="body">
+              {t}
+            </Label>
+          </g>
+        );
+      })}
+      <Label x={inX + 14} y={190} size={9} tone="muted">
+        and sessions to run
+      </Label>
+      {/* Where it will be saved: the Sync Space to Server switch, on for a signed-in person. */}
+      <rect x={inX} y={210} width={26} height={26} rx={7} className="fill-brand-50" />
+      <g
+        transform={`translate(${inX + 6} ${216}) scale(${14 / 24})`}
+        className="stroke-brand-600"
+        fill="none"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <Prims prims={lucideCloud} />
+      </g>
+      <Label x={inX + 36} y={217} size={11} weight={600} tone="strong">
+        Sync Space to Server
+      </Label>
+      <Label x={inX + 36} y={231} size={9.5} tone="muted">
+        Saved to your account, on every device.
+      </Label>
+      <Switch x={inX + inW - 30} y={215} on />
+      {/* Footer. */}
+      <line x1={x} y1={250} x2={x + w} y2={250} className="stroke-slate-100" strokeWidth={1.2} />
+      <Label x={inX} y={273} size={10} weight={500} tone="muted">
+        Open Existing Space
+      </Label>
+      <Button x={x + w - 128} y={261} w={44} h={24} label="Skip" />
+      <Button x={x + w - 78} y={261} w={60} h={24} label="Create" variant="primary" />
     </Scene>
   );
 }

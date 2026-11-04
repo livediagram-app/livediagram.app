@@ -2,11 +2,12 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { AvatarMode } from '@/components/illustrations/palette-modes';
 import { AddingElements } from '@/components/illustrations/canvas';
+import { NewSpaceWizard } from '@/components/illustrations/getting-started';
 
 export const metadata = helpMetadata({
   title: 'Your First Space',
   description:
-    'Open your first livehuddle Space in a couple of minutes: walk in as your character, put notes on the board, and share the link. No sign-in needed.',
+    'Open your first livehuddle Space in a couple of minutes: create it, walk in as your character, put notes on the board, and share the link. No sign-in needed.',
   path: '/help/getting-started/your-first-space/',
 });
 
@@ -16,16 +17,38 @@ The quickest way to learn livehuddle is to open a Space and walk round it. This 
 
 ## Open a Space
 
-<Step n={1}>Open [a new Space](/new). The editor opens on it straight away.</Step>
+<Step n={1}>
+  Open [a new Space](/new). The **New Space** window opens: "A place for your team to meet, plan and
+  run sessions." There is nothing to choose yet.
+</Step>
 
 <Step n={2}>
-  It is saved where new Spaces go: to your account once you have signed in, or in this browser while
-  you try things out as a guest (you can [move it to your
-  account](/help/privacy-and-security/offline-mode/) any time). Click its name at the top to rename
-  it; [Default Folders](/help/explorer/folders/default-folders/) decide which folder it lands in.
+  It shows what **Create** makes: a **Blank Space** that opens on its start, with templates and the
+  session tools ready. Under "Templates on its start" it names the first Spaces waiting there
+  (Virtual Office, Coworking Space and Team Pod), and sessions to run.
 </Step>
 
 <Step n={3}>
+  Under that, **Sync Space to Server** says where the new Space will be saved. It starts on once you
+  have signed in (saved to your account, on every device) and off while you try things out as a
+  guest (saved in this browser only). Flip it before you create if you want the other place; you can
+  also [move a Space](/help/privacy-and-security/offline-mode/) later. When you start from a folder
+  or a team, the Space goes there and the switch is not shown.
+</Step>
+
+<Step n={4}>
+  Press **Create**. The Space is called "Untitled Space" and [Default
+  Folders](/help/explorer/folders/default-folders/) decide which folder it lands in. **Skip** makes
+  the same blank Space with its start closed, **Open Existing Space** opens the
+  [Explorer](/help/explorer/explorer-page/) instead, and the × (or **Esc**) backs out without making
+  anything.
+</Step>
+
+<Figure caption="The New Space window: the Blank Space that Create makes, the templates waiting on its start, and where it will be saved.">
+  <NewSpaceWizard />
+</Figure>
+
+<Step n={5}>
   The empty board opens on **Start a Space**: the Spaces first (Virtual Office, Coworking Space,
   Team Pod and All-Hands Hall), then the session [templates](/help/canvas/templates/) by category,
   with a search. Pick **Team Pod** to follow along, or close it with the × to start from an empty
