@@ -87,20 +87,10 @@ export function WriteRows() {
       key: 'N',
       glyph: <path d="M-6 -6 h12 v7 l-5 5 h-7 Z M1 6 v-5 h5" {...g} />,
     },
-    {
-      name: 'Pointer Note',
-      blurb: 'A note with a line to one spot',
-      glyph: (
-        <path
-          d="M-7 -7 h9 v6 h-9 Z M-2 -1 L5 5 M5 5 m-1.5 0 a1.5 1.5 0 1 0 3 0 a1.5 1.5 0 1 0 -3 0"
-          {...g}
-        />
-      ),
-    },
   ];
   return (
-    <Scene w={420} h={210} bg="plain">
-      <PaletteFrame category="Write" h={190}>
+    <Scene w={420} h={170} bg="plain">
+      <PaletteFrame category="Write" h={150}>
         {rows.map((r, i) => {
           const ry = 80 + i * 40;
           return (

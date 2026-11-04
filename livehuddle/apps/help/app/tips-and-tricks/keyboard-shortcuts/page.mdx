@@ -22,8 +22,7 @@ The most useful canvas-tool keys are:
 
 - `V` to **Select** (the default on desktop), with `S` kept working as a legacy alias where the [palette strip](/help/palette/toolbar-layout/)'s **Search** isn't shown; where it is, `S` opens Search.
 - `H` for the **Hand** (pan) tool, the default on touch viewports.
-- `P` for **Freehand**, to sketch a stroke that is kept as you drew it.
-- `F` to draw a **Frame**, the section backdrop that carries what you draw inside it.
+- `F` to draw a **Frame**, the section backdrop that carries what you put inside it.
 - `K` for the **Laser** pointer, for drawing attention while you present.
 - `E` for the **Eraser**, to delete elements by pressing or dragging over them.
 - `Z` to toggle [Zen mode](/help/tools/zen-mode/) on and off. `Escape` exits it too, once nothing is selected (the first press clears the selection).
@@ -53,7 +52,7 @@ These are the chords that edit the selection.
 | `Delete` / `⌫` | Delete the selection                                          |
 | `⌘⇧]` / `⌘⇧[`  | Bring to front / send to back                                 |
 
-**Cut, copy and paste use your operating system's clipboard**, not a private one, so a selection copied on one tab pastes onto another, into a different space, or into a second browser window. A paste lands offset from the original rather than exactly on top of it, so you can see what arrived, and arrows between copied elements come along and reconnect to the copies.
+**Cut, copy and paste use your operating system's clipboard**, not a private one, so a selection copied on one tab pastes onto another, into a different space, or into a second browser window. A paste lands offset from the original rather than exactly on top of it, so you can see what arrived.
 
 ## Moving around and selecting
 
@@ -76,24 +75,23 @@ These are the chords that edit the selection.
 
 ## Keys that place an element
 
-The rest of the letters pick up an element, ready to place: click the canvas to drop it at its default size, or drag to draw it to the size you want. A board can be built without visiting the palette at all:
+A few letters pick up an element, ready to place: click the canvas to drop it at its default size, or drag to draw it to the size you want. A brainstorm can run without visiting the palette at all:
 
-- `R` a **square**, `O` a **circle**, `D` a **diamond**, `C` a **cylinder**, `G` a **parallelogram**.
-- `A` an **arrow**, `T` a **text** label, `N` a **sticky note**.
+- `T` a **text** label, `N` a **sticky note**, `F` a **frame**.
+- `9` an **image**.
 
 ## The number row
 
-The main tools also sit on a digit, along the top of the keyboard:
+A few tools also sit on a digit, along the top of the keyboard:
 
-| Key | Tool    | Key | Tool     |
-| --- | ------- | --- | -------- |
-| `1` | Select  | `7` | Freehand |
-| `2` | Square  | `8` | Text     |
-| `3` | Diamond | `9` | Image    |
-| `4` | Circle  | `0` | Eraser   |
-| `5` | Arrow   |     |          |
+| Key | Tool   |
+| --- | ------ |
+| `1` | Select |
+| `8` | Text   |
+| `9` | Image  |
+| `0` | Eraser |
 
-The digits are deliberately laid out to mirror Excalidraw's tool row, so if you have that muscle memory it carries straight over. That matters most right after an [Excalidraw import](/help/tabs/import-tabs/), when you are working on a board you drew somewhere else. The one slot left empty is `6`, which Excalidraw gives to its line tool.
+They keep the slots Excalidraw's tool row gives them, so if you have that muscle memory it carries straight over.
 
 `9` does nothing in an embedded board, where images can't be uploaded.
 
@@ -102,11 +100,8 @@ The digits are deliberately laid out to mirror Excalidraw's tool row, so if you 
 Shift is the editor's power modifier. While you hold it, a small hint bar near the top of the canvas names what Shift is doing right then, so these are easy to discover:
 
 - **Shift-click elements** to build a [multi-selection](/help/canvas/selecting-and-grouping/multi-select/); Shift-click again to remove one.
-- **Shift-click table cells** to select several cells and style or clear them together.
 - **Shift while resizing** an element (or drawing one to size) locks its proportions.
-- **Shift while move-dragging a selection** drops a duplicate: the originals stay put, a translucent ghost follows your cursor, and the copy lands where you release, connected arrows included, all in one undo step.
-- **Shift while placing a quick-connect arrow** chains the next arrow from the same source, so a hub fans out in one flow.
-- **Shift-drag a selected arrow's head** splits a branch off its line, one trunk pointing at several targets. See [Arrows](/help/palette/arrows/).
+- **Shift while move-dragging a selection** drops a duplicate: the originals stay put, a translucent ghost follows your cursor, and the copy lands where you release, all in one undo step.
 - **Shift + arrow keys** nudge the selection in big (10px) steps.
 
 ## Turning shortcuts off

@@ -1,95 +1,14 @@
-// Palette illustrations (docs/specs/018-help/help-app.md): the category picker, freehand drawing with
-// the Pencil, shape recognition, images and the image picker, sticky notes,
-// and tables. Composed only from the shared primitives so the house style
-// holds. (Data / chart tiles are handled in a sibling file.)
+// Palette illustrations (docs/specs/018-help/help-app.md): images and the image picker, and sticky notes.
+// Composed only from the shared primitives so the house style holds.
 
 import {
   Scene,
-  Shape,
-  Arrow,
   SelectionBox,
   Cursor,
-  Panel,
   Dialog,
   Tabs,
-  Label,
   TextBar,
 } from '@liveworkspace/help-site/art/primitives';
-
-/** A freehand pencil stroke mid-draw: a smooth hand-drawn curve on the canvas
- *  with the "Drag to draw" mode banner and a pencil cursor. */
-export function PencilStroke() {
-  return (
-    <Scene w={420} h={220}>
-      {/* Mode banner */}
-      <Panel x={20} y={20} w={380} h={30}>
-        <circle cx={38} cy={35} r={6} className="fill-brand-500" />
-        <Label x={52} y={36} size={11} weight={600} tone="body">
-          Drag to draw (release near the start to close)
-        </Label>
-        <Label x={388} y={36} anchor="end" size={11} weight={600} tone="muted">
-          Cancel
-        </Label>
-      </Panel>
-      {/* A committed, smoothed freehand stroke */}
-      <path
-        d="M70 150 C92 96 120 92 140 132 C158 168 188 170 208 124 C228 80 264 86 286 138 C300 172 332 168 350 120"
-        fill="none"
-        className="stroke-brand-500"
-        strokeWidth={3.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Pencil cursor at the leading end */}
-      <g transform="translate(350 120)">
-        <path
-          d="M0 0 L14 14 l4 -4 L4 -4 Z"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinejoin="round"
-        />
-        <path
-          d="M4 -4 l4 -4 l6 6 l-4 4 Z"
-          className="fill-amber-300 stroke-slate-500"
-          strokeWidth={2}
-          strokeLinejoin="round"
-        />
-      </g>
-    </Scene>
-  );
-}
-
-/** Before / after of shape recognition: a wobbly square drawn with the Shape
- *  Pen snapping into a clean one on release. (The magic-wand toggle this
- *  figure once showed is gone: the Shape Pen IS the setting.) */
-export function ShapeRecognition() {
-  return (
-    <Scene w={420} h={230}>
-      <Label x={210} y={34} anchor="middle" size={12} weight={600} tone="muted">
-        Drawn with the Shape Pen
-      </Label>
-      {/* Before: rough sketch */}
-      <path
-        d="M60 88 L150 82 L154 168 L66 172 L60 92"
-        fill="none"
-        className="stroke-slate-400"
-        strokeWidth={3}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Label x={106} y={196} anchor="middle" size={11} tone="muted">
-        rough sketch
-      </Label>
-      {/* Arrow between */}
-      <Arrow from={[176, 128]} to={[244, 128]} tone="accent" />
-      {/* After: clean recognised shape */}
-      <Shape x={258} y={86} w={96} h={84} kind="rect" accent />
-      <Label x={306} y={196} anchor="middle" size={11} tone="accent">
-        clean square
-      </Label>
-    </Scene>
-  );
-}
 
 /** An image element placed on the canvas: a framed picture with a sky / hill
  *  motif, selected. */
@@ -180,101 +99,6 @@ export function StickyNotes() {
           <rect x={x + 12} y={y + 48} width={20} height={8} rx={2} className={bar} />
         </g>
       ))}
-    </Scene>
-  );
-}
-
-/** A table element on the canvas: a header row plus body cells, with one cell
- *  selected and in edit mode. */
-export function TableElement() {
-  const x = 96;
-  const y = 50;
-  const cols = 3;
-  const rows = 3;
-  const cw = 76;
-  const ch = 36;
-  return (
-    <Scene w={420} h={220}>
-      {/* Body */}
-      <rect
-        x={x}
-        y={y}
-        width={cw * cols}
-        height={ch * rows}
-        rx={6}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
-      />
-      {/* Header band: rounded top, square bottom */}
-      <path
-        d={`M${x} ${y + ch} V${y + 6} a6 6 0 0 1 6 -6 H${x + cw * cols - 6} a6 6 0 0 1 6 6 V${y + ch} Z`}
-        className="fill-brand-100 stroke-brand-300"
-        strokeWidth={2}
-      />
-      {/* Grid lines */}
-      {Array.from({ length: cols - 1 }, (_, i) => (
-        <line
-          key={`v${i}`}
-          x1={x + (i + 1) * cw}
-          y1={y}
-          x2={x + (i + 1) * cw}
-          y2={y + ch * rows}
-          className="stroke-brand-200"
-          strokeWidth={1.5}
-        />
-      ))}
-      {Array.from({ length: rows - 1 }, (_, i) => (
-        <line
-          key={`h${i}`}
-          x1={x}
-          y1={y + (i + 1) * ch}
-          x2={x + cw * cols}
-          y2={y + (i + 1) * ch}
-          className="stroke-brand-200"
-          strokeWidth={1.5}
-        />
-      ))}
-      {/* Header labels */}
-      {[0, 1, 2].map((c) => (
-        <rect
-          key={c}
-          x={x + c * cw + 14}
-          y={y + ch / 2 - 3}
-          width={40}
-          height={7}
-          rx={3}
-          className="fill-brand-400"
-        />
-      ))}
-      {/* Body text bars */}
-      {[1, 2].map((r) =>
-        [0, 1, 2].map((c) => (
-          <TextBar
-            key={`${r}-${c}`}
-            x={x + c * cw + 14}
-            y={y + r * ch + ch / 2 - 3}
-            w={c === 2 ? 32 : 44}
-          />
-        )),
-      )}
-      {/* Selected, in-edit cell */}
-      <rect
-        x={x + cw}
-        y={y + ch}
-        width={cw}
-        height={ch}
-        className="fill-brand-50 stroke-brand-500"
-        strokeWidth={2}
-      />
-      <TextBar x={x + cw + 14} y={y + ch + ch / 2 - 3} w={44} tone="accent" />
-      <line
-        x1={x + cw + 14}
-        y1={y + ch + 10}
-        x2={x + cw + 14}
-        y2={y + ch + ch - 10}
-        className="stroke-brand-500"
-        strokeWidth={1.5}
-      />
     </Scene>
   );
 }

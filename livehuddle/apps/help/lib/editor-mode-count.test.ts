@@ -16,7 +16,7 @@ const articles = readdirSync(APP_DIR, { recursive: true })
 
 describe('help articles counting the editor modes', () => {
   it('finds the articles and the modes', () => {
-    expect(articles.length).toBeGreaterThan(200);
+    expect(articles.length).toBeGreaterThan(150);
     expect(modeCount).toBeGreaterThan(0);
   });
 
