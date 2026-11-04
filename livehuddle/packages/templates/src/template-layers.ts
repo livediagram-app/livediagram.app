@@ -21,69 +21,11 @@ import type { TemplateKind } from './templates';
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';
 export const TEMPLATE_CONTENT_LAYER_ID = 'layer:template:content';
 
-// Bottom → top, matching Tab.layers order (docs/specs/006-document/layers.md). Built fresh per
-// call so a caller mutating its tab can't corrupt the catalogue.
-const layered = (scaffoldName: string, contentName: string): Layer[] => [
-  { id: TEMPLATE_SCAFFOLD_LAYER_ID, name: scaffoldName },
-  { id: TEMPLATE_CONTENT_LAYER_ID, name: contentName },
-];
 
-// The layers a template ships with, or undefined for the templates
-// without a meaningful scaffold / content split (single-plane
-// node-and-arrow diagrams, tables, lockups).
-export function templateLayers(kind: TemplateKind): Layer[] | undefined {
-  switch (kind) {
-    // Boards: the stationary lanes / quadrants / axes under the cards,
-    // stickies and items users drag around.
-    case 'retrospective':
-    case 'start-stop-continue':
-    case 'mad-sad-glad':
-    case 'four-ls':
-    case 'sailboat':
-    case 'brainstorm':
-    case 'workshop-board':
-      return layered('Board', 'Stickies');
-    case 'incident-postmortem':
-      return layered('Report', 'Findings');
-    case 'opportunity-solution-tree':
-      return layered('Levels', 'Tree');
-    case 'crazy-eights':
-      return layered('Sheet', 'Sketches');
-    case 'stakeholder-map':
-      return layered('Grid', 'Stakeholders');
-    case 'risk-matrix':
-      return layered('Matrix', 'Risks');
-    case 'value-proposition-canvas':
-      return layered('Canvas', 'Notes');
-    case 'user-persona':
-      return layered('Card', 'Details');
-    case 'meeting-agenda':
-      return layered('Board', 'Notes');
-    case 'objectives-planner':
-      return layered('Planner', 'Objectives');
-    case 'prioritization-matrix':
-      return layered('Axes', 'Items');
-    case 'affinity-map':
-      return layered('Board', 'Stickies');
-    case 'user-story-map':
-      return layered('Backbone', 'Stories');
-    case 'roadmap':
-      return layered('Lanes', 'Cards');
-    // Fixed grids / frameworks with sliding or fill-in content.
-    case 'swot':
-      return layered('Quadrants', 'Notes');
-    case 'business-model-canvas':
-      return layered('Canvas', 'Notes');
-    case 'empathy-map':
-      return layered('Quadrants', 'Notes');
-    // The board grids (template-builders-board-grid.ts): panels, headers and prompts under the notes.
-    case 'pestle-analysis':
-      return layered('Lenses', 'Notes');
-    case 'kwl-chart':
-      return layered('Chart', 'Notes');
-    case 'journey':
-      return layered('Stages', 'Notes');
-    default:
-      return undefined;
-  }
+// The layers a template ships with, or undefined for a template without a meaningful scaffold / content split. None of
+// the catalogue's is layered (docs/specs/007-editor/templates-by-mode.md "The catalogue"): the Spaces are one floor of
+// rooms and furniture, and Blank Space is empty. The layered boards (the retrospectives, the matrices and the rest)
+// left with Work Tracker #423; the ids above stay, so a stored board's layers read as they always did.
+export function templateLayers(_kind: TemplateKind): Layer[] | undefined {
+  return undefined;
 }

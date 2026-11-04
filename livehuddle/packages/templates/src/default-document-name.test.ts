@@ -5,7 +5,7 @@ import { isDefaultDocumentName, untitledNameForTemplate } from './templates';
 // it after itself while its name is still a default one.
 describe('untitledNameForTemplate', () => {
   it('names a document after its template', () => {
-    expect(untitledNameForTemplate('sailboat')).toBe('Untitled Sailboat Retrospective');
+    expect(untitledNameForTemplate('team-pod')).toBe('Untitled Team Pod');
     // The blank makes a Space (domain-language.md "Space"), as no template does.
     expect(untitledNameForTemplate('blank-session')).toBe('Untitled Space');
     expect(untitledNameForTemplate(null)).toBe('Untitled Space');
@@ -22,7 +22,10 @@ describe('isDefaultDocumentName', () => {
       'Untitled diagram',
       'Untitled Session',
       'Untitled Workshop',
+      'Untitled Team Pod',
+      // A space made from a template that left (Work Tracker #423) is still unnamed.
       'Untitled Sailboat Retrospective',
+      'Untitled Town Hall Q&A',
     ])
       expect(isDefaultDocumentName(name)).toBe(true);
   });
