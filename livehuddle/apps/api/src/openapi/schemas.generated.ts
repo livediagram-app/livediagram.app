@@ -523,6 +523,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     ],
   },
+  CallsMode: {
+    enum: ['on', 'audio-only', 'off'],
+    type: 'string',
+  },
   CapabilitiesResponse: {
     additionalProperties: false,
     properties: {
@@ -534,6 +538,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       callsEnabled: {
         type: 'boolean',
+      },
+      callsMode: {
+        $ref: '#/components/schemas/CallsMode',
       },
       cli: {
         additionalProperties: false,
