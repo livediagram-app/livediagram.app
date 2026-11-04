@@ -90,11 +90,18 @@ export function segmentDistance(p: FenceSegment, q: FenceSegment): number {
   return sharedSegmentDistance(p.a, p.b, q.a, q.b);
 }
 
+// Closer to a fence's line than this, a character's feet stand in the fence itself (a room's wall is drawn 5 px either
+// side of its line). No walk ends this close: the narrowest reach, the Small character's, is 9.2 px. So a character
+// here was put here (a spawn, or a fence or room moved onto it), and the fence lets it off to either side.
+export const FENCE_ON_LINE = 8;
+
 /**
  * Whether one fence refuses a step. From outside its reach: any step that comes within the reach.
  * From inside it (a fence dropped on top of a character): only a step that crosses the line, ending
  * strictly on its far side, or closes in on it, so the character can always step away, even one
- * standing exactly on the line (where every step touches it, and would otherwise be refused).
+ * standing exactly on the line (where every step touches it, and would otherwise be refused). In the
+ * fence itself (within FENCE_ON_LINE), nothing is refused: a character left standing in a room's wall
+ * walks out of it toward a click on either side, rather than refusing every click into the room.
  */
 export function fenceRefuses(
   from: FencePoint,
@@ -104,6 +111,7 @@ export function fenceRefuses(
 ): boolean {
   const before = pointSegmentDistance(from, fence);
   if (before >= reach) return segmentDistance({ a: from, b: to }, fence) < reach;
+  if (before < FENCE_ON_LINE) return false;
   const crosses =
     cross(fence.a, fence.b, from) * cross(fence.a, fence.b, to) < 0 &&
     segmentsIntersect({ a: from, b: to }, fence);
@@ -169,3 +177,50 @@ export function fenceStep(
 
 // How many halvings the approach takes: a 13 px step (the longest a frame walks) to within 0.1 px.
 const FENCE_APPROACH_STEPS = 7;
+
+// How many nudges clearOfFences makes: one per fence it lands beside, so a corner (two walls) takes two.
+const FENCE_CLEAR_ROUNDS = 4;
+// How far past the reach a nudge puts the feet, so rounding never leaves them a hair inside it.
+const FENCE_CLEAR_MARGIN = 0.5;
+
+/** The point on a segment nearest `p`. */
+function nearestOnSegment(p: FencePoint, s: FenceSegment): FencePoint {
+  const fx = s.b.x - s.a.x;
+  const fy = s.b.y - s.a.y;
+  const len2 = fx * fx + fy * fy;
+  const t =
+    len2 === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - s.a.x) * fx + (p.y - s.a.y) * fy) / len2));
+  return { x: s.a.x + fx * t, y: s.a.y + fy * t };
+}
+
+/**
+ * Where a character put down at `p` should stand instead (docs/specs/009-elements/fence.md "What does not walk"). A
+ * character put within a fence's reach but not in the fence itself could only step away from it, so a click past the
+ * fence did nothing: it is nudged straight off each such fence, to the side its feet were on, until none is left.
+ * One in a fence (within FENCE_ON_LINE) stays, free to walk off either side, and so does a point no nudge clears (a
+ * gap narrower than a character): nudging it further could only push it through something.
+ */
+export function clearOfFences(
+  p: FencePoint,
+  fences: readonly FenceSegment[],
+  reach = FENCE_REACH,
+): FencePoint {
+  let at = p;
+  for (let round = 0; ; round++) {
+    const fence = fences.find((f) => {
+      const d = pointSegmentDistance(at, f);
+      return d >= FENCE_ON_LINE && d < reach;
+    });
+    if (!fence) return at;
+    if (round === FENCE_CLEAR_ROUNDS) return p;
+    // Beside the line, never on it, so the way off is the way from the line to the feet.
+    const near = nearestOnSegment(at, fence);
+    const dx = at.x - near.x;
+    const dy = at.y - near.y;
+    const out = (reach + FENCE_CLEAR_MARGIN) / Math.hypot(dx, dy);
+    const next = { x: near.x + dx * out, y: near.y + dy * out };
+    // Never nudged through another fence: out of a box too small to stand in is out of the box.
+    if (fences.some((f) => f !== fence && segmentsIntersect({ a: at, b: next }, f))) return p;
+    at = next;
+  }
+}

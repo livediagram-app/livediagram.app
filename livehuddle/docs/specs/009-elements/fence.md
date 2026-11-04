@@ -51,15 +51,21 @@ fence**, from either side.
   reaches of where it was going (a peer standing by a fence), it counts as arriving, so what waited on the arrival
   (a shove) still happens. Whether a walk slides or stops depends on its angle alone, never on the display's frame
   rate.
-- **A character already inside a fence's reach** (a fence dropped on top of one) may step away
-  from it, never across it; one standing exactly on the line may step off it to either side. A step along the
-  fence, the same distance off it, is never read as closing in for rounding (a millionth of a px either way).
+- **A character already inside a fence's reach** (a fence or a room dropped on top of one) may step away
+  from it, never across it. One standing **in the fence itself**, within 8 px of its line (a room's wall is drawn
+  5 px either side of it), is not held by it at all and walks off to either side, so a character left in a room's
+  wall can click-walk into the room or out of it. No walk brings a character that close (the Small character's
+  reach is 9.2 px), so only one put there walks through.
+  A step along the fence, the same distance off it, is never read as closing in for rounding (a millionth of a px
+  either way).
 - **A hidden layer's fences block nothing**, as its portals and chairs do nothing: a character walks
   among what is drawn.
 - **What does not walk is not blocked.** A portal still carries a character through a fence (a
   portal is a gate), sitting snaps a character onto its chair, and a new character appears where
-  the mode puts it. A character that starts inside a fenced area stays inside until it takes a
-  portal out.
+  the mode puts it. Put down beside a fence or wall, inside its reach but not in it, it is nudged just clear of it
+  to the side its feet were on, so it never opens held where a click past the wall does nothing; put down in the
+  wall itself, it stays there, free to walk off either side. A character that starts inside a fenced area stays
+  inside until it takes a portal out.
 - **A fence is not a destination.** Standing beside one does not ring it as "the element you are
   on".
 
