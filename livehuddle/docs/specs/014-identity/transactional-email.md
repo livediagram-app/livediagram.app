@@ -78,9 +78,8 @@ help article.
 - Sign-in (`ACCOUNTS_URL` and the client credentials): the addresses are
   liveworkspace's, so without it nobody has one and nothing is sent.
 - `EMAIL_FROM` (plain var): the From identity, a bare address or `Name <address>`. Its domain must be
-  onboarded to Email Service on this account. livehuddle.app isn't on it yet, so production and staging
-  both send as `livehuddle <hello@liveplanner.app>` until it moves
-  ([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md) "Senders until the domains move"). Unset, it defaults to
+  onboarded to Email Service on this account; livehuddle.app is, so production and staging both send as
+  `livehuddle <hello@livehuddle.app>`. Unset, it defaults to
   `livehuddle <hello@livehuddle.app>`.
 - `APP_BASE_URL` (plain var, optional): public origin for links in emails.
   Default `https://livehuddle.app`.

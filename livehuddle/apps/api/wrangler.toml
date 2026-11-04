@@ -23,9 +23,8 @@ port = 9087
 # production's, https://www.liveworkspace.app/api/telemetry. Local dev sets
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
-# The sender for this app's email (see EMAIL below). liveplanner.app until livehuddle.app moves to this
-# account and is onboarded to Email Service (liveworkspace/docs/specs/003-accounts/email.md "Senders until the domains move").
-EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
+# The sender for this app's email (see EMAIL below). livehuddle.app is onboarded to Email Service on this account.
+EMAIL_FROM = "livehuddle <hello@livehuddle.app>"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
@@ -266,7 +265,7 @@ name = "livehuddle-api-staging"
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
-EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
+EMAIL_FROM = "livehuddle <hello@livehuddle.app>"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.livehuddle.app"

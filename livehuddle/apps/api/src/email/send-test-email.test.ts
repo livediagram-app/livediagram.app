@@ -66,7 +66,7 @@ const previewBinding = {
 
 const env = {
   EMAIL: previewBinding,
-  EMAIL_FROM: vars.EMAIL_FROM ?? 'livehuddle <hello@liveplanner.app>',
+  EMAIL_FROM: vars.EMAIL_FROM ?? 'livehuddle <hello@livehuddle.app>',
   APP_BASE_URL: vars.APP_BASE_URL ?? 'https://www.livehuddle.app',
 } as unknown as Env;
 
