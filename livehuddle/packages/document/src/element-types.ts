@@ -3,7 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livehuddle/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
-import type { RoomDoor } from './office';
+import type { RoomDoor, StageSpeakers } from './office';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -269,6 +269,10 @@ export type ShapeElement = {
   // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
   // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
   roomDoor?: RoomDoor;
+  // Stage (docs/specs/009-elements/office.md "Stage"): who may speak from it, and whether its speakers' cameras and
+  // screens reach the whole tab. Absent = DEFAULT_STAGE_SPEAKERS ('edit') and off.
+  stageSpeakers?: StageSpeakers;
+  stageCameras?: boolean;
   // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
   // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
   // temperature check. At most one entry per participant: re-casting REPLACES,

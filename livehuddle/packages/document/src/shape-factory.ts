@@ -163,6 +163,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'water-cooler': { width: 56, height: 112 },
   'coffee-machine': { width: 72, height: 96 },
   rug: { width: 200, height: 120 },
+  // A stage (docs/specs/009-elements/office.md "Stage"): room for a few speakers side by side, and its front edge.
+  stage: { width: 360, height: 140 },
   // Estimate card (docs/specs/012-collaboration/estimate-card.md): the eight fibonacci chips wrap to two rows, and
   // the card has to hold them PLUS the answered avatars PLUS the two footer
   // buttons without clipping — a card that arrives already cut off is the
@@ -355,6 +357,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textAlignX: 'left',
       textAlignY: 'top',
     };
+  }
+  // A stage (docs/specs/009-elements/office.md "Stage") is any width of platform, its name on the plate centred on its
+  // front edge. Who may speak and Show Cameras are not stored until set: absent reads as the defaults.
+  if (kind === 'stage') {
+    return { ...base, label: 'Stage', textSize: 'sm', textAlignY: 'bottom' };
   }
   if (isOfficeShape(kind)) {
     return {

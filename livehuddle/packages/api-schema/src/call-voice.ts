@@ -1,4 +1,4 @@
-// Proximity audio's wire (docs/specs/012-collaboration/proximity-audio.md "The wire" and "The mint route"): the two
+// Proximity audio's wire (docs/specs/012-collaboration/proximity-audio.md "The wire" and "The mint route"): the three
 // presence ops a call adds to the room, their field-by-field parsers (shared by the room's gate and the editor), and
 // the calls mint routes' bodies. Never audio: a level and a locator are all that ride the room.
 
@@ -46,6 +46,12 @@ export type CallTrackOp = {
   screen?: CallTrackLocator | null;
 };
 
+/**
+ * A publishing call that has sent the room nothing for 5 seconds asks it to read the calls kill switch
+ * (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients"). The room consumes it.
+ */
+export type CallsCheckOp = { kind: 'calls-check'; tabId: string };
+
 const isTabId = (v: unknown): v is string =>
   typeof v === 'string' && v.length > 0 && v.length <= TAB_ID_MAX;
 const isField = (v: unknown): v is string =>
@@ -64,6 +70,13 @@ export function parseAvatarVoice(op: unknown): AvatarVoiceOp | null {
   if (!o || o.kind !== 'avatar-voice' || !isTabId(o.tabId)) return null;
   const level = parseVoiceLevel(o.level);
   return level === null ? null : { kind: 'avatar-voice', tabId: o.tabId, level };
+}
+
+/** A `calls-check` op as sent, or null. */
+export function parseCallsCheck(op: unknown): CallsCheckOp | null {
+  const o = op as { kind?: unknown; tabId?: unknown } | null;
+  if (!o || o.kind !== 'calls-check' || !isTabId(o.tabId)) return null;
+  return { kind: 'calls-check', tabId: o.tabId };
 }
 
 /**

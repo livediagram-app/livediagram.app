@@ -642,7 +642,8 @@ describe('DocumentRoom op-role enforcement', () => {
   // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
-  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow'];
+  // `calls-check` is the room's too: never relayed, it reads the calls kill switch (document-room-fanout.test.ts).
+  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow', 'calls-check'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
   // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
   const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];

@@ -38,6 +38,7 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'water-cooler',
   'coffee-machine',
   'rug',
+  'stage',
   'done-check',
   'estimate',
   // Quiz (docs/specs/012-collaboration/quiz.md).

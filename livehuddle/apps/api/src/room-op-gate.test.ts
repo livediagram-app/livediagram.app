@@ -62,6 +62,15 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ ...track, track: { sessionId: 's' } }, as('edit'))).toEqual(DROP);
   });
 
+  // docs/specs/016-platform/calls-kill-switch.md "The room tells its clients": a silent publisher's nudge.
+  it('lets a calls-check through from a speaker only, and only well formed', () => {
+    const check = { kind: 'calls-check', tabId: 't' };
+    expect(gateClientOp(check, as('view'))).toEqual(DROP);
+    expect(gateClientOp(check, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp(check, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp({ kind: 'calls-check' }, as('edit'))).toEqual(DROP);
+  });
+
   // docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles": a camera is taking part, a screen an Editor's.
   it('relays a camera from a speaker, a screen from an Editor only, and never a slot holding another track', () => {
     const at = (trackName: string) => ({ sessionId: 's', trackName, token: 'k' });

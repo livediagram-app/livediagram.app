@@ -7,6 +7,7 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   roomParts,
+  type FurniturePart,
   type ShapeElement,
 } from '@livehuddle/document';
 
@@ -26,7 +27,40 @@ export function RoomView({
   animClass?: string;
 }) {
   const { width, height } = element;
-  const parts = roomParts(width, height, element.roomDoor ?? DEFAULT_ROOM_DOOR);
+  return (
+    <SizedPieceView
+      parts={roomParts(width, height, element.roomDoor ?? DEFAULT_ROOM_DOOR)}
+      width={width}
+      height={height}
+      stroke={stroke}
+      floor={floor}
+      animClass={animClass}
+      label={`Room${element.label ? `, ${element.label}` : ''}`}
+    />
+  );
+}
+
+/**
+ * An office piece drawn at its own size (a room, a stage): its parts in its own px, the floor and panels in the
+ * element's fill, outlines and rails in its stroke, a face shaded with the stroke so it reads as standing up.
+ */
+export function SizedPieceView({
+  parts,
+  width,
+  height,
+  stroke,
+  floor,
+  animClass,
+  label,
+}: {
+  parts: readonly FurniturePart[];
+  width: number;
+  height: number;
+  stroke: string;
+  floor: string;
+  animClass?: string;
+  label: string;
+}) {
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -34,9 +68,23 @@ export function RoomView({
         preserveAspectRatio="none"
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
-        aria-label={`Room${element.label ? `, ${element.label}` : ''}`}
+        aria-label={label}
       >
         {parts.map((p, i) => {
+          if (p.tag === 'path') {
+            // A plank line: a rail, never filled.
+            return (
+              <path
+                key={i}
+                d={p.d}
+                fill="none"
+                stroke={stroke}
+                strokeWidth={FURNITURE_RAIL_STROKE}
+                opacity={FURNITURE_RAIL_OPACITY}
+                strokeLinecap="round"
+              />
+            );
+          }
           if (p.tag !== 'rect') return null;
           const box = { x: p.x, y: p.y, width: p.w, height: p.h, rx: p.rx };
           if (p.role === 'floor') return <rect key={i} {...box} fill={floor} />;

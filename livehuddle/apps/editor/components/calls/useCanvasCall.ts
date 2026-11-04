@@ -11,6 +11,7 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
 import { DO_NOT_DISTURB, useProximityCall } from '@/lib/calls/useProximityCall';
+import { callStages } from '@/lib/calls/stage';
 import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import type { TalkingBarsPeer } from './TalkingBars';
@@ -54,10 +55,12 @@ export function useCanvasCall(deps: {
 
   // Each visible Office room is a call of its own (meeting-rooms-and-stage.md "Rooms are calls"): the rooms the walk
   // collides with, worked out only when the board or its layers change, never on a step.
-  const zones = useMemo(
-    () => roomZones(visibleLayerElements(props.elements, props.tabLayers)),
-    [props.elements, props.tabLayers],
-  );
+  // And each visible stage, with the room it stands in (the same spec's "The stage").
+  const { zones, stages } = useMemo(() => {
+    const visible = visibleLayerElements(props.elements, props.tabLayers);
+    const rooms = roomZones(visible);
+    return { zones: rooms, stages: callStages(visible, rooms) };
+  }, [props.elements, props.tabLayers]);
 
   const self = inMode ? avatar.pos : null;
   const view = useViewRect(deps.viewport);
@@ -74,6 +77,7 @@ export function useCanvasCall(deps: {
     self,
     walkers: peers,
     zones,
+    stages,
   });
 
   return {

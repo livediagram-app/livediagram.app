@@ -4,6 +4,7 @@ import {
   isCallLayer,
   isCallTrackName,
   parseAvatarVoice,
+  parseCallsCheck,
   parseCallTrack,
   parseCallTrackLocator,
   parseVoiceLevel,
@@ -29,6 +30,19 @@ describe('proximity audio wire (proximity-audio.md "The wire")', () => {
     expect(parseAvatarVoice({ kind: 'avatar-voice', tabId: 'x'.repeat(65), level: 1 })).toBeNull();
     expect(parseAvatarVoice({ kind: 'avatar', tabId: 't', level: 1 })).toBeNull();
     expect(parseAvatarVoice(null)).toBeNull();
+  });
+
+  // docs/specs/016-platform/calls-kill-switch.md "The room tells its clients".
+  it('parses a calls-check op to its tab alone, a presence op', () => {
+    expect(parseCallsCheck({ kind: 'calls-check', tabId: 't', extra: 1 })).toEqual({
+      kind: 'calls-check',
+      tabId: 't',
+    });
+    expect(parseCallsCheck({ kind: 'calls-check' })).toBeNull();
+    expect(parseCallsCheck({ kind: 'calls-check', tabId: 'x'.repeat(65) })).toBeNull();
+    expect(parseCallsCheck({ kind: 'call-track', tabId: 't' })).toBeNull();
+    expect(parseCallsCheck(null)).toBeNull();
+    expect(isPresenceOpKind('calls-check')).toBe(true);
   });
 
   it('takes a locator for a track a call publishes, within bounds', () => {

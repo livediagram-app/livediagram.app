@@ -412,4 +412,13 @@ describe('layerBands — office floors', () => {
     ];
     expect(order(office)).toEqual(['room', 'rug', 'table']);
   });
+
+  it('lays a stage on its room, under the furniture', () => {
+    const hall = [
+      shape('chair', 'chair', 60),
+      shape('stage', 'stage', 360),
+      shape('hall', 'room', 900),
+    ];
+    expect(order(hall)).toEqual(['hall', 'stage', 'chair']);
+  });
 });
