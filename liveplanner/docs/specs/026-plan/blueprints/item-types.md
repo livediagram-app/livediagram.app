@@ -739,6 +739,91 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     to `itemTypes.saveType(next, along)`, whose `change` pushes `combinedStep([typeStep, itemsStep])`
     (`item-undo-journal.ts`) once the write settles (the type's step alone when it made none).
 
+  - **Gap: filters on a retyped field** (spec "Filters on the field"). `packages/items/src/field-filter-removal.ts`,
+    pure: `FieldRetypeTarget = { field, builtIn, typesAfter }`; `clauseNamesField(clause, field)` (a
+    `CardSearchFilter` with `by: 'field'` and that field, or for a built-in `by: 'assignee'` / `'priority'`);
+    `boardWithoutFieldFilters(setup, target)` → `{ setup, removed }` takes the clauses off every
+    `savedFilters[].filters` (and a saved filter's `person` for Assignee, `priority` for Priority, `due` for Due
+    Date), dropping a saved filter left with nothing to narrow by; `viewWithoutFieldFilters(settings, target)`
+    the same for `PlanViewRef.filters` (absent when none is left). A built-in's clause comes off only where the
+    place's types after the change (`boardAddTypes(setup, typesAfter)`, or the view's `types`, every type when
+    absent) hold the built-in on none. The setup or settings object is returned as is when nothing comes off.
+    `apps/editor/components/plan/field-retype-tabs.ts` walks `Tab[]` (boards `shape: 'plan-board'`, views
+    `shape: 'plan-view'`): `countFieldFilters(tabs, target)` and `tabsWithoutFieldFilters(tabs, target)` (a tab
+    and an element replaced only when one changed; the array returned as is when none did).
+  - **Gap: all or none** (spec "Saving the type"). `usePlanSlice.reshapeValues(patches)` resolves
+    `{ ok, step }` (`ValuesWrite`, `item-undo-journal.ts`): `ok` is the write's own answer, `step` the undo of
+    whatever landed (`usePlanItems.write`'s `onUndo`, called for a partial write too). `useItemTypes.saveType(type,
+along?)` takes `along: SaveAlong = { values?: Promise<ValuesWrite>, settle?: () => boolean, name }`;
+    `make(change)` now resolves `true` once the change is stored (`send` resolves `false` when it gives up). With
+    `along`, `change` waits for both (`settleRetype`, `retype-settle.ts`, pure): both landed: `settle()` runs
+    (commits the filter removal to the tabs, one canvas step, answering whether it changed any) and one undo step
+    is pushed, `combinedStep([typeStep, valuesStep])` with `canvas: true` when `settle` committed; the values
+    failed: `step.undo()` puts back what landed and, when the type did land, `make(inverseCatalogueChange(made))`
+    puts it back; the type failed: `step.undo()`; either failure pushes no step and calls `onError("Couldn’t
+change {name}'s type, so nothing was changed.")` (the type's own "Couldn’t save the card types" toast is not
+    shown for a change made with `along`).
+  - **One undo step over a canvas step**: `ItemUndoStep.canvas?: true` marks an item step pushed right after a
+    canvas commit it belongs with. `useItemUndo.undo` runs `step.undo()` then `history.undo()`; the journal's redo
+    entry keeps the future length from before the canvas undo, and `journalRedoTarget` matches a canvas step at
+    `futureLength + 1`; `redo` runs `history.redo()` then `step.redo()`, and `journalAfterRedo` files it at
+    `depth + 1`. Pure in `item-undo-journal.ts`.
+
+- **Built-in Full edit** (spec "Edit Field": Built-in fields).
+  - `packages/items/src/built-in-field-labels.ts`, pure: `BUILT_IN_FIELD_NAMES` (the type editor's names, moved
+    from the editor; `BUILT_IN_FIELD_LABELS` in `ItemTypeFieldForms.tsx` re-exports it), `RENAMABLE_BUILT_INS` (every
+    built-in but Title, Archived, Flagged and Example), `fieldLabelsWith(labels, id, name)` (trimmed; blank or the
+    built-in's own name in any case drops the key; absent when none is left), `readFieldLabels(input, fields)` (an
+    object of renamable ids to 1 to `CUSTOM_FIELD_LABEL_MAX` characters; a key the type lacks or the built-in's own
+    name dropped; `null` for anything else, refused as `types[i].fieldLabels`),
+    `typeFieldLabel(type, id, fallback = BUILT_IN_FIELD_NAMES[id])` (O(1)), `builtInFieldLabel(id, types,
+fallback)` (the name every type in scope holding the field agrees on, else `fallback`; memoised per `types`
+    array in a `WeakMap<readonly ItemTypeDef[], Map<id, string | null>>`, O(types) once) and `builtInIdOfName(name,
+types)` (the built-in a lower-cased name names on any type, for the CSV import).
+  - `ItemTypeDef.fieldLabels?: Partial<Record<ItemFieldId, string>>`; `readType` reads it with `readFieldLabels`;
+    `INHERITED_PARTS` gains `'fieldLabels'`. Regenerate the api's `schemas.generated.ts` (`gen:openapi`).
+  - Readers: one type: `ItemFieldEditor` (the panel's names: its short names as the fallback), `ItemTypeLayoutEditor`
+    (`labelOf`), `PlanCardFace` chip names, `formulaScopeOf` (name, with the built-in's names kept as aliases).
+    Several: `boardSortFieldsOf` / `boardSortFieldOf`, `laneFieldsOf` (`everyLaneField`), `searchFields` (Assignee,
+    Priority groupings), `breakdownTitle`, `viewFieldsOf` / `viewFieldLabel`, `boardCsvRows` headers (`Start`, `Due`
+    the fallbacks), `boardCsvImport` (`builtInIdOfName` over the board's types after `builtInFieldOf`),
+    `plan-view-settings.ts` and `BoardSelectionBar` names.
+  - `packages/items/src/built-in-field-retype.ts`, pure: `BUILT_IN_KIND_SHAPES` (id → `KindShape`: description
+    `longtext`, estimate `number`, start and due `date`, priority `choice` with options `PRIORITY_LABELS` in order,
+    labels `labels`, assignee `person`, color `colour`, checklist `checklist`, comments `comments`, votes `votes`,
+    attachments `image`, status `choice`), `STATUS_KEEPS_TYPE` (the spec's line), `builtInRetypeRefusal(id, to)`
+    (Status always; else `kindChangeRefusal(shape, to)`), `builtInValueOf(id, raw)` (a Priority's label, the rest
+    as stored), `builtInCardsOf(typeId, id, types)` (the type and heirs taking the field from it),
+    `retypeBuiltInIn(type, id, def)` (the def's id in the built-in's place in `fields`, `ownFields`, every tab and
+    every card size's display; `fieldLabels[id]` dropped; `assigneeNotifies` dropped for Assignee; Colour's
+    `colourField` set to the new id) and `builtInRetypePatches(id, to, newId, items, on, ctx)` =
+    `fieldKindChange(shape, to, items, on, ctx, { into: newId, read })`.
+  - `fieldKindChange` gains `move?: { into, read? }`: a kept or rewritten value is set under `into` and the old key
+    cleared; a cleared value clears the old key; `fieldValues(items, on, read?)` reads the same way.
+  - `packages/items/src/field-retype-impact.ts`, pure: `fieldRetypeImpact({ field, builtIn, typeId, name, boards,
+views, forms, types })` → `string[]`, one pass over the given boards, views, forms and the catalogue's custom
+    fields: sorts (`sortBy`), lanes (`swimlaneBy` `field` + `swimlaneField`, or `assignee` / `priority`), widgets
+    (`field:*:{id}`, and the kinds reading a built-in: `BUILT_IN_WIDGET_READS`), views (`startField`, `dueField`,
+    `measure`, `swimlaneField`, or the built-ins a view reads: `VIEW_READS`), forms (a question `{ to: 'field',
+fieldId }` on a form whose destination is the type), formulas (`{id}` in a Formula's stored text), rollups and
+    lookups (`source`), and one CSV row when any board shows the type. Only places covering the type count.
+    `IMPACT_ROWS_SHOWN` 6, then "and N more".
+  - Editor: `ItemTypeLayoutEditor` gives a built-in row (in `RENAMABLE_BUILT_INS`, not inherited) the pencil;
+    `editing` holds its id; `BuiltInEditDialog` (`BuiltInEditDialog.tsx`) is `AddFieldDialog` with `edit: { field,
+plan, onSave, builtIn: { id, role, notifies } }`: `field` is the built-in's shape named `typeFieldLabel`,
+    `plan` is `useEditFieldPlan` with `builtIn` (refusals from `builtInRetypeRefusal`, values read through
+    `builtInValueOf`, loss, filters and impact from the stored type). `NewFieldForm` passes `builtIn` to
+    `AddFieldShape`, which on the built-in's own tile shows `BuiltInShape` (Name with the built-in's name as
+    placeholder, its role line, Notifies for the Assignee, Status's States line) instead of `ShapeOwn`. Save on its
+    own tile writes `fieldLabels` (and `assigneeNotifies`) into the draft; on another tile `retypeBuiltInIn` makes
+    the draft's new custom field (`newCustomFieldId`) and records `{ [newId]: builtInId }` in the draft's `retyped`.
+    `ItemTypeEditor.onSave(type, retyped)` hands it to `PlanSheetsHost`, which adds `builtInRetypePatches` to the
+    custom fields' `retypedValuePatches` and passes `{ values, settle, name }` to `saveType`. The confirm step asks
+    when values are lost, filters come off or the impact has rows.
+  - `edit-field-values.ts` gains the filter count and impact: `countFieldFilters` and `fieldRetypeImpact` over
+    `ctx.planTabs()` (a getter on the Plan context reading the editor's tabs when called, so no render reads them),
+    worked out once per shape with the loss; `lossMessage` adds "N filters on it will be removed.".
+
 ## Tabs
 
 - `ItemTypeDef.tabs?: ItemTypeTab[]` (`{ id: /^t-[a-z0-9-]{1,30}$/, label ≤ ITEM_TYPE_TAB_LABEL_MAX (24), fields }`),
@@ -952,6 +1037,13 @@ cards, children)` adds "{names} will keep a copy of its settings."
   People to Person 1.1 ms, to Text 1.5 ms, Date to Date and Time 1.4 ms over 100 distinct days and 24 ms when every
   card holds a different day (time-zone math per day). The options a Choice starts with: one pass, under 0.1 ms.
   The save's writes go in `ITEM_BULK_MAX` chunks (`postInChunks`), so a 2,000-card change is ten requests.
+- Built-in names: `typeFieldLabel` is a property read; `builtInFieldLabel` walks the types in scope once per
+  `types` array and field (at most 32 types), memoised in a `WeakMap`, so menus, search fields and CSV headers pay
+  it once per catalogue change and a card face never does. Budget test: 10,000 lookups over 32 types inside a CPU
+  budget (`built-in-field-labels.test.ts`).
+- The retype scan (`fieldRetypeImpact`, `countFieldFilters`) walks the tabs' elements once per shape picked, no
+  card read; the values pass is `fieldKindChange`'s. Measured on a 2,000-card, 10-tab plan
+  (`field-retype.perf.test.ts`).
 - Add Field's gallery: 33 tiles (25 kinds and 8 variants), each a static sample (no data read), drawn on opening; the search's matching is
   memoised on the search key (`shownCategories`, 33 tiles × a few dozen short strings, well under a millisecond);
   measured in the browser at about 22 ms from the press to the second frame with every tile drawn. Each tile's
@@ -1042,6 +1134,10 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Add Field: option rows, Enter, Backspace, paste                                                                  | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                                                                                                                                                                                                       |
 | Edit Field: value conversions, refusals, counts, options, 2,000-card budget                                      | `packages/items/src/field-kind-change.test.ts`                                                                                                                                                                                                                                                                   |
 | Edit Field: pencil, rename, reshape, type change, loss count and confirm, disabled tiles, Editor only            | `apps/editor/components/plan/EditFieldDialog.test.tsx`                                                                                                                                                                                                                                                           |
+| Built-in names: stored, read, inherited, one type and several, CSV both names, budget                            | `packages/items/src/built-in-field-labels.test.ts`                                                                                                                                                                                                                                                               |
+| Built-in retype: shapes, refusals, Status, values moved, type rewritten, impact rows, filters removed, perf      | `packages/items/src/built-in-field-retype.test.ts`, `packages/items/src/field-retype-impact.test.ts`, `packages/items/src/field-filter-removal.test.ts`, `packages/items/src/field-retype.perf.test.ts`                                                                                                          |
+| Built-in Edit Field: pencil on built-ins (Editor only), rename, Notifies, Status tiles dimmed, retype confirm    | `apps/editor/components/plan/BuiltInEditDialog.test.tsx`                                                                                                                                                                                                                                                         |
+| All or none: values write fails, type fails, filters in the same undo step over a canvas step                    | `apps/editor/hooks/plan/retype-settle.test.ts`, `apps/editor/hooks/plan/item-undo-journal.test.ts`, `apps/editor/components/plan/field-retype-tabs.test.ts`                                                                                                                                                      |
 | Edit Field: the type and its values as one undo step                                                             | `apps/editor/hooks/plan/item-undo-journal.test.ts`, `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                                                                                                                                                |
 | Add Field: opened from a group, lands there                                                                      | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                                                                                                                                                                                                 |
 | Statuses chips, panel Status options                                                                             | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                                                                                                                                                                                          |

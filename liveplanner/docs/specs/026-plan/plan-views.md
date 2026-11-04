@@ -26,6 +26,9 @@ a card is never dropped into one.
   A board without a done column has no Done. A status two boards name takes the phase the first board gives
   it. A card with no status, or one no board names, is Not Started.
 - **Done** is the Done phase: what a board would count as done.
+- **Field names**: a built-in field is named as every card type the view draws names it, when they all agree
+  ([Edit Field](item-types.md#built-in-full-edit)); else by its own name (Due, Start Date). Its settings, title
+  ("Cards by Owner") and filter chips read the same way.
 - Before the cards arrive a plan view says **Loading cards…**; outside the editor (an export, a share view
   without cards) it shows its empty state.
 
@@ -404,7 +407,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   filter ever leaves nothing; picking a value adds the filter and closes it. A list longer than 8 has a box to
   narrow it. **Clear All** removes every filter.
 - The filters are the view's own, saved with it (`filters`: `{ by, field?, key }`), so everyone sees the same
-  search. Someone who may only view, or a view outside Plan mode, shows the chips without crosses or Add Filter.
+  search. A filter on a field whose type changes comes off with the change ([Edit
+  Field](item-types.md#edit-field) "Filters on the field"), in its undo step, since its value would match nothing. Someone who may only view, or a view outside Plan mode, shows the chips without crosses or Add Filter.
 - Empty: the shared empty state in the board's colours ([Empty states](../004-interface-design/empty-states.md)):
   "No cards match these filters" with **Clear Filters** for an Editor (with filters), "No cards yet" ("Add cards to a
   board.") without.

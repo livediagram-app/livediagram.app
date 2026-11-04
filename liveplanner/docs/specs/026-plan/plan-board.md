@@ -28,6 +28,11 @@ is about.
 
 Stored on the element, shared by everyone, undone like any element edit:
 
+- **Field names** in every menu below (Swimlanes, Sort Cards, the Filter widget, saved filters, field widgets, the
+  selection bar): a built-in field reads as every card type the board shows names it, when they all agree
+  ([Edit Field](item-types.md#built-in-full-edit): "Sort By Points" on a board of types calling Estimate Points);
+  else by its own name. A saved filter on a field whose type changes comes off with the change, in its undo step.
+
 - **Title**: shown in the board's header. <a id="the-boards-title"></a>A board placed on a tab (from the palette, Start
   Planning, or drawn) is **named after its tab** ("Launch"), its preset's name ("Kanban") when the tab has none or
   still has its default name ("Tab 4"), and a Board tab then takes the board's title
@@ -1009,7 +1014,9 @@ column in board order, each column's cards in their order on it. A file named fo
   Archive board, the state's name).
 - Then each built-in field any of the board's card types offers, in this order: **Assignee** (the person's name),
   **Priority** (Urgent, High, Medium, Low), **Start**, **Due** (YYYY-MM-DD), **Estimate**, **Labels** (joined by ", "),
-  **Description** (its plain text).
+  **Description** (its plain text). A header is the type's own name for the field when every card type the board
+  shows names it the same ([Edit Field](item-types.md#built-in-full-edit)): "Points" for an Estimate every type
+  calls Points; else the name above.
 - Then the custom fields of the board's card types by their label, in catalogue order (a label two types share is one
   column): a Card field (Parent among them) as the linked card's title, a checkbox as "Yes" or empty, a Date and
   Time as its UTC instant in ISO 8601 (`2026-10-31T17:00:00Z`), a Date Range as an ISO 8601 interval
@@ -1017,8 +1024,9 @@ column in board order, each column's cards in their order on it. A file named fo
 
 **Import CSV** (an Editor or a Participant, who may add cards; dimmed for a Viewer, and on an Archive board) opens a
 file picker (`.csv`, `.tsv`). The first row names the columns, matched case-insensitively by the names the Sheet's
-card functions take ("Title", "Status" or "State", "Assignee" or "Owner", "Due Date", ...) and then by the custom
-fields' labels; a column it does not know is ignored, and so is **Key** (the new cards are numbered afresh). A file
+card functions take ("Title", "Status" or "State", "Assignee" or "Owner", "Due Date", ...), or by any name the board's
+card types give a built-in field ([Edit Field](item-types.md#built-in-full-edit): a "Points" column fills Estimate),
+and then by the custom fields' labels; a column it does not know is ignored, and so is **Key** (the new cards are numbered afresh). A file
 over 5 MB (the CSV reader's 10,000 rows at about 500 bytes each) is refused before it is read: "That file is too big
 to import. Import CSV reads files up to 5 MB." Each row after it becomes a new card on the board:
 
