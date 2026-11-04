@@ -142,23 +142,23 @@ the one new stored value, a synced user preference.
 
 ## Errors and edge cases
 
-| #   | Case                                       | Handling                                                      |
-| --- | ------------------------------------------ | ------------------------------------------------------------- |
-| E1  | Enter while typing in a field elsewhere    | Ignored (`isTypingTarget`)                                    |
-| E1a | Enter on a focused button, row or tour     | Left to it (`isEnterActivatedTarget`)                         |
-| E2  | Enter with a dialog open                   | Ignored (`anyModalOpen`)                                      |
-| E3  | Paste of 2,000 characters                  | Clamped to the limits                                         |
-| E4  | Send during the cooldown                   | Held, "One moment…"                                           |
-| E5  | Composer open, mode left / tab switched    | Closed, draft dropped                                         |
-| E6  | Peer op for another tab                    | Not drawn until its speaker is found on the open tab          |
-| E7  | Same id twice                              | Second dropped (`SeenIds`, capped at 200)                     |
-| E8  | Peer floods ops                            | Room op-rate cap, then three bubbles per person on screen     |
-| E9  | Viewer sends by a modified client          | Room drops it                                                 |
-| E10 | Markup in the text                         | Rendered as text                                              |
-| E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                 |
-| E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                   |
-| E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin |
-| E14 | Bubble rising to the view's top edge       | It stops 120px below the top (`topShift`, `SPEECH_TOP_CLEAR`), under the palette strip, and fades there       |
+| #   | Case                                       | Handling                                                                                                |
+| --- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| E1  | Enter while typing in a field elsewhere    | Ignored (`isTypingTarget`)                                                                              |
+| E1a | Enter on a focused button, row or tour     | Left to it (`isEnterActivatedTarget`)                                                                   |
+| E2  | Enter with a dialog open                   | Ignored (`anyModalOpen`)                                                                                |
+| E3  | Paste of 2,000 characters                  | Clamped to the limits                                                                                   |
+| E4  | Send during the cooldown                   | Held, "One moment…"                                                                                     |
+| E5  | Composer open, mode left / tab switched    | Closed, draft dropped                                                                                   |
+| E6  | Peer op for another tab                    | Not drawn until its speaker is found on the open tab                                                    |
+| E7  | Same id twice                              | Second dropped (`SeenIds`, capped at 200)                                                               |
+| E8  | Peer floods ops                            | Room op-rate cap, then three bubbles per person on screen                                               |
+| E9  | Viewer sends by a modified client          | Room drops it                                                                                           |
+| E10 | Markup in the text                         | Rendered as text                                                                                        |
+| E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                                                           |
+| E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                                                             |
+| E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin                                           |
+| E14 | Bubble rising to the view's top edge       | It stops 120px below the top (`topShift`, `SPEECH_TOP_CLEAR`), under the palette strip, and fades there |
 
 ## Security and trust
 
