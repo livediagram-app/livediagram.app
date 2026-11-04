@@ -29,7 +29,10 @@ are, the panel draws them.
   groups lead.
 - **The start is the whole catalogue.** It holds every listed Pages template; there is no bigger picker behind it.
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
-- **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go. Down
+- **Keyboard:** the search is focused on a fine pointer, as the panel opens, unless focus has gone somewhere since: the
+  panel's code loads when it is first drawn, so on a busy machine it can arrive after a control was reached or a menu
+  opened from the keyboard, and it never takes focus from one. It takes it only from the page itself or the canvas
+  (`focusIsFree`, `../packages/workbench/src/lib/focus-is-free.ts`). Up and Down move along the rail, choosing as they go. Down
   in the search box moves to the first card it found. Among the cards the arrow keys move between them: Left and Right
   to the card before and after (across a section's end into the next), Up and Down to the nearest card in the row
   above and below; Up from the first row goes back to the search box while there is a search. Home and End reach the
