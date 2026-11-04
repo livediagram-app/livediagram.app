@@ -131,7 +131,7 @@ const ARRIVE_EPSILON = 1.5;
 
 // How near a viewport edge (SCREEN px) the avatar may get before the
 // camera pans to keep it comfortably in frame.
-const AVATAR_FOLLOW_MARGIN = 120;
+export const AVATAR_FOLLOW_MARGIN = 120;
 
 export type AvatarFacing = 'down' | 'up' | 'left' | 'right';
 

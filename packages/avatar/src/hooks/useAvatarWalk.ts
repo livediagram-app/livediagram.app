@@ -359,11 +359,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     if (requested) {
       if (spawnAtRef) spawnAtRef.current = null;
       place(requested);
-      // A low Walk In put it within the follow margin of an edge (behind the bottom-right cluster): the view comes
-      // just far enough to bring it in, as the walk's camera follow does (Work Tracker #484). One the press put off
-      // screen (opening walking, before its fit) is left to the opening, which brings the view to it.
-      const at = posRef.current!;
-      if (r && onScreen(at)) follow(at, r);
+      // A low Walk In put it within the follow margin of an edge, or just past it (feet under the bottom-right
+      // cluster or the tab bar): the view comes just far enough to bring it in, as the walk's camera follow does (Work
+      // Tracker #484). Opening walking sets the same spot before its fit, which replaces this and judges the view again.
+      if (r) follow(posRef.current!, r);
       return;
     }
     if (!centre) return;

@@ -158,7 +158,7 @@ the one new stored value, a synced user preference.
 | E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                 |
 | E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                   |
 | E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin |
-| E14 | Bubble rising to the view's top edge       | It stops 8px below the top (`topShift`) and fades there       |
+| E14 | Bubble rising to the view's top edge       | It stops 120px below the top (`topShift`, `SPEECH_TOP_CLEAR`), under the palette strip, and fades there       |
 
 ## Security and trust
 
@@ -186,7 +186,8 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
   added to the card's translate. The top edge the same way: the layer also takes the view's height and y offset
   (`viewHeight`, `offsetY`; `screenY` is `screenX`'s formula on the other axis), and `topShift(top)` answers how far
   down a card whose top is at screen y `top` (its anchor, less its rise, lift and scaled height) moves to keep
-  SPEECH_EDGE_MARGIN below the view's top: zero while it fits, so a bubble rises until it meets the top and holds
+  SPEECH_TOP_CLEAR (the walk's follow margin, `AVATAR_FOLLOW_MARGIN`, 120px: the palette strip floats over the
+  canvas's top) below the view's top: zero while it fits, so a bubble rises until it meets the top and holds
   there as it fades. Floating bubbles only: the composer sits over your own character, which the camera follow
   keeps clear of the edges. No layout reads per frame.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say

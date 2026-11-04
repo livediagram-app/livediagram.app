@@ -103,9 +103,9 @@ describe('the speech bubbles flight', () => {
       return container.querySelector<HTMLElement>('[aria-hidden].w-max')!.style.transform;
     };
 
-    it('starts a bubble over a head at the top edge inside the view, 8px below it', () => {
-      // Its top would be at 20 - 40 = -20: dropped 28 to sit at 8.
-      expect(startAt(20)).toContain(', 28px) scale');
+    it('starts a bubble over a head under the top chrome below it, 120px down', () => {
+      // Its top would be at 20 - 40 = -20: dropped 140 to sit at 120.
+      expect(startAt(20)).toContain(', 140px) scale');
     });
 
     it('leaves a bubble with room above it where it starts', () => {
@@ -122,14 +122,16 @@ describe('the speech bubbles flight', () => {
       const { container } = render(
         <AvatarSpeechLayer
           {...props}
-          bubbles={[{ ...bubble, x: 200, y: 60 }]}
+          bubbles={[{ ...bubble, x: 200, y: 200 }]}
           view={{ ...props.view, height: 600 }}
         />,
       );
       const card = container.querySelector<HTMLElement>('[aria-hidden].w-max')!;
-      // Three seconds in, it has risen 54px; its top stops at 8, so it stands 12px up, not 54.
+      // Starting with its top at 160, three seconds in it would have risen 54px (a top at 106); it stops at 120, so
+      // it stands 40px up, not 54.
       vi.advanceTimersByTime(3000);
-      expect(card.style.transform).toContain(', -12px) scale');
+      const y = Number(/, (-?[\d.]+)px\) scale/.exec(card.style.transform)![1]);
+      expect(y).toBeCloseTo(-40, 6);
     });
 
     it('keeps only the sides where the view has no height', () => {

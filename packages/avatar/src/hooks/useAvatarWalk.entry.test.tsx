@@ -53,9 +53,9 @@ describe('useAvatarWalk entering from a button', () => {
     expect(setViewportOffset).not.toHaveBeenCalled();
   });
 
-  it('leaves a spot off screen to the opening, which brings the view to it', () => {
-    const { result, setViewportOffset } = pressAt({ x: 500, y: 1200 });
-    expect(result.current.pos).toEqual({ x: 500, y: 1200 });
-    expect(setViewportOffset).not.toHaveBeenCalled();
+  it('brings in a spot the press put just past the bottom edge, under the chrome', () => {
+    const { result, setViewportOffset } = pressAt({ x: 500, y: 830 });
+    expect(result.current.pos).toEqual({ x: 500, y: 830 });
+    expect(setViewportOffset).toHaveBeenCalledWith({ x: 40, y: -170 });
   });
 });

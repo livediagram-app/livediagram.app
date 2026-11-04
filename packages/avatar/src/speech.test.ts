@@ -7,6 +7,7 @@ import {
   screenX,
   screenY,
   topShift,
+  SPEECH_TOP_CLEAR,
   flightMs,
   headPoint,
   nextDraft,
@@ -172,14 +173,14 @@ describe('nextDraft (typing past the limit is refused, a paste is clamped)', () 
   });
 });
 
-describe('topShift (a bubble stays below the top of the view, Work Tracker #394)', () => {
-  it('leaves a card whose top is clear of the margin', () => {
-    expect(topShift(8)).toBe(0);
-    expect(topShift(200)).toBe(0);
+describe('topShift (a bubble stays below the top chrome, Work Tracker #394)', () => {
+  it('leaves a card whose top is clear of the top chrome', () => {
+    expect(topShift(SPEECH_TOP_CLEAR)).toBe(0);
+    expect(topShift(300)).toBe(0);
   });
-  it('drops a card rising past the top back to the margin', () => {
-    expect(topShift(2)).toBe(6);
-    expect(topShift(-120)).toBe(128);
+  it('drops a card rising into the top chrome back below it', () => {
+    expect(topShift(100)).toBe(20);
+    expect(topShift(-30)).toBe(150);
   });
   it('reads a canvas y on screen as screenX reads an x', () => {
     expect(screenY(100, 2, 7.5, 390)).toBe(screenX(100, 2, 7.5, 390));
