@@ -166,7 +166,7 @@ migration lists it in [Owner-keyed data](../../015-api/api.md#owner-keyed-data).
 | Swap loses its compare                                 | Add-only statements may add references the stored body lacks: over-keeps |
 | Tab deleted                                            | Its references go with it; the next push sends the smaller set           |
 | Image deleted from the gallery, references left behind | Harmless; they go when the element does                                  |
-| A push fails                                           | Its keys stay; the next drain, a minute later, sends the whole set again |
+| A push fails                                           | Its keys stay; the next drain, a minute later and doubling to an hour, sends the whole set again; parked after 12 failures |
 | No `MEDIA_KEY`                                         | The index is still maintained; the push sends nothing                    |
 
 ## Security and trust
