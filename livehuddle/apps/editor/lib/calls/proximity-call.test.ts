@@ -19,6 +19,7 @@ import {
   SCREEN_CONSTRAINTS,
   type CallSignal,
 } from './proximity-call';
+import { roomZones } from './zones';
 
 const sfu = vi.hoisted(() => ({
   instances: [] as {
@@ -632,6 +633,75 @@ describe('ProximityCall video and screens', () => {
     setCallsMode('audio-only');
     expect(callSelf().camera).toBe('off');
     setCallsMode('on');
+    call.stop();
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls" (Work Tracker #319, #436).
+describe('ProximityCall in rooms', () => {
+  const loc = (id: string, trackName: string) => ({ sessionId: `${id}s`, trackName, token: 't' });
+  // A 600 × 400 room at the origin; the corridor runs below it.
+  const zones = roomZones([
+    { id: 'meeting', type: 'shape', shape: 'room', x: 0, y: 0, width: 600, height: 400 },
+  ]);
+  const roomScene = (self: { x: number; y: number }, walkers: [string, number, number][]) => ({
+    tabId: 't1',
+    self,
+    walkers: new Map(walkers.map(([id, x, y]) => [id, { x, y }])),
+    zones,
+  });
+
+  it('hears and sees the whole room at full volume, and nobody outside it, however close', async () => {
+    const { call } = makeCall();
+    await call.start();
+    for (const id of ['far', 'outside']) {
+      receiveCallOp(id, {
+        kind: 'call-track',
+        tabId: 't1',
+        track: loc(id, 'mic'),
+        video: loc(id, 'cam'),
+      });
+    }
+    // You in one corner, a colleague in the opposite one, somebody just past the front wall in the corridor.
+    call.update(
+      roomScene({ x: 20, y: 380 }, [
+        ['far', 580, 50],
+        ['outside', 20, 420],
+      ]),
+    );
+    const s = sfu.instances[0]!;
+    expect(callSelf().heard).toEqual(new Set(['far']));
+    expect(callSelf().someoneNear).toBe(true);
+    expect(s.want).toHaveBeenLastCalledWith([loc('far', 'mic'), loc('far', 'cam')]);
+    s.events.onTrack('fars', 'mic', {});
+    expect(graph.place).toHaveBeenLastCalledWith('far', 1, expect.any(Number));
+
+    // Stepping out into the corridor: the room goes, the neighbour comes, by distance.
+    call.update(
+      roomScene({ x: 60, y: 420 }, [
+        ['far', 580, 50],
+        ['outside', 20, 420],
+      ]),
+    );
+    expect(callSelf().heard).toEqual(new Set(['outside']));
+    expect(s.want).toHaveBeenLastCalledWith([loc('outside', 'mic'), loc('outside', 'cam')]);
+    s.events.onTrack('outsides', 'mic', {});
+    expect(graph.place).toHaveBeenLastCalledWith('outside', 1, expect.any(Number));
+    call.stop();
+  });
+
+  it('reads Nobody Near when the only walker is through a wall, and keeps the zoning for a late locator', async () => {
+    const { call } = makeCall();
+    await call.start();
+    call.update(roomScene({ x: 300, y: 380 }, [['corridor', 300, 420]]));
+    expect(callSelf().someoneNear).toBe(false);
+    expect(callSelf().heard).toEqual(new Set());
+    // Their microphone's locator arrives after the scene: still not heard.
+    receiveCallOp('corridor', { kind: 'call-track', tabId: 't1', track: loc('corridor', 'mic') });
+    expect(callSelf().heard).toEqual(new Set());
+    // Without your character, nobody is near.
+    call.update({ ...roomScene({ x: 0, y: 0 }, [['corridor', 300, 420]]), self: null });
+    expect(callSelf().someoneNear).toBe(false);
     call.stop();
   });
 });
