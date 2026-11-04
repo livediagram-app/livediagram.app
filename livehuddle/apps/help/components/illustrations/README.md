@@ -41,8 +41,8 @@ static export.
 
 - Draw in the light ramp only. In dark, [`../packages/help-site/src/help-art.css`](../../../../../packages/help-site/src/help-art.css) re-points the
   light tokens inside `Scene` so the art shows the editor's dark chrome with no `dark:` classes.
-- Something that looks the same in both appearances (a code window, the presenter HUD, the light
-  half of a light/dark comparison, theme swatches) goes in a `<g className="help-art-as-drawn">`.
+- Something that looks the same in both appearances (a code window, the light half
+  of a light/dark comparison, theme swatches) goes in a `<g className="help-art-as-drawn">`.
 - A `dark:` class may only name a token the file leaves alone (slate-950, brand-800 and up, hues
   from 300 up) or a capture such as `dark:fill-(--help-art-slate-800)`.
 - White text on a solid hue uses the hue's 700 step in dark (`fill-violet-500 dark:fill-violet-700`).

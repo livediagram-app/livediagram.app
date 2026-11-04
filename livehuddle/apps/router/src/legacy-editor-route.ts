@@ -21,7 +21,9 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // since left livehuddle for livedocuments: every article of all three sections lands on the
 // Editor Modes article. Plan mode left for liveplanner the same way, its articles landing there too, and the API's
 // Plan Items, Sheets and Images article became Images, Copies and Libraries. Custom themes, tags and the in-editor AI
-// assistant were removed: their articles land on the nearest live one (Themes, Folders, Connect AI Tools). The
+// assistant were removed: their articles land on the nearest live one (Themes, Folders, Connect AI Tools). Slide
+// decks, presenting and the Page element left livehuddle for meeting in Spaces (Work Tracker #423): the deck's
+// articles and Presenting from the Canvas land on Following Someone, and Pages on Write Elements. The
 // Self-Hosting category was retired; its pages land on the help centre home (an empty target). The old addresses are
 // links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
@@ -80,6 +82,12 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'explorer/tags': 'explorer/folders',
   'tools/ai': 'account-and-data/connect-ai-mcp',
   'tools/ai/ai-tools': 'account-and-data/connect-ai-mcp',
+  'selection-modes/slide-deck': 'canvas/follow-along',
+  'selection-modes/slide-deck/building-a-deck': 'canvas/follow-along',
+  'selection-modes/slide-deck/presenting': 'canvas/follow-along',
+  'selection-modes/slide-deck/presenter-controls': 'canvas/follow-along',
+  'tips-and-tricks/presenting-well': 'canvas/follow-along',
+  'palette/tools/pages': 'palette/write',
   'self-hosting': '',
   'self-hosting/self-hosting-overview': '',
   'self-hosting/deploying-livehuddle': '',
