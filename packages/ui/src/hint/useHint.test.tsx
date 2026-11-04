@@ -11,6 +11,7 @@ import {
   type HintKind,
 } from './hint-constants';
 import { resetHintRegistry } from './hint-registry';
+import { resetInputModality } from './input-modality';
 import { useHint } from './useHint';
 
 function Harness({
@@ -72,6 +73,7 @@ function focusVisible(visible: boolean) {
 }
 
 beforeEach(() => {
+  resetInputModality();
   vi.useFakeTimers();
 });
 
@@ -152,6 +154,34 @@ describe('useHint, preview on pointer', () => {
     render(<Harness kind="preview" />);
     fireEvent.focus(button());
     expect(tip()).not.toBeNull();
+  });
+});
+
+describe('useHint, focus that follows a tap', () => {
+  // A dialog closing hands focus back to its opener; an engine may call that focus keyboard-visible.
+  it('opens nothing on focus after a touch press, even when the engine says keyboard-visible', () => {
+    focusVisible(true);
+    render(<Harness kind="tooltip" />);
+    fireEvent.pointerDown(document.body, touch);
+    fireEvent.focus(button());
+    expect(tip()).toBeNull();
+  });
+
+  it('opens nothing on focus after a mouse press either', () => {
+    focusVisible(true);
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerDown(document.body, mouse);
+    fireEvent.focus(button());
+    expect(tip()).toBeNull();
+  });
+
+  it('opens again on focus once a key has been pressed since the tap', () => {
+    focusVisible(true);
+    render(<Harness kind="tooltip" />);
+    fireEvent.pointerDown(document.body, touch);
+    fireEvent.keyDown(document.body, { key: 'Tab' });
+    fireEvent.focus(button());
+    expect(tip()?.dataset.source).toBe('focus');
   });
 });
 

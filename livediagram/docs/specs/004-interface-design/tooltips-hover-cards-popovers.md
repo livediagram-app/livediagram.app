@@ -39,7 +39,9 @@ A control has at most one hint. If a hover card is present, it carries the name 
   row of controls, for as long as it arrives within **500 ms** of the last tooltip closing. Scanning a
   toolbar reads each name without paying the wait each time.
 - **Opens instantly on keyboard focus.** Focus that is not keyboard-visible (a click, a dialog
-  focusing its first control) does not open it.
+  focusing its first control, a dialog handing focus back to its opener after a tap) does not open it.
+  Focus that follows a touch or mouse press, with no key pressed since, is never keyboard focus: a phone
+  that taps Join in a dialog must not find the Settings tooltip up when focus returns.
 - **The name only**, on one line where it fits, in the interface's small text. It may wrap; it never
   truncates.
 - **Inverse pill.** On light pages, a dark pill (slate 900) with white text and a small pointer

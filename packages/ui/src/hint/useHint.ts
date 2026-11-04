@@ -11,6 +11,7 @@ import {
   type HintKind,
 } from './hint-constants';
 import { claimHint, isHintWarm, releaseHint, type HintToken } from './hint-registry';
+import { lastInputWasPress, watchInputModality } from './input-modality';
 import { hasVisibleText } from './trigger-text';
 
 type HintOpenSource = 'pointer' | 'focus' | 'touch';
@@ -226,7 +227,7 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
       if (e.pointerType === 'touch') endPress();
     },
     onFocus: (e) => {
-      if (!isFocusVisible(e.target)) return;
+      if (!isFocusVisible(e.target) || lastInputWasPress()) return;
       const m = machine.current;
       m.focused = true;
       if (!m.dismissed) show('focus');
@@ -262,6 +263,9 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
   };
 
   const open = source !== null;
+
+  // Hear presses and keys from the first hint on, so focus after a tap is told from focus after a key.
+  useEffect(watchInputModality, []);
 
   // Escape dismisses without consuming the key: a menu or dialog listening
   // for it closes on the same press (spec).
