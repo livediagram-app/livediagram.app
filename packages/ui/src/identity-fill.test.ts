@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { contrastRatio, shade } from '@liveworkspace/brand/colour';
 import { PRESENCE_COLOURS } from '@liveworkspace/settings/presence';
-import { createIdentityFill, IDENTITY_DARK_INK, IDENTITY_FILL } from './identity-fill';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import {
+  createIdentityFill,
+  IDENTITY_CACHE_MAX,
+  IDENTITY_DARK_INK,
+  IDENTITY_FILL,
+} from './identity-fill';
 
 // Text on an identity colour (docs/specs/004-interface-design/color-scheme.md, Dark palette rules): white where it
 // reaches AA on the fill, otherwise the dark ink, in light and dark alike (Work Tracker #441).
@@ -58,5 +64,25 @@ describe('identity ink', () => {
   it('paints both inks over any text colour a caller set, falling back to white', () => {
     expect(IDENTITY_FILL).toContain('text-[color:var(--identity-ink,#fff)]!');
     expect(IDENTITY_FILL).toContain('dark:text-[color:var(--identity-deep-ink,#fff)]!');
+  });
+
+  it('works each colour out once, and keeps a bounded few', () => {
+    const fill = createIdentityFill({ shade, contrastRatio });
+    expect(fill.identityVars('#fde047')).toBe(fill.identityVars('#fde047'));
+    const first = fill.identityVars('#fde047');
+    for (let i = 0; i < IDENTITY_CACHE_MAX; i++)
+      fill.identityVars(`#0000${i.toString(16).padStart(2, '0')}`);
+    // Full: it starts over, so the first colour is worked out afresh, equal but new.
+    expect(fill.identityVars('#fde047')).not.toBe(first);
+    expect(fill.identityVars('#fde047')).toEqual(first);
+  });
+
+  it('paints a page of avatars a frame without measurable cost', () => {
+    const fill = createIdentityFill({ shade, contrastRatio });
+    const colours = ['#6366f1', '#84cc16', '#fde047', '#123456'];
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 10_000; i++) fill.identityVars(colours[i % 4]!);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(5));
   });
 });

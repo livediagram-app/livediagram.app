@@ -13,6 +13,8 @@ const SHADE_STEP = 0.05;
 // The dark ink: slate-950, which reaches AA on every participant colour (4.5:1 on indigo, the darkest).
 export const IDENTITY_DARK_INK = '#020617';
 const WHITE = '#ffffff';
+// The colours whose shades and inks are kept, per bound fill.
+export const IDENTITY_CACHE_MAX = 64;
 
 // The fill and its ink in each appearance. The ink is important, so it wins over a caller's own `text-white`, and
 // falls back to white where a caller set the fill's custom properties without the inks.
@@ -49,15 +51,24 @@ export function createIdentityFill({
     return contrastRatio(WHITE, fill) >= AA ? WHITE : IDENTITY_DARK_INK;
   }
 
+  // The page shows a handful of colours, each painted on every render of every avatar, cursor and chip that wears it:
+  // worked out once per colour (a custom colour takes up to twenty shading steps), bounded all the same.
+  const cache = new Map<string, CSSProperties>();
+
   /** Paint an element's background and text from both shades; the element carries IDENTITY_FILL. */
   function identityVars(color: string): CSSProperties {
+    const known = cache.get(color);
+    if (known) return known;
     const deep = identityDeep(color);
-    return {
+    const vars = {
       '--identity': color,
       '--identity-ink': identityInk(color),
       '--identity-deep': deep,
       '--identity-deep-ink': identityInk(deep),
     } as CSSProperties;
+    if (cache.size >= IDENTITY_CACHE_MAX) cache.clear();
+    cache.set(color, vars);
+    return vars;
   }
 
   return { identityDeep, identityInk, identityVars };
