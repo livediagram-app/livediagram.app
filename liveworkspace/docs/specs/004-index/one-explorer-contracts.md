@@ -187,6 +187,15 @@ matches no mode), each value matching `INTENT_WORD`; and `space`, `mine`, `share
 `team:<id>` of a joined team (403 otherwise). A filter's values are a comma list of at most 8, combined with or;
 filters combine with and. Anything else is 400 `invalid_query`.
 
+**A create that resumes.** An editor makes a new item in two steps under ids it minted: `POST /items` here, then
+the content in its own api with the grant that answered. When the second step fails, the editor's Retry sends the
+same ids again, so the index answers 409 `item_exists` for an item that is the caller's own. Every editor makes the
+item through `createOrResumeItem` (`@liveworkspace/index-client`): on that one answer it asks for the item's grant
+(`POST /items/:id/grant`, through the app's held grants) and, when it is an `edit` grant, hands it back with the
+title the create asked for, so the content's create carries on. Any other refusal, a grant below `edit` or no grant
+at all, throws the index's error as before. The index itself changes nothing: an id taken by someone else still
+never gives its taker a way in.
+
 **Purging.** A permanent delete, the daily sweep of items in the Trash for 30 days, or closing an account
 (below) removes the index rows and asks the app to drop the content (`DELETE <app>/api/internal/items/:id`,
 app key). Each purged item leaves a tombstone until its app confirms: the index tells the app at once for

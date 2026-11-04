@@ -113,8 +113,9 @@ ids it first tried: a create that reached the server but whose answer was lost
 is then taken as the re-commit of an id the caller already owns, never a second
 document. The same holds one step earlier: the index makes the item before the api
 makes its content, so when the content's create is what failed, the Retry finds the
-item already there (`409 item_exists`). `apiCreateDocument` then asks for the item's
-grant and, when it is an edit grant (the caller's own item), carries the create on
+item already there (`409 item_exists`). `apiCreateDocument` makes the item through
+`createOrResumeItem` (`@liveworkspace/index-client`, shared by every editor since Work Tracker #397), which then
+asks for the item's grant and, when it is an edit grant (the caller's own item), carries the create on
 with it; any other answer fails as before (issue #330: Retry used to fail every time).
 
 The distinction is made at every call site that can fail this way:
