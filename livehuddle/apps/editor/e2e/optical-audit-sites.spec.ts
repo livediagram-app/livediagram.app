@@ -32,17 +32,18 @@ async function open(page: Page, url: string, build: string): Promise<void> {
   // Measure the settled page: an illustration still loading moves what sits beside it by a fraction of a pixel, which
   // snaps its text to a different row (the feature page's call to action read -1.49px on some runs, 0 on others).
   await page.waitForLoadState('networkidle');
+  // A lazy image off screen never loads, so only the eager ones still loading are waited for.
   await page.evaluate(() =>
     Promise.all(
-      Array.from(document.images, (img) =>
-        // A lazy image off screen never loads, so only the eager ones are waited for.
-        img.complete || img.loading === 'lazy'
-          ? undefined
-          : new Promise((done) => {
+      Array.from(document.images)
+        .filter((img) => !img.complete && img.loading !== 'lazy')
+        .map(
+          (img) =>
+            new Promise((done) => {
               img.addEventListener('load', done, { once: true });
               img.addEventListener('error', done, { once: true });
             }),
-      ),
+        ),
     ),
   );
 }
