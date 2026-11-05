@@ -64,7 +64,8 @@ A category or article that is removed keeps its old URL landing: `apps/help/publ
 (301) to the live page nearest to it, with paths as the help worker sees them (no `/help` prefix, which the router
 strips). Every `/self-hosting` URL goes to the help centre home. `lib/retired-articles.test.ts` checks every rule targets a
 live page and never redirects a live article or category away. `selection-modes/isometric-mode` goes to the Selection Modes page (livedocuments
-has no isometric view, [Canvas and palette](../008-canvas/canvas-and-palette.md#isometric)).
+has no isometric view, [Canvas and palette](../008-canvas/canvas-and-palette.md#isometric)). `pages/tab-windows` goes to Pages (the Tab Window
+retired, [The tab window](../009-elements/tab-window.md)).
 
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedocuments is for.
 

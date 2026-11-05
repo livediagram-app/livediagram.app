@@ -1,4 +1,5 @@
-import { isFixedSizeElement } from '@livedesign/design';
+import { isFixedSizeElement, type LaidOutPage } from '@livedesign/design';
+import { snapScope } from '@/lib/page-snap-scope';
 import {
   alignmentGuides,
   distributionSnap,
@@ -57,6 +58,7 @@ const FIXED_SIGN: Partial<Record<DragMode, { sx: number; sy: number }>> = {
 export function resolveBoxedMove({
   elements,
   pageSnapBoxes,
+  pages,
   startBounds,
   primaryId,
   dx,
@@ -75,6 +77,8 @@ export function resolveBoxedMove({
   // Lines to snap to besides the elements' own (a page's edges and margins), as
   // stand-in boxes: aligned to and guided by, never spaced against.
   pageSnapBoxes?: Element[];
+  // Pages mode's laid-out pages: snapping keeps to the page the moved box is over (snapScope).
+  pages?: readonly LaidOutPage[];
   // The user's alignment-guides preference (guides only; the snap still
   // applies when it's off).
   guidesOn: boolean;
@@ -93,7 +97,8 @@ export function resolveBoxedMove({
     width: primaryStart.width,
     height: primaryStart.height,
   };
-  const aligned = pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements;
+  // Aligned to what is on the page under it and that page's lines; spaced against what is on it.
+  const { spaced, aligned } = snapScope(elements, pageSnapBoxes, pages, candidate);
   const snap = snapToAlignment(candidate, aligned, memberIds, ALIGN_SNAP_THRESHOLD);
   let snapDx = snap.dx;
   let snapDy = snap.dy;
@@ -107,7 +112,7 @@ export function resolveBoxedMove({
   const dist =
     snap.snappedX && snap.snappedY
       ? { dx: 0, dy: 0, guides: [] }
-      : distributionSnap(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD);
+      : distributionSnap(candidate, spaced, memberIds, ALIGN_SNAP_THRESHOLD);
   // Distribution fills only the axes alignment didn't claim. Keyed off
   // snap.snappedX/Y (not snapDx === 0) so an EXACT edge alignment, whose
   // delta is 0, still wins over an equal-spacing nudge that's also in
@@ -195,6 +200,7 @@ export function resolveBoxedResize({
   dragAspectLocked,
   guidesOn,
   noSnap = false,
+  pages,
 }: {
   elements: Element[];
   startBounds: ReadonlyMap<string, ShapeBounds>;
@@ -214,9 +220,15 @@ export function resolveBoxedResize({
   noSnap?: boolean;
   // As resolveBoxedMove's: page lines to snap the resized edge to.
   pageSnapBoxes?: Element[];
+  // As resolveBoxedMove's: snapping keeps to the page the resized box started on.
+  pages?: readonly LaidOutPage[];
 }): { boundsById: Map<string, ShapeBounds>; guides: AlignmentGuide[] | null } | null {
   if (mode === 'move') return null;
-  const aligned = pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements;
+  // Snapped to what is on the page the resized box started on, and that page's lines.
+  const startRect = startBounds.get(primaryId);
+  const { aligned } = startRect
+    ? snapScope(elements, pageSnapBoxes, pages, startRect)
+    : { aligned: pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements };
   const corner = cornerOf(mode);
   // Corner OR single edge — so edge resizes snap + dimension-match on
   // their axis (multi-member scaling below stays corner-only).

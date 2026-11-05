@@ -1,8 +1,9 @@
 'use client';
 
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start Making Pages, a start panel
-// (StartPanel). Recommended and its groups beside a grid of the templates, each its preview over its name and line; a
-// search across them; the × starts from nothing. Choosing a template lands it on the tab at once.
+// (StartPanel). Blank Pages and the catalogue's groups beside a grid of the templates, each its preview over its name and line; a
+// search across them. It cannot be closed: the tab holds no page until something is chosen, Blank Pages offering an
+// empty page of each kind. Choosing a template lands it on the tab at once.
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livedocuments/ui';
 import {
@@ -17,11 +18,9 @@ import {
   lucidePartyPopper,
   lucideRocket,
   lucideSquareDashed,
-  lucideStar,
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
 import type { TemplateKind } from '@livedocuments/templates';
-import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
@@ -34,10 +33,9 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
 
-// Each rail group's glyph (start-template-items.ts OWN_GROUPS): Recommended, Blank Pages, then one per catalogue
+// Each rail group's glyph (start-template-items.ts OWN_GROUPS): Blank Pages, then one per catalogue
 // category (docs/specs/008-canvas/canvas-and-palette.md "Template categories").
 const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
-  recommended: glyph(lucideStar),
   'blank-pages': glyph(lucideSquareDashed),
   careers: glyph(lucideBriefcase),
   events: glyph(lucidePartyPopper),
@@ -54,7 +52,7 @@ const FALLBACK_ICON = glyph(lucideLightbulb);
 
 const COPY: { title: string; line: string; noMatch: string; help: HelpArticleKey } = {
   title: 'Start Making Pages',
-  line: 'Pick something to make, or close this to start from a blank page.',
+  line: 'Pick something to make, or start from a blank page under Blank Pages.',
   noMatch: 'page templates',
   help: 'templates',
 };
@@ -80,7 +78,7 @@ export function StartFromTemplates({
       })),
     [start],
   );
-  // The × starts from nothing: the panel stays closed on this tab, for this person (empty-card-dismissed.ts), until the
+  // Only an explicit blank (closeStartForBlank) opens with it closed, its page asking What Is This Page For?, until the
   // palette tray's Show Templates brings it back (StartAgainTray).
   const closedKey = startClosedKey(tabId);
   const closed = useEmptyCardDismissed(closedKey);
@@ -91,9 +89,6 @@ export function StartFromTemplates({
     return () => setStartPanelOpen(false);
   }, [closed]);
   if (closed) return null;
-  const close = () => {
-    dismissEmptyCard(closedKey);
-  };
   return (
     <StartPanel
       titleId="start-pages-title"
@@ -104,13 +99,12 @@ export function StartFromTemplates({
       helpArticle={copy.help}
       palette={palette}
       categories={categories}
-      initialCategory="recommended"
+      initialCategory="blank-pages"
       cardsIn={(id) => (start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard)}
       search={(query) =>
         start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) }))
       }
       onChoose={(kind) => onTemplate(kind as TemplateKind)}
-      onClose={close}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}
     />

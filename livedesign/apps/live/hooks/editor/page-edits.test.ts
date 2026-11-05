@@ -8,7 +8,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const box = (id: string, cx: number) =>
   ({ id, type: 'shape', shape: 'square', x: cx - 10, y: -10, width: 20, height: 20 }) as Element;
 
-function harness(tab: Tab) {
+function harness(tab: Tab, currentPage: () => string | null = () => null) {
   let tabs = [tab];
   const onGoTo = vi.fn();
   const onLayoutPlaced = vi.fn();
@@ -26,6 +26,7 @@ function harness(tab: Tab) {
       onGoTo,
       onLayoutPlaced,
       toastInfo,
+      currentPage,
     });
   return { edits, tab: () => tabs[0]!, commitTabs, onGoTo, onLayoutPlaced, toastInfo };
 }
@@ -61,6 +62,23 @@ const twoPages = (): Tab =>
   }) as unknown as Tab;
 
 describe('Page edits', () => {
+  // pages-mode.md "Adding a page": right after the page someone is on, or after the page whose + was pressed.
+  it('adds right after the page someone is on, and after the page whose + was pressed', () => {
+    const on = harness(twoLogos(), () => 'page-1');
+    on.edits().addPage!('logo');
+    const ids = pagesOf(on.tab()).map((p) => p.id);
+    expect([ids[0], ids[2]]).toEqual(['page-1', 'page-2']);
+    expect(on.onGoTo).toHaveBeenLastCalledWith(ids[1]);
+    const beside = harness(twoLogos(), () => 'page-2');
+    beside.edits().addPageLike!('page-1');
+    const besideIds = pagesOf(beside.tab()).map((p) => p.id);
+    expect([besideIds[0], besideIds[2]]).toEqual(['page-1', 'page-2']);
+    const none = harness(twoLogos());
+    none.edits().addPage!('logo');
+    const noneIds = pagesOf(none.tab()).map((p) => p.id);
+    expect(noneIds.slice(0, 2)).toEqual(['page-1', 'page-2']);
+  });
+
   it('renames, trimming, and clears an empty name', () => {
     const h = harness(twoPages());
     h.edits().rename('page-1', '  Intro  ');

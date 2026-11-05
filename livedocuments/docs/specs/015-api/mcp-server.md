@@ -317,7 +317,9 @@ in this call`); an arrow to nowhere is never stored.
 **Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
 is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
 like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
-(`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
+(`textSize` `sm`, `md`, `lg`, `scale` or a pixel number, which on a text or a non-chip shape is stored past 48 px as 48
+with the rest as `textScale` and held to 72, the document's Size slider, [Fonts](../004-interface-design/fonts.md) "In
+livedocuments"; the alignments, arrow styles, ends and heads, border styles
 and radii, and the content kinds' looks, media, attach points and pyramid variants: the
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
 and an `iconId` that names no icon is refused with the icons like it and a
@@ -426,7 +428,8 @@ wrongly:
 
 - **Every element takes the presentation defaults the editor's own factory
   gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
-  for shapes, stickies and tables, `sm` for text) and, where the kind sets
+  for shapes, stickies and tables) and, for a new **text**, the Write palette's Paragraph: `textSize: 24`,
+  `textAlignX: 'left'`, `textAlignY: 'top'` (a document's text reads from its left edge), and, where the kind sets
   them, the title alignment and padding. Unset, text scales to
   fill its box, so a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. On a list of more than 12 labelled
@@ -454,7 +457,7 @@ wrongly:
 **Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
 every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
 heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
-`iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
+`iconId` (from `search_icons`); `note` left the list when element notes retired (2026-11-04, [links-and-notes-retired.md](../009-elements/links-and-notes-retired.md)), and a `note`, `noteRich` or element `link` is refused. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing an infographic guessed `textAlign` and `textSize: "xl"`.
 
 **Block kinds.** The format also names what the ready-made blocks hold:

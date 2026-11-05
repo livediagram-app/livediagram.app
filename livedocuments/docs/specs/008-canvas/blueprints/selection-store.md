@@ -22,7 +22,6 @@ who re-renders when it changes.
 | `apps/editor/components/canvas/selection-aware-views.tsx`                  | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`                      |
 | `apps/editor/components/canvas/LayerSelectionChrome.tsx`                   | Quick-connect pluses, union resize box                                              |
 | `apps/editor/hooks/canvas/useCanvasSelectionView.ts`                       | `useCanvasSelectionView`, `CanvasSelectionInput`                                    |
-| `apps/editor/components/panels/SlideDeckPanel.tsx`                         | Reads the selection it slides from the store                                        |
 | `apps/editor/lib/canvas-selection.ts`                                      | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added                    |
 
 ## Domain and naming
@@ -110,8 +109,8 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
     subscribe to it;
   - `useQuickRing(store)` closes an open ring on a change of the selected element through a store
     subscription;
-  - `SlideDeckPanel` reads `selectionIds(selectedId, multiSelectedIds)` from the store (compared
-    with `sameMembers`); `useSlideDeck` does not return `selectionCount` / `currentSelectionIds`.
+  - `useSlideDeck` takes no selection: a slide is made from a page (the Slide Deck panel, which read it, is
+    retired).
 
 ### Above the canvas
 

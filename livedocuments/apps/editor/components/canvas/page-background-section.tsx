@@ -146,11 +146,11 @@ export function BackgroundSection({
 }) {
   const fill = page.background?.fill;
   const pattern = page.background?.pattern;
-  // A slide page's background moves (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
-  const categories: BackgroundCategory[] =
-    pageKindOf(page) === 'slide'
-      ? ['solid', 'gradient', 'image', 'animated']
-      : ['solid', 'gradient', 'image'];
+  // A slide's or a flashcard's background moves (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
+  const moves = pageKindOf(page) === 'slide' || pageKindOf(page) === 'flashcard';
+  const categories: BackgroundCategory[] = moves
+    ? ['solid', 'gradient', 'image', 'animated']
+    : ['solid', 'gradient', 'image'];
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);

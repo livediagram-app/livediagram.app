@@ -110,12 +110,7 @@
           "unknown": false,
           "label": "API gateway",
           "summary": null,
-          "attributes": [
-            {
-              "key": "note",
-              "value": "Kong. Terminates TLS, rate-limits per API key, forwards to the services."
-            }
-          ],
+          "attributes": [],
           "edges": [
             {
               "ref": "9c5e",
@@ -186,10 +181,6 @@
             {
               "key": "icon",
               "value": "server"
-            },
-            {
-              "key": "note",
-              "value": "Owns the order lifecycle and is the source of truth for order state. Calls Payments synchronously; publishes OrderPlaced."
             }
           ],
           "edges": [
@@ -240,12 +231,7 @@
           "unknown": false,
           "label": "Event bus",
           "summary": null,
-          "attributes": [
-            {
-              "key": "note",
-              "value": "Kafka, 3 brokers, 7-day retention."
-            }
-          ],
+          "attributes": [],
           "edges": [
             {
               "ref": "1434",
@@ -378,12 +364,7 @@
           "unknown": false,
           "label": "Orders DB",
           "summary": null,
-          "attributes": [
-            {
-              "key": "note",
-              "value": "Postgres 16, primary + 1 replica."
-            }
-          ],
+          "attributes": [],
           "edges": [],
           "children": [],
           "collapsed": 0
@@ -410,12 +391,7 @@
       "unknown": false,
       "label": "Stripe",
       "summary": null,
-      "attributes": [
-        {
-          "key": "link",
-          "value": "https://stripe.com/docs/api"
-        }
-      ],
+      "attributes": [],
       "edges": [],
       "children": [],
       "collapsed": 0

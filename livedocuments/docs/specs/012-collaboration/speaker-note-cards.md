@@ -6,7 +6,7 @@ the presenter flips through them while the slide is on screen. One long box of s
 of a room; a card per point is what speakers already hold in their hand.
 
 Note cards replace the single notes box of [Presentation mode](presentation-mode.md) "Presenter notes" and the
-title-bar **Add Notes** popover of [Pages](../007-editor/pages-mode.md) "Slides". They are still the slide's notes:
+title-bar **Notes** popover of [Pages](../007-editor/pages-mode.md) "Slides". They are still the slide's notes:
 written in the same places, shown in the same presenter view, exported to and imported from the same PowerPoint notes
 pages.
 
@@ -19,7 +19,7 @@ pages.
 | **card in front**   | While presenting, the note card the presenter is on. Every slide starts on its first card.                                        |
 | **flip**            | Moving to another note card while presenting, turned as a flashcard turns ([Flashcards](../007-editor/flashcards.md) "Flipping"). |
 
-The interface keeps **Notes** for the whole ("Add Notes", "Speaker Notes"), says **card** for one of them ("Add Card",
+The interface keeps **Notes** for the whole ("Notes", "Speaker Notes"), says **card** for one of them ("Add Card",
 "Card 2 of 4"), and never calls a note card a flashcard, a page or a slide.
 
 ## How it differs from a flashcard
@@ -46,9 +46,9 @@ one point a card, the speaking time in its corner, the stack showing what is sti
 
 ## Writing note cards
 
-The cards are written in two places, both an Editor's: the slide page's title-bar **Notes** button
-([Pages](../007-editor/pages-mode.md) "Slides") and the Slide Deck panel's notes area (opened from a row's `…` menu,
-**Add notes** / **Edit notes**). Both show the same **note card list**.
+The cards are written in one place, an Editor's: the page's title-bar **Notes** button
+([Pages](../007-editor/pages-mode.md) "Slides"), on any page the deck has a slide of. It shows the **note card list**.
+(The Slide Deck panel's notes area was the second place; it is retired with the panel, 2026-11-04.)
 
 - **Desktop**: the title-bar button opens a 360 px popover under it. **Phone**: the same button (icon only) opens a
   bottom sheet. On a phone the title bar offers **Notes** for a slide in the deck even though it offers no deck
@@ -72,7 +72,7 @@ The cards are written in two places, both an Editor's: the slide page's title-ba
   and opens it. ⌘↵ (Ctrl+Enter) in an open card adds a blank card straight after it and opens that. At 20 cards the
   button is disabled with the tooltip "A slide holds up to 20 cards" and ⌘↵ does nothing.
 - **Reorder**: drag a card by its grip (the six dots at its top left, shown on hover or focus on a desktop and always
-  on touch): a caret shows where it lands, the move commits on release, as the Slide Deck's rows reorder
+  on touch): a caret shows where it lands, the move commits on release, as Contents' rows reorder
   (`useRowReorderDrag`, pointer events, so touch works). **Move Up** and **Move Down** buttons sit beside the grip,
   and Alt+↑ / Alt+↓ move the focused card; the first card has no Move Up, the last no Move Down.
 - **Remove**: the bin button on the card. A card with words on it goes at once and a bar under the list offers
@@ -83,8 +83,6 @@ The cards are written in two places, both an Editor's: the slide page's title-ba
 - The keyboard shortcuts dialog and help list ↑ / ↓ under "While presenting" (next and previous note card).
 - Copy is Title Case on buttons and headings; every icon button has a styled Tooltip and a pointer cursor; light and
   dark both read; the list fits a 450 px wide window and a 390 px phone without sideways scrolling.
-
-The Slide Deck panel keeps the slide's **Budget** under the list, as before.
 
 ## Presenting
 
@@ -148,11 +146,11 @@ they are what the presenter means to say, not what the document shows.
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With note cards                                                                                            |
-| --------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything above: adds, writes, reorders and removes cards, in the title bar and the Slide Deck.           |
-| **Participant** | Reads and flips through the cards in the presenter view. Never sees the title-bar Notes or the Slide Deck. |
-| **Viewer**      | The same as a Participant: presenting is every role's, changing the deck is an Editor's.                   |
+| Role            | With note cards                                                                          |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| **Editor**      | Everything above: adds, writes, reorders and removes cards, in the title bar's Notes.    |
+| **Participant** | Reads and flips through the cards in the presenter view. Never sees the title-bar Notes. |
+| **Viewer**      | The same as a Participant: presenting is every role's, changing the deck is an Editor's. |
 
 The deck is document metadata saved through the document's PUT, which is `gateEdit`; the deck it was built on
 ("Two people writing at once") travels in the same PUT, under the same gate.

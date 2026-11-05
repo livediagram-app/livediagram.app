@@ -481,9 +481,9 @@ and the dialog stays as the one complete, browsable index of them.
   (`MovablePanel`'s `onReset`, shown once the panel has left its default
   corner), which is the only non-preference thing the popovers held.
 
-  The **Slide Deck** popover stays: its contents (auto-advance, speed,
-  transition, slide size, loop, hide pointer) are deck state rather than user
-  preferences, so they have no home in Settings and should not get one.
+  The **Slide Deck** popover's gear went with the panel (retired 2026-11-04,
+  [Pages](pages-mode.md) "Retired: the Slide Deck panel"): the presenter
+  settings are in Settings > Presenting and the HUD's cog.
 
 - **Settings dialog**: `apps/editor/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand

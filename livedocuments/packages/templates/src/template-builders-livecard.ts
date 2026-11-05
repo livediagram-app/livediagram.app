@@ -15,6 +15,7 @@
 import { createSticky, type Element, type Page } from '@livedocuments/document';
 import { heading, type Kit } from './page-layout-kit';
 import { pageKits, templatePage } from './template-page-kit';
+import { themeGradientBackground } from './template-backgrounds';
 
 type Note = { message: string; name: string; initials: string; paper: string; badge: string };
 
@@ -74,12 +75,10 @@ const NOTES: Note[] = [
 /** The card's pages: the cover and the inside, both Portrait post (4:5). */
 export function liveCardPages(): Page[] {
   return [
-    templatePage(1, 'social', 'portrait', 'Cover', {
-      fill: { kind: 'gradient', from: '#fce7f3', to: '#fef9c3', angle: 160 },
-    }),
-    templatePage(2, 'social', 'portrait', 'Inside', {
-      fill: { kind: 'solid', color: '#fffbeb' },
-    }),
+    // The theme's own backgrounds (template-backgrounds): the cover on its Glow, the inside the
+    // plain paper.
+    templatePage(1, 'social', 'portrait', 'Cover', themeGradientBackground('glow')),
+    templatePage(2, 'social', 'portrait', 'Inside'),
   ];
 }
 

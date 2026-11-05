@@ -108,15 +108,19 @@ export const PanelLocalCard = memo(function PanelLocalCard({ item }: { item: Thi
   const name = item.title || `Untitled ${kind.lowerOne}`;
   return (
     <PaneCard
-      preview={<LocalPreview app={app} iconSize={28} className="h-full w-full" />}
-      title={name}
-      label={name}
-      meta={
-        <span className="flex min-w-0 items-center gap-1.5">
-          <ThisBrowserPill inLink />
-          <span className="truncate">{jumpBackInLine(item, now || Date.now())}</span>
+      // The pill sits on the picture's corner, so the line below has the card's width for when it was
+      // opened (side by side, a three-across card cut the time short).
+      preview={
+        <span className="relative block h-full w-full">
+          <LocalPreview app={app} iconSize={28} className="h-full w-full" />
+          <span className="absolute left-1.5 top-1.5">
+            <ThisBrowserPill inLink />
+          </span>
         </span>
       }
+      title={name}
+      label={name}
+      meta={<span className="block truncate">{jumpBackInLine(item, now || Date.now())}</span>}
       onActivate={host ? () => openThisBrowserItem(host, item) : undefined}
       rowProps={
         {

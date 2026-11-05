@@ -1,7 +1,7 @@
 'use client';
 
-// The Tab Style dialog (docs/specs/011-theme/canvas-and-theme-dialog.md), opened from the paintbrush dock
-// button. One modal, four tabs: Theme (the category-browse picker), Canvas
+// The Tab Style dialog (docs/specs/011-theme/canvas-and-theme-dialog.md), opened from a page's Style button (or,
+// on a tab with no pages yet, the paintbrush dock button). One modal, four tabs: Theme (the category-browse picker), Canvas
 // (pattern + colours + opacity), Font (the tab's default font + the size
 // seeded onto new elements, docs/specs/004-interface-design/fonts.md) and Finish (how elements are drawn,
 // docs/specs/008-canvas/finish.md). Opens on whichever tab the caller
@@ -14,6 +14,7 @@
 // New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
+import { tabStyleOpener } from '@/lib/tab-style-opener';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { use, useRef, useState } from 'react';
@@ -154,10 +155,11 @@ export function CanvasThemeDialog({
   };
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef);
-  // A popover flying out of the paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): on a screen wider than a
-  // phone, the panel's bottom-right corner sits just above the brush and it grows from there. Without the brush (a
-  // whiteboard, an embed) or on a phone, it is the centred (phone: full-screen) dialog it always was.
-  const anchor = useBrushAnchor();
+  // A popover flying out of the button that opened it (docs/specs/011-theme/canvas-and-theme-dialog.md "Opening it"):
+  // on a screen wider than a phone, dropping from a page's Style button (its top-right corner just under the button),
+  // or rising from the cluster's paintbrush (its bottom-right corner just above it). Opened another way (the command
+  // palette, no button on screen) or on a phone, it is the centred (phone: full-screen) dialog it always was.
+  const anchor = useDialogAnchor();
   const panelScale = useUiScale('panels');
   // On a phone it is a bottom sheet, its grab handle dragging it taller or down to close (BottomSheet's).
   const sheet = useSheetDrag(onClose);
@@ -197,7 +199,7 @@ export function CanvasThemeDialog({
           aria-label="Tab style"
           // A bottom sheet on a phone, rising from the bottom edge as the editor's other phone sheets do, the canvas
           // still in view above it so each pick shows on the tab.
-          className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:max-h-[75dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
+          className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:max-h-[75dvh] max-sm:w-full max-sm:max-w-none max-sm:animate-sheet-up max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-x-0 max-sm:border-b-0 max-sm:shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900 ${anchor ? `fixed ${'top' in anchor ? 'animate-dialog-in' : 'animate-fly-up-in'} shadow-2xl motion-reduce:animate-fade-in` : ''}`}
           // Drawn at the Panels UI scale like every other panel (docs/specs/007-editor/ui-scale.md); under its
           // `zoom` the anchored offsets are in the panel's own px, so they are converted (toSurfacePx).
           style={
@@ -205,9 +207,17 @@ export function CanvasThemeDialog({
               ? {
                   ...uiScaleStyle(panelScale),
                   right: toSurfacePx(anchor.right, panelScale),
-                  bottom: toSurfacePx(anchor.bottom, panelScale),
-                  maxHeight: `calc(100% - ${toSurfacePx(anchor.bottom + 16, panelScale)}px)`,
-                  transformOrigin: 'bottom right',
+                  ...('top' in anchor
+                    ? {
+                        top: toSurfacePx(anchor.top, panelScale),
+                        maxHeight: `calc(100% - ${toSurfacePx(anchor.top + 16, panelScale)}px)`,
+                        transformOrigin: 'top right',
+                      }
+                    : {
+                        bottom: toSurfacePx(anchor.bottom, panelScale),
+                        maxHeight: `calc(100% - ${toSurfacePx(anchor.bottom + 16, panelScale)}px)`,
+                        transformOrigin: 'bottom right',
+                      }),
                 }
               : { ...uiScaleStyle(panelScale), ...sheet.style, paddingBottom: safeInset('bottom') }
           }
@@ -340,15 +350,25 @@ export function CanvasThemeDialog({
   );
 }
 
-// The paintbrush's place: how far the panel's right edge and bottom sit from the window's, so it sits just above the
-// brush with its right edge on the bottom-right cluster's (the screen's right-hand side), keeping as much of the work
-// as it can in view. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.
-const BRUSH_GAP_PX = 8;
-function useBrushAnchor(): { right: number; bottom: number } | null {
-  // Read once as it opens, in the browser only (use(browser())): the brush does not move while it is open.
+// Where the panel sits: dropping from the page Style button that opened it (its top just under the button, its right
+// edge on the button's), else rising from the cluster's paintbrush (its bottom just above the brush, its right edge on
+// the cluster's, keeping as much of the work as it can in view). Null with neither on screen, or on a phone (below
+// 640 px), where it stays a dialog.
+const ANCHOR_GAP_PX = 8;
+type DialogAnchor = { right: number; top: number } | { right: number; bottom: number };
+function useDialogAnchor(): DialogAnchor | null {
+  // Read once as it opens, in the browser only (use(browser())): nothing it hangs from moves while it is open.
   use(browser());
-  const [anchor] = useState<{ right: number; bottom: number } | null>(() => {
+  const [anchor] = useState<DialogAnchor | null>(() => {
+    const opener = tabStyleOpener();
     if (window.innerWidth < 640) return null;
+    const from = opener?.getBoundingClientRect();
+    if (from && from.width > 0) {
+      return {
+        right: Math.max(8, Math.round(window.innerWidth - from.right)),
+        top: Math.round(from.bottom + ANCHOR_GAP_PX),
+      };
+    }
     const brush = document.querySelector<HTMLElement>('[data-tour-id="canvas-theme"]');
     const box = brush?.getBoundingClientRect();
     if (!box || box.width === 0) return null;
@@ -359,7 +379,7 @@ function useBrushAnchor(): { right: number; bottom: number } | null {
     const edge = cluster && cluster.width > 0 ? Math.max(cluster.right, box.right) : box.right;
     return {
       right: Math.max(8, Math.round(window.innerWidth - edge)),
-      bottom: Math.round(window.innerHeight - box.top + BRUSH_GAP_PX),
+      bottom: Math.round(window.innerHeight - box.top + ANCHOR_GAP_PX),
     };
   });
   return anchor;

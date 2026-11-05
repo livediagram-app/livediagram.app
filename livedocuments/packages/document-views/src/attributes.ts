@@ -1,7 +1,9 @@
 // The attributes of one element's line, in order (docs/specs/024-agents/blueprints/document-views.md
-// "Attributes", VW14): draft, icon, link, alt, locked, action, note, comments, then style.
+// "Attributes", VW14): draft, icon, link, alt, locked, action, comments, then style. Element links and notes are
+// retired (docs/specs/009-elements/links-and-notes-retired.md): a stored note is never printed, and a link only on a
+// link card or a video, whose link is their content.
 import type { Element } from '@livedocuments/document';
-import { ACTION_CUT_CHARS, ALT_CUT_CHARS, NOTE_CUT_CHARS } from './constants';
+import { ACTION_CUT_CHARS, ALT_CUT_CHARS } from './constants';
 import {
   flagField,
   objectField,
@@ -24,7 +26,7 @@ export type AttributeContext = {
 };
 
 function linkAttribute(el: Element, tabRefOf: (tabId: string) => string): ViewAttribute[] {
-  const link = objectField(el, 'link');
+  const link = el.type === 'link-card' || el.type === 'video' ? objectField(el, 'link') : null;
   if (link === null) return [];
   const tabId = stringField(link, 'tabId');
   const target = ((): string | null => {
@@ -82,7 +84,6 @@ export function attributesOf(el: Element, context: AttributeContext): ViewAttrib
     ...(el.type === 'image' ? cutAttribute('alt', textField(el, 'alt'), ALT_CUT_CHARS) : []),
     ...(flagField(el, 'locked') ? [flagAttribute('locked')] : []),
     ...actionAttributes(el),
-    ...cutAttribute('note', textField(el, 'note'), NOTE_CUT_CHARS),
     ...commentsAttribute(el),
     ...(context.style === null ? [] : styleAttributesOf(el, context.style)),
   ];

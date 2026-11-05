@@ -1,7 +1,7 @@
 // A tile pressed again while its tool is armed puts the tool down (docs/specs/008-canvas/canvas-and-palette.md
 // "Placement on add").
 import { describe, expect, it, vi } from 'vitest';
-import { tileHandler, type PaletteTileActions } from './PaletteTileGrid';
+import { tileActive, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 
 const actions = () =>
   ({
@@ -60,5 +60,33 @@ describe('a shape tile pressed', () => {
       'square',
       expect.objectContaining({ name: 'Square' }),
     );
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Text styles".
+describe('a text style tile pressed', () => {
+  const heading = {
+    id: 'h',
+    label: 'Add Heading',
+    action: { type: 'text', preset: 'heading' },
+  } as never;
+  const quote = { id: 'q', label: 'Add Quote', action: { type: 'text', preset: 'quote' } } as never;
+
+  it('arms its own style', () => {
+    const addText = vi.fn();
+    tileHandler(heading, { ...actions(), addText }, null)();
+    expect(addText).toHaveBeenCalledWith('heading');
+  });
+
+  it('lights only while its own style is armed, a bare text intent being a Paragraph', () => {
+    expect(tileActive(heading, { type: 'text', preset: 'heading' })).toBe(true);
+    expect(tileActive(quote, { type: 'text', preset: 'heading' })).toBe(false);
+    const paragraph = {
+      id: 'p',
+      label: 'Add Paragraph',
+      action: { type: 'text', preset: 'paragraph' },
+    } as never;
+    expect(tileActive(paragraph, { type: 'text' })).toBe(true);
+    expect(tileActive(heading, null)).toBe(false);
   });
 });

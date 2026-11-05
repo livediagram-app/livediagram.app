@@ -17,7 +17,7 @@ const cloud = {
   ...createShape('cloud', 0, 0),
   width: 270,
   height: 180,
-  label: 'Cloud',
+  label: 'Cloud storage for every team',
   textSize: 'md',
   iconId: 'cloud',
   iconPosition: 'above',
@@ -60,7 +60,6 @@ function draw(
       onFollowLink={vi.fn()}
       onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
-      onOpenNote={vi.fn()}
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       tabLocked={false}
@@ -77,9 +76,10 @@ describe('BoxedElementView indicators', () => {
     const { container, getByText } = draw(cloud);
     const cluster = container.querySelector<HTMLElement>('[data-indicators="top"]')!;
     expect(cluster).not.toBeNull();
-    expect(cluster.querySelectorAll('button')).toHaveLength(3);
+    // Its stored link and note are retired (docs/specs/009-elements/links-and-notes-retired.md): the comment alone.
+    expect(cluster.querySelectorAll('button')).toHaveLength(1);
     // The content area starts below the cluster.
-    const moved = getByText('Cloud').closest<HTMLElement>('.inset-x-0')!;
+    const moved = getByText('Cloud storage for every team').closest<HTMLElement>('.inset-x-0')!;
     expect(parseFloat(moved.style.top)).toBeGreaterThan(0);
   });
 
@@ -93,16 +93,30 @@ describe('BoxedElementView indicators', () => {
   it('draws none and moves nothing when indicators are off', () => {
     const { container, getByText } = draw(cloud, { style: 'off' });
     expect(container.querySelector('[data-indicators]')).toBeNull();
-    expect(getByText('Cloud').closest('.inset-x-0')).toBeNull();
+    expect(getByText('Cloud storage for every team').closest('.inset-x-0')).toBeNull();
   });
 
   it('draws none in an embed, whatever style the person chose', () => {
     for (const style of ['top', 'footer'] as const) {
       const { container, getByText, unmount } = draw(cloud, { style, embed: true });
       expect(container.querySelector('[data-indicators]')).toBeNull();
-      expect(getByText('Cloud').closest('.inset-x-0')).toBeNull();
+      expect(getByText('Cloud storage for every team').closest('.inset-x-0')).toBeNull();
       unmount();
     }
+  });
+
+  it('draws no badge for a stored link or note, which are retired', () => {
+    const carried = {
+      ...createShape('square', 0, 0),
+      width: 260,
+      height: 120,
+      label: 'Box',
+      note: 'An old note',
+      link: { kind: 'tab', tabId: 't2' },
+    } as BoxedElement;
+    const { container } = draw(carried);
+    expect(container.querySelector('[data-indicators]')).toBeNull();
+    expect(container.querySelector('[aria-label*="Note" i], [aria-label*="link" i]')).toBeNull();
   });
 
   it('draws none on an element that carries nothing', () => {
@@ -118,7 +132,7 @@ describe('BoxedElementView indicators', () => {
       label: 'Box',
       textSize: 'md',
       iconId: 'star',
-      note: 'n',
+      commentThread: cloud.commentThread,
     } as BoxedElement;
     const { container, getByText } = draw(box);
     expect(container.querySelector('[data-indicators]')).not.toBeNull();

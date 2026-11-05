@@ -33,8 +33,8 @@ export function useOfficeExport({
   title: string;
   /** `<document> - <tab>`, made safe for a file name. */
   baseName: string;
-  /** The images and tab windows the dialog loaded for its preview, drawn into the pictures. */
-  render: Pick<ImageExportOpts, 'images' | 'resolveTabWindow' | 'tabWindowFontIds'>;
+  /** The images the dialog loaded for its preview, and stored tab windows' names, drawn into the pictures. */
+  render: Pick<ImageExportOpts, 'images' | 'resolveTabWindow'>;
   onDone: () => void;
 }) {
   const [phase, setPhase] = useState<OfficePhase>({ kind: 'idle' });

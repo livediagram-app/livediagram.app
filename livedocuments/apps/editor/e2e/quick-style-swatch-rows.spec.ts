@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNoPageErrors, openStartBlank, test } from './fixtures';
+import { expect, expectNoPageErrors, onPage, openStartBlank, test } from './fixtures';
 
 // A swatch row never wraps and is never clipped (docs/specs/008-canvas/quick-style-panel.md "Where
 // it sits"): the panel's width counts the targets, their gaps, the padding and the border exactly.
@@ -45,7 +45,8 @@ test.describe('swatch rows', () => {
     await openStartBlank(page);
     await page.keyboard.press('Escape');
     await page.keyboard.press('o');
-    await page.mouse.click(500, 400);
+    // On the page, framed beside the Contents sidebar (docs/specs/007-editor/pages-mode.md "Contents").
+    await page.locator('[data-canvas-a11y-root]').click({ position: await onPage(page, 0.5, 0.5) });
     await expect(panel(page)).toBeVisible();
     const rows = await rowsFit(page);
     expect(rows.find((r) => r.name === 'Stroke')?.count).toBe(9);

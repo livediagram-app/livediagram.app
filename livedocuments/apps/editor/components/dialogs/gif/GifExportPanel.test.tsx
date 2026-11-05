@@ -110,7 +110,7 @@ describe('the GIF panel', () => {
   it('names the deck’s transition', () => {
     h.config = { ...DEFAULT_PRESENTATION_CONFIG, transition: 'fade', speed: 'normal' };
     open();
-    expect(screen.getByText(/Fade, Normal, from the Slide Deck settings/)).toBeTruthy();
+    expect(screen.getByText(/Fade, Normal, from the Presenting settings/)).toBeTruthy();
   });
 
   it('estimates from a sample frame, and warns when it is large', async () => {

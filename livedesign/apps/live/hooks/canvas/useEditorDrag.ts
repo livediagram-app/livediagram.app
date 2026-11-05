@@ -286,6 +286,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             noSnap,
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
             pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
+            ...(depsRef.current.pagesMode ? { pages: depsRef.current.pagesMode } : {}),
           });
           scheduleGuides(move.guides, move.distGuides);
           tick((els) => {
@@ -354,6 +355,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             guidesOn: depsRef.current.alignmentGuidesRef.current ?? true,
             noSnap,
             pageSnapBoxes: depsRef.current.pageSnapBoxes ?? undefined,
+            ...(depsRef.current.pagesMode ? { pages: depsRef.current.pagesMode } : {}),
           });
           if (!resize) return;
           if (resize.guides !== null) scheduleGuides(resize.guides);

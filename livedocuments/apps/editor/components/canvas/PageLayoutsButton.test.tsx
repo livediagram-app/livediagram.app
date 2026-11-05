@@ -44,4 +44,12 @@ describe('PageLayoutsButton', () => {
     expect(onPreview).toHaveBeenCalledWith(null);
     expect(document.querySelector('[data-page-layouts-popover]')).toBeNull();
   });
+
+  it("opens from elsewhere on a new open request (the page's Use a Layout invite)", () => {
+    const props = { page: slide!, labelled: true, onApply: vi.fn(), onPreview: vi.fn() };
+    const { rerender } = render(<PageLayoutsButton {...props} openRequest={0} />);
+    expect(document.querySelector('[data-page-layouts-popover]')).toBeNull();
+    rerender(<PageLayoutsButton {...props} openRequest={1} />);
+    expect(document.querySelector('[data-page-layouts-popover]')).not.toBeNull();
+  });
 });

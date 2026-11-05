@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import {
-  CONTENTS_SIDEBAR_WIDTH,
-  contentsClusterBounds,
+  contentsClusterLeft,
   contentsSidebarClearancePx,
-  readContentsSide,
   restingRect,
   sideInsetsOf,
   translateOf,
@@ -70,31 +68,13 @@ describe('contentsSidebarClearancePx', () => {
   });
 });
 
-describe('readContentsSide', () => {
-  it('is the left until the person moves it right; anything else reads as the left', () => {
-    expect(readContentsSide(null)).toBe('left');
-    expect(readContentsSide('right')).toBe('right');
-    expect(readContentsSide('top')).toBe('left');
-  });
-});
-
-describe('contentsClusterBounds: the bottom-right cluster beside a docked sidebar', () => {
+describe('contentsClusterLeft: the bottom-right cluster beside a docked sidebar', () => {
   it('is unbounded with no sidebar docked', () => {
-    expect(contentsClusterBounds(false, 'left', 1)).toEqual({ right: 0, left: null });
-    expect(contentsClusterBounds(false, 'right', 1)).toEqual({ right: 0, left: null });
+    expect(contentsClusterLeft(false, 1)).toBeNull();
   });
 
-  it('moves past a sidebar pinned right', () => {
-    expect(contentsClusterBounds(true, 'right', 1.25)).toEqual({
-      right: CONTENTS_SIDEBAR_WIDTH * 1.25,
-      left: null,
-    });
-  });
-
-  it('stops short of a sidebar pinned left, so it never covers Add Page', () => {
-    expect(contentsClusterBounds(true, 'left', 1)).toEqual({
-      right: 0,
-      left: contentsSidebarClearancePx(1),
-    });
+  it('stops short of the docked sidebar, so it never covers Add Page', () => {
+    expect(contentsClusterLeft(true, 1)).toBe(contentsSidebarClearancePx(1));
+    expect(contentsClusterLeft(true, 1.25)).toBe(contentsSidebarClearancePx(1.25));
   });
 });

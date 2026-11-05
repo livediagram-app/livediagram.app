@@ -53,9 +53,10 @@ const nextOf = (out: FieldsWrite) => out.next as unknown as Record<string, unkno
 describe('aliasesOf', () => {
   it('gives each element the aliases its type takes, style keys included', () => {
     const style = ['stroke', 'text-color', 'border'];
-    expect(aliasesOf(square)).toEqual(['label', 'note', 'shape', 'fill', ...style, 'text']);
+    expect(aliasesOf(square)).toEqual(['label', 'shape', 'fill', ...style, 'text']);
     expect(aliasesOf(arrow)).toEqual(['label', ...style, 'text', 'line']);
-    expect(aliasesOf(text)).toEqual(['label', 'note', ...aliasesOf(text).slice(2)]);
+    expect(aliasesOf(text)[0]).toBe('label');
+    expect(aliasesOf(text)).not.toContain('note');
     expect(aliasesOf(image)).toContain('label');
   });
 
@@ -101,7 +102,6 @@ describe('writeFieldsOnto', () => {
     const out = write(square, {
       label: 'Sign in',
       text: 'lg',
-      note: null,
       fill: 'blue',
       opacity: 0.5,
     });
@@ -112,8 +112,7 @@ describe('writeFieldsOnto', () => {
       fillSwatch: 5,
       opacity: 0.5,
     });
-    expect(nextOf(out)).not.toHaveProperty('note');
-    expect(out.written).toEqual(['label', 'text', 'note', 'fill', 'opacity']);
+    expect(out.written).toEqual(['label', 'text', 'fill', 'opacity']);
     expect(out.warnings).toEqual([]);
   });
 
@@ -173,32 +172,32 @@ describe('writeFieldsOnto', () => {
     expect(write(stickyEl, { textColor: '#000' }).warnings).toEqual([]);
   });
 
-  it('caps a long shape label into the note it ends with, and warns', () => {
-    const out = write(square, {
-      label: 'Orders service which creates and tracks every order',
-      note: 'Given',
-    });
-    expect(nextOf(out)).toMatchObject({
-      label: 'Orders service',
-      note: 'Orders service which creates and tracks every order\n\nGiven',
-    });
+  // Element notes are retired (docs/specs/009-elements/links-and-notes-retired.md): the rest is cut, the stored note
+  // left as it was.
+  it('caps a long label, cutting the rest, and warns', () => {
+    const out = write(square, { label: 'Orders service which creates and tracks every order' });
+    expect(nextOf(out)).toMatchObject({ label: 'Orders service', note: 'Old' });
     expect(out.capped).toBe(true);
-    expect(out.warnings[0]!.message).toBe(
-      'n3 label kept as "Orders service"; the full text is in its note',
-    );
+    expect(out.warnings[0]!.message).toBe('n3 label kept as "Orders service"; the rest was cut');
     const onArrow = write(arrow, { label: 'Orders service which creates and tracks every order' });
     expect(onArrow.warnings[0]!.message).toBe(
       'a1 label kept as "Orders service"; the rest was cut',
     );
-    expect(
-      write(square, { label: 'Message queue for asynchronous events now' }).next,
-    ).toMatchObject({
-      note: 'Message queue for asynchronous events now\n\nOld',
-    });
-    const bare = { ...square, note: undefined } as Element;
-    expect(
-      write(bare, { label: 'Message queue for asynchronous events now', note: null }).next,
-    ).toMatchObject({ note: 'Message queue for asynchronous events now' });
+  });
+
+  it('refuses element links and notes, which are retired, but keeps a link card and a video their link', () => {
+    for (const fields of [
+      { note: 'x' },
+      { note: null },
+      { noteRich: null },
+      { link: null },
+    ] as Fields[])
+      expect(refusal(square, fields).details[0]).toContain('element links and notes are retired');
+    const url = { kind: 'url', url: 'https://example.com' };
+    for (const type of ['link-card', 'video']) {
+      const own = { id: 'c', type, x: 0, y: 0, width: 200, height: 100 } as unknown as Element;
+      expect(nextOf(write(own, { link: url }))).toMatchObject({ link: url });
+    }
   });
 
   it('refuses identity, live and prototype fields, and keys the type lacks', () => {
@@ -234,7 +233,7 @@ describe('writeFieldsOnto', () => {
         'fill=chartreuse: a theme colour or a hex',
         'allowed: theme red orange yellow green blue violet',
       ],
-      ['text="huge": one of sm md lg scale or a px from 6 to 48'],
+      ['text="huge": one of sm md lg scale or a px from 24 to 72'],
       ['line="wavy": one of straight angled curved'],
     ]);
     expect(nextOf(write(arrow, { line: 'angled' })).arrowStyle).toBe('angled');
@@ -242,19 +241,30 @@ describe('writeFieldsOnto', () => {
   });
 
   it('writes an exact text px from the Text Size slider range, as a number or a numeric string', () => {
-    expect(nextOf(write(square, { text: 18 })).textSize).toBe(18);
-    expect(nextOf(write(square, { text: '6' })).textSize).toBe(6);
-    expect(nextOf(write(square, { text: 48 })).textSize).toBe(48);
-    expect(refusal(square, { text: 5 }).details).toEqual([
-      'text=5: one of sm md lg scale or a px from 6 to 48',
+    // A text's or a shape's runs a document's 24 to 72 (fonts.md "In livedocuments"), the rest the model's 6 to 48.
+    expect(nextOf(write(square, { text: 30 })).textSize).toBe(30);
+    expect(nextOf(write(square, { text: '24' })).textSize).toBe(24);
+    expect(nextOf(write(text, { text: 48 })).textSize).toBe(48);
+    expect(refusal(square, { text: 18 }).details).toEqual([
+      'text=18: one of sm md lg scale or a px from 24 to 72',
     ]);
-    expect(refusal(square, { text: 49 }).details).toHaveLength(1);
-    expect(refusal(square, { text: 12.5 }).details).toHaveLength(1);
+    expect(refusal(text, { text: 73 }).details).toHaveLength(1);
+    expect(refusal(square, { text: 30.5 }).details).toHaveLength(1);
+    expect(nextOf(write(arrow, { text: '6' })).textSize).toBe(6);
+    expect(refusal(arrow, { text: 49 }).details).toEqual([
+      'text=49: one of sm md lg scale or a px from 6 to 48',
+    ]);
+  });
+
+  it("stores a text's px past 48 as 48 and a scale, as the slider does", () => {
+    expect(nextOf(write(text, { text: 72 }))).toMatchObject({ textSize: 48, textScale: 1.5 });
+    const rescaled = nextOf(write({ ...square, textScale: 0.46 } as Element, { text: 60 }));
+    expect(rescaled).toMatchObject({ textSize: 48, textScale: 1.25 });
   });
 
   it('clears a re-fit or Shift scale with the size it writes (fonts.md "Text size")', () => {
-    const scaled = nextOf(write({ ...square, textScale: 0.46 } as Element, { text: 18 }));
-    expect(scaled.textSize).toBe(18);
+    const scaled = nextOf(write({ ...square, textScale: 0.46 } as Element, { text: 30 }));
+    expect(scaled.textSize).toBe(30);
     expect(scaled).not.toHaveProperty('textScale');
     expect(nextOf(write({ ...text, textScale: 2 } as Element, { text: 'md' }))).not.toHaveProperty(
       'textScale',

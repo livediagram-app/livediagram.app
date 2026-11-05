@@ -1,14 +1,15 @@
 // Fields onto an element (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values"):
-// the spec's aliases (`label note shape fill text line`) or any stored field of the element's type.
-// `null` unsets. Identity, live fields and prototype keys are refused. A shape's long label is capped
-// into its note once every field is written, so it moves into the note the element ends with.
+// the spec's aliases (`label shape fill text line`) or any stored field of the element's type.
+// `null` unsets. Identity, live fields, prototype keys and element links and notes (retired,
+// docs/specs/009-elements/links-and-notes-retired.md) are refused. A long label is capped once every field is
+// written.
 
 import type { EditRejection, EditWarning } from '@livedocuments/api-schema';
 import {
   BORDER_DASH_ARRAY,
   isTextSize,
-  TEXT_PX_MAX,
-  TEXT_PX_MIN,
+  textPxRangeFor,
+  textSizeFields,
   ELEMENT_FIELD_NAMES,
   ELEMENT_FIELD_VALUES,
   LIVE_ELEMENT_FIELDS,
@@ -18,6 +19,7 @@ import {
   mergeElementUpdate,
   themeColourFields,
   type Element,
+  type TextSize,
   type ThemeDefinition,
   rederiveColorPresetForTheme,
   shapeColorPresets,
@@ -34,7 +36,6 @@ import { iconsLike, isIconId } from '@liveworkspace/icons/search';
 // unchanged; `font` is a stored field name already.
 const FIELD_ALIASES = [
   'label',
-  'note',
   'shape',
   'fill',
   'stroke',
@@ -46,8 +47,19 @@ const FIELD_ALIASES = [
 type Alias = (typeof FIELD_ALIASES)[number];
 
 export const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
-/** What the `text` alias takes, as the format line and a rejection spell it. */
-const TEXT_SIZE_VALUES = `${TEXT_SIZES.join(' ')} or a px from ${TEXT_PX_MIN} to ${TEXT_PX_MAX}`;
+/** What the `text` alias takes on an element of this type, as a rejection spells it: a text's or a shape's px runs a
+ *  document's Size slider, 24 to 72 (docs/specs/004-interface-design/fonts.md "In livedocuments"). */
+const textSizeValues = (type: string): string => {
+  const { min, max } = textPxRangeFor(type);
+  return `${TEXT_SIZES.join(' ')} or a px from ${min} to ${max}`;
+};
+
+/** Whether a `text` value fits an element of this type: a preset, or a whole px in its slider's range. */
+function fitsTextSize(type: string, size: unknown): size is TextSize {
+  if (typeof size !== 'number') return isTextSize(size);
+  const { min, max } = textPxRangeFor(type);
+  return Number.isInteger(size) && size >= min && size <= max;
+}
 export const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
 export const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
@@ -58,6 +70,13 @@ const FORMER_FIELDS: Readonly<Partial<Record<Element['type'], readonly string[]>
   freehand: ['points', 'pressures'],
 };
 const LIVE_HINT = "comments go through the comment commands; responses and ideas are people's";
+// Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): a stored one is kept but
+// never written. A link card's and a video's link is their own content, not an attachment, so it stays theirs.
+const RETIRED_HINT = 'element links and notes are retired';
+const retiredField = (el: Element, key: string) =>
+  key === 'note' ||
+  key === 'noteRich' ||
+  (key === 'link' && el.type !== 'link-card' && el.type !== 'video');
 
 const hasField = (el: Element, field: string) => isElementFieldName(el.type, field);
 
@@ -66,7 +85,6 @@ export function aliasesOf(el: Element): Alias[] {
   return FIELD_ALIASES.filter((alias) => {
     switch (alias) {
       case 'label':
-      case 'note':
         return hasField(el, alias);
       case 'shape':
         return el.type === 'shape';
@@ -137,6 +155,7 @@ export function writeFieldsOnto<T extends Element>(
       given === 'icon' && hasField(el, 'iconId') && !hasField(el, 'icon') ? 'iconId' : given;
     if (PROTOTYPE_KEYS.has(key)) return unknownField(operation, kindOf(el), key, stored, aliases);
     if (IDENTITY_FIELDS.has(key)) return invalidValue(operation, key, value, 'cannot be changed');
+    if (retiredField(el, key)) return invalidValue(operation, key, value, RETIRED_HINT);
     if (LIVE_FIELDS.has(key))
       return invalidValue(
         operation,
@@ -182,17 +201,14 @@ export function writeFieldsOnto<T extends Element>(
   }
   let capped = false;
   if (typeof label === 'string') {
-    const note = 'note' in patch ? patch.note : Reflect.get(el, 'note');
-    const write = applyLabel(el, label, typeof note === 'string' ? note : undefined);
+    const write = applyLabel(el, label);
     patch.label = write.label;
-    if (write.note !== undefined) patch.note = write.note;
     if (write.capped) {
       capped = true;
-      const where = el.type === 'arrow' ? 'the rest was cut' : 'the full text is in its note';
       warnings.push({
         code: 'label_capped',
         ref,
-        message: `${ref} label kept as ${JSON.stringify(write.label)}; ${where}`,
+        message: `${ref} label kept as ${JSON.stringify(write.label)}; the rest was cut`,
       });
     }
   }
@@ -253,7 +269,6 @@ function writeAlias(
   const text = (rule: string) => invalidValue(operation, alias, value, rule);
   switch (alias) {
     case 'label':
-    case 'note':
       if (value !== null && typeof value !== 'string')
         return text('text, in quotes when it has spaces');
       patch[alias] = value;
@@ -308,11 +323,15 @@ function writeAlias(
       // A preset, or an exact whole px from the Size slider's range (docs/specs/004-interface-design/fonts.md
       // "Text size"), written as a number or a numeric string ("18").
       const size = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
-      if (size !== null && !isTextSize(size)) return { ...text(`one of ${TEXT_SIZE_VALUES}`) };
-      patch.textSize = size;
+      if (size !== null && !fitsTextSize(el.type, size))
+        return { ...text(`one of ${textSizeValues(el.type)}`) };
       // A size set is the size the words draw at, so a re-fit or Shift-resize scale goes with it
-      // (docs/specs/004-interface-design/fonts.md "Text size").
-      if (Reflect.get(el, 'textScale') !== undefined) patch.textScale = null;
+      // (docs/specs/004-interface-design/fonts.md "Text size"); a text's or shape's px past 48 keeps the rest as one.
+      const fields: { textSize: TextSize | null; textScale?: number } =
+        size === null ? { textSize: null } : textSizeFields(el.type, size);
+      patch.textSize = fields.textSize;
+      if (fields.textScale !== undefined) patch.textScale = fields.textScale;
+      else if (Reflect.get(el, 'textScale') !== undefined) patch.textScale = null;
       return null;
     }
     case 'line':

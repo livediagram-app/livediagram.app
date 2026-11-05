@@ -42,7 +42,7 @@ function MiniFlow({
 
 // The editor's fixed chrome in miniature: the bottom bar (a tab or two at
 // the left, the quick-control icons at the right) and the bottom-right corner
-// cluster (undo/redo, layers, the paintbrush, zoom), drawn inside a screen.
+// cluster (undo/redo, layers and the corner buttons, zoom), drawn inside a screen.
 function MiniBottomBar({ x, y, w }: { x: number; y: number; w: number }) {
   return (
     <g>
@@ -64,7 +64,7 @@ function MiniBottomBar({ x, y, w }: { x: number; y: number; w: number }) {
 }
 
 function MiniCornerCluster({ x, y }: { x: number; y: number }) {
-  // Undo, Redo, then Layers beside the theme brush, then the zoom pill ending in Fit.
+  // Undo, Redo, then the corner buttons, then the zoom pill ending in Fit.
   return (
     <g>
       {[0, 1, 2, 3].map((i) => (

@@ -16,6 +16,7 @@ import {
 import type { Item } from '@liveworkspace/index-client';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucideDownload } from '@liveworkspace/icons/lucide';
+import { removeThisBrowserRecord } from '@liveworkspace/explorer/this-browser-record';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
 
 const TakeOfflineIcon = lucideGlyph(lucideDownload, 16);
@@ -58,16 +59,20 @@ export function offlineSyncHref(
   return (item) => handOver('sync', item.id);
 }
 
-/** Delete on each of This Browser's rows, for anyone: the Explorer has asked by now (its `delete-local` dialog), so it
- *  notes that for the editor in this tab and hands over; the editor deletes it without asking again and comes back
- *  to `/explorer/offline`. Undefined where the app converts none. */
+/** Delete on each of This Browser's rows, for anyone, once the Explorer has asked (its `delete-local` dialog): in
+ *  place, the page deleting the record from the app's offline store itself, so the person stays where they were and the
+ *  item leaves the list there. Where it can't reach the record (`unreachable`), it falls back to the hand-over: it notes
+ *  that the Explorer asked for the editor in this tab and opens the item there, which deletes it without asking again
+ *  and comes back to `/explorer/offline`. Undefined where the app converts none. */
 export function offlineRemove(
   host: AppName | null,
   assign: (href: string) => void = (href) => window.location.assign(href),
-): ((item: ThisBrowserItem) => void) | undefined {
+  removeRecord: typeof removeThisBrowserRecord = removeThisBrowserRecord,
+): ((item: ThisBrowserItem) => Promise<void>) | undefined {
   const handOver = offlineHandOver(host);
-  if (!handOver) return undefined;
-  return (item) => {
+  if (!handOver || !host) return undefined;
+  return async (item) => {
+    if ((await removeRecord(host, item.id)) === 'removed') return;
     markThisBrowserDeleteConfirmed(item.id);
     assign(handOver('delete', item.id));
   };

@@ -5,9 +5,7 @@ import {
   GoneSlides,
   GONE_SLIDES_MAX,
   deckPagesKey,
-  pageMoveForDeckOrder,
   pageSlideIdFor,
-  slidePageOwnSlideIds,
 } from './slide-deck-pages';
 import type { Deck, Slide } from './slide-deck';
 import { LEGACY_NOTE_CARD_ID, slideNoteCards } from './slide-notes';
@@ -72,6 +70,13 @@ describe('deckFollowingPages', () => {
     const before: Deck = { slides: [pageSlide('t', 'a'), elementSlide('x', 'other')] };
     const tab = deckTab('t', [slidePage('a'), slidePage('new')]);
     expect(pagesOf(deckFollowingPages(before, [tab]))).toEqual(['a', 'new', 'x']);
+  });
+
+  // pages-mode.md "Where a new page goes": a slide added after the one someone is on takes that place in the deck too.
+  it('puts a slide added between two slides between their slides', () => {
+    const before: Deck = { slides: [pageSlide('t', 'a'), pageSlide('t', 'b')] };
+    const tab = deckTab('t', [slidePage('a'), slidePage('new'), slidePage('b')]);
+    expect(pagesOf(deckFollowingPages(before, [tab]))).toEqual(['a', 'new', 'b']);
   });
 
   it('orders a page slide of an infographic page with the rest, but never adds one', () => {
@@ -142,69 +147,6 @@ describe('deckPagesKey', () => {
     expect(deckPagesKey([deckTab('t', [slidePage('a'), infoPage('b')])])).toBe(one);
     expect(deckPagesKey([deckTab('t', [infoPage('b'), slidePage('a')])])).not.toBe(one);
     expect(deckPagesKey([deckTab('t', [slidePage('a'), slidePage('b')])])).not.toBe(one);
-  });
-});
-
-describe('pageMoveForDeckOrder', () => {
-  const tab = deckTab('t', [slidePage('a'), infoPage('i'), slidePage('b'), slidePage('c')]);
-
-  it('moves the page just after the page whose slide now comes before it', () => {
-    // c dragged between a and b in the deck.
-    const deck: Deck = { slides: [pageSlide('t', 'a'), pageSlide('t', 'c'), pageSlide('t', 'b')] };
-    expect(pageMoveForDeckOrder(deck, 's-t-c', [tab])).toEqual({
-      tabId: 't',
-      pageId: 'c',
-      unitIndex: 1,
-    });
-  });
-
-  it('moves it first when no page slide comes before it, past other slides', () => {
-    const deck: Deck = {
-      slides: [
-        elementSlide('x', 't'),
-        pageSlide('t', 'b'),
-        pageSlide('t', 'a'),
-        pageSlide('t', 'c'),
-      ],
-    };
-    expect(pageMoveForDeckOrder(deck, 's-t-b', [tab])).toEqual({
-      tabId: 't',
-      pageId: 'b',
-      unitIndex: 0,
-    });
-  });
-
-  it('is null when the page is already there, or the slide is no followed page slide', () => {
-    const deck: Deck = {
-      slides: [
-        pageSlide('t', 'a'),
-        pageSlide('t', 'b'),
-        elementSlide('x', 't'),
-        pageSlide('t', 'gone'),
-      ],
-    };
-    // b after a, with the infographic page between them in the tab: already in place.
-    expect(pageMoveForDeckOrder(deck, 's-t-b', [tab])).toBeNull();
-    expect(pageMoveForDeckOrder(deck, 'x', [tab])).toBeNull();
-    expect(pageMoveForDeckOrder(deck, 's-t-gone', [tab])).toBeNull();
-    expect(pageMoveForDeckOrder(deck, 's-t-a', [deckTab('t', undefined)])).toBeNull();
-  });
-});
-
-describe('slidePageOwnSlideIds', () => {
-  it("holds a slide page's only slide, not a copy's pair or another page's", () => {
-    const tab = deckTab('t', [slidePage('a'), infoPage('i'), slidePage('b')]);
-    const deck: Deck = {
-      slides: [
-        pageSlide('t', 'a'),
-        pageSlide('t', 'i'),
-        pageSlide('t', 'b'),
-        pageSlide('t', 'b', { id: 'copy' }),
-        pageSlide('t', 'gone'),
-        elementSlide('x', 't'),
-      ],
-    };
-    expect([...slidePageOwnSlideIds(deck, [tab])]).toEqual(['s-t-a']);
   });
 });
 

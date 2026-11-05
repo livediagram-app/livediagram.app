@@ -37,6 +37,7 @@ import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView
 import { ZoomedLaserOverlay } from '@/components/canvas/view-readers';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PageClip } from '@/components/canvas/PageClip';
+import { shownPagesOf } from '@/lib/flashcard-stack';
 import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
@@ -116,7 +117,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onFollowLink,
     onOpenComments,
     onOpenAction,
-    onOpenNote,
     onEditLink,
     onOpenEditDialog,
     onDropIcon,
@@ -171,7 +171,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onFollowLink,
     onOpenComments,
     onOpenAction,
-    onOpenNote,
     onEditLink,
     onOpenEditDialog,
     onDropIcon,
@@ -249,7 +248,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onFollowLink: h.onFollowLink,
       onOpenComments: h.onOpenComments,
       onOpenAction: h.onOpenAction,
-      onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
       onOpenEditDialog: h.onOpenEditDialog,
       onDropIcon: h.onDropIcon,
@@ -327,7 +325,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             disabled in CSS, only the inner arrow line picks them up. */}
         {/* Pages mode cuts elements off at the page edges (PageClip). */}
         <PageClip
-          pages={props.pagesMode ? props.pagesMode.pages : null}
+          // A stack shows the page in front alone, so only its elements show (shownPagesOf).
+          pages={props.pagesMode ? shownPagesOf(props.pagesMode) : null}
           // A page under a layout preview shows only the preview.
           hiddenPageId={props.pagesMode?.layoutPreview?.pageId ?? null}
           elements={elements}

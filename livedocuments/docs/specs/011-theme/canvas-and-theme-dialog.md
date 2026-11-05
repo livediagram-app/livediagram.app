@@ -10,11 +10,19 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 
 - The dialog is one modal (`CanvasThemeDialog`) titled **Tab Style** ("Appearance" names the VIEWER's own
   chrome, [Editor app](../007-editor/editor-app.md)). It opens on its **home**: a grid of **Looks**, then a
-  **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category: the dock button is
-  the one entry point.
+  **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category.
+- **Opening it.** Once a tab has pages, every page's title bar holds **Style** (a painter's palette, named
+  "Style" while the bar is named, its icon alone otherwise), first in the bar's looks group
+  ([Pages mode](../007-editor/pages-mode.md) "Beside the cog"), opening the dialog on its home; the bottom-right
+  cluster then holds no Theme & canvas button. An article page (or a card) already has a Style for its writing, so
+  it never shows two: its Style popover **leads with a Tab Style row** (a brand icon tile, "Tab Style", "Theme,
+  finish, fonts and canvas for the whole tab", a chevron) above the article's own style, and the row opens the
+  dialog. The row rather than a dialog section, because the article's style is what that button is pressed for
+  on that page; the tab's look is one press further, named plainly
+  (`apps/editor/lib/tab-style-opener.ts`, `PageTabStyleButton`, `PageArticleButtons`' `TabStyleRow`).
 - A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, **in one strip with the Layers
-  button** (Layers on its left) ([Editor app](../007-editor/editor-app.md) "Mobile chrome"), and opens
-  the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
+  button** (Layers on its left) ([Editor app](../007-editor/editor-app.md) "Mobile chrome"), while the tab has
+  no pages yet (its first-page choice), and opens the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
   read-only / embed views.
 - The header is a title row with the **help icon beside the close button** on the right.
@@ -331,7 +339,11 @@ the underlying setters send their own `Canvas` / `Theme` / `Tab` events; there i
 - `CanvasStyleControls`: pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
 - `ThemeBrowser`: the flat, paged theme list. Rendered by the palette accordion, the New-document picker and the dialog's Colours panel.
 - `PagedCarousel`: the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
-- On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
+- On a screen wider than a phone (640 px and up), opened from a page's **Style**, the dialog **drops from that
+  button**: its top-right corner 8 px under the button, its right edge on the button's, growing from that corner
+  (`dialog-in`; a fade alone with reduced motion), at most as tall as the room below. Opened another way (the
+  command palette), it is the centred dialog.
+- From the cluster's button, the dialog is a **popover flying out of the Theme & canvas button**: its
   bottom-right corner sits 8 px above the button, its right edge on the bottom-right cluster's (the right of the zoom
   controls, so it sits as far right as the cluster and covers as little of the work as it can), and it grows from that corner (the long motion
   token's `fly-up-in`; a fade alone with reduced motion), at most as tall as the room above the button. Without the

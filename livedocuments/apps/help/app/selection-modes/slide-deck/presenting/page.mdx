@@ -19,9 +19,11 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('slide-deck').filter((a) => a.slug !== 'presenting')}
 >
 
-Press **Present** at the bottom of the Slide Deck panel and the deck opens full screen at slide 1, with every part of the editor hidden. The button carries a **badge with the number of slides that will run**, so you know the length of the deck before you start it; hidden slides are not counted. Slides whose tab hasn't been opened yet are loaded first, so the deck never stalls halfway through.
+Press **Present** in the top bar, just left of **Share**, and the tab's slides open full screen at slide 1, with every part of the editor hidden. The button carries a **badge with the number of slides that will run**, so you know the length of this tab's show before you start it; hidden slides are not counted.
 
-You don't need the panel open to start: whenever the deck has at least one slide to show, a **Present** button sits in the top bar, just left of **Share**, and starts the deck at slide 1 from anywhere in the document. It disappears when there is nothing to show (an empty deck, or every slide hidden), and it is there for everyone on the document, Viewers included, since presenting changes nothing. Like the Slide Deck itself, it is not offered on a phone.
+The button is there whenever the tab you are on has at least one slide to show. It disappears when there is nothing to show (no slides on this tab, or every one hidden), and it is there for everyone on the document, Viewers included, since presenting changes nothing. It is not offered on a phone. To start at a later slide, an Editor opens that page's **⋯** menu in Contents and presses **Present From Here**.
+
+The slides run in Contents' order, and only the tab you are on: each tab is its own show. To present another tab's slides, open that tab and press **Present**. Switching tabs mid-show never changes the show you are giving.
 
 - **One slide at a time.** Each page fills the screen on its own, with no labels, cogs or neighbouring pages around it; advancing replaces the picture rather than adding to it.
 - **The framing is exactly the page.** A 16:9 slide page fills a 16:9 screen; any other shape sits between black bars, as a projector shows it. See [Slide Pages](/help/pages/slide-pages/).
@@ -64,7 +66,7 @@ While one is armed, **a click no longer advances the slide**: moving draws the l
 
 Nothing on a slide can be altered: there is no editing, moving or deleting. You are on a projector in front of a room, and a stray click that edits the page is not a feature.
 
-**Click an element and a read-only popover opens** with what that element has to say: its [note](/help/canvas/notes/), its [comment thread](/help/collaboration/comments/), and any [assigned action](/help/collaboration/assigned-actions/) with its assignee and status. There is no composer: you can show the room the objection somebody left on a box, and you cannot answer it from here.
+**Click an element and a read-only popover opens** with what that element has to say: its [comment thread](/help/collaboration/comments/) and any [assigned action](/help/collaboration/assigned-actions/) with its assignee and status. There is no composer: you can show the room the objection somebody left on a box, and you cannot answer it from here.
 
 Because click-to-advance and click-to-inspect are the same gesture, the target decides: **a click on an element with a note, comments or an action opens its popover; anywhere else advances the slide**. A click outside an open note, settings or element popover just dismisses it rather than skipping ahead.
 

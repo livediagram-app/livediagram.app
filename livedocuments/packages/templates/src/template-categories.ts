@@ -20,6 +20,8 @@ export type TemplateCategory =
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set.
+// Labels are a word each, so a picker's rail fits each on one line; the longer names they once had (Events and
+// Celebrations, Plans and Proposals) live on in `searchWords`, so a search for either half still finds them.
 // `searchWords`: what a search also finds the category's templates by, beyond its label.
 type CategoryInfo = {
   id: TemplateCategory;
@@ -37,38 +39,38 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'events',
-    label: 'Events and Celebrations',
-    searchWords: 'party birthday wedding celebrate invitation',
+    label: 'Events',
+    searchWords: 'celebrations celebration party birthday wedding celebrate invitation',
     description: 'Posters, group cards and toasts for big days.',
   },
   {
     id: 'home',
-    label: 'Home and Hobbies',
-    searchWords: 'personal family cooking house',
+    label: 'Home',
+    searchWords: 'hobbies hobby personal family cooking house',
     description: 'Recipes to share and floor plans of a home.',
   },
   {
     id: 'learning',
-    label: 'Lessons and Learning',
-    searchWords: 'school teacher teaching class education student',
+    label: 'Learning',
+    searchWords: 'lessons lesson school teacher teaching class education student',
     description: 'Lesson plans, class slides and school talks.',
   },
   {
     id: 'marketing',
-    label: 'Marketing and Social',
+    label: 'Marketing',
     searchWords: 'social media content ad advert campaign',
     description: 'Social posts, explainers, ads and comparisons.',
   },
   {
     id: 'pitches',
-    label: 'Pitches and Launches',
-    searchWords: 'pitch investor startup sales keynote',
+    label: 'Pitches',
+    searchWords: 'launches launch pitch investor startup sales keynote',
     description: 'Decks and cue cards to pitch or launch an idea.',
   },
   {
     id: 'plans',
-    label: 'Plans and Proposals',
-    searchWords: 'plan planning proposal spec project',
+    label: 'Plans',
+    searchWords: 'proposals plan planning proposal spec project',
     description: 'Briefs, proposals, PR/FAQs and design docs.',
   },
   {
@@ -79,14 +81,14 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'speeches',
-    label: 'Speeches and Talks',
-    searchWords: 'speech talk speaking cue cards',
+    label: 'Talks',
+    searchWords: 'speeches speech talk speaking cue cards',
     description: 'Cue cards for talks, toasts and presentations.',
   },
   {
     id: 'team',
-    label: 'Team and Meetings',
-    searchWords: 'meeting team onboarding workshop agenda',
+    label: 'Teams',
+    searchWords: 'meetings meeting team onboarding workshop agenda',
     description: 'Meeting notes, workshops and welcomes for a team.',
   },
 ];
@@ -101,7 +103,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .map(({ id, label, description }) => ({ id, label, description }));
 
 // The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/start-diagramming.md
-// "Recommended and groups"). Mirrors isBlankTemplate (BLANK_TEMPLATE, EXTRA_BLANK_TEMPLATES and Blank Tab);
+// "Groups"). Mirrors isBlankTemplate (BLANK_TEMPLATE, EXTRA_BLANK_TEMPLATES and Blank Tab);
 // the categories test pins them together.
 type BlankKind =
   | 'blank'

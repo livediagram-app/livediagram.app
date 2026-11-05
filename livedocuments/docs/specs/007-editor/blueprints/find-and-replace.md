@@ -35,7 +35,7 @@ painters: a ProseMirror plugin in the writing and a ring overlay on the canvas. 
 ### Gathering (`findTargets(tab, pages, { scope, blockPage })`)
 
 - One walk over `pagesOf(tab)` laid out (`pages`, the row): `buildElementIndex(elements)` once, each element placed by
-  `rowPageAt(pages, elementAnchorPoint(el, index))` (the rule `pageTexts` uses; both read it from
+  `rowPageAt(pages, elementAnchorPoint(el, index))` (read from
   `elementsByPage`, `apps/editor/lib/elements-by-page.ts`). An element on no page is skipped.
 - Per page in row order: the blocks of `tab.articles[page.flow]` whose page is this one (`blockPage(flow, blockId)`,
   read from the mounted editor's `blocksByPage()`; absent, every block is its flow's first page's), in block order,

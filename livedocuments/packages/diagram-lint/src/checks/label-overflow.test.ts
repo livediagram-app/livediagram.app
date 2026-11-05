@@ -14,9 +14,7 @@ describe('label-overflow', () => {
     const small = box('b', 0, 0, {
       label: 'An extremely long label that cannot possibly fit in this small box',
     });
-    expect(of(lint(tabOf(small)), 'label-overflow')[0]!.fix).toBe(
-      'set b label="<text>" note="<text>"',
-    );
+    expect(of(lint(tabOf(small)), 'label-overflow')[0]!.fix).toBe('set b label="<shorter text>"');
   });
 
   it('stays quiet for a fitting label, a blank one, a scaled one, and a shape that draws its own text (N11)', () => {

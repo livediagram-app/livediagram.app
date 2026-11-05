@@ -288,8 +288,8 @@ Top to bottom:
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
    line), dismissible as the sign-in notice is. Minimal chrome drops it.
 
-**Size and scrim.** On a desktop or tablet the panel is up to **64rem** wide (kept 1rem inside the window) and
-**56rem** tall (kept on the canvas below the menu button, 24 px short of its bottom), the rail and pane filling the
+**Size and scrim.** On a desktop or tablet the panel is up to **54rem** wide (kept 1rem inside the window) and
+**45rem** tall (kept on the canvas below the menu button, 24 px short of its bottom), the rail and pane filling the
 rest, the rail 13rem wide; the pane's preview cards are compact, three across once it is 24rem wide and four once it
 is 42rem (every desktop popover). A dimmed **scrim** (translucent slate, a fade
 where motion is allowed) sits behind it on every screen size, over the canvas and its chrome and under the panel and

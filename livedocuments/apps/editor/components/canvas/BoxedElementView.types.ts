@@ -72,8 +72,8 @@ export type BoxedElementViewProps = {
   onOpenComments: (id: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). The badge only
   // renders while the element carries an OPEN action; everyone (including
-  // view-role visitors) may open the popover, so this is not optional the
-  // way onOpenNote is — mutations are gated inside the popover instead.
+  // view-role visitors) may open the popover, so this is not optional:
+  // mutations are gated inside the popover instead.
   onOpenAction: (id: string) => void;
   // Image element context: the editor passes these so the inner
   // ImageElementView can fetch the bitmap with the right
@@ -86,10 +86,6 @@ export type BoxedElementViewProps = {
     shareCode: string | null;
     onOpenPicker?: (elementId: string) => void;
   };
-  // Open the per-element note popover. Optional so read-only viewers
-  // (who shouldn't see a clickable badge) can omit it. When omitted
-  // the note badge does not render.
-  onOpenNote?: (id: string) => void;
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;

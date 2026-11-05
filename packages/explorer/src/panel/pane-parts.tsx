@@ -65,15 +65,15 @@ export function PaneList({ label, children }: { label?: string; children: ReactN
 }
 
 // Preview cards (folders, Jump Back In), compact so more fit in a row: two across in a narrow pane (a phone's sheet),
-// three from 24rem (a tablet, a wide phone), four from 42rem (every desktop popover), with a touch more air between
+// three from 24rem (a tablet, a wide phone), four from 38rem (every desktop popover), with a touch more air between
 // them there. They cascade in as the rows do.
 export const PANE_GRID =
-  'lvd-cascade grid grid-cols-2 gap-2 @sm:grid-cols-3 @2xl:grid-cols-4 @2xl:gap-x-3 @2xl:gap-y-3.5';
+  'lvd-cascade grid grid-cols-2 gap-2 @sm:grid-cols-3 @[44rem]:grid-cols-4 @[44rem]:gap-x-3 @[44rem]:gap-y-3.5';
 
 // `fullRowsBelowFour`: from the seventh card on, shown only where the grid runs four across, so two and three across
 // end on a full row (six cards: three rows of two, two rows of three). Hidden with CSS, so a card that is not drawn
 // never asks for its preview (the host's thumbnails load once they scroll into view, which display: none never does).
-const FULL_ROWS_BELOW_FOUR = '@max-2xl:[&>li:nth-child(n+7)]:hidden';
+const FULL_ROWS_BELOW_FOUR = '@max-[44rem]:[&>li:nth-child(n+7)]:hidden';
 
 export function PaneGrid({
   label,

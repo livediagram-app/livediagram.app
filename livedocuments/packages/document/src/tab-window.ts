@@ -1,10 +1,13 @@
-// The tab window (docs/specs/009-elements/tab-window.md): an element showing another tab of the document, live,
-// zoomed to fit. Pure: which tabs a window may show, its sizes, and its picture in an export (the shown tab's drawing
-// fitted inside a rounded frame, or the frame named for its tab where there is no drawing).
+// The tab window (docs/specs/009-elements/tab-window.md, retired 2026-11-04): an element that showed another tab of
+// the document. Nothing makes one any more; a stored one still validates, loads and draws. Pure: which tabs a window
+// may show, its sizes, and its picture in an export (the frame named for its tab, or a drawing when one is given).
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { SKETCH_FACE_FILTER } from './svg-render-sketch';
+
+/** Shape kinds no surface makes any more (no palette tile, no agent `add`), kept so stored ones load. */
+export const RETIRED_SHAPE_KINDS: ReadonlySet<string> = new Set(['tab-window']);
 
 /** A window's size as it lands (16:9). */
 export const TAB_WINDOW_SIZE = { width: 640, height: 360 } as const;

@@ -196,16 +196,7 @@ export type ShowView = {
 // `show` with `ref=selected`: each element as ShowView holds it, in tab order (VW67).
 export type ShowSelectedView = { header: ViewHeader; selected: Omit<ShowView, 'header'>[] };
 
-export const FIND_FIELDS = [
-  'label',
-  'note',
-  'edge',
-  'cell',
-  'item',
-  'node',
-  'code',
-  'comment',
-] as const;
+export const FIND_FIELDS = ['label', 'edge', 'cell', 'item', 'node', 'code', 'comment'] as const;
 export type FindField = (typeof FIND_FIELDS)[number];
 
 export type FindView = {

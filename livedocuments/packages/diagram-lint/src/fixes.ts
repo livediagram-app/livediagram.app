@@ -25,8 +25,10 @@ export const fixes = {
     `set ${arrow} label="<at most ${fits} characters>"`,
   // A struck label moved along its own line to a spot clear of every other line and box.
   labelStruck: (arrow: string, t: number) => `set ${arrow} labelOffset={"t":${t},"offset":0}`,
+  // A label too long even small: a shorter one (element notes, where the rest used to go, are retired:
+  // docs/specs/009-elements/links-and-notes-retired.md).
   labelOverflow: (a: string, smaller: boolean) =>
-    smaller ? `set ${a} text=sm` : `set ${a} label="<text>" note="<text>"`,
+    smaller ? `set ${a} text=sm` : `set ${a} label="<shorter text>"`,
   // A card's title or subtitle cut short: the card widened to hold it.
   cardTextCut: (a: string, width: number) => `set ${a} width=${width}`,
   // A page's text: grown to hold its lines; two texts over each other moved apart.

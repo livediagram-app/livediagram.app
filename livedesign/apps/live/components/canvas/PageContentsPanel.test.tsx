@@ -96,15 +96,10 @@ describe('PageContentsPanel', () => {
     expect(screen.queryByRole('button', { name: /^Add Page/ })).toBeNull();
   });
 
-  it('offers Find a Page past six pages, narrowing the list', () => {
-    show(4);
-    expect(screen.queryByRole('searchbox', { name: 'Find a Page' })).toBeNull();
-    cleanup();
+  it('lists every page with no Find box, however many', () => {
     show(8);
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Page' }), {
-      target: { value: 'logo' },
-    });
-    expect(screen.getAllByRole('listitem')).toHaveLength(4);
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.getAllByRole('listitem')).toHaveLength(8);
   });
 
   it('docks back as the sidebar from its header, where a sidebar is offered', () => {

@@ -92,12 +92,45 @@ function Body({
 
 export function PageLayoutsButton({
   labelled,
+  openRequest = 0,
+  headless = false,
   ...props
 }: BodyProps & {
   // Named beside its icon (a desktop).
   labelled: boolean;
+  // Opens it from elsewhere each time it rises (a phone's Appearance sheet); 0 never does.
+  openRequest?: number;
+  // No button of its own: a phone's Appearance sheet opens it (TitlePopoverButton's headless).
+  headless?: boolean;
 }) {
   const mobile = useIsMobileViewport();
+  const popover = (
+    <TitlePopoverButton
+      name="Layout"
+      labelled={labelled}
+      openRequest={openRequest}
+      headless={headless}
+      className={titleButtonClass}
+      icon={<LayoutsIcon />}
+      width={POPOVER_WIDTH}
+      onOpen={() => track('UI', 'Opened', 'PageLayoutsButton')}
+    >
+      {(close) => (
+        <Body
+          {...props}
+          wide={!mobile}
+          onClose={close}
+          onApply={(layout) => {
+            props.onPreview(null);
+            props.onApply(layout);
+            close();
+          }}
+          onSurprise={props.onApply}
+        />
+      )}
+    </TitlePopoverButton>
+  );
+  if (headless) return popover;
   return (
     <div
       // The title bar takes no pointer events: the button opts back in, and a press on it is its
@@ -107,28 +140,7 @@ export function PageLayoutsButton({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <TitlePopoverButton
-        name="Layout"
-        labelled={labelled}
-        className={titleButtonClass}
-        icon={<LayoutsIcon />}
-        width={POPOVER_WIDTH}
-        onOpen={() => track('UI', 'Opened', 'PageLayoutsButton')}
-      >
-        {(close) => (
-          <Body
-            {...props}
-            wide={!mobile}
-            onClose={close}
-            onApply={(layout) => {
-              props.onPreview(null);
-              props.onApply(layout);
-              close();
-            }}
-            onSurprise={props.onApply}
-          />
-        )}
-      </TitlePopoverButton>
+      {popover}
     </div>
   );
 }

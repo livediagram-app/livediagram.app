@@ -154,34 +154,29 @@ export function slideFrame(
 }
 
 /**
- * The slides that can actually be shown, paired with their tab.
+ * The slides a tab's show runs, paired with the tab, in order (docs/specs/012-collaboration/presentation-mode.md
+ * "One tab, one show").
  *
- * Slides the author has HIDDEN are left out, as is a slide whose tab is gone:
- * the tab may come back via undo, and a presentation that refuses to start
- * because one slide points at a deleted tab helps nobody. A slide whose ELEMENTS have all
- * gone is kept, because an empty slide you can see and fix beats a slide that
- * silently deleted itself when you cleared its contents.
+ * A presentation is a tab's, never the document's: Present runs the open tab's slides alone, in their deck order,
+ * which for a tab's page slides is its page order (deckFollowingPages), the order Contents lists them. Another tab's
+ * slides are never in it, so slides added across tabs never interleave in a show nobody can reorder. A deck stored
+ * across tabs (A, C, A) gives A's show A's slides and C's show C's; the stored order is never rewritten. O(slides).
+ *
+ * Slides the author has HIDDEN are left out, which is the ONE place the run is decided, so the count on the Present
+ * button, the `7 / 23` in the HUD and what advancing lands on can never disagree about the show's length. No tab (it
+ * is gone, or not yet known), no show. A slide whose ELEMENTS have all gone is kept, because an empty slide you can
+ * see and fix beats a slide that silently deleted itself when you cleared its contents.
  */
 export function presentableSlides(
   deck: Deck,
-  tabs: Tab[],
+  tab: Tab | undefined,
 ): { slide: Slide; tab: Tab; index: number }[] {
-  const byId = new Map(tabs.map((t) => [t.id, t]));
-  const out: { slide: Slide; tab: Tab; index: number }[] = [];
+  if (!tab) return [];
+  const run: { slide: Slide; tab: Tab; index: number }[] = [];
   deck.slides.forEach((slide, index) => {
-    // Hidden slides are skipped here, which is the ONE place the run is
-    // decided — so the count on the Present button, the `7 / 23` in the HUD
-    // and what advancing lands on can never disagree about the deck's length.
-    if (slide.hidden) return;
-    const tab = byId.get(slide.tabId);
-    if (tab) out.push({ slide, tab, index });
+    if (!slide.hidden && slide.tabId === tab.id) run.push({ slide, tab, index });
   });
-  return out;
-}
-
-/** Every tab a deck reaches into — what Start must have loaded before it runs. */
-export function deckTabIds(deck: Deck): Set<TabId> {
-  return new Set(deck.slides.map((s) => s.tabId));
+  return run;
 }
 
 /**

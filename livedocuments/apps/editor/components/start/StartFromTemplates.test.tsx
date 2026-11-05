@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { StartFromTemplates } from './StartFromTemplates';
+import { closeStartForBlank } from './close-start-for-blank';
 
 // docs/specs/007-editor/start-diagramming.md
 afterEach(() => {
@@ -25,27 +26,25 @@ describe('StartFromTemplates', () => {
     expect(onTemplate).toHaveBeenCalledWith('blank-slide-deck');
   });
 
-  it('remembers a close per tab', () => {
+  it('cannot be closed: no ×, no grab handle, and Escape only clears a search', () => {
     mount();
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(screen.queryByRole('heading', { name: 'Start Making Pages' })).toBeNull();
-    cleanup();
-    mount();
-    expect(screen.queryByRole('heading', { name: 'Start Making Pages' })).toBeNull();
-    cleanup();
-    mount(vi.fn(), 't2');
-    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
-  });
-
-  it('closes on Escape once its search has nothing to clear', () => {
-    mount();
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+    expect(document.querySelector('[data-sheet-handle]')).toBeNull();
     const search = screen.getByRole('textbox', { name: 'Find a template' });
     fireEvent.change(search, { target: { value: 'slide' } });
     fireEvent.keyDown(search, { key: 'Escape' });
     expect((search as HTMLInputElement).value).toBe('');
-    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
     fireEvent.keyDown(search, { key: 'Escape' });
+    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
+  });
+
+  it('opens closed only for an explicit blank, per tab', () => {
+    closeStartForBlank('t-blank', 'blank');
+    mount(vi.fn(), 't-blank');
     expect(screen.queryByRole('heading', { name: 'Start Making Pages' })).toBeNull();
+    cleanup();
+    mount(vi.fn(), 't2');
+    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
   });
 });
 

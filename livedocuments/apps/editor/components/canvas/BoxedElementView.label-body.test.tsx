@@ -43,7 +43,6 @@ function draw(
       onFollowLink={vi.fn()}
       onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
-      onOpenNote={vi.fn()}
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       tabLocked={false}

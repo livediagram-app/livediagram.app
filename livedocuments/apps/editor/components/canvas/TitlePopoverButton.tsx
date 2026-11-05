@@ -4,7 +4,7 @@
 // Layouts, and an article's Style and Text (docs/specs/007-editor/pages-mode.md "Beside the cog"). Pressed while its tool is on for
 // the page (or, with no `on`, tinted while its popover is open), named beside its icon on a
 // desktop, the popover anchored under it; on a phone it opens as a bottom sheet instead.
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Tooltip, useClickOutside, useEscape } from '@livedocuments/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
@@ -13,16 +13,8 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 // The tour's step card: a press on it is the tour's, never an outside press that closes the popover under it.
 const TOUR_CARD = '[data-tour-popover]';
 
-/** The title-bar controls' look: the cog's size, named beside the icon when `labelled`, tinted while on. */
-export function titleButtonClass(on: boolean | undefined, labelled: boolean): string {
-  return `flex h-6 items-center justify-center rounded-md transition ${
-    labelled ? 'gap-1 px-1.5 text-[11px] font-medium' : 'w-6'
-  } focus-visible:outline-2 focus-visible:outline-brand-600 ${
-    on
-      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-      : 'text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-  }`;
-}
+// The title-bar controls' look is the shared bar's (PageTitleBar), so every editor's reads the same.
+export { titleBarButtonClass as titleButtonClass } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
 
 export function TitlePopoverButton({
   name,
@@ -35,6 +27,8 @@ export function TitlePopoverButton({
   onOpen,
   openRequest = 0,
   onEscape,
+  onOpenChange,
+  headless = false,
   children,
 }: {
   // The control's name: its label, its tooltip and the popover's name (on or off is aria-pressed).
@@ -51,45 +45,62 @@ export function TitlePopoverButton({
   padded?: boolean;
   // Called as the popover opens (its telemetry).
   onOpen?: () => void;
-  // Opens the popover from elsewhere each time it changes (an article toolbar's Style command); 0 never does.
+  // Opens the popover from elsewhere each time it rises (an article toolbar's Style command); 0 never does.
   openRequest?: number;
   // Escape asked first: true when the body took it (an open note card closing), the popover then staying open.
   onEscape?: () => boolean;
+  // Told when the popover opens or closes (an empty page's invite steps aside while its Layouts is open).
+  onOpenChange?: (open: boolean) => void;
+  // No trigger of its own: opened only by openRequest (a phone's Appearance sheet, PageAppearanceButton, opens it as
+  // a bottom sheet). Only on a phone, where the sheet needs no anchor.
+  headless?: boolean;
   // The popover's body, or a function of its close (a body that closes itself, Layouts).
   children: ReactNode | ((close: () => void) => ReactNode);
 }) {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   const [seenRequest, setSeenRequest] = useState(openRequest);
+  // Opens as the request rises: a caller may sum several (an article toolbar's Style and a phone's Appearance), each
+  // per page and never falling but to 0 when another page asks, so only a fresh ask for this page raises it.
   if (openRequest !== seenRequest) {
     setSeenRequest(openRequest);
-    if (openRequest) setOpen(true);
+    if (openRequest > seenRequest) setOpen(true);
   }
+  const told = useRef(onOpenChange);
+  // Kept current after each render (never during it), before the effect below reads it.
+  useEffect(() => {
+    told.current = onOpenChange;
+  });
+  useEffect(() => {
+    told.current?.(open);
+  }, [open]);
   const mobile = useIsMobileViewport();
   const close = () => setOpen(false);
   const body = typeof children === 'function' ? children(close) : children;
   return (
     <>
       {/* Its name: whether it is on is aria-pressed and the pressed look. */}
-      <Tooltip label={name}>
-        <button
-          ref={setAnchor}
-          type="button"
-          aria-label={name}
-          aria-haspopup="dialog"
-          data-title-popover-trigger=""
-          aria-expanded={open}
-          {...(on === undefined ? {} : { 'aria-pressed': on })}
-          onClick={() => {
-            if (!open) onOpen?.();
-            setOpen(!open);
-          }}
-          className={className(on ?? open, labelled)}
-        >
-          {icon}
-          {labelled ? <span aria-hidden>{name}</span> : null}
-        </button>
-      </Tooltip>
+      {headless ? null : (
+        <Tooltip label={name}>
+          <button
+            ref={setAnchor}
+            type="button"
+            aria-label={name}
+            aria-haspopup="dialog"
+            data-title-popover-trigger=""
+            aria-expanded={open}
+            {...(on === undefined ? {} : { 'aria-pressed': on })}
+            onClick={() => {
+              if (!open) onOpen?.();
+              setOpen(!open);
+            }}
+            className={className(on ?? open, labelled)}
+          >
+            {icon}
+            {labelled ? <span aria-hidden>{name}</span> : null}
+          </button>
+        </Tooltip>
+      )}
       {open && mobile ? (
         <TitleSheet name={name} onClose={close} onEscape={onEscape}>
           {body}

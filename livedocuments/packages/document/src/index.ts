@@ -8,7 +8,7 @@
 // self-drawing data shapes the same way the inline editor does.
 import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
-import type { Page, PageOrientation } from './page';
+import type { Page, PageArrangement, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -171,6 +171,10 @@ export type Tab = {
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withPages`).
   pageOrientation?: PageOrientation;
+  // How the tab's pages stand (docs/specs/007-editor/pages-mode.md "Stacked or side by side"): `stack`, one page in
+  // front and the rest fanned behind it, or `row`, side by side. Absent, its kind's own (flashcards and infographic
+  // pages stack, slides and articles stand in a row): read via `tabStacksPages`.
+  pageArrangement?: PageArrangement;
   // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
   // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
   // `customColoursOf`; every picker in the document offers them as Custom Colours.
@@ -283,6 +287,7 @@ export * from './article-markdown';
 export * from './article-markdown-io';
 export * from './page-paint';
 export * from './page-default-background';
+export * from './page-theme-fills';
 export * from './pages-edits';
 export * from './pages-background-copy';
 export * from './tab-window';
@@ -421,6 +426,7 @@ export * from '@liveworkspace/model-core/icon-weight';
 export * from '@liveworkspace/model-core/rich-text';
 
 export * from './factories';
+export * from './text-presets';
 export * from './segment-geometry';
 export * from './duplicate';
 export * from './polyline';
@@ -466,7 +472,17 @@ export * from './svg-render';
 export { borderOf } from './svg-render-border';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
-export { labelTextScale, withPickedTextSize } from './label-text-scale';
+export {
+  DOCUMENT_TEXT_PX_MAX,
+  DOCUMENT_TEXT_PX_MIN,
+  drawnTextSize,
+  labelTextScale,
+  splitTextPx,
+  textPxRangeFor,
+  textSizeFields,
+  withPickedTextSize,
+  type TextPxRange,
+} from './label-text-scale';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';
 export { mixHex } from '@liveworkspace/model-core/color-wash';

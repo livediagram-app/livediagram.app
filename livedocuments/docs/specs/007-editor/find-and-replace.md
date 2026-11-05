@@ -45,8 +45,7 @@ missing.
 
 - **Every page of the open tab, in the row's order.** On each page: first the article writing that
   starts on it, block by block, then the words of the elements on it, top to bottom, then left to
-  right. An element is on the page its centre falls on (as Find a Page reads it, [Pages](pages-mode.md)
-  "Contents"); an element on no page is not searched.
+  right. An element is on the page its centre falls on; an element on no page is not searched.
 - **An article's writing**: its paragraphs (titles and headings included), list items and code
   blocks. A match may run across formatting (part bold, part plain) but never across two blocks.
   A line break inside a block (Shift+Enter) is a character of the block, so a query never matches

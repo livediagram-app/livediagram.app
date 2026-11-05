@@ -5,13 +5,15 @@
 import { upgradeStores } from './legacy-offline-store';
 import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livediagram/ui';
 import type { OfflineDocumentRecord } from './offline-store';
+import { APP_ITEMS } from '@liveworkspace/sites';
 
-const DB_NAME = 'livediagram-offline';
+// The names are the registry's, which the Explorer page deletes a This Browser item by.
+const DB_NAME = APP_ITEMS.livediagram.offlineStore.db;
 // Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
 // ./legacy-offline-store moves every record across. Version 3 added the `retired-parts` store and sets aside each
 // record holding Pages or Plan content before anything can read it (./retired-parts-upgrade).
 const DB_VERSION = 3;
-const STORE = 'documents';
+const STORE = APP_ITEMS.livediagram.offlineStore.store;
 export const OFFLINE_DOCUMENTS_STORE = STORE;
 
 // What a read-modify-write gets: the stored record (undefined when there is none), and what it

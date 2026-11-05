@@ -32,7 +32,7 @@ export function buildTabFromMarkdown(
       error: `This Markdown is longer than an article takes (${ARTICLE_MARKDOWN_MAX.toLocaleString('en-GB')} characters).`,
     };
   }
-  const read = articleFromMarkdown(markdown);
+  const read = articleFromMarkdown(imagesAsLinks(markdown));
   if ('tooLong' in read) {
     return {
       ok: false,
@@ -67,4 +67,33 @@ export function buildTabFromMarkdown(
   // A blank tab's one page always offers the choice, so the article takes it.
   const chosen = withPageKindChosen(blank, pagesOf(blank)[0]!.id, 'article', flow)!;
   return { ok: true, tab: withArticleFlow(chosen, flow, { blocks }) };
+}
+
+// An image (`![alt](address)`) read as a link named by its alt text, the address when it has none
+// (docs/specs/020-import-export/markdown-import.md "What it reads"): the reader takes `!` as text, which left a
+// stray `!` before a link. Code (a fence, or an inline span) is left as written. Only the import reads it so.
+// Linear: a backtick run is taken whole (the lookahead), the alt text stops at a `[` and the address at a `(`, so
+// no start rescans what a later one will.
+const IMAGE_OR_CODE = /(?=(`+))\1[^`]*\1|!\[([^[\]\n]*)\]\(([^()\s]+)\)/g;
+
+export function imagesAsLinks(markdown: string): string {
+  if (!markdown.includes('![')) return markdown;
+  let fence = 0;
+  return markdown
+    .split('\n')
+    .map((line) => {
+      const open = /^\s*(`{3,})/.exec(line);
+      if (fence) {
+        if (open && open[1]!.length >= fence && line.trim() === open[1]) fence = 0;
+        return line;
+      }
+      if (open) {
+        fence = open[1]!.length;
+        return line;
+      }
+      return line.replace(IMAGE_OR_CODE, (whole, tick?: string, alt?: string, href?: string) =>
+        tick !== undefined || href === undefined ? whole : `[${alt?.trim() || href}](${href})`,
+      );
+    })
+    .join('\n');
 }

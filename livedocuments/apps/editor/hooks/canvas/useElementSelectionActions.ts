@@ -12,10 +12,9 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
-  createText,
-  bringManyToFront,
+  createPresetText,
+  DEFAULT_TEXT_PRESET,
   duplicateElements,
-  sendManyToBack,
   isBoxed,
   withAttachedArrows,
   type Element,
@@ -256,7 +255,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // do NOT connect it with an arrow (a caption / label next to a node
     // isn't a flow edge, so a connector would be noise).
     if (kind === 'text') {
-      const text = createText(baseBounds.x + dx, baseBounds.y + dy);
+      // A Paragraph, left aligned (canvas-and-palette.md "Text element").
+      const text = createPresetText(baseBounds.x + dx, baseBounds.y + dy, DEFAULT_TEXT_PRESET);
       commit((els) => [...els, text]);
       setSelectedId(text.id);
       setEditingId(text.id);
@@ -265,23 +265,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     }
   };
 
-  // Intra-LAYER z-order (selection popover). Distinct from the element
-  // menu's Bring to Front, which is a LAYER move (docs/specs/006-document/layers.md): these nudge the
-  // selection within its own band, so two notes on the same layer can be
-  // stacked without shuffling anyone between layers. A multi-selection
-  // travels together, keeping its members' relative order.
-  const stackSelected = (direction: 'front' | 'back') => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      direction === 'front' ? bringManyToFront(els, ids) : sendManyToBack(els, ids),
-    );
-    track('Element', 'Changed', direction === 'front' ? 'StackFront' : 'StackBack');
-  };
-
   return {
-    stackSelectedFront: () => stackSelected('front'),
-    stackSelectedBack: () => stackSelected('back'),
     deleteSelected,
     selectMarquee,
     toggleLockMultiSelected,

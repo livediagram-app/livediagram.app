@@ -60,13 +60,12 @@ export function inheritedSizeFor(
     return { width: base.width, height: base.height };
   }
   // And the kinds drawn to their own proportions or placed around other things: a step number (a disc), a container
-  // (a stack: a box to put things in), a concept graphic and a tab window. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
+  // (a stack: a box to put things in), and a concept graphic. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
   if (
     base.type === 'shape' &&
     (isChipShape(base.shape) ||
       isContainerKind(base.shape) ||
       isConceptShape(base.shape) ||
-      base.shape === 'tab-window' ||
       // A chart, a meter, a rating, a timeline rail, a legend, a sticker: each draws its own content to its own
       // proportions. A progress bar tapped while a legend was selected came out a 200 x 170 blob.
       isSelfDrawingShape(base.shape))

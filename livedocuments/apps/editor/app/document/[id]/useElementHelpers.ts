@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
   isBoxed,
+  textSizeFields,
   type BoxedElement,
   type Element,
   type Tab,
@@ -118,7 +119,7 @@ export function useElementHelpers(opts: {
       width,
       height,
       // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
-      ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
+      ...(activeTab.defaultTextSize ? textSizeFields(base.type, activeTab.defaultTextSize) : {}),
     });
     // Single commit that both adds the element and marks the template
     // picker as dismissed for this tab (if it was still showing).

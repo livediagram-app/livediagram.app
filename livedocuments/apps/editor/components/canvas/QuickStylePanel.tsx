@@ -1,7 +1,7 @@
 'use client';
 
 // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): the few most-used style choices for
-// the selected shapes and arrows, on the left edge of the canvas. The context
+// the selected shapes and arrows, on the right edge of the canvas. The context
 // menu stays the complete home of every setting; this is the fast path to a
 // handful of them, and never grows into the old Editor panel.
 
@@ -165,7 +165,9 @@ export function QuickStylePanel({
   const { view } = quickStyle;
   const active = !hidden && !isMobile && view !== null;
   const panelRef = useRef<HTMLDivElement>(null);
-  const spot = useQuickStylePlacement(panelRef, active);
+  // Always on the canvas's right in livedocuments (docs/specs/008-canvas/quick-style-panel.md "Where it sits"):
+  // the left holds the Contents sidebar.
+  const spot = useQuickStylePlacement(panelRef, active, 'right');
   const [editing, setEditing] = useState<Editing | null>(null);
   // A popover outlives neither the panel nor its swatch.
   const editingGone =

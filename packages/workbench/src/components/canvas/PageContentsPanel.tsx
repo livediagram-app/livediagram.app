@@ -13,12 +13,7 @@ import { HoverCard, lucideGlyph, useEscape } from '@liveworkspace/ui';
 import { BottomSheet } from '../primitives/BottomSheet';
 import { useViewportStoreIfAny } from '../../hooks/canvas/useViewportStore';
 import { pageInView, type ContentsPageRect, type ContentsRowBase } from '../../lib/page-contents';
-import {
-  ContentsFind,
-  ContentsList,
-  type ContentsBadges,
-  type ContentsListState,
-} from './PageContentsList';
+import { ContentsList, type ContentsBadges, type ContentsListState } from './PageContentsList';
 
 const DockIcon = lucideGlyph(lucidePanelLeftOpen, 14);
 
@@ -59,7 +54,7 @@ export function ContentsPanel<R extends ContentsRowBase>({
   // cluster button), its header carrying `headerActions`.
   frame: (body: ReactNode, headerActions: ReactNode) => ReactNode;
 }) {
-  // Escape closes the popover (the Find box clears itself first, stopping the key there).
+  // Escape closes the popover.
   useEffect(() => {
     if (mobile) return;
     const onKey = (e: globalThis.KeyboardEvent) => {
@@ -78,7 +73,6 @@ export function ContentsPanel<R extends ContentsRowBase>({
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.stopPropagation()}
     >
-      <ContentsFind contents={contents} />
       <ContentsList
         contents={contents}
         variant="list"

@@ -130,8 +130,8 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a checklist's ticks, a tab window's Show a Tab and Open.
-const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>(['checklist', 'tab-window']);
+// The kinds whose face carries controls of its own: a checklist's ticks.
+const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>(['checklist']);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture
  *  (`img`, one concise name) for an element that is only drawn, and a named `group` for one whose face holds

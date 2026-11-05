@@ -67,9 +67,8 @@ const ROWS: readonly { topic: string; tea: Point; coffee: Point }[] = [
 
 const VERDICT = 'Tea for the long afternoons, coffee for the early starts. Why not both?';
 
-const VERSUS_PAGE = templatePage(1, 'social', 'portrait', 'Versus', {
-  fill: { kind: 'solid', color: '#f8fafc' },
-});
+// The plain paper: a template's backgrounds are the theme's own (template-backgrounds).
+const VERSUS_PAGE = templatePage(1, 'social', 'portrait', 'Versus');
 
 /** The post's page: one Portrait post (4:5) page, split between the two sides' washes. */
 export function versusPages(): Page[] {

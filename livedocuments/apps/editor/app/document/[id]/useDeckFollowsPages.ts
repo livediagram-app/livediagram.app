@@ -5,7 +5,7 @@
 // peer, an agent, an undo). One pass whenever the pages change, never on an element edit.
 
 import { useEffect, useEffectEvent, useMemo } from 'react';
-import { deckPagesKey, pageMovedTo, type Tab } from '@livedocuments/document';
+import { deckPagesKey, type Tab } from '@livedocuments/document';
 
 // Called after the stored deck's own hydration effect, so a deck that arrives with the document is what the pass
 // builds on: an earlier pass over the empty deck would have saved its page slides alone over the stored deck.
@@ -30,19 +30,4 @@ export function useDeckFollowsPages({
   useEffect(() => {
     follow();
   }, [ready, pages, hasStoredDeck, documentId]);
-}
-
-// The tabs with one tab's page moved to a unit index (pageMovedTo), for a page slide dragged in the deck. The same
-// tabs when the move is refused (an unknown page).
-export function tabsWithPageMoved(
-  tabs: Tab[],
-  tabId: string,
-  pageId: string,
-  unitIndex: number,
-): Tab[] {
-  return tabs.map((t) => {
-    if (t.id !== tabId) return t;
-    const out = pageMovedTo(t, pageId, unitIndex);
-    return 'tab' in out ? out.tab : t;
-  });
 }

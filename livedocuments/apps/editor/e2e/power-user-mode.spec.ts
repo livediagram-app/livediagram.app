@@ -150,7 +150,11 @@ test.describe('Power user mode', () => {
     await expect(page.locator('[data-element-id]')).toHaveCount(0);
 
     // Panel headers: the title stays for assistive technology only, and the
-    // help button goes.
+    // help button goes. Contents is docked as a headerless sidebar from the first page; collapsed into the
+    // cluster's Contents button it opens as the popover, with its header (docs/specs/007-editor/pages-mode.md
+    // "Minimised to its button").
+    await page.getByRole('button', { name: 'Contents Options', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Collapse Contents' }).click();
     await page.getByRole('button', { name: 'Contents', exact: true }).click();
     const contentsTitle = page.locator('.sr-only', { hasText: /^Contents$/ });
     await expect(contentsTitle).toHaveCount(1);

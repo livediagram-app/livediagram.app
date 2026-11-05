@@ -1,4 +1,4 @@
-import { isFixedSizeShape } from '@livedocuments/document';
+import { isFixedSizeShape, layOutPages, pageAt, pagesOf } from '@livedocuments/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -8,8 +8,10 @@ import {
   createShape,
   createSticky,
   createTable,
-  createText,
+  createPresetText,
   createVideo,
+  DEFAULT_TEXT_PRESET,
+  textSizeFields,
   defaultIconAnimation,
   snapToArrowPoint,
   type ArrowElement,
@@ -18,6 +20,8 @@ import {
   type Element,
   type Endpoint,
   type Tab,
+  type TextElement,
+  type TextPresetId,
 } from '@livedocuments/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import type { ThemeDefinition } from '@livedocuments/document';
@@ -174,6 +178,59 @@ export function buildDrawnComponent(
   };
 }
 
+// A text style on a slide spans this share of the slide's width, centred (canvas-and-palette.md "On a slide, a style
+// spans the slide").
+export const SLIDE_TEXT_SPAN = 0.8;
+
+/** The slide a canvas point lies on, if the tab has pages and the point is on a slide. */
+export function slideAt(
+  tab: Pick<Tab, 'pages' | 'pageOrientation'> | undefined,
+  x: number,
+  y: number,
+): { x: number; width: number } | undefined {
+  if (!tab?.pages) return undefined;
+  const page = pageAt(layOutPages(pagesOf(tab)), { x, y });
+  return page?.kind === 'slide' ? page.rect : undefined;
+}
+
+/** A new text in a style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"), centred on a canvas point,
+ *  left aligned; on a slide (`slide`, its rect), 80% of its width and centred across it, wrapping there. */
+export function presetTextAt(
+  x: number,
+  y: number,
+  preset: TextPresetId = DEFAULT_TEXT_PRESET,
+  slide?: { x: number; width: number },
+): TextElement {
+  const made = createPresetText(x, y, preset);
+  if (slide) {
+    const width = Math.round(slide.width * SLIDE_TEXT_SPAN);
+    return {
+      ...made,
+      x: slide.x + (slide.width - width) / 2,
+      y: y - made.height / 2,
+      width,
+      sizing: 'wrap',
+    };
+  }
+  return { ...made, x: x - made.width / 2, y: y - made.height / 2 };
+}
+
+// A drawn text style: a tap drops the style's own box centred on the tap (never the selected element's size); a drag
+// sets its width, so it wraps there, its height the text's.
+function buildDrawnText(
+  preset: TextPresetId | undefined,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  slide?: { x: number; width: number },
+): TextElement {
+  const tapped = presetTextAt(startX, startY, preset, slide);
+  if (isDrawTap(startX, startY, endX, endY)) return tapped;
+  const box = drawnDragBox({ type: 'text' }, startX, startY, endX, endY);
+  return { ...tapped, x: box.x, y: box.y, width: box.width, sizing: 'wrap' };
+}
+
 // Boxed branch (shape / text / sticky / image / table / link card / embed).
 // A tap drops the element centred on the tap at its inherited size (the
 // armed-time selection's size, else the factory default; circle/diamond stay
@@ -191,24 +248,41 @@ export function buildDrawnBoxed(
   inheritFrom: Element | null,
   activeTab: Tab,
 ) {
+  // A text style is its own size and alignment, whatever is selected and whatever the tab's text size.
+  if (intent.type === 'text') {
+    const text = buildDrawnText(
+      intent.preset,
+      startX,
+      startY,
+      endX,
+      endY,
+      slideAt(activeTab, startX, startY),
+    );
+    return {
+      ...text,
+      ...deriveNewBoxedColours(text, {
+        backgroundColor: activeTab.backgroundColor,
+        patternColor: activeTab.patternColor,
+        theme: activeTab.theme,
+      }),
+    };
+  }
   const isTap = isDrawTap(startX, startY, endX, endY);
   const base =
     intent.type === 'shape'
       ? applyShapeVariant(createShape(intent.kind, startX, startY), intent.variant)
-      : intent.type === 'text'
-        ? createText(startX, startY)
-        : intent.type === 'sticky'
-          ? createSticky(startX, startY)
-          : intent.type === 'table'
-            ? createTable(startX, startY)
-            : intent.type === 'link-card'
-              ? createLinkCard(startX, startY)
-              : intent.type === 'video'
-                ? // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
-                  // choice arrives on the intent and lands on the element
-                  // here rather than leaving a bare embed to re-point.
-                  createVideo(startX, startY, intent.provider)
-                : createImage(startX, startY);
+      : intent.type === 'sticky'
+        ? createSticky(startX, startY)
+        : intent.type === 'table'
+          ? createTable(startX, startY)
+          : intent.type === 'link-card'
+            ? createLinkCard(startX, startY)
+            : intent.type === 'video'
+              ? // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
+                // choice arrives on the intent and lands on the element
+                // here rather than leaving a bare embed to re-point.
+                createVideo(startX, startY, intent.provider)
+              : createImage(startX, startY);
   const tapSize = inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (docs/specs/009-elements/badge.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
@@ -233,8 +307,11 @@ export function buildDrawnBoxed(
     patternColor: activeTab.patternColor,
     theme: activeTab.theme,
   });
-  // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
-  const textSize = activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {};
+  // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md); past 48 px a
+  // shape takes the rest as its scale.
+  const textSize = activeTab.defaultTextSize
+    ? textSizeFields(base.type, activeTab.defaultTextSize)
+    : {};
   return {
     ...base,
     ...colours,

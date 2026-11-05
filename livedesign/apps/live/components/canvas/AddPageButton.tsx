@@ -24,7 +24,7 @@ export const ADD_SCREEN_LABEL = 'Add a Screen of Another Device';
 
 // After the last page (docs/specs/007-editor/pages-mode.md "Adding a page"), held at one screen size
 // whatever the zoom: the + adds another page like the last of the tab's kind (its kind and shape; a
-// wireframe page's device and frame too), named for what it adds ("Add Another Logo Page"). A tab
+// wireframe page's device and frame too), named for what it adds ("Add Logo Page"). A tab
 // holds one kind ("One kind a tab"), so there is no choosing another; a wireframe tab's button under
 // the + adds a screen of another device (AddScreenPopover).
 export function AddPageButton({

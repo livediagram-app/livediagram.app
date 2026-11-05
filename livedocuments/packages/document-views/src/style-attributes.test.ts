@@ -52,3 +52,14 @@ describe('styleAttributesOf', () => {
     expect(baselineOf(a)).toBe(baselineOf(shapeAt('square', 'b', 9, 9)));
   });
 });
+
+// docs/specs/024-agents/blueprints/document-views.md "Style attributes": the size the words draw at.
+describe('a scaled text size', () => {
+  it('prints as the px it draws at, so it writes back unchanged', () => {
+    const big = { ...createText(0, 0), textSize: 48, textScale: 1.5 } as Element;
+    expect(style(big)).toBe('text=72');
+    const shifted = { ...createText(0, 0), textSize: 'sm', textScale: 2 } as Element;
+    expect(style(shifted)).toBe('text=28');
+    expect(style({ ...createText(0, 0), textSize: 30 })).toBe('text=30');
+  });
+});

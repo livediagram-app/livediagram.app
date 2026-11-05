@@ -22,7 +22,6 @@ import { pageKits, templatePage } from './template-page-kit';
 const NIGHT = '#1e1b4b';
 const AMBER = '#f59e0b';
 const GOLD = '#fcd34d';
-const CREAM = '#fffbeb';
 const PAPER = '#ffffff';
 const INK = '#1e1b4b';
 const MUTED = '#57534e';
@@ -54,9 +53,8 @@ const HIGHLIGHTS = [
   },
 ] as const;
 
-const POSTER_PAGE = templatePage(1, 'a3', 'portrait', 'Poster', {
-  fill: { kind: 'solid', color: CREAM },
-});
+// The plain paper: a template's backgrounds are the theme's own (template-backgrounds).
+const POSTER_PAGE = templatePage(1, 'a3', 'portrait', 'Poster');
 
 /** The poster's page: one A3 portrait sheet on cream. */
 export function eventPosterPages(): Page[] {

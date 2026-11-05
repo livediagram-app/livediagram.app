@@ -76,6 +76,8 @@ function Body({
 export function PageBackgroundButton({
   page,
   labelled,
+  openRequest = 0,
+  headless = false,
   themePresets,
   onBackground,
   onPreview,
@@ -87,11 +89,37 @@ export function PageBackgroundButton({
   applyToAll?: { reach: number; onApply: () => void };
   // Named beside its icon (a desktop).
   labelled: boolean;
+  // Opens it from elsewhere each time it rises (a phone's Appearance sheet); 0 never does.
+  openRequest?: number;
+  // No button of its own: a phone's Appearance sheet opens it (TitlePopoverButton's headless).
+  headless?: boolean;
   // The tab theme's own backgrounds, offered first.
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
   onPreview: (patch: Partial<PageBackground> | null) => void;
 }) {
+  const popover = (
+    <TitlePopoverButton
+      name="Background"
+      labelled={labelled}
+      openRequest={openRequest}
+      headless={headless}
+      className={titleButtonClass}
+      icon={<BackgroundIcon />}
+      width={POPOVER_WIDTH}
+      padded={false}
+      onOpen={() => track('UI', 'Opened', 'PageBackgroundButton')}
+    >
+      <Body
+        page={page}
+        themePresets={themePresets}
+        onBackground={onBackground}
+        onPreview={onPreview}
+        {...(applyToAll ? { applyToAll } : {})}
+      />
+    </TitlePopoverButton>
+  );
+  if (headless) return popover;
   return (
     <div
       // The title bar takes no pointer events: the button opts back in, and a press on it is its
@@ -100,23 +128,7 @@ export function PageBackgroundButton({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <TitlePopoverButton
-        name="Background"
-        labelled={labelled}
-        className={titleButtonClass}
-        icon={<BackgroundIcon />}
-        width={POPOVER_WIDTH}
-        padded={false}
-        onOpen={() => track('UI', 'Opened', 'PageBackgroundButton')}
-      >
-        <Body
-          page={page}
-          themePresets={themePresets}
-          onBackground={onBackground}
-          onPreview={onPreview}
-          {...(applyToAll ? { applyToAll } : {})}
-        />
-      </TitlePopoverButton>
+      {popover}
     </div>
   );
 }

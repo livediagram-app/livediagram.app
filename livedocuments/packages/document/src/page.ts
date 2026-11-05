@@ -300,6 +300,33 @@ function parsePageFields(v: unknown): Page | undefined {
 }
 
 /** The page's kind: an article, slide or flashcard page, or else an infographic page. */
+/** How a tab's pages stand (pages-mode.md "Stacked or side by side"): one page in front with the rest fanned behind
+ *  it, or side by side. */
+export type PageArrangement = 'stack' | 'row';
+
+export function isPageArrangement(v: unknown): v is PageArrangement {
+  return v === 'stack' || v === 'row';
+}
+
+/** Whether a tab's pages stand as a stack: its own choice, else its kind's (its first page's, one kind a tab):
+ *  flashcards stack; infographic pages and slides stand in a row. An article never stacks: its writing runs on
+ *  from page to page, so it is read along the row. */
+export function tabStacksPages(
+  pages: readonly Pick<Page, 'kind'>[],
+  arrangement?: unknown,
+): boolean {
+  if (!pages[0]) return false;
+  const kind = pageKindOf(pages[0]);
+  if (kind === 'article') return false;
+  if (isPageArrangement(arrangement)) return arrangement === 'stack';
+  return kind === 'flashcard';
+}
+
+/** Whether a tab's pages may be stacked or set side by side at will: every kind but an article. */
+export function tabArrangesPages(pages: readonly Pick<Page, 'kind'>[]): boolean {
+  return !!pages[0] && pageKindOf(pages[0]) !== 'article';
+}
+
 export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
   return page.kind === 'article' || page.kind === 'slide' || page.kind === 'flashcard'
     ? page.kind

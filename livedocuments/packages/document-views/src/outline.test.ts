@@ -30,6 +30,9 @@ describe('outlineView on the checkout tab (R8)', () => {
       .replace(/entity cb02 "Order" \{.*\}/, 'square cb02 "Order"')
       .replace('16 boxes, 3 frames,', '19 boxes,')
       .replace(/^frame (\w+ "\w+")$/gm, 'stack $1 direction=row')
+      // Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): never printed.
+      .replace(/ note="[^"]*"…?/g, '')
+      .replace(/ link=\S+/g, '')
       .split('\n');
     // The research drew a diagram tab; every tab now has pages, which the header counts before its threads.
     const paged = header!.replace(' · threads', ' · 1 page: 1 infographic (view pages) · threads');
@@ -65,7 +68,7 @@ describe('outlineView on the checkout tab (R8)', () => {
     expect(subtree).toEqual([
       expect.stringContaining('· 30 elements'),
       'stack ca76 "Data" direction=row',
-      '  cylinder d41e "Orders DB" note="Postgres 16, primary + 1 replica."',
+      '  cylinder d41e "Orders DB"',
       '  cylinder 822f "Inventory DB"',
     ]);
     expect(outlineView(checkout(), { only: CHECKOUT_IDS.stripe }).text.split('\n')).toHaveLength(2);
@@ -74,13 +77,11 @@ describe('outlineView on the checkout tab (R8)', () => {
 });
 
 describe('outline budgets (R20, R21)', () => {
-  it('steps down the ladder: notes, attributes, containers, then the root', () => {
-    const states = [420, 380, 300, 210, 60].map(
-      (budget) => outlineView(checkout(), { budget }).state,
-    );
+  // Notes are retired and never print, so the ladder has no notes step.
+  it('steps down the ladder: attributes, containers, then the root', () => {
+    const states = [420, 300, 210, 60].map((budget) => outlineView(checkout(), { budget }).state);
     expect(states).toEqual([
       'full',
-      'notes-dropped',
       'attributes-dropped',
       'containers-collapsed',
       'root-collapsed',
@@ -96,10 +97,10 @@ describe('outline budgets (R20, R21)', () => {
   it('says what it dropped in one closing line, naming the largest collapsed container', () => {
     const { text, json } = outlineView(checkout(), { budget: 210 });
     expect(text.split('\n').at(-1)).toBe(
-      '… notes hidden; attributes hidden; 13 elements in stack c991 hidden: view --only c991',
+      '… attributes hidden; 13 elements in stack c991 hidden: view --only c991',
     );
     expect(json.elision).toMatchObject({
-      dropped: ['notes', 'attributes'],
+      dropped: ['attributes'],
       arguments: { only: 'c991' },
     });
     const services = json.nodes.find((n) => 'ref' in n && n.ref === 'c991');
@@ -107,8 +108,8 @@ describe('outline budgets (R20, R21)', () => {
   });
 
   it('points to the full budget when nothing collapsed', () => {
-    const { text, fullTokens } = outlineView(checkout(), { budget: 380 });
-    expect(text.split('\n').at(-1)).toBe(`… notes hidden: view --budget ${fullTokens}`);
+    const { text, fullTokens } = outlineView(checkout(), { budget: 300 });
+    expect(text.split('\n').at(-1)).toBe(`… attributes hidden: view --budget ${fullTokens}`);
   });
 
   it('accounts for every printed element when the root goes (I2, E20)', () => {
@@ -129,7 +130,7 @@ describe('outline budgets (R20, R21)', () => {
       { budget: 1 },
     );
     expect(text.split('\n').at(-1)).toBe(
-      `… notes hidden; attributes hidden; 1 element hidden: view --budget ${fullTokens}`,
+      `… attributes hidden; 1 element hidden: view --budget ${fullTokens}`,
     );
   });
 });

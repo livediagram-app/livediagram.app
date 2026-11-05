@@ -1,7 +1,7 @@
 // One slide's picture (docs/specs/012-collaboration/presentation-mode.md, docs/specs/007-editor/
 // pages-mode.md "Contents"): its elements drawn by the headless renderer the exports use,
-// framed to the slide (a page slide to its page, on its background). Shared by the Slide Deck's
-// rows and the Contents popover's page thumbnails, so a page looks the same in both. The markup is
+// framed to the slide (a page slide to its page, on its background). Drawn for Contents' page
+// thumbnails. The markup is
 // our own renderer's output (user text is xmlEscaped inside it), so injecting it is safe.
 import {
   r2,

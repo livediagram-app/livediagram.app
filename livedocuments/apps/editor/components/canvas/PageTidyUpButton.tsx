@@ -1,6 +1,6 @@
 'use client';
 
-// An infographic or slide page's Tidy, its icon alone, left of the lock and cog in the title bar
+// An infographic or slide page's Tidy, named beside its icon on a desktop, in the title bar's tools
 // (docs/specs/007-editor/pages-mode.md "Tidy"), shown only while a press would change
 // something: a press aligns and spaces what is on the page, one edit (pageEdits.tidyPage, the pure lib/page-tidy.ts). On a desktop pointer,
 // hovering it shows the tidied page in place; leaving it puts the page back. An Editor's alone: the
@@ -15,22 +15,26 @@ import { titleButtonClass } from './TitlePopoverButton';
 
 const TidyUpIcon = lucideGlyph(lucideBrushCleaning, 14);
 
-// The title-bar room it takes (24 px and the gap: it is an icon alone), so the page's label
+// The title-bar room it takes (the bar's button, named or its icon alone), so the page's label
 // truncates first.
 const TIDY_UP_ROOM = 28;
+const TIDY_UP_LABELLED_ROOM = 63;
 
 export const PAGE_TIDY_UP_TOOLTIP = 'Tidy: align and space what is on this page';
 
-/** The room the button takes in the title bar: its icon alone, on a desktop and a phone. */
-export function pageTidyUpRoom(): number {
-  return TIDY_UP_ROOM;
+/** The room the button takes in the title bar: named on a desktop, its icon alone on a phone. */
+export function pageTidyUpRoom(labelled: boolean): number {
+  return labelled ? TIDY_UP_LABELLED_ROOM : TIDY_UP_ROOM;
 }
 
 export function PageTidyUpButton({
   pageId,
   edit,
+  labelled = false,
 }: {
   pageId: string;
+  // Named beside its icon (a desktop).
+  labelled?: boolean;
   // The pages view's edits (absent ones render nothing).
   edit: Pick<PageEdits, 'tidyPage' | 'previewTidy'>;
 }) {
@@ -77,9 +81,10 @@ export function PageTidyUpButton({
             previewing.current = false;
             tidyPage(pageId);
           }}
-          className={titleButtonClass(false, false)}
+          className={titleButtonClass(false, labelled)}
         >
           <TidyUpIcon />
+          {labelled ? <span aria-hidden>Tidy</span> : null}
         </button>
       </Tooltip>
     </div>

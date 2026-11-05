@@ -15,11 +15,8 @@ const layout = vi.hoisted(() => vi.fn((..._args: unknown[]) => null));
 vi.mock('./useIndicatorLayout', () => ({ useIndicatorLayout: layout }));
 
 const handlers = {
-  onFollowLink: vi.fn(),
   onOpenComments: vi.fn(),
   onOpenAction: vi.fn(),
-  onOpenNote: vi.fn(),
-  tabSummaries: [],
 };
 const label = {
   text: 'Continue',

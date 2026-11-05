@@ -8,11 +8,8 @@ import { elementIndicatorItems, useElementIndicators } from './useElementIndicat
 // elements show theirs on their own face instead.
 
 const handlers = () => ({
-  onFollowLink: vi.fn(),
   onOpenComments: vi.fn(),
   onOpenAction: vi.fn(),
-  onOpenNote: vi.fn(),
-  tabSummaries: [],
 });
 const action = (status: 'open' | 'done', name: string | null = 'Sam Reed'): ElementAction => ({
   id: 'a',
@@ -40,7 +37,8 @@ const thread = (n: number, resolved = false) => ({
 const kinds = (el: BoxedElement) => elementIndicatorItems(el, handlers()).map((i) => i.kind);
 
 describe('elementIndicatorItems', () => {
-  it('lists everything a shape carries', () => {
+  // Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): a stored one shows nothing.
+  it('lists what a shape carries, and nothing for a stored link or note', () => {
     const el = {
       ...createShape('square', 0, 0),
       link: { kind: 'url', url: 'https://example.com' },
@@ -48,7 +46,7 @@ describe('elementIndicatorItems', () => {
       action: action('open'),
       commentThread: thread(2),
     } as BoxedElement;
-    expect(kinds(el)).toEqual(['link', 'note', 'action', 'comment']);
+    expect(kinds(el)).toEqual(['action', 'comment']);
   });
 
   it('opens what each one stands for', () => {
@@ -62,13 +60,11 @@ describe('elementIndicatorItems', () => {
       commentThread: thread(1),
     } as BoxedElement;
     for (const item of elementIndicatorItems(el, h)) item.onClick();
-    expect(h.onFollowLink).toHaveBeenCalledWith(link);
-    expect(h.onOpenNote).toHaveBeenCalledWith(el.id);
     expect(h.onOpenAction).toHaveBeenCalledWith(el.id);
     expect(h.onOpenComments).toHaveBeenCalledWith(el.id);
   });
 
-  it('leaves out a done action, resolved comments and an unlinked kind', () => {
+  it('leaves out a done action and resolved comments', () => {
     const el = {
       ...createShape('square', 0, 0),
       link: { kind: 'element', elementId: 'x' },
@@ -129,9 +125,13 @@ describe('elementIndicatorItems', () => {
     expect(kinds(margin)).toEqual([]);
   });
 
-  it('shows no note without a way to open it', () => {
-    const el = { ...createShape('square', 0, 0), note: 'n' } as BoxedElement;
-    expect(elementIndicatorItems(el, { ...handlers(), onOpenNote: undefined })).toEqual([]);
+  it('shows nothing for an element that carries only a stored link and note', () => {
+    const el = {
+      ...createShape('square', 0, 0),
+      note: 'n',
+      link: { kind: 'tab', tabId: 't2' },
+    } as BoxedElement;
+    expect(elementIndicatorItems(el, handlers())).toEqual([]);
   });
 });
 
@@ -157,9 +157,14 @@ describe('useElementIndicators', () => {
       link: { kind: 'url', url: 'https://example.com' },
     } as BoxedElement;
     const { result } = renderHook(() =>
-      useElementIndicators(el, handlers(), { ...label, inlineIcon: true }, 8),
+      useElementIndicators(
+        el,
+        handlers(),
+        { ...label, text: 'Cloud storage for every team', inlineIcon: true },
+        8,
+      ),
     );
-    expect(result.current.items).toHaveLength(4);
+    expect(result.current.items).toHaveLength(2);
     expect(result.current.layout?.form).toBe('top');
     expect(result.current.layout?.inset.top).toBeGreaterThan(0);
   });
@@ -180,7 +185,7 @@ describe('useElementIndicators', () => {
       width: 260,
       height: 120,
       iconId: 'star',
-      note: 'n',
+      action: action('open'),
     } as BoxedElement;
     const { result } = renderHook(() =>
       useElementIndicators(el, handlers(), { ...label, text: 'Box', inlineIcon: true }, 8),
@@ -197,7 +202,7 @@ describe('useElementIndicators', () => {
       width: 300,
       height: 120,
       label: 'Notes',
-      note: 'n',
+      action: action('open'),
     } as unknown as BoxedElement;
     const { result } = renderHook(() =>
       useElementIndicators(text, handlers(), { ...label, text: 'Notes', inlineIcon: false }, 0),

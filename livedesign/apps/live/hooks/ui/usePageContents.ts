@@ -2,10 +2,9 @@
 
 // Pages mode's Contents as state (docs/specs/007-editor/pages-mode.md "Contents"): the shared hook
 // (@liveworkspace/workbench/hooks/ui/usePageContents) bound to this editor's pages. What is
-// livedesign's own is handed in here: the rows (a wireframe's device), the words on each page, where
-// a dropped page lands, the page Add Page copies (the last of the tab's kind, "One kind a tab"), Add
+// livedesign's own is handed in here: the rows (a wireframe's device), where a dropped page lands, the page Add Page copies (the last of the tab's kind, "One kind a tab"), Add
 // Page's device for a wireframe screen, and the pictures (a photo page's is its picture).
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   lastPageOfTabKind,
   MAX_PAGES,
@@ -21,7 +20,6 @@ import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnai
 import { usePhotoThumbHrefs } from '@/components/photo/usePhotoThumbHrefs';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { contentsDropUnit, contentsRows, type ContentsRow } from '@/lib/page-contents';
-import { pageTexts } from '@/lib/page-texts';
 import { track } from '@/lib/telemetry';
 import { requestPagePanel } from '@/lib/page-panel-request';
 
@@ -43,11 +41,9 @@ export function usePageContents({
 }): PageContents {
   const { pages } = view;
   const rows = useMemo(() => contentsRows(pages), [pages]);
-  const readTexts = useCallback(() => pageTexts(pages, tab.elements), [pages, tab.elements]);
   const contents = useSharedPageContents({
     view,
     rows,
-    readTexts,
     dropUnit: (id, drop) => contentsDropUnit(pages, id, drop),
     // Another page like the last of the tab's kind (its kind and shape; a wireframe page's device and
     // frame too): "One kind a tab". None on a tab whose first page is still blank.

@@ -49,3 +49,37 @@ describe('placeQuickStylePanel', () => {
     expect(place([], offset)).toMatchObject({ left: 112, top: 260 });
   });
 });
+
+// An editor that keeps the panel on the right (livedocuments): it never crosses to the left.
+describe('placeQuickStylePanel on the right', () => {
+  const right = (obstacles: Rect[], a = area) =>
+    placeQuickStylePanel({ area: a, panel, obstacles, gap: 12, side: 'right' });
+
+  it('sits on the right edge, vertically centred, when nothing is there', () => {
+    expect(right([])).toEqual({ left: 988, top: 250, candidate: 'centre', fallback: false });
+  });
+
+  it('ignores chrome on the left edge', () => {
+    const contents = { left: 0, top: 0, width: 236, height: 800 };
+    expect(right([contents])).toMatchObject({ left: 988, candidate: 'centre' });
+  });
+
+  it('drops below a panel docked top right, and rises above the bottom-right cluster', () => {
+    const panelTopRight = { left: 950, top: 12, width: 238, height: 300 };
+    expect(right([panelTopRight])).toMatchObject({ left: 988, top: 324, candidate: 'below' });
+    const cluster = { left: 900, top: 520, width: 288, height: 268 };
+    expect(right([cluster])).toMatchObject({ left: 988, top: 208, candidate: 'above' });
+  });
+
+  it('steps left of a tall panel filling the right edge, never to the left edge', () => {
+    const tall = { left: 950, top: 12, width: 238, height: 776 };
+    expect(right([tall])).toMatchObject({ left: 738, top: 250, candidate: 'beside' });
+    const wall = { left: 0, top: 0, width: 1200, height: 800 };
+    expect(right([wall])).toMatchObject({ left: 988, fallback: true });
+  });
+
+  it('is relative to the canvas area, not the window', () => {
+    const offset = { left: 100, top: 60, width: 1000, height: 700 };
+    expect(right([], offset)).toMatchObject({ left: 888, top: 260 });
+  });
+});

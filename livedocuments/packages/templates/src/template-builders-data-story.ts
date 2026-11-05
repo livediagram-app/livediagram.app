@@ -18,6 +18,7 @@ import type { Element, Page } from '@livedocuments/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
+import { themeGradientBackground } from './template-backgrounds';
 
 const TEAL = '#134e4a';
 const SEA = '#0d9488';
@@ -56,9 +57,8 @@ const LOANS = [
 
 const SOURCE = 'Source: Elm Street Library annual report, January 2027 · Figures rounded';
 
-const STORY_PAGE = templatePage(1, 'a4', 'portrait', 'Data Story', {
-  fill: { kind: 'gradient', from: '#f0fdfa', to: '#fff7ed', angle: 160 },
-});
+// The theme's Haze: a template's backgrounds are the theme's own (template-backgrounds).
+const STORY_PAGE = templatePage(1, 'a4', 'portrait', 'Data Story', themeGradientBackground('haze'));
 
 /** The story's page: one A4 portrait sheet on a pale teal-to-peach wash. */
 export function dataStoryPages(): Page[] {

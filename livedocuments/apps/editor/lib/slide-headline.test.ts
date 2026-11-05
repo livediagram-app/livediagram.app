@@ -3,7 +3,7 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Tab } from '@livedocuments/document';
 import { presentedSlideName, slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
 
-// docs/specs/012-collaboration/presentation-mode.md "The Slide Deck panel": a slide nobody named
+// docs/specs/012-collaboration/presentation-mode.md "The HUD": a slide nobody named
 // is called by its largest text.
 const text = (id: string, y: number, label: string, extra = {}) => ({
   id,

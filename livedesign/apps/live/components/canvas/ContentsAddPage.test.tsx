@@ -19,10 +19,10 @@ function contents(over: Partial<PageContents> = {}): PageContents {
 }
 
 describe('ContentsAddPage', () => {
-  it('adds another page like the last from Add Page', () => {
+  it('adds another page like the last, named for it (Add Logo Page)', () => {
     const c = contents();
     render(<ContentsAddPage contents={c} />);
-    fireEvent.click(screen.getByRole('button', { name: /^Add Page/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Add Logo Page/ }));
     expect(c.addLike).toHaveBeenCalled();
   });
 
@@ -48,7 +48,9 @@ describe('ContentsAddPage', () => {
 
   it('is disabled at the page limit, and shows nothing to a Participant, a Viewer or a blank tab', () => {
     render(<ContentsAddPage contents={contents({ full: true })} />);
-    expect(screen.getByRole('button', { name: /^Add Page/ }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: /^Add Logo Page/ }).hasAttribute('disabled')).toBe(
+      true,
+    );
     cleanup();
     const { container } = render(<ContentsAddPage contents={contents({ canAdd: false })} />);
     expect(container.innerHTML).toBe('');
@@ -57,10 +59,10 @@ describe('ContentsAddPage', () => {
     expect(blank.container.innerHTML).toBe('');
   });
 
-  // packages/ui Tooltip: a tooltip repeats its control's name. Add Page's said "Add Another Logo Page" while the button
+  // packages/ui Tooltip: a tooltip repeats its control's name. Add Page's said "Add Logo Page" while the button
   // was named "Add Page", and hovering it warned "[tooltip] label is not the accessible name".
   it('is named with what its tooltip says it adds', () => {
     render(<ContentsAddPage contents={contents()} />);
-    expect(screen.getByRole('button', { name: 'Add Page: Add Another Logo Page' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Add Logo Page' })).toBeTruthy();
   });
 });

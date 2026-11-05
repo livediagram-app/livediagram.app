@@ -4,7 +4,7 @@ A short, optional guided tour of one [page kind](pages-mode.md#page-kinds): a sl
 article. Like every tour it is started from the footer's **Start Pages Tour** button and never offers itself; [Show Me](show-me.md)
 runs the same track from a page's panel, and the [element tours](element-tours.md) share the button. Each kind has its own **track**, which shows how that kind of page is made by
 opening the real controls on the person's own page (a slide's Layout and Background popovers,
-the Slide Deck and Present) rather than only pointing at them: anchored step cards, a glide, a
+a page's menu in Contents and Present) rather than only pointing at them: anchored step cards, a glide, a
 dimming spotlight, Skip, Back and a closing card, driven by the tour engine every tour shares ("How a tour runs").
 
 ## Domain language
@@ -60,7 +60,7 @@ and the closing card. This tour's part:
 
 ## Tour content
 
-The tour opens popovers, the page's panel and the Slide Deck, and closes them again on leaving the step. Its
+The tour opens popovers, the page's panel and a page's menu in Contents, and closes them again on leaving the step. Its
 controls stay live: a layout or background the person picks while its step is up is theirs, kept as any pick is (one
 edit, undoable). The tour places nothing of its own.
 
@@ -68,14 +68,14 @@ edit, undoable). The tour places nothing of its own.
 
 The track's steps, then its closing card, a step card in the same popover (`TourPopover`) that sits outside the
 step count. Each
-step rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's,
+step rings one control of the tour page (or its row in Contents, or the header's Present), held by its own page rather than the first page's,
 never the whole page: a ring that size would light most of the screen, so a step about the page itself is a card
 on its own (centred, counted, no ring), and a popover step rings its title-bar button until the popover shows.
 
 Each track's cards name its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour** or **Article tour**.
 The exact strings live in `apps/editor/components/tour/<kind>-tour-steps.ts`.
 
-**A step that opens a popover** (Layout, Background, the Slide Deck) opens it once on entering, by pressing its
+**A step that opens a popover** (Layout, Background, a Contents row's menu) opens it once on entering, by pressing its
 real button, and rings it. The popover stays open while the person presses the tour's card. Picking from it closes
 it as it always does: the ring then moves to the tour page, so the person sees what they picked land; the step
 never reopens it. Leaving the step closes whatever it opened that is still open.
@@ -87,17 +87,13 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
    pictures, a pattern on top; hover to preview, press to keep it.
-3. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
-4. **Your Slide Deck** (the Slide Deck, opened from the Slides button, ringing its rows): every slide page is in the
-   deck already; drag a row to reorder, press one to go to that slide.
-5. **Each Slide's Menu** (a row's ⋯ menu, opened): speaker note cards, hide from the show, rename, duplicate.
-6. **Set Up the Show** (the deck's Presentation settings, opened): transitions and their speed, auto-advance, slide
-   size.
-7. **Present** (the deck's Present button): full screen, arrow keys to move, Escape to end.
-8. **You're ready to present** (closing card).
-
-The deck stays open from step 4 to step 7 and closes after them, however the tour leaves them
-(`holdSlideDeck` / `releaseSlideDeck`).
+3. **Add Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
+4. **Your Slides** (the tour page's row in the Contents sidebar): every slide is in the show already, in this
+   order; drag a row to move it, press one to go to that slide.
+5. **Each Slide's Menu** (the row's ⋯ menu, opened): hide a slide from the show, or present from it.
+6. **Present** (the header's Present): full screen, arrow keys to move, Escape to end. Transitions and auto-advance
+   are in Settings, under Presenting.
+7. **You're ready to present** (closing card).
 
 ### Infographic track
 
@@ -106,7 +102,8 @@ The deck stays open from step 4 to step 7 and closes after them, however the tou
 3. **Change the Background** (the Background popover, opened).
 4. **Page Size** (the page's panel, opened on Page): size and orientation; duplicate, move or delete below.
 5. **Add a Page** (the +).
-6. **Present It** (the Slide Deck, opened): any page can be a slide, picked in the deck and presented.
+6. **Present It** (the tour page's ⋯ menu in Contents, opened): Add to Slides puts any page in the show, and
+   Present runs it.
 7. **You're ready to make pages** (closing card).
 
 ### Article track
@@ -121,8 +118,8 @@ The deck stays open from step 4 to step 7 and closes after them, however the tou
 
 ### Filtering
 
-- A step whose control is not on screen when the tour starts (the Slides button on a
-  phone; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
+- A step whose control is not on screen when the tour starts (the Contents sidebar while it is minimised, or on a
+  phone; the header's Present while the deck has nothing to show; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
   turn is skipped ("Mechanics").
 - If the tour can no longer run where it started (the person's edit rights go, they open another tab, or the tour page is deleted or locked) it ends as skipped, closing whatever it opened.
 

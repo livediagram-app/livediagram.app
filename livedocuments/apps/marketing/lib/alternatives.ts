@@ -58,7 +58,6 @@ const LIST: Alternative[] = [
       'Any page can be a slide, from any tab, ordered in one deck that is saved with the document.',
       'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
-      'Put another tab on a slide, live: a tab window shows it as it is now, so the slide follows every change.',
       'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
@@ -70,7 +69,7 @@ const LIST: Alternative[] = [
         heading: 'Slides from ready-made layouts',
         paragraphs: [
           'In Google Slides a deck is its own file, built slide by slide. In livedocuments a slide is a page: add a 16:9 or 4:3 slide page and start it from one of 61 layouts (a title, an agenda, two columns, image and text, a timeline and more), painted from your theme. Change the theme and every slide follows.',
-          'A slide sits in a deck you order in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week. Any other page can join the deck too, so a poster or a page of an article can be presented as it is. A tab window puts another tab on a slide, live, fitted to its frame.',
+          'A slide sits in a deck you order in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week. Any other page can join the deck too, so a poster or a page of an article can be presented as it is.',
         ],
       },
       {

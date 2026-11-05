@@ -9,7 +9,6 @@ import {
   lucideFolder,
   lucideGitCommitHorizontal,
   lucideLayoutGrid,
-  lucideLink,
   lucideLocateFixed,
   lucideMagnet,
   lucidePanelLeft,
@@ -246,16 +245,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M10.25 10.5v6.5M7.75 14.5l2.5 2.5 2.5-2.5" />
     </Glyph>
   ),
-  // A slide with a window onto a small diagram: another tab shown live inside it.
-  'tab-windows': (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
-      <rect x="6.5" y="8" width="11" height="8" rx="1" />
-      <circle cx="9.5" cy="12" r="1.25" />
-      <circle cx="14.5" cy="12" r="1.25" />
-      <path d="M10.75 12h2.5" />
-    </Glyph>
-  ),
   'using-tabs': (
     <Glyph>
       <Prims prims={lucidePanelsTopLeft} />
@@ -270,12 +259,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" />
       <circle cx="18" cy="6" r="2.5" />
-    </Glyph>
-  ),
-  links: (
-    <Glyph>
-      <path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.5 1.5" />
-      <path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 19" />
     </Glyph>
   ),
   images: (
@@ -857,14 +840,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4.5 6.5v-2h2M4.5 12.5v-2h2M4.5 18.5v-2h2" />
     </Glyph>
   ),
-  notes: (
-    <Glyph>
-      <rect x="3" y="4" width="11" height="11" rx="1.5" />
-      <path d="M6 8h5M6 11h3" />
-      <rect x="11" y="12" width="10" height="8" rx="1.5" />
-      <path d="M14 15.5h4M14 18h2.5" />
-    </Glyph>
-  ),
   'layer-order': (
     <Glyph>
       <rect x="4" y="4" width="12" height="6" rx="1.5" />
@@ -1053,11 +1028,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M3 7a2 2 0 0 1 2-2h3l2 2h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <path d="M3 11h18" />
-    </Glyph>
-  ),
-  'linking-tabs': (
-    <Glyph>
-      <Prims prims={lucideLink} />
     </Glyph>
   ),
   'add-to-document': (

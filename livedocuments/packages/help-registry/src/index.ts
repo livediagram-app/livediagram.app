@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Pages',
     description:
       'Build documents out of pages: articles, slide decks and infographics, with layouts, backgrounds and exports.',
-    articleCount: 8,
+    articleCount: 7,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
   },
@@ -145,7 +145,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Work with what is on your pages: place, select, link, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 22,
+    articleCount: 20,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements', 'Layers and Locking'],
   },
@@ -154,7 +154,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one document: organise, link, and move between tabs of pages.',
-    articleCount: 9,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -845,7 +845,7 @@ export const articles: Article[] = [
     title: 'Slide Deck',
     description: 'Turn your pages into a deck: each slide is a page, presented full screen.',
     keywords:
-      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
+      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides contents add to slides pages spans tabs one tab at a time',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -855,7 +855,7 @@ export const articles: Article[] = [
     description:
       'Everything you do to a deck before you present it: slides, order, hiding and notes.',
     keywords:
-      'build deck new slide add remove elements selection membership rename duplicate copy slide delete confirm hide hidden slide skip struck through eye reorder drag order presenter notes script speaker notes budget minutes timing per slide pace slide menu ellipsis',
+      'build deck contents add to slides add page slide page infographic article hide in slides show in slides hidden slide skip veil present from here start from slide reorder drag order page order speaker notes presenter notes note cards script page menu ellipsis right click',
     category: 'Selection Modes',
     categorySlug: 'selection-modes/slide-deck',
     parentSlug: 'slide-deck',
@@ -1216,16 +1216,6 @@ export const articles: Article[] = [
     group: 'Basics',
   },
   {
-    slug: 'tab-windows',
-    title: 'Tab Windows',
-    description: 'Another tab, live, fitted inside a slide or page.',
-    keywords:
-      'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
-    category: 'Pages',
-    categorySlug: 'pages',
-    group: 'Basics',
-  },
-  {
     slug: 'flashcards',
     title: 'Flashcards',
     description: 'A stack of small text cards to speak from, flipped one at a time.',
@@ -1260,15 +1250,6 @@ export const articles: Article[] = [
     title: 'Tab Folders',
     description: 'Group related tabs under one named folder chip on the tab bar.',
     keywords: 'group tabs organise organize collapse nest sections fan chip',
-    category: 'Tabs',
-    categorySlug: 'tabs',
-  },
-  {
-    slug: 'linking-tabs',
-    title: 'Linking Across Tabs',
-    description:
-      'Turn an element into a jump point to another tab, another document, or a web address.',
-    keywords: 'jump navigation cross reference hyperlink go to connect',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1351,17 +1332,6 @@ export const articles: Article[] = [
       'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus',
     category: 'Collaboration',
     categorySlug: 'collaboration',
-  },
-  {
-    slug: 'links',
-    title: 'Links',
-    description:
-      'Make a shape, text, sticky note, image or table a link to another tab, document or the web.',
-    keywords:
-      'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Basics',
   },
   {
     slug: 'explorer-page',
@@ -1585,17 +1555,6 @@ export const articles: Article[] = [
     keywords: 'tidy align arrange auto grid organise organize straighten',
     category: 'Tools',
     categorySlug: 'tools',
-  },
-  {
-    slug: 'notes',
-    title: 'Notes',
-    description:
-      'Attach a longer written note to any element, formatted and out of sight until opened.',
-    keywords:
-      'note notes memo remark caveat detail context description rich text formatting bold italic underline heading bullet numbered list link popover badge resources',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Text and Notes',
   },
   {
     slug: 'layer-order',

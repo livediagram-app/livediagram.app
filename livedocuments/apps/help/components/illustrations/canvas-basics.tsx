@@ -257,7 +257,7 @@ function TabStylePanel({
 
 /** The canvas with the menu button and tab name top-left, the palette strip across the top
  *  (the selection mode, the category bar and Search) and the bottom-right
- *  cluster (Undo and Redo, Layers beside the Theme & canvas paintbrush, then the zoom controls). */
+ *  cluster (Undo and Redo, Layers, then the zoom controls). */
 export function CanvasPaletteOverview() {
   const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   return (
@@ -269,7 +269,7 @@ export function CanvasPaletteOverview() {
       <Shape x={168} y={146} w={76} h={36} accent label="Done" />
       <Arrow from={[136, 93]} to={[176, 93]} />
       <Arrow from={[206, 120]} to={[206, 146]} />
-      {/* Bottom-right cluster: Undo and Redo, Layers and the paintbrush, then the zoom controls. */}
+      {/* Bottom-right cluster: Undo and Redo, Layers, then the zoom controls. */}
       <rect
         x={150}
         y={198}
@@ -285,26 +285,19 @@ export function CanvasPaletteOverview() {
       <rect
         x={218}
         y={198}
-        width={66}
+        width={33}
         height={30}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <line x1={251} y1={204} x2={251} y2={222} className="stroke-slate-200" strokeWidth={1.2} />
       <path
         d="M228 211 L235 208 L242 211 L235 214 Z M228 215 L235 218 L242 215"
         {...ink}
         strokeLinejoin="round"
       />
-      <path
-        d="M260 220 c3 0 4 -2 4 -4 l7 -9 a2 2 0 0 1 3 2 l-8 8 c0 2 -2 3 -6 3 Z"
-        className="fill-brand-400 stroke-slate-500"
-        strokeWidth={1.2}
-        strokeLinejoin="round"
-      />
       <rect
-        x={292}
+        x={259}
         y={198}
         width={114}
         height={30}
@@ -312,13 +305,13 @@ export function CanvasPaletteOverview() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={310} y={214} anchor="middle" size={14} weight={700} tone="muted">
+      <Label x={277} y={214} anchor="middle" size={14} weight={700} tone="muted">
         −
       </Label>
-      <Label x={349} y={214} anchor="middle" size={11} weight={600} tone="body">
+      <Label x={316} y={214} anchor="middle" size={11} weight={600} tone="body">
         100%
       </Label>
-      <Label x={388} y={214} anchor="middle" size={14} weight={700} tone="muted">
+      <Label x={355} y={214} anchor="middle" size={14} weight={700} tone="muted">
         +
       </Label>
     </Scene>

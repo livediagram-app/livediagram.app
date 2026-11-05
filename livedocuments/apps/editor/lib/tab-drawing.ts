@@ -1,10 +1,8 @@
-// A tab drawn where it is shown away from its own canvas (docs/specs/009-elements/tab-window.md "The drawing",
-// docs/specs/007-editor/split-view.md "The other pane"): its pages where they lie on the canvas, each as its page
-// export draws it, else its canvas (renderTabToSvg). Shared by useTabSvg (a tab window, the split view's other pane and
-// its drop preview) and a window in an export (tabWindowArts), so each draws a tab the same way.
+// A tab drawn where it is shown away from its own canvas (docs/specs/007-editor/split-view.md "The other pane"): its
+// pages where they lie on the canvas, each as its page export draws it, else its canvas (renderTabToSvg). Shared by
+// useTabSvg (the split view's other pane and its drop preview), so each draws a tab the same way.
 import {
   endpointPosition,
-  exportFontIds,
   laidOutPagesOf,
   pagesWithWriting,
   prefixSvgIds,
@@ -15,7 +13,6 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@livedocuments/document';
-import { pageWritingFonts } from './article/article-export';
 import { renderTabToSvg, type ImageExportOpts } from './export-tab';
 
 const SVG_OPEN = '<svg xmlns="http://www.w3.org/2000/svg" ';
@@ -115,11 +112,4 @@ function keepEnds(
     keep.add(id);
     if (target.type === 'arrow') keepEnds(target, byId, keep, depth + 1);
   }
-}
-
-/** The typefaces the drawing of this tab writes in: its elements', and its pages' writing. */
-export function tabDrawingFontIdsOf(tab: Tab): string[] {
-  const ids = new Set(exportFontIds(tab.elements, tab.font, tab.finish));
-  for (const page of laidOutPagesOf(tab)) for (const id of pageWritingFonts(tab, page)) ids.add(id);
-  return [...ids];
 }

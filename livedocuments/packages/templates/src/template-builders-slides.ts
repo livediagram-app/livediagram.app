@@ -10,6 +10,7 @@ import type { Kit } from './page-layout-kit';
 import { slideType } from './slide-layouts';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { pageKits, templateSlidePage } from './template-page-kit';
+import { themeGradientBackground } from './template-backgrounds';
 
 // Slide deck: the arc every good deck follows (title, problem, solution, traction, team, the ask)
 // for a made-up start-up, Relay, which lets hospital nurses swap shifts in one tap. Each slide is
@@ -54,13 +55,10 @@ const SLIDES: Slide[] = [
   },
 ];
 
-// The title slide's dark gradient (light ink on it) and the ask's light one.
-const TITLE_BACKGROUND = {
-  fill: { kind: 'gradient' as const, from: '#1e1b4b', to: '#4c1d95', angle: 160 },
-};
-const ASK_BACKGROUND = {
-  fill: { kind: 'gradient' as const, from: '#e0f2fe', to: '#ede9fe', angle: 160 },
-};
+// The title slide's dark gradient (light ink on it) and the ask's light one: the theme's Dusk and
+// Haze, so they follow the theme (template-backgrounds).
+const TITLE_BACKGROUND = themeGradientBackground('dusk');
+const ASK_BACKGROUND = themeGradientBackground('haze');
 
 /** The deck's pages: one slide page (16:9) per slide. */
 export function slideDeckPages(): Page[] {

@@ -58,7 +58,9 @@ width counts the targets, their gaps, 8 px of padding a side and a 1 px border a
 
 Never over the other chrome (panels, the Contents panel, popovers, the Toolbar strip and
 its More popover, the bottom-right cluster). The placement tries fixed candidate spots in order and
-takes the first that overlaps none of them:
+takes the first that overlaps none of them. The bottom-right cluster counts by its strips, not its row: beside a
+docked Contents sidebar the row reaches left to the sidebar (so it can wrap upward short of it) while its strips sit at
+the right, and the empty row is no obstacle:
 
 1. the left edge, centred;
 2. the left edge, just below an obstacle on that edge (the Explorer), the highest spot first;

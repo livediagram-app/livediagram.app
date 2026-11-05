@@ -5,6 +5,7 @@
 
 import type { EditRejection } from '@livedocuments/api-schema';
 import {
+  RETIRED_SHAPE_KINDS,
   SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
   coerceShapeKind,
@@ -12,7 +13,11 @@ import {
   createShape,
   createSticky,
   createTable,
-  createText,
+  createPresetText,
+  DEFAULT_TEXT_PRESET,
+  labelTextScale,
+  TEXT_PRESETS,
+  textBoxFor,
   kindWordOf,
   LABEL_FONT_PX,
   labelBoxSize,
@@ -44,7 +49,9 @@ export const NOT_ADDED: Readonly<Record<string, string>> = {
 };
 
 const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
-  text: () => createText(0, 0),
+  // The Write palette's Paragraph, left aligned, top first, as every text the editor makes (EO28); a `set` field
+  // overrides any of it.
+  text: () => createPresetText(0, 0, DEFAULT_TEXT_PRESET),
   sticky: () => createSticky(0, 0),
   table: () => createTable(0, 0),
   'link-card': () => createLinkCard(0, 0),
@@ -60,8 +67,12 @@ export type Built = { el: BoxedElement; coerced: string | null };
 export function buildKind(kind: string): Built | { refusal: string } {
   const refused = NOT_ADDED[kind];
   if (refused !== undefined) return { refusal: refused };
+  // A retired kind (a tab window, docs/specs/009-elements/tab-window.md): stored ones load, nothing makes one.
+  if (RETIRED_SHAPE_KINDS.has(kind)) return { refusal: 'tab windows are retired' };
   const factory = FACTORIES[kind];
-  if (factory) return { el: { ...factory(), textSize: 'sm' }, coerced: null };
+  // A text keeps its Paragraph size; the others take a diagram label's small one.
+  if (factory)
+    return { el: kind === 'text' ? factory() : { ...factory(), textSize: 'sm' }, coerced: null };
   const shape = kind === 'shape' ? 'square' : coerceShapeKind(kind);
   return {
     el: { ...createShape(shape, 0, 0), textSize: 'sm' },
@@ -129,6 +140,11 @@ export function createKind(
   if ('code' in written) return { rejection: written };
   const named = spec.fields ?? {};
   let el = paint(written.next, state.theme);
+  if (el.type === 'text' && !('width' in named) && !('height' in named)) {
+    // Boxed for its words at the size they draw at, wrapping at a paragraph's width (EO28).
+    const px = labelFontPx(el.textSize) * labelTextScale(el);
+    el = { ...el, ...textBoxFor(el.label, px, TEXT_PRESETS[DEFAULT_TEXT_PRESET].wrapWidth) };
+  }
   if (el.type === 'shape' && !('width' in named) && !('height' in named)) {
     // A new box matches its siblings (docs/specs/024-agents/edit-operations.md "Layout on edit"): the text size most
     // boxes of its shape on the tab wear, and at least their usual size, so a step added to a drawn flow is not a

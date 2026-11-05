@@ -3,7 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 import { track } from '@/lib/telemetry';
-import { finishFlip, flipCard, motionReduced, pictureCard } from './flashcard-flip';
+import {
+  FLASHCARD_FLIP_MS,
+  finishFlip,
+  flipCard,
+  motionReduced,
+  pictureCard,
+} from './flashcard-flip';
 
 // docs/specs/007-editor/flashcards.md "Flipping".
 const a = { id: 'a', rect: { x: 0, y: 0, width: 900, height: 540 }, flow: 'fa' };
@@ -80,19 +86,22 @@ describe('the flip', () => {
     expect(flips()).toHaveLength(0);
   });
 
-  it('back: brings the earlier card over the one that was in front', () => {
+  // flashcards.md "Only the card leaving moves": the card now in front is the real one, its writing on throughout.
+  it('back: only the card leaving moves, sinking away, never a picture of the card coming in', () => {
     world();
     flipCard(pictureCard(b), a, false, false);
-    expect(flips()).toHaveLength(2);
-    expect(animations[0]!.keyframes[0]!.opacity).toBe(0);
-    expect(animations[0]!.keyframes[1]!.opacity).toBe(1);
+    expect(flips()).toHaveLength(1);
+    expect(animations).toHaveLength(1);
+    expect(animations[0]!.keyframes[0]!.opacity).toBe(1);
+    expect(animations[0]!.keyframes[1]!.opacity).toBe(0);
+    expect(String(animations[0]!.keyframes[1]!.transform)).toContain('rotateX(-10deg)');
   });
 
-  it('back without a picture of the earlier card turns the old one away', () => {
+  it('forward lifts the leaving card a little, quickly: a small tilt, never a big turn', () => {
     world();
-    flipCard(pictureCard(b), { ...a, id: 'gone' }, false, false);
-    expect(flips()).toHaveLength(1);
-    expect(animations[0]!.keyframes[1]!.opacity).toBe(0);
+    flipCard(pictureCard(a), b, true, false);
+    expect(String(animations[0]!.keyframes[1]!.transform)).toContain('rotateX(14deg)');
+    expect(FLASHCARD_FLIP_MS).toBeLessThanOrEqual(250);
   });
 
   it('finishes a flip under way before the next', () => {
@@ -100,10 +109,11 @@ describe('the flip', () => {
     flipCard(pictureCard(a), b, true, false);
     flipCard(pictureCard(b), a, false, false);
     expect(animations[0]!.cancel).toHaveBeenCalled();
-    expect(flips()).toHaveLength(2);
+    // The first's picture gone, the second's (the card leaving) alone.
+    expect(flips()).toHaveLength(1);
     // The first's own end, late, takes nothing of the second's away.
     animations[0]!.onfinish!();
-    expect(flips()).toHaveLength(2);
+    expect(flips()).toHaveLength(1);
   });
 
   it('draws nothing under reduced motion or without a picture', () => {

@@ -19,18 +19,18 @@ function contents(over: Partial<PageContents> = {}): PageContents {
 }
 
 describe('ContentsAddPage', () => {
-  it('adds another page like the last from Add Page', () => {
+  it('adds another page like the last, named for it (Add Slide on a deck)', () => {
     const c = contents();
     render(<ContentsAddPage contents={c} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Slide' }));
     expect(c.addLike).toHaveBeenCalled();
   });
 
   // docs/specs/007-editor/flashcards.md "Contents".
-  it('reads Add Another Card on a stack of flashcards', () => {
+  it('reads Add Card on a stack of flashcards', () => {
     const c = contents({ lastPage: { id: 'c', kind: 'flashcard' } as PageContents['lastPage'] });
     render(<ContentsAddPage contents={c} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add Another Card' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
     expect(c.addLike).toHaveBeenCalled();
   });
 
@@ -42,7 +42,7 @@ describe('ContentsAddPage', () => {
 
   it('is disabled at the page limit, and shows nothing to a Participant or a Viewer', () => {
     render(<ContentsAddPage contents={contents({ full: true })} />);
-    expect(screen.getByRole('button', { name: 'Add Page' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: /^Add Slide/ }).hasAttribute('disabled')).toBe(true);
     cleanup();
     const { container } = render(<ContentsAddPage contents={contents({ canAdd: false })} />);
     expect(container.innerHTML).toBe('');

@@ -1,5 +1,6 @@
 // An element's indicators (docs/specs/008-canvas/element-indicators.md), worked out for
-// BoxedElementView: which indicators it carries (link, note, open action, unresolved comments),
+// BoxedElementView: which indicators it carries (open action, unresolved comments; element links and notes are
+// retired, docs/specs/009-elements/links-and-notes-retired.md, so a stored one shows nothing),
 // what each opens, and where the cluster and the content go. Its own hook so
 // the element view only wires the result in.
 import {
@@ -12,7 +13,6 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livedocuments/document';
-import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
@@ -23,10 +23,7 @@ import {
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
-type Handlers = Pick<
-  BoxedElementViewProps,
-  'onFollowLink' | 'onOpenComments' | 'onOpenAction' | 'onOpenNote' | 'tabSummaries'
->;
+type Handlers = Pick<BoxedElementViewProps, 'onOpenComments' | 'onOpenAction'>;
 
 /** The element's indicator items, from its state and the view's handlers. Pure. */
 export function elementIndicatorItems(
@@ -38,21 +35,11 @@ export function elementIndicatorItems(
 ): IndicatorItem[] {
   // A margin note shows its count and action on its own face.
   if (element.type === 'article-note') return [];
-  const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
-  // A link card IS its link. A done action stops showing.
-  const link =
-    element.type !== 'link-card' &&
-    element.link &&
-    (element.link.kind === 'tab' || element.link.kind === 'document' || element.link.kind === 'url')
-      ? element.link
-      : undefined;
+  const { onOpenComments, onOpenAction } = handlers;
+  // A done action stops showing.
   const assignee = isOpenAction(element.action) ? element.action?.assignee : undefined;
   const assigneeName = assignee?.name?.trim() || 'a teammate';
   return buildIndicatorItems({
-    link: link
-      ? { onFollow: () => onFollowLink(link), destination: describeLink(link, tabSummaries) }
-      : undefined,
-    note: element.note && onOpenNote ? () => onOpenNote(element.id) : undefined,
     action: assignee
       ? {
           onOpen: () => onOpenAction(element.id),

@@ -24,8 +24,12 @@ describe('test', () => {
   });
 
   it('holds key= when the field is absent, and not when present', () => {
-    expect(applied(run('test n3 note='))).toBeTruthy();
-    expect(applied(run('test n3 label=Login note= fill='))).toBeTruthy();
+    expect(applied(run('test n3 opacity='))).toBeTruthy();
+    expect(applied(run('test n3 label=Login opacity= fill='))).toBeTruthy();
+    // A retired element note (docs/specs/009-elements/links-and-notes-retired.md) is not a field to test.
+    expect(refused(run('test n3 note=')).details).toEqual([
+      'note=null: element links and notes are retired',
+    ]);
     expect(refused(run('test n3 label=')).details).toEqual([
       'n3 label: expected (none), actual "Login"',
     ]);

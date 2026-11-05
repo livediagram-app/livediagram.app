@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { POPULAR_TEMPLATE_KINDS, stepPopularKinds } from './popular';
+import { POPULAR_TEMPLATE_KINDS } from './popular';
 import { BLANK_TEMPLATE } from './template-modes';
 import { TEMPLATES } from './templates';
 
@@ -7,8 +7,8 @@ import { TEMPLATES } from './templates';
 describe('Popular', () => {
   const kinds = new Set(TEMPLATES.map((t) => t.kind));
 
-  it('gives each shelf a short list, Blank Illustration first, each once, every kind real', () => {
-    for (const list of [POPULAR_TEMPLATE_KINDS, stepPopularKinds()]) {
+  it('is a short list, Blank Illustration first, each once, every kind real', () => {
+    for (const list of [POPULAR_TEMPLATE_KINDS]) {
       expect(list.length).toBeGreaterThanOrEqual(5);
       expect(list.length).toBeLessThanOrEqual(13);
       expect(new Set(list).size).toBe(list.length);

@@ -37,14 +37,6 @@ export const FOLDERS_RENAMED = chart(
   'A folder of tab pills renamed inside one document.',
 );
 
-export const NOTES_DELETED = chart(
-  'Note',
-  'Deleted',
-  'Notes Deleted',
-  'A note cleared from an element.',
-  { rising: 'neutral' },
-);
-
 export const ACTIONS_EDITED = chart(
   'Action',
   'Changed',
@@ -106,15 +98,6 @@ export const LAYERS_MERGED = chart(
   { types: ['MergedDown', 'MergedUp'] },
 );
 
-export const NOTES_EDITED = chart('Note', 'Changed', 'Notes Edited', 'A written note changed.');
-
-export const NOTE_FORMATTING = chart(
-  'Note',
-  'Used',
-  'Note Formatting',
-  'Rich-text formatting used inside a note.',
-);
-
 export const TABS_UNFILED = chart(
   'Tab',
   'Removed',
@@ -167,7 +150,7 @@ export const PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Pages Set Up',
-  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
+  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), a page locked or unlocked, or a tab's pages stacked or set side by side.",
   {
     types: [
       'PageSize',
@@ -181,6 +164,8 @@ export const PAGE_SETUP = chart(
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
+      'PagesStacked',
+      'PagesSideBySide',
     ],
   },
 );
@@ -214,13 +199,23 @@ export const FLASHCARD_FLIPS = chart(
   { types: ['FlashcardFlip'], rising: 'neutral' },
 );
 
-// Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
-export const TAB_WINDOW_USE = chart(
+// A stack's Previous or Next pressed under its page in front (docs/specs/007-editor/flashcards.md "Getting around a
+// stack").
+export const STACK_NAV = chart(
   'UI',
   'Used',
-  'Tab Windows Opened',
-  'A tab opened from a Tab Window showing it, on a slide or page.',
-  { types: ['TabWindowOpen'], rising: 'neutral' },
+  'Stack Turns',
+  "A stack of flashcards or infographic pages turned to the previous or next page from the page in front's own Previous and Next.",
+  { types: ['StackNav'], rising: 'neutral' },
+);
+
+// Print (docs/specs/020-import-export/print.md): Export's Print, the scope in the type.
+export const PRINTS = chart(
+  'UI',
+  'Used',
+  'Prints',
+  'Pages printed from Export: the page in view, or the whole document.',
+  { types: ['PrintPage', 'PrintDocument'], rising: 'good' },
 );
 
 // Building pages: a layout placed, a page duplicated or moved.
@@ -330,7 +325,8 @@ export const PAGE_WORK: MetricStack = {
     PAGE_CONTENTS_JUMPS,
     PAGE_SWIPES,
     FLASHCARD_FLIPS,
-    TAB_WINDOW_USE,
+    STACK_NAV,
+    PRINTS,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
@@ -404,22 +400,6 @@ export const LAYERS_FEATURE: MetricStack = {
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
 // different subjects: see the type note in docs/specs/017-telemetry/telemetry.md's Folder entry.
-
-export const NOTES_ADDED: Metric = {
-  category: 'Note',
-  action: 'Added',
-  type: null,
-  title: 'Notes Added',
-  blurb: "An element's note went from empty to written.",
-};
-
-export const NOTES_OPENED: Metric = {
-  category: 'Note',
-  action: 'Opened',
-  type: null,
-  title: 'Notes Opened',
-  blurb: 'The note popover was opened, to read as well as to write.',
-};
 
 export const ACTIONS_ASSIGNED: Metric = {
   category: 'Action',
@@ -514,14 +494,6 @@ export const TABS_FILED: Metric = {
   title: 'Tabs Filed',
   blurb:
     'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
-};
-
-export const NOTES: MetricStack = {
-  stack: true,
-  title: 'Notes',
-  blurb: 'Notes written on elements, and opened to read or edit.',
-  members: [NOTES_ADDED, NOTES_OPENED, NOTES_DELETED, NOTES_EDITED, NOTE_FORMATTING],
-  headline: NOTES_ADDED,
 };
 
 export const ASSIGNED_ACTIONS: MetricStack = {
@@ -814,10 +786,10 @@ export const NEW_VERSION_OFFERED = opened(
   (t) => t === 'NewVersionPrompt',
 );
 
-export const SLIDE_DECK_OPENED = opened(
-  'Slide Deck Opened',
-  'The Slide Deck panel or presentation settings opened.',
-  (t) => t === 'SlideDeck' || t === 'PresentationSettings',
+export const PRESENTATION_SETTINGS_OPENED = opened(
+  'Presentation Settings Opened',
+  "The settings on a presentation's on-screen controls opened, while presenting.",
+  (t) => t === 'PresentationSettings',
 );
 
 export const EXPLORER_REASONS_OPENED = opened(

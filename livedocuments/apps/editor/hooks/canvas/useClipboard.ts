@@ -51,6 +51,7 @@ import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { DROP_NOT_AN_IMAGE, dropImportHint } from '@/lib/drop-import-hint';
+import { importFormatsFor } from '@/lib/import-formats';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Whether a paste carries something for the canvas rather than words: a file, or elements copied here (their JSON or
@@ -285,8 +286,8 @@ export function useClipboard(deps: ClipboardDeps) {
   // does; a file Import reads is pointed at Import; anything else is not something the canvas takes, and says so.
   const dropBoardFile = (file: File, at: { x: number; y: number }) => {
     if (isReadOnly) return;
-    // A Markdown file or a JSON export replaces the tab through Import, and is told so.
-    const importHint = dropImportHint(file);
+    // A Markdown file or a JSON export replaces the tab through Import, and is told so (or which tabs take it).
+    const importHint = dropImportHint(file, importFormatsFor(activeTab));
     if (importHint) return toast.info(importHint);
     if (file.type.startsWith('image/')) return void pasteImageFile(file, at);
     toast.info(DROP_NOT_AN_IMAGE);

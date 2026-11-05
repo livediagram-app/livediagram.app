@@ -25,7 +25,7 @@ theirs without adding a settings screen.
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas, so a keyboard user in a popover's field can always leave it. **Zen mode** ([Zen mode](zen-mode.md)) still hides
   all chrome; while it is on the docking system is inert.
 - **Participating panels:** Minimap and the tool panels (Laser, Spotlight,
-  Format, Slide Deck), every corner panel built on the shared `MovablePanel`.
+  Format), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; zen mode and
   the body-height measurement both rely on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, `apps/editor/lib/panel-layout.ts`) so a panel
@@ -55,7 +55,7 @@ When the user has never arranged panels, the corners match today's defaults:
 | `bottom-left`  | Minimap                                                   |
 | `bottom-right` | Tool panels, above the bottom cluster (zoom controls pin) |
 
-The tool panels (Laser, Spotlight, Format, Slide Deck) open bottom-right, stacked
+The tool panels (Laser, Spotlight, Format) open bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.

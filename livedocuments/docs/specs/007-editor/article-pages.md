@@ -213,9 +213,9 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
 - **Controls**, left to right, each with a tooltip naming it and its shortcut, pressed state shown
   (`aria-pressed`); the formats used all the time are buttons, the rest menus:
   - **Style** (a menu, each entry drawn in its own type: Text, Title, Subtitle, Heading 1, Heading
-    2, Heading 3, Quote, Code); on a phone its button names the style short (H1, H2, H3, and
-    Bullets, Numbers, To-do for a list) and is only as wide as the name shown, the menu keeping
-    the full names;
+    2, Heading 3, Quote, Code); its button is only as wide as the name it shows, on every screen
+    (no fixed width: "Text" leaves no gap after it), and on a phone it names the style short (H1,
+    H2, H3, and Bullets, Numbers, To-do for a list), the menu keeping the full names;
   - **Bold**, **Italic**, **Underline**;
   - **Colour** (a menu holding two colour pickers, each under its name on screen (**Text Colour**, then
     **Highlight** below a rule), so their two Theme Palettes read apart,

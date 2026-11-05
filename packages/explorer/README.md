@@ -220,9 +220,9 @@ host trashes the item open in its editor itself, from any of the panel's menus o
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
 follows), and the same optional props as `<Explorer>`.
 
-Its size: `EXPLORER_POPOVER_WIDTH` (`w-[64rem]`) and `EXPLORER_POPOVER_HEIGHT` (`56rem`) are the editors' popover,
+Its size: `EXPLORER_POPOVER_WIDTH` (`w-[54rem]`) and `EXPLORER_POPOVER_HEIGHT` (`45rem`) are the editors' popover,
 passed to each editor's movable panel so the size lives once. In it the rail is 13rem and the pane's preview cards
-(Jump Back In, up to eight, and folders) are compact: two across, three from a 24rem pane, four from 42rem
+(Jump Back In, up to eight, and folders) are compact: two across, three from a 24rem pane, four from 44rem (so in the 54rem popover, whose pane is about 40rem, three: each card keeps room for its name and its "This Browser" chip with the time beside it)
 (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the scrim"). Each card's picture
 is the host's `renderThumbnail`, which should load only once it scrolls into view, as every editor's does.
 

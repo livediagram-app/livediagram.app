@@ -354,8 +354,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Stack (docs/specs/009-elements/stack.md): a Build container.
     'Stack',
     'Checklist',
-    // Tab window (docs/specs/009-elements/tab-window.md).
-    'TabWindow',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',

@@ -184,6 +184,28 @@ describe('adding', () => {
     ...extra,
   });
 
+  // pages-mode.md "Adding a page": right after the person's current page, else after the last.
+  it('adds right after the page named, its neighbours’ content staying on them', () => {
+    const pages = [logo('l1'), logo('l2'), logo('l3')];
+    const on3 = onPage(pages, 2, 'on3');
+    const out = ok(pageAdded(tabOf(pages, [on3]), 'logo', 'n', undefined, undefined, 'l1'));
+    expect(pagesOf(out).map((p) => p.id)).toEqual(['l1', 'n', 'l2', 'l3']);
+    expect(out.elements[0]).toEqual(onPage(pagesOf(out), 3, 'on3'));
+    // Unknown or none: after the last.
+    const tab = tabOf([logo('l1'), logo('l2')]);
+    expect(
+      pagesAfter(pageAdded(tab, 'logo', 'n', undefined, undefined, 'gone')).map((p) => p.id),
+    ).toEqual(['l1', 'l2', 'n']);
+  });
+
+  it('adds a screen like another right after it, wearing that page’s background', () => {
+    const fill = { kind: 'solid' as const, color: '#fde68a' };
+    const tab = tabOf([screen('s1', { background: { fill } }), screen('s2'), screen('s3')]);
+    const out = pagesAfter(pageAddedLike(tab, 's1', 'n', 's1'));
+    expect(out.map((p) => p.id)).toEqual(['s1', 'n', 's2', 's3']);
+    expect(out[1]!.background).toEqual({ fill });
+  });
+
   it('adds a logo page as the artboard, after the last', () => {
     const out = pagesAfter(pageAdded(tabOf([logo('p')]), 'logo', 'n'));
     expect(out.map((p) => p.id)).toEqual(['p', 'n']);

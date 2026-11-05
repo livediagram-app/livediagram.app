@@ -50,8 +50,8 @@ export type ShapeKind =
   | 'process'
   // Header: a website header bar, logo + brand (the label) + `navLinks`.
   | 'site-header'
-  // Tab window (docs/specs/009-elements/tab-window.md): another tab of the document drawn live inside it, fitted;
-  // which tab lives in `windowTabId`.
+  // Tab window (docs/specs/009-elements/tab-window.md, retired): stored ones load as a frame named for the tab in
+  // `windowTabId`; nothing makes one.
   | 'tab-window'
   | 'stadium'
   | 'cloud'

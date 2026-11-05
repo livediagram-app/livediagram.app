@@ -555,14 +555,17 @@ const LocalCard = memo(function LocalCard({
       attrs={{ 'data-this-browser-card': '' }}
       large={large}
       app={showApp ? app : null}
-      thumb={<LocalPreview app={app} iconSize={large ? 28 : 18} className="h-full w-full" />}
-      name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
-      line={
-        <span className="flex min-w-0 items-center gap-1.5">
-          <ThisBrowserPill inLink />
-          <OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />
+      // The pill on the picture's corner, as the editors' panel has it, so the line keeps its width.
+      thumb={
+        <span className="relative block h-full w-full">
+          <LocalPreview app={app} iconSize={large ? 28 : 18} className="h-full w-full" />
+          <span className="absolute left-1.5 top-1.5">
+            <ThisBrowserPill inLink />
+          </span>
         </span>
       }
+      name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
+      line={<OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />}
       link={(className, body) => (
         <a href={host?.itemHref(item)} aria-label={title} className={className}>
           {body}

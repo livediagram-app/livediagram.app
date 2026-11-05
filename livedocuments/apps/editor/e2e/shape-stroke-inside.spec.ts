@@ -12,6 +12,24 @@ const MARGIN_PX = 6;
 // Summed RGB difference that counts as ink.
 const INK_THRESHOLD = 24;
 
+// The page snap waits for the view to rest VIEW_REST_MS (250 ms, hooks/editor/usePageSnap.ts) before it glides; the
+// page sheet read twice further apart than that, and unmoved, has no glide to come or under way.
+async function viewAtRest(page: Page): Promise<void> {
+  const sheet = page.locator('[data-page-id]').first();
+  let last = '';
+  await expect
+    .poll(
+      async () => {
+        const now = JSON.stringify(await sheet.boundingBox());
+        const still = now === last;
+        last = now;
+        return still;
+      },
+      { intervals: [400] },
+    )
+    .toBe(true);
+}
+
 async function inkOutsideBox(page: Page, element: Locator): Promise<number> {
   // A new element pops in (a scale entry animation), and a bounding box read
   // mid-pop is the shrunken one, while the screenshots below finish the
@@ -97,6 +115,10 @@ test('a shape drawn to its box edge paints no stroke outside it', async ({ page,
     .getByRole('menuitemradio', { name: '100%' })
     .click();
   await expect(page.getByRole('button', { name: 'Fit to screen' }).first()).toHaveText('100%');
+  // A zoom that has rested glides the view onto the page (docs/specs/007-editor/pages-mode.md "Getting around the
+  // pages"), now beside the Contents sidebar docked from the first page. Measure once the view is at rest, or a ring
+  // is read across the glide.
+  await viewAtRest(page);
 
   const outside: Record<string, number> = {};
   for (const shape of EDGE_KINDS) {

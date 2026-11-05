@@ -72,12 +72,21 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
           ?.getAttribute('style')
           ?.match(/transform:[^;]+/)?.[0] ?? null,
     );
-  await expect.poll(camera).not.toBeNull();
-  const before = await camera();
+  // Opening the tab frames its page beside the Contents sidebar, a short glide (docs/specs/007-editor/pages-mode.md
+  // "Framing beside it"): the view the deck must leave as it was is the one at rest.
+  let before: string | null = null;
+  await expect
+    .poll(async () => {
+      const now = await camera();
+      const still = now !== null && now === before;
+      before = now;
+      return still;
+    })
+    .toBe(true);
 
-  await page.getByRole('button', { name: 'Selection mode' }).click();
-  await page.getByText('Slide Deck', { exact: true }).first().click();
-  await page.getByRole('button', { name: /^Present \d+$/ }).click();
+  // The header's Present starts the open tab's show at its slide 1; a stored deck's selection slides keep
+  // presenting (presentation-mode.md "The header's Present button"; the Slide Deck panel is retired).
+  await page.getByRole('button', { name: 'Present', exact: true }).click();
   await expect.poll(camera).not.toBe(before);
   const slideOne = await camera();
 

@@ -1,6 +1,6 @@
 // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"), the part every editor
-// with pages reads the same: what a row says about its page, the Find a Page narrowing, and which
-// page is in view. Pure: pages and the view in, rows out. Each editor builds its own rows (what a
+// with pages reads the same: what a row says about its page and which page is in
+// view. Pure: pages and the view in, rows out. Each editor builds its own rows (what a
 // page of its kinds says about itself) on ContentsRowBase.
 
 /** A page's row: what both of Contents' homes show for it. An editor's rows add their own facts. */
@@ -10,11 +10,14 @@ export type ContentsRowBase = {
   number: number;
   // Its own name, else "Page n".
   name: string;
-  // What it is ("Infographic · A4 Portrait", "Wireframe · iPhone"), searched with its name.
+  // What it is ("Infographic · A4 Portrait", "Wireframe · iPhone").
   line: string;
   locked: boolean;
   // Its shape on the sheet, for the thumbnail's frame.
   aspect: number;
+  // Why the page is set aside ("Hidden in Slides"): its picture greys under a Hidden veil and the row
+  // is described by this. Absent on a page in use; an editor with nothing to set aside never sets it.
+  setAside?: string;
 };
 
 /** A page's picture: an SVG of the page, drawn by the editor's own renderer. */
@@ -25,27 +28,6 @@ export type ContentsPageRect = {
   id: string;
   rect: { x: number; y: number; width: number; height: number };
 };
-
-// More pages than this show the Find a Page box.
-export const CONTENTS_FIND_AFTER = 6;
-
-/** The rows a Find a Page query keeps: every word found in the name, the line or the number. */
-export function filterContents<R extends ContentsRowBase>(
-  rows: readonly R[],
-  query: string,
-  // The words on each page (the editor's lib/page-texts.ts), searched as its name is.
-  texts?: ReadonlyMap<string, string>,
-): R[] {
-  const words = normalise(query).split(/\s+/).filter(Boolean);
-  if (words.length === 0) return [...rows];
-  return rows.filter((r) => {
-    const hay = normalise(`${r.number} ${r.name} ${r.line} ${texts?.get(r.id) ?? ''}`);
-    return words.every((w) => hay.includes(w));
-  });
-}
-
-// Case and width folded, as the editor's find folds them (normaliseFind in document-views).
-const normalise = (text: string) => text.normalize('NFKC').toLowerCase();
 
 /** The page in view: the one whose rectangle holds the middle of the screen, else the nearest to
  *  it. `view` is the canvas's (the centred transform: a canvas x lands at screen

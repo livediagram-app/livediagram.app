@@ -89,7 +89,6 @@ export type CommandHandlers = {
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;
-  editNote: () => void;
   createTab: () => void;
   renameDocument: () => void;
   deleteDocument: () => void;
@@ -158,20 +157,6 @@ export const CANVAS_TOOLS: {
     keywords: 'spotlight focus dim darken present attention',
     needsContent: true,
     desktopOnly: true,
-  },
-
-  {
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
-    // so it needs content for the same reason: there is nothing to put on a
-    // slide on an empty canvas. Picking it opens the panel; Start presents.
-    // Desktop-only: the deck workbench has no room beside a phone's canvas.
-    id: 'slide-deck',
-    name: 'Slide Deck',
-    keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
-    needsContent: true,
-    desktopOnly: true,
-    // Building and presenting a deck is an Editor's (docs/specs/013-workspace/share-roles.md).
-    mutates: true,
   },
 ];
 

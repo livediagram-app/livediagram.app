@@ -1,9 +1,12 @@
 // Where the quick style panel sits (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): on
-// the left edge of the canvas, vertically centred. It keeps clear of the chrome
-// by trying fixed candidates in order, so the same chrome always gives the same spot.
+// one edge of the canvas (the left, or the right where an editor asks), vertically centred. It keeps
+// clear of the chrome by trying fixed candidates in order, so the same chrome always gives the same spot.
 
 export type Rect = { left: number; top: number; width: number; height: number };
 type QuickStyleCandidate = 'centre' | 'below' | 'above' | 'beside' | 'right-edge';
+/** The canvas edge the panel keeps to. On the right it never crosses to the left: past every
+ *  candidate there it falls back to the right edge's centre. */
+export type QuickStyleSide = 'left' | 'right';
 type QuickStylePlacement = {
   left: number;
   top: number;
@@ -30,13 +33,15 @@ export function placeQuickStylePanel(input: {
   panel: { width: number; height: number };
   obstacles: readonly Rect[];
   gap?: number;
+  side?: QuickStyleSide;
 }): QuickStylePlacement {
   const { area, panel, obstacles } = input;
   const gap = input.gap ?? QUICK_STYLE_GAP_PX;
-  const leftX = area.left + gap;
+  const onRight = input.side === 'right';
+  const leftX = onRight ? right(area) - gap - panel.width : area.left + gap;
   const centreY = area.top + (area.height - panel.height) / 2;
   const band: Rect = {
-    left: area.left,
+    left: onRight ? right(area) - panel.width - 2 * gap : area.left,
     top: area.top,
     width: panel.width + 2 * gap,
     height: area.height,
@@ -53,9 +58,15 @@ export function placeQuickStylePanel(input: {
     for (const t of [...new Set(edge.map((o) => o.top))].sort((x, y) => y - x)) {
       candidates.push(['above', leftX, t - gap - panel.height]);
     }
-    candidates.push(['beside', Math.max(...edge.map(right)) + gap, centreY]);
+    candidates.push([
+      'beside',
+      onRight
+        ? Math.min(...edge.map((o) => o.left)) - gap - panel.width
+        : Math.max(...edge.map(right)) + gap,
+      centreY,
+    ]);
   }
-  candidates.push(['right-edge', right(area) - gap - panel.width, centreY]);
+  if (!onRight) candidates.push(['right-edge', right(area) - gap - panel.width, centreY]);
 
   const inner = inflate(area, -gap);
   const clear = (left: number, top: number) => {

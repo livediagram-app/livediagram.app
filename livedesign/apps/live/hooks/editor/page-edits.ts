@@ -69,11 +69,13 @@ export type PageEdits = BackgroundCopyEdits & {
   // A page's unit (the page, or its whole design) to a place among the units (0 first), its
   // content with it: a page's label dragged.
   movePageTo: (pageId: string, unitIndex: number) => void;
-  // Absent at the page limit. A wireframe page takes the device chosen for it.
+  // Absent at the page limit. A wireframe page takes the device chosen for it. Right after the page someone is on
+  // (pages-mode.md "Adding a page"), else last.
   addPage?: (kind: PageKind, device?: WireframeDeviceId) => void;
-  // Another page like this one after the last (the + beside the last page): its kind and shape, a
+  // Another page like this one, right after it (the + beside a page): its kind and shape, a
   // wireframe page's device and frame too. Absent at the page limit.
-  addPageLike?: (pageId: string) => void;
+  // Right after `after` (Contents' page here) when given, else right after `pageId`.
+  addPageLike?: (pageId: string, after?: string) => void;
   // A photo page added after a page (else at the end), of a picture's size, gone to: answers its id
   // (Edit as Photo, docs/specs/031-photo/photo-pages.md "Making a photo page"). Absent at the page
   // limit and on a tab not of photos ("One kind a tab").
@@ -159,6 +161,7 @@ export function pageEdits({
   onLayoutPlaced,
   mayEdit = () => true,
   toastInfo = () => {},
+  currentPage = () => null,
 }: {
   tabId: string;
   // The tab as it is now: what an edit will do (a duplicate's id, how many pages a split makes, whether Tidy Up moves
@@ -181,6 +184,9 @@ export function pageEdits({
   onGoTo: (pageId: string) => void;
   // What a page action says it did (Split Into Pages).
   toastInfo?: (message: string) => void;
+  // The page someone is on, read when a page is added: a new page goes right after it (pages-mode.md "Adding a
+  // page"). Null: after the last.
+  currentPage?: () => string | null;
 }): PageEdits {
   // A locked tab, or a person no longer editing, takes no page edit. A handler that tells or moves the view after
   // its edit asks first, so nothing is said of an edit that never landed.
@@ -345,7 +351,8 @@ export function pageEdits({
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     if (kind === 'wireframe' && chosen) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[chosen]);
     const id = nextPageId(current);
-    commitTab((t) => edited(t, pageAdded(t, kind, id, device)));
+    const after = currentPage() ?? undefined;
+    commitTab((t) => edited(t, pageAdded(t, kind, id, device, undefined, after)));
     onGoTo(id);
     debugLog('[page] page added', { tabId, count: current.length + 1 });
   };
@@ -364,14 +371,15 @@ export function pageEdits({
     if (patch.orientation) onGoTo(pageId);
     debugLog('[page] device set', { tabId, pageId, keys: Object.keys(patch) });
   };
-  const addPageLike = (pageId: string) => {
+  const addPageLike = (pageId: string, after = pageId) => {
     if (!takesEdits()) return;
     const source = page(pageId);
     if (!source) return;
     const kind = pageKindOf(source);
     track('Tab', 'Changed', 'PageAddedLikeLast');
     const id = nextPageId(current);
-    commitTab((t) => edited(t, pageAddedLike(t, pageId, id)));
+    // Right after the page whose + was pressed, or Contents' page here.
+    commitTab((t) => edited(t, pageAddedLike(t, pageId, id, after)));
     onGoTo(id);
     debugLog('[page] page added like another', { tabId, from: pageId, kind });
   };

@@ -304,6 +304,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextSize': "Someone changed a selected element's text size.",
   'Tab|Changed|PageAddedLikeLast':
     'Someone added another page like the last one, with the + after the pages.',
+  'Tab|Changed|PagesStacked':
+    "Someone switched a tab's pages to stand as a stack (one page in front, the rest fanned behind) from Stack Pages in Contents Options.",
+  'Tab|Changed|PagesSideBySide':
+    "Someone switched a tab's pages to stand side by side in a row from Stack Pages in Contents Options.",
   'Element|Changed|TimelineRail': "Someone changed a Timeline Rail element's number of points.",
   'Element|Copied|': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted|': 'An element was removed from the canvas.',
@@ -744,9 +748,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Added|PaletteFavourite':
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
   'UI|Added|NoteCard':
-    'Someone added a speaker note card to a slide, in the title-bar Notes popover or the Slide Deck panel.',
+    'Someone added a speaker note card to a slide, in the title-bar Notes popover.',
   'UI|Added|Slide':
-    'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
+    'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one. No longer recorded: the Slide Deck panel was retired in November 2026 and the deck is built in Contents.',
   'UI|Changed|FormatCopies':
     'Someone toggled which style properties the format painter copies (fill, border, text, effects, or size), in the Format panel.',
   'UI|Changed|FormatMode':
@@ -913,7 +917,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Moved|NoteCard':
     'Someone moved a speaker note card up or down its slide, by dragging its grip, a Move button or Alt+arrow.',
   'UI|Moved|Slide':
-    'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
+    'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed. No longer recorded: the Slide Deck panel was retired in November 2026 and the deck is built in Contents.',
   'UI|Opened|ActionSignInNudge':
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
@@ -923,6 +927,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
+  'UI|Used|PresentFromHere':
+    "Someone started the show at a chosen slide, with Present From Here on its page's Contents menu.",
   'UI|Opened|PresentationSettings':
     "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
   'UI|Opened|PresenterNotes': 'Someone opened the speaker note cards while presenting.',
@@ -956,12 +962,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|PageContentsJump': "Someone went to a page from Pages mode's Contents list.",
   'UI|Used|PageSwipe':
     'Someone turned to the next or previous page in Pages mode with a short pan or a flick, the view gliding onto it.',
+  'UI|Used|PrintPage': 'Someone printed the page in view from Export.',
+  'UI|Used|PrintDocument': 'Someone printed the whole document, every tab, from Export.',
+  'UI|Used|StackNav':
+    'Someone turned a stack of pages (flashcards, or a tab stacked from Contents Options) to the previous or next page with the Previous or Next on the page in front.',
   'UI|Used|PageContentsReorder':
     "Someone dragged a page to a new place in Pages mode's Contents list.",
   'UI|Added|AllPageSlides':
-    "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
+    "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages. No longer recorded: the Slide Deck panel was retired in November 2026 and the deck is built in Contents.",
   'UI|Opened|SlideDeck':
-    "Someone opened the deck-building panel: the Slide Deck tool, or a Pages tab's Slides button.",
+    "Someone opened the deck-building panel: the Slide Deck tool, or a Pages tab's Slides button. No longer recorded: the Slide Deck panel was retired in November 2026 and the deck is built in Contents.",
   'UI|Opened|SlideElementDetail':
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
@@ -1038,7 +1048,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|PaletteFavourite':
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
   'UI|Removed|NoteCard': 'Someone removed a speaker note card from a slide.',
-  'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
+  'UI|Removed|Slide':
+    'Someone deleted a slide from the Slide Deck. No longer recorded: the Slide Deck panel was retired in November 2026 and the deck is built in Contents.',
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
@@ -1211,9 +1222,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|SkipLocationStepOn':
     'Someone ticked "Always save new documents in <place> and skip this step" on the New Document wizard\'s Location step.',
   'UI|Toggled|SlideHidden':
-    'Someone hid a slide from the presentation run, without deleting it, in the Slide Deck panel.',
+    "Someone hid a slide from the presentation run, without deleting it, with Hide in Slides on its page's Contents menu.",
   'UI|Toggled|SlideShown':
-    'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
+    "Someone unhid a slide, putting it back into the presentation run, with Show in Slides on its page's Contents menu.",
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
   'UI|Toggled|TemplateModeAll':
     'Someone set the New Document template filter back to Everything, showing templates for every mode.',
@@ -1331,13 +1342,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PagesTourStepSlideBackground':
     'The Pages tour\'s slides track reached its "Change the Background" step, with the slide\'s Background popover open.',
   'UI|View|PagesTourStepSlideDeck':
-    'The Pages tour\'s slides track reached its "Add It to the Deck" step, on the slide\'s deck button (retired in October 2026 for the speaker notes step: every slide of a deck is in it already).',
+    'The Pages tour\'s slides track reached its deck step: first "Add It to the Deck", on the slide\'s deck button, then "Your Slide Deck", with the Slide Deck open. No longer recorded: the Slide Deck panel was retired in November 2026 and the step now points at the slide\'s row in Contents.',
   'UI|View|PagesTourStepSlideNotes':
     'The Pages tour\'s slides track reached its "Write Your Speaker Notes" step, with the slide\'s notes popover open.',
   'UI|View|PagesTourStepSlideAddPage':
     'The Pages tour\'s slides track reached its "Add Another Slide" step, on the + after the last page.',
   'UI|View|PagesTourStepSlidePresent':
-    'The Pages tour\'s slides track reached its "Present" step, with the Slide Deck open.',
+    'The Pages tour\'s slides track reached its "Present" step, on the Present button in the top bar.',
+  'UI|View|PagesTourStepSlideContents':
+    'The Pages tour\'s slides track reached its "Your Slides" step, on the slide\'s row in Contents.',
+  'UI|View|PagesTourStepSlideShowSettings':
+    'The Pages tour\'s slides track reached its "Set Up the Show" step, on the Slide Deck\'s settings. No longer recorded: the Slide Deck panel was retired in November 2026 and the deck is built in Contents.',
   'UI|View|PagesTourStepSlideOutro':
     'The Pages tour\'s slides track reached its closing "You\'re ready to present" card.',
   'UI|View|PagesTourStepInfographicPageName':
@@ -1351,7 +1366,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PagesTourStepInfographicAddPage':
     'The Pages tour\'s infographic track reached its "Add a Page" step, on the + after the last page.',
   'UI|View|PagesTourStepInfographicPresent':
-    'The Pages tour\'s infographic track reached its "Present It" step, with the Slide Deck open.',
+    'The Pages tour\'s infographic track reached its "Present It" step, with the page\'s Contents menu open.',
   'UI|View|PagesTourStepInfographicOutro':
     'The Pages tour\'s infographic track reached its closing "You\'re ready to make pages" card.',
   'UI|View|PagesTourStepArticleWrite':

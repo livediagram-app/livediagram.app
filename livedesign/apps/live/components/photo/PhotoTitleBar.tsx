@@ -141,7 +141,7 @@ export function PhotoTitleBar({
   return (
     <div
       data-photo-title-bar=""
-      className="pointer-events-auto flex items-center gap-1"
+      className="pointer-events-auto flex items-center gap-0.5"
       // Its menus are portalled, but React bubbles their presses up here: the canvas under the page
       // must not take them (it would close the menu, or start a marquee).
       onPointerDown={(e) => e.stopPropagation()}
