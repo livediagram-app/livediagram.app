@@ -61,11 +61,20 @@ describe('the element plane rule', () => {
 // the surface always takes the colour ease, its parts only while the canvas is not busy.
 describe('the Tab Style ease', () => {
   const selectors = () => {
-    const match = /((?::root\.lvd-style-transition [^,{]+,?\s*)+)\{\s*transition-property/.exec(
-      read('./globals.css'),
-    );
-    if (!match) throw new Error('the Tab Style ease rule is missing from globals.css');
-    return match[1]!.split(',').map((s) => s.trim());
+    // Split into rules rather than one regex over the file: a repeated selector group in a regex can backtrack.
+    const rule = read('./globals.css')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('}')
+      .map((r) => r.split('{'))
+      .find(
+        ([sel, body]) =>
+          sel?.includes(':root.lvd-style-transition') && body?.includes('transition-property'),
+      );
+    if (!rule) throw new Error('the Tab Style ease rule is missing from globals.css');
+    return rule[0]!
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.startsWith(':root.lvd-style-transition'));
   };
 
   it('eases the canvas surface itself', () => {
