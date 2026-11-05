@@ -26,11 +26,12 @@ describe('element tours', () => {
     expect(canTourElement({ level: 'edit' }, { ...sankey, locked: true }, 'sankey')).toBe(false);
   });
 
-  it('remembers an answer, and counts every kind seen for a power user only', () => {
+  it('remembers an answer, and counts every kind seen under the blanket flag', () => {
     expect(elementTourSeen({}, 'sankey')).toBe(false);
     expect(elementTourSeen(markElementTourSeen({}, 'sankey'), 'sankey')).toBe(true);
-    expect(elementTourSeen({ elementToursSeen: true }, 'sankey')).toBe(false);
-    expect(elementTourSeen({ elementToursSeen: true, powerUserMode: true }, 'sankey')).toBe(true);
+    // The flag the retired Power user mode's preset wrote keeps every kind answered
+    // (docs/specs/007-editor/power-user-mode.md "What happens to stored preferences").
+    expect(elementTourSeen({ elementToursSeen: true }, 'sankey')).toBe(true);
   });
 
   it('marks an answer once', () => {
@@ -38,13 +39,9 @@ describe('element tours', () => {
     expect(markElementTourSeen(once, 'sankey')).toEqual({ elementTourKinds: ['sankey'] });
   });
 
-  it('offers a kind again, even to a power user', () => {
-    const power = {
-      powerUserMode: true,
-      elementToursSeen: true,
-      elementTourKinds: ['sankey' as const],
-    };
-    const again = offerElementTourAgain(power, 'sankey');
+  it('offers a kind again, even under the blanket flag', () => {
+    const all = { elementToursSeen: true, elementTourKinds: ['sankey' as const] };
+    const again = offerElementTourAgain(all, 'sankey');
     expect(elementTourSeen(again, 'sankey')).toBe(false);
     expect(again.elementToursSeen).toBe(false);
   });

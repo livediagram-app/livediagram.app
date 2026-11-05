@@ -45,7 +45,7 @@ import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // What the steps may know about where the tour runs, read when Play is pressed.
 type ElementTourEnv = {
-  // The selection toolbar's More button is showing (not for a power user on a desktop, who right-clicks).
+  // The selection toolbar's More button is showing; the menu steps say "Right-click it" where it is not.
   hasMore: boolean;
   // A touch screen: taps where a mouse clicks.
   touch: boolean;

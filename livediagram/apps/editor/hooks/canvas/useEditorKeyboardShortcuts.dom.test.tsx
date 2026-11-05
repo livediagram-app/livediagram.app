@@ -6,8 +6,7 @@ import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-gua
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection
-// (docs/specs/008-canvas/canvas-and-palette.md#selection-popover), and every key the editor acts on
-// is counted once for the power user mode offer (docs/specs/007-editor/power-user-mode.md).
+// (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
 
 // A case states the selection as values; the hook reads it through readSelection.
 type Overrides = Partial<EditorKeyboardShortcutsDeps> & {
@@ -19,7 +18,6 @@ function deps(overrides: Overrides = {}) {
   const spies = {
     deleteSelected: vi.fn(),
     deleteMultiSelected: vi.fn(),
-    onShortcutUsed: vi.fn(),
     setCanvasTool: vi.fn(),
   };
   const target: Record<string, unknown> = {
@@ -183,26 +181,6 @@ describe("a Participant's palette keys", () => {
   });
 });
 
-describe('onShortcutUsed', () => {
-  it('counts a key the editor acted on, once', () => {
-    const { bag, spies } = deps();
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Delete');
-    press('v');
-    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(2);
-  });
-
-  it('does not count a key nothing acted on, or one already claimed', () => {
-    const { bag, spies } = deps({ selectedId: null });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Delete');
-    const claimed = new KeyboardEvent('keydown', { key: 'v', bubbles: true, cancelable: true });
-    claimed.preventDefault();
-    window.dispatchEvent(claimed);
-    expect(spies.onShortcutUsed).not.toHaveBeenCalled();
-  });
-});
-
 describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts")', () => {
   const board = () => {
     const wb = {
@@ -354,12 +332,11 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
 describe('Shift+D', () => {
   it('cycles the editor mode where a switch is offered', () => {
     const onCycleEditorMode = vi.fn();
-    const { bag, spies } = deps({ selectedId: null, onCycleEditorMode });
+    const { bag } = deps({ selectedId: null, onCycleEditorMode });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     const e = press('D', { shiftKey: true });
     expect(onCycleEditorMode).toHaveBeenCalledTimes(1);
     expect(e.defaultPrevented).toBe(true);
-    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(1);
   });
 
   it('does nothing where no switch is offered, and adds no diamond', () => {
@@ -424,7 +401,6 @@ describe('inside a menu', () => {
       expect(e.defaultPrevented).toBe(false);
     }
     expect(spies.deleteSelected).not.toHaveBeenCalled();
-    expect(spies.onShortcutUsed).not.toHaveBeenCalled();
     menu.remove();
   });
 });
@@ -587,7 +563,7 @@ describe('vote keys (docs/specs/012-collaboration/blueprints/vote-keys.md)', () 
   it('hands + and - on the one selected element to the vote, ahead of type-to-edit', () => {
     const onVoteKey = vi.fn(() => true);
     const onTypeIntoSelected = vi.fn(() => true);
-    const { bag, spies } = deps({ onVoteKey, onTypeIntoSelected });
+    const { bag } = deps({ onVoteKey, onTypeIntoSelected });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     expect(press('+').defaultPrevented).toBe(true);
     press('=');
@@ -598,7 +574,6 @@ describe('vote keys (docs/specs/012-collaboration/blueprints/vote-keys.md)', () 
       ['a', -1],
     ]);
     expect(onTypeIntoSelected).not.toHaveBeenCalled();
-    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(3);
   });
 
   it('leaves a key the vote did not take to type-to-edit', () => {

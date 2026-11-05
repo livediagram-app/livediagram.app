@@ -9,7 +9,6 @@ import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { QuickStylePanel, panelFrame } from './QuickStylePanel';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
-import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 // The panel is desktop only; jsdom has no viewport to measure.
 vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
@@ -203,7 +202,7 @@ describe('SwatchOverridePopover', () => {
   });
 });
 
-describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user-mode.md)', () => {
+describe('QuickStylePanel chrome (docs/specs/008-canvas/quick-style-panel.md)', () => {
   const quickStyle = {
     view: {
       targetIds: ['a'],
@@ -231,22 +230,17 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     clearSwatchOverride: vi.fn(),
     setColour: vi.fn(),
   };
-  const renderPanel = (minimal: boolean) =>
-    render(
-      <MinimalChromeProvider value={minimal}>
-        <QuickStylePanel quickStyle={quickStyle} hidden={false} />
-      </MinimalChromeProvider>,
-    );
+  const renderPanel = () => render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
 
   it('keeps its section titles', () => {
-    renderPanel(true);
+    renderPanel();
     expect(screen.getByText('Stroke width')).toBeTruthy();
     expect(screen.getByText('Stroke style')).toBeTruthy();
     expect(screen.getByText('Actions')).toBeTruthy();
   });
 
   it('has no header, and keeps its name', () => {
-    renderPanel(false);
+    renderPanel();
     expect(screen.queryByLabelText('Learn about the quick style panel')).toBeNull();
     expect(screen.getByLabelText('Quick style')).toBeTruthy();
   });
@@ -343,12 +337,6 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     );
     fireEvent.click(within(row).getByRole('radio', { name: 'Large' }));
     expect(quickStyle.setCorners).toHaveBeenCalledWith('lg');
-  });
-
-  it('drops the pen name in power user mode', () => {
-    render(<QuickStylePanel quickStyle={api(second)} hidden={false} powerUser />);
-    expect(screen.queryByText('Marker 2')).toBeNull();
-    expect(screen.getByRole('radiogroup', { name: 'Marker width' })).toBeTruthy();
   });
 
   it('offers the nine stock colours and More colours in one row, with no Custom colours row', () => {

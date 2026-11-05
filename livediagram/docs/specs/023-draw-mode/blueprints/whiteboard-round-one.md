@@ -280,7 +280,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
     `penColour`). For the held pen Ink is `colour: null`.
     `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
     / `QuickStrokeWidth`), or call `updatePen` for the held pen (its own `Draw·Changed` tokens). Clear Styles shows only when `targetIds` is non-empty. `QuickPenRows`
-    shows `subject.name` as a caption unless `QuickStylePanel` has `powerUser` (from `isPowerUserMode`).
+    shows `subject.name` as a caption.
     Choosing the held pen's current value is a no-op.
 
 ### Marker colours
@@ -360,7 +360,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   `useQuickStyle({ toolIntent: pendingDraw })`: on a whiteboard with nothing selected, the view is
   `quickStyleView([styleNewElement(phantom)])` through `onWhiteboard`, with `caption`; a choice runs
   `memory.recordEdit([phantom], [applied])` and bumps a version; Clear Styles forgets `board:<kind>`.
-- The panel shows `view.caption ?? view.pen.subject.name` above the rows unless `powerUser`.
+- The panel shows `view.caption ?? view.pen.subject.name` above the rows.
 - `useStyleMemory` returns `scope` (`<documentId>:board` or `<documentId>:diagram`); `useQuickStyle`'s
   phantom memo keys on it, so a document or editor mode switch with a tool still in hand re-dresses the
   phantom from the memory in front of the user.

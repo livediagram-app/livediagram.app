@@ -19,8 +19,8 @@ where it is and changes only how the next mark is made.
 
 - "Whiteboard" names the activity and Draw mode's look, never a tab kind and
   never a type of document.
-- "Mode" on its own is ambiguous here (Zen mode, Presentation mode, Power user
-  mode); in specs and code say **editor mode**. The interface says **Diagram**,
+- "Mode" on its own is ambiguous here (Zen mode, Presentation mode); in specs
+  and code say **editor mode**. The interface says **Diagram**,
   **Draw** and **Workshop**.
 
 ## Kinds versus modes
@@ -67,7 +67,7 @@ where it is and changes only how the next mark is made.
     keys open it and move within it, wrapping, Home and End jump. The start's chip is named for the tab it sets
     ("Tab mode: Diagram"), the top chrome's for the editor ("Editor mode: Diagram"), so the two never share a name
     while both show.
-  - The same for everyone, power user mode or not, on a phone as on a computer.
+  - The same for everyone, on a phone as on a computer.
 - **The mode menu** is two panes: a **list** of the modes and a **preview** of one.
   - **The list:** one row per mode in catalogue order, each its mark on a small tile in the
     mode's tint, its name, then a check on the current mode.
