@@ -75,7 +75,7 @@ describe('calls (docs/specs/012-collaboration/proximity-audio.md "Turning calls 
     TURN_KEY_API_TOKEN: 'turn-secret',
   };
 
-  it('are off with no secrets, on with them, and off on production whatever is set', async () => {
+  it('are off with no secrets, on with them, and on on production too once they are set', async () => {
     expect(await capabilities({})).toMatchObject({ callsEnabled: false });
     expect(await capabilities(secrets)).toMatchObject({ callsEnabled: true });
     expect(
@@ -83,7 +83,10 @@ describe('calls (docs/specs/012-collaboration/proximity-audio.md "Turning calls 
     ).toMatchObject({ callsEnabled: true });
     expect(
       await capabilities({ ...secrets, APP_BASE_URL: 'https://www.livehuddle.app' }),
-    ).toMatchObject({ callsEnabled: false });
+    ).toMatchObject({ callsEnabled: true });
+    expect(await capabilities({ APP_BASE_URL: 'https://www.livehuddle.app' })).toMatchObject({
+      callsEnabled: false,
+    });
   });
 
   it('stay shown while the kill switch pauses them, and say the mode', async () => {

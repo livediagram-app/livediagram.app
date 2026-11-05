@@ -240,8 +240,8 @@ name = "EMAIL"
 # create, never in [vars]:
 #
 #   - Staging: `wrangler secret put <NAME> --env staging` for each.
-#   - Production: not yet. The mint route refuses every session on production whatever is set
-#     (src/calls/calls-gate.ts) until the calls kill switch (Work Tracker #316) is live.
+#   - Production: `wrangler secret put <NAME>` (no --env) for each, on `livehuddle-api`. The calls kill switch
+#     (CALLS_SWITCH above) can still pause calls there or hold them to audio only.
 #
 # Unset = calls are off: /api/capabilities says so and the editor shows no audio controls.
 

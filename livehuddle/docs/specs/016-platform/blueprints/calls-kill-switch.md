@@ -31,7 +31,7 @@ Derived from [Calls kill switch](../calls-kill-switch.md).
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `../packages/api-schema/src/calls-mode.ts`           | `CallsMode`, `CallsMediaKind`, `callsModeAllows`, `callTrackKind`, `CallsModeOp`, `parseCallsModeOp`                            |
 | `apps/api/src/calls/calls-mode.ts`                   | `callsMode`, its cache, `parseCallsMode`, `stricterCallsMode`; re-exports the shared rule                                       |
-| `apps/api/src/calls/calls-gate.ts`                   | `callsGate(env)`: production, secrets, then the switch; open answers the mode                                                   |
+| `apps/api/src/calls/calls-gate.ts`                   | `callsGate(env)`: secrets, then the switch; open answers the mode                                                               |
 | `apps/api/src/calls/calls-mode-watch.ts`             | `CallsModeWatch`: the room's throttled read and its push                                                                        |
 | `apps/api/src/routes/calls.ts`                       | Every session and track checked with `callsModeAllows`; close allowed while paused                                              |
 | `apps/api/src/routes/capabilities.ts`                | `callsEnabled` (gate open or only paused) and `callsMode`                                                                       |
@@ -70,17 +70,17 @@ Derived from [Calls kill switch](../calls-kill-switch.md).
 
 ## Wired in (part 2)
 
-**Gate** (`callsGate(env)`): `production` first, then `unconfigured`, then `callsMode(env)`. `off` closes it with
+**Gate** (`callsGate(env)`): `unconfigured` first, then `callsMode(env)`. `off` closes it with
 `paused`; otherwise `{ open: true, mode }` with `mode` `on` or `audio-only`.
 
 **Mint route** (`routes/calls.ts`), after the grant:
 
-| Route         | Gate closed `production` / `unconfigured` | Gate closed `paused`     | Open                                                                                               |
-| ------------- | ----------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------- |
-| `session`     | 503 `calls_off`, that reason              | 503 `calls_off` `paused` | Answer carries `mode`                                                                              |
-| `tracks`      | 503 `calls_off`, that reason              | 503 `calls_off` `paused` | Each track's kind (`callTrackKind`) must pass `callsModeAllows`, else 503 `calls_off` `audio-only` |
-| `renegotiate` | 503 `calls_off`, that reason              | 503 `calls_off` `paused` | As before                                                                                          |
-| `close`       | 503 `calls_off`, that reason              | Allowed                  | As before                                                                                          |
+| Route         | Gate closed `unconfigured`   | Gate closed `paused`     | Open                                                                                               |
+| ------------- | ---------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------- |
+| `session`     | 503 `calls_off`, that reason | 503 `calls_off` `paused` | Answer carries `mode`                                                                              |
+| `tracks`      | 503 `calls_off`, that reason | 503 `calls_off` `paused` | Each track's kind (`callTrackKind`) must pass `callsModeAllows`, else 503 `calls_off` `audio-only` |
+| `renegotiate` | 503 `calls_off`, that reason | 503 `calls_off` `paused` | As before                                                                                          |
+| `close`       | 503 `calls_off`, that reason | Allowed                  | As before                                                                                          |
 
 A track name with no kind is already refused as malformed (400) by `parseCallTrackLocator`, and a publish names the
 microphone, so today every track checked is `audio`.
@@ -122,7 +122,7 @@ store adds one listener set; the paused control is the same `Segment` as Join Au
 | Rule                                                                                                  | Test                                                      |
 | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | Mode table per kind; track kinds; the push op's parser                                                | `../packages/api-schema/src/calls-mode.test.ts`           |
-| Gate: production before secrets before the switch; open carries mode                                  | `apps/api/src/calls/calls-gate.test.ts`                   |
+| Gate: secrets before the switch; open carries mode                                                    | `apps/api/src/calls/calls-gate.test.ts`                   |
 | Routes: session, publish, subscribe, renegotiate refused when off; close allowed; mode on the session | `apps/api/src/routes/calls.test.ts`                       |
 | Watch: throttled, tells changes only, from `on`                                                       | `apps/api/src/calls/calls-mode-watch.test.ts`             |
 | Capabilities: enabled while paused, mode answered                                                     | `apps/api/src/routes/capabilities.test.ts`                |

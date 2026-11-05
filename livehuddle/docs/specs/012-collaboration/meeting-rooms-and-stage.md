@@ -1,10 +1,10 @@
 # Meeting rooms and the stage
 
-Status: **built for staging** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
+Status: **built** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
 calls**, part 2, **the stage under the hood** (the element, its hearing and its role gate), part 3, **raise hand and
 Do Not Disturb** (with the line under the call strip for a stage you may not speak from), and part 4, **the stage's
 way in** (its palette tile, its settings, the All-Hands Hall on a real stage, and its help). Under the calls kill
-switch and off in production with the rest of calls ([Turning calls on](proximity-audio.md#turning-calls-on)).
+switch, and on wherever calls are ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
 Plain distance ([Proximity audio](proximity-audio.md#hearing)) suits an open floor, but not every gathering. A meeting
 room should be private: whoever is in it hears everyone else in it, and nobody outside hears a word. An all-hands
