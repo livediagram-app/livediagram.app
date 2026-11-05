@@ -334,7 +334,35 @@
   }
 }
 
-/* Reduced motion: the settled frame. Everyone at the table, Maya's bubble up, the note and the votes on the board. */
+/* A Reaction Pad's burst (the All-Hands Hall's applause): each emoji rises from the room and fades, on the loop. */
+.hs-burst {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: hs-burst 12s ease-out var(--d) infinite;
+}
+@keyframes hs-burst {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.6);
+  }
+  2% {
+    opacity: 1;
+    transform: translateY(0) scale(1.1);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(-36px) scale(1);
+  }
+  16%,
+  100% {
+    opacity: 0;
+    transform: translateY(-48px) scale(1);
+  }
+}
+
+/* Reduced motion: the settled frame. Everyone in their place, the first bubble up, the note and the votes on the
+   notes, no burst. */
 @media (prefers-reduced-motion: reduce) {
   .hs-leg {
     animation: none;
@@ -343,6 +371,7 @@
   .hs-walk,
   .hs-idle,
   .hs-cursor,
+  .hs-burst,
   .hs-react-wave,
   .hs-cheer-0,
   .hs-cheer-1,

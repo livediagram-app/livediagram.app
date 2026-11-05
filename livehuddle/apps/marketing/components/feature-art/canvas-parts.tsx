@@ -26,13 +26,10 @@ const PANEL_SUNK = 'fill-slate-50 stroke-slate-200 dark:fill-slate-900 dark:stro
 export const TEXT = 'fill-slate-700 dark:fill-slate-200';
 export const MUTED = 'fill-slate-400 dark:fill-slate-500';
 export const RULE = 'stroke-slate-200 dark:stroke-slate-700';
-export const LINE = 'fill-slate-200 dark:fill-slate-700';
 const FLOAT =
   'drop-shadow-[0_1.5px_2px_rgb(15_23_42/0.12)] dark:drop-shadow-[0_1.5px_2px_rgb(0_0_0/0.45)]';
 // The ring round an avatar or a pin, in the colour of what it sits on.
 const ON_PANEL = 'stroke-white dark:stroke-slate-800';
-export const ON_CANVAS = 'stroke-(--art-paper)';
-
 /** A shape on the canvas in the Default scheme's ink, with an optional label. */
 export function Box({
   x,
@@ -74,22 +71,6 @@ export function Box({
           {label}
         </text>
       ) : null}
-    </g>
-  );
-}
-
-/** A connector between two points on the canvas, with a small arrowhead at the end. */
-export function Connector({ d, head }: { d: string; head: string }) {
-  return (
-    <g
-      className="stroke-(--art-arrow)"
-      fill="none"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={d} />
-      <path d={head} />
     </g>
   );
 }
@@ -234,21 +215,6 @@ export function Pill({
   );
 }
 
-/** A line of text standing in for a sentence: a soft bar. */
-export function TextBar({
-  x,
-  y,
-  w,
-  className = LINE,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  className?: string;
-}) {
-  return <rect className={className} x={x} y={y} width={w} height="3" rx="1.5" />;
-}
-
 // Chrome glyphs on a 10-unit grid, drawn at (x, y) in currentColor-free strokes.
 export function Glyph({
   x,
@@ -304,54 +270,6 @@ export const LOCK_PATHS = (
   </>
 );
 export const FOLDER_PATHS = <path d="M1 2.6 h3 l1 1.2 h4 v4.6 h-8 z" />;
-export const CHECK_PATHS = <path d="M2.2 5.2 l1.9 1.9 l3.7 -3.9" />;
-
-// Avatar mode (docs/specs/008-canvas/avatar-mode.md): a little pixel character standing on the
-// canvas, in its participant's shirt colour. Pure rects on a coarse grid, the editor's sprite look,
-// its feet at (x, y).
-export function PixelWalker({
-  x,
-  y,
-  shirt,
-  flag = false,
-}: {
-  x: number;
-  y: number;
-  shirt: string;
-  flag?: boolean;
-}) {
-  const s = 1.6;
-  const p = (n: number) => n * s;
-  return (
-    <g transform={`translate(${x - p(8)} ${y - p(23)})`} shapeRendering="crispEdges">
-      <ellipse
-        cx={p(8)}
-        cy={p(23)}
-        rx={p(4.6)}
-        ry={p(1.1)}
-        className="fill-slate-900/20 dark:fill-black/50"
-      />
-      <rect x={p(5)} y={p(15)} width={p(3)} height={p(6)} fill="#3f4c63" />
-      <rect x={p(9)} y={p(15)} width={p(3)} height={p(6)} fill="#3f4c63" />
-      <rect x={p(5)} y={p(21)} width={p(3)} height={p(2)} fill="#1e293b" />
-      <rect x={p(9)} y={p(21)} width={p(3)} height={p(2)} fill="#1e293b" />
-      <rect x={p(4)} y={p(9)} width={p(8)} height={p(6)} fill={shirt} />
-      <rect x={p(2)} y={p(9)} width={p(2)} height={p(4)} fill={shirt} />
-      <rect x={p(12)} y={p(9)} width={p(2)} height={p(4)} fill={shirt} />
-      <rect x={p(4)} y={p(1)} width={p(8)} height={p(8)} fill="#f4c99b" />
-      <rect x={p(3)} y={0} width={p(10)} height={p(3)} fill="#6b4423" />
-      <rect x={p(6)} y={p(5)} width={s} height={s} fill="#243044" />
-      <rect x={p(9)} y={p(5)} width={s} height={s} fill="#243044" />
-      {flag ? (
-        <>
-          <rect x={p(13)} y={p(-4)} width={s} height={p(14)} fill="#b8845a" />
-          <rect x={p(14)} y={p(-4)} width={p(6)} height={p(3.5)} fill="#f43f5e" />
-        </>
-      ) : null}
-    </g>
-  );
-}
-
 // A card's stage: the canvas Frame and the 300 by 96 drawing on it, the frame's own proportions
 // (about 304 by 96), so a scene fills the card edge to edge with a 10-unit inner margin.
 export function Scene({ children }: { children: ReactNode }) {

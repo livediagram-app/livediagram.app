@@ -34,7 +34,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livehuddle?',
-        a: 'A free, real-time Space for meetings and workshops. Open a Space and you walk in as your own little character, gather the team round the table, and run the session on the board with a timer, dot votes, polls and quizzes built in. Share a link and everyone is in the same Space, live, with no account needed.',
+        a: 'A free, real-time Space to meet your team in. Open a Space and you walk in as your own little character, find the team in a virtual office, a team pod or an all-hands hall, and gather round the table, with sticky notes on the walls, a shared timer and a quick vote when the meeting needs them. Share a link and everyone is in the same Space, live, with no account needed.',
       },
       {
         q: 'Do I need an account to use livehuddle?',
@@ -150,7 +150,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need to switch modes?',
-        a: 'No. Every board in livehuddle is a workshop board: stickies, writing, pens, shapes, icons, media, charts and every session tool sit on one palette, and the Session strip at the foot holds the timer, votes and polls. Pick Avatar on the toolbar to walk, and any other tool to work on the board.',
+        a: 'No. Every tab in livehuddle is a Space: the office pieces, sticky notes, text, images, stickers, icons and link cards sit on one palette, and the Session strip at the foot holds the timer and the vote. Pick Avatar on the toolbar to walk, and any other tool to put something on the walls.',
       },
       {
         q: 'Can I organise a big space?',
@@ -268,19 +268,22 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Your Inbox gathers the actions and comment threads waiting on you across every space, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
       },
       {
-        q: 'Is it good for running workshops and retros?',
+        q: 'Is it good for stand-ups, all-hands and a virtual office?',
         a: (
           <>
-            It is what livehuddle is for. Every board carries a timer, dot votes and polls, and
-            templates start a retrospective, Lean Coffee or town hall Q&amp;A in one click. Whoever
-            holds the facilitator baton runs the room’s timer, votes, polls and reveals. Estimate
-            cards run planning poker, a temperature check shows how the room feels, a quiz asks what
-            it knows, and an idea box collects anonymous ideas. See{' '}
+            It is what livehuddle is for. Meet for the stand-up in a Team Pod, gather the company in
+            the All-Hands Hall, and keep a Virtual Office open to walk round in between. Every Space
+            has a shared timer to keep a meeting short and a quick vote, dots on the sticky notes,
+            to settle a choice, and whoever holds the facilitator baton runs both. See{' '}
             <a href="/help/collaboration/session-tools/">session tools</a>.
           </>
         ),
         aText:
-          'It is what livehuddle is for. Every board carries a timer, dot votes and polls, and templates start a retrospective, Lean Coffee or town hall Q&A in one click. Whoever holds the facilitator baton runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See session tools.',
+          'It is what livehuddle is for. Meet for the stand-up in a Team Pod, gather the company in the All-Hands Hall, and keep a Virtual Office open to walk round in between. Every Space has a shared timer to keep a meeting short and a quick vote, dots on the sticky notes, to settle a choice, and whoever holds the facilitator baton runs both. See session tools.',
+      },
+      {
+        q: 'Can we talk by voice or video in a Space?',
+        a: 'Not yet. Voice and video calls between the people near each other are being built, but they are not switched on at livehuddle.app, so for now run your usual call alongside the Space. Speech bubbles, statuses, comments and reactions all work live in the Space itself.',
       },
     ],
   },
@@ -389,8 +392,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. Export a tab as PNG, SVG, PDF or a portable JSON file you can import back. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
-        q: 'Can I move my boards over from another tool?',
-        a: 'Not directly yet: there is no importer for other whiteboards. Export a board from the old tool as a PNG and add it to a tab as an image, or start the next session from one of the templates. A livehuddle JSON export imports back in full.',
+        q: 'Can I bring my office over from another tool?',
+        a: 'Not directly: there is no importer for other virtual offices or boards. Start from the Virtual Office or Coworking Space template and arrange the office pieces to match, or add a picture of your old floor plan to a tab as an image to work from. A livehuddle JSON export imports back in full.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',

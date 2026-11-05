@@ -79,7 +79,8 @@ and usage billing; v1 is built to leave room for them ([Future work](future-work
 **Settled: (a), (a) and (a)** (built as recommended; Work Tracker #187). The editor, the marketing site, the help centre,
 the Community and the emails wear emerald through `@livehuddle/tailwind-config` and `@liveworkspace/brand`
 ([Theme](../004-interface-design/color-scheme.md), [Brand mark](../004-interface-design/brand-mark.md)), and the
-landing page says "Meet and run workshops together" ([Marketing site](../019-marketing/marketing-site.md)). The domain
+landing page says "Meet your team in a Space" ([Marketing site](../019-marketing/marketing-site.md); it said "Meet and
+run workshops together" until Work Tracker #423 refocused livehuddle on meeting). The domain
 waits on the owner (D8).
 
 - **Domain:** (a) `livehuddle.app`, canonical on `www.livehuddle.app`, as every product; (b) another name.

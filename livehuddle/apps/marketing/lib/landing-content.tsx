@@ -1,31 +1,39 @@
 import type { HeroSceneKey } from '@/components/hero-scenes';
 import {
+  AiSpaceArt,
   ApiArt,
-  AssignedActionsArt,
-  AvatarModeArt,
+  ArriveArt,
   BringFocusArt,
-  CommentsArt,
-  ComponentsArt,
+  BrowserSpaceArt,
+  BubbleArt,
+  CameraArt,
+  CharacterArt,
+  CommunitySpaceArt,
+  DriveCopyArt,
+  EveryMeetingArt,
+  EveryoneArt,
   ExpiryArt,
-  ExportArt,
   FacilitatorArt,
-  FollowAlongArt,
+  FollowArt,
+  FourSpacesArt,
+  FurnitureArt,
   LaserArt,
-  LiveImageArt,
-  LockArt,
-  McpArt,
+  NoteActionArt,
+  NoteCommentArt,
+  NoteUndoArt,
+  PortalArt,
   PresenceArt,
+  ReactArt,
   RealtimeArt,
   RevokeArt,
-  SelectionGlowArt,
+  SelectedNoteArt,
   SessionToolsArt,
   ShareLinksArt,
   SpotlightArt,
-  TabsArt,
+  StatusArt,
   TeamsArt,
-  TemplatesArt,
   TimelineFeedArt,
-  UndoRedoArt,
+  WalkInArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -58,7 +66,7 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: the Space you meet in, the
- * workshop you run in it, then working on it together. `page.tsx` renders one beat per entry and
+ * meeting you hold in it, then being in it together. `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
@@ -80,7 +88,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     items: [
       {
-        art: <AvatarModeArt />,
+        art: <WalkInArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Walk in',
         title: 'Walk in as yourself',
@@ -88,7 +96,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Pick Avatar and a little pixel character stands on the board in your colour. Click or tap where you want to go and it walks there, steer it with the arrow keys, and press Space to hop and wave a flag. The board stays as it is while you walk, so nobody moves a sticky by accident.',
       },
       {
-        art: <PresenceArt />,
+        art: <CharacterArt />,
         href: '/help/selection-modes/avatar-mode/avatar-tour/',
         group: 'Walk in',
         title: 'A character of your own',
@@ -96,7 +104,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Choose a gender, one of sixteen outfits, fourteen hairstyles and three sizes, or press randomise. Your browser remembers the character for next time, and your shirt is always your presence colour, so everyone can tell at a glance who is who.',
       },
       {
-        art: <TemplatesArt />,
+        art: <FourSpacesArt />,
         href: '/help/palette/virtual-office/',
         group: 'Rooms to meet in',
         title: 'Four Spaces to start from',
@@ -104,7 +112,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Open a Virtual Office of rooms either side of a corridor, a Coworking Space with phone booths, a Team Pod with a meeting table and a board for the week, or an All-Hands Hall of chairs facing a stage. Each is ready to walk into, with no floor plan to draw first.',
       },
       {
-        art: <BringFocusArt />,
+        art: <ArriveArt />,
         href: '/help/palette/avatar-pads/',
         group: 'Rooms to meet in',
         title: 'Spaces that open walking',
@@ -112,7 +120,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Open a Space and you are already on your feet: the board puts you in Avatar mode, standing on its Avatar Pad and arriving in a beam of light. Press Walk In to come back after you leave, or pick any other tool and carry on as you were.',
       },
       {
-        art: <ComponentsArt />,
+        art: <FurnitureArt />,
         href: '/help/palette/chairs/',
         group: 'Rooms to meet in',
         title: 'Desks, sofas and a coffee machine',
@@ -120,7 +128,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Build your own rooms from walls with doorways, desks, chairs, sofas, a meeting table, rugs, plants and bookshelves. Walk onto a chair to sit down, and walk up to the water cooler or the coffee machine to come away holding a drink.',
       },
       {
-        art: <TabsArt />,
+        art: <PortalArt />,
         href: '/help/palette/tools/portals/',
         group: 'Rooms to meet in',
         title: 'Fences and portals',
@@ -128,7 +136,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Fences and room walls keep characters where they belong, and they come in by the doorway. Step into a portal and you come out of its partner, on this tab or another, so a Space can run to several floors.',
       },
       {
-        art: <PresenceArt />,
+        art: <EveryoneArt />,
         href: '/help/selection-modes/walking-together/',
         group: 'Say hello',
         title: 'Everyone walks together',
@@ -136,7 +144,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'On a shared Space every character is on everyone else’s board, in its owner’s colour with their name above its head. Click a teammate’s character to walk over and give them a gentle push. Viewers can walk too: walking changes nothing on the board.',
       },
       {
-        art: <SelectionGlowArt />,
+        art: <StatusArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'Status at a glance',
@@ -144,7 +152,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Say how you are without a word: Available, Focusing (headphones on), In a Meeting or Away, shown above your head while you walk. It lasts for the session only, so yesterday’s In a Meeting never greets anyone today.',
       },
       {
-        art: <CommentsArt />,
+        art: <BubbleArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'Say it in a bubble',
@@ -152,7 +160,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Press Enter, type a line and it appears in a speech bubble over your character for everyone on the tab, then floats up and away. A hello, a follow me or a nice one while someone presents, with no chat panel and nothing left behind.',
       },
       {
-        art: <AvatarModeArt />,
+        art: <ReactArt />,
         href: '/help/palette/behaviour/reaction-pads/',
         group: 'Say hello',
         title: 'Wave, cheer and dance',
@@ -160,7 +168,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Five moves, each one key: jumping jacks, a wave, a spin, a cheer and a dance, and five bursts of confetti, sparkles, hearts, applause or fireworks. Reaction pads on the board throw them over the whole room when someone presses one or walks onto it.',
       },
       {
-        art: <FollowAlongArt />,
+        art: <CameraArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'A camera that keeps up',
@@ -170,9 +178,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
   },
   {
-    id: 'workshops',
+    id: 'meetings',
     label: 'Meetings',
-    scene: 'townhall',
+    scene: 'hall',
     cta: 'Explore meetings',
     title: 'Run the meeting from the room',
     description:
@@ -227,7 +235,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Switch to the laser and your cursor leaves a glowing trail on everyone’s screen. Point at the thing you mean while you talk it through, and the trail fades on its own.',
       },
       {
-        art: <TemplatesArt />,
+        art: <EveryMeetingArt />,
         href: '/help/canvas/templates/',
         group: 'Run the room',
         title: 'A Space for every meeting',
@@ -239,11 +247,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
   {
     id: 'collaboration',
     label: 'Collaborate',
-    scene: 'draw',
+    scene: 'office',
     cta: 'Explore collaboration',
-    title: 'Work on it together, live',
+    title: 'Together in one place, live',
     description:
-      'Share a link and your team is in the Space with you: live cursors, comments on any element, actions handed to teammates, and links for whoever runs it, whoever takes part and whoever watches.',
+      'Share a link and your team is in the Space with you: who is where at a glance, notes and comments on the walls, actions handed to teammates, and links for whoever runs it, whoever takes part and whoever watches.',
     metaDescription:
       'Share a link and your team is in the Space with you: live cursors, comments, assigned actions, and share links for editors, participants and viewers.',
     highlights: [
@@ -270,7 +278,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
       },
       {
-        art: <SelectionGlowArt />,
+        art: <SelectedNoteArt />,
         href: '/help/collaboration/live-presence/',
         group: 'Work together live',
         title: 'See what others are working on',
@@ -278,7 +286,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
       },
       {
-        art: <CommentsArt />,
+        art: <NoteCommentArt />,
         href: '/help/collaboration/comments/',
         group: 'Work together live',
         title: 'Comments on any element',
@@ -286,7 +294,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Right-click an element, leave a thread, and mention a teammate to let them know. Replies, emoji reactions, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
       },
       {
-        art: <AssignedActionsArt />,
+        art: <NoteActionArt />,
         href: '/help/collaboration/assigned-actions/',
         group: 'Work together live',
         title: 'Assign actions to teammates',
@@ -294,7 +302,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Turn any element into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
       },
       {
-        art: <FollowAlongArt />,
+        art: <FollowArt />,
         href: '/help/canvas/follow-along/',
         group: 'Work together live',
         title: 'Follow someone’s view',
@@ -310,7 +318,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'The Explorer opens on Home: the Spaces you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed.',
       },
       {
-        art: <UndoRedoArt />,
+        art: <NoteUndoArt />,
         href: '/help/canvas/undo/',
         group: 'Work together live',
         title: 'Undo and redo',
@@ -350,7 +358,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The Space is yours again.',
       },
       {
-        art: <LockArt />,
+        art: <BrowserSpaceArt />,
         href: '/help/privacy-and-security/offline-mode/',
         group: 'Your Spaces, your way',
         title: 'Keep a Space in This Browser',
@@ -358,7 +366,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Without an account your Spaces live in This Browser and never leave it. Take a Space offline whenever you like, or sync it to your account when you want company.',
       },
       {
-        art: <ExportArt />,
+        art: <DriveCopyArt />,
         href: '/help/account-and-data/google-drive/',
         group: 'Your Spaces, your way',
         title: 'A copy in your Google Drive',
@@ -366,20 +374,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Signed in, connect Google Drive and every Space you own is kept as a file in your own Drive, in folders that match yours, synced both ways.',
       },
       {
-        art: <LiveImageArt />,
+        art: <CommunitySpaceArt />,
         href: '/help/collaboration/sharing/community/',
         group: 'Your Spaces, your way',
         title: 'Share a Space with the Community',
         description:
-          'Publish a Space you are proud of to the Community gallery, filed under meetings and workshops, so another team can start their next session from yours.',
+          'Publish a Space you are proud of to the Community gallery, filed under offices, meetings or socials, so another team can start their next meeting from yours.',
       },
       {
-        art: <McpArt />,
+        art: <AiSpaceArt />,
         href: '/help/account-and-data/connect-ai-mcp/',
         group: 'Your Spaces, your way',
         title: 'Bring your AI tools',
         description:
-          'Hook livehuddle up to Claude or any MCP client at mcp.livehuddle.app and let it find, read, create, change and share your Spaces for you: set out an agenda, fill a retro from your notes. It runs on a revocable token, read-only if you prefer.',
+          'Hook livehuddle up to Claude or any MCP client at mcp.livehuddle.app and let it find, read, create, change and share your Spaces for you: set up a Team Pod for Monday’s stand-up with a sticky on the wall for each person. It runs on a revocable token, read-only if you prefer.',
       },
       {
         art: <ApiArt />,

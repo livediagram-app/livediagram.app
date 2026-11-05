@@ -38,11 +38,11 @@ export function Hero() {
           </li>
         </ul>
         <h1 className="mx-auto mt-6 max-w-4xl sm:mt-8 text-balance text-[clamp(2.5rem,6.5vw,4.5rem)] font-semibold leading-[1.02] tracking-tight">
-          Meet and run workshops together
+          Meet your team in a Space
         </h1>
         <p className="mx-auto mt-5 max-w-2xl sm:mt-7 text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl">
-          Walk into a Space as yourself, gather round the table, and run the session on the same
-          board: timers, votes and polls built in. Share one link and everyone&rsquo;s in.
+          Walk in as your own character, find the team round the table and say hello. Rooms to meet
+          in, a timer and a quick vote when you need them. Share one link and everyone&rsquo;s in.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10">
           <a href={ctaHref('/new', 'Home.Hero')} className={PRIMARY}>

@@ -4,206 +4,306 @@ import { SITE_URL } from '@livehuddle/ui';
 // livehuddle's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livehuddle"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them. Each competes on the
-// competitor's own ground: the online board a team meets and runs its workshops on.
-const UPDATED = new Date('2026-11-03');
+// competitor's own ground: the virtual office and spatial meeting place a remote team meets in. Each
+// says plainly that livehuddle has no voice or video of its own in production yet (proximity audio and
+// calls are built but off, docs/specs/012-collaboration/proximity-audio.md), so a team runs its usual
+// call alongside. The retired Miro and FigJam pages redirect to the hub (public/_redirects).
+const UPDATED = new Date('2026-11-05');
 
 const LIST: Alternative[] = [
   {
-    slug: 'miro',
-    name: 'Miro',
-    highlights: ['Free, no tiers', 'No sign-up', 'Meet on the board'],
-    title: 'Miro alternative for meetings and workshops · livehuddle',
+    slug: 'gather',
+    name: 'Gather',
+    highlights: ['Free, no tiers', 'No sign-up to create', 'Any browser, no install'],
+    title: 'Gather alternative for a virtual office · livehuddle',
     description:
-      'A free, open-source Miro alternative for meetings and workshops: timers, votes and polls on the board, avatars in a shared Space, no account needed.',
-    h1: 'The open-source Miro alternative for meetings and workshops',
-    lede: 'Miro is a powerful, sprawling online workspace, and much of what teams do on it is meet: retros, stand-ups, planning, workshops. livehuddle is built for exactly that part. Open a Space from a link, walk in as your own character, and run the session on the board with a timer, votes and polls built in, free, open source and with no sign-up.',
+      'A free, open-source Gather alternative: walk your team round a virtual office as characters, meet in rooms, no account, no install and no per-seat plan.',
+    h1: 'The free, open-source Gather alternative',
+    lede: 'Gather made the pixel-art virtual office popular: walk up to a teammate and the call starts. livehuddle is a virtual office in the same spirit, free and open source, that anyone opens from a link without an account. It has no voice or video of its own yet, so a team keeps its usual call open beside the Space.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free tier, then paid plans' },
-      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary SaaS' },
+      { label: 'Price', us: 'Free, every feature', them: 'Free for small teams, then paid plans' },
+      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
-        us: 'Yes, create and run a session as a guest',
-        them: 'An account to create boards; guest editing on paid plans',
-      },
-      { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
-      {
-        label: 'Session tools',
-        us: 'Timer, dot votes, polls, quizzes, estimates, Q&A and a facilitator baton, free',
-        them: 'Timer, voting and facilitation tools, several on paid plans',
+        us: 'Yes, create and share a Space as a guest',
+        them: 'An account to create an office',
       },
       {
-        label: 'Meeting in a place',
-        us: 'Avatars walking round offices, team pods and halls',
-        them: 'Boards; meeting presence through cursors and video',
+        label: 'Voice and video',
+        us: 'Not yet: run your usual call alongside',
+        them: 'Built in, and it follows where you walk',
+      },
+      {
+        label: 'Getting in',
+        us: 'Any modern browser, nothing to install',
+        them: 'The browser, or its desktop apps',
+      },
+      {
+        label: 'On the floor',
+        us: 'Stickies, images, a shared timer, a quick vote and Reaction Pads',
+        them: 'Interactive objects, private areas and meeting rooms',
       },
       {
         label: 'Programmatic access',
         us: 'REST API, a command line and an MCP server for AI tools, all free',
-        them: 'Developer platform + marketplace',
+        them: 'Integrations such as calendars',
       },
     ],
     themBest: [
-      'Facilitating very large workshops: breakout-scale sessions and a marketplace of meeting apps around the board.',
-      'A deep template and integration marketplace (Jira, Slack, and more).',
-      'One workspace for everything visual: diagrams, docs, tables and video walkthroughs beside the workshop boards.',
-      'Enterprise admin, SSO, and compliance at large scale.',
+      'Voice and video built in: walk up to someone and you are talking, walk away and the call ends. livehuddle has no voice or video in production yet.',
+      'Screen sharing inside the office, so a quick look at someone’s work needs no second tool.',
+      'Desktop apps that keep the office open all day, with notifications when someone comes over.',
+      'A deep map maker and object library for building an office that looks exactly like yours.',
+      'Calendar integration, so a scheduled meeting opens in the right room.',
     ],
     usBest: [
-      "It's free for everyone and MIT-licensed, with no per-seat pricing and nothing to upgrade to.",
-      'Open a link and you are in, with no sign-up wall, even to create a Space.',
-      'Meet in a place, not just on a board: everyone walks their own character round a virtual office, a team pod or an all-hands hall, with a status, speech bubbles and reactions.',
-      'Session tools on every board: a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
-      'One person runs the room: hand the facilitator baton to whoever is running it, and the timer, votes and reveals answer to them alone.',
-      'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
-      'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
-      'Assign action items to teammates on the board itself, so the follow-ups leave the meeting with an owner.',
-      '5 templates: a blank Space, and offices, team pods and halls to walk round.',
+      'Free for everyone and MIT-licensed, with no per-seat pricing, no team-size limit on a plan, and nothing to upgrade to.',
+      'Open a link and you are in, with no sign-up, even to create a Space, and nothing to install.',
+      '5 templates: a blank Space, a Virtual Office, a Team Pod, a Coworking Space and an All-Hands Hall, each ready to walk into.',
+      'Your own character with outfits, a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves, and Follow to go wherever a teammate goes.',
+      'A Space is also a board: sticky notes, text, images, stickers, icons and link cards on the walls, a shared timer and a quick dot vote on the notes.',
+      'Share links at three levels: an Editor reshapes the office, a Participant walks, writes and votes, and a Viewer walks and watches. Add a password or an expiry, or revoke a link at any time.',
+      'A free REST API, a command line and an MCP server, so scripts and AI assistants can set up and change your Spaces.',
+      'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
     ],
     sections: [
       {
-        heading: 'Built for the meeting, not the whole workspace',
+        heading: 'A virtual office, open from a link',
         paragraphs: [
-          'Miro grew into a broad workspace: boards, docs, tables, diagrams, video walkthroughs and a marketplace of apps. livehuddle does one part of that and goes deep on it: the time a team spends together. Every board is a workshop board, with the Session strip at its foot holding a timer, votes and polls, and a palette of the things a facilitator reaches for, from a Q&A board and an idea box to a quiz with a countdown.',
-          'Workshops are built in rather than bolted on. A facilitator runs the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes and responses kept hidden until the reveal, and templates cover retrospectives in five formats, Lean Coffee and town hall Q&A. When the session ends, the actions it produced are assigned on the board.',
+          'Gather and livehuddle share the idea that a remote team should meet in a place, not a grid of faces: everyone is a little character, the office has rooms, desks and a coffee corner, and you can see who is around before you say hello. In livehuddle you walk in as your own pixel character in your own colour, sit at a desk or round the meeting table, show a status above your head, and talk in speech bubbles. Portals take everyone from one room or tab to the next.',
+          'Start from the Virtual Office, the Team Pod, the Coworking Space or the All-Hands Hall, or build your own from rooms, walls, desks, chairs, sofas, meeting tables, rugs, plants, bookshelves, a water cooler and a coffee machine.',
         ],
       },
       {
-        heading: 'A place to meet in',
+        heading: 'Where Gather goes further: talking',
         paragraphs: [
-          'A board shows where people are pointing; a Space shows where they are. Open the Team Pod or the Virtual Office and you walk in as a little character in your own colour, sit at a desk, gather round the meeting table, and say hello in a speech bubble. A status above your head tells the room whether you are free, focusing, in a meeting or away, and portals take everyone from one room or tab to the next.',
+          'Gather’s heart is proximity video and audio: the people near you are the people you hear. livehuddle has proximity audio and calls built, but they are switched off in production while they are finished, so today a team keeps its usual call (Meet, Zoom, Teams or anything else) open beside the Space. If talking inside the office itself is what you need, Gather is the better pick for now.',
         ],
       },
       {
-        heading: 'Free means free, not a free tier',
+        heading: 'More than a floor plan',
         paragraphs: [
-          "Miro's free tier is real, but it's the top of a pricing funnel: board limits and gated features exist to move teams onto paid seats. livehuddle has no paid tier and no plan to introduce one. The hosted version at livehuddle.app is free, every user gets every feature, and there is nothing to upgrade to.",
-          'The whole codebase is MIT-licensed and public, so anyone can read exactly how it works.',
+          'Every livehuddle Space is also a board, so the walls of a room hold the meeting: sticky notes, text, images, stickers, icons and link cards, grouped in frames. The Session strip runs a shared timer and a quick vote, dots on the notes, and one person can hold the facilitator baton so the timer and the vote answer to them. Bring Focus offers everyone a jump to what you mean, the laser and spotlight point at it, and comments with mentions, reactions and assigned actions keep the follow-ups with the Space.',
         ],
       },
       {
-        heading: 'Collaboration without the onboarding',
+        heading: 'Free means free, and open',
         paragraphs: [
-          'In Miro, creating a board starts with an account, and anonymous guest editing depends on the plan you are on. In livehuddle, joining is a URL. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. A link is an Editor, Participant or view-only link (a Participant adds stickies, writes and votes but cannot reshape the board), and it can carry a password or an expiry date when you need it locked down.',
-          'For programmatic use there is a free REST API with personal tokens, a command line, and an MCP server at mcp.livehuddle.app that lets AI assistants read and change your Spaces directly. None of it sits behind a plan.',
+          'livehuddle has no paid tier and no plan to introduce one: every user gets every feature at livehuddle.app. The whole codebase is MIT-licensed and public, so anyone can read exactly how it works. A guest’s new Space is kept in their browser until they press Share, which syncs it in one step, and accounts are optional.',
         ],
       },
     ],
     faqs: [
       {
+        q: 'Can we talk by voice or video in livehuddle like we do in Gather?',
+        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Everything else, the characters, rooms, statuses, speech bubbles, timer and vote, works live for everyone in the Space.',
+      },
+      {
+        q: 'Can I bring my Gather office across?',
+        a: 'There is no Gather importer. Start from the Virtual Office template and rearrange its rooms, or build your own from the office pieces. You can add a picture of your old map to a tab as an image to work from.',
+      },
+      {
+        q: 'Do my teammates need an account or an app?',
+        a: 'Neither. Share a link and anyone who opens it walks into the Space in a modern browser, without signing up or installing anything. Accounts are optional and mainly keep your Spaces across devices and let you use teams.',
+      },
+      {
         q: 'Is livehuddle really free?',
-        a: 'Yes. The hosted version at livehuddle.app is free with every feature included, and there is no paid tier or plan to add one. The code is MIT-licensed and public.',
-      },
-      {
-        q: 'Do my teammates need an account to join a session?',
-        a: 'No. Share a link and anyone who opens it is in the Space with you, live cursors and all, without signing up. You do not need an account to create a Space either: a guest’s Space is kept in their browser until they press Share, which syncs it in one step. Accounts are optional and mainly useful for keeping your Spaces across devices and using teams.',
-      },
-      {
-        q: 'Can I import my existing Miro boards?',
-        a: "There's no direct Miro importer today. For a recurring session, the fastest path is to start from a livehuddle template (a retro, a town hall, Lean Coffee, a meeting agenda) and carry on there.",
-      },
-      {
-        q: 'Can livehuddle run workshops the way Miro does?',
-        a: 'Retros, stand-ups, brainstorms, estimation and planning sessions work well: a facilitator runs a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the Space keeps the comments and assigned actions that came out of it. What livehuddle does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
+        a: 'Yes. Every feature is free for everyone, with no paid tier and no team-size limit on a plan. The code is MIT-licensed and public.',
       },
     ],
   },
   {
-    slug: 'figjam',
-    name: 'FigJam',
-    highlights: ['No seats', 'No sign-up', 'Avatars in a Space'],
-    title: 'FigJam alternative for meetings and workshops · livehuddle',
+    slug: 'teamflow',
+    name: 'Teamflow',
+    highlights: ['Free and open source', 'No install', 'A board in every room'],
+    title: 'Teamflow alternative for a virtual office · livehuddle',
     description:
-      'A free, open-source FigJam alternative for meetings and workshops: session tools built in, avatars in a shared Space, and no account or seat needed.',
-    h1: 'The free, open-source FigJam alternative for meetings and workshops',
-    lede: 'FigJam is a polished, playful whiteboard that lives inside Figma, and a favourite for retros, brainstorms and team rituals. livehuddle covers that same ground, the sessions a team runs together, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
+      'A free, open-source Teamflow alternative: a virtual office in the browser where your team walks between rooms as characters, with notes on the walls.',
+    h1: 'The free, open-source Teamflow alternative',
+    lede: 'Teamflow is a virtual office built round video: the team’s faces float in rooms you move between, with shared apps beside the call. livehuddle is a virtual office too, where everyone walks between rooms as a character and the walls hold the meeting. It is free, open source and needs no install, but it has no voice or video of its own yet, so the call stays in your usual tool.',
     rows: [
-      {
-        label: 'Price',
-        us: 'Free, every feature',
-        them: 'Free Starter plan with limits, then paid Figma seats',
-      },
+      { label: 'Price', us: 'Free, every feature', them: 'Paid plans per user' },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
-        us: 'Yes, create and run a session as a guest',
-        them: 'An account to create files',
-      },
-      { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
-      {
-        label: 'Session tools',
-        us: 'Timer, dot votes, polls, quizzes, estimates, Q&A and a facilitator baton',
-        them: 'Timer, voting, music and widgets',
+        us: 'Yes, create and share a Space as a guest',
+        them: 'An account to create an office',
       },
       {
-        label: 'Meeting in a place',
-        us: 'Avatars walking round offices, team pods and halls',
-        them: 'Cursors, cursor chat and emotes on the board',
+        label: 'Voice and video',
+        us: 'Not yet: run your usual call alongside',
+        them: 'Built in, video bubbles that move with you',
+      },
+      {
+        label: 'Getting in',
+        us: 'Any modern browser, nothing to install',
+        them: 'A desktop app, and the browser',
+      },
+      {
+        label: 'In a room',
+        us: 'Stickies, images, a shared timer, a quick vote and Reaction Pads',
+        them: 'Screen shares and shared apps beside the call',
       },
       {
         label: 'Programmatic access',
         us: 'REST API, a command line and an MCP server for AI tools, all free',
-        them: 'A plugin and widget platform, and the Figma API',
+        them: 'Integrations such as calendars',
       },
     ],
     themBest: [
-      'Your team designs in Figma, and you want boards that sit beside your design files and copy across into them.',
-      'A playful, polished feel: stamps, stickers, emotes, cursor chat and widgets.',
-      'A large community of plugins, widgets and templates.',
-      'FigJam AI, for generating boards, sorting and summarising sticky notes.',
+      'Video first: everyone’s face is on the floor, and moving next to someone starts the conversation. livehuddle has no voice or video in production yet.',
+      'Several screen shares at once in a room, so a group can compare work side by side.',
+      'Apps that sit beside the call in a room, so notes and shared documents live where the conversation is.',
+      'A desktop app that keeps the office running in the background all day.',
     ],
     usBest: [
-      'Free with no file limits and no seats: every feature, for everyone.',
-      'Open a link and start, no account needed, even to create a Space.',
-      'Meet on the board: everyone walks an avatar round a virtual office or team pod, with speech bubbles, a status and a cheer when it goes well.',
-      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
-      'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
-      'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
-      '5 templates: a blank Space, and offices, team pods and halls to walk round.',
-      'A free REST API, a command line and an MCP server, so scripts and AI assistants can read and change your Spaces.',
-      'MIT-licensed, with portable exports, so your sessions never depend on one vendor.',
+      'Free for everyone and MIT-licensed, with no per-seat pricing and nothing to upgrade to.',
+      'Open a link and walk in from any modern browser, with nothing to install and no sign-up, even to create a Space.',
+      'A place you can see: everyone is a character in their own colour and outfit, with a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves.',
+      '5 templates: a blank Space, a Virtual Office, a Team Pod, a Coworking Space and an All-Hands Hall, and office pieces to build more rooms.',
+      'The walls hold the meeting: sticky notes, text, images, stickers and link cards, a shared timer and a quick dot vote on the notes.',
+      'Bring Focus, follow-me, the laser and spotlight to walk the room through something, and Reaction Pads for confetti, sparkles, hearts, applause or fireworks when it goes well.',
+      'Comments with mentions and reactions, and actions assigned to a teammate, so the follow-ups leave with an owner.',
+      'A free REST API, a command line and an MCP server, so scripts and AI assistants can set up and change your Spaces.',
     ],
     sections: [
       {
-        heading: 'A board without the seat',
+        heading: 'Two kinds of virtual office',
         paragraphs: [
-          'FigJam is part of Figma, and that is its great strength for design teams: boards and design files share one home. For everyone else, it means accounts, a free plan with limits on shared files, and paid seats as the team grows. livehuddle has none of that. Anyone can open a Space without signing up, share a link, and work together in real time; a guest’s Space stays in their browser until they press Share, which syncs it in one step. There is no paid tier and no plan to introduce one.',
+          'Teamflow puts the team’s video on a shared floor: you drag yourself next to someone and the conversation starts, with screen shares and apps beside you. livehuddle puts the team’s characters on a floor plan: you walk into a room, sit at the meeting table or a desk, and everyone can see where everyone is and what they are up to from their status.',
+          'The difference that matters most today is the call. livehuddle has proximity audio and calls built but switched off in production, so a team runs its usual call alongside the Space. If you want the video in the office itself, Teamflow is the better pick for now.',
         ],
       },
       {
-        heading: 'Workshops built in',
+        heading: 'A board in every room',
         paragraphs: [
-          'Running a session needs more than sticky notes. Every livehuddle board carries a Session strip with a shared timer, dot-voting and live polls, and one person can hold the facilitator baton so the room has a single host. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee and town hall Q&A, and comments and assigned actions keep the follow-ups with the board.',
+          'A livehuddle Space is a board as well as a place. A stand-up in the Team Pod can start with a sticky note per person and a shared timer at the foot of the screen; a decision gets a quick vote, dots on the notes; a link card points at the doc everyone needs. One person can hold the facilitator baton so the timer and the vote answer to them, and Bring Focus offers everyone a jump to the thing you mean.',
         ],
       },
       {
-        heading: 'A Space to meet in',
+        heading: 'Open from a link, for free',
         paragraphs: [
-          'FigJam shows the room as cursors. livehuddle shows it as people: open a Space and you walk in as a character in your own colour, find the team round the meeting table, and talk it through in speech bubbles, with a wave, a cheer or a burst of confetti when it lands. Offices, team pods and an all-hands hall are ready to walk into, and you can build your own rooms from desks, sofas and a coffee machine.',
-        ],
-      },
-      {
-        heading: 'Open at the edges',
-        paragraphs: [
-          'Any board exports as PNG, SVG, PDF or a portable JSON file, and any share link embeds as a live-updating iframe in a wiki or doc. For automation there is a free REST API with personal tokens, a command line, and an MCP server that lets AI assistants read and change your Spaces directly.',
+          'There is no paid tier, no seat to buy and no app to install. Anyone can open a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. A share link is an Editor, Participant or view-only link, and can carry a password or an expiry, or be revoked at any time.',
+          'The whole codebase is MIT-licensed and public. Signed in, your Spaces can sync to your own Google Drive, and a Space in This Browser never reaches our servers at all.',
         ],
       },
     ],
     faqs: [
       {
-        q: 'Is livehuddle really free compared with FigJam?',
-        a: 'Yes. Every feature is free for everyone, with no file limits, no seats and no paid tier. The code is MIT-licensed.',
+        q: 'Does livehuddle have video like Teamflow?',
+        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now keep your usual call open beside the Space. Characters, rooms, statuses, speech bubbles, the timer and the vote all work live.',
       },
       {
-        q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new sessions, start from one of the 5 templates.',
+        q: 'Do I need to install anything?',
+        a: 'No. livehuddle runs in any modern browser on a laptop, desktop or tablet, and a phone can join to look and walk. There is no desktop app to install.',
       },
       {
-        q: 'Does livehuddle work with Figma?',
-        a: 'Partly. A Figma file, prototype or board link sits on the board as a live embed, but nothing syncs or imports between the two. If your boards need to live beside your Figma design files, FigJam is the better pick.',
+        q: 'Can I move my Teamflow office over?',
+        a: 'There is no Teamflow importer. The Virtual Office template gives you rooms, desks and a meeting table to start from, and every piece can be moved, added or removed.',
       },
       {
-        q: 'Can my team join without accounts?',
-        a: 'Yes. Share an editor link and anyone who opens it is in the Space with you, live cursors and all, without signing up. A Participant link lets people add stickies, write and vote without reshaping the board, and a view-only link just watches and walks. You can add a password or an expiry date to a link, and revoke it at any time.',
+        q: 'Is livehuddle really free?',
+        a: 'Yes. Every feature is free for everyone, with no paid tier and no per-seat pricing. The code is MIT-licensed and public.',
+      },
+    ],
+  },
+  {
+    slug: 'kumospace',
+    name: 'Kumospace',
+    highlights: ['Free, every feature', 'No sign-up to create', 'Share roles built in'],
+    title: 'Kumospace alternative for a virtual office · livehuddle',
+    description:
+      'A free, open-source Kumospace alternative: a virtual office and all-hands hall your team walks round as characters, from a link, with no account needed.',
+    h1: 'The free, open-source Kumospace alternative',
+    lede: 'Kumospace is a polished virtual office with spatial audio and video, built for a team’s everyday office and for bigger gatherings. livehuddle gives a team the same sense of place, rooms to walk into and people to find, as free, open-source software anyone opens from a link. It has no voice or video of its own yet, so a team keeps its usual call beside the Space.',
+    rows: [
+      { label: 'Price', us: 'Free, every feature', them: 'Free plan with limits, then paid plans' },
+      { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
+      {
+        label: 'Start without an account',
+        us: 'Yes, create and share a Space as a guest',
+        them: 'An account to create a space',
+      },
+      {
+        label: 'Voice and video',
+        us: 'Not yet: run your usual call alongside',
+        them: 'Spatial audio and video built in',
+      },
+      {
+        label: 'Big gatherings',
+        us: 'An All-Hands Hall with a stage to meet in',
+        them: 'Event spaces and broadcasting to a crowd',
+      },
+      {
+        label: 'Who can do what',
+        us: 'Editor, Participant and Viewer links, with passwords and expiry',
+        them: 'Roles and permissions for members and guests',
+      },
+      {
+        label: 'Programmatic access',
+        us: 'REST API, a command line and an MCP server for AI tools, all free',
+        them: 'Integrations such as calendars',
+      },
+    ],
+    themBest: [
+      'Spatial audio and video built in: voices get louder as you walk closer. livehuddle has no voice or video in production yet.',
+      'Large events: a stage that broadcasts to a big audience, and spaces built for parties and conferences.',
+      'Screen sharing and music in the room.',
+      'A desktop app, and a rich furniture and decor library for an office that looks its best.',
+    ],
+    usBest: [
+      'Free for everyone and MIT-licensed: no plan limits on people or rooms, and nothing to upgrade to.',
+      'Open a link and walk in, with no sign-up, even to create a Space, and nothing to install.',
+      '5 templates: a blank Space, a Virtual Office, a Team Pod, a Coworking Space and an All-Hands Hall.',
+      'Everyone is a character with outfits, a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves, and Follow takes you wherever a teammate goes.',
+      'The walls hold the meeting: sticky notes, text, images, stickers and link cards, with a shared timer and a quick dot vote at the foot of the screen.',
+      'Participant links let people walk, add notes and vote without moving the furniture, and view-only links let them walk and watch.',
+      'A free REST API, a command line and an MCP server, so an AI assistant can set up a Space and share it for you.',
+      'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
+    ],
+    sections: [
+      {
+        heading: 'A place for the team to be',
+        paragraphs: [
+          'Kumospace and livehuddle both turn a remote team’s day into a place: an office with rooms, desks and a corner to chat in, where you can see who is around. In livehuddle that place is a Space. Walk in as your own character, sit at your desk, set your status to Focusing when you need quiet, and walk over to the meeting table when it is time to talk.',
+          'For the whole company there is the All-Hands Hall, with a stage at the front, and Reaction Pads for a burst of confetti, sparkles, hearts, applause or fireworks when the news lands.',
+        ],
+      },
+      {
+        heading: 'What livehuddle does not do yet',
+        paragraphs: [
+          'Kumospace is built on spatial audio and video. livehuddle has proximity audio and calls built, but they are switched off in production, so a team runs its usual call beside the Space for now. For a large event broadcast to a crowd, or a meeting that must happen entirely inside the office, Kumospace is the better pick.',
+        ],
+      },
+      {
+        heading: 'A meeting you can write on',
+        paragraphs: [
+          'Every Space is also a board. Put a sticky note per person on the wall for the stand-up, start the shared timer, and finish with a quick vote, dots on the notes. Bring Focus offers everyone a jump to what you mean, and comments with mentions and assigned actions carry the follow-ups out of the meeting.',
+        ],
+      },
+      {
+        heading: 'Free, open and yours',
+        paragraphs: [
+          'There is no paid tier and no plan to introduce one. The whole codebase is MIT-licensed and public. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. Export a tab as PNG, SVG, PDF or a JSON file that imports back, and script the rest with the free REST API, the command line or the MCP server.',
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: 'Can we talk in livehuddle the way we do in Kumospace?',
+        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Characters, rooms, statuses, speech bubbles, the timer and the vote all work live.',
+      },
+      {
+        q: 'Can I hold an all-hands in livehuddle?',
+        a: 'Yes, as a place to gather: the All-Hands Hall has a stage at the front and room for the whole team to walk in, with Reaction Pads for applause and confetti. The talking happens on your usual call for now, and Kumospace is the better pick for broadcasting to a large audience.',
+      },
+      {
+        q: 'Can I import my Kumospace office?',
+        a: 'There is no Kumospace importer. Start from the Virtual Office or Coworking Space template and arrange the office pieces to match.',
+      },
+      {
+        q: 'Do guests need an account?',
+        a: 'No. Share a link and anyone who opens it is in the Space with you, without signing up. You do not need an account to create a Space either.',
       },
     ],
   },
@@ -216,9 +316,9 @@ export const COMPARISONS: Comparisons = {
   hub: {
     title: 'How livehuddle compares · alternatives',
     description:
-      'Honest, side-by-side comparisons of livehuddle with Miro and FigJam for meetings and workshops, including where each is the better pick.',
+      'Honest, side-by-side comparisons of livehuddle with Gather, Teamflow and Kumospace as a virtual office, including where each is the better pick.',
     heading: 'How livehuddle compares',
-    lede: 'Thinking about another tool for your meetings and workshops? Here is an honest, side-by-side look at how livehuddle compares, including where each one is the better pick.',
+    lede: 'Looking for a virtual office for your team? Here is an honest, side-by-side look at how livehuddle compares with the spatial meeting tools you may know, including where each one is the better pick.',
   },
   alternatives: LIST,
 };

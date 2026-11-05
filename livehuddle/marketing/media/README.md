@@ -10,9 +10,18 @@ split by viewport so the desktop and mobile pitches stay independent. Each is
 captioned with what it shows so copywriters can match it to a claim in
 [`../copy/facts.md`](../copy/facts.md).
 
-Most of these show an older Explorer, telemetry page and editor chrome: today the Explorer and the telemetry
-dashboard are liveworkspace.app's, and livehuddle has no Pages or Plan modes. Retake a shot before using it for a
-claim about those surfaces.
+**None of these shows livehuddle as it is today.** They came over from livediagram at the fork and show diagrams,
+mind maps, flowcharts, shapes and the old Explorer and telemetry page. livehuddle is for meeting in Spaces
+([Purpose](../../docs/specs/001-project-vision/purpose.md)), and the diagram tools, Pages and Plan modes are not in
+it ([Not in livehuddle](../../docs/specs/002-project-scope/not-in-livehuddle.md)), so do not use any of them for a
+claim. They are kept only until a new set replaces them. The set to shoot, each with two or three characters walking:
+
+- A Team Pod mid stand-up: characters round the meeting table, a sticky note per person, the timer running.
+- The Virtual Office: rooms, desks, the coffee corner, statuses over a few heads.
+- The All-Hands Hall: a crowd facing the stage, a Reaction Pad's confetti.
+- A speech bubble and the Avatar panel (outfits, status, the five moves).
+- The Share dialog: Editor, Participant and Viewer links, expiry and password.
+- The same Space on a phone, a tap to walk.
 
 ### Desktop (`desktop/`)
 
@@ -45,8 +54,9 @@ claim about those surfaces.
 
 ### Mobile (`mobile/`)
 
-These need retaking too: they show Explorer and Palette buttons, where the phone now has the Toolbar layout (the
-palette as one strip across the top, the Explorer behind a menu button).
+These need retaking too, for the same reason: they show livediagram's diagrams, and Explorer and Palette buttons
+where the phone now has the Toolbar layout (the palette as one strip across the top, the Explorer behind a menu
+button).
 
 | File                | Shows                                                                                   |
 | ------------------- | --------------------------------------------------------------------------------------- |
@@ -92,8 +102,10 @@ also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test
 
 - **Brand color** is sky blue `#0EA5E9` ("livehuddle blue"); the logo has its own sky-to-indigo prism palette. Page background
   `#F8FAFC`, canvas white. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
-- **Show, don't tell.** Screenshots should feature a real diagram with visible
-  multiplayer cursors, since "no sign-in, real-time" is the pitch.
+- **Show, don't tell.** Screenshots should feature a real Space with several
+  characters in it, since "meet your team in a Space" is the pitch. Never show
+  a call, a video tile or a microphone control: voice and video are off in
+  production ([`../copy/facts.md`](../copy/facts.md) "Do not claim").
 - **Keep claims current.** When the UI changes, retake the affected screenshot:
   a stale shot that shows a removed control is worse than none.
 - **Keep large binaries out of git where practical.** Prefer SVG for logos and

@@ -1,9 +1,9 @@
 import {
+  lucideBuilding2,
   lucideSearch,
   lucideShare2,
-  lucideSquareKanban,
+  lucideStickyNote,
   lucideUndo2,
-  lucideWorkflow,
   lucideTrash2,
 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livehuddle/ui';
@@ -12,14 +12,14 @@ import { lucideGlyph } from '@livehuddle/ui';
 // card maps to a shipped tool (docs/specs/015-api/mcp-server.md §4); a new tool earns a card here only once it ships.
 const CAPABILITIES = [
   {
-    icon: lucideGlyph(lucideWorkflow, 20),
-    title: 'Sessions from a sentence',
-    body: 'Stand-ups, workshops, offices and processes. Your AI names the boxes and links; livehuddle lays them out. Mermaid works too.',
+    icon: lucideGlyph(lucideBuilding2, 20),
+    title: 'Spaces from a sentence',
+    body: 'A Team Pod for the stand-up, a Virtual Office with a floor for each team, an All-Hands Hall for Friday: each from the Space templates, furnished and ready to walk into.',
   },
   {
-    icon: lucideGlyph(lucideSquareKanban, 20),
-    title: 'Boards and templates',
-    body: 'Retros, agendas, lean coffee, quizzes and more from the template library, filled in with your own content.',
+    icon: lucideGlyph(lucideStickyNote, 20),
+    title: 'Notes on the walls',
+    body: 'Sticky notes, titles and labels in the rooms, written from your words, in a theme that fits the team.',
   },
   {
     icon: lucideGlyph(lucideTrash2, 20),

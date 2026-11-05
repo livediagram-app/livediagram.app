@@ -10,8 +10,8 @@ import { timelineOf } from './hero-space-floor-motion';
 const html = renderToStaticMarkup(<Hero />);
 
 describe('the hero', () => {
-  it('pitches meetings and workshops under its two promise badges', () => {
-    expect(html).toContain('>Meet and run workshops together</h1>');
+  it('pitches meeting in a Space under its two promise badges', () => {
+    expect(html).toContain('>Meet your team in a Space</h1>');
     expect(html).toMatch(/aria-label="Our promises"/);
     expect(html).toContain('Free and open source');
     expect(html).toContain('No sign-up to start');
