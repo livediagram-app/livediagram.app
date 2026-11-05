@@ -1037,7 +1037,7 @@ function Pane({
           </HeaderIconButton>
         ) : null}
         {section.kind === 'inbox' ? (
-          <span ref={setInboxSlot} className="flex max-w-[8.5rem] shrink-0 max-sm:max-w-[9rem]" />
+          <span ref={setInboxSlot} className="flex max-w-[8.5rem] shrink-0 max-sm:max-w-[13rem]" />
         ) : null}
         {/* This Browser holds only this app's items, and the Library is the app's own. */}
         {section.kind === 'library' || section.kind === 'offline' ? null : (
