@@ -30,7 +30,7 @@ describe('upgradeLegacyPreferences', () => {
     });
   });
 
-  it("keeps the Pages tour seen for someone who had the mode on, adding to the kinds already answered", () => {
+  it('keeps the Pages tour seen for someone who had the mode on, adding to the kinds already answered', () => {
     expect(
       upgradeLegacyPreferences({
         powerUserMode: true,

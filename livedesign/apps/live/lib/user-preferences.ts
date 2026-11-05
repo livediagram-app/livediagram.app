@@ -365,7 +365,7 @@ async function loadUserPreferences(ownerId: string): Promise<UserPreferences | n
   const local = readUserPreferences();
   // Remembered as the server holds it, so the next write sends a null for each retired key dropped here
   // (docs/specs/007-editor/user-preferences.md "Retired keys").
-  markPreferencesSynced(ownerId, remote as UserPreferences);
+  markPreferencesSynced(ownerId, remote);
   const server = upgradeLegacyPreferences(remote) as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
