@@ -13,6 +13,7 @@ import {
   ROOM_WALL,
   roomParts,
   STAGE_FRONT,
+  STAGE_SPEAKER_LABELS,
   STAGE_SPEAKERS,
   stageParts,
   stageTop,
@@ -96,6 +97,10 @@ describe('the stage', () => {
 
   it('takes Editors, or Editors and Participants, and a Show Cameras flag', () => {
     expect(STAGE_SPEAKERS).toEqual(['edit', 'take-part']);
+    expect(STAGE_SPEAKERS.map((v) => STAGE_SPEAKER_LABELS[v])).toEqual([
+      'Editors',
+      'Editors and Participants',
+    ]);
     for (const v of STAGE_SPEAKERS) expect(isStageSpeakers(v)).toBe(true);
     expect(isStageSpeakers('participate')).toBe(false);
     const stage = createShape('stage', 0, 0);

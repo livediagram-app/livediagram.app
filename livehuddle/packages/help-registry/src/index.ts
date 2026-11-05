@@ -928,9 +928,9 @@ export const articles: Article[] = [
     slug: 'virtual-office',
     title: 'Virtual Office',
     description:
-      'Rooms with doorways, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
+      'Rooms with doorways, a stage, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms walls door doorway meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
+      'virtual office room rooms walls door doorway stage platform meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -1697,6 +1697,18 @@ export const articles: Article[] = [
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
+  },
+
+  // ---- Sub-articles: Virtual Office ----
+  {
+    slug: 'stage',
+    title: 'Stage',
+    description: 'A platform whoever stands on is heard by everyone on the tab, for an all-hands.',
+    keywords:
+      'stage platform podium all-hands all hands town hall keynote presenter presenting speaker speak talk heard everyone broadcast audience raise hand who can speak editors participants show cameras video call calls audio',
+    category: 'Palette',
+    categorySlug: 'palette/virtual-office',
+    parentSlug: 'virtual-office',
   },
 
   // ---- Sub-articles: Selecting and Grouping ----

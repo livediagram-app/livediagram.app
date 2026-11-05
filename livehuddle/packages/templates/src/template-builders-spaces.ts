@@ -193,9 +193,10 @@ const HALL_W = 1000;
 const HALL_H = 730;
 const SEAT_XS = [90, 175, 260, 345, 580, 665, 750, 835];
 const ROW_YS = [290, 390, 490, 590];
-// The stage: the rug at its own 5:3, centred across the hall.
-const STAGE_W = 360;
-const STAGE_H = 216;
+// The stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in"): a real Stage, centred
+// across the hall, its front edge well clear of the first row.
+const STAGE_W = 400;
+const STAGE_H = 160;
 const STAGE_X = (HALL_W - STAGE_W) / 2;
 
 export function buildAllHandsHall(cx: number, cy: number): Element[] {
@@ -212,8 +213,9 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
       h: HALL_H,
       door: 's',
       pieces: [
-        // The stage, and rows of chairs facing it either side of an aisle.
-        { kind: 'rug', x: STAGE_X, y: 48, w: STAGE_W, h: STAGE_H },
+        // The stage, and rows of chairs facing it either side of an aisle. Whoever speaks from it is heard by the
+        // whole hall, and seen: the hall exists for a presenter everyone watches.
+        { kind: 'stage', x: STAGE_X, y: 48, w: STAGE_W, h: STAGE_H, stageCameras: true },
         ...ROW_YS.flatMap((y) =>
           SEAT_XS.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const })),
         ),
@@ -224,22 +226,8 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
     },
   ];
   const top = y0 + HEAD;
-  const stage: Element[] = [
-    {
-      ...createText(x0 + STAGE_X, top + 48 + (STAGE_H - 40) / 2),
-      width: STAGE_W,
-      height: 40,
-      label: 'Stage',
-      textSize: 'lg',
-      textBold: true,
-      textAlignX: 'center',
-      // No ink of its own: the rug under it is drawn per half, pale on light and deep brown on dark.
-    },
-    // The presenter's Bring Focus, so the room looks where they point.
-    {
-      ...createShape('focus-button', x0 + 720, top + 70),
-    },
-  ];
+  // The presenter's Bring Focus, so the room looks where they point. The stage names itself on its plate.
+  const focus: Element = createShape('focus-button', x0 + 720, top + 70);
   return plan(
     x0,
     y0,
@@ -250,7 +238,7 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
     'emoji-raised-hands',
     'Take a seat for the all-hands: the stage up front, the room facing it, and Bring Focus for the presenter.',
     [
-      ...stage,
+      focus,
       ...walkIn(
         x0 + width,
         y0 + HEAD + HALL_H + BELOW / 2,
