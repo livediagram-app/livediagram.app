@@ -184,6 +184,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17.5 13v-3M16 10h3" />
     </Glyph>
   ),
+  // The Stage: a platform's top and the front face you see, with a microphone on a stand, as its palette tile.
+  stage: (
+    <Glyph>
+      <path d="M4.5 13.5h15L22 17H2z" />
+      <path d="M2 17v3.5h20V17" />
+      <rect x="10.25" y="2.5" width="3.5" height="5.5" rx="1.75" />
+      <path d="M12 8v5.5" />
+    </Glyph>
+  ),
   // A pressable pill with the pointer arriving from outside it: every Behaviour
   // element is something a participant activates rather than reads. The pointer
   // sits clear of the pill — overlapping the two made one shape nobody could

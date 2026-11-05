@@ -51,6 +51,7 @@ import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/prim
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
+import { StageMenuSection } from '@/components/palette/StageMenuSection';
 import {
   AgendaMenuSection,
   ChairMenuSection,
@@ -199,7 +200,8 @@ export function ElementDataSections({
     isAgenda ||
     isDecision ||
     isChair ||
-    shapeTarget?.shape === 'room';
+    shapeTarget?.shape === 'room' ||
+    shapeTarget?.shape === 'stage';
   return (
     <>
       {showTools ? (
@@ -313,6 +315,13 @@ export function ElementDataSections({
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetDoor={props.onSetRoomDoor}
+            />
+          ) : null}
+          {shapeTarget?.shape === 'stage' ? (
+            <StageMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetStage={props.onSetStage}
             />
           ) : null}
           {isChair ? (

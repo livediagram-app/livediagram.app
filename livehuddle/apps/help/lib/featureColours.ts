@@ -70,6 +70,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   fences: '#b45309',
   'avatar-pads': '#0ea5e9',
   'virtual-office': '#0f766e',
+  stage: '#d97706',
   behaviour: '#7c3aed',
   stickers: '#f43f5e',
   tools: '#14b8a6',

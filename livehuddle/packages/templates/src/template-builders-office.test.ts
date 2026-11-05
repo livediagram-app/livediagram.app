@@ -130,7 +130,7 @@ describe('the space templates', () => {
     for (const kind of ['coworking-space', 'team-pod', 'all-hands-hall'] as const) {
       const els = build(kind);
       const isFloor = (e: Element) =>
-        e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug');
+        e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug' || e.shape === 'stage');
       const firstOther = els.findIndex((e) => !isFloor(e));
       expect(els.slice(firstOther).some(isFloor), kind).toBe(false);
       expect(count(els, 'mode-button'), kind).toBe(1);
@@ -201,6 +201,27 @@ describe('the space templates', () => {
     expect(chairs).toHaveLength(32);
     expect(chairs.every((c) => c.type === 'shape' && c.chairFacing === 's')).toBe(true);
     expect(count(els, 'focus-button')).toBe(1);
+    // A real Stage up front, cameras on, inside the hall and clear of the first row; no rug and no "Stage" text
+    // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in").
+    const stages = els.filter((e) => e.type === 'shape' && e.shape === 'stage') as (Element & {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    })[];
+    expect(stages).toHaveLength(1);
+    const [stage] = stages;
+    expect(stage).toMatchObject({ label: 'Stage', width: 400, height: 160, stageCameras: true });
+    expect(stage!.type === 'shape' && stage!.stageSpeakers).toBeFalsy();
+    const hall = els.find((e) => e.type === 'shape' && e.shape === 'room') as Element & {
+      x: number;
+      width: number;
+    };
+    expect(stage!.x - hall.x).toBe(hall.x + hall.width - (stage!.x + stage!.width));
+    const firstRow = Math.min(...chairs.map((c) => (c as { y: number }).y));
+    expect(firstRow - (stage!.y + stage!.height)).toBeGreaterThanOrEqual(60);
+    expect(count(els, 'rug')).toBe(0);
+    expect(els.some((e) => e.type === 'text' && e.label === 'Stage')).toBe(false);
     // A raised hand is Behaviour › Wave, which everyone sees; a Reactions burst plays on its sender's screen only.
     const hint = els.find((e) => e.type === 'text' && /take a seat/.test(e.label ?? ''));
     expect(hint?.label).toMatch(/Wave/);

@@ -323,6 +323,11 @@ export function roomParts(width: number, height: number, door: RoomDoor): Furnit
 export type StageSpeakers = 'edit' | 'take-part';
 export const STAGE_SPEAKERS: readonly StageSpeakers[] = ['edit', 'take-part'];
 export const DEFAULT_STAGE_SPEAKERS: StageSpeakers = 'edit';
+/** Who Can Speak's tiles in the element menu (docs/specs/012-collaboration/meeting-rooms-and-stage.md part 4). */
+export const STAGE_SPEAKER_LABELS: Record<StageSpeakers, string> = {
+  edit: 'Editors',
+  'take-part': 'Editors and Participants',
+};
 export function isStageSpeakers(v: unknown): v is StageSpeakers {
   return v === 'edit' || v === 'take-part';
 }

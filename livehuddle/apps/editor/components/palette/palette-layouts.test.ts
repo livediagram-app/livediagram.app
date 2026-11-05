@@ -91,6 +91,7 @@ describe('palette layouts', () => {
       'tools:avatar-pad',
       'tools:link-card',
       'tools:room',
+      'tools:stage',
       'tools:meeting-table',
       'tools:plant',
       'tools:bookshelf',

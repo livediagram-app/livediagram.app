@@ -16,12 +16,11 @@ places, so an office is drawn with the same tools as a diagram.
 ## Where they live
 
 Shape kinds in the palette's **Collaborate** category under **Navigate**, after the chair, desk, sofa and fence:
-`room`, `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine`,
-`rug`, and (from Work Tracker #319 part 4; until then it arrives only from an agent, the API or a paste) `stage`.
+`room`, `stage`, `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine` and `rug` (the Stage's tile
+from Work Tracker #319 part 4).
 Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
 pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, lock, copy,
-theme, export. None has a settings `…`; a room's one setting and a table's are in the element menu (a stage's two come with its
-tile, in part 4).
+theme, export. None has a settings `…`; a room's one setting, a stage's two and a table's are in the element menu.
 
 ## Room
 
@@ -108,12 +107,14 @@ A raised platform for an all-hands: whoever stands on it is heard by the whole t
 - **Standing on it** is having your feet on its top; the front edge is off it.
 - **Two settings**, stored on the element: **Who Can Speak** (`stageSpeakers`: `'edit'`, Editors, the default; or
   `'take-part'`, Editors and Participants) and **Show Cameras** (`stageCameras`, off by default). Absent reads as
-  the default; anything else makes the element invalid. Set from the element menu once the stage has its tile
-  (part 4).
+  the default; anything else makes the element invalid. Set from the element menu's **Stage** section: two tiles,
+  **Editors** and **Editors and Participants**, and a **Show Cameras** switch
+  ([The stage's way in](../012-collaboration/meeting-rooms-and-stage.md#the-stages-way-in-part-4-built)).
 
 ## Share roles
 
-- **Editor**: places, moves, renames, recolours and deletes every piece; sets a room's doorway.
+- **Editor**: places, moves, renames, recolours and deletes every piece; sets a room's doorway and a stage's Who Can
+  Speak and Show Cameras.
 - **Participant**: the participant palette does not offer them; walks, sits and drinks like everyone.
 - **Viewer**: walks, sits and drinks like everyone (all of it is presence, which a Viewer has).
 
@@ -121,7 +122,8 @@ A raised platform for an all-hands: whoever stands on it is heard by the whole t
 
 - Placing one: `Element · Added · <Kind>` (`Room`, `Meeting-table`, `Plant`, `Bookshelf`, `Water-cooler`,
   `Coffee-machine`, `Rug`, `Stage`: a hyphenated kind keeps its hyphen, as every element's token does).
-- A room's doorway changed: `Element · Changed · Room`.
+- A room's doorway changed: `Element · Changed · Room`; a stage's Who Can Speak or Show Cameras: `Element · Changed ·
+Stage`.
 - Getting a drink: `Canvas · Used · WaterCooler` or `CoffeeMachine`. Never who, never how often in a session.
 
 ## Not in scope

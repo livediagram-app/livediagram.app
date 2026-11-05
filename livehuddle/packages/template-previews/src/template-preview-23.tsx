@@ -170,7 +170,9 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
       return (
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <Room x={6} y={3} w={68} h={44} door="bottom" />
-          <rect x={26} y={7} width="28" height="7" rx="2" fill="rgb(253 230 138)" />
+          {/* The stage: its top, and the front face you see below it. */}
+          <rect x={25} y={7} width="30" height="6" rx="1" fill="rgb(253 230 138)" />
+          <rect x={25} y={12} width="30" height="2.4" rx="0.6" fill="rgb(217 119 6)" />
           {[20, 26, 32, 38].map((y) =>
             [12, 18, 24, 30, 46, 52, 58, 64].map((x) => (
               <rect

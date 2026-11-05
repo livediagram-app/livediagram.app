@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { AccessLevel } from '@livehuddle/api-schema';
 import { STAGE_FRONT } from '@livehuddle/document';
+import { buildTemplate } from '@livehuddle/templates';
 import {
   inEarshot,
   MAX_PAN,
@@ -415,5 +416,35 @@ describe('raised hands let speak', () => {
     expect(speakers).toBe(101);
     // Measured: about 30 µs a scene (1.8 ms for 60).
     expect(best).toBeLessThan(cpuBudgetMs(30));
+  });
+});
+
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in" (part 4): the All-Hands Hall template
+// stands a real stage, so its presenter reaches the back row and anyone outside the hall, and is seen.
+describe('the All-Hands Hall template', () => {
+  const els = buildTemplate('all-hands-hall', 0, 0);
+  const hallZones = roomZones(els);
+  const hallStages = callStages(els, hallZones);
+  const hallStage = hallStages[0]!;
+  const hall = hallZones.find((z) => z.id === hallStage.zone)!;
+  const centre = { x: (hallStage.x0 + hallStage.x1) / 2, y: (hallStage.y0 + hallStage.y1) / 2 };
+  const hallScene = (listener: Point, who: Who) =>
+    scene(listener, who, { zones: hallZones, stages: hallStages });
+
+  it('is one stage inside the hall, Editors speaking, cameras shown', () => {
+    expect(hallStages).toHaveLength(1);
+    expect(hallStage).toMatchObject({ speakers: 'edit', cameras: true });
+    expect(hall).toBeDefined();
+  });
+
+  it('lets an Editor on the stage reach the back row and outside, seen by both; a Participant on it is the audience', () => {
+    const backRow = { x: centre.x - 300, y: hall.y1 - 60 };
+    const outside = { x: centre.x, y: hall.y1 + 400 };
+    for (const listener of [backRow, outside]) {
+      const out = hallScene(listener, [['presenter', centre, 'edit']]);
+      expect(out.heard).toEqual(['presenter']);
+      expect(out.zoning.stage?.unseen.size).toBe(0);
+    }
+    expect(hallScene(outside, [['p', centre, 'participate']]).heard).toEqual([]);
   });
 });

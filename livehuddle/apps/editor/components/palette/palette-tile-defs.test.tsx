@@ -76,7 +76,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-record': 5,
   'collab-react': 5,
   'collab-mode': 8,
-  'collab-navigate': 15,
+  'collab-navigate': 16,
   // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).
   layout: 0,
   // The meeting palette's Frame, filled by the layout with the frame alone (docs/specs/012-collaboration/workshop-mode.md).

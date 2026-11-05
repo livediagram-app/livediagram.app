@@ -67,8 +67,8 @@ The meeting palette is livehuddle's one palette, in order:
 - **Frame**: the frame alone, to group a room's notes; no lane, stack, boundary, timeline, key, card, badge or step
   number.
 - **Navigate**: Portal, Bring Focus, Chair, Desk, Sofa, Fence, Avatar Pad and Link card, then the
-  [office pieces](../009-elements/office.md): Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine and
-  Rug.
+  [office pieces](../009-elements/office.md): Room, Stage, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee
+  Machine and Rug.
 - **React**: the five [Reaction Pads](../009-elements/reaction-pad.md), Confetti, Sparkles, Hearts, Applause and
   Fireworks (owner, 2026-11-04: they stay as a light meeting tool).
 - **Selection Mode**: one [Selection Mode button](../009-elements/mode-button.md) per selection mode (the Spaces'

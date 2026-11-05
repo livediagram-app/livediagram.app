@@ -21,10 +21,11 @@ Derived from [Office](../office.md).
 | `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                          |
 | `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                   |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                               |
-| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                           |
+| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room, rug or stage goes in at the back                                                    |
 | `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                           |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`                                                                       |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | Seven Navigate tiles                                                                        |
+| `apps/editor/components/palette/StageMenuSection.tsx`    | `StageMenuSection`: Who Can Speak, Show Cameras                                             |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`, `setStageSelected`                                                   |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | Eight office tiles                                                                          |
 
 ## Domain and naming
 
@@ -66,7 +67,7 @@ Derived from [Office](../office.md).
 ## Interfaces and contracts
 
 ```ts
-export type OfficeKind = 'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug';
+export type OfficeKind = 'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug' | 'stage';
 export type RoomDoor = 'n' | 'e' | 's' | 'w' | 'none';
 export type DrinkKind = 'water' | 'coffee';
 export function roomDoorSpan(length: number, door: RoomDoor): [number, number] | null;
@@ -124,7 +125,9 @@ Drawings as in [Office](../office.md), from `OFFICE_ART` (grids: plant 56 × 88,
 wall face `ROOM_BACK_FACE` tall shaded with the stroke, mat in the doorway; label `sm`, top left, `md` padding so it
 sits in the wall's face. Stage: drawn to its size like a room, top in its fill (`STAGE_FLOOR` unstyled) with two
 plank rails, front face `STAGE_FRONT` tall shaded with the stroke, a plate centred on the face; label `sm`, centred at
-the bottom so it sits on the plate. Menu: **Room** section, five tiles (Top, Right, Bottom, Left, None), hint text as shipped.
+the bottom so it sits on the plate. Menu: **Room** section, five tiles (Top, Right, Bottom, Left, None), hint text as shipped;
+**Stage** section, two tiles (`STAGE_SPEAKER_LABELS`: Editors, Editors and Participants), a hint, and a Show Cameras
+switch ([Meeting rooms and the stage blueprint](../../012-collaboration/blueprints/meeting-rooms-and-stage.md)).
 
 ## Accessibility
 

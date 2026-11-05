@@ -229,6 +229,8 @@ export type EditorContextMenuProps = {
   onSetChairFacing: (facing: ChairFacing) => void;
   // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
+  // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
+  onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livehuddle/document').Tab[];

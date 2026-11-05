@@ -88,6 +88,13 @@ const SAMPLES: Sample[] = [
   { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: TEXT },
   { name: 'video', el: theirs(createVideo(0, 0), 'vi'), allowed: TEXT },
   { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: TEXT },
+  {
+    // A stage's settings and name are an Editor's (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share
+    // roles"): a Participant's change to Who Can Speak or Show Cameras stays as stored.
+    name: 'shape (Behaviour: stage)',
+    el: theirs({ ...createShape('stage', 0, 0), stageSpeakers: 'edit', stageCameras: false }, 'sg'),
+    allowed: [],
+  },
 ];
 
 // Values a field is offered: the kind a real client would send for it, and some it would not.

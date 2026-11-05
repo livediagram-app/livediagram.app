@@ -166,14 +166,14 @@ author?** Pressing something that acts on your session and the canvas collecting
 both what you reach for while running a session, so they are one category ([The Done check](../012-collaboration/done-check.md)
 is filed with the estimate card, not apart from it).
 
-| Group              | Holds                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                            |
-| **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
-| **Reactions**      | the five pads                                                                                                                     |
-| **Selection Mode** | one button per mode (8)                                                                                                           |
-| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
+| Group              | Holds                                                                                                                                    |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                                   |
+| **Tools**          | Reveal, Done, Picker, Timer                                                                                                              |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                        |
+| **Reactions**      | the five pads                                                                                                                            |
+| **Selection Mode** | one button per mode (8)                                                                                                                  |
+| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Stage, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
 
 **There is no Session group**: a group named after the machinery rather than the job. A poll and a dot vote ARE
 asking the room, so they sit with the estimate card and the temperature check, where somebody wanting to put a
