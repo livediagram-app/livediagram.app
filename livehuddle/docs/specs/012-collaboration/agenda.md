@@ -30,7 +30,7 @@ A **shape kind**, `agenda`. Its `label` is the session's name.
 ## The current segment
 
 `agendaCurrent` is an index into the rows, so it is kept true as they change
-(`packages/document/src/agenda-current.ts`):
+(`../livediagram/packages/document/src/agenda-current.ts`):
 
 - **Moving a row** carries the current index with it, so the segment the room
   is in stays the one lit.

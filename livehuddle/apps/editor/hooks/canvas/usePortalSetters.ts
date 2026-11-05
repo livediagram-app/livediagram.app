@@ -1,7 +1,7 @@
 // Setters for the Behaviour elements (docs/specs/009-elements/portal-element.md, docs/specs/009-elements/reaction-pad.md), off useEditorState rather
 // than the style hook: a portal link is the one element setting that reaches
 // ACROSS TABS, so these need the whole tab list and a tabs-wide commit, not the
-// active tab's element mapper every other setter uses — and the reaction pad's
+// active tab's element mapper every other setter uses, and the reaction pad's
 // setting sits beside it because it is configured from the same menu.
 //
 // Three actions, all keyed off the current selection:

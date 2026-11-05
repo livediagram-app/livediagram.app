@@ -19,7 +19,7 @@ Scope, by file:
 | `packages/document/src/svg-render-shapes.ts`                   | `svgChecklistShape`: the headless render                                                                    |
 | `apps/editor/components/canvas/ChecklistView.tsx`              | Canvas card, row buttons, footer count                                                                      |
 | `apps/editor/components/canvas/ShapeContentRouter.tsx`         | Routes the kind; `editable = !readOnly && !isLocked`                                                        |
-| `apps/editor/hooks/canvas/useCollabElements.ts`                | `toggleChecklistItem`: builds and applies the delta                                                         |
+| `apps/editor/hooks/canvas/useChecklistTicks.ts`                | `toggleChecklistItem`: builds and applies the delta                                                         |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setChecklistItemsSelected`: whole-array row edits                                                          |
 | `apps/editor/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
 | `apps/editor/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |

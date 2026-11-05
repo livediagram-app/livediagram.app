@@ -201,7 +201,7 @@ Session category.
 | **Vote**  | Dots each (1, 2, 3, 5, 8)                                         |
 | **Poll**  | The question, the answer style, and, for Choices, the list itself |
 
-The answer-style picker is `PollStyleTiles` (`apps/editor/components/panels/session-studio/PollStyleTiles.tsx`),
+The answer-style picker is `PollStyleTiles` (`../livediagram/apps/editor/components/panels/session-studio/PollStyleTiles.tsx`),
 shared by every place a poll is composed, the right-click Session section included: they configure the same button,
 so a style named differently in one of them would describe two products. Each tile previews the
 answers the style produces ("Yes No Abstain"), following the estimate card's

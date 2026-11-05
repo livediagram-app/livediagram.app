@@ -38,7 +38,7 @@ The precise answer to the question. A view link (role `view`, all tabs, no accou
   (concurrent-selection lock, `usePresenceBroadcast.ts`; `selectElement` in `useSelectionEditing.ts` has no role
   check).
 - **Take part, partly**: answer a live poll (`poll-answer` is presence-class; `PollPromptSheet` is shown to every
-  role), add a note to a Q&A board and upvote or withdraw an upvote (`routes/qa-board-routes.ts`,
+  role), add a note to a Q&A board and upvote or withdraw an upvote (the Q&A route, gone from livehuddle in Work Tracker #423 part 4,
   `isParticipantQaAction` goes through `gateRead`).
 - **Comment, partly**: add a comment to any element's unresolved thread from the anchored popover
   (`POST .../tabs/:tabId/comments`, `gateRead`), and delete their own comment (`DELETE .../comments/:id`, author
@@ -120,7 +120,7 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | Dot vote: cast, retract                    | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `castVote` returns on `editsBlocked`; `vote` is mutation class                                      |
 | Live poll: start, end                      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | mutation class plus `mayRunSession` in the room                                                     |
 | Live poll: answer                          | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | n/a | N   | N   | `poll-answer` presence class; `PollPromptSheet` ungated                                             |
-| Q&A: add note, upvote, withdraw            | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `qa-board-routes.ts`, participant actions on `gateRead`                                             |
+| Q&A: add note, upvote, withdraw            | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | the Q&A route (gone, #423 part 4), participant actions on `gateRead`                                |
 | Q&A: discuss, close, reopen, remove, clear | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | same route, other actions on `gateEdit`                                                             |
 | Estimate, temperature, Done check: answer  | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `respond` undefined when `isReadOnly`; `el-delta` (`response`) is mutation class                    |
 | Estimate, Done check: reveal, reset, scale | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked` in `EditorCanvasHost.tsx`                                              |
