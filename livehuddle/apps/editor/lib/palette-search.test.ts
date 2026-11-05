@@ -2,17 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import { SHAPE_KINDS } from '@livehuddle/document';
 
-import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
+import { modeElementTiles } from '@/components/palette/palette-tile-search';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { SHAPE_KEYWORDS } from '@/lib/palette-tile-keywords';
 
 // Drift guard. The "Add to canvas" catalogue used to be a hand-written list of
 // shapes, and it had fallen 22 kinds behind the palette without anything
 // failing: every Devices, Data, Media and Behaviour element was unfindable
-// from the search panel. It now derives from PALETTE_TILES, and these tests
-// exist so that stays true.
+// from the search panel. It now derives from the meeting palette's tiles, and these tests
+// exist so that stays true. It offers only what that palette offers
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The diagram tools still in livehuddle's UI").
 
-const shapeTiles = PALETTE_TILES.filter(
+const OFFERED = modeElementTiles('workshop');
+const shapeTiles = OFFERED.filter(
   (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
 );
 
@@ -37,26 +39,34 @@ describe('buildPaletteSearchItems', () => {
     expect(missing).toEqual([]);
   });
 
-  it('offers every non-shape palette tile too (text, arrow, table, embeds, ...)', () => {
+  it('offers every non-shape palette tile too (text, sticky, frame, ...)', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    const missing = PALETTE_TILES.filter(
+    const missing = OFFERED.filter(
       (t) => !['shape', 'icon', 'tech-icon', 'sticker'].includes(t.action.type),
     )
       .map((t) => `tile:${t.id}`)
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
+    for (const id of ['tile:tools:text', 'tile:tools:sticky']) expect(ids).toContain(id);
+  });
+
+  it('offers no diagram tool the meeting palette left out', () => {
+    const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
     for (const id of [
-      'tile:tools:text',
+      'shape:square',
+      'shape:lane',
+      'shape:stack',
+      'shape:bar-chart',
       'tile:tools:arrow',
       'tile:tools:table',
-      'tile:tools:sticky',
+      'tile:tools:pencil',
     ])
-      expect(ids).toContain(id);
+      expect(ids).not.toContain(id);
   });
 
   it('hides the image-upload tiles when the editor has no image support', () => {
     const ids = new Set(buildPaletteSearchItems({ hasImage: false }).map((i) => i.id));
-    const imageTiles = PALETTE_TILES.filter((t) => t.needsImage && t.action.type !== 'shape');
+    const imageTiles = OFFERED.filter((t) => t.needsImage && t.action.type !== 'shape');
     expect(imageTiles.length).toBeGreaterThan(0);
     for (const t of imageTiles) expect(ids).not.toContain(`tile:${t.id}`);
   });
@@ -66,7 +76,7 @@ describe('buildPaletteSearchItems', () => {
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['lane', 'bar-chart', 'portal']) {
+    for (const kind of ['portal', 'chair', 'room']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
     }
     // The Page left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2): no
@@ -79,11 +89,11 @@ describe('buildPaletteSearchItems', () => {
   });
 
   it('names each entry from the tile, not from its id', () => {
-    const lane = buildPaletteSearchItems().find((i) => i.id === 'shape:lane');
-    expect(lane?.name).toBe('Lane');
-    // The tile's description feeds the keywords, so the sentence the palette
-    // already writes about an element is searchable without being restated.
-    expect(lane?.keywords).toContain('swimlane');
+    const portal = buildPaletteSearchItems().find((i) => i.id === 'shape:portal');
+    expect(portal?.name).toBe('Portal');
+    // The tile's keywords and description feed the search, so the words the palette
+    // already writes about an element are searchable without being restated.
+    expect(portal?.keywords).toContain('teleport');
   });
 
   it('emits no duplicate ids', () => {

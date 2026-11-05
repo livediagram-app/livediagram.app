@@ -54,9 +54,9 @@ const LINE_STYLES: Record<
   RetiredPlaceholderLine['role'],
   { size: number; weight: number; opacity: number }
 > = {
-  name: { size: 13, weight: 600, opacity: 1 },
-  note: { size: 11, weight: 400, opacity: 0.7 },
-  label: { size: 11, weight: 500, opacity: 0.85 },
+  name: { size: 15, weight: 600, opacity: 1 },
+  note: { size: 12, weight: 400, opacity: 0.7 },
+  label: { size: 13, weight: 500, opacity: 0.85 },
 };
 
 type RetiredSource = {

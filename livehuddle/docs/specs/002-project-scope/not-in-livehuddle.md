@@ -88,7 +88,8 @@ and redacted by the api, never read or written by the editor.
 Part 4 also removes the diagram tools livehuddle's UI still offered after part 3, with their help articles (each old
 address redirects to the nearest article that stays): Tidy Up's Auto Layout tiles (Tidy Up keeps Auto-Align and its
 cleanup), the Explorer's Shape Libraries page and library import, the draw.io, Mermaid, Markdown and Microsoft
-Whiteboard imports, and Settings' Auto-Attach Arrows. The element engine under the diagram tools (shapes, arrows,
+Whiteboard imports, Settings' Auto-Attach Arrows, and the search panel's Add to Canvas results for tiles the meeting
+palette does not offer (it adds only what the palette offers). The element engine under the diagram tools (shapes, arrows,
 pens, the layout containers) is Work Tracker #459's, not this part's: a stored one still draws, moves and deletes.
 
 ## Share roles
