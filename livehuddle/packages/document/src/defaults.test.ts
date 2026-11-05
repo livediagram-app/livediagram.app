@@ -52,7 +52,7 @@ describe('PADDING_PX lookup', () => {
     expect(PADDING_PX.none).toBe(0);
   });
 
-  it('orders presets monotonically (none < sm < md < lg) so the Layer accordion icons read correctly', () => {
+  it('orders presets monotonically (none < sm < md < lg) so the padding icons read correctly', () => {
     expect(PADDING_PX.none).toBeLessThan(PADDING_PX.sm);
     expect(PADDING_PX.sm).toBeLessThan(PADDING_PX.md);
     expect(PADDING_PX.md).toBeLessThan(PADDING_PX.lg);

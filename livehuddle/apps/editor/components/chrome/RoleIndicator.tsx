@@ -2,9 +2,10 @@
 
 import { useId } from 'react';
 import { lucideGlyph, PencilIcon, Tooltip } from '@livehuddle/ui';
-import { lucideVote } from '@liveworkspace/icons/lucide';
-import { EyeIcon } from '@/components/panels/layers-panel-icons';
+import { lucideEye, lucideVote } from '@liveworkspace/icons/lucide';
 import type { AccessLevel } from '@livehuddle/api-schema';
+
+const EyeIcon = lucideGlyph(lucideEye, 13);
 
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md), in two shapes

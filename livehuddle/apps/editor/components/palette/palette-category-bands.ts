@@ -9,7 +9,7 @@ export const CATEGORY_BANDS: Record<number, string> = {
   1: 'Structure',
   2: 'Decorate',
   3: 'Dynamic',
-  // The meeting palette's Navigate, React and Selection Mode (docs/specs/012-collaboration/workshop-mode.md "The
-  // palette"): what a Space is walked round, met in and celebrated with.
+  // The meeting palette's Space categories and Selection Mode (docs/specs/012-collaboration/workshop-mode.md "The
+  // palette"): what a Space is built from and walked round.
   6: 'Meet',
 };

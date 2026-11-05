@@ -281,7 +281,7 @@ each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-proj
 - **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
   Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
   (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
-- **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the Reaction Pads, the
+- **The light meeting tools**: the Session strip's Timer, Bring Focus, the Reaction Pads, the
   facilitator baton and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`,
   `docs/specs/009-elements/reaction-pad.md`).
 - **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
@@ -299,7 +299,7 @@ The rules:
 
 - **A fix or change to one of these lands in both products in the same PR**, specs and code, **or the code moves to
   `packages/` first** (as `@liveworkspace/*`, the root AGENTS.md order) so there is one copy to change. The pure parts
-  of the Session strip's Timer and Vote, Bring Focus and the facilitator baton are the next extraction, to
+  of the Session strip's Timer, Bring Focus and the facilitator baton are the next extraction, to
   `@liveworkspace/session-tools`, the first time a change has to land in both.
 - What is already one copy stays one: the avatar core and its wire shapes (`@liveworkspace/avatar`,
   `@liveworkspace/api-schema`), the realtime room's shared shapes, and everything else in `packages/`.

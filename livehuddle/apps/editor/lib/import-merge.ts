@@ -6,8 +6,6 @@ import { migrateStoredTab, type Tab } from '@livehuddle/document';
 // the import brings, what the receiving tab keeps, and — the part that was
 // silently wrong — what must travel or the round trip loses meaning.
 //
-// `layers` is in that last group: without it, every imported element's `layerId` dangles and the bands it
-// was organised into are lost.
 // A file is a stored tab like any other, so it takes the same migrations on
 // the way in (retired schemes, retired groups and docks).
 export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
@@ -21,7 +19,6 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     kind: imported.kind ?? receiving.kind,
     // The mode the tab opens in travels with it (docs/specs/007-editor/editor-modes.md).
     opensIn: imported.opensIn ?? receiving.opensIn,
-    layers: imported.layers ?? receiving.layers,
     theme: imported.theme ?? receiving.theme,
     backgroundColor: imported.backgroundColor ?? receiving.backgroundColor,
     backgroundPattern: imported.backgroundPattern ?? receiving.backgroundPattern,

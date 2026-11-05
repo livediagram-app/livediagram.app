@@ -12,7 +12,7 @@ describe('newElementId (EO8, EO9)', () => {
     const s = state();
     expect(newElementId(s, { label: 'Verify email', kind: 'square' }, 1)).toBe('verify-email');
     expect(newElementId(s, { kind: 'arrow' }, 1)).toBe('arrow');
-    expect(newElementId(s, { label: 'Frame', kind: 'frame' }, 1)).toBe('frame-2');
+    expect(newElementId(s, { label: 'Boundary', kind: 'boundary' }, 1)).toBe('boundary-2');
     putElement(s, sticky('verify-email'), 1);
     expect(newElementId(s, { label: 'Verify email', kind: 'square' }, 1)).toBe('verify-email-2');
     expect(newElementId(s, { label: 'N3', kind: 'square' }, 1)).toBe('n3-2');

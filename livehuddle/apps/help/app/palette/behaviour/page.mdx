@@ -6,7 +6,7 @@ import { MeetingCategories } from '@/components/illustrations/palette-behaviour'
 export const metadata = helpMetadata({
   title: 'Meeting Elements',
   description:
-    'The palette Navigate, React and Selection Mode categories: Portals, Bring Focus, furniture, the office pieces, Reaction Pads and Selection Mode buttons.',
+    'The palette Travel, Seating, Rooms and Amenities categories: Portals, Bring Focus, the Avatar button, furniture and the office pieces.',
   path: '/help/palette/behaviour/',
 });
 
@@ -18,15 +18,15 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("behaviour")}
 >
 
-The **meeting elements** are the ones that do something when somebody presses them or walks onto them. Everywhere else in the palette you are placing a picture; here you are placing a seat, a doorway, a pad that throws confetti, or a button that hands everyone a different tool.
+The **meeting elements** are the ones that do something when somebody presses them or walks onto them. Everywhere else in the palette you are placing a picture; here you are placing a seat, a doorway, a room, or a button that hands everyone a different tool.
 
 This page is the map. Each element has its own short article, so you can link somebody straight to the one they need.
 
 ## Where to find them
 
-The meeting elements are the palette's **Meet** band on the palette strip: **Navigate**, **React** and **Selection Mode**, after Write and Frame.
+The meeting elements are the palette's **Meet** band on the palette strip: **Travel**, **Seating**, **Rooms**, **Amenities** and **Selection Mode**, after Write.
 
-<Figure caption="The Meet band on the strip: Navigate, React and Selection Mode, with Navigate open.">
+<Figure caption="The Meet band on the strip, with Travel open.">
   <MeetingCategories />
 </Figure>
 
@@ -36,11 +36,13 @@ The strip's [element search](/help/palette/toolbar-layout/) finds and places eve
 
 In each category, every element is a row with its name and a one-line description of what it does, because a glyph cannot say where a Portal goes or what a pad does when you step on it.
 
-- **Navigate**: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Chair, Desk and Sofa](/help/palette/chairs/), the [Fence](/help/palette/fences/), the [Avatar Pad](/help/palette/avatar-pads/), the [Link card](/help/canvas/links/link-cards/), and the [Virtual Office](/help/palette/virtual-office/) pieces: rooms, a [Stage](/help/palette/virtual-office/stage/), a meeting table, plants, a bookshelf, a water cooler, a coffee machine and rugs.
-- **React**: the five [Reaction Pads](/help/palette/behaviour/reaction-pads/), Confetti, Sparkles, Hearts, Applause and Fireworks.
-- **Selection Mode**: [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, that hand whoever presses them a different tool. **Walk In**, the button the Spaces templates carry, is the Avatar one.
+- **Travel**: what takes somebody somewhere: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Avatar Pad](/help/palette/avatar-pads/), the [Directory](/help/palette/directory/), the [Elevator](/help/palette/elevator/), the [Avatar Button](/help/palette/behaviour/mode-buttons/) and the [Link card](/help/canvas/links/link-cards/).
+- **Seating**: what people sit at: the [Chair, Desk and Sofa](/help/palette/chairs/), and the [Virtual Office](/help/palette/virtual-office/)'s meeting table.
+- **Rooms**: what a floor is laid out with: the [Fence](/help/palette/fences/), rooms, a [Stage](/help/palette/virtual-office/stage/) and rugs.
+- **Amenities**: what makes a Space feel like a place: plants, a bookshelf, a water cooler and a coffee machine.
+- **Meeting**: what a meeting room needs: a [Screen](/help/palette/screen/) that shows the room's screen share, and a [Room Sign](/help/palette/room-sign/) by its door that says whether it's free and lets you knock.
 
-They are grouped by what the element does with the room rather than by what it looks like. That is why the Portal sits beside the Chair, Bring Focus and the Link card: each takes somebody somewhere (another tab, a seat, one spot on the canvas, or the page the card points at).
+They are grouped by the question you are answering as you build a Space: how people get somewhere, where they sit, how the floor is laid out, and what makes it feel like a place. That is why the Portal sits beside Bring Focus, the Avatar Pad, the Avatar Button and the Link card: each takes somebody somewhere (another tab, one spot on the canvas, the way in, into Avatar mode, or the page the card points at). **Walk In**, the button the Spaces templates carry, is an Avatar Button.
 
 ## Changing one
 
@@ -48,13 +50,13 @@ Most elements here carry a **…** in their top corner, which opens that element
 
 ## Working with them
 
-Each behaves like any other element once placed: select, restyle, and move it freely. A click presses it and a drag moves it, so you can arrange a row of them without setting one off. They keep working while you are in a selection mode that makes the rest of the canvas read-only (Avatar, Spotlight or Isometric), which is the point of a control bar made of them.
+Each behaves like any other element once placed: select, restyle, and move it freely. A click presses it and a drag moves it, so you can arrange a row of them without setting one off. They keep working while you are in a selection mode that makes the rest of the canvas read-only (Avatar), so you can walk onto or press them mid-walk.
 
-On a Participant or Viewer link, Bring Focus is inactive. Selection Mode buttons still switch your own tool, and a Participant can fire Reaction Pads; a Viewer only watches.
+On a Participant or Viewer link, Bring Focus is inactive. The Avatar Button still switches your own tool; a Viewer only watches.
 
 <Tip>
-  Put a Walk In button at a Space's entrance and a Reaction Pad in a room's corner, and the Space
-  carries its own welcome: people walk in, sit down, and celebrate a win without opening a menu.
+  Put a Walk In button at a Space's entrance and the Space carries its own welcome: people walk in
+  and sit down without opening a menu.
 </Tip>
 
 </ArticleLayout>

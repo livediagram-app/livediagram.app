@@ -58,7 +58,6 @@ export function trackDuplicated(created: Element[], gestureType?: string): void 
 const SHAPE_TOKENS: Record<string, string> = {
   'code-block': 'CodeBlock',
   'mode-button': 'ModeButton',
-  'reaction-pad': 'ReactionPad',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',

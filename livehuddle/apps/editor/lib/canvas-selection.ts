@@ -26,9 +26,8 @@ type CanvasSelection = {
   selectedIsBoxed: boolean;
   selectionBounds: Rect | null;
   selectedLocked: boolean;
-  // Single-selection popover + plus-button visibility.
+  // Single-selection popover visibility.
   showPopover: boolean;
-  showPlus: boolean;
   // Per-element resize-handle / arrow-anchor visibility (same predicate
   // for both today). Call with an element id.
   showHandlesFor: (id: string) => boolean;
@@ -138,31 +137,6 @@ export function deriveCanvasSelection(input: {
     multiSelectedIds.size === 0 &&
     !tabLocked
   );
-  const showPlus = !!(
-    selected &&
-    !elementMenuOpen &&
-    selectedIsBoxed &&
-    // Quick-connect works on a single element. A marquee multi-select stays
-    // suppressed: it's a transient selection, not a unit you chain from.
-    multiSelectedIds.size === 0 &&
-    // An annotation marker is a note, not a node to chain from. See docs/specs/009-elements/annotations.md
-    // + docs/specs/008-canvas/canvas-and-palette.md. Tables DO show the pluses, with a slimmed table ring (Arrow
-    // + Add Row / Add Column, docs/specs/008-canvas/canvas-and-palette.md).
-    //
-    // Frames used to be excluded too, on the grounds that a backdrop's
-    // pluses would float far out around the whole section. Lanes are the
-    // same shape of thing and always showed theirs, which made the rule look
-    // arbitrary rather than considered: both are containers you chain from
-    // exactly as often as you chain from a box.
-    selected.type !== 'annotation' &&
-    // Nor is a badge or step number: it is a mark on a node (docs/specs/009-elements/badge.md).
-    !(selected.type === 'shape' && isChipShape(selected.shape)) &&
-    editingId !== selected.id &&
-    !isPaintMode &&
-    !selectedLocked &&
-    !tabLocked &&
-    !readOnly
-  );
   // Resize handles and edge anchors: the per-element rule each element view also applies.
   const gripsOf = (id: string) => {
     const el = elements.find((e) => e.id === id);
@@ -219,7 +193,6 @@ export function deriveCanvasSelection(input: {
     selectionBounds,
     selectedLocked,
     showPopover,
-    showPlus,
     showHandlesFor: resizeVisible,
     showAnchorsFor: anchorVisible,
     unionResizeIds,

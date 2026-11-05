@@ -40,7 +40,6 @@ import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/Lands
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
-import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
@@ -71,8 +70,7 @@ import { resolveUiScales } from '@liveworkspace/workbench/lib/ui-scale';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
-import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
-import { panelEnabled } from '@/lib/user-preferences';
+import { ClearStylesHost } from '@/components/canvas/ClearStylesHost';
 import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
@@ -103,7 +101,6 @@ export function EditorView() {
   const {
     pasteFromClipboard,
     hasClipboard,
-    boardSceneInsert,
     activeId,
     activeTab,
     addTab,
@@ -165,7 +162,6 @@ export function EditorView() {
     renameTabNonce,
     tabs,
     toggleActiveTabLock,
-    zenMode,
     openCollaborators,
     userPreferences,
     sessionCommunity,
@@ -211,14 +207,12 @@ export function EditorView() {
   // Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md): the same banner the Explorer shows,
   // but on the editor it waits ~5 minutes into the session before
   // appearing so it never interrupts someone the moment they open a
-  // document. Hidden in embed (read-only iframe) and zen mode. zenMode
-  // is deliberately kept OUT of the timer's `enabled` so toggling zen
-  // doesn't restart the countdown; it only hides the card at render.
+  // document. Hidden in embed (read-only iframe).
   const { dismissed: signInDismissed, dismiss: dismissSignIn } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
   const signInTimerEnabled = !accountUserId && appChrome && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
-  const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
+  const showSignInBanner = signInTimerEnabled && signInDelayElapsed;
   const backdrop = resolveTabBackdrop(activeTab, appearance);
 
   // Whether the document shows as public on Community, for the header's share state.
@@ -232,59 +226,57 @@ export function EditorView() {
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
   const landscapeBars = useLandscapeBars([renameDocumentNonce, renameTabNonce]);
 
-  // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
-  // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
+  // The site header. Embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
   // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-  const header =
-    zenMode || !appChrome ? null : (
-      <LandscapeBarFold shown={landscapeBars.shown}>
-        <AreaErrorBoundary area="Header" fallback="panel">
-          <EditorHeader
-            documentName={documentName}
-            hideTitle={anyWelcomeOpen}
-            showShare={canShareDocument && hydrated && !anyWelcomeOpen}
-            shareable={documentShareable}
-            community={headerCommunity}
-            teamDocument={!!documentTeamId}
-            offline={isOffline}
-            // Visitors see "Make a copy" instead of "Share": same slot (a joined
-            // team member is no visitor: the team's documents are theirs to share),
-            // different action. Hidden during the welcome flow so the
-            // first-paint chrome stays minimal, and during hydration so
-            // we don't render the button before we know whether the user
-            // is the owner. A Community visitor gets it from the Community bar instead.
-            onMakeCopy={
-              !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
-                ? () => void makeCopy()
-                : undefined
-            }
-            copying={copying}
-            readOnly={isStructureReadOnly}
-            renameNonce={renameDocumentNonce}
-            // Minimal chrome moves the pill to an icon in the status bar.
-            rolePill={minimalChrome ? undefined : <RolePill {...role} />}
-            onOpenAccount={() => openSettingsOn('account')}
-            onOpenShare={() => {
-              setShareDialogOpen(true);
-              track('UI', 'Opened', 'Share');
-            }}
-            onRename={(next) => {
-              const prev = documentName.trim();
-              // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
-              // limit the auto-namer and the Explorer renames both respect.
-              const nextTrim = truncateName(next);
-              nameDocument(nextTrim);
-              if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
-            }}
-          />
-        </AreaErrorBoundary>
-      </LandscapeBarFold>
-    );
+  const header = !appChrome ? null : (
+    <LandscapeBarFold shown={landscapeBars.shown}>
+      <AreaErrorBoundary area="Header" fallback="panel">
+        <EditorHeader
+          documentName={documentName}
+          hideTitle={anyWelcomeOpen}
+          showShare={canShareDocument && hydrated && !anyWelcomeOpen}
+          shareable={documentShareable}
+          community={headerCommunity}
+          teamDocument={!!documentTeamId}
+          offline={isOffline}
+          // Visitors see "Make a copy" instead of "Share": same slot (a joined
+          // team member is no visitor: the team's documents are theirs to share),
+          // different action. Hidden during the welcome flow so the
+          // first-paint chrome stays minimal, and during hydration so
+          // we don't render the button before we know whether the user
+          // is the owner. A Community visitor gets it from the Community bar instead.
+          onMakeCopy={
+            !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+              ? () => void makeCopy()
+              : undefined
+          }
+          copying={copying}
+          readOnly={isStructureReadOnly}
+          renameNonce={renameDocumentNonce}
+          // Minimal chrome moves the pill to an icon in the status bar.
+          rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+          onOpenAccount={() => openSettingsOn('account')}
+          onOpenShare={() => {
+            setShareDialogOpen(true);
+            track('UI', 'Opened', 'Share');
+          }}
+          onRename={(next) => {
+            const prev = documentName.trim();
+            // docs/specs/006-document/name-length.md: capped here so the header rename can't outrun the
+            // limit the auto-namer and the Explorer renames both respect.
+            const nextTrim = truncateName(next);
+            nameDocument(nextTrim);
+            if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
+          }}
+        />
+      </AreaErrorBoundary>
+    </LandscapeBarFold>
+  );
 
-  // The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
+  // The tab bar, the editor's footer. Hidden through the welcome flow and in embeds.
   // Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
   const footer =
-    anyWelcomeOpen || zenMode || embedMode ? null : (
+    anyWelcomeOpen || embedMode ? null : (
       <LandscapeBarFold shown={landscapeBars.shown}>
         <AreaErrorBoundary area="TabBar" fallback="panel">
           <TabBar
@@ -369,7 +361,7 @@ export function EditorView() {
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
+  // where there are bars to fold (not in an embed, the workbench frame or the welcome flow).
   const landscapeBarsHandle =
     header && footer ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
@@ -398,7 +390,7 @@ export function EditorView() {
                   {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
                     tab of the document live beside it when one has been dragged to the right. */}
                   <SplitViewFrame header={header} footer={footer}>
-                    {(headerInColumn, footerInColumn, splitShowing) => (
+                    {(headerInColumn, footerInColumn) => (
                       <div
                         // The open tab's editor mode, for the e2e helpers (e2e/fixtures.ts).
                         data-editor-mode={ctx.editorMode.mode}
@@ -480,24 +472,10 @@ export function EditorView() {
                           />
                         ) : null}
                         {footerInColumn}
-                        {/* Quick style panel (docs/specs/008-canvas/quick-style-panel.md): the most-used style choices beside
-            a selection. Stands down in zen / embeds and while an
-            element menu is open, which is the complete home of every setting. */}
+                        {/* Clear Styles for the element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md).
+            Headless: livehuddle has no Quick Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). */}
                         <AreaErrorBoundary area="QuickStyle">
-                          <QuickStyleHost
-                            deps={quickStyleDeps}
-                            hidden={
-                              // Not beside another tab (docs/specs/007-editor/split-view.md): half a window has
-                              // no room for it next to the selection.
-                              splitShowing ||
-                              zenMode ||
-                              embedMode ||
-                              // Off in Settings (docs/specs/007-editor/user-preferences.md); style memory stays.
-                              !panelEnabled(userPreferences, 'quickStylePanelEnabled') ||
-                              (contextMenu !== null && contextMenu.mode !== 'canvas')
-                            }
-                            powerUser={isPowerUserMode(userPreferences)}
-                          />
+                          <ClearStylesHost deps={quickStyleDeps} />
                         </AreaErrorBoundary>
                         {ctx.searchOpen ? (
                           <AreaErrorBoundary area="Search">
@@ -545,11 +523,6 @@ export function EditorView() {
                             standOnChrome
                           />
                         ) : null}
-                        {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
-                        <BoardSceneNotice
-                          notice={boardSceneInsert.notice}
-                          onClose={boardSceneInsert.dismissNotice}
-                        />
                         <EditorStartPanels />
 
                         {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does

@@ -20,7 +20,7 @@ export type ElementTileSearch = {
 // --- The element types on the tab --------------------------------------------------------------
 // A tile and an element meet on a signature: the element type, plus the creation-time choice that
 // tells two tiles of one type apart where the element records it (the shape kind and its session,
-// reaction, mode or scale; a sticky's workshop kind; a pen; an embed's provider; an
+// mode or scale; a sticky's workshop kind; a pen; an embed's provider; an
 // arrow's or a line's ends). Where an element does not record the choice, the tiles share a signature and the first in layout order stands for them.
 
 const shapeSig = (kind: string, choice?: string) => `shape:${kind}:${choice ?? ''}`;
@@ -33,7 +33,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
   switch (a.type) {
     case 'shape':
       if (a.kind === 'icon' || a.kind === 'sticker') return null;
-      return shapeSig(a.kind, a.reaction ?? a.mode ?? a.variant);
+      return shapeSig(a.kind, a.mode ?? a.variant);
     case 'component': {
       const kind = componentShapeKind(a.kind);
       return kind ? shapeSig(kind) : null;
@@ -69,7 +69,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
 export function elementSignature(el: Element): string {
   switch (el.type) {
     case 'shape':
-      return shapeSig(el.shape, el.reaction ?? el.mode);
+      return shapeSig(el.shape, el.mode);
     case 'sticky':
       return 'sticky';
     case 'freehand':

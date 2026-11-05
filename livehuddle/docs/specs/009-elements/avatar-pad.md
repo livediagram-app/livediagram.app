@@ -14,29 +14,30 @@ or the first room, and everybody starts there.
 
 ## The element
 
-A **shape kind**, `avatar-pad`, in the palette's **Collaborate** category under **Navigate** (Workshop's
-palette), beside the portal, the chairs and the fence: like them it is somewhere a character goes. The tile reads
+A **shape kind**, `avatar-pad`, in the palette's **Travel** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside the portal, the bring focus button and the link card:
+like them it is somewhere a character goes. The tile reads
 **Avatar Pad**. Search adds one in any mode, as it adds any element.
 
-- **Drawn in the avatar's own pixel style.** A round teleport platform seen from the front and a little above,
-  on the same coarse pixel grid and hard edges as the character ([Avatar mode](../008-canvas/avatar-mode.md)
-  "The character"), in the sprite's own palette: the dark slate of its shoes for the outline, the trouser blues
-  for the platform's side, the white-coat greys for its top, with a ring of brand-cyan light set into the top and
-  a bright core where the character stands. Four small chevrons on the rim point in at the spot.
-- **Alive, not busy.** The ring of light shimmers on a slow stepped loop (a few discrete brightness steps, the
-  pixel-art way, never a smooth glow), so a pad on a still board still reads as switched on. It stops under
-  reduced motion.
-- **Fixed colours.** The pad keeps the sprite's palette whatever the theme, for the reason the character keeps
-  its own: it belongs to the characters, not to the diagram, and a pad recoloured by a theme would stop looking
-  like the thing they stand on.
+- **Drawn as a piece of the Space.** A round teleport platform seen from the room's camera angle, a little
+  above, drawn in the same style as the furniture ([Office](office.md)): smooth vector shapes, outlined in the
+  theme's line colour at the furniture's line weight, the platform's body in the same soft wash as a seat, its side
+  shaded toward the room. A ring of brand-cyan light is set into a recessed well in the top, with a soft glow round a
+  bright core where the character stands, and five small lamps glow along the rim's front. It scales cleanly at any
+  size and zoom: no pixel grid, no blocky edges.
+- **Alive, not busy.** The ring, its glow and the lamps breathe on a slow, gentle pulse (a fine-stepped fade, so it
+  reads as eased while restyling only on its steps), so a pad on a still board still reads as switched on. It stops
+  under reduced motion.
+- **Theme lines, fixed light.** The outline and body follow the theme on light and dark paper, as every piece of
+  furniture does, so the pad sits in the room. The light (ring, glow, core, lamps) keeps the avatar's own brand
+  cyan whatever the theme, as a plant keeps its leaves: it is the part that says "the characters arrive here".
 - **No label and no settings `…`.** There is nothing to write on it and nothing to set. Its hover card names it.
-- **Its proportions are locked** (unlockable from the menu like any element), so the pixel grid stays square.
-  A resized pad scales its pixels; it never stretches them.
+- **Its proportions are locked** (unlockable from the menu like any element), so the platform stays round. An
+  unlocked, stretched box fits the drawing whole and centred; it never stretches it.
 - **It lies on the floor.** Like a [rug or a room](office.md), it goes in behind everything when added, so
   furniture and characters stand on it. A character walks over it freely (it never blocks), and standing on it
   does not ring it as "the element you are on": the arrival is the pad's highlight.
 - Otherwise an ordinary element: move, resize, rotate, lock, copy, delete, export.
-- **One drawing, on the canvas and in an export**: both paint the shared pixel table in `@livehuddle/document`.
+- **One drawing, on the canvas and in an export**: both paint the same vector table in `@livehuddle/document`.
   The export draws the pad as it stands, ring lit; the shimmer and the arrival are the canvas's.
 
 ## Starting on the pad
@@ -56,9 +57,8 @@ placed it has said where people arrive:
   leaves the view where it is.
 - **Several pads on one tab: the nearest wins.** The pad whose core is closest to the centre of your view when
   you enter the mode is the one you start on, so a big board with an entrance per area starts you at the area
-  you are looking at. Two pads exactly as close: the one first in the layer order (furthest back) wins, so the
+  you are looking at. Two pads exactly as close: the one first in the tab's element order (furthest back) wins, so the
   choice is the same on every screen showing the same view.
-- **Only what is drawn counts.** A pad on a hidden layer is not there: entry falls through to the rules after it.
 - **Placing, moving or deleting a pad never moves anyone already walking.** A pad decides where people
   _arrive_; a character already in the mode stays where it is, on your screen and everyone else's, and the
   change applies at the next entry. The same goes for a peer moving the pad under you.
@@ -94,8 +94,21 @@ What the pad does is gated on nothing: arriving changes nobody's document, so ev
 
 ## Not votable
 
-Like every Behaviour element ([Session tools (timer + voting)](../012-collaboration/session-tools.md)): controls,
+Like every Behaviour element ([Session tools (timer)](../012-collaboration/session-tools.md)): controls,
 not candidates.
+
+## Pressing it
+
+- **A click on a pad starts Avatar mode on that pad**, for every role (anyone may walk): the character arrives on
+  the pressed pad's core in its beam of light, whichever pad is nearest the view's centre, and the camera centres on
+  it at 100% ([Avatar mode](../008-canvas/avatar-mode.md) "The camera"). It goes through the same pick as the picker
+  and a Selection Mode button, so leaving the mode returns to the tool you were in.
+- **Dragging it still moves it**: the press fires on `click` and is swallowed when the pointer travelled
+  (`usePressWithoutDrag`, as the Portal and the Selection Mode button do). A hover card names it: **Start Walking
+  Here**.
+- Inside Avatar mode the canvas is pointer-inert, so a pad is walked onto, not pressed.
+- Implementation: `AvatarPadView`'s `onPress`, threaded as `onPressAvatarPad`; the canvas sets the walk's one-shot
+  `spawnPadRef` to the pad before the pick, and the walk's entry takes that pad over the nearest one.
 
 ## Telemetry
 
@@ -105,5 +118,4 @@ starting on a pad emits `track('Canvas', 'Used', 'AvatarPadArrival')`, once per 
 ## Not in scope
 
 - **No pad per person or per team.** Everyone starts on the same pad (or the nearest one).
-- **No pressing it.** A pad is not a way into Avatar mode; a Selection Mode button set to Avatar is.
 - **No departure effect.** Leaving the mode takes the character away as it always has.

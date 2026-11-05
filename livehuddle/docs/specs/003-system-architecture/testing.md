@@ -216,7 +216,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   - `packages/document`: the data model end to end: element
     factories + defaults, geometry / anchor / snap math, arrow path +
     avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels,
-    layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
+    auto-layout (clusters, styles, lanes, crossings), mind maps,
     Mermaid import/export (flowchart, state, ER), graph authoring, freehand +
     shape recognition, rich text, tables, comments + mentions, element ops and
     deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds, names, themes, element shadows,

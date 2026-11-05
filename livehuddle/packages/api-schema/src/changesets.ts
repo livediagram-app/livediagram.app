@@ -179,7 +179,6 @@ export type ChangesetBase = { rev: number; elements?: Record<string, string> };
 // creates (a `name` on an existing tab is ignored).
 export type ChangesetReplaceBody = {
   graph?: unknown;
-  mermaid?: string;
   template?: string;
   elements?: unknown[];
   layout?: 'auto' | 'preserve';

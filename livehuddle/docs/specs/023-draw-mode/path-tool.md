@@ -36,7 +36,7 @@ optional incoming and outgoing **handle**, and a `closed` flag. Freehand strokes
 their points carry no handles and are not edited point by point.
 
 - Nodes and handles are stored normalised to the element's box, like freehand points, so resizing
-  scales the whole path, handles included. Rotation, lock, layers, opacity, links, comments and the
+  scales the whole path, handles included. Rotation, lock, opacity, links, comments and the
   rest of the boxed-element fields apply as to any boxed element.
 - Each node has a **handle mode**:
   - **Corner**: no handles, or handles that move independently (a cusp).
@@ -100,7 +100,7 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
   node reads at a glance.
 - **The edit overlay is always on top:** nodes, handles, their lines and the edit toolbar draw
   above the path itself and above every other element on the board, whatever the path's place in
-  the stacking order, its layer or its fill, so no node or handle is ever hidden or unreachable.
+  the stacking order or its fill, so no node or handle is ever hidden or unreachable.
 - **An edit toolbar** floats above the path while in edit mode, with the selected nodes' **node
   type** as a three-way choice (**Corner**, **Mirrored**, **Aligned**, showing the shared type or
   none), **Delete Point**, **Close Path** / **Open Path** (opening cuts the path at the selected

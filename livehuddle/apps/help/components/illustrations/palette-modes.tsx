@@ -1,10 +1,9 @@
 // Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
+// Eraser, Format Painter, Avatar) and the palette
 // settings (Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds, except the Avatar sprite, which is deliberately pixel art.
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
-import { IsoCard, iso } from './palette-modes-parts';
 import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
 import { PickerTrigger } from './selection-modes';
 
@@ -124,37 +123,6 @@ export function FormatPainterMode() {
   );
 }
 
-/** Laser mode: the picker set to Laser and a fading laser trail across the
- *  canvas, brightening towards the cursor. */
-export function LaserMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="laser" />
-      <Shape x={84} y={120} w={76} h={44} label="A" />
-      <Shape x={264} y={150} w={76} h={44} accent label="B" />
-      {/* Fading laser trail, from under A to just short of B: faint tail to bright head,
-          clear of both labels. */}
-      <path
-        d="M100 186 q50 24 104 4"
-        className="stroke-rose-200"
-        strokeWidth={5}
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d="M196 192 q26 -8 52 -20"
-        className="stroke-rose-400"
-        strokeWidth={3.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Bright head dot, pointing at B */}
-      <circle cx={250} cy={171} r={5} className="fill-rose-500" />
-      <circle cx={250} cy={171} r={9} className="fill-rose-400/30" />
-    </Scene>
-  );
-}
-
 /** Avatar mode: the picker set to Avatar, the pixel character standing on the
  *  shape being talked about (its feet inside it, which is what rings it), to the
  *  side of the label so both read, at the end of the dashed path it walked. */
@@ -186,28 +154,6 @@ export function AvatarMode() {
       />
       {/* The character, feet inside the ringed shape where the path ends */}
       <PixelCharacter fx={334} fy={178} />
-    </Scene>
-  );
-}
-
-/** Isometric mode: the picker set to Isometric and the same shapes tilted into an
- *  isometric, three-dimensional view. */
-export function IsometricMode() {
-  const a = iso(-70, -30);
-  const b = iso(70, 30);
-  return (
-    <Scene w={420} h={264}>
-      <PickerTrigger tool="isometric" />
-      <line
-        x1={a[0]}
-        y1={a[1] + 6}
-        x2={b[0]}
-        y2={b[1] + 6}
-        className="stroke-brand-400"
-        strokeWidth={2.5}
-      />
-      <IsoCard cx={-70} cy={-30} label="A" />
-      <IsoCard cx={70} cy={30} accent label="B" />
     </Scene>
   );
 }

@@ -31,7 +31,6 @@ function setup(
     elements: Element[];
     editsBlocked: boolean;
     canRecolour: (el: Element) => boolean;
-    inertIds: Set<string>;
   }> = {},
 ) {
   let els = over.elements ?? [square, loop];
@@ -43,8 +42,6 @@ function setup(
     usePaintBucket({
       pendingDraw: 'pendingDraw' in over ? over.pendingDraw! : { type: 'fill', fill: BLUE },
       elements: () => els,
-      layers: undefined,
-      inertIds: over.inertIds ?? new Set(),
       editsBlocked: over.editsBlocked ?? false,
       canRecolour: over.canRecolour ?? (() => true),
       commit,

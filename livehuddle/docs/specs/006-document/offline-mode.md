@@ -103,7 +103,7 @@ documents with retired parts` (`apps/editor/lib/offline/retired-parts-upgrade.ts
 
 The document model (`Tab[]` + meta, per [Document structure](document-structure.md)) is **identical**: an offline
 document is a normal document whose persistence target is IndexedDB instead of the
-API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
+API. The full editor works: shapes, arrows, sketches, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
 _require the server_, which are hidden or gated (not broken) for an offline document:
 

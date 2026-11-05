@@ -79,7 +79,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // (lib/tidy-engine.ts): already there after the popover opens, fetched at the press otherwise.
   const refused = (engine: TidyEngine, judged: boolean | undefined): boolean => {
     if (judged) return false;
-    const verdict = engine.assessCleanup(activeTab.elements, activeTab.layers);
+    const verdict = engine.assessCleanup(activeTab.elements);
     const notice = engine.verdictNotice('Auto-align', verdict);
     if (notice) notify?.(notice);
     return notice !== null;
@@ -91,7 +91,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     withTidyEngine((engine) => {
       if (refused(engine, opts.judged)) return;
       // `commit` snapshots the pre-align state, so undo restores it.
-      commit((els) => engine.cleanupElements(els, activeTab.layers));
+      commit((els) => engine.cleanupElements(els));
       track('Tab', 'Aligned');
     });
   };

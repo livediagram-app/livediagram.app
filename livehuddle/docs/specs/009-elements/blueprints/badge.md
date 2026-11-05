@@ -13,7 +13,7 @@ Derived from [The badge](../badge.md) and [The step number](../step-number.md). 
 | `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                        | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                                                                      |
 | `packages/document/src/shape-factory.ts`                                                                                  | Sizes and starting content                                                                                                |
 | `packages/document/src/colors.ts`                                                                                         | Both in `SELF_PAINTING_SHAPES`                                                                                            |
-| `packages/document/src/layers.ts`                                                                                         | `paintTier`: an attached chip paints in the top tier                                                                      |
+| `packages/document/src/paint-order.ts`                                                                                     | `paintTier`: an attached chip paints in the top tier                                                                      |
 | `packages/document/src/duplicate.ts`                                                                                      | `attachedTo` follows a copied host, else the copy is detached                                                             |
 | `packages/document/src/svg-render-chip.ts`                                                                                | `svgChip`: the headless body                                                                                              |
 | `apps/editor/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` (through `settleChipsInTabs`, `lib/settle-tabs.ts`) at the commit choke point, after flowcharts |
@@ -72,7 +72,7 @@ with it. Deletion needs no path of its own (settling removes orphans of a delete
 
 ### Paint order
 
-`paintTier`: an attached chip is tier 4 (above everything in its layer), so a later element never covers it.
+`paintTier`: an attached chip is tier 4 (above everything else), so a later element never covers it.
 
 ### Steps
 
@@ -193,7 +193,7 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 | Host deleted removes, unknown host detaches (I2)    | same                                                                                                         |
 | Badge fit (I3), next number, renumber, looks        | `packages/document/src/chip.test.ts`                                                                         |
 | Duplicate remap / detach                            | `packages/document/src/duplicate.test.ts`                                                                    |
-| Paint tier                                          | `packages/document/src/layers.test.ts`                                                                       |
+| Paint tier                                          | `packages/document/src/boundary.test.ts`                                                                    |
 | Export draws pill / disc in its look                | `packages/document/src/chip.test.ts`                                                                         |
 | Face, menu section                                  | `apps/editor/components/canvas/ChipFace.test.tsx`, `apps/editor/components/palette/ChipMenuSection.test.tsx` |
 | Settle budget                                       | `packages/document/src/attachment.perf.test.ts`                                                              |

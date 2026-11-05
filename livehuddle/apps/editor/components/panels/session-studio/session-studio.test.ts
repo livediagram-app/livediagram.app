@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TabVote } from '@livehuddle/document';
+
 import {
   clampTimerMinutes,
   dialAngle,
@@ -8,17 +8,8 @@ import {
   dialFraction,
   formatMinutesLabel,
   minutesForDialAngle,
-  voteRules,
   wedgePath,
 } from './session-studio';
-
-const vote = (patch: Partial<TabVote> = {}): TabVote => ({
-  active: true,
-  revealed: false,
-  votesPerPerson: 3,
-  votes: {},
-  ...patch,
-});
 
 describe('timer dial', () => {
   it('measures angles clockwise from twelve', () => {
@@ -76,30 +67,5 @@ describe('timer dial', () => {
     expect(formatMinutesLabel(5)).toBe('5 min');
     expect(formatMinutesLabel(60)).toBe('1 hr');
     expect(formatMinutesLabel(90)).toBe('1 hr 30 min');
-  });
-});
-
-describe('voteRules', () => {
-  const layers = [{ id: 'l2', name: 'Ideas' }];
-
-  it('names the budget and nothing else for a plain vote', () => {
-    expect(voteRules(vote(), layers)).toEqual(['3 dots each']);
-  });
-
-  it('adds one per item, the layer scope and the privacy in force', () => {
-    const v = vote({ onePerElement: true, voteLayerId: 'l2', hideCursors: true, hideCounts: true });
-    expect(voteRules(v, layers)).toEqual([
-      '3 dots each',
-      'One per item',
-      'Ideas only',
-      'Cursors hidden',
-      'Counts hidden',
-    ]);
-  });
-
-  it('brings cursors back when voting closes, and counts once results show', () => {
-    const closed = vote({ active: false, hideCursors: true, hideCounts: true });
-    expect(voteRules(closed, layers)).toEqual(['3 dots each', 'Counts hidden']);
-    expect(voteRules({ ...closed, revealed: true }, layers)).toEqual(['3 dots each']);
   });
 });

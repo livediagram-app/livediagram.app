@@ -1,11 +1,11 @@
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): lay out a DiagramGraph whose
-// clusters (Mermaid subgraphs) must render as frames drawn around their
+// clusters (Mermaid subgraphs, an agent's groups) render as boundaries drawn around their
 // member nodes. The flow layout (auto-layout.ts) knows nothing about
 // containment, so this module composes it twice: each cluster's members are
 // laid out among themselves, the cluster is contracted to a single node the
 // exact size of that block (kept intact via autoLayoutElements'
 // fixedSizeIds), the contracted graph is laid out, and the members then
-// shift into the placed frame. Import-path module — the editor's own Tidy
+// shift into the placed boundary (called a frame below, the layout's word for it). Import-path module — the editor's own Tidy
 // Up never runs this.
 
 import { autoLayoutElements, type LayoutDirection } from './auto-layout';
@@ -200,12 +200,16 @@ export function layoutClusteredGraph(
       ] as const;
     }),
   );
+  // Each group is a boundary in its Inset style, the title inside its top-left corner (livehuddle has no Frame,
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Frame").
   const frames: BoxedElement[] = clusters.map((c) => {
     const b = bbox(memberEls.get(c.id)!);
     return {
       id: c.id,
       type: 'shape' as const,
-      shape: 'frame' as const,
+      shape: 'boundary' as const,
+      boundaryStyle: 'inset' as const,
+      strokeStyle: 'dashed' as const,
       x: 0,
       y: 0,
       // The lead both sides: the members stay centred in the frame, which the contracted layout lines up on.

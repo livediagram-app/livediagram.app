@@ -1,7 +1,7 @@
 import { isUntitledName, titleCase } from '@livehuddle/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the four Spaces, every
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the ten Spaces, every
 // one opening on a meeting board. livehuddle is for meeting in Spaces; the retrospectives, workshops, planning and
 // strategy boards and the quizzes and games are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
 export type TemplateKind =
@@ -11,7 +11,13 @@ export type TemplateKind =
   | 'virtual-office'
   | 'coworking-space'
   | 'team-pod'
-  | 'all-hands-hall';
+  | 'focus-library'
+  | 'all-hands-hall'
+  | 'training-room'
+  | 'rooftop-bar'
+  | 'cafe'
+  | 'garden-retreat'
+  | 'city-park';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -38,7 +44,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-session',
     title: 'Blank Space',
-    description: 'An empty space to meet in: build a room, leave a note, run a timer or a vote.',
+    description: 'An empty space to meet in: build a room, leave a note, or run a timer.',
     extra: true,
   },
   {
@@ -67,6 +73,48 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'All-Hands Hall',
     description:
       'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
+    extra: true,
+  },
+  {
+    kind: 'focus-library',
+    title: 'Focus Library',
+    description:
+      'A quiet room to work in Avatar mode: bookshelves, study desks, two Office Pods for calls and a reading nook.',
+    extra: true,
+  },
+  {
+    kind: 'training-room',
+    title: 'Training Room',
+    description:
+      'A room for training and group work in Avatar mode: a small stage, four tables to work round and Bring Focus.',
+    extra: true,
+  },
+  {
+    kind: 'rooftop-bar',
+    title: 'Rooftop Bar',
+    description:
+      'A terrace for after-work drinks in Avatar mode: a long bar with stools, a drinks cabinet and fridge, and two lounges.',
+    extra: true,
+  },
+  {
+    kind: 'cafe',
+    title: 'Cafe',
+    description:
+      'A corner cafe for a catch-up in Avatar mode: a counter with stools and coffee, tables to share and a sofa nook.',
+    extra: true,
+  },
+  {
+    kind: 'garden-retreat',
+    title: 'Garden Retreat',
+    description:
+      'A fenced garden in Avatar mode: a lawn, paths and trees, a summer house to meet in and places to sit outside.',
+    extra: true,
+  },
+  {
+    kind: 'city-park',
+    title: 'City Park',
+    description:
+      'A park to stroll round in Avatar mode: paths across a lawn, benches, a picnic table, a fountain and a bandstand.',
     extra: true,
   },
 ];

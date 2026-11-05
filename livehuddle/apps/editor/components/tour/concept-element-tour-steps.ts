@@ -1,6 +1,7 @@
 // The steps every concept graphic's element tour is built from (docs/specs/007-editor/element-tours.md, one section per
 // kind; docs/specs/009-elements/timeline.md): a step on the graphic or one of its rows (with an animation
-// previewed there, never stored), the "+" ring opened on the add it offers, the More button, and the closing card.
+// previewed there, never stored), the More button, and the closing card. (livehuddle has no "+" ring to open,
+// docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect.)
 // Each kind's own steps and words live in its own file (timeline-tour-steps.ts, ...).
 import type { ConceptRow } from '@livehuddle/document';
 import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
@@ -10,7 +11,6 @@ import {
   MENU_TARGET,
   openMenuPath,
 } from '@liveworkspace/workbench/components/tour/element-menu-tour';
-import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
 type Step = TourStepOf<ElementTourApi>;
@@ -22,35 +22,6 @@ export type ConceptTourContext = {
   hasMore: boolean;
   touch: boolean;
 };
-
-// The "+" sides, nearest the reader's eye first: the ring under a graphic is where a new row lands.
-const PLUS_SIDES = ['below', 'right', 'above', 'left'] as const;
-
-const ringOpen = () =>
-  document.querySelector<HTMLElement>('[data-quick-plus][aria-expanded="true"]');
-
-// The step on the "+" ring: opens the first "+" on screen, rings its add option, and closes the ring on leaving.
-export function addRowStep(id: string, title: string, body: string, action: string): Step {
-  return {
-    id,
-    title,
-    body,
-    selector: () => `[data-quick-ring] button[aria-label="${action}"]`,
-    prepare: async (api) => {
-      api.clearPreview();
-      if (ringOpen()) return;
-      for (const side of PLUS_SIDES) {
-        const plus = document.querySelector<HTMLElement>(`[data-quick-plus="${side}"]`);
-        if (plus && plus.getClientRects().length > 0) {
-          plus.click();
-          break;
-        }
-      }
-      await waitForSelector(`[data-quick-ring] button[aria-label="${action}"]`, 1500);
-    },
-    cleanup: () => ringOpen()?.click(),
-  };
-}
 
 // A step on the graphic, or on one of its parts; `preview` plays its animation there while the step is up.
 export function onGraphic(

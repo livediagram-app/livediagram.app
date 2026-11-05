@@ -1,3 +1,5 @@
+// docs/specs/013-workspace/share-roles.md: livehuddle makes no new Viewer link, so the Viewer cases below are a legacy
+// Viewer link's ("Legacy Viewer links"), which keeps every gate it had.
 import { describe, expect, it } from 'vitest';
 import { elementSupportsText, type Element } from '@livehuddle/document';
 import { CANVAS_TOOLS } from '@/lib/editor-commands';
@@ -14,6 +16,7 @@ import {
 } from '@/components/palette/palette-layouts';
 import { buildCanvasToolOptions } from '@/components/palette/canvas-tool-options';
 import { tilesForCategory } from '@/components/palette/palette-tile-defs';
+import { SPACE_CATEGORIES } from '@/components/palette/space-categories';
 import { avatarTourSteps } from '@/components/tour/avatar-tour-steps';
 import { walkButtonShown } from '@/lib/walk-button';
 
@@ -39,7 +42,7 @@ const canFor = (level: Level): EditorCapabilities =>
 const gatesFor = (level: Level) => roleGates(canFor(level), false);
 // A read-only session (a Participant or a Viewer) gets the participant selection modes; an Editor every tool.
 const toolsFor = (level: Level): readonly string[] => {
-  const all = buildCanvasToolOptions({ isMobile: false, includeZen: true }).map((o) => o.id);
+  const all = buildCanvasToolOptions({}).map((o) => o.id);
   return level === 'edit' ? all : all.filter((id) => PARTICIPANT_CANVAS_TOOLS.includes(id));
 };
 // The palette strip: an Editor's full one, a Participant's own (it holds an adder key), none for a Viewer
@@ -62,7 +65,8 @@ const expectPerLevel = (
     }
   });
 
-const NAVIGATE_TILES = tilesForCategory('collab-navigate').map((t) => t.id);
+// The Space categories' tiles (docs/specs/010-palette/palette-top-level-categories.md "The Space categories").
+const NAVIGATE_TILES = SPACE_CATEGORIES.flatMap((c) => tilesForCategory(c.id)).map((t) => t.id);
 const NAVIGATE_ELEMENTS = [
   shape('portal', { label: 'Kitchen' }),
   shape('chair'),
@@ -185,7 +189,7 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     });
   });
 
-  describe('Take part in a session tool (vote, answer, react)', () => {
+  describe('Take part in a session tool (answer, react)', () => {
     expectPerLevel('with the baton free', (level) => gatesFor(level).takePart, {
       edit: true,
       participate: true,
@@ -242,8 +246,8 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
 
   // Every look-only tool is in every role's selection modes; export is a read, with no gate.
   expectPerLevel(
-    'Pan, zoom, laser, spotlight, export',
-    (level) => ['pan', 'laser', 'spotlight'].every((tool) => toolsFor(level).includes(tool)),
+    'Pan, zoom, export',
+    (level) => ['select', 'pan'].every((tool) => toolsFor(level).includes(tool)),
     { edit: true, participate: true, view: true },
   );
 

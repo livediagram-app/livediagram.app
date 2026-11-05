@@ -1,8 +1,8 @@
 'use client';
 
 import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livehuddle/document';
-import { HoverCard, SOLID_BRAND_DARK } from '@livehuddle/ui';
-import { TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
+import { HoverCard } from '@livehuddle/ui';
+import { TimerMenuIcon } from '@/components/palette/context-menu-icons';
 import { timerFillStyle } from '@/components/chrome/timer-pill';
 import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
@@ -12,30 +12,28 @@ import {
 } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 // The Session strip in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md "The Session
-// strip"): Timer and Vote in one strip left of Layers. Each opens its tool above it, set-up while idle and the live tool while it runs. An editor always has
-// Timer and Vote; a view-role visitor, who cannot start anything, gets only the ones running. The Timer
-// shows its clock while a timer runs, so the time reads without opening anything, and the Vote
-// carries your dots left while casting is open (the number the vote banner used to float over the
-// canvas), then an amber dot while the results are walked through.
+// strip"): the Timer, left of Layers. It opens above it, set-up while idle and the live tool while it runs. An
+// editor always has the Timer; a view-role visitor, who cannot start anything, gets it only while one runs. It
+// shows its clock while a timer runs, so the time reads without opening anything. The Vote left livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
 
-export type SessionSegment = 'session-timer' | 'session-vote';
+export type SessionSegment = 'session-timer';
 
-// Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"): Timer and
-// Vote on every meeting board (docs/specs/012-collaboration/workshop-mode.md "The Session strip"). The live poll left
+// Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"): the Timer
+// on every meeting board (docs/specs/012-collaboration/workshop-mode.md "The Session strip"). The live poll left
 // with the Collaborate tools (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"). None for any
 // other mode, even while a tool runs.
 export type SessionStripTools = {
   timer: boolean;
-  vote: boolean;
 };
 
 export function sessionStripTools(mode: string | undefined): SessionStripTools | null {
-  if (mode === 'workshop') return { timer: true, vote: true };
+  if (mode === 'workshop') return { timer: true };
   return null;
 }
 
 // An embed (docs/specs/013-workspace/embeds.md) has no Session strip: its visitors read the document and
-// cannot run or join a session there, so the Timer and Vote buttons would only open nothing. The
+// cannot run or join a session there, so the Timer button would only open nothing. The
 // editor host hands the canvas chrome its session tools through this, so an embed gets none.
 export function sessionToolsForSurface<T>(tools: T, embedMode: boolean): T | undefined {
   return embedMode ? undefined : tools;
@@ -60,14 +58,13 @@ export function stripSegmentGone({
   /** The strip's tools, or null when it has none (or no session to run them). */
   tools: SessionStripTools | null;
   readOnly: boolean;
-  running: { timer: boolean; vote: boolean };
+  running: { timer: boolean };
 }): boolean {
   if (segment === null) return false;
   if (!tools) return true;
-  if (segment === 'session-timer' && !tools.timer) return true;
+  if (!tools.timer) return true;
   if (stripCanStart(readOnly)) return false;
-  if (segment === 'session-timer') return !running.timer;
-  return !running.vote;
+  return !running.timer;
 }
 
 type Toggle = (button: HTMLElement) => void;
@@ -77,23 +74,12 @@ const PRESSED = 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-bran
 
 export function SessionClusterStrip({
   timer,
-  voteRunning,
-  voteDotsLeft = null,
-  voteReviewing = false,
-  voteButtonRef,
   canStart,
   offersTimer = true,
   open,
   onToggle,
 }: {
   timer: TabTimer | null;
-  voteRunning: boolean;
-  // Your dots left while casting is open and you can cast; null otherwise.
-  voteDotsLeft?: number | null;
-  // The results walkthrough is running.
-  voteReviewing?: boolean;
-  // The Vote button, so the walkthrough can open its popover over it.
-  voteButtonRef?: React.Ref<HTMLButtonElement>;
   // An editor: the idle tools are offered too, to start one.
   canStart: boolean;
   // The mode has a Timer button.
@@ -103,103 +89,27 @@ export function SessionClusterStrip({
   onToggle: (segment: SessionSegment, button: HTMLElement) => void;
 }) {
   const showTimer = offersTimer && (canStart || !!timer);
-  const showVote = canStart || voteRunning;
-  if (!showTimer && !showVote) return null;
+  if (!showTimer) return null;
   return (
     <ClusterStrip dataTourId="session-tools">
-      {showTimer ? (
-        timer ? (
-          <TimerClockSegment
-            timer={timer}
-            open={open === 'session-timer'}
-            onToggle={(b) => onToggle('session-timer', b)}
-          />
-        ) : (
-          <ClusterPopoverSegment
-            label="Open Timer"
-            name="Timer"
-            hoverTitle="Timer"
-            hoverDescription="Start a countdown or a stopwatch everyone on this tab can see."
-            icon={<TimerMenuIcon size={ICON_SIZE} />}
-            popoverOpen={open === 'session-timer'}
-            onTogglePopover={(b) => onToggle('session-timer', b)}
-          />
-        )
-      ) : null}
-      {showVote ? (
-        <ClusterPopoverSegment
-          divided={showTimer}
-          label={
-            voteDotsLeft !== null
-              ? `Open Vote (${voteDotsLeft} ${voteDotsLeft === 1 ? 'dot' : 'dots'} left)`
-              : voteRunning
-                ? 'Open Vote'
-                : 'Start a Vote'
-          }
-          name="Vote"
-          hoverTitle="Vote"
-          hoverDescription={
-            voteRunning
-              ? 'The vote on this tab: who has voted, then the results.'
-              : 'Run a dot vote on this tab.'
-          }
-          icon={
-            voteDotsLeft !== null ? (
-              <CountBadge count={voteDotsLeft} icon={<VoteMenuIcon size={ICON_SIZE} />} />
-            ) : (
-              <LiveBadge
-                live={voteRunning}
-                tone={voteReviewing ? 'amber' : 'emerald'}
-                icon={<VoteMenuIcon size={ICON_SIZE} />}
-              />
-            )
-          }
-          popoverOpen={open === 'session-vote'}
-          onTogglePopover={(b) => onToggle('session-vote', b)}
-          {...(voteButtonRef ? { buttonRef: voteButtonRef } : {})}
+      {timer ? (
+        <TimerClockSegment
+          timer={timer}
+          open={open === 'session-timer'}
+          onToggle={(b) => onToggle('session-timer', b)}
         />
-      ) : null}
+      ) : (
+        <ClusterPopoverSegment
+          label="Open Timer"
+          name="Timer"
+          hoverTitle="Timer"
+          hoverDescription="Start a countdown or a stopwatch everyone on this tab can see."
+          icon={<TimerMenuIcon size={ICON_SIZE} />}
+          popoverOpen={open === 'session-timer'}
+          onTogglePopover={(b) => onToggle('session-timer', b)}
+        />
+      )}
     </ClusterStrip>
-  );
-}
-
-// A running tool's glyph carries a small live dot, so the strip says what is on at a glance: green
-// while it runs, amber while a vote's results are walked through (the canvas rings are amber too).
-function LiveBadge({
-  live,
-  icon,
-  tone = 'emerald',
-}: {
-  live: boolean;
-  icon: React.ReactNode;
-  tone?: 'emerald' | 'amber';
-}) {
-  if (!live) return icon;
-  return (
-    <span className="relative flex">
-      {icon}
-      <span
-        aria-hidden
-        className={`absolute -right-1 -top-1 h-2 w-2 rounded-full ring-2 ring-white dark:ring-slate-900 ${
-          tone === 'amber' ? 'bg-amber-400' : 'bg-emerald-500'
-        }`}
-      />
-    </span>
-  );
-}
-
-// Your dots left on the Vote glyph while casting is open: the one number each participant needs.
-function CountBadge({ count, icon }: { count: number; icon: React.ReactNode }) {
-  return (
-    <span className="relative flex">
-      {icon}
-      <span
-        aria-hidden
-        className={`absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-white dark:ring-slate-900 ${SOLID_BRAND_DARK}`}
-      >
-        <span className="text-optical-centre">{count}</span>
-      </span>
-    </span>
   );
 }
 

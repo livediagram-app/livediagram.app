@@ -102,13 +102,12 @@ type ElementItem = {
 // this back so the editor routes it to the matching add handler (which arms
 // the same tap-to-drop / drag-to-size placement the palette uses).
 export type PaletteAdd =
-  // `reaction` / `mode` are the creation-time choice for the kinds that have
-  // one (docs/specs/009-elements/reaction-pad.md, docs/specs/009-elements/mode-button.md). The palette offers a tile per
+  // `mode` is the creation-time choice for the Mode button
+  // (docs/specs/009-elements/mode-button.md). The palette offers a tile per
   // choice, so search has to as well: typing "hearts" should place hearts, not confetti.
   | {
       type: 'shape';
       shapeKind: ShapeKind;
-      reaction?: import('@livehuddle/document').Reaction;
       mode?: import('@livehuddle/document').SelectionMode;
       plan?: string;
       variant?: string;

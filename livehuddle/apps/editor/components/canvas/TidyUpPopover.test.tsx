@@ -94,9 +94,9 @@ describe('TidyUpPopover', () => {
   });
 
   // An empty Space is asked for meeting content, not shapes and arrows.
-  it('asks an empty Space for notes or frames', () => {
+  it('asks an empty Space for notes or pictures', () => {
     expect(TIDY_EMPTY_NOTE).not.toMatch(/arrow|shape/i);
-    expect(TIDY_EMPTY_NOTE).toMatch(/notes|frames/);
+    expect(TIDY_EMPTY_NOTE).toMatch(/notes|pictures/);
   });
 
   it.each([

@@ -216,7 +216,7 @@ describe('SERVER_INSTRUCTIONS on Spaces', () => {
 
 describe('SERVER_INSTRUCTIONS template examples', () => {
   it('names only kinds create_document takes', () => {
-    const list = /four ready-furnished Spaces \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
+    const list = /ten ready-furnished Spaces \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
     const examples = list
       .split(/,\s*/)
       .map((s) => s.trim())

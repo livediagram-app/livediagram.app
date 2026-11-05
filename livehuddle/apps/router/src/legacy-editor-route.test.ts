@@ -112,6 +112,15 @@ describe('legacyHelpRedirect', () => {
         '/help/selection-modes/avatar-mode/avatar-tour/',
       ],
       ['/help/selection-modes/highlighter/', '/help/palette/tools/'],
+      // The presenting tools, Isometric and Zen left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md).
+      ['/help/selection-modes/laser/', '/help/selection-modes/avatar-mode/'],
+      ['/help/selection-modes/spotlight/', '/help/selection-modes/avatar-mode/'],
+      ['/help/selection-modes/isometric-mode/', '/help/selection-modes/avatar-mode/'],
+      ['/help/palette/behaviour/reaction-pads/', '/help/selection-modes/avatar-mode/'],
+      ['/help/tools/zen-mode/', '/help/user-interface/panel-layout/'],
+      ['/help/canvas/quick-style-panel/', '/help/canvas/colours-borders-opacity/'],
+      // Quick Connect left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect).
+      ['/help/palette/quick-add-on-hover/', '/help/user-interface/settings/'],
       // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
       ['/help/activity-panel/', '/help/canvas/undo/'],
       ['/help/activity-panel/undo/', '/help/canvas/undo/'],
@@ -153,6 +162,11 @@ describe('legacyHelpRedirect', () => {
         '/help/selection-modes/avatar-mode/avatar-tour/',
       ],
       ['/help/collaboration/session-tools/polls/', '/help/collaboration/session-tools/'],
+      ['/help/collaboration/session-tools/voting/', '/help/collaboration/session-tools/'],
+      [
+        '/help/collaboration/session-tools/voting/vote-privacy/',
+        '/help/collaboration/session-tools/',
+      ],
       ['/help/palette/behaviour/session-buttons/', '/help/palette/behaviour/'],
       ['/help/palette/behaviour/reveal-zones/', '/help/palette/behaviour/'],
       ['/help/palette/collaborate/', '/help/collaboration/session-tools/'],
@@ -164,8 +178,8 @@ describe('legacyHelpRedirect', () => {
       ['/help/palette/arrows/', '/help/palette/tools/'],
       ['/help/palette/arrows/arrow-styles/', '/help/palette/tools/'],
       ['/help/palette/auto-attach-arrows/', '/help/palette/tools/'],
-      ['/help/palette/lanes/', '/help/palette/build/frames/'],
-      ['/help/palette/timeline-rail/', '/help/palette/build/frames/'],
+      ['/help/palette/lanes/', '/help/palette/virtual-office/'],
+      ['/help/palette/timeline-rail/', '/help/palette/virtual-office/'],
       ['/help/palette/pointer-notes/', '/help/palette/write/'],
       ['/help/palette/embed-elements/website/', '/help/palette/tools/images/'],
       ['/help/palette/tools/tables/', '/help/palette/write/'],
@@ -184,6 +198,10 @@ describe('legacyHelpRedirect', () => {
       ['/help/explorer/drawio-import/', '/help/tabs/import-tabs/'],
       ['/help/explorer/microsoft-whiteboard-import/', '/help/tabs/import-tabs/'],
       ['/help/tools/markdown-import/', '/help/tabs/import-tabs/'],
+      // The Frame left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame"): its articles land on
+      // Virtual Office, whose Rooms mark out an area of a Space.
+      ['/help/palette/build/', '/help/palette/virtual-office/'],
+      ['/help/palette/build/frames/', '/help/palette/virtual-office/'],
       // A retired category's link that lost its `/help` prefix lands on the help centre home too.
       ['/self-hosting', '/help/'],
       ['/self-hosting/', '/help/'],
@@ -209,7 +227,7 @@ describe('legacyHelpRedirect', () => {
       '/help/explorer/folders/',
       '/help/palette/tools/',
       '/help/palette/behaviour/',
-      '/help/palette/build/frames/',
+      '/help/palette/virtual-office/',
       '/help/collaboration/session-tools/',
       '/self-hostingx/',
       '/help/self-hostingx/',

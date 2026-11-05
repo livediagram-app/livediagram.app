@@ -1,13 +1,8 @@
 // Pure logic behind the session panes (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md): the Timer
-// dial's angle <-> minutes mapping, and the rules a running dot vote is under. Kept out of the components so it can be tested without a
+// dial's angle <-> minutes mapping. Kept out of the components so it can be tested without a
 // DOM, and so the dial's snapping rules live in one place.
 
-import {
-  TIMER_MINUTES_RANGE,
-  voteHidesCursors,
-  voteHidesTallies,
-  type TabVote,
-} from '@livehuddle/document';
+import { TIMER_MINUTES_RANGE } from '@livehuddle/document';
 
 // --- Timer dial --------------------------------------------------------------
 //
@@ -71,26 +66,6 @@ export function formatMinutesLabel(minutes: number): string {
   const m = minutes % 60;
   if (h === 0) return `${m} min`;
   return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
-}
-
-// --- Dot vote -----------------------------------------------------------------
-
-// The rules a running vote is under, as short chips for the Vote panel. Phase-aware: the privacy
-// rules read what is in force NOW (cursors come back the moment voting closes), not what was
-// ticked at start.
-export function voteRules(
-  vote: TabVote,
-  layers: readonly { id: string; name: string }[],
-): string[] {
-  return [
-    `${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} each`,
-    vote.onePerElement ? 'One per item' : null,
-    vote.voteLayerId
-      ? `${layers.find((l) => l.id === vote.voteLayerId)?.name ?? 'One layer'} only`
-      : null,
-    voteHidesCursors(vote) ? 'Cursors hidden' : null,
-    voteHidesTallies(vote) ? 'Counts hidden' : null,
-  ].filter((r): r is string => r !== null);
 }
 
 // Dragging the dial handle past twelve o'clock would otherwise wrap: 59 -> 1

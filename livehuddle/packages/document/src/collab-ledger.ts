@@ -2,21 +2,19 @@
 //
 // Every client PUTs whole tabs, and D1 keeps whichever lands last, so a save
 // snapshotted before somebody's answer arrived erased it from D1 even though
-// the room had it. The Durable Object sequences every `el-delta` and `vote`
+// the room had it. The Durable Object sequences every `el-delta`
 // op, so it records them here, and the api merges the ledger into each save
 // before writing. Merging re-applies the entries through `applyElementDelta`,
 // so the result is exactly what a peer receiving those deltas would hold.
 //
 // What is kept is the minimum that reproduces the state, not a log:
 //   - ticks: each checklist row's latest state, by index and text;
-//   - dots: the round's votes map (a round starts empty, so its deltas are
-//     the whole map).
 //   - comments: each one posted (as the room stamped it, see
 //     `stampCommentAuthor`), each one removed, the thread's latest
 //     resolve, and each person's latest reaction per comment and emoji
 //     (docs/specs/012-collaboration/comment-reactions.md).
 //
-// Each tick and the vote carry the room seq that last set them, and a
+// Each tick carries the room seq that last set them, and a
 // merge only applies what the SAVING client had not yet seen (seq past the
 // cursor it sent). Anything it had seen is already in its snapshot, or it
 // changed it since: an untick made while its socket was down never reached
@@ -24,7 +22,9 @@
 //
 // A room may still hold entries from the retired answer and idea cards (`round`, `retired`, `responses`, `ideas`,
 // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): nothing reads them, so a merge never writes
-// them onto the element, which keeps its stored fields exactly as they were.
+// them onto the element, which keeps its stored fields exactly as they were. Nor do the dots of the retired Vote
+// (a `ledger:<tab>:vote` entry, docs/specs/002-project-scope/not-in-livehuddle.md "The Vote"): the room no longer
+// records them and a merge skips the entry.
 //
 // Pure, and a LEAF module: the DO stores these values, it doesn't interpret
 // them.
@@ -33,7 +33,6 @@ import type { Tab } from './index';
 import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
-import { applyVoteDelta, type TabVote } from './session';
 import {
   isReactionChange,
   type CommentReactionId,
@@ -54,48 +53,24 @@ export type ElementLedger = {
   };
 };
 
-export type VoteLedger = {
-  round: string;
-  votes: Record<string, string[]>;
-  seq: number;
-  // Vote rounds the tab has moved past, newest last (see `retire`).
-  retired?: string[];
-};
-
-export type TabLedger = { vote?: VoteLedger; elements: Record<string, ElementLedger> };
+export type TabLedger = { elements: Record<string, ElementLedger> };
 
 // Bounds on what one ledger entry may hold, so a flood of hand-crafted ops
 // can't grow a room's storage without end. Past a bound, new keys are dropped
 // and the merge falls back to what the save carried.
-// A vote round's id, which is otherwise opaque.
-export const COLLAB_ROUND_MAX = 64;
 const TICKS_MAX = 200;
 const COMMENT_EVENTS_MAX = 500;
-const DOTS_MAX = 5000;
 const ID_MAX = 200;
-// How many past vote rounds the ledger remembers, so a late dot naming one of them is
-// dropped instead of flipping the ledger back to it (and wiping the current
-// round's dots). A round is retired by a new vote, a human action, so a late op
-// is at most a few rounds stale; 16 ids of at most COLLAB_ROUND_MAX characters
-// keep the entry around 1KB.
-export const RETIRED_ROUNDS_MAX = 16;
 
 const isStr = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max;
 
-// The round being left joins the retired list, oldest dropped past the bound.
-function retire(retired: string[] | undefined, round: string): string[] {
-  const kept = (retired ?? []).filter((r) => r !== round);
-  return [...kept, round].slice(-RETIRED_ROUNDS_MAX);
-}
-
 // The storage key an op's ledger entry lives under, or null for an op the
-// ledger doesn't track. One key per element (and one for the tab's vote) so
+// ledger doesn't track. One key per element so
 // no single stored value grows with the size of the canvas.
 export function ledgerKey(op: unknown): string | null {
   if (!op || typeof op !== 'object') return null;
   const o = op as { kind?: unknown; tabId?: unknown; elementId?: unknown };
   if (!isStr(o.tabId, ID_MAX)) return null;
-  if (o.kind === 'vote') return `ledger:${o.tabId}:vote`;
   if (o.kind === 'el-delta' && isStr(o.elementId, ID_MAX)) {
     return `ledger:${o.tabId}:el:${o.elementId}`;
   }
@@ -111,42 +86,15 @@ export function ledgerPrefix(tabId: string): string {
 // or null when the op is malformed or not tracked (the caller then leaves
 // storage alone).
 export function recordInLedger(
-  prev: ElementLedger | VoteLedger | undefined,
+  prev: ElementLedger | undefined,
   op: unknown,
   seq: number,
-): ElementLedger | VoteLedger | null {
+): ElementLedger | null {
   const o = op as { kind?: unknown };
-  if (o.kind === 'vote') return recordVote(prev as VoteLedger | undefined, op, seq);
   if (o.kind === 'el-delta') {
-    return recordElement(prev as ElementLedger | undefined, (op as { delta?: unknown }).delta, seq);
+    return recordElement(prev, (op as { delta?: unknown }).delta, seq);
   }
   return null;
-}
-
-function recordVote(prev: VoteLedger | undefined, op: unknown, seq: number): VoteLedger | null {
-  const v = op as { round?: unknown; elementId?: unknown; voter?: unknown; delta?: unknown };
-  // A dot with no round is from a client before rounds: nothing to key it by.
-  if (!isStr(v.round, COLLAB_ROUND_MAX) || !isStr(v.elementId, ID_MAX)) return null;
-  if (!isStr(v.voter, ID_MAX) || (v.delta !== 1 && v.delta !== -1)) return null;
-  // A late dot (or withdraw) from a round the tab has left: drop it.
-  if (prev?.retired?.includes(v.round)) return null;
-  const base: VoteLedger =
-    prev && prev.round === v.round
-      ? prev
-      : {
-          round: v.round,
-          votes: {},
-          seq,
-          ...(prev ? { retired: retire(prev.retired, prev.round) } : {}),
-        };
-  if (v.delta === 1) {
-    const dots = Object.values(base.votes).reduce((n, ids) => n + ids.length, 0);
-    if (dots >= DOTS_MAX) return null;
-  }
-  // Borrow the one place a dot changes hands (docs/specs/012-collaboration/session-tools.md).
-  const asVote: TabVote = { active: true, revealed: false, votesPerPerson: 0, votes: base.votes };
-  const next = applyVoteDelta(asVote, v.elementId, v.voter, v.delta);
-  return next === asVote ? base : { ...base, votes: next.votes, seq };
 }
 
 function recordElement(
@@ -233,8 +181,8 @@ export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]
   for (const [key, value] of entries) {
     if (!key.startsWith(prefix) || !value || typeof value !== 'object') continue;
     const rest = key.slice(prefix.length);
-    if (rest === 'vote') ledger.vote = value as VoteLedger;
-    else if (rest.startsWith('el:')) ledger.elements[rest.slice(3)] = value;
+    // A retired Vote's `vote` entry is skipped (see the header).
+    if (rest.startsWith('el:')) ledger.elements[rest.slice(3)] = value;
   }
   return ledger;
 }
@@ -242,9 +190,7 @@ export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]
 // Fold the ledger into a tab a client is saving, given the room seq that
 // client had caught up to (`since`). Everything the save carries stays, except
 // where the room knows something the saver didn't: ticks and thread changes set
-// after `since` are re-applied, and the round's dots replace the snapshot's if
-// any changed after `since`. A vote entry for a different round than the tab's
-// vote is ignored: the save carries a new vote the ledger hasn't seen a dot for yet.
+// after `since` are re-applied.
 export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): Tab {
   let changed = false;
   const elements = tab.elements.map((el) => {
@@ -270,22 +216,14 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
     if (next !== el) changed = true;
     return next;
   });
-  let vote = tab.vote;
-  if (vote?.round !== undefined && ledger.vote?.round === vote.round && ledger.vote.seq > since) {
-    if (JSON.stringify(vote.votes) !== JSON.stringify(ledger.vote.votes)) {
-      vote = { ...vote, votes: ledger.vote.votes };
-      changed = true;
-    }
-  }
   if (!changed) return tab;
-  return { ...tab, elements, ...(vote ? { vote } : {}) };
+  return { ...tab, elements };
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's dots and comment reactions itself, since a Participant never saves a whole tab. Only those
-// are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest per person, the
-// dots are the round's whole map), and the dots only while the stored round still matches; ticks and the rest of a
-// thread stay with an Editor's save.
+// writes a Participant's comment reactions itself, since a Participant never saves a whole tab. Only those are
+// taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest per person); ticks
+// and the rest of a thread stay with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {
@@ -293,7 +231,7 @@ export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
     if (!reacts) continue;
     elements[id] = { comments: { adds: {}, removes: {}, reacts } };
   }
-  return mergeLedgerIntoTab(tab, { ...(ledger.vote ? { vote: ledger.vote } : {}), elements }, 0);
+  return mergeLedgerIntoTab(tab, { elements }, 0);
 }
 
 // The thread changes the saver hadn't seen, in the order the room took them,

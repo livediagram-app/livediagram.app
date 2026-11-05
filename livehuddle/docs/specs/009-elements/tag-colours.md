@@ -6,7 +6,7 @@
 
 **Colour by tag**: a tab-level map from a card tag to a colour. A [Card](card.md) carrying a mapped tag takes that
 colour as its [accent edge](../008-canvas/accent-edge.md), and the tag's chip is tinted with it, so colour-coding by
-team, status or layer stays consistent: retag a card and its colour follows, change a tag's colour once and every card
+team or status stays consistent: retag a card and its colour follows, change a tag's colour once and every card
 with it changes.
 
 ## Why

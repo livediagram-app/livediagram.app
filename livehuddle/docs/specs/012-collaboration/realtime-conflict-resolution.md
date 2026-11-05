@@ -44,13 +44,13 @@ op: ElementOp }` and `{ kind: 'tab-meta'; tabId; patch }` alongside the kept
   ([Same-element edits converge](#same-element-edits-converge)). The
   selection lock makes that rare; it is advisory and client-only, so it does not
   prevent it. Only the multi-writer fields (answers, ideas, checklist ticks,
-  comments, dots) survive a same-element collision, because they travel as
-  `el-delta` / `vote` deltas and receivers keep their own copy of them
+  comments) survive a same-element collision, because they travel as
+  `el-delta` deltas and receivers keep their own copy of them
   ([Collaboration race hardening](collab-race-hardening.md)).
 - The emit side is `tabBroadcastOps` (in the autosave path); it falls back to a
   whole-`tab` op for a new tab or a bulk change. A meta field that was
   _cleared_ serialises to `undefined`, which JSON drops on the wire, so it
-  travels by name in the `tab-meta` op's `clear` list, so a clear (Clear Timer, Clear Vote) never needs a
+  travels by name in the `tab-meta` op's `clear` list, so a clear (Clear Timer) never needs a
   whole-`tab` op that would replace every element on every receiver
   ([Collaboration race hardening](collab-race-hardening.md)).
 
@@ -117,16 +117,13 @@ against the schema.
   end live collaboration for the rest of the session.
 - **The cursor must include the client's own ops.** The relay skips the
   sender, so from other people's ops alone a reconnect would ask for its own ops back. Re-applying ops is harmless
-  for element ops (by id), but a dot vote ([Session tools (timer + voting)](session-tools.md)) is a delta, so a
-  replayed dot would count twice. The room sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
+  for element ops (by id), but an `el-delta` (a comment, a checklist tick) is a delta, so a
+  replayed one would apply twice. The room sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
   sender of each ordered op, and the client folds it into its cursor (ignoring
   a different epoch, which the `sync` / `catchup` exchange reconciles). An op
   frame may carry a `ref` (a positive integer the client picks); the room echoes
   it on that op's `cursor` frame, which is how a save knows the room has
   sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md#the-room-has-a-saves-deltas-before-the-save-is-written)).
-- **A whole-`tab` op keeps the receiver's dots.** It carries the sender's votes
-  map as of their autosave, without dots still in flight, so the receiver keeps
-  its own map unless the round itself changed (`mergeRemoteTab`).
 - **The save baseline follows remote ops** ([Collaboration race hardening](collab-race-hardening.md)). `lastSavedTabsRef` is
   the "before" for both the save diff and the broadcast diff, so it must
   hold what peers already have. Every applied remote op is folded into it
@@ -149,7 +146,7 @@ The room relays an Editor's op as it was sent and keeps it in the catch-up log, 
 document-changing op's envelope before applying it (`roomOpIsWellFormed`, `room-op-shape.ts`): a `tab` carries a
 tab with its elements, an `el` an element op (an add or update an element with an id and a type, a remove an id, a
 reorder a list, a patch an id and its fields), an `el-delta` an element id and a delta, a `changeset` a list of
-element ops if any, a `vote` an element and a voter, a `tab-meta` a patch, an `article` a flow, a `document-meta`
+element ops if any, a `tab-meta` a patch, an `article` a flow, a `document-meta`
 a name and a list of tabs with ids and names; each but `document-meta` names its tab. One that does not is dropped
 and logged (`[room] malformed op dropped`), so it cannot stop every editor in the room, or each one that
 reconnects, from rendering. What an element or a patch holds is the stored-element migrations' to settle; a kind

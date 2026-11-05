@@ -284,6 +284,15 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   out; any other value is 400 `invalid_expiry`, as a bad `level` is `invalid_level`, never a link that lasts for ever.
   `POST /items/:id/share {public: true}` makes a public link (a Community post's): it never asks for the
   item's share password, and while one is set it opens nothing (404), as if closed.
+- The levels a new link may grant are each app's (`APP_LINK_LEVELS`, most capable first) and so is the level a link
+  made without one grants (`APP_DEFAULT_LINK_LEVEL`), both in `packages/index-client`: every app offers Editor,
+  Participant and Viewer and starts at Editor, except livehuddle, which offers Editor and Participant and starts at
+  Participant ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#what-a-new-share-offers)).
+  `POST /items/:id/share` with a level the item's app does not offer is 400 `level_not_offered`, and so is a
+  `PATCH /share/:code` that changes a link to one; a link already holding such a level (made before the app stopped
+  offering it) keeps working, opens at its level and can be rescoped to another tab. A public link is always `view`,
+  outside the table. The shared Share dialog reads the same table for the item's app: its role picker lists the
+  offered levels with the default chosen, and a pass whose level is no longer offered reads "Viewer (Legacy)".
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right

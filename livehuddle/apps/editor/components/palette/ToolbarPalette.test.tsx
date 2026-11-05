@@ -87,31 +87,31 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
     expect(barNames()).toEqual([
       'Write',
-      'Frame',
-      'Navigate',
-      'React',
+      'Travel',
+      'Seating',
+      'Rooms',
+      'Amenities',
       'Modes',
       'Icons',
       'Stickers',
       'Media',
     ]);
     // No tiles of their own on the strip: they are in the flyouts.
-    expect(within(strip()).queryByRole('button', { name: 'Add Frame' })).toBeNull();
+    expect(within(strip()).queryByRole('button', { name: 'Add Chair' })).toBeNull();
   });
 
   it("reaches the same add-handler as the Palette from a category's flyout, and closes it", () => {
     const { h } = show();
-    fireEvent.click(within(openFlyout('Frame')).getByRole('button', { name: 'Add Frame' }));
-    expect(h.onAddShape).toHaveBeenCalledWith('frame', expect.anything());
+    fireEvent.click(within(openFlyout('Seating')).getByRole('button', { name: 'Add Chair' }));
+    expect(h.onAddShape).toHaveBeenCalledWith('chair', expect.anything());
     expect(flyout()).toBeNull();
   });
 
-  it('opens Navigate on the places and seats, then the office pieces, one level deep', () => {
+  it('opens Rooms one level deep, with no group headings', () => {
     show();
-    const navigate = openFlyout('Navigate');
-    expect(within(navigate).getByText('Around the Space')).toBeTruthy();
-    expect(within(navigate).getByText('Office Pieces')).toBeTruthy();
-    fireEvent.click(within(navigate).getByRole('button', { name: 'Add Room' }));
+    const rooms = openFlyout('Rooms');
+    expect(within(rooms).queryByRole('heading', { level: 4 })).toBeNull();
+    fireEvent.click(within(rooms).getByRole('button', { name: 'Add Room' }));
     expect(flyout()).toBeNull();
   });
 
@@ -131,8 +131,8 @@ describe('ToolbarPalette', () => {
   it('switches the flyout to the category pressed next', () => {
     show();
     openFlyout('Icons');
-    fireEvent.click(screen.getByRole('button', { name: 'Frame' }));
-    expect(within(flyout()!).getByRole('button', { name: 'Add Frame' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Seating' }));
+    expect(within(flyout()!).getByRole('button', { name: 'Add Chair' })).toBeTruthy();
     expect(within(flyout()!).queryByPlaceholderText('Search icons')).toBeNull();
   });
 
@@ -175,7 +175,7 @@ describe('ToolbarPalette', () => {
     it('lists only the element types on the tab before anything is typed', () => {
       show({
         tabElements: [
-          { id: 'a', type: 'shape', shape: 'frame', x: 0, y: 0, width: 1, height: 1 },
+          { id: 'a', type: 'shape', shape: 'chair', x: 0, y: 0, width: 1, height: 1 },
         ] as unknown as Element[],
       });
       const popover = openSearch();
@@ -185,7 +185,7 @@ describe('ToolbarPalette', () => {
           .getAllByRole('button')
           .map((b) => b.getAttribute('aria-label'))
           .filter((l) => l?.startsWith('Add ')),
-      ).toEqual(['Add Frame']);
+      ).toEqual(['Add Chair']);
       cleanup();
       show();
       expect(openSearch().textContent).toContain('No elements on this tab yet');
@@ -200,6 +200,9 @@ describe('ToolbarPalette', () => {
         ['cylinder', /^Add Cylinder$/],
         ['lane', /^Add Lane$/],
         ['poll', /^Add Poll$/],
+        ['frame', /^Add Frame$/],
+        ['confetti', /^Add Confetti Pad$/],
+        ['laser', /^Add Laser/],
       ] as const) {
         type(popover, q);
         expect(within(popover).queryAllByRole('button', { name: gone }), q).toEqual([]);
@@ -221,11 +224,11 @@ describe('ToolbarPalette', () => {
     it('uses the best match on Enter', () => {
       const { h } = show();
       const popover = openSearch();
-      type(popover, 'frame');
+      type(popover, 'sofa');
       fireEvent.keyDown(within(popover).getByRole('textbox', { name: 'Search elements' }), {
         key: 'Enter',
       });
-      expect(h.onAddShape).toHaveBeenCalledWith('frame', expect.anything());
+      expect(h.onAddShape).toHaveBeenCalledWith('sofa', expect.anything());
     });
 
     it('says so when nothing matches anywhere', () => {

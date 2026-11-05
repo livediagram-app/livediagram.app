@@ -7,7 +7,7 @@ Derived from [Avatar mode](../avatar-mode.md) "Where it lives" and "Opening walk
 
 | File                                                     | Role                                                                                         |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/walk-entrance.ts`                       | Pure: `walkEntrance(elements, layers)`, the tab's entrance (a pad, an Avatar button) or null |
+| `apps/editor/lib/walk-entrance.ts`                       | Pure: `walkEntrance(elements)`, the tab's entrance (a pad, an Avatar button) or null |
 | `apps/editor/app/document/[id]/useOpenWalking.ts`        | Judges each tab once per visit; asks for the walk; hands the start spot on as `walkIn`       |
 | `apps/editor/hooks/canvas/useCanvasTool.ts`              | `openWalking()`: enters Avatar mode as a pick does, remembered, but uncounted                |
 | `apps/editor/app/document/[id]/useEditorState.ts`        | Wires the hook: `enabled` off in an embed, `loaded` from `loadedTabIds`                      |
@@ -33,7 +33,7 @@ Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different featur
 
 ## Behaviour and state
 
-1. The editor passes the active tab's id, elements, layers and whether it has loaded.
+1. The editor passes the active tab's id, elements and whether it has loaded.
 2. When the tab has loaded and is not in `judged`, `useOpenWalking` adds it, then reads `walkEntrance`.
 3. No entrance: nothing. Already in Avatar mode: nothing more.
 4. A button entrance bumps `walkIn` (`seq + 1`) with the button's box; a pad entrance leaves `walkIn` alone, since
@@ -54,8 +54,8 @@ never brings the walk back.
 
 ## Interfaces and contracts
 
-- `walkEntrance(elements: Element[], layers: Layer[] | undefined): WalkEntrance | null`.
-- `useOpenWalking({ enabled, tabId, elements, layers, loaded, walking, openWalking }): { walkIn, rejudge }`.
+- `walkEntrance(elements: Element[]): WalkEntrance | null`.
+- `useOpenWalking({ enabled, tabId, elements, loaded, walking, openWalking }): { walkIn, rejudge }`.
 - `useCanvasTool().openWalking(): void`.
 - `useWalkIn({ walkIn, scale, spawnAtRef, mainRef, wrapperRef, viewportZoom, viewportOffset, setViewportOffset })`.
 - `CanvasProps.walkIn?: WalkIn | null`.
@@ -68,7 +68,6 @@ a Space made by the MCP server or before this change opens walking the same way.
 ## Errors and edge cases
 
 - A pad and a button: the pad wins, as in `useAvatarWalk`.
-- A button on a hidden layer is no entrance (`visibleLayerElements`).
 - A mode button with no `mode` is an Avatar button (`DEFAULT_BUTTON_MODE`).
 - A tab that has not loaded is not judged yet; one that loads empty is judged then and stays judged unless a template
   lands.
@@ -105,7 +104,7 @@ Opening walking fires no `Canvas·Used·AvatarMode`; a pick from the picker or s
 
 ## Testing
 
-- `lib/walk-entrance.test.ts`: pad, button, hidden layer, none; every Spaces template opens walking, no other.
+- `lib/walk-entrance.test.ts`: pad, button, none; every Spaces template opens walking, no other.
 - `app/document/[id]/useOpenWalking.test.tsx`: once per tab, waits for load, embed, already walking, re-judge.
 - `hooks/canvas/useCanvasTool.test.ts`: `openWalking` is remembered and uncounted.
 - `components/canvas/useWalkIn.test.tsx`: the spot, the off-screen recentre, once per `seq`.

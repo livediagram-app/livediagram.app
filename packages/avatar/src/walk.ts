@@ -4,7 +4,7 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isFloorShape } from './office-geometry';
+import { isFloorShape, isSceneryShape, isWallPieceShape } from './office-geometry';
 import { hasSceneBox, isSceneShape, type AvatarSceneElement } from './scene';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
@@ -273,6 +273,39 @@ export function facingFromDelta(dx: number, dy: number): AvatarFacing | null {
   return dy < 0 ? 'up' : 'down';
 }
 
+// How far the character walks (canvas px) for an off-centre view to close half its gap to it
+// (docs/specs/008-canvas/avatar-mode.md "The camera").
+export const AVATAR_CAMERA_HALF_LIFE = 400;
+
+// The centred camera's step (docs/specs/008-canvas/avatar-mode.md "The camera"): the viewport offset after the
+// character moved `from` -> `to`. The canvas wrapper is `scale(zoom) translate(offset)` about its own centre, so the
+// offset that centres a point p is `size / 2 - p` at any zoom, and `from + offset - size / 2` is how far (canvas px)
+// the character stands off the middle of the view. A centred view moves with every step; an off-centre one stays put
+// while the walk closes the gap itself and otherwise gravitates back by distance walked.
+export function centredCamera(
+  offset: AvatarPoint,
+  from: AvatarPoint,
+  to: AvatarPoint,
+  size: { width: number; height: number },
+  zoom: number,
+): AvatarPoint {
+  const z = zoom > 0 ? zoom : 1;
+  const cx = size.width / 2;
+  const cy = size.height / 2;
+  const centred = { x: cx - to.x, y: cy - to.y };
+  const off = { x: from.x + offset.x - cx, y: from.y + offset.y - cy };
+  const gap = Math.hypot(off.x, off.y);
+  // Within a screen pixel counts as centred.
+  if (gap * z < 1) return centred;
+  const stay = { x: to.x + offset.x - cx, y: to.y + offset.y - cy };
+  // Walking towards the middle of the view: the camera waits for you.
+  if (Math.hypot(stay.x, stay.y) < gap) return offset;
+  // Any other way, the gap shrinks with distance walked, so the character never ends further off the middle (or
+  // nearer an edge) than it started the step.
+  const keep = Math.pow(0.5, Math.hypot(to.x - from.x, to.y - from.y) / AVATAR_CAMERA_HALF_LIFE);
+  return { x: centred.x + off.x * keep, y: centred.y + off.y * keep };
+}
+
 // The camera correction (in CANVAS px, i.e. already divided by zoom) that
 // brings a point back inside `margin` of the viewport edges. Zero on both
 // axes when the point is comfortably inside, so the common case is a no-op.
@@ -319,7 +352,8 @@ export function elementUnderFeet(
     if (shape === 'fence') continue;
     // Nor is the office's floor and scenery (docs/specs/009-elements/office.md): a room or a rug is where you
     // stand, and a plant or a bookshelf is walked round.
-    if (shape !== null && (isFloorShape(shape) || shape === 'plant' || shape === 'bookshelf'))
+    // Nor is a piece on a wall (a notice board, a world clock): walked past, not to.
+    if (shape !== null && (isFloorShape(shape) || isSceneryShape(shape) || isWallPieceShape(shape)))
       continue;
     if (
       feet.x >= el.x &&

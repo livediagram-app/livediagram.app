@@ -11,7 +11,7 @@ which fixes what that tab is. Every tab is worked on in Workshop, livehuddle's o
 | Term            | Means                                                                                    |
 | --------------- | ---------------------------------------------------------------------------------------- |
 | **document**    | The top-level container: its name, owner, location, share links and tabs.                |
-| **tab**         | One page of a document, with its own canvas, layers and elements.                        |
+| **tab**         | One page of a document, with its own canvas and elements.                              |
 | **tab kind**    | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                      |
 | **diagram**     | The general tab kind (a stored name): every element type, worked on in Workshop.         |
 | **editor mode** | How a tab is worked on: always Workshop ([Editor modes](../007-editor/editor-modes.md)). |

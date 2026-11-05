@@ -23,6 +23,8 @@ export type PaletteTileActions = {
   beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
+  // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
+  beginRoomWalls?: () => void;
   addArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   addSticky: () => void;
   addTable: () => void;
@@ -59,11 +61,10 @@ export function tileHandler(
   }
   switch (a.type) {
     case 'shape':
-      // The creation-time choice rides along, so a confetti tile places a confetti pad
-      // (docs/specs/009-elements/reaction-pad.md).
+      // The creation-time choice rides along, so an Eraser tile places an Eraser button
+      // (docs/specs/009-elements/mode-button.md).
       return () =>
         actions.addShape(a.kind, {
-          reaction: a.reaction,
           mode: a.mode,
           variant: a.variant,
           name: tileCaption(def.label, def.caption),
@@ -78,6 +79,8 @@ export function tileHandler(
       return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
+    case 'room-walls':
+      return actions.beginRoomWalls ?? (() => {});
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
@@ -120,12 +123,11 @@ export function tileActive(
   const a = def.action;
   switch (a.type) {
     case 'shape':
-      // Matched on the CHOICE too, or all five reaction tiles would light up
+      // Matched on the CHOICE too, or all the mode tiles would light up
       // together while one of them was armed.
       return (
         pendingDraw.type === 'shape' &&
         pendingDraw.kind === a.kind &&
-        pendingDraw.reaction === a.reaction &&
         pendingDraw.mode === a.mode &&
         pendingDraw.variant === a.variant
       );
@@ -139,6 +141,8 @@ export function tileActive(
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
+    case 'room-walls':
+      return pendingDraw.type === 'room-walls';
     // The Media tab has a tile per service and they all arm one `video`
     // intent, so match on the provider too or picking Loom would light up
     // Vimeo alongside it (the same trap the shape branch above avoids).
@@ -235,7 +239,7 @@ function TileButton({
       description={def.description}
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
-      dragChoice={a.type === 'shape' ? (a.reaction ?? a.mode ?? a.variant) : undefined}
+      dragChoice={a.type === 'shape' ? (a.mode ?? a.variant) : undefined}
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}
       filled={def.filled}

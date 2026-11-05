@@ -1,8 +1,6 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
-import { votesSpentBy } from '@livehuddle/document';
-import { participantKey } from '@/lib/identity';
-import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
+
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
@@ -27,7 +25,7 @@ import {
   stripCanStart,
 } from '@/components/canvas/SessionClusterStrip';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
+import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -85,13 +83,6 @@ type ChromeExtras = {
   handleZoomIn: () => void;
   handleZoomOut: () => void;
   handleSetZoom: (zoom: number) => void;
-  // Begin an isometric orbit drag from the given screen coordinates
-  // (wired to `isoCamera.startOrbit`). Drives the dock orbit button,
-  // which only renders while the isometric tool is active.
-  onIsoOrbit: (clientX: number, clientY: number) => void;
-  // Reset the isometric camera to its default angle (wired to
-  // `isoCamera.reset`) — fired when the dock orbit button is clicked.
-  onIsoReset: () => void;
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the character's customisation, owned by
   // useAvatarConfig in Canvas (it persists per browser, so it lives with the
   // sprite rather than in the editor's document state) and edited by the
@@ -113,30 +104,6 @@ type ChromeExtras = {
   avatarStatus?: import('@liveworkspace/avatar/status').AvatarStatus | null;
   onSetAvatarStatus?: (status: import('@liveworkspace/avatar/status').AvatarStatus | null) => void;
   avatarSpeechCooling?: boolean;
-  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen, owned by useLaserConfig in Canvas (it
-  // persists per browser, like the avatar's costume) and edited down here.
-  laserConfig?: import('@/lib/laser-config').LaserConfig;
-  onChangeLaserField?: <K extends keyof import('@/lib/laser-config').LaserConfig>(
-    field: K,
-    value: import('@/lib/laser-config').LaserConfig[K],
-  ) => void;
-  laserPanelPosition?: { x: number; y: number } | null;
-  onMoveLaserPanel?: (x: number, y: number) => void;
-  onResetLaserPanel?: () => void;
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, owned by useSpotlightConfig
-  // in Canvas, plus the live radius the canvas clicks also change.
-  spotlightConfig?: import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig;
-  onChangeSpotlightField?: <
-    K extends keyof import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig,
-  >(
-    field: K,
-    value: import('@liveworkspace/workbench/lib/spotlight-config').SpotlightConfig[K],
-  ) => void;
-  spotlightRadius?: number;
-  onSetSpotlightRadius?: (radius: number) => void;
-  spotlightPanelPosition?: { x: number; y: number } | null;
-  onMoveSpotlightPanel?: (x: number, y: number) => void;
-  onResetSpotlightPanel?: () => void;
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, owned by useEraserConfig in
   // Canvas (the erase gesture reads it too).
   eraserConfig?: import('@/lib/eraser-config').EraserConfig;
@@ -211,8 +178,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     offscreenContent,
     onFitToScreen,
     onRedo,
-    onIsoOrbit,
-    onIsoReset,
     onCancelIdentity,
     onUndo,
     pendingDraw,
@@ -228,28 +193,26 @@ export function CanvasChrome(props: CanvasChromeProps) {
     identityLockedName,
     welcomeOpen,
     wrapperRef,
-    zenMode,
-    onToggleZen,
+    chromeAway,
   } = props;
   // The view is not a prop here: the parts that show it read it from the viewport store, so a pan or
   // zoom renders them and not this chrome or its panels (docs/specs/008-canvas/blueprints/viewport-store.md).
   const viewport = useViewportStore();
   const readZoom = useCallback(() => viewport.get().zoom, [viewport]);
-  // Zen / focus mode (docs/specs/007-editor/zen-mode.md): hide all floating chrome. `chromeHidden`
+  // An embed hides all floating chrome. `chromeHidden`
   // folds it in next to the welcome-flow gate that already suppresses
   // the same panels, so each panel stays hidden in either state.
-  const chromeHidden = welcomeOpen || zenMode === true;
+  const chromeHidden = welcomeOpen || chromeAway === true;
   // Panels turned off in Settings (docs/specs/007-editor/user-preferences.md) take their cluster
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    layers: panelEnabled(settings, 'layersPanelEnabled'),
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
-    useCornerDocking({ zenMode: zenMode === true });
+    useCornerDocking({ chromeAway: chromeAway === true });
   // Alignment guides while a palette tile is being dragged in (docs/specs/008-canvas/canvas-and-palette.md):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
@@ -269,11 +232,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     whiteboard: false,
   });
 
-  // The Vote button, which a starting results walkthrough opens for whoever drives it.
-  const voteButtonRef = useVoteReviewOpener(!!props.voteReview?.canControl, {
-    activeDockPanel,
-    handleDockButtonClick,
-  });
   // The palette strip: an editor's (not read-only), or a Participant's (docs/specs/013-workspace/share-roles.md).
   const paletteShown = !readOnly || !!props.participantPalette;
   // The strip only renders with the chrome up.
@@ -304,7 +262,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const {
     panelEls,
     explorerEl,
-    layersEl,
     collaborateEl,
     sessionPopoverEl,
     tidyUpPopoverEl,
@@ -391,8 +348,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     <>
       {/* The menu button's card at the top left (or a workspace frame's Back), first of the canvas's controls in the
           keyboard order (docs/specs/007-editor/toolbar-layout.md); on a phone it rides in the strip's row instead.
-          Zen hides it with the rest of the chrome. */}
-      {zenMode || menuInStrip ? null : explorerMenuButton}
+          An embed hides it with the rest of the chrome. */}
+      {chromeAway || menuInStrip ? null : explorerMenuButton}
 
       {/* The empty-canvas hint is now a dismissible bottom banner
           (EmptyCanvasBanner), rendered by EditorView alongside the sign-in /
@@ -430,37 +387,30 @@ export function CanvasChrome(props: CanvasChromeProps) {
       />
 
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
-          active editor-mode banner, multi-selection toolbar, session timer
-          and vote banner — laid out as one non-overlapping stack. */}
+          active editor-mode banner, multi-selection toolbar and session timer, laid out as one
+          non-overlapping stack. */}
       <TopCenterChrome {...props} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
-          (zen hides it, the welcome flow doesn't), and Layers opens as a popover over its cluster
-          button. */}
-      {!zenMode ? (
-        <>
-          {explorerEl}
-          {layersEl}
-        </>
-      ) : null}
+          (an embed hides it, the welcome flow doesn't). */}
+      {!chromeAway ? explorerEl : null}
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
           against the canvas, so it renders outside the corner layer, as Layers does. */}
-      {zenMode ? null : collaborateEl}
+      {chromeAway ? null : collaborateEl}
       {tidyUpPopoverEl}
       {avatarPopoverEl}
-      {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
+      {/* The Session strip's popover, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
           key={readOnly ? 'participant' : 'standard'}
           participant={readOnly}
-          // Hidden, not unmounted, while the chrome is away (zen, welcome),
+          // Hidden, not unmounted, while the chrome is away (an embed, welcome),
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
           canvasTool={canvasTool}
           onSetCanvasTool={props.onSetCanvasTool}
           onExitAvatarMode={props.onExitAvatarMode}
-          onToggleZen={onToggleZen}
           canvasEmpty={elements.length === 0}
           {...pickPaletteAddHandlers(props)}
           pendingDraw={pendingDraw}
@@ -471,8 +421,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : null}
 
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
-          containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
-          Each element carries its own visibility gate, so the welcome-flow / read-only / zen
+          containers (with a free layer + snap guides) by `dockedLayer`; in an embed they render inline.
+          Each element carries its own visibility gate, so the welcome-flow / read-only / embed
           suppression is unchanged. */}
       {dockingActive ? (
         dockedLayer
@@ -480,20 +430,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <>
           {panelEls.collaborate}
           {panelEls.minimap}
-          {panelEls.laser}
-          {panelEls.spotlight}
           {panelEls.eraser}
           {panelEls.format}
         </>
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Session strip (Timer, Vote, Poll), the
+          strip, the Session strip (the Timer), the
           Collaborate button (only while the tab has a thread or an action), the Layers and
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
       <div
-        // Zen keeps the zoom controls as its one way back out.
         data-zoom-cluster=""
         data-region="controls"
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
@@ -518,7 +465,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
                 (docs/specs/013-workspace/share-roles.md). */}
-            {!zenMode && (!readOnly || !!props.participantPalette) ? (
+            {!chromeAway && (!readOnly || !!props.participantPalette) ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}
@@ -544,7 +491,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
-                is on, for every role, Zen included: it is the mode's one piece of chrome. */}
+                is on, for every role : it is the mode's one piece of chrome. */}
             {props.canvasTool === 'avatar' ? (
               <>
                 {/* Proximity audio (docs/specs/012-collaboration/proximity-audio.md): Join Audio, then the
@@ -561,33 +508,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
               </>
             ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
-                Layers. Kept in Zen: a running session is the one piece of chrome a facilitator still
-                needs there. Workshop has all three; Diagram and Draw keep
-                their bottom bar to their own tools. */}
+                Layers. A running session is the one piece of chrome a facilitator still
+                needs there. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">
                 <SessionClusterStrip
                   timer={props.sessionTools.timer}
-                  voteRunning={!!props.tabVote}
-                  voteDotsLeft={
-                    // A Participant votes too (docs/specs/013-workspace/share-roles.md), so it sees its dots left.
-                    props.tabVote?.active && (!readOnly || props.takePart)
-                      ? Math.max(
-                          0,
-                          props.tabVote.votesPerPerson -
-                            votesSpentBy(props.tabVote, participantKey(selfParticipant)),
-                        )
-                      : null
-                  }
-                  voteReviewing={!!props.voteReview}
-                  voteButtonRef={voteButtonRef}
                   canStart={stripCanStart(!!readOnly)}
                   offersTimer={stripTools.timer}
-                  open={
-                    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
-                      ? activeDockPanel
-                      : null
-                  }
+                  open={activeDockPanel === 'session-timer' ? activeDockPanel : null}
                   onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
                 />
               </div>
@@ -595,7 +524,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
-            {!zenMode &&
+            {!chromeAway &&
             panelsOn.collaborate &&
             (commentRows.length > 0 || actionRows.length > 0) ? (
               <CollaborateClusterButton
@@ -604,28 +533,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
-            {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
-                (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
-                pass no handler), one strip in every mode: see LayersThemeStrip. */}
-            {!zenMode ? (
-              <LayersThemeStrip
+            {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
+                read-only sessions pass no handler): see ThemeStrip. */}
+            {!chromeAway ? (
+              <ThemeStrip
                 // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
                 tidyUp={
                   tidyUpOffered({
                     actions: props.tidyUp,
-                    zenMode: !!zenMode,
+                    chromeAway: !!chromeAway,
                   })
                     ? {
                         open: activeDockPanel === 'tidy-up',
                         onToggle: (button) => handleDockButtonClick('tidy-up', button, true),
-                      }
-                    : undefined
-                }
-                layers={
-                  !readOnly && panelsOn.layers
-                    ? {
-                        open: activeDockPanel === 'layers',
-                        onToggle: (button) => handleDockButtonClick('layers', button, true),
                       }
                     : undefined
                 }
@@ -637,13 +557,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
               onZoomOut={handleZoomOut}
               onSetZoom={handleSetZoom}
               onFitToScreen={onFitToScreen}
-              onIsoOrbit={canvasTool === 'isometric' ? onIsoOrbit : undefined}
-              onIsoReset={canvasTool === 'isometric' ? onIsoReset : undefined}
-              onToggleZen={onToggleZen}
-              zenActive={zenMode}
-              // View-only visitors have no palette (so no canvas-tool
-              // dropdown); the dock keeps the enter button for them.
-              zenEnterHere={readOnly}
               pinchOnly={isMobile}
             />
           </>

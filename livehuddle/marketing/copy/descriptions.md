@@ -52,7 +52,7 @@ For Product Hunt, app store short descriptions, README intros.
 > livehuddle is a collaborative diagram and mindmap editor in the browser. The
 > canvas never sits behind a sign-in wall, so getting started is as simple as
 > opening a link and drawing. Teams work on the same canvas in real time: live
-> cursors, selection rings, comment threads, and a laser pointer.
+> cursors, selection rings, comment threads and walking characters.
 >
 > Build with ten core shapes, sticky notes, images, freehand sketching with
 > shape recognition, and arrows you can curve, bend, and label. Start from 82
@@ -73,8 +73,8 @@ For longer listing bodies and "about this project" sections.
 > create anything. Friction-free starting is the whole point.
 >
 > Collaboration is real time and built in, not bolted on. Everyone on a diagram
-> sees live cursors, selection rings, and comment threads, with a laser pointer
-> for walking a group through a design. Each document gets its own realtime room,
+> sees live cursors, selection rings, and comment threads, with a walking
+> character for taking a group through a design. Each document gets its own realtime room,
 > so presence and edits stay snappy.
 >
 > The canvas is deep enough for real work: ten core shapes, sticky notes, text,
@@ -88,11 +88,11 @@ For longer listing bodies and "about this project" sections.
 >
 > Nothing is lost: every change saves on its own, and undo and redo step back
 > and forth through your recent edits. Share links as an editor, participant
-> or viewer and revoke them whenever you like. Export any tab to JSON, Mermaid,
-> Markdown, Excalidraw, PNG, SVG, or PDF.
+> or viewer and revoke them whenever you like. Export any tab to JSON,
+> Markdown, PNG, SVG, or PDF.
 >
 > livehuddle is MIT-licensed and free for everyone, with no paid tier and no
-> plan for one. [247 words]
+> plan for one. [245 words]
 
 ---
 
@@ -113,8 +113,8 @@ detailed GitHub / Product Hunt write-up.
 > #### Real-time multiplayer, built in
 >
 > Collaboration is the product, not a feature. Everyone on a diagram sees live
-> cursors, selection rings, and comment threads as they happen, plus a laser
-> pointer for walking a group through a design in a call. Each document runs in
+> cursors, selection rings, and comment threads as they happen, plus a walking
+> character for taking a group through a design in a call. Each document runs in
 > its own realtime room, so presence and edits stay responsive even with a
 > crowd on the canvas.
 >
@@ -143,8 +143,7 @@ detailed GitHub / Product Hunt write-up.
 > forth through your recent edits without touching anyone else's work.
 > Share links per document as an editor, participant or viewer, and revoke them
 > whenever you want. Anyone you share with can make their own copy. Export any
-> tab to JSON, Mermaid, Markdown, Excalidraw, PNG, SVG, or PDF, and import the
-> JSON back as a new tab.
+> tab to JSON, Markdown, PNG, SVG, or PDF, and import the JSON back into a tab.
 >
 > #### Free, open, and yours
 >
@@ -153,4 +152,4 @@ detailed GitHub / Product Hunt write-up.
 > introduce one. If you ship it, every user gets it. The open-source core never
 > calls home and never gates features behind a license check.
 >
-> Open a link, draw, share. That is the whole pitch. [484 words]
+> Open a link, draw, share. That is the whole pitch. [481 words]

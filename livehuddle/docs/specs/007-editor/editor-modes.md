@@ -15,7 +15,7 @@ with the elements only they offered ([Purpose](../001-project-vision/purpose.md#
 | **editor mode**   | How a tab is worked on. In livehuddle always `workshop` (`EditorMode`), kept as a type so stored tabs and shared code read one value. |
 | **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip.                                              |
 
-- "Mode" on its own is ambiguous (Zen mode, Presentation mode, Power user mode); in specs and code say **editor mode**.
+- "Mode" on its own is ambiguous (Avatar mode, Power user mode); in specs and code say **editor mode**.
 - "Whiteboard" names an activity, never a tab kind, a mode or a type of document.
 
 ## Kinds versus modes
@@ -52,7 +52,7 @@ with the elements only they offered ([Purpose](../001-project-vision/purpose.md#
   entities, the layer stack, pyramid, cycle, hub, onion and chevrons, the device frames) are not part of the element
   union. A stored element of such a kind reads as a plain square keeping its box, label and colours (validation reads
   an unknown shape kind as `square`), and the fields only those kinds read are dropped.
-- A stored tab with `kind: 'whiteboard'` reads as a general Workshop tab, its elements, background and layers
+- A stored tab with `kind: 'whiteboard'` reads as a general Workshop tab, its elements and background
   unchanged.
 
 ## Stored tabs from other products' modes
@@ -83,7 +83,7 @@ There is one palette layout, the meeting palette (`apps/editor/components/palett
 - **A layout entry** names a category and may override its `label`, `description` and `band`, and list its `tiles` by
   id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
 - **Catalogue categories** (My shapes, Icons, Stickers) are bodies with their own content and take no tile list.
-- **Popular** is the landing category: Sticky note, Text, Frame, Image, Link card, then behind a divider (`DIVIDE`)
+- **Popular** is the landing category: Sticky note, Text, Image, Link card, then behind a divider (`DIVIDE`)
   Room, Meeting Table, Chair, Bring Focus and Avatar Pad. No category holds an opener (the openers module went with
   the Collaborate code in part 4).
 - The tool a tab starts with is **Select**; on a phone **Hand**. An embedded viewer always starts on Hand.
@@ -101,5 +101,4 @@ There is one palette layout, the meeting palette (`apps/editor/components/palett
 ## References
 
 [Document](../006-document/document.md), [Workshop mode](../012-collaboration/workshop-mode.md),
-[Toolbar layout](toolbar-layout.md),
-[Zen mode](zen-mode.md).
+[Toolbar layout](toolbar-layout.md).

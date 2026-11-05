@@ -297,12 +297,16 @@ describe('applyEditOperations', () => {
 
     it('logs a locked element with its scope', () => {
       const { calls, log } = recording();
+      const flow = checkoutFlow();
       const tab: Tab = {
-        ...checkoutFlow(),
-        layers: [{ id: 'base', name: 'Base', locked: true }],
+        ...flow,
+        elements: flow.elements.map((el) => (el.id === 'n3' ? { ...el, locked: true } : el)),
       };
       run([set('n3', { label: 'x' })], tab, log);
-      expect(calls[0]).toEqual(['[edit-ops] locked', { operation: 1, op: 'set', scope: 'layer' }]);
+      expect(calls[0]).toEqual([
+        '[edit-ops] locked',
+        { operation: 1, op: 'set', scope: 'element' },
+      ]);
     });
   });
 });

@@ -401,7 +401,7 @@ export async function reorderTabs(
 
 // Compare-and-swap one tab's `data` blob (docs/specs/013-workspace/share-roles.md "Integrity"). Writes `nextData`
 // only if the row still holds exactly `expectedData`, the string the caller read, and reports whether it did. A
-// Participant's write (participant-write.ts) loops on this so a room voting in the same second can't lose a dot to
+// Participant's write (participant-write.ts) loops on this so a room reacting in the same second can't lose a reaction to
 // the read-modify-write race a plain upsert would have.
 //
 // Only `data` and `updated_at` move: such a write never renames, reorders or

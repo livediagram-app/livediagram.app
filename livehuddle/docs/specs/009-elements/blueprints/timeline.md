@@ -43,7 +43,6 @@ Scope, by file:
 | `apps/editor/components/canvas/ConceptFace.tsx`          | Routes a Timeline to `ConceptTimelineBody`                                                         |
 | `apps/editor/components/canvas/ConceptTimelineBody.tsx`  | The canvas face: spine, arrowhead, a `ConceptRowLayer` per milestone                               |
 | `apps/editor/components/canvas/element-variant.ts`       | Borderless wrapper via `SELF_PAINTING_SHAPES`                                                      |
-| `apps/editor/components/canvas/QuickConnectPluses.tsx`   | The ring's Add Milestone                                                                           |
 | `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `tools:timeline`, section `concepts`                                                          |
 | `apps/editor/lib/palette-tile-keywords.ts`               | Search words for the tile                                                                          |
 | `apps/editor/lib/element-tours.ts`                       | `elementTourKindOf`: `'timeline'`                                                                  |
@@ -51,16 +50,15 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term          | Identifier                        | Meaning                                      |
-| ------------- | --------------------------------- | -------------------------------------------- |
-| Timeline      | `shape: 'timeline-rail'`          | The element kind                             |
-| Milestone     | one `ConceptRow` in `conceptRows` | A name on the line                           |
-| Name          | `ConceptRow.label`                | The milestone's words, at most 60 characters |
-| When          | `ConceptRow.note`                 | A date, a quarter, a sprint; at most 40      |
-| Spine         | `TimelineLayout.spine`            | The line across the middle                   |
-| Arrowhead     | `TimelineLayout.head`             | At the spine's right end: time runs that way |
-| Point fields  | `railCount`, `railLabels`         | Read once into milestones, never written     |
-| Add Milestone | `QuickConnectPluses` entry        | The ring action that appends a milestone     |
+| Term         | Identifier                        | Meaning                                      |
+| ------------ | --------------------------------- | -------------------------------------------- |
+| Timeline     | `shape: 'timeline-rail'`          | The element kind                             |
+| Milestone    | one `ConceptRow` in `conceptRows` | A name on the line                           |
+| Name         | `ConceptRow.label`                | The milestone's words, at most 60 characters |
+| When         | `ConceptRow.note`                 | A date, a quarter, a sprint; at most 40      |
+| Spine        | `TimelineLayout.spine`            | The line across the middle                   |
+| Arrowhead    | `TimelineLayout.head`             | At the spine's right end: time runs that way |
+| Point fields | `railCount`, `railLabels`         | Read once into milestones, never written     |
 
 Banned synonyms: "point", "node" or "tick" for a milestone; "date" as an identifier (the when is free text).
 

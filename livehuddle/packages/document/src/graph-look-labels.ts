@@ -35,7 +35,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     .map((el) => ({ id: el.id, pts: paths.get(el.id) ?? pathOf(el), end: busEnd(el) }));
   // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
   const isHolder = (el: Element) =>
-    el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
+    el.type === 'shape' && (el.shape === 'boundary' || el.shape === 'lane');
   const boxes = elements.filter((el): el is BoxedElement => isBoxed(el) && !isHolder(el));
   // The frames and lanes a label must not straddle, and the heading each reads by: a frame's title at its top left,
   // a lane's header strip down its left.

@@ -1,5 +1,6 @@
 import type { Browser, Page } from '@playwright/test';
 import { adoptGuest, documentHeaders, expect, mintGuest, seedDocumentItem, test } from './fixtures';
+import { legacyViewerLink } from './legacy-viewer';
 
 // The Viewer's Walk button (docs/specs/008-canvas/avatar-mode.md "The Walk button", Work Tracker #486): a Viewer has
 // no palette strip and so no picker, so the bottom-right cluster gives them Walk. On a plain board (no Walk In, no
@@ -64,12 +65,8 @@ test('a Viewer walks in and out from the Walk button; an Editor has none', async
   const headers = await documentHeaders(page.request, owner, id, {
     Origin: new URL(baseURL!).origin,
   });
-  const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
-    headers,
-    data: { role: 'view' },
-  });
-  expect(share.ok(), `share: ${share.status()}`).toBe(true);
-  const code = ((await share.json()) as { link: { code: string } }).link.code;
+  // livehuddle makes no new Viewer link: a legacy one, as stored before.
+  const code = await legacyViewerLink(page.request, apiBase, id, headers);
 
   // The Editor: the picker is their way in, so the cluster has no Walk.
   const editor = await openAs(browser, baseURL!, `/document/${id}`, owner);

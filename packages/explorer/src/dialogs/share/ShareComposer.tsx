@@ -1,6 +1,7 @@
 'use client';
 
-// "Issue a pass": the level picker (one card, Editor to start, that unfolds the three levels), then the fine print,
+// "Issue a pass": the level picker (one card, the app's default to start, that unfolds the levels it offers), then
+// the fine print,
 // Opens (when the item has more than one tab) and Valid, a sliding segmented control ending in Create Pass, which also
 // copies the new link. It owns the draft pass; the dialog issues it.
 
@@ -10,6 +11,7 @@ import { Button, Select } from '@liveworkspace/ui';
 import { HelpLink } from './HelpLink';
 import {
   DEFAULT_LEVEL,
+  LEVEL_ORDER,
   LEVEL_PASS,
   LIFETIMES,
   SECTION_LABEL,
@@ -24,13 +26,18 @@ export function ShareComposer({
   busy,
   helpHref,
   onIssue,
+  levels = LEVEL_ORDER,
+  defaultLevel = DEFAULT_LEVEL,
 }: {
   tabs: ShareTab[];
   busy: boolean;
   helpHref?: ShareHelpHref;
+  // The levels the item's app offers a new pass, and the one it starts at (APP_LINK_LEVELS, APP_DEFAULT_LINK_LEVEL).
+  levels?: readonly Level[];
+  defaultLevel?: Level;
   onIssue: (level: Level, expiry: ShareLinkExpiry, tabId: string | null) => void;
 }) {
-  const [level, setLevel] = useState<Level>(DEFAULT_LEVEL);
+  const [level, setLevel] = useState<Level>(defaultLevel);
   const [expiry, setExpiry] = useState<ShareLinkExpiry>('never');
   const [scope, setScope] = useState('');
   const multiTab = tabs.length > 1;
@@ -59,7 +66,7 @@ export function ShareComposer({
       {/* The level and the fine print share one tinted panel, so the pass being made reads as one thing. */}
       <div className="flex flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
         <div data-tour-id="share-role">
-          <RolePicker level={level} onChange={setLevel} />
+          <RolePicker level={level} onChange={setLevel} levels={levels} />
         </div>
         {/* The fine print: one labelled row per term, labels in one column, Create Pass ending the Valid row. */}
         <div className="grid grid-cols-1 items-center gap-x-3 gap-y-1.5 px-0.5 sm:grid-cols-[3.5rem_1fr_auto] sm:gap-y-2">

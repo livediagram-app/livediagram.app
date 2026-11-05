@@ -1,6 +1,5 @@
 import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livehuddle/document';
-import { useEffect, useState } from 'react';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
@@ -32,7 +31,6 @@ type Deps = Pick<
   | 'canvasTool'
   | 'onSetCanvasTool'
   | 'onExitAvatarMode'
-  | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
   | 'onTileUsed'
@@ -47,7 +45,6 @@ export function usePaletteCatalogue({
   canvasTool,
   onSetCanvasTool,
   onExitAvatarMode,
-  onToggleZen,
   canvasEmpty,
   onAddShape,
   onAddIcon,
@@ -74,32 +71,18 @@ export function usePaletteCatalogue({
   onCancelDraw,
   onBeginShapePen,
   onBeginPolygon,
+  onBeginRoomWalls,
   pendingDraw,
   onTileUsed,
   participant = false,
 }: Deps) {
-  // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
-  // cursor and on left/right-click to resize the light, none of which map to
-  // touch — so drop it from the tool picker on mobile viewports. Reactive
-  // (the shared useIsMobileViewport, as MovablePanel uses) so the option
-  // appears / disappears as the viewport crosses the breakpoint; a client
-  // mount reads it synchronously, so there's no flicker.
   // The editor mode picks the palette layout (palette-layouts): Workshop, the one mode.
   const editorMode = DEFAULT_EDITOR_MODE;
-  const isMobile = useIsMobileViewport();
-  // If the viewport shrinks into mobile while Spotlight is active (desktop ->
-  // resize / rotate), revert to Select: the option has just left the picker,
-  // so leaving the tool on spotlight would strand it (the trigger would
-  // mislabel as Select while the canvas stayed shrouded).
-  useEffect(() => {
-    if (isMobile && canvasTool === 'spotlight') onSetCanvasTool('select');
-  }, [isMobile, canvasTool, onSetCanvasTool]);
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
-  // session tool, which reaction (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). It has to be forwarded
-  // rather than dropped — this adapter silently swallowing it is what made
-  // every session tile place a timer and every reaction tile place confetti.
+  // mode (docs/specs/009-elements/mode-button.md). It has to be forwarded rather than dropped: this adapter
+  // silently swallowing it once made every choice tile place the factory default.
   const armed = (fn: () => void) => () => {
     fn();
     onTileUsed?.();
@@ -128,6 +111,7 @@ export function usePaletteCatalogue({
   const beginMarker = (penId: WhiteboardPenId) => armed(() => onBeginMarker(penId))();
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
+  const beginRoomWalls = armed(() => onBeginRoomWalls?.());
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -159,6 +143,7 @@ export function usePaletteCatalogue({
       beginMarker,
       beginShapePen,
       beginPolygon,
+      beginRoomWalls,
       addArrow,
       addSticky,
       addTable,
@@ -225,21 +210,12 @@ export function usePaletteCatalogue({
     stickerResults,
   });
 
-  // The canvas-tool picker's options, and its change handler: 'zen' is an
-  // action entry, not a tool, so it fires the toggle and keeps the current
-  // tool selected (see canvas-tool-options).
-  const allCanvasToolOptions = buildCanvasToolOptions({
-    canvasEmpty,
-    isMobile,
-    includeZen: !!onToggleZen,
-  });
+  // The canvas-tool picker's options (canvas-tool-options), and its change handler.
+  const allCanvasToolOptions = buildCanvasToolOptions({ canvasEmpty });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))
     : allCanvasToolOptions;
-  const onCanvasToolChange = (id: string) => {
-    if (id === 'zen') onToggleZen?.();
-    else onSetCanvasTool(id as CanvasTool);
-  };
+  const onCanvasToolChange = (id: string) => onSetCanvasTool(id as CanvasTool);
 
   return {
     tileActions,

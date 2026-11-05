@@ -13,20 +13,20 @@ describe('the category bar’s categories', () => {
     const cats = bar();
     expect(cats.map((c) => c.id)).toEqual([
       'write',
-      'frame',
-      'collab-navigate',
-      'collab-react',
-      'collab-mode',
+      'collab-travel',
+      'collab-seating',
+      'collab-rooms',
+      'collab-amenities',
       'icons',
       'stickers',
       'media',
     ]);
     expect(cats.map((c) => c.label)).toEqual([
       'Write',
-      'Frame',
-      'Navigate',
-      'React',
-      'Modes',
+      'Travel',
+      'Seating',
+      'Rooms',
+      'Amenities',
       'Icons',
       'Stickers',
       'Media',
@@ -37,7 +37,7 @@ describe('the category bar’s categories', () => {
     for (const c of bar()) expect(c.label, c.id).not.toMatch(/\s/);
   });
 
-  it('keeps the bands: Write and Frame, then the meeting categories, then the decorations', () => {
-    expect(bar().map((c) => c.group)).toEqual([0, 0, 6, 6, 6, 2, 2, 2]);
+  it('keeps the bands: Write, then the meeting categories, then the decorations', () => {
+    expect(bar().map((c) => c.group)).toEqual([0, 6, 6, 6, 6, 2, 2, 2]);
   });
 });

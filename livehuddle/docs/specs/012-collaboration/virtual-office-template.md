@@ -32,8 +32,9 @@ all four templates.
 
 ## Spaces
 
-Three siblings, built the same way (`template-office-parts.ts`: rooms first, rugs next, furniture after, and a
-**Walk In** button with a how-to line under the plan):
+Nine siblings, built the same way (`template-office-parts.ts`: open-air floors such as grass and garden paths first,
+then rooms, rugs and stages, furniture after, and a **Walk In** button with a how-to line under the plan). The first
+three (`template-builders-spaces.ts`):
 
 - **Coworking Space**: one open room of two desk clusters (four desks each pair facing across a shared bench), a coffee
   bar (coffee machine, water cooler, plant), a lounge (a sofa and two chairs round a rug), a bookshelf, and two
@@ -47,12 +48,35 @@ Three siblings, built the same way (`template-office-parts.ts`: rooms first, rug
   for the presenter, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants and a
   water cooler.
 
+And six more, one module a category (`template-builders-office-more.ts`, `template-builders-events.ts`,
+`template-builders-recreation.ts`, `template-builders-outdoor.ts`):
+
+- **Focus Library** (Office): one quiet room, a row of bookshelves and six study desks, two **Office Pods** along the
+  back for a call for two, a reading corner (a sofa and a chair on a rug) and a water cooler.
+- **Training Room** (Events): one room with a small Stage up front (cameras on) and Bring Focus beside it, four meeting
+  tables in two pairs either side of a centre aisle for group work, a coffee machine, a water cooler and plants.
+- **Rooftop Bar** (Recreation): an open terrace (one room) with a long **Bar** of two counters and eight **Bar Stools**
+  in front of it, a **Drinks Cabinet** and a **Drinks Fridge** behind, two lounges (a sofa and a chair on a rug each)
+  either side of the doorway, trees and **Outdoor Plants** round the edge.
+- **Cafe** (Recreation): a counter (a Bar) with four stools, a coffee machine and a drinks fridge behind it, two tables
+  (meeting tables) on the right, a pair of chairs facing each other, and a sofa nook on a rug.
+- **Garden Retreat** (Outdoor): a lawn of **Grass** fenced by a **Garden Fence** with a gateway in the bottom, a
+  **Garden Path** from the gate to a **Summer House** (a room with a meeting table) and two side paths, one to a
+  **Bench** and one to two chairs round a **Campfire**, a **Pond** under the trees, **Trees** and Outdoor Plants round
+  it (the social pieces: [social-pieces.md](../009-elements/social-pieces.md)).
+- **City Park**: an open lawn crossed by two Garden Paths, trees in each corner, two **Benches** along the paths, a
+  **Picnic Table**, a **Fountain** by the crossing, and a bandstand (a Stage) with four chairs facing it.
+
+The open-air Spaces have no walls round them: the fence and the trees hold the edge, and the Walk In waits under the
+gate or the path, so walking in is walking up it.
+
 ## Where they are
 
-In the **Virtual Spaces** category ("Offices and halls to walk round as an avatar."), on every start and on the
-marketing gallery. Since Work Tracker #423 they are livehuddle's whole catalogue with Blank Space, and lead Popular
-([Templates by mode](../007-editor/templates-by-mode.md#the-catalogue)); the Meetings & Workshops category, where
-All-Hands Hall was cross-listed, leaves with the workshop templates (part 3).
+In four categories, **Office**, **Events**, **Outdoor** and **Recreation**
+([Template categories](../008-canvas/canvas-and-palette.md#template-categories)), on every start and on the marketing
+gallery. Since Work Tracker #423 they are livehuddle's whole catalogue with Blank Space, and four of them lead Popular
+([Templates by mode](../007-editor/templates-by-mode.md#the-catalogue)). They were one **Virtual Spaces** category
+while there were four; it split by kind of place when the six more arrived.
 
 ## Share roles
 

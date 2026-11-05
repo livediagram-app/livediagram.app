@@ -24,8 +24,7 @@ type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 //   - Permissions-Policy: deny every powerful feature the editor
 //     doesn't use (camera / mic / geolocation / payment / USB) so a
 //     compromised script can't request them. Clipboard isn't denied
-//     because the image picker uses paste; fullscreen=self is
-//     allowed for the laser-presenter view.
+//     because the image picker uses paste; fullscreen=self is allowed.
 //   - Strict-Transport-Security: 1-year HSTS with includeSubDomains.
 //     Pins the browser to HTTPS for the apex + every subdomain
 //     after the first visit; subsequent loads can't be downgraded

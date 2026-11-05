@@ -20,8 +20,8 @@ is the tool every drawing program has for this: one press on the region you mean
   Path tool | Fill, Eraser** ([Draw mode](draw-mode.md) "Pens"; no board shows the dock now). Labelled
   **Fill**, a paint bucket icon with a swatch of its colour under it, key **F** (on the button and
   in `aria-keyshortcuts`).
-- **Key F** picks it from anywhere on a whiteboard (not while typing). Elsewhere F stays the
-  Frame.
+- **Key F** picks it from anywhere on a whiteboard (not while typing). Elsewhere F does nothing
+  (livehuddle has no Frame).
 - Picking it puts any marker, shape, Path tool or eraser down, like every dock tool, and it stays
   in hand until another tool or Escape puts it down, as the eraser does: a bucket is
   pressed many times in a row.
@@ -57,7 +57,7 @@ of these that applies:
    press that would write the colour it already has changes nothing.
 2. **A marker loop: it becomes a filled shape.** A single marker stroke whose **ends meet** (below),
    with the press inside the loop. The stroke is closed and filled, keeping everything else:
-   its id, ink (colour, width, pressure, streamline), layer, place in the stacking order, comments,
+   its id, ink (colour, width, pressure, streamline), place in the stacking order, comments,
    note, link and animation. Where its ends did not quite touch, its first point is added at its end,
    so the ink itself closes the outline and the fill never shows an edge without ink. The fill is
    drawn **under** the ink, along the stroke's centre line, so the ink stays the outline exactly as
@@ -71,8 +71,7 @@ of these that applies:
 What a press looks past, on its way down: open ink (a marker stroke whose ends do not meet, a
 highlight), lines and arrows, text boxes, and a shape or path whose outline the press is outside.
 What stops it: a sticky note, an image or any other element that fills its box (a table, an embed, a
-chart), which is not something a bucket fills. Elements on a hidden or locked layer are not there
-for the bucket.
+chart), which is not something a bucket fills.
 
 ### When ends meet
 

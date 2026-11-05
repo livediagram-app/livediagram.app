@@ -40,8 +40,6 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
     return useSelectionEditing({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
-      layerInertIds: new Set(),
-      adoptLayerName: vi.fn(),
       formatSourceId: null,
       formatToolActive: false,
       documentName: 'My document',

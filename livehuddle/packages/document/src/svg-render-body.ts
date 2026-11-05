@@ -80,7 +80,8 @@ export function svgElementBody(
     surface?: CanvasSurface;
     /** Resolves an icon id to its art, for a card's media glyph. */
     resolveIconArt?: ResolveIconArt;
-    /** Resolves an emoji to its art, for a face that writes one (a reaction pad). */
+    /** Resolves an emoji to its art. No livehuddle face writes one since the Reaction Pad left; kept so the shared
+     *  preview resolvers (@liveworkspace/icons/resolve) still fit. */
     resolveEmojiArt?: ResolveEmojiArt;
     // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
     tagColours?: readonly TagColour[];
@@ -138,7 +139,7 @@ export function svgElementBody(
   // The Behaviour faces (docs/specs/009-elements/mode-button.md to /137), which all exported as the same blank
   // labelled box as each other.
   return svgFace(
-    svgBehaviourFace(el, label, labelColor, stroke, o.fill, o.resolveEmojiArt) ?? '',
+    svgBehaviourFace(el, label, labelColor, stroke, o.fill) ?? '',
     fontFamily,
   );
 }

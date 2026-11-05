@@ -23,7 +23,7 @@ describe('findView (R17, VW35)', () => {
   it('folds case and width, and finds an arrow label under its source', () => {
     const { text, json } = findView(checkout(), 'ｊｗｔ');
     expect(text.split('\n').slice(1)).toEqual([
-      'frame 048c "Edge"',
+      'boundary 048c "Edge"',
       '  arrow 9c5e 649c → 202b "JWT"',
       '1 match: 1 edge',
     ]);
@@ -55,19 +55,19 @@ describe('findView (R17, VW35)', () => {
 describe('find on odd shapes', () => {
   it('reads past malformed rows, prints an unlabelled container, and skips non-matching own-line arrows', () => {
     const elements = [
-      shapeAt('frame', 'box', 0, 0, 900, 900, { label: undefined }),
+      shapeAt('boundary', 'box', 0, 0, 900, 900, { label: undefined }),
       { ...shapeAt('square', 't', 10, 10), type: 'table', cells: ['junk', ['a needle']] },
       { ...arrowBetween('free', 't', 't', { label: 'other' }), from: { kind: 'free', x: 0, y: 0 } },
     ] as unknown as Element[];
     const model = buildViewModel({ id: 't', name: 'T', elements });
-    expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['frame box']);
+    expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['boundary box']);
     expect(findView(model, 'needle').json.matches.map((m) => m.field)).toEqual(['cell']);
   });
 
   it('searches items, code and comments, reprinting a chain only when it changes', () => {
     const elements = [
-      shapeAt('frame', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
-      shapeAt('frame', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
+      shapeAt('boundary', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
+      shapeAt('boundary', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
       shapeAt('checklist', 'list', 300, 10, 100, 50, {
         checklistItems: [{ text: 'thread the needle', done: false }],
       }),
@@ -88,8 +88,8 @@ describe('find on odd shapes', () => {
     const model = buildViewModel({ id: 't', name: 'T', elements });
     const lines = findView(model, 'needle').text.split('\n').slice(1);
     expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
-      'frame outer',
-      '  frame inner',
+      'boundary outer',
+      '  boundary inner',
       '    checklist list',
       '  code-block code',
       'square talk',

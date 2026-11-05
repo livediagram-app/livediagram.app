@@ -1,22 +1,17 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { Element, TabVote } from '@livehuddle/document';
 import type { DockAnchor } from '@/lib/canvas-chrome';
-import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { FacilitatedNote } from '@/components/panels/session-studio/studio-ui';
 import { TimerPane } from '@/components/panels/session-studio/TimerPane';
-import { VotePane } from '@/components/panels/session-studio/VotePane';
-import { VotePanel } from '@/components/panels/VotePanel';
 import type { SessionSegment } from './SessionClusterStrip';
 
-// What a Session strip button opens (docs/specs/012-collaboration/session-tools.md "The Session strip"):
-// the tool's live panel while it runs (the Timer pane's live dial, the Vote panel),
-// and its Session Studio set-up pane while it is idle, so starting one from the strip is the same
-// form as starting it from the tab menu.
+// What the Session strip's Timer button opens (docs/specs/012-collaboration/session-tools.md "The Session strip"):
+// the Timer pane, its live dial while a timer runs and its set-up while idle, so starting one from the strip is
+// the same form as starting it from the tab menu.
 
 const NO_MOVE = () => {};
 
@@ -27,99 +22,26 @@ export type SessionPopoverProps = {
   session: SessionToolsProps;
   // A view-role visitor: running tools only, read-only.
   readOnly: boolean;
-  // Casts dots in a running vote: an Editor, or a read-only Participant (docs/specs/013-workspace/share-roles.md).
-  canVote: boolean;
-  // A running vote's popover stays open until its button closes it, rather than on any
-  // press outside it (desktop; on a phone it would sit over the canvas being voted on). The timer
-  // always closes on a press outside: its clock is on its button.
-  holdOpen: boolean;
-  // Who the dot-vote knows us by (the collab key).
-  voteSelfId: string;
-  vote: {
-    tabVote: TabVote | undefined;
-    elements: Element[];
-    participantCount: number;
-    results: { id: string; votes: number }[];
-    reviewIndex: number | null;
-    onJumpToResult: (index: number) => void;
-    isHost: boolean;
-    // The results walkthrough and its controls, shown in the Vote panel.
-    review: VoteReview | null;
-    onNextResult: () => void;
-    onPrevResult: () => void;
-    onDoneReview: () => void;
-  };
 };
 
-export function SessionPopover({
-  segment,
-  anchor,
-  onClose,
-  session,
-  readOnly,
-  canVote,
-  holdOpen,
-  voteSelfId,
-  vote,
-}: SessionPopoverProps) {
-  if (segment === 'session-vote' && vote.tabVote) {
-    return (
-      <VotePanel
-        vote={vote.tabVote}
-        elements={vote.elements}
-        participantCount={vote.participantCount}
-        results={vote.results}
-        reviewIndex={vote.reviewIndex}
-        onJumpToResult={vote.onJumpToResult}
-        onEndVote={session.onEndVote}
-        onRevealVote={session.onRevealVote}
-        onClearVote={session.onClearVote}
-        isHost={vote.isHost}
-        selfId={voteSelfId}
-        voteLayers={session.voteLayers}
-        review={vote.review}
-        onNextResult={vote.onNextResult}
-        onPrevResult={vote.onPrevResult}
-        onDoneReview={vote.onDoneReview}
-        readOnly={readOnly}
-        canVote={canVote}
-        popoverAnchor={anchor}
-        onPopoverClose={onClose}
-        dismissOnOutside={!holdOpen}
-      />
-    );
-  }
-  if (segment === 'session-timer') {
-    // A view-role visitor only reaches this while a timer runs (the strip offers them nothing idle).
-    if (readOnly) {
-      return session.timer ? (
-        <SessionToolPopover title="Timer" help="sessionTimer" anchor={anchor} onClose={onClose}>
-          <TimerPane {...session} readOnly />
-        </SessionToolPopover>
-      ) : null;
-    }
-    return (
-      <SessionToolPopover
-        title="Timer"
-        help="sessionTimer"
-        anchor={anchor}
-        onClose={onClose}
-        facilitatedBy={session.facilitatedBy}
-      >
-        <TimerPane {...session} />
+export function SessionPopover({ anchor, onClose, session, readOnly }: SessionPopoverProps) {
+  // A view-role visitor only reaches this while a timer runs (the strip offers them nothing idle).
+  if (readOnly) {
+    return session.timer ? (
+      <SessionToolPopover title="Timer" help="sessionTimer" anchor={anchor} onClose={onClose}>
+        <TimerPane {...session} readOnly />
       </SessionToolPopover>
-    );
+    ) : null;
   }
-  if (readOnly) return null;
   return (
     <SessionToolPopover
-      title="Vote"
-      help="sessionVoting"
+      title="Timer"
+      help="sessionTimer"
       anchor={anchor}
       onClose={onClose}
       facilitatedBy={session.facilitatedBy}
     >
-      <VotePane {...session} selfId={voteSelfId} />
+      <TimerPane {...session} />
     </SessionToolPopover>
   );
 }

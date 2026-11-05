@@ -8,7 +8,7 @@ export function TipsAndTricksArt() {
       commands={[
         { name: 'Zoom to fit', keys: '⇧ 1' },
         { name: 'Next editor mode', keys: '⇧ D' },
-        { name: 'Zen mode', keys: 'Z' },
+        { name: 'Search & commands', keys: '⌘ K' },
       ]}
       shortcuts={[
         { key: 'R', name: 'Square' },

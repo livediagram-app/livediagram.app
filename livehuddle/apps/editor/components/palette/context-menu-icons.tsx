@@ -19,7 +19,6 @@ import {
   lucideArrowRight,
   lucideBaseline,
   lucideBringToFront,
-  lucideCircleCheck,
   lucideClipboardPaste,
   lucideImage,
   lucideLayers,
@@ -75,8 +74,6 @@ export const SquareMenuIcon = lucideGlyph(lucideShapes, MENU_ICON_PX);
 export const PaletteMenuIcon = lucideGlyph(lucidePalette, MENU_ICON_PX);
 // The Timer session-tool category glyph.
 export const TimerMenuIcon = lucideGlyph(lucideTimer, MENU_ICON_PX);
-// The Vote session-tool category glyph (a cast dot-vote).
-export const VoteMenuIcon = lucideGlyph(lucideCircleCheck, MENU_ICON_PX);
 
 // A small arrow pointing in `dir` (one up-arrow path, rotated). Used by the
 // inline-icon placement picker's cross of direction cells.
@@ -145,7 +142,7 @@ export function ShadowMenuGlyph() {
   );
 }
 
-// The "Layer" section glyph.
+// The "Arrange" section glyph.
 export const LayersGlyph = lucideGlyph(lucideLayers, MENU_ICON_PX);
 // Animation section glyph (docs/specs/008-canvas/canvas-and-palette.md): a dot with motion arcs.
 export const AnimationMenuGlyph = lucideGlyph(lucideRadio, MENU_ICON_PX);

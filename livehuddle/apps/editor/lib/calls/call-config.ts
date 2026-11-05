@@ -79,7 +79,10 @@ export type CallSignal =
   // Proves this browser's Realtime session to the room, which then answers the mint route for it (#483).
   | { kind: 'call-session'; sessionId: string; sessionToken: string }
   // An Editor stopping someone else's screen share (#469).
-  | { kind: 'call-stop-share'; targetId: string };
+  | { kind: 'call-stop-share'; targetId: string }
+  // A knock on a room, and the answer to one (docs/specs/012-collaboration/knock.md "The wire").
+  | { kind: 'avatar-knock'; roomId: string }
+  | { kind: 'avatar-knock-answer'; targetId: string; roomId: string; answer: 'in' | 'later' };
 
 /**
  * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, the

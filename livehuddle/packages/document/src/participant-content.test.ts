@@ -107,19 +107,13 @@ describe('applyParticipantOp: add', () => {
     expect(r).toEqual({ result: 'refused', reason: 'id-taken', correction: null });
   });
 
-  it('refuses on a locked tab and onto a locked layer', () => {
+  it('refuses on a locked tab', () => {
     const locked = applyParticipantOp(
       tabOf([], { locked: true }),
       { kind: 'add', element: sticky('x'), at: 0 },
       ME,
     );
     expect(locked).toMatchObject({ result: 'refused', reason: 'tab-locked' });
-    const layered = applyParticipantOp(
-      tabOf([], { layers: [{ id: 'L', name: 'Frame', locked: true }] }),
-      { kind: 'add', element: sticky('x', { layerId: 'L' }), at: 0 },
-      ME,
-    );
-    expect(layered).toMatchObject({ result: 'refused', reason: 'locked' });
   });
 
   it('refuses a malformed element', () => {
@@ -426,22 +420,6 @@ describe('applyParticipantOp: what its own element may not become', () => {
     );
     expect(r.tab.elements[0]).not.toHaveProperty('locked');
     expect(r.op).toEqual({ kind: 'patch', id: 'mine', set: {}, clear: ['note'] });
-  });
-
-  it('refuses moving it onto a locked layer', () => {
-    const tab = tabOf([sticky('mine', { addedBy: ME })], {
-      layers: [
-        { id: 'layer:default', name: 'Layer 1' },
-        { id: 'L', name: 'Frame', locked: true },
-      ],
-    });
-    expect(
-      applyParticipantOp(
-        tab,
-        { kind: 'update', element: sticky('mine', { addedBy: ME, layerId: 'L' }) },
-        ME,
-      ),
-    ).toMatchObject({ result: 'refused', reason: 'locked' });
   });
 });
 

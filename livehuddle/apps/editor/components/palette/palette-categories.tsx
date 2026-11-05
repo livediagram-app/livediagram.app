@@ -19,11 +19,8 @@ import {
   StickersTabIcon,
   WriteTabIcon,
   ParticipateTabIcon,
-  Glyph,
-  Prims,
 } from '@livehuddle/ui';
-import { lucidePanelTop } from '@liveworkspace/icons/lucide';
-import { ModeGroupIcon, MoveGroupIcon, ReactionGroupIcon } from '@livehuddle/ui';
+import { SPACE_CATEGORIES } from './space-categories';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -80,20 +77,6 @@ export const PALETTE_CATEGORIES: {
     description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
   },
-  {
-    // Frame (docs/specs/012-collaboration/workshop-mode.md "The palette"): the meeting palette's frame alone, to group
-    // a room's notes, wearing the Frame tile's own glyph.
-    id: 'frame',
-    label: 'Frame',
-    group: 0,
-    description: 'A titled box to group a room’s notes.',
-    icon: (
-      <Glyph size={18} units={24}>
-        <Prims prims={lucidePanelTop} />
-      </Glyph>
-    ),
-  },
-
   {
     id: 'draw',
     label: 'Draw',
@@ -155,32 +138,15 @@ export const PALETTE_CATEGORIES: {
       'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
     icon: <DataTabIcon />,
   },
-  // The meeting elements (docs/specs/010-palette/palette-top-level-categories.md): the ones that do something when
-  // pressed, and the office. Their own band, three categories, one per group: the Meeting Board offers them in
-  // place of one category with a group browser inside it (docs/specs/012-collaboration/workshop-mode.md "The
-  // palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS. Ask, Tools and Record left with the elements they held
-  // (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
-  {
-    id: 'collab-react',
-    label: 'React',
+  // The meeting elements (docs/specs/010-palette/palette-top-level-categories.md "The Space categories"): the Space
+  // categories, from their one list. Their own band, one category per group, with no parent category. Their tiles:
+  // COLLABORATE_CATEGORY_GROUPS. The Selection Mode category is gone: the Avatar button is in Travel
+  // (docs/specs/009-elements/mode-button.md "Only Avatar").
+  ...SPACE_CATEGORIES.map(({ id, label, description, icon }) => ({
+    id,
+    label,
     group: 6,
-    description: 'Pads that throw confetti, sparkles, hearts, applause or fireworks for everyone.',
-    icon: <ReactionGroupIcon />,
-  },
-  {
-    id: 'collab-mode',
-    label: 'Selection Mode',
-    group: 6,
-    description:
-      'Buttons that hand everyone a selection mode: select, pan, laser, spotlight and more.',
-    icon: <ModeGroupIcon />,
-  },
-  {
-    id: 'collab-navigate',
-    label: 'Navigate',
-    group: 6,
-    description:
-      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, an avatar pad, a link card, rooms, a stage, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
-    icon: <MoveGroupIcon />,
-  },
+    description,
+    icon,
+  })),
 ];

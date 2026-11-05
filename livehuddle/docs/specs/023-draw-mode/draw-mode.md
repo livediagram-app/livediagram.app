@@ -8,7 +8,7 @@ speaks of "a whiteboard" or "the dock", it describes behaviour that no board off
 engine out is its own follow-up.
 
 The tools tune **rules**, never the document model: strokes are `freehand` elements, notes are stickies, text is
-`text` and shapes are shapes, so realtime, comments, layers, export and share links need nothing of their own.
+`text` and shapes are shapes, so realtime, comments, export and share links need nothing of their own.
 
 ## Pens
 
@@ -225,7 +225,7 @@ The tools tune **rules**, never the document model: strokes are `freehand` eleme
   though a single click there passes through: on the bare board, a
   double-click inside the topmost outline-picked shape there (by its drawn
   outline, following its rotation) opens that shape's label editor, unless
-  the shape is locked, on a hidden or locked layer, or has no label to edit.
+  the shape is locked or has no label to edit.
   Beside every shape, a double-click makes a text box as on any canvas (a finger's
   double-tap zooms instead, [Double-tap to zoom](../008-canvas/canvas-and-palette.md#double-tap-to-zoom)). (A
   selected shape's first click puts it down, so its second reaches the board:
@@ -281,7 +281,7 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
   **path** (corners kept, curves smooth, closed with its fill); arrows become
   **arrows** attached to the shapes they were bound to; text becomes **text
   boxes**; notes become **sticky notes** in the nearest sticky colour; images
-  arrive through the image gallery; frames stay **frames**. Groups are dropped.
+  arrive through the image gallery; frames become **boundaries** (livehuddle has no Frame, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)). Groups are dropped.
 - **Adaptive colours:** colour comes across the way the pens store it. A
   near-black line is the board's **ink** (no colour of its own), so it shows
   dark on the light board and light on the dark one, whatever board it was
@@ -342,7 +342,7 @@ The eraser offers **both** modes (Stroke and Partial, not editor modes), switche
   nothing. Notes and text boxes are touched anywhere in their box.
 - **Partial**: removes only the part of a stroke under the brush, splitting
   the stroke into the pieces either side. Pieces are new `freehand` elements
-  with the original's colour, width and layer; one gesture is one undo, as
+  with the original's colour and width; one gesture is one undo, as
   for every eraser gesture ([Eraser panel](../008-canvas/eraser-panel.md)).
   **The ink a piece keeps stays where it was drawn**: a piece holds the
   original stroke's own samples plus the point where the brush's edge cut it,
@@ -361,7 +361,7 @@ The eraser offers **both** modes (Stroke and Partial, not editor modes), switche
   it.
 - The brush stays under the pointer through a pan or zoom mid-sweep (a wheel
   or a pinch while erasing).
-- Locked elements and locked or hidden layers stay protected, as everywhere.
+- Locked elements stay protected, as everywhere.
 
 ## Shape recognition
 
@@ -501,7 +501,7 @@ light and dark boards like everything drawn with the stock colours.
   highlighter strokes (their recipe owns their colour), fills (a whiteboard
   has no stock fills), text on a fill (a filled shape's label, a sticky
   note's text: the fill does not adapt, so the text keeps its exact colour to
-  stay readable on it), an arrow's separate head colour, images, locked elements and elements on locked or hidden layers.
+  stay readable on it), an arrow's separate head colour, images and locked elements.
 - **One undo step**; collaborators receive it as any edit. Snapping is
   unavailable (the button disabled) while the board cannot be edited.
 - **Confirmation:** the section then says "3 custom colours snapped to stock
@@ -511,7 +511,7 @@ light and dark boards like everything drawn with the stock colours.
 ## Keyboard shortcuts
 
 With the whiteboard dock, the plain-key shortcuts are the dock's, and only these
-(the other element keys, the laser on K and so on, do not apply: a whiteboard has no
+(the other element keys do not apply: a whiteboard has no
 palette to mirror). livehuddle shows no dock, so these keys are not bound there today:
 
 | Key    | Tool                                                    |
@@ -543,7 +543,7 @@ Escape first closes whatever is open (a flyout, a text edit); with nothing
 open it puts down a pen, the eraser, the Fill tool or an armed shape, and only with Select
 already in hand does it clear the selection.
 
-H (hand) and Z (zen) keep working as on any tab, and every modifier shortcut
+H (hand) keeps working as on any tab, and every modifier shortcut
 (undo, copy, delete and the rest) is unchanged. With a single note or text
 box selected, typing a character still edits it rather than switching tool;
 any other selection (a shape just drawn, a line, a stroke) leaves the key to

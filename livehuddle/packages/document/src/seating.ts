@@ -53,9 +53,10 @@ export function facingSwapsBox(from: ChairFacing, to: ChairFacing): boolean {
 //   screen: the monitor's glass (the stroke colour, so it follows the theme)
 //   glint:  a light reflection on the glass
 //   floor:  a room's floor, in the element's fill, unstroked (docs/specs/009-elements/office.md)
+//   mark:   a small unstroked mark in its own `fill`: a table's white line, a flame, a dark screen (social-pieces.md)
 // A panel or face may carry its own `fill`: what keeps its colour whatever the theme (a leaf, water, coffee).
 export type FurniturePartRole =
-  'shadow' | 'panel' | 'face' | 'line' | 'rail' | 'screen' | 'glint' | 'floor';
+  'shadow' | 'panel' | 'face' | 'line' | 'rail' | 'screen' | 'glint' | 'floor' | 'mark';
 
 export type FurniturePart = (
   | { tag: 'rect'; role: FurniturePartRole; x: number; y: number; w: number; h: number; rx: number }

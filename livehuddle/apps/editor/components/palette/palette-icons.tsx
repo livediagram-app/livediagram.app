@@ -14,7 +14,6 @@
 import { MODE_GLYPHS, type TextAlignX, type TextAlignY } from '@livehuddle/document';
 import {
   lucideArmchair,
-  lucideCircleCheck,
   lucideFileDown,
   lucideFileUp,
   lucidePenTool,
@@ -99,17 +98,6 @@ export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="select" size={size} />;
 }
 
-export function LaserIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="laser" size={size} />;
-}
-
-// Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
-// a top rhombus plus the two front faces — signalling "see the canvas in
-// 3-D, tilted". The shared vertical edge hints at the extruded depth.
-export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="isometric" size={size} />;
-}
-
 // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
 // The Highlighter tile (docs/specs/008-canvas/highlighter.md), in the Draw category beside the pens.
@@ -137,44 +125,11 @@ export { ThemeLookIcon } from '@livehuddle/ui';
 // (pick a base, then tap targets).
 export { FormatPainterIcon } from '@livehuddle/ui';
 
-// Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a focus glyph — a bright centre dot ringed
-// by a circle with short rays beaming outward, reading as "the cursor
-// emits light" without copying the laser-pointer beam.
-export function SpotlightIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="spotlight" size={size} />;
-}
-
 // Avatar mode (docs/specs/008-canvas/avatar-mode.md): footprints, so the picker entry reads as "a
 // character that walks" rather than a person / profile photo (which is what the
 // palette's Avatar ELEMENT tile means).
 export function AvatarModeIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="avatar" size={size} />;
-}
-
-// Zen / focus mode (docs/specs/007-editor/zen-mode.md): an "expand to fullscreen" glyph (four
-// corner arrows pushing outward) for the palette enter button.
-export function ZenIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M6 2H2v4" />
-      <path d="M10 2h4v4" />
-      <path d="M14 10v4h-4" />
-      <path d="M2 10v4h4" />
-    </Glyph>
-  );
-}
-
-// "Exit fullscreen" / compress glyph (corner arrows pulling inward) for
-// the exit-zen control next to the zoom controls.
-export function ZenExitIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M2 6h4V2" />
-      <path d="M14 6h-4V2" />
-      <path d="M14 10h-4v4" />
-      <path d="M2 10h4v4" />
-    </Glyph>
-  );
 }
 
 export function NonePaddingIcon() {
@@ -234,9 +189,6 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
   );
 }
 
-// Vote (docs/specs/012-collaboration/session-tools.md): the same glyph as its context-menu category.
-export const VoteIcon = lucideGlyph(lucideCircleCheck, 14);
-
 // --- Chair (docs/specs/009-elements/chair.md) -----
 
 export function ChairIcon({ size = 14 }: IconSizeProps = {}) {
@@ -276,6 +228,30 @@ export function RoomIcon({ size = 14 }: IconSizeProps = {}) {
       <path d="M3 4h18v16h-6M9 20H3V4" />
       <path d="M3 8h18" />
       <path d="M10 20h4" strokeDasharray="1.5 1.5" />
+    </Glyph>
+  );
+}
+
+// The Room Builder (docs/specs/009-elements/room-builder.md): an L-shaped plan with a 45-degree corner and its
+// corners marked, reads as "draw your own room".
+export function RoomBuilderIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M3 3h11v7h7v7l-4 4H3z" />
+      <circle cx="3" cy="3" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="10" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="21" r="1.5" fill="currentColor" stroke="none" />
+    </Glyph>
+  );
+}
+
+// A Door (docs/specs/009-elements/room-builder.md "Door"): a wall broken by a door standing open and its swing.
+export function DoorIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M2 8h4M18 8h4" />
+      <path d="M6 8v12" />
+      <path d="M18 8a12 12 0 0 1-12 12" strokeDasharray="2 2" />
     </Glyph>
   );
 }
@@ -373,8 +349,28 @@ export function AvatarPadIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// Directory (docs/specs/009-elements/directory.md): a stand on a post, a sign across its head and rows of rooms.
+export function DirectoryIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="4" y="2" width="16" height="14" rx="2" />
+      <path d="M4 6h16M7.5 9.5h1M11 9.5h5.5M7.5 12.5h1M11 12.5h4M12 16v4M8 21.5h8" />
+    </Glyph>
+  );
+}
+
+// Elevator (docs/specs/009-elements/elevator.md): two doors meeting in the middle under an up and a down arrow.
+export function ElevatorIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="3.5" y="7" width="17" height="15" rx="1.5" />
+      <path d="M12 7v15M9 4.5l1.5-2 1.5 2M12 2.5l1.5 2 1.5-2" />
+    </Glyph>
+  );
+}
+
 // A selection-mode glyph drawn from the data (MODE_GLYPHS in @livehuddle/document:
-// the shared @liveworkspace/icons table plus Isometric), the ONE drawing the palette, the Mode button face and
+// the shared @liveworkspace/icons table), the ONE drawing the palette, the Mode button face and
 // the export all use (docs/specs/009-elements/mode-button.md).
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
   const g = MODE_GLYPHS[mode]!;

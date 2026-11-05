@@ -197,7 +197,7 @@ function CallControl({
   const mutable = indicator !== 'listening' && indicator !== 'blocked';
   return (
     <div className="relative flex">
-      <StageLine barredBy={self.barredBy} />
+      <StageLine barredBy={self.barredBy} onStage={self.stage === 'speaker'} />
       <ClusterStrip dataTourId="call-button">
         <Segment
           label={self.muted ? 'Unmute' : indicator === 'listening' ? 'Listening' : 'Mute'}

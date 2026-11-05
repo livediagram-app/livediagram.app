@@ -2,6 +2,7 @@ import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAc
 import {
   containerContents,
   withAttached,
+  withAttachedDoors,
   anchorOutward,
   anchorPosition,
   isBoxed,
@@ -59,10 +60,6 @@ export function useBoxedDragHandlers({
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;
-    // A hidden / locked LAYER makes its elements fully inert (docs/specs/006-document/layers.md):
-    // unlike per-element `locked` (selectable to inspect, below), a
-    // press on one doesn't even land a selection.
-    if (d.layerInertIds.has(elementId)) return;
     // The selection as the press found it, before this press changes it.
     const { multiSelectedIds } = d.readSelection();
     d.setSelectedId(elementId);
@@ -102,7 +99,11 @@ export function useBoxedDragHandlers({
       mode === 'move'
         ? unlocked(
             // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
-            withAttached(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds)),
+            // A room's doors ride it too (docs/specs/009-elements/room-builder.md "Door").
+            withAttachedDoors(
+              d.activeTab.elements,
+              withAttached(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds)),
+            ),
           )
         : baseIds;
 
@@ -154,7 +155,6 @@ export function useBoxedDragHandlers({
     if (d.formatSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
-    if (d.layerInertIds.has(elementId)) return;
     // A side without anchors (a triangle's top) starts from the nearest one
     // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
     const anchor = nearestOfferedAnchor(element, sideAnchor);

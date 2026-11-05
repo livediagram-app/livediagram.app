@@ -1,5 +1,7 @@
 # Excalidraw import: blueprint
 
+> **Gone from livehuddle** (imports from other tools, [Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)): livediagram keeps it, and [its blueprint there](../../../../../livediagram/docs/specs/020-import-export/blueprints/excalidraw-import.md) is the one to read and change. livehuddle's code for it and its tests are deleted, so the files this page names live on in livediagram only. The rest of this page records what livehuddle had.
+
 Derived from [Excalidraw import & export](../excalidraw-import-export.md): the parser from
 Excalidraw to a board scene, paste and drop on the canvas, images, embedded-scene PNG / SVG, and
 the dialog's progress and report. The scene-mapping table and the degradation copy are the spec's
@@ -8,32 +10,32 @@ and are not restated. The landing is [Board scene](../board-scene.md)'s. Default
 
 Scope, by file:
 
-| File                                                                                     | Role                                                                               |
-| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `apps/editor/lib/excalidraw-types.ts`                                                    | The slice of Excalidraw's format the parser reads (types only)                     |
-| `apps/editor/lib/excalidraw-envelope.ts`                                                 | `looksLikeExcalidraw`, `readExcalidrawEnvelope`: detection, cap, rejections        |
-| `apps/editor/lib/excalidraw-scene.ts`                                                    | `excalidrawToBoardScene`: elements to scene items, order, notes                    |
-| `apps/editor/lib/excalidraw-scene-style.ts`                                              | Colours, opacity, widths, dashes, fonts, text, arrowheads                          |
-| `apps/editor/lib/excalidraw-scene-geometry.ts`                                           | Absolute points, rotation baking, closure                                          |
-| `apps/editor/lib/excalidraw-fixtures.ts`                                                 | Typed builder of synthesised Excalidraw elements and envelopes (tests only)        |
-| `apps/editor/lib/excalidraw-read.ts`                                                     | `sceneFromExcalidrawText`, `readExcalidrawFile`: text or file to a scene (lazy)    |
-| `apps/editor/lib/excalidraw-paste.ts`                                                    | `excalidrawTextFromPaste`, `isExcalidrawFileCandidate`, `DROP_NOT_A_SCENE`         |
-| `apps/editor/lib/excalidraw-board-file.ts`                                               | `excalidrawFileIdentity`, `readExcalidrawBoardFiles`: files to named, dated scenes |
-| `apps/editor/hooks/persistence/useExcalidrawFileImport.ts`                               | The Explorer import flow: read, import, report, telemetry                          |
-| `apps/editor/hooks/persistence/useExcalidrawImportLauncher.tsx`                          | Opens the dialog (loaded on first open)                                            |
-| `apps/editor/components/dialogs/ExcalidrawImportPanel.tsx`, `ExcalidrawImportDialog.tsx` | Pick, progress, report; the dialog host                                            |
-| `apps/editor/app/import/import-sources.tsx`, `useImportDialogs.tsx`                      | The Excalidraw row of "Import from" and its wiring                                 |
-| `packages/explorer/src/library/import-source-icons.tsx` (repo root)                      | `ExcalidrawSourceIcon`                                                             |
-| `apps/editor/scripts/excalidraw-verify.mts`                                              | Real copies through parser and landing, aggregates only (local)                    |
-| `apps/editor/lib/excalidraw-embedded.ts`                                                 | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
-| `apps/editor/hooks/canvas/useClipboard.ts`                                               | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
-| `apps/editor/hooks/canvas/usePaletteDrop.ts`                                             | `onDropFile`: a dropped file with its canvas point                                 |
-| `apps/editor/components/canvas/Canvas.tsx`, `EditorCanvasHost.tsx`                       | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
-| `apps/editor/hooks/persistence/useTabImport.ts`                                          | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport)    |
-| `apps/editor/components/dialogs/TextImportPanel.tsx`                                     | Progress label; hands the outcome to the dialog                                    |
-| `apps/editor/components/dialogs/ImportTabDialog.tsx`                                     | Shows the report view when the outcome carries one                                 |
-| `apps/editor/components/dialogs/ImportImageReport.tsx`                                   | The report view                                                                    |
-| liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts                   | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                   |
+| File                                                                                                    | Role                                                                               |
+| ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `../livediagram/apps/editor/lib/excalidraw-types.ts`                                                    | The slice of Excalidraw's format the parser reads (types only)                     |
+| `../livediagram/apps/editor/lib/excalidraw-envelope.ts`                                                 | `looksLikeExcalidraw`, `readExcalidrawEnvelope`: detection, cap, rejections        |
+| `../livediagram/apps/editor/lib/excalidraw-scene.ts`                                                    | `excalidrawToBoardScene`: elements to scene items, order, notes                    |
+| `../livediagram/apps/editor/lib/excalidraw-scene-style.ts`                                              | Colours, opacity, widths, dashes, fonts, text, arrowheads                          |
+| `../livediagram/apps/editor/lib/excalidraw-scene-geometry.ts`                                           | Absolute points, rotation baking, closure                                          |
+| `../livediagram/apps/editor/lib/excalidraw-fixtures.ts`                                                 | Typed builder of synthesised Excalidraw elements and envelopes (tests only)        |
+| `../livediagram/apps/editor/lib/excalidraw-read.ts`                                                     | `sceneFromExcalidrawText`, `readExcalidrawFile`: text or file to a scene (lazy)    |
+| `../livediagram/apps/editor/lib/excalidraw-paste.ts`                                                    | `excalidrawTextFromPaste`, `isExcalidrawFileCandidate`, `DROP_NOT_A_SCENE`         |
+| `../livediagram/apps/editor/lib/excalidraw-board-file.ts`                                               | `excalidrawFileIdentity`, `readExcalidrawBoardFiles`: files to named, dated scenes |
+| `../livediagram/apps/editor/hooks/persistence/useExcalidrawFileImport.ts`                               | The Explorer import flow: read, import, report, telemetry                          |
+| `../livediagram/apps/editor/hooks/persistence/useExcalidrawImportLauncher.tsx`                          | Opens the dialog (loaded on first open)                                            |
+| `../livediagram/apps/editor/components/dialogs/ExcalidrawImportPanel.tsx`, `ExcalidrawImportDialog.tsx` | Pick, progress, report; the dialog host                                            |
+| `../livediagram/apps/editor/app/import/import-sources.tsx`, `useImportDialogs.tsx`                      | The Excalidraw row of "Import from" and its wiring                                 |
+| `packages/explorer/src/library/import-source-icons.tsx` (repo root)                                     | `ExcalidrawSourceIcon`                                                             |
+| `apps/editor/scripts/excalidraw-verify.mts`                                                             | Real copies through parser and landing, aggregates only (local)                    |
+| `../livediagram/apps/editor/lib/excalidraw-embedded.ts`                                                 | `extractExcalidrawScene`: PNG / SVG / JSON input to scene text                     |
+| `apps/editor/hooks/canvas/useClipboard.ts`                                                              | Paste branches and `dropBoardFile`: scenes go to the board-scene insert            |
+| `apps/editor/hooks/canvas/usePaletteDrop.ts`                                                            | `onDropFile`: a dropped file with its canvas point                                 |
+| `apps/editor/components/canvas/Canvas.tsx`, `EditorCanvasHost.tsx`                                      | Thread `onDropFile` (`dropBoardFile`, not when read-only)                          |
+| `apps/editor/hooks/persistence/useTabImport.ts`                                                         | Extraction, `sceneFromExcalidrawText`, then `importScene` (useBoardSceneImport)    |
+| `apps/editor/components/dialogs/TextImportPanel.tsx`                                                    | Progress label; hands the outcome to the dialog                                    |
+| `apps/editor/components/dialogs/ImportTabDialog.tsx`                                                    | Shows the report view when the outcome carries one                                 |
+| `../livediagram/apps/editor/components/dialogs/ImportImageReport.tsx`                                   | The report view                                                                    |
+| liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts                                  | Explanations for `ExcalidrawPng` / `ExcalidrawSvg` and the paste                   |
 
 ## Domain and naming
 
@@ -253,8 +255,8 @@ zoom)`, `onDropFile(file, at)`.
 
 ### Explorer entry and dialog
 
-- `IMPORT_SOURCES` (`app/import/import-sources.tsx`) gains `{ id: 'excalidraw', name: 'Excalidraw',
-icon: <ExcalidrawSourceIcon /> }` after Microsoft Whiteboard; `useImportDialogs` (`app/import/useImportDialogs.tsx`) maps it to
+- `IMPORT_SOURCES` (`../livediagram/apps/editor/app/import/import-sources.tsx`) gains `{ id: 'excalidraw', name: 'Excalidraw',
+icon: <ExcalidrawSourceIcon /> }` after Microsoft Whiteboard; `useImportDialogs` (`../livediagram/apps/editor/app/import/useImportDialogs.tsx`) maps it to
   `useExcalidrawImportLauncher(importScenes).openExcalidrawImport` and renders its dialog.
 - `ExcalidrawSourceIcon` (`packages/explorer/src/library/import-source-icons.tsx` (repo root)): 20 px, an original glyph
   (a hand-drawn box and a pencil, white on a `#6965db` tile); `aria-hidden`.
@@ -371,37 +373,37 @@ must read `Imported from Excalidraw`, which the tests assert.
 
 ## Testing
 
-| Rule                                                                 | Test                                                                                                                 |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Envelope detection, cap, every rejection                             | `apps/editor/lib/excalidraw-envelope.test.ts`                                                                        |
-| Prefix test: three types, indented, ordinary text                    | `apps/editor/lib/excalidraw-envelope.test.ts`                                                                        |
-| Order by `index`, ties, missing indices, deleted                     | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Shapes, roundness types, bound labels                                | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Standalone text: autoResize, size, family, lines                     | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Freedraw: points, pressure, widths, closure                          | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Lines: two-point, multi-point, polygon, curved                       | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Arrows: bindings, heads, curved, elbowed, label                      | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Sticky note, frame, groups note                                      | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Images and assets, no missing note                                   | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Colours, opacity, unreadable colour note                             | `apps/editor/lib/excalidraw-scene-style.test.ts`                                                                     |
-| Rotation baked into linear points                                    | `apps/editor/lib/excalidraw-scene-geometry.test.ts`                                                                  |
-| Unknown types noted, never thrown                                    | `apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
-| Text through parser + landing: diagram profile keeps today's mapping | `apps/editor/lib/excalidraw-import.test.ts`                                                                          |
-| Whiteboard profile                                                   | `apps/editor/lib/excalidraw-import.test.ts`                                                                          |
-| Paste text pick (custom type, text/plain, neither)                   | `apps/editor/lib/excalidraw-paste.test.ts`                                                                           |
-| Reader: text and files, `not-excalidraw`, errors                     | `apps/editor/lib/excalidraw-read.test.ts`                                                                            |
-| Paste: text, files, label editing, read-only, refusals               | `apps/editor/hooks/canvas/useClipboard.excalidraw-paste.test.tsx`                                                    |
-| Drop: file and canvas point, refusal toast                           | `apps/editor/hooks/canvas/useClipboard.excalidraw-paste.test.tsx`, `apps/editor/hooks/canvas/usePaletteDrop.test.ts` |
-| Image requests from `files`, key = fileId                            | `apps/editor/lib/excalidraw-import.test.ts`                                                                          |
-| PNG compressed / uncompressed / legacy                               | `apps/editor/lib/excalidraw-embedded.test.ts` (fixtures built in the test)                                           |
-| SVG v1 / v2 payloads                                                 | `apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
-| No scene / corrupt scene messages                                    | `apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
-| JSON passthrough                                                     | `apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
-| Report copy                                                          | `apps/editor/lib/import-images/report.test.ts`                                                                       |
-| Images stored as WebP, report, focus                                 | `apps/editor/e2e/import-images.spec.ts`                                                                              |
-| Full gallery: placeholders + sentence                                | `apps/editor/e2e/import-images.spec.ts` (403 via route)                                                              |
-| Real PNG export imports its content                                  | `apps/editor/e2e/import-images.spec.ts`                                                                              |
-| Paste dark / light whiteboard and diagram; drop; plain text          | `apps/editor/e2e/excalidraw-paste.spec.ts`                                                                           |
+| Rule                                                                 | Test                                                                                                                                |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Envelope detection, cap, every rejection                             | `../livediagram/apps/editor/lib/excalidraw-envelope.test.ts`                                                                        |
+| Prefix test: three types, indented, ordinary text                    | `../livediagram/apps/editor/lib/excalidraw-envelope.test.ts`                                                                        |
+| Order by `index`, ties, missing indices, deleted                     | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Shapes, roundness types, bound labels                                | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Standalone text: autoResize, size, family, lines                     | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Freedraw: points, pressure, widths, closure                          | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Lines: two-point, multi-point, polygon, curved                       | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Arrows: bindings, heads, curved, elbowed, label                      | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Sticky note, frame, groups note                                      | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Images and assets, no missing note                                   | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Colours, opacity, unreadable colour note                             | `../livediagram/apps/editor/lib/excalidraw-scene-style.test.ts`                                                                     |
+| Rotation baked into linear points                                    | `../livediagram/apps/editor/lib/excalidraw-scene-geometry.test.ts`                                                                  |
+| Unknown types noted, never thrown                                    | `../livediagram/apps/editor/lib/excalidraw-scene.test.ts`                                                                           |
+| Text through parser + landing: diagram profile keeps today's mapping | `../livediagram/apps/editor/lib/excalidraw-import.test.ts`                                                                          |
+| Whiteboard profile                                                   | `../livediagram/apps/editor/lib/excalidraw-import.test.ts`                                                                          |
+| Paste text pick (custom type, text/plain, neither)                   | `../livediagram/apps/editor/lib/excalidraw-paste.test.ts`                                                                           |
+| Reader: text and files, `not-excalidraw`, errors                     | `../livediagram/apps/editor/lib/excalidraw-read.test.ts`                                                                            |
+| Paste: text, files, label editing, read-only, refusals               | `../livediagram/apps/editor/hooks/canvas/useClipboard.excalidraw-paste.test.tsx`                                                    |
+| Drop: file and canvas point, refusal toast                           | `../livediagram/apps/editor/hooks/canvas/useClipboard.excalidraw-paste.test.tsx`, `apps/editor/hooks/canvas/usePaletteDrop.test.ts` |
+| Image requests from `files`, key = fileId                            | `../livediagram/apps/editor/lib/excalidraw-import.test.ts`                                                                          |
+| PNG compressed / uncompressed / legacy                               | `../livediagram/apps/editor/lib/excalidraw-embedded.test.ts` (fixtures built in the test)                                           |
+| SVG v1 / v2 payloads                                                 | `../livediagram/apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
+| No scene / corrupt scene messages                                    | `../livediagram/apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
+| JSON passthrough                                                     | `../livediagram/apps/editor/lib/excalidraw-embedded.test.ts`                                                                        |
+| Report copy                                                          | `../livediagram/apps/editor/lib/import-images/report.test.ts`                                                                       |
+| Images stored as WebP, report, focus                                 | `../livediagram/apps/editor/e2e/import-images.spec.ts`                                                                              |
+| Full gallery: placeholders + sentence                                | `../livediagram/apps/editor/e2e/import-images.spec.ts` (403 via route)                                                              |
+| Real PNG export imports its content                                  | `../livediagram/apps/editor/e2e/import-images.spec.ts`                                                                              |
+| Paste dark / light whiteboard and diagram; drop; plain text          | `../livediagram/apps/editor/e2e/excalidraw-paste.spec.ts`                                                                           |
 
 Real input is never a fixture: `apps/editor/scripts/excalidraw-verify.mts <path>` (data-free) runs a
 real copy through parser and landing and prints counts and notes.

@@ -16,7 +16,6 @@ function spyLive() {
   const calls: string[] = [];
   const live = {
     setCanvasTool: (t: string) => calls.push(`tool:${t}`),
-    onToggleZen: () => calls.push('zen'),
     addShape: (k: string) => calls.push(`shape:${k}`),
     addText: () => calls.push('text'),
     addSticky: () => calls.push('sticky'),
@@ -47,14 +46,12 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(VIEW_TOOL_KEYS.p).toBeUndefined();
   });
 
-  it('binds Laser to K (not L)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'k')).toBe('tool:laser');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The presenting tools, Isometric and Zen".
+  it('binds nothing to K, I or Z: the Laser, Isometric and Zen left livehuddle', () => {
+    expect(VIEW_TOOL_KEYS.k).toBeUndefined();
     expect(VIEW_TOOL_KEYS.l).toBeUndefined();
-  });
-
-  it('keeps Isometric on I and Zen on Z', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
-    expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
+    expect(VIEW_TOOL_KEYS.i).toBeUndefined();
+    expect(VIEW_TOOL_KEYS.z).toBeUndefined();
   });
 
   it('has no key into Avatar mode (a Selection Mode button is its one way in)', () => {
@@ -64,8 +61,8 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
-  it('binds Frame to F', () => {
-    expect(fired(EDIT_KEYS, 'f')).toBe('shape:frame');
+  it('binds nothing to F (livehuddle has no Frame)', () => {
+    expect(EDIT_KEYS.f).toBeUndefined();
   });
 
   it('binds Eraser to E and number 0', () => {

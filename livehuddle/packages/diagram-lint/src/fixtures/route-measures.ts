@@ -116,12 +116,12 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
 function headingsOf(elements: readonly Element[]): Rect[] {
   // A frame's heading as the layout reckons it (frameHeadingRect), so the measure and the layout agree.
   return elements.flatMap((el) => {
-    const r = el.type === 'shape' && el.shape === 'frame' ? frameHeadingRect(el) : null;
+    const r = el.type === 'shape' && el.shape === 'boundary' ? frameHeadingRect(el) : null;
     return r ? [r] : [];
   });
 }
 
-export function routeMeasures(tab: Pick<Tab, 'elements' | 'layers' | 'theme'>): RouteMeasures {
+export function routeMeasures(tab: Pick<Tab, 'elements' | 'theme'>): RouteMeasures {
   const ctx = prepareLintContext(tab, { source: 'tab' });
   const routes = ctx.drawable.map((d) => d.polyline);
   const runs = routes.map(runsOf);

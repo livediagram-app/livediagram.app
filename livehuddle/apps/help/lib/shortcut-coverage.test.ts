@@ -77,8 +77,8 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
   it('parses real tables (guard against this test going blind)', () => {
     // Twenty-eight bindings when this landed, fewer once the diagram tools' keys left (Work Tracker #423). A
     // collapse toward zero means the table shape changed and every assertion below passes vacuously.
-    expect(boundKeys().size).toBeGreaterThan(10);
-    expect(documentedKeys().size).toBeGreaterThan(10);
+    expect(boundKeys().size).toBeGreaterThan(6);
+    expect(documentedKeys().size).toBeGreaterThan(6);
   });
 
   it('documents every plain key in the lookup tables', () => {

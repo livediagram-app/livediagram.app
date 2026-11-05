@@ -162,7 +162,7 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
   });
 
   it('leaves plain boxes, icons and stickers to their own drawing', () => {
-    for (const kind of ['square', 'circle', 'frame', 'icon', 'sticker']) {
+    for (const kind of ['square', 'circle', 'icon', 'sticker']) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(false);
     }
     for (const type of ['text', 'sticky', 'freehand', 'image', 'path']) {
@@ -178,7 +178,7 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
   it('names only real shape kinds as drawn by their body', () => {
     // Every kind not split must exist, so a renamed kind cannot quietly drop out of Sketch.
     const unsplit = [...SHAPE_KINDS].filter((k) => !finishSplitsFace(shape(k)));
-    expect(unsplit.length).toBe(18);
+    expect(unsplit.length).toBe(17);
   });
 });
 

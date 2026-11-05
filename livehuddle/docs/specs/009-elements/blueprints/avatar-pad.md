@@ -6,42 +6,44 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                              | Role                                                                            |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `../packages/avatar/src/palette.ts`                               | `AVATAR_PALETTE`: the sprite's tones, shared by the sprite and the pad          |
-| `../packages/avatar/src/pad-art.ts`                               | Grid, tones, `AVATAR_PAD_PARTS`, `avatarPadArtRect`, `avatarPadCore`, footprint |
-| `packages/document/src/shape-kind.ts`, `validate.ts`              | `'avatar-pad'` in `ShapeKind` and `SHAPE_KINDS`                                 |
-| `packages/document/src/shape-factory.ts`                          | 128 x 80, `label: ''`, `aspectLocked: true`                                     |
-| `packages/document/src/office.ts`                                 | `isFloorShape('avatar-pad')`: added behind, painted with the floors             |
-| `packages/document/src/behaviour-shapes.ts`                       | In `BEHAVIOUR_SHAPES`; no shared settings `…`                                   |
-| `packages/document/src/data-shapes.ts`, `element-types.ts`        | Self-drawing, untyped: no label, no caret                                       |
-| `packages/document/src/colors.ts`                                 | Transparent skin; in `SELF_PAINTING_SHAPES`                                     |
-| `packages/document/src/animation-membership.ts`                   | Wordless                                                                        |
-| `packages/document/src/svg-render-faces.ts`                       | `avatarPadArt`: the export pixels                                               |
-| `../packages/avatar/src/components/avatar-sprite-palette.ts`      | Re-exports the sprite tones from `AVATAR_PALETTE`                               |
-| `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas pixels; the shimmering lights group                                  |
-| `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                          |
-| `apps/editor/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                        |
-| `apps/editor/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                            |
-| `../packages/avatar/src/pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants           |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`                   | Entry order: pad, button, remembered spot, view centre; camera; telemetry       |
-| `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`            | Arrivals from presence: own and peers'                                          |
-| `../packages/avatar/src/components/AvatarPadArrivals.tsx`         | The beam, floor flash and sparks                                                |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                             |
-| `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion               |
-| `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Navigate** (`tileGroup: 'move'`)                        |
-| `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                                 |
-| `apps/editor/components/palette/canvas-tool-options.tsx`          | Avatar is always listed in the canvas-tool picker                               |
-| `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                        |
-| `packages/api-schema/src/telemetry-schema.ts`                     | `Avatar-pad` element type token                                                 |
+| File                                                              | Role                                                                      |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `../packages/avatar/src/palette.ts`                               | `AVATAR_PALETTE`: the sprite's tones, shared by the sprite and the pad    |
+| `../packages/avatar/src/pad-art.ts`                               | Grid, tones, `avatarPadArtRect`, `avatarPadCore`, footprint (shared)      |
+| `packages/document/src/avatar-pad-art.ts`                         | `AVATAR_PAD_ART` vector table, `avatarPadPaint`, `AVATAR_PAD_CORE_POINT`  |
+| `packages/document/src/shape-kind.ts`, `validate.ts`              | `'avatar-pad'` in `ShapeKind` and `SHAPE_KINDS`                           |
+| `packages/document/src/shape-factory.ts`                          | 128 x 80, `label: ''`, `aspectLocked: true`                               |
+| `packages/document/src/office.ts`                                 | `isFloorShape('avatar-pad')`: added behind, painted with the floors       |
+| `packages/document/src/behaviour-shapes.ts`                       | In `BEHAVIOUR_SHAPES`; no shared settings `…`                             |
+| `packages/document/src/data-shapes.ts`, `element-types.ts`        | Self-drawing, untyped: no label, no caret                                 |
+| `packages/document/src/colors.ts`                                 | Furniture skin (theme stroke, no box); in `SELF_PAINTING_SHAPES`          |
+| `packages/document/src/animation-membership.ts`                   | Wordless                                                                  |
+| `packages/document/src/svg-render-faces.ts`                       | `avatarPadArt`: the export drawing                                        |
+| `../packages/avatar/src/components/avatar-sprite-palette.ts`      | Re-exports the sprite tones from `AVATAR_PALETTE`                         |
+| `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas drawing; the shimmering lights                                 |
+| `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                    |
+| `apps/editor/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                  |
+| `apps/editor/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                      |
+| `../packages/avatar/src/pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants     |
+| `../packages/avatar/src/hooks/useAvatarWalk.ts`                   | Entry order: pad, button, remembered spot, view centre; camera; telemetry |
+| `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`            | Arrivals from presence: own and peers'                                    |
+| `../packages/avatar/src/components/AvatarPadArrivals.tsx`         | The beam, floor flash and sparks                                          |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                       |
+| `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion         |
+| `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Travel** (`tileGroup: 'travel'`)                  |
+| `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                           |
+| `apps/editor/components/palette/canvas-tool-options.tsx`          | Avatar is always listed in the canvas-tool picker                         |
+| `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                  |
+| `packages/api-schema/src/telemetry-schema.ts`                     | `Avatar-pad` element type token                                           |
 
 ## Domain and naming
 
 | Term      | Identifier                        | Meaning                                                  |
 | --------- | --------------------------------- | -------------------------------------------------------- |
 | Pad       | shape kind `'avatar-pad'`         | The element                                              |
-| Grid      | `AVATAR_PAD_GRID` (32 x 20)       | The pixel grid the drawing is on                         |
-| Part      | `AvatarPadPart`                   | One row run of same-coloured pixels, with a `role`       |
+| Grid      | `AVATAR_PAD_GRID` (32 x 20)       | The box proportions the core geometry is measured on     |
+| View      | `AVATAR_PAD_VIEW` (128 x 80)      | The drawing's units: the grid at 4 a unit                |
+| Part      | `AvatarPadArtPart`                | One ellipse or path of the drawing, with a `role`        |
 | Core      | `avatarPadCore(pad)`              | Where a starting character's feet go, canvas px, rotated |
 | Footprint | `avatarPadFootprint(pad)`         | Top face half-axes, for "standing on the pad"            |
 | Spawn pad | `pickSpawnPad(pads, centre)`      | The pad an entry starts on                               |
@@ -55,14 +57,14 @@ pad.
 
 The pad has no state. Entry, in `useAvatarWalk`'s `enterOrLeave(true)`:
 
-1. `padEntry(elements, viewportCentre(), onScreen)`: `elements` are the visible layers' (`walkElements`).
+1. `padEntry(elements, viewportCentre(), onScreen)`: `elements` are the tab's (`walkElements`).
    - Some pad → clear `spawnAtRef`, place feet at its core facing down, `setViewportOffset(centred on the core)` iff
      the core is off screen, `track('Canvas', 'Used', 'AvatarPadArrival')`, stop.
 2. `spawnAtRef.current` → place there, clear it, stop.
 3. The remembered `posRef` on screen → keep it.
 4. Else the view centre.
 
-`pickSpawnPad`: minimum Euclidean distance core → view centre, strict `<` so the earliest in array (layer) order
+`pickSpawnPad`: minimum Euclidean distance core → view centre, strict `<` so the earliest in array order
 wins ties; no centre → the first pad. Nothing re-runs on an element change while active (I1).
 
 Arrivals, in `useAvatarPadArrivals`: `presentKey` = `self?` + peer ids. On each change of `presentKey`,
@@ -96,15 +98,7 @@ export const AVATAR_PAD_TONES: {
   coreHot;
   lamp;
 };
-export type AvatarPadPartRole = 'body' | 'ring' | 'core' | 'lamp';
-export type AvatarPadPart = {
-  x: number;
-  y: number;
-  width: number;
-  role: AvatarPadPartRole;
-  fill: string;
-};
-export const AVATAR_PAD_PARTS: readonly AvatarPadPart[];
+// (AVATAR_PAD_PARTS, the shared pixel table, stays for livediagram; livehuddle no longer draws it.)
 export function avatarPadArtRect(box: { width: number; height: number }): {
   x: number;
   y: number;
@@ -112,6 +106,29 @@ export function avatarPadArtRect(box: { width: number; height: number }): {
 };
 export function avatarPadCore(pad: PadBox): { x: number; y: number };
 export function avatarPadFootprint(pad: PadBox): { rx: number; ry: number };
+
+// packages/document/src/avatar-pad-art.ts
+export const AVATAR_PAD_VIEW = { width: 128, height: 80 } as const;
+export const AVATAR_PAD_CORE_POINT: { x: number; y: number }; // avatarPadCore of the view box
+export type AvatarPadArtRole =
+  | 'shadow'
+  | 'side'
+  | 'sideShade'
+  | 'top'
+  | 'bevel'
+  | 'well'
+  | 'glint'
+  | 'glow'
+  | 'ring'
+  | 'ringLit'
+  | 'lamp'
+  | 'core'
+  | 'coreHot';
+export type AvatarPadArtPart = { tag: 'ellipse'; role; cx; cy; rx; ry } | { tag: 'path'; role; d };
+export const AVATAR_PAD_ART: readonly AvatarPadArtPart[]; // 17 parts, back to front
+export const AVATAR_PAD_GLOW: { color; innerOpacity };
+export function isAvatarPadLight(role): boolean; // glow, ring, ringLit, lamp
+export function avatarPadPaint(role, stroke, body, glowFill): AvatarPadPaint;
 
 // ../packages/avatar/src/pad.ts
 export const AVATAR_PAD_ARRIVAL_MS = 900;
@@ -128,7 +145,7 @@ export function nextArrivals(input: { arrivals; seen; present; pads; now }): rea
 
 | Input                       | Handling                                             |
 | --------------------------- | ---------------------------------------------------- |
-| Box not 32:20               | Grid scaled whole (`meet`), centred                  |
+| Box not 32:20               | Drawing fitted whole (`meet`), centred               |
 | Box of zero width or height | Scale 0: nothing drawn, footprint empty, no arrivals |
 | `rotation` absent           | 0                                                    |
 | Peer colour not `#rrggbb`   | Beam in `AVATAR_PALETTE.shirt`                       |
@@ -145,10 +162,9 @@ export function nextArrivals(input: { arrivals; seen; present; pads; now }): rea
 
 | Case                                  | Handling                                              |
 | ------------------------------------- | ----------------------------------------------------- |
-| Pad on a hidden layer                 | Not in `walkElements`: entry falls through            |
 | Pad deleted while walking             | Nothing moves (I1)                                    |
 | Peer joins already standing on a pad  | One beam on your screen when they first appear (spec) |
-| Two pads equidistant                  | Earliest in layer order                               |
+| Two pads equidistant                  | Earliest in element order                             |
 | Forty people arrive together          | Eight beams, oldest dropped                           |
 | Reduced motion                        | `.avatar-pad-arrival { display: none }`, no shimmer   |
 | Already in Avatar mode, picker opened | Shows Avatar current; any other pick leaves           |
@@ -162,9 +178,11 @@ draw the colour only when it is a plain hex, and are capped (I3). Placing a pad 
 
 ## Performance and limits
 
-- Drawing: 134 rects per pad, built once at module load (`AVATAR_PAD_PARTS`); the canvas view is memoised with no
-  per-render props but the animation class. Export emits the same 134 rects.
-- Shimmer: one stepped opacity loop on one `<g>` per pad (4 steps per 2.4s), no inherited custom properties.
+- Drawing: a fixed 17 nodes per pad (`AVATAR_PAD_ART`, built once at module load) plus one static radial gradient
+  (two stops) for the glow; no filters, nothing blurred per frame. The canvas view is memoised on the theme stroke,
+  the animation class and the press handler. Export emits the same 17 nodes and gradient.
+- Shimmer: one opacity loop on the eight light nodes (glow, ring, ring highlight, five lamps), 10 steps each way per
+  1.6s, alternating, so it restyles only on its steps; no inherited custom properties.
 - Arrival rule: runs only when the set of characters on screen changes (`presentKey`), O(people x pads); never per
   walked frame or presence packet.
 - Beam: three groups, 23 rects (five flash rows, four fading bands of three columns, six sparks), stepped keyframes (9, 7 and 8 steps), unmounted after 900ms (I3).
@@ -180,12 +198,12 @@ blurb "Where Avatars arrive".
 
 - The pad's SVG is `role="img"` named "Avatar Pad"; the beam is `aria-hidden` decoration.
 - Motion: `prefers-reduced-motion` and `:root.reduce-motion` stop the shimmer and hide the beam.
-- Colour: the pad's identity does not depend on hue (outline, side and top read in grey on any paper).
+- Colour: the pad's identity does not depend on hue (outline, side and top are the theme's line and wash on any paper).
 
 ## Web Experience
 
 No layout shift: the beam is absolutely positioned inside the transformed canvas wrapper. No main-thread work on load:
-the parts table is a few hundred array entries built once. INP: entry adds one O(n) pass, well under a frame.
+the drawing is 17 entries built once. INP: entry adds one O(n) pass, well under a frame.
 
 ## Observability
 
@@ -195,14 +213,14 @@ the parts table is a few hundred array entries built once. INP: entry adds one O
 
 | Rule                                                   | Test                                                                                           |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| Drawing on its grid, merged, palette, tints            | `packages/document/src/avatar-pad.test.ts`                                                     |
+| Drawn core on `avatarPadCore`, fixed nodes, tints      | `packages/document/src/avatar-pad.test.ts`                                                     |
 | Scale whole, centred; core and footprint; rotation     | same                                                                                           |
-| Kind registration, factory, export pixels              | same                                                                                           |
-| Spawn pad: nearest, tie by layer, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                           |
+| Kind registration, factory, export drawing             | same                                                                                           |
+| Spawn pad: nearest, tie by order, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                           |
 | Arrivals: new on a pad, not seen, cap, replace, expiry | same                                                                                           |
 | Entry order, recentre, telemetry, I1, every entry      | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                          |
 | Own and peer beams from presence, once, expiry         | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                       |
-| View pixels and shimmer group; beam placement, colour  | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                     |
+| View nodes, theme stroke, shimmer; beam, colour        | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                     |
 | I5: picker, key, command                               | `canvas-tool-options.test.ts`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
 | A peer walks in from a board button                    | `apps/editor/e2e/realtime-peers.spec.ts`                                                       |
 
@@ -210,14 +228,15 @@ the parts table is a few hundred array entries built once. INP: entry adds one O
 
 | Constant                  | Value    | Provenance                                               | Safe range     |
 | ------------------------- | -------- | -------------------------------------------------------- | -------------- |
-| `AVATAR_PAD_GRID`         | 32 x 20  | Round platform proportions at sprite chunkiness          | fixed          |
+| `AVATAR_PAD_GRID`         | 32 x 20  | Round platform proportions; the core geometry's units    | fixed          |
+| `AVATAR_PAD_VIEW`         | 128 x 80 | The grid at 4 a unit: a new pad draws 1:1                | fixed          |
 | `AVATAR_PAD_DEFAULT_SIZE` | 128 x 80 | 4 canvas px per grid pixel (D212)                        | 64 to 256 wide |
 | `AVATAR_PAD_ARRIVAL_MS`   | 900      | Under a second; matches `avatar-pad-beam`                | 600 to 1200    |
 | `AVATAR_PAD_MAX_ARRIVALS` | 8        | A full row of arrivals without filling the canvas (D213) | 4 to 16        |
 
 ## Assets and external resources
 
-None: the pad and beam are generated pixel tables in source.
+None: the pad is a vector table and the beam a pixel table, both in source.
 
 ## Defaults ledger
 

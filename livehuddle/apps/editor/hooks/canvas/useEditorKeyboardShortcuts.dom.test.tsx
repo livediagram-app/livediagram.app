@@ -32,7 +32,6 @@ function deps(overrides: Overrides = {}) {
     participant: false,
     canvasTool: 'select',
     enabled: true,
-    zenMode: false,
     canGrowMindNode: () => false,
     onEscapeMindNode: () => false,
     // An ordinary diagram tab unless a test says otherwise.
@@ -261,7 +260,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
     expect(addShape).not.toHaveBeenCalled();
   });
 
-  it('picks up the Fill tool with F, never the Frame', () => {
+  it('picks up the Fill tool with F', () => {
     const { wb, addShape } = board();
     press('f');
     expect(wb.pickFill).toHaveBeenCalledTimes(1);
@@ -274,13 +273,13 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
     expect(wb.pickPath).toHaveBeenCalledTimes(1);
   });
 
-  it('leaves the other diagram tab keys out: no laser on K, no parallelogram on G', () => {
+  it('leaves the other diagram tab keys out: nothing on K, no parallelogram on G', () => {
     const { wb, addShape, setCanvasTool } = board();
     press('k');
     press('g');
     expect(addShape).not.toHaveBeenCalled();
     expect(wb.pickShape).not.toHaveBeenCalled();
-    expect(setCanvasTool).not.toHaveBeenCalledWith('laser');
+    expect(setCanvasTool).not.toHaveBeenCalled();
   });
 
   it('puts the eraser down before clearing a selection', () => {
@@ -495,56 +494,5 @@ describe('Enter with a tile armed', () => {
     );
     input.remove();
     expect(onDropDrawAtCentre).not.toHaveBeenCalled();
-  });
-});
-
-describe('vote keys (docs/specs/012-collaboration/blueprints/vote-keys.md)', () => {
-  it('hands + and - on the one selected element to the vote, ahead of type-to-edit', () => {
-    const onVoteKey = vi.fn(() => true);
-    const onTypeIntoSelected = vi.fn(() => true);
-    const { bag, spies } = deps({ onVoteKey, onTypeIntoSelected });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('+').defaultPrevented).toBe(true);
-    press('=');
-    press('-');
-    expect(onVoteKey.mock.calls).toEqual([
-      ['a', 1],
-      ['a', 1],
-      ['a', -1],
-    ]);
-    expect(onTypeIntoSelected).not.toHaveBeenCalled();
-    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(3);
-  });
-
-  it('leaves a key the vote did not take to type-to-edit', () => {
-    const onVoteKey = vi.fn(() => false);
-    const onTypeIntoSelected = vi.fn(() => true);
-    const { bag } = deps({ onVoteKey, onTypeIntoSelected });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('-');
-    expect(onVoteKey).toHaveBeenCalledWith('a', -1);
-    expect(onTypeIntoSelected).toHaveBeenCalledWith('a', '-');
-  });
-
-  it('never asks the vote with several selected, nothing selected, a chord, or no vote key (a Viewer)', () => {
-    const onVoteKey = vi.fn(() => true);
-    const multi = deps({ onVoteKey, multiSelectedIds: new Set(['a', 'b']) });
-    renderHook(() => useEditorKeyboardShortcuts(multi.bag));
-    press('+');
-    cleanup();
-    const none = deps({ onVoteKey, selectedId: null });
-    renderHook(() => useEditorKeyboardShortcuts(none.bag));
-    press('+');
-    cleanup();
-    const chord = deps({ onVoteKey });
-    renderHook(() => useEditorKeyboardShortcuts(chord.bag));
-    press('+', { altKey: true });
-    expect(onVoteKey).not.toHaveBeenCalled();
-    cleanup();
-    const onTypeIntoSelected = vi.fn(() => false);
-    const viewer = deps({ onVoteKey: undefined, isReadOnly: true, onTypeIntoSelected });
-    renderHook(() => useEditorKeyboardShortcuts(viewer.bag));
-    expect(press('+').defaultPrevented).toBe(false);
-    expect(onTypeIntoSelected).not.toHaveBeenCalled();
   });
 });

@@ -309,8 +309,6 @@ route, never a save.
 
 ## Import carries identity, not just content
 
-When an exported tab lands in a receiving tab (`mergeImportedTab`), the **tab kind** and the **layers** travel with the elements and styling.
-
-Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost ([Layers](layers.md)).
+When an exported tab lands in a receiving tab (`mergeImportedTab`), the **tab kind** travels with the elements and styling.
 
 The merge rule lives in its own module so it is testable as a rule: what the import brings, what the receiving tab keeps (its id and name), and what must travel or the round trip loses meaning.

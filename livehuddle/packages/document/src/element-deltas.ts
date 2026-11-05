@@ -5,8 +5,7 @@
 // replaces the whole element on every receiver (docs/specs/012-collaboration/realtime-conflict-resolution.md). That is fine for an
 // author editing a shape, which the selection lock makes a one-writer affair,
 // and wrong for a checklist the whole room ticks in the same second: each
-// receiver took the other's copy, and one tick vanished. It is the dot-vote's
-// bug (docs/specs/012-collaboration/session-tools.md) on element fields, fixed the same way. A delta names one
+// receiver took the other's copy, and one tick vanished. A delta names one
 // tick or one comment, so concurrent deltas commute and every peer lands on the same element.
 //
 // Three pieces, all pure:

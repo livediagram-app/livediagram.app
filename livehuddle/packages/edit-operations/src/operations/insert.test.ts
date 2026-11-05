@@ -122,17 +122,4 @@ describe('insert', () => {
     expect(refused(run('insert square between a1 n4')).code).toBe('invalid_value');
     expect(refused(run('insert square between n3 a1')).code).toBe('invalid_value');
   });
-
-  it('refuses a node whose layer is locked', () => {
-    const tab = {
-      ...flowWith((el) => el),
-      layers: [
-        { id: 'base', name: 'Base' },
-        { id: 'top', name: 'Top', locked: true },
-      ],
-    };
-    expect(refused(run('insert square layerId=top between n3 n4', tab))).toMatchObject({
-      code: 'element_locked',
-    });
-  });
 });

@@ -502,7 +502,7 @@ does of the menu button (`useStripCrowded`, `useBarLabels`, `useStripTileLimit`)
 strip's row (`inline`, the glyph alone). `EditorCanvasHost` passes the frame's hooks to `Canvas` as
 `workbenchBack`, and `CanvasChrome` renders the card first of its controls, so Back is the first stop after the
 canvas itself; the card is the editor's Header region for F6 (`data-region="header"`). It shows when a phone is held
-sideways, where the Explorer's button does not, and zen hides it with the rest of the chrome. The tab bar holds no
+sideways, where the Explorer's button does not. The tab bar holds no
 Back. The status screens put the same card at `EmbedShell`'s top left. The document entry's `history.state` carries
 `workbenchFrom` (the frame path it was pushed from); Back calls `history.back()` when the entry before is that path
 (`workbenchFrom` set by `navigate`), else pushes Home. Browser back and forward walk the same entries.

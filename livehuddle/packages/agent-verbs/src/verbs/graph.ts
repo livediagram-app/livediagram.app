@@ -1,9 +1,9 @@
-// `graph lint` (docs/specs/024-agents/diagram-lint.md, docs/specs/015-api/blueprints/cli.md "Previews"): a graph or
-// Mermaid file laid out and linted locally, before anything is written; `--compare` lays it out in each variant and
+// `graph lint` (docs/specs/024-agents/diagram-lint.md, docs/specs/015-api/blueprints/cli.md "Previews"): a graph file
+// laid out and linted locally, before anything is written; `--compare` lays it out in each variant and
 // prints one line of measures each. Nothing reaches the api.
 
 import { z } from 'zod';
-import { graphFromMermaid, type GraphInput } from '@livehuddle/document';
+import type { GraphInput } from '@livehuddle/document';
 import {
   compareGraphLayouts,
   type LintLogger,
@@ -19,16 +19,12 @@ import { classifySource } from '../source-kind';
 const refuse = (message: string, hint = 'livehuddle guide build') =>
   new VerbRefusal({ status: 400, code: 'invalid_value', message, hint });
 
-// The graph a file holds: graph JSON (bare or as a replace), or Mermaid.
+// The graph a file holds: graph JSON, bare or as a replace. Mermaid is gone from livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools").
 export function graphOfSource(text: string, named: string): GraphInput {
   const source = classifySource(text);
   const replace = source.kind === 'unknown' ? null : source.body.replace;
-  if (replace?.mermaid !== undefined) {
-    const parsed = graphFromMermaid(replace.mermaid);
-    if (!parsed.ok) throw refuse(`${named}: ${parsed.error}`);
-    return parsed.graph;
-  }
-  if (replace?.graph === undefined) throw refuse(`${named} holds no graph or Mermaid`);
+  if (replace?.graph === undefined) throw refuse(`${named} holds no graph`);
   const issue = graphBodyIssue(replace.graph);
   if (issue) throw refuse(`${named}: ${issue}`);
   return replace.graph as GraphInput;
@@ -59,14 +55,14 @@ export function graphLint(
 
 export const graphLintVerb = defineVerb({
   id: 'graph.lint',
-  summary: 'Lint a graph or Mermaid file before writing it',
+  summary: 'Lint a graph file before writing it',
   description:
-    'Lays a graph or Mermaid file out as the api would and prints its lint; --compare direction,groups,lines prints one line of measures per layout variant. Exits 1 when a finding is an error. Nothing is sent.',
+    'Lays a graph file out as the api would and prints its lint; --compare direction,groups,lines prints one line of measures per layout variant. Exits 1 when a finding is an error. Nothing is sent.',
   behaviour: 'read',
   local: true,
   offline: true,
   input: z.object({
-    file: z.string().describe('The graph or Mermaid file, or - for stdin'),
+    file: z.string().describe('The graph file, or - for stdin'),
     compare: z.string().optional().describe('Variants to compare: direction, groups, lines'),
   }),
   output: z.object({ text: z.string(), errors: z.number() }),

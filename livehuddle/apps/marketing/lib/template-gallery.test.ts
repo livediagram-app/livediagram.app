@@ -43,11 +43,11 @@ describe('filterGallery', () => {
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'virtual spaces').map((t) => t.kind)).toContain('coworking-space');
+    expect(filterGallery(all, 'recreation').map((t) => t.kind)).toContain('rooftop-bar');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'pod office').map((t) => t.kind);
+    const kinds = filterGallery(all, 'pod stand-up').map((t) => t.kind);
     expect(kinds).toEqual(['team-pod']);
     expect(filterGallery(all, 'office zebra')).toEqual([]);
   });
@@ -56,7 +56,7 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'team pod'));
-    expect(groups.map((g) => g.label)).toEqual(['Virtual Spaces']);
+    expect(groups.map((g) => g.label)).toEqual(['Office']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['team-pod']);
     expect(groupGallery(filterGallery(galleryTemplates(), 'zebra'))).toEqual([]);
   });

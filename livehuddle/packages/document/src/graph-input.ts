@@ -1,12 +1,11 @@
-// The MCP's graph-first input (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph, or the same
-// thing written as Mermaid, turned into laid-out elements. Three things happen
-// here that the shared graph code doesn't do on its own:
+// The MCP's graph-first input (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph turned into laid-out
+// elements (no Mermaid: imports from other tools are gone, docs/specs/002-project-scope/not-in-livehuddle.md).
+// Three things happen here that the shared graph code doesn't do on its own:
 //
 //  - Labels are capped (GRAPH_LABEL_MAX). A label is the heading in the box;
 //    a longer one is cut at a word boundary with an ellipsis and its full text
 //    moves into the node's note, so a verbose model's detail lands somewhere
-//    useful instead of filling the box. The editor's own Mermaid import never
-//    does this: what a person typed is theirs.
+//    useful instead of filling the box.
 //  - The layout is chosen: flow (with or without groups, through the
 //    clustered layout) or tree, in the requested direction.
 //  - The arrows get their routing (lines), defaulting per style.
@@ -43,7 +42,6 @@ import { withHeaderAndKey, type GraphKey } from './graph-header';
 import { layoutLanes } from './graph-lanes';
 import { branchExits, withExactEnds } from './graph-branches';
 import { layoutCycle } from './graph-cycle';
-import { parseMermaid } from './mermaid';
 import { graphTooLargeError } from './graph-limits';
 import type { Element } from './index';
 
@@ -222,14 +220,13 @@ const DEFAULT_LINES: Record<GraphStyle, ArrowStyle> = {
 // Laid-out elements for a graph: capped, positioned in the chosen style and direction, worn in the template look
 // (graph-look.ts: sizes, tones, side steps, loops round the outside, elbows), with its title and key. Groups force the
 // flow style (the clustered layout is layered) unless the style is lanes, where each group is a lane.
-// `makeEdgeId` names the arrows the edges become; random ids when omitted. `wholeLabels` keeps every label as
-// written, for the editor's Mermaid import: text a person pasted is theirs, not cut to a heading.
+// `makeEdgeId` names the arrows the edges become; random ids when omitted.
 export function layoutGraph(
   input: GraphInput,
-  options: { makeEdgeId?: () => string; wholeLabels?: boolean } = {},
+  options: { makeEdgeId?: () => string } = {},
 ): Element[] {
-  const { makeEdgeId, wholeLabels } = options;
-  const g = wholeLabels ? { ...input, groups: withNodeGroups(input) } : conciseGraph(input);
+  const { makeEdgeId } = options;
+  const g = conciseGraph(input);
   const direction =
     g.direction === 'right'
       ? ('LR' as const)
@@ -334,51 +331,6 @@ export function layoutGraph(
   });
 }
 
-// `line` after `word` and one of `separators`, trimmed; null when the line does not start with the word so.
-function afterWord(line: string, word: string, separators = ': \t'): string | null {
-  if (!line.startsWith(word) || line.length === word.length) return null;
-  return separators.includes(line[word.length]!) ? line.slice(word.length + 1).trim() : null;
-}
-
-// The same graph from Mermaid, through the editor's own importer: its direction
-// and subgraphs become `direction` and `groups`.
-export function graphFromMermaid(
-  text: string,
-): { ok: true; graph: GraphInput; notes?: string[] } | { ok: false; error: string } {
-  // Mermaid's front matter (`---` / `title: …` / `---`) heads the diagram, as `title` does on a graph.
-  const front = /^\s*---\r?\n([\s\S]*?)\r?\n---\s*\r?\n/.exec(text);
-  const title = front
-    ? front[1]!
-        .split(/\r?\n/)
-        .map((l) => afterWord(l.trim(), 'title', ':'))
-        .find((t) => !!t)
-        ?.replace(/^["']|["']$/g, '')
-    : undefined;
-  const parsed = parseMermaid(front ? text.slice(front[0].length) : text);
-  if (!parsed.ok) return parsed;
-  return {
-    ok: true,
-    graph: {
-      ...(title ? { title: title.slice(0, 120) } : {}),
-      nodes: parsed.graph.nodes,
-      edges: parsed.graph.edges,
-      groups: parsed.graph.clusters,
-      direction: parsed.direction === 'LR' ? 'right' : 'down',
-    },
-    // Said, not dropped: what the drawing cannot keep of what the Mermaid asked.
-    ...(parsed.folded
-      ? {
-          notes: [
-            `${parsed.folded} nested subgraph${parsed.folded === 1 ? '' : 's'} folded into their outer group: groups draw one level deep`,
-          ],
-        }
-      : {}),
-  };
-}
-
-// A tool's graph-shaped input, from whichever of `graph` / `mermaid` it gave:
-// the graph, nothing (the call used elements or a template), or an error that
-// names what Mermaid supports.
 // What a graph asks that it cannot be drawn as, said rather than dropped: an id naming both a node and a group, a group listed as another's member (groups
 // do not nest, and the member was silently left out), and a node in no lane on a lanes graph (it went to an
 // unlabelled lane of its own).
@@ -431,11 +383,11 @@ export function graphShapeError(graph: GraphInput): string | undefined {
     : undefined;
 }
 
-export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }): {
+// A tool's graph-shaped input: the graph, nothing (the call used elements or a template), or an error naming what
+// the graph asks that it cannot be drawn as.
+export function resolveGraphInput(args: { graph?: GraphInput }): {
   graph?: GraphInput;
   error?: string;
-  // What the drawing could not keep, to say back (a Mermaid subgraph nested in another).
-  notes?: string[];
 } {
   if (args.graph) {
     // The MCP schema caps these too; this holds for every caller (graph-limits.ts).
@@ -443,9 +395,5 @@ export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }
     const shape = tooLarge ?? graphShapeError(args.graph);
     return shape ? { error: shape } : { graph: args.graph };
   }
-  if (args.mermaid === undefined) return {};
-  const parsed = graphFromMermaid(args.mermaid);
-  return parsed.ok
-    ? { graph: parsed.graph, ...(parsed.notes ? { notes: parsed.notes } : {}) }
-    : { error: `Could not read the Mermaid: ${parsed.error}` };
+  return {};
 }

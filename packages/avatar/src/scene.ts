@@ -17,6 +17,12 @@ export type AvatarSceneShape = {
   readonly width: number;
   readonly height: number;
   readonly roomDoor?: RoomDoor;
+  // A room drawn with the Room Builder (livehuddle's docs/specs/009-elements/room-builder.md): its walls' centre
+  // line as 0..1 fractions of its box. A Door's rotation turns it onto its wall.
+  readonly roomOutline?: readonly { readonly x: number; readonly y: number }[];
+  readonly rotation?: number;
+  // An Office Pod whose door is shut (pod.ts closePods): never stored, set on the walk's copy of the board.
+  readonly podClosed?: boolean;
 };
 
 /** An element with a box: every product's boxed kinds (a shape, a sticky, a text, an image, ...), never an arrow. */

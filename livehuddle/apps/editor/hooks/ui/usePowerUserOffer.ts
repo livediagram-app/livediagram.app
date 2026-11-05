@@ -22,7 +22,6 @@ export type PowerUserOfferDeps = {
   settled: boolean;
   editable: boolean;
   embed: boolean;
-  zen: boolean;
   // Persist the next preferences (state + cache + server).
   apply: (next: UserPreferences) => void;
   offer: (offer: ToastOffer) => void;
@@ -49,7 +48,7 @@ export function usePowerUserOffer(deps: PowerUserOfferDeps): { onShortcutUsed: (
   const evaluate = (counters: OfferCounters) => {
     const d = live.current;
     if (shown.current || !d.settled || !offerDue(counters)) return;
-    if (!offerEligible(d.prefs, { editable: d.editable, embed: d.embed, zen: d.zen })) return;
+    if (!offerEligible(d.prefs, { editable: d.editable, embed: d.embed })) return;
     shown.current = true;
     // Marked the moment it shows: never again, answered or not.
     d.apply({ ...d.prefs, powerUserOfferShown: true });

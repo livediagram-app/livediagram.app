@@ -37,20 +37,15 @@ const multiOf = (s: Selection) => s.multiSelectedIds;
 export function CanvasSelectionToolbars({
   props,
   selectionInput,
-  quickRingOpen,
 }: {
   props: CanvasProps;
   selectionInput: CanvasSelectionInput;
-  // A quick-connect ring owns the space around the element while open; the
-  // popover fades out (kept mounted) so it animates away and back.
-  quickRingOpen: boolean;
 }) {
   const {
     selected,
     selectionBounds,
     selectedLocked,
     showPopover,
-    showPlus,
     multiToolbarBounds,
     showMultiToolbar,
   } = useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
@@ -65,12 +60,11 @@ export function CanvasSelectionToolbars({
   // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
-  const toolbarsStale = quickRingOpen || moving;
+  const toolbarsStale = moving;
   const multiStale = moving;
   const {
     elements,
     readOnly,
-    canvasTool,
     onDuplicateSelected,
     onToggleLockSelected,
     onDeleteSelected,
@@ -93,11 +87,7 @@ export function CanvasSelectionToolbars({
           Canvas elements stay in the original wrapper at z-auto
           and continue to be visually covered by panels where they
           overlap. */}
-      {/* Hide the selection toolbar while a quick-connect ring is open — its
-          options own the space around the element, and a toolbar on top just
-          competes for clicks. Kept mounted and faded out (not unmounted) so
-          it animates away as the ring opens and back in when it closes. */}
-      {showPopover && selectionBounds && canvasTool !== 'spotlight' ? (
+      {showPopover && selectionBounds ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
@@ -182,10 +172,10 @@ export function CanvasSelectionToolbars({
                     }
                   : undefined
             }
-            // Close to the element whenever no "+" sits in the gap: read-only, and boxed kinds that show none (an
-            // annotation). An arrow keeps the wide gap: its move
-            // frame sits there, and a toolbar over it would take the press that drags the arrow.
-            compact={readOnly || (!showPlus && !!selected && isBoxed(selected))}
+            // Close to every box (livehuddle has no quick-connect "+" in the gap,
+            // docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect) and in read-only. An arrow keeps the
+            // wide gap: its move frame sits there, and a toolbar over it would take the press that drags the arrow.
+            compact={readOnly || (!!selected && isBoxed(selected))}
           />
         </div>
       ) : null}
@@ -198,7 +188,7 @@ export function CanvasSelectionToolbars({
           than the boxed-only resize box, so an arrow-only / mixed marquee still
           gets the toolbar — and its "More" entry into the Flow / animate menu.
           Gated on a true marquee multi-selection (2+), never in view-only. */}
-      {showMultiToolbar && multiToolbarBounds && canvasTool !== 'spotlight' ? (
+      {showMultiToolbar && multiToolbarBounds ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{

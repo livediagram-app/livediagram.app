@@ -10,7 +10,7 @@
 //  - create a fresh portal already linked to this one, for when the place you
 //    want to lead to doesn't exist yet.
 
-import { createShape, type Reaction, type ShapeElement, type Tab } from '@livehuddle/document';
+import { createShape, type ShapeElement, type Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 // How far to the right of its partner a freshly created portal lands, in canvas
@@ -139,40 +139,9 @@ export function usePortalSetters({
     track('Element', 'Added', 'Portal');
   };
 
-  // The remaining Behaviour setting is an ordinary active-tab patch on the
-  // element the menu is acting on: which burst a reaction pad throws (docs/specs/009-elements/reaction-pad.md).
-  const patchTarget = (patch: Partial<ShapeElement>, kind: string, telemetry: string) => {
-    const tab = tabs.find((t) => t.id === activeId);
-    const ids = currentSelectionIds();
-    const targets = (tab?.elements ?? []).filter(
-      (el): el is ShapeElement =>
-        el.type === 'shape' && el.shape === kind && (ids.has(el.id) || el.id === contextTargetId),
-    );
-    if (targets.length === 0) return;
-    const targetIds = new Set(targets.map((t) => t.id));
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id !== activeId
-          ? t
-          : {
-              ...t,
-              elements: t.elements.map((el) =>
-                el.type === 'shape' && targetIds.has(el.id) ? { ...el, ...patch } : el,
-              ),
-            },
-      ),
-    );
-    track('Element', 'Changed', telemetry);
-  };
-
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst it throws.
-  const setReactionSelected = (reaction: Reaction) =>
-    patchTarget({ reaction }, 'reaction-pad', 'ReactionPad');
-
   return {
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
-    setReactionSelected,
   };
 }

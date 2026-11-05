@@ -77,7 +77,7 @@ the interface, and leaves the controls:
   Elements (3)") is hidden.
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Start Tour, Search, Settings and appearance controls show their icons only.
-- **Panel titles and help buttons.** Panels (Explorer, Map, Layers, ...) hide their
+- **Panel titles and help buttons.** Panels (Explorer, Map, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
   article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
   added to hold it, and the help centre stays one click away in the header's **Editor** menu.
@@ -167,7 +167,7 @@ The mode is offered **once**, ever, to people whose use suggests they would want
   it does. It stays until answered: it does not time out.
 - **Never again, either way.** The offer is marked as made the moment it shows. Accepting switches the mode on (the
   preset applies). "No Thanks", and closing it, change nothing else.
-- **Not offered** when the mode is already on, in a view-only or embedded session, in Zen mode, or when in-editor
+- **Not offered** when the mode is already on, in a view-only or embedded session, or when in-editor
   notifications are off ([User preferences](user-preferences.md)): the offer is an in-editor notification, and "a
   quieter editor" includes it.
 

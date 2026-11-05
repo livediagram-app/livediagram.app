@@ -214,15 +214,13 @@ describe('admitFrame', () => {
 
 // docs/specs/013-workspace/share-roles.md "Integrity": a Participant answers only as itself.
 describe('answersAsSelf', () => {
-  const vote = (voter: unknown) => ({ kind: 'vote', voter });
   const delta = (d: Record<string, unknown>) => ({ kind: 'el-delta', delta: d });
-  it('admits its own dot and comment reaction', () => {
-    expect(answersAsSelf(vote('k'), 'k')).toBe(true);
+  it('admits its own comment reaction', () => {
     expect(answersAsSelf(delta({ kind: 'comment-react', by: 'k' }), 'k')).toBe(true);
   });
   it("refuses another's key, no key, and anything else", () => {
-    expect(answersAsSelf(vote('other'), 'k')).toBe(false);
-    expect(answersAsSelf(vote('k'), undefined)).toBe(false);
+    // The retired Vote's dot is no answer (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
+    expect(answersAsSelf({ kind: 'vote', voter: 'k' }, 'k')).toBe(false);
     expect(answersAsSelf(delta({ kind: 'comment-react', by: 'other' }), 'k')).toBe(false);
     expect(answersAsSelf(delta({ kind: 'check' }), 'k')).toBe(false);
     // The retired per-participant responses and idea box take no Participant answer any more.

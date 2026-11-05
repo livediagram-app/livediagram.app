@@ -47,9 +47,6 @@ export function nearestElementTowards(
   let bestGap = Infinity;
   for (const el of elements) {
     if (el.id === source.id || !isBoxed(el)) continue;
-    // A frame is a section backdrop, not a node — an arrow into one reads as
-    // pointing at the whole section rather than at anything in particular.
-    if (el.type === 'shape' && el.shape === 'frame') continue;
     const gap = gapTowards(source, el, anchor);
     if (gap === null || gap > reach) continue;
     const laterallyAligned = vertical

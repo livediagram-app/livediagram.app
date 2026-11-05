@@ -63,8 +63,7 @@ picked for checklists (`applyStyleMemory`).
 1. A click on a box, or on a row checkbox in the menu, calls `toggleChecklistItem(id, index)`.
 2. Guards, in order: canvas button `disabled` unless `editable` (not read-only, not user-locked,
    tab not locked); handler returns when `editsBlocked` (tab locked, read-only, tab not loaded).
-   Neither path checks a locked or hidden layer, and the menu path does not check the element lock
-   [GE6].
+   The menu path does not check the element lock [GE6].
 3. `checklistDeltaFor(el, index)` returns `{ kind: 'check', index, text: item.text, done: !done }`
    or null for a missing row.
 4. `applyElementDelta` applies it locally and sends it; it is not pushed onto the undo stack and
@@ -125,7 +124,7 @@ like any field once applied. No migration.
 | E4  | Peer's whole copy lacks a tick       | `keepLocalTicks` keeps ours                                       |
 | E5  | More rows than fit                   | Clipped on the canvas; export draws `floor((h - 24) / 26)` rows   |
 | E6  | Long row text                        | Ellipsis on the canvas; export cuts at the width in 7 px chars    |
-| E7  | Locked layer or user-locked (menu)   | Tick still applies [GE6]                                          |
+| E7  | User-locked (menu)                   | Tick still applies [GE6]                                          |
 | E8  | Exported on dark paper               | Rows in `el.textColor ?? '#1e293b'`, dark on the dark card [GE17] |
 
 ## Security and trust
@@ -174,7 +173,7 @@ dropped delta (no match) is silent [GE12].
 | Export: rows, strike-through, footer   | renders a checklist as rows with ticked boxes                                                        | `packages/document/src/svg-render.test.ts`                          |
 | Row draft survives, follows the rows   | keeps a typed draft through a re-render with the same rows; follows the element when its rows change | `apps/editor/components/palette/context-menu-data-editors.test.tsx` |
 | Starter rows all unchecked, no footer  | none [GE11]                                                                                          |                                                                     |
-| Lock and layer gating of ticks         | none [GE6]                                                                                           |                                                                     |
+| Lock gating of ticks                   | none [GE6]                                                                                           |                                                                     |
 | Ticks are not undoable and not tracked | none [GE11]                                                                                          |                                                                     |
 
 ## Constants and configuration

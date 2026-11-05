@@ -65,9 +65,9 @@ export function FacilitatorButton({
     ? iHoldIt
       ? 'Hand the session tools back to everyone.'
       : batonFree
-        ? 'Run the timer, votes and polls for this session.'
+        ? 'Run the timer for this session.'
         : 'Take the session back from whoever is running it.'
-    : `Let ${name} run the timer, votes and polls.`;
+    : `Let ${name} run the timer.`;
 
   // Disabled rather than hidden for a Participant or Viewer, so the rule is
   // learnable: a button that vanishes teaches nothing about why.

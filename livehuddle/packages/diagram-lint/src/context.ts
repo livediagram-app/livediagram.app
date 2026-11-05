@@ -13,7 +13,6 @@ import {
   estimatedLabelMeasure,
   isBoxed,
   pinnedBoxedElement,
-  visibleLayerElements,
   type ArrowElement,
   type ArrowLabelPass,
   type BoxedElement,
@@ -83,10 +82,10 @@ function isDangling(arrow: ArrowElement, index: ElementIndex): boolean {
 }
 
 export function prepareLintContext(
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'>,
+  tab: Pick<Tab, 'elements' | 'theme'>,
   options: { source: LintSource; flow?: 'down' | 'right' },
 ): LintContext {
-  const visible = visibleLayerElements(tab.elements, tab.layers);
+  const visible = tab.elements;
   const index = buildElementIndex(tab.elements);
   const boxed = visible.filter(isBoxed);
   const boxes = visible.filter(isLintBox);

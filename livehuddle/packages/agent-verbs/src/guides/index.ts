@@ -14,9 +14,9 @@ A Space is a place a team meets in; the commands call it a document. Start from 
   livehuddle document create "Sprint retro" --template team-pod
   livehuddle tab add "Sprint retro" Hall --template all-hands-hall
 
-Boxes and arrows (a process, a flow) come from a graph or Mermaid, laid out for you:
+Boxes and arrows (a process, a flow) come from a graph, laid out for you:
 
-  livehuddle tab add "Sprint retro" Flow -f flow.mmd       flowchart LR ...
+  livehuddle tab add "Sprint retro" Flow -f flow.json      {"nodes": [...], "edges": [...]}
 
 Or add with edit operations, each one placed beside the element it names:
 
@@ -71,7 +71,7 @@ what changed since a revision you read.`,
 
 A view answers one question about a tab at the lowest token cost:
 
-  outline   what is there, nested by frame, arrows on the line   (default)
+  outline   what is there, nested by container, arrows on the line   (default)
   graph     what connects to what
   layout    where things sit; --coarse for rows
   comments  open threads; --all adds resolved ones
@@ -113,7 +113,7 @@ A workbench (a coding tool or an editor) shows a Space live beside you. When the
 to you about it, the message carries a selection reference:
 
   [livehuddle] "Home screen" \u203a tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
-  selected: button 146b "Play", frame e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
+  selected: button 146b "Play", boundary e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
   read: livehuddle tab view 3h9x2a --tab 0b34 --view show --ref 146b
 
 The first line names the Space, the tab and the revision the selection was made on.
@@ -125,7 +125,7 @@ Refs are element ids, so they still name the same elements after later edits. Re
 they hold now, starting from the read: line:
 
   livehuddle tab view 3h9x2a --tab 0b34 --view show --ref 146b    one element in full
-  livehuddle tab view 3h9x2a --tab 0b34 --only e4a8               a frame and what is in it
+  livehuddle tab view 3h9x2a --tab 0b34 --only e4a8               a boundary and what is in it
   livehuddle tab view 3h9x2a --tab 0b34                           the whole tab, as an outline
 
 More than 20 selected ends the line with "… and 14 more: livehuddle tab view ... --ref selected".

@@ -13,7 +13,7 @@ import { useTabSession } from './useTabSession';
 // they stand, then hands back its handlers.
 function harness(
   initial: Partial<Tab> = {},
-  opts: { editsBlocked?: boolean; sessionToolsBlocked?: boolean; isFacilitator?: boolean } = {},
+  opts: { editsBlocked?: boolean; sessionToolsBlocked?: boolean } = {},
 ) {
   let tabs: Tab[] = [{ id: 't1', name: 'Tab 1', elements: [], ...initial }];
   const hook = renderHook(() =>
@@ -25,9 +25,6 @@ function harness(
       commitTabs: (map) => {
         tabs = map(tabs);
       },
-      emitVote: vi.fn(),
-      selfId: 'me',
-      isFacilitator: opts.isFacilitator ?? false,
     }),
   );
   const session = () => {
@@ -111,35 +108,6 @@ describe('extendTimer', () => {
   });
 });
 
-describe('one dot per item', () => {
-  it('bakes the choice into the vote only when it is on', () => {
-    const on = harness();
-    on.session().startVote(3, { hideCursors: false, hideCounts: false, onePerElement: true });
-    expect(on.tab().vote?.onePerElement).toBe(true);
-
-    const off = harness();
-    off.session().startVote(3, { hideCursors: false, hideCounts: false });
-    expect(off.tab().vote).not.toHaveProperty('onePerElement');
-  });
-
-  it('refuses a second dot on the same item but allows a different one', () => {
-    const h = harness();
-    h.session().startVote(3, { hideCursors: false, hideCounts: false, onePerElement: true });
-    h.session().castVote('a');
-    h.session().castVote('a');
-    h.session().castVote('b');
-    expect(h.tab().vote?.votes).toEqual({ a: ['me'], b: ['me'] });
-  });
-
-  it('still lets dots stack on an ordinary vote', () => {
-    const h = harness();
-    h.session().startVote(3, { hideCursors: false, hideCounts: false });
-    h.session().castVote('a');
-    h.session().castVote('a');
-    expect(h.tab().vote?.votes).toEqual({ a: ['me', 'me'] });
-  });
-});
-
 describe('while somebody else is facilitating (docs/specs/012-collaboration/facilitator.md)', () => {
   it('refuses to start the timer', () => {
     const { session, tab } = harness({}, { sessionToolsBlocked: true });
@@ -147,122 +115,9 @@ describe('while somebody else is facilitating (docs/specs/012-collaboration/faci
     expect(tab().timer).toBeUndefined();
   });
 
-  it('refuses to start, reveal, end or clear a vote', () => {
-    const { session, tab } = harness({}, { sessionToolsBlocked: true });
-    session().startVote(3);
-    expect(tab().vote).toBeUndefined();
-  });
-
-  it('still lets you cast and retract your own dots, which is the point of a vote', () => {
-    // Started by the facilitator, answered by the room.
-    const running = harness();
-    running.session().startVote(3);
-    const voting = harness(running.tab(), { sessionToolsBlocked: true });
-    voting.session().castVote('el-1');
-    expect(voting.tab().vote?.votes).toEqual({ 'el-1': ['me'] });
-    voting.session().retractVote('el-1');
-    expect(voting.tab().vote?.votes['el-1'] ?? []).toEqual([]);
-  });
-
-  it('lets the facilitator reveal and end a vote somebody else started', () => {
-    const started = harness();
-    started.session().startVote(3);
-    const theirs = { vote: { ...started.tab().vote!, startedBy: 'someone-else' } };
-
-    const participant = harness(theirs);
-    participant.session().revealVote();
-    expect(participant.tab().vote?.revealed).toBeFalsy();
-
-    const facilitator = harness(theirs, { isFacilitator: true });
-    facilitator.session().revealVote();
-    expect(facilitator.tab().vote?.revealed).toBe(true);
-    facilitator.session().endVote();
-    expect(facilitator.tab().vote?.active).toBe(false);
-  });
-
-  it('says whether it ended the vote, refusing its own starter while somebody else facilitates', () => {
-    const started = harness();
-    started.session().startVote(3);
-    const blocked = harness(started.tab(), { sessionToolsBlocked: true });
-    expect(blocked.session().endVote()).toBe(false);
-    expect(blocked.tab().vote?.active).toBe(true);
-    const host = harness(started.tab());
-    expect(host.session().endVote()).toBe(true);
-    expect(host.session().endVote()).toBe(false);
-  });
-
   it('changes nothing when nobody is facilitating', () => {
     const { session, tab } = harness();
     session().startTimer('countdown', 60_000);
     expect(tab().timer?.running).toBe(true);
-  });
-});
-
-describe('dot-vote telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
-  const votedCalls = () =>
-    vi.mocked(track).mock.calls.filter(([c, a]) => c === 'Element' && a === 'Voted');
-  const retractedCalls = () =>
-    vi
-      .mocked(track)
-      .mock.calls.filter(([c, a, t]) => c === 'Element' && a === 'Removed' && t === 'Vote');
-
-  it('counts only the dots that were actually cast', () => {
-    const h = harness();
-    h.session().startVote(2, { hideCursors: false, hideCounts: false });
-    h.session().castVote('a');
-    h.session().castVote('b');
-    // Budget spent: these presses cast nothing.
-    h.session().castVote('c');
-    h.session().castVote('a');
-    expect(h.tab().vote?.votes).toEqual({ a: ['me'], b: ['me'] });
-    expect(votedCalls()).toHaveLength(2);
-  });
-
-  it('does not count a second dot refused on a one-per-item vote', () => {
-    const h = harness();
-    h.session().startVote(3, { hideCursors: false, hideCounts: false, onePerElement: true });
-    h.session().castVote('a');
-    h.session().castVote('a');
-    expect(votedCalls()).toHaveLength(1);
-  });
-
-  it('does not count a press with no vote open', () => {
-    const h = harness();
-    h.session().castVote('a');
-    expect(votedCalls()).toHaveLength(0);
-  });
-
-  it('counts a retraction only when one of my dots came off', () => {
-    const h = harness();
-    h.session().startVote(3, { hideCursors: false, hideCounts: false });
-    h.session().retractVote('a');
-    expect(retractedCalls()).toHaveLength(0);
-    h.session().castVote('a');
-    h.session().retractVote('a');
-    h.session().retractVote('a');
-    expect(retractedCalls()).toHaveLength(1);
-    expect(h.tab().vote?.votes.a ?? []).toEqual([]);
-  });
-});
-
-describe('whether a dot moved (docs/specs/012-collaboration/blueprints/vote-keys.md)', () => {
-  it('says true for a dot cast or taken back, false for one refused', () => {
-    const h = harness();
-    h.session().startVote(1, { hideCursors: false, hideCounts: false });
-    expect(h.session().castVote('a')).toBe(true);
-    expect(h.session().castVote('b')).toBe(false);
-    expect(h.session().retractVote('b')).toBe(false);
-    expect(h.session().retractVote('a')).toBe(true);
-  });
-
-  it('says false on a locked tab, and keeps a closed vote’s dots', () => {
-    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: { a: ['me'] } };
-    const locked = harness({ vote }, { editsBlocked: true });
-    expect(locked.session().castVote('a')).toBe(false);
-    expect(locked.session().retractVote('a')).toBe(false);
-
-    const ended = harness({ vote: { ...vote, active: false } });
-    expect(ended.session().retractVote('a')).toBe(false);
-    expect(ended.tab().vote?.votes.a).toEqual(['me']);
   });
 });

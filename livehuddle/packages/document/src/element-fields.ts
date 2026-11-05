@@ -31,7 +31,6 @@ export const ELEMENT_FIELD_NAMES = {
   shape: fieldsOf<ShapeElement>()([
     'id',
     'type',
-    'layerId',
     'shape',
     'iconId',
     'stickerId',
@@ -82,8 +81,13 @@ export const ELEMENT_FIELD_NAMES = {
     'portalTarget',
     'chairFacing',
     'roomDoor',
+    'roomOutline',
     'stageSpeakers',
     'stageCameras',
+    'noticeNotes',
+    'clockZones',
+    'jukeboxSource',
+    'screenUrl',
     'railCount',
     'railLabels',
     'rating',
@@ -159,7 +163,6 @@ export const ELEMENT_FIELD_NAMES = {
     'id',
     'type',
     'addedBy',
-    'layerId',
     'x',
     'y',
     'width',
@@ -208,7 +211,6 @@ export const ELEMENT_FIELD_NAMES = {
     'id',
     'type',
     'addedBy',
-    'layerId',
     'x',
     'y',
     'width',
@@ -250,7 +252,6 @@ export const ELEMENT_FIELD_NAMES = {
   image: fieldsOf<ImageElement>()([
     'id',
     'type',
-    'layerId',
     'x',
     'y',
     'width',
@@ -295,7 +296,6 @@ export const ELEMENT_FIELD_NAMES = {
   freehand: fieldsOf<FreehandElement>()([
     'id',
     'type',
-    'layerId',
     'x',
     'y',
     'width',
@@ -340,7 +340,6 @@ export const ELEMENT_FIELD_NAMES = {
   path: fieldsOf<PathElement>()([
     'id',
     'type',
-    'layerId',
     'x',
     'y',
     'width',
@@ -383,7 +382,6 @@ export const ELEMENT_FIELD_NAMES = {
   table: fieldsOf<TableElement>()([
     'id',
     'type',
-    'layerId',
     'x',
     'y',
     'width',
@@ -433,7 +431,6 @@ export const ELEMENT_FIELD_NAMES = {
   annotation: fieldsOf<AnnotationElement>()([
     'id',
     'type',
-    'layerId',
     'x',
     'y',
     'width',
@@ -468,7 +465,6 @@ export const ELEMENT_FIELD_NAMES = {
   'link-card': fieldsOf<LinkCardElement>()([
     'id',
     'type',
-    'layerId',
     'x',
     'y',
     'width',
@@ -505,7 +501,6 @@ export const ELEMENT_FIELD_NAMES = {
   video: fieldsOf<VideoElement>()([
     'id',
     'type',
-    'layerId',
     'x',
     'y',
     'width',
@@ -542,7 +537,6 @@ export const ELEMENT_FIELD_NAMES = {
   arrow: fieldsOf<ArrowElement>()([
     'id',
     'type',
-    'layerId',
     'from',
     'to',
     'locked',

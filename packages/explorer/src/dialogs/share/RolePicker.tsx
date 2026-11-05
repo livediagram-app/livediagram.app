@@ -1,6 +1,7 @@
 'use client';
 
-// The new pass's level: one compact card naming the chosen level, which unfolds the three levels beneath it when
+// The new pass's level: one compact card naming the chosen level, which unfolds the levels the item's app offers
+// (APP_LINK_LEVELS: three, or livehuddle's Editor and Participant) beneath it when
 // pressed (a click, never a hover). It unfolds in place rather than floating, so the dialog's scroll never clips it
 // and nothing covers the fine print. Choosing a level folds it again. livediagram's ShareRolePicker from before the
 // Explorer split, in each app's words.
@@ -13,9 +14,12 @@ import { LEVEL_ORDER, LEVEL_PASS } from './parts';
 export function RolePicker({
   level,
   onChange,
+  levels = LEVEL_ORDER,
 }: {
   level: Level;
   onChange: (level: Level) => void;
+  // The levels offered, most capable first.
+  levels?: readonly Level[];
 }) {
   const [open, setOpen] = useState(false);
   const listId = useId();
@@ -43,8 +47,8 @@ export function RolePicker({
       fold();
       return;
     }
-    const i = LEVEL_ORDER.indexOf(level);
-    const last = LEVEL_ORDER.length - 1;
+    const i = levels.indexOf(level);
+    const last = levels.length - 1;
     const to: Record<string, number> = {
       ArrowUp: i - 1,
       ArrowLeft: i - 1,
@@ -55,7 +59,7 @@ export function RolePicker({
     };
     if (!(e.key in to)) return;
     e.preventDefault();
-    const next = LEVEL_ORDER[(to[e.key]! + LEVEL_ORDER.length) % LEVEL_ORDER.length]!;
+    const next = levels[(to[e.key]! + levels.length) % levels.length]!;
     onChange(next);
     e.currentTarget.parentElement
       ?.querySelector<HTMLButtonElement>(`[data-level="${next}"]`)
@@ -121,7 +125,7 @@ export function RolePicker({
             aria-label="What the pass lets people do"
             className="flex flex-col gap-1 border-t border-slate-200/70 p-1.5 dark:border-slate-700/70"
           >
-            {LEVEL_ORDER.map((l) => {
+            {levels.map((l) => {
               const option = LEVEL_PASS[l];
               const active = l === level;
               return (

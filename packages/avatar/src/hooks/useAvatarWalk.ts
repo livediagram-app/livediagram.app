@@ -11,7 +11,7 @@
 // Realtime), which the room relays like a cursor.
 
 import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useState } from 'react';
-import { drinkFrom, DRINK_HOLD_MS, isSeatingShape, type DrinkKind } from '../office-geometry';
+import { drinkFrom, DRINK_HOLD_MS, seatsACharacter, type DrinkKind } from '../office-geometry';
 import { isSceneShape, type AvatarSceneElement, type SceneShapeOf } from '../scene';
 import {
   clearOfFences,
@@ -30,6 +30,7 @@ import { newSeatClaim, type SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
 import {
   arrowDirection,
+  centredCamera,
   elementUnderFeet,
   facingFromDelta,
   followCorrection,
@@ -100,12 +101,14 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   viewportZoom,
   setViewportOffset,
   spawnAtRef,
+  spawnPadRef,
   onPresence,
   peers,
   onWalkIntoPortal,
   onWalkIntoChair,
   onWalkIntoReactionPad,
   onWalkIntoDrink,
+  camera = 'edge',
 }: {
   // True while the Avatar canvas tool is the active tool.
   active: boolean;
@@ -130,6 +133,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // the entry effect below — which then clears it, so the palette's own way in
   // still spawns centre-screen.
   spawnAtRef?: React.MutableRefObject<AvatarPoint | null>;
+  // A one-shot pad for the NEXT entry: pressing an Avatar Pad (docs/specs/009-elements/avatar-pad.md "Pressing it")
+  // starts the walk on that pad rather than the one nearest the view's centre. Cleared once used, like spawnAtRef.
+  spawnPadRef?: React.MutableRefObject<string | null>;
   // Publishes the local character to the room so peers can see it, and
   // `null` on exit so they drop it. Throttling lives in the broadcaster.
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
@@ -151,6 +157,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // The office's machines (docs/specs/009-elements/office.md "Using it"): the character walked onto a water
   // cooler or a coffee machine. Fired once on ARRIVAL, like the portal and the chair.
   onWalkIntoDrink?: (element: SceneShapeOf<E>) => void;
+  // How the view follows a walk (docs/specs/008-canvas/avatar-mode.md "The camera"): 'edge' pans only when the
+  // character nears an edge; 'centred' keeps it in the middle and gravitates back after a hand pan.
+  camera?: 'edge' | 'centred';
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until
@@ -266,6 +275,22 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setViewportOffset(nextOffset);
   };
 
+  // The centred camera (docs/specs/008-canvas/avatar-mode.md "The camera"): one step of the view after a move.
+  const centreStep = (from: AvatarPoint, to: AvatarPoint, r: NonNullable<ReturnType<typeof rects>>) => {
+    const prev = offsetRef.current;
+    const nextOffset = centredCamera(
+      prev,
+      from,
+      to,
+      { width: r.main.width, height: r.main.height },
+      viewportZoom,
+    );
+    if (nextOffset.x === prev.x && nextOffset.y === prev.y) return;
+    offsetRef.current = nextOffset;
+    offsetWrittenRef.current = nextOffset;
+    setViewportOffset(nextOffset);
+  };
+
   // Where the avatar should appear when the mode is entered: the centre of
   // the visible viewport, in canvas coords.
   const viewportCentre = (): AvatarPoint | null => {
@@ -337,7 +362,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     };
     // An Avatar Pad on the tab (docs/specs/009-elements/avatar-pad.md "Starting on the pad") is the board's
     // entrance: it wins over the button and the remembered spot, and the view comes to it when it is off screen.
-    const entry = padEntry(elements, centre, onScreen);
+    const pressedPad = spawnPadRef?.current ?? null;
+    if (spawnPadRef) spawnPadRef.current = null;
+    const pressed = pressedPad ? elements.filter((el) => el.id === pressedPad) : [];
+    const entry = padEntry(pressed.length > 0 ? pressed : elements, centre, onScreen);
     if (entry) {
       if (spawnAtRef) spawnAtRef.current = null;
       place(entry.feet);
@@ -617,9 +645,12 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
         setWalking(true);
         const nextFacing = facingFromDelta(dx, dy);
         if (nextFacing) setFacing(nextFacing);
-        // Camera follow: keep the avatar clear of the viewport edges.
+        // Camera: keep the avatar centred, or clear of the viewport edges.
         const r = rects();
-        if (r) follow(next, r);
+        if (r) {
+          if (camera === 'centred') centreStep(from, next, r);
+          else follow(next, r);
+        }
       } else {
         setWalking(false);
       }
@@ -830,7 +861,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     if (
       el &&
       isSceneShape(el) &&
-      isSeatingShape(el.shape) &&
+      seatsACharacter(el.shape) &&
       !seatedRef.current &&
       posRef.current
     ) {
@@ -856,6 +887,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
 
   return {
     pos: active ? pos : null,
+    // The live position between renders (the loop owns it), for the editor's Fit and zoom anchor; null outside the mode.
+    readPos: () => (active ? posRef.current : null),
     facing,
     walking,
     lift,

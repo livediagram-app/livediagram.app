@@ -11,14 +11,7 @@ import {
   parseCallTrack,
   parseStoredLevel,
 } from '@livehuddle/api-schema';
-import {
-  callStages,
-  roomZones,
-  visibleLayerElements,
-  type CallLevel,
-  type Element,
-  type Layer,
-} from '@livehuddle/document';
+import { callStages, roomZones, type CallLevel, type Element } from '@livehuddle/document';
 import {
   hearingVerdict,
   mayLetSpeakNow,
@@ -54,19 +47,19 @@ export type HearingAsk = { readonly sessionId: string; readonly trackName: strin
 
 const NO_CALLS: TabCalls = { zones: [], stages: [] };
 
-/** A stored tab's rooms and stages on its visible layers; none for a tab that does not parse. */
+/** A stored tab's rooms and stages; none for a tab that does not parse. */
 export function tabCallsOf(data: string): TabCalls {
-  let tab: { elements?: unknown; layers?: unknown };
+  let tab: { elements?: unknown };
   try {
     tab = JSON.parse(data) as typeof tab;
   } catch {
     return NO_CALLS;
   }
   if (typeof tab !== 'object' || tab === null || !Array.isArray(tab.elements)) return NO_CALLS;
-  const layers = Array.isArray(tab.layers) ? (tab.layers as Layer[]) : undefined;
-  const visible = visibleLayerElements(tab.elements as Element[], layers);
-  const zones = roomZones(visible);
-  return { zones, stages: callStages(visible, zones) };
+  // No layers (docs/specs/006-document/layers.md): a room saved on a hidden layer counts like any other.
+  const elements = tab.elements as Element[];
+  const zones = roomZones(elements);
+  return { zones, stages: callStages(elements, zones) };
 }
 
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);

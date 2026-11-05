@@ -157,14 +157,18 @@ describe('readUserPreferences (with localStorage)', () => {
     // writes back, otherwise an older browser tab would silently
     // strip flags the user set in a newer tab.
     const { storage } = mockBrowser();
-    storage.setItem(STORAGE_KEY, JSON.stringify({ autoRebindArrows: false, futureFlag: 'yes' }));
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ autoRebindArrows: false, quickAddOnHover: true, futureFlag: 'yes' }),
+    );
     // `autoRebindArrows` is also unknown now: the Auto-Attach Arrows setting left livehuddle (Work Tracker #423,
-    // part 4), and an old browser's stored value stays in place, unread.
+    // part 4), and an old browser's stored value stays in place, unread. So does `quickAddOnHover`, gone with
+    // Quick Connect (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect).
     const read: UserPreferences & { futureFlag?: string } = readUserPreferences();
     expect(read.futureFlag).toBe('yes');
     writeUserPreferences(read);
     const stored: unknown = JSON.parse(storage.getItem(STORAGE_KEY)!);
-    expect(stored).toEqual({ autoRebindArrows: false, futureFlag: 'yes' });
+    expect(stored).toEqual({ autoRebindArrows: false, quickAddOnHover: true, futureFlag: 'yes' });
   });
 
   it('handles an empty object correctly (the every-default-on state)', () => {

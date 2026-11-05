@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
-// docs/specs/012-collaboration/session-tools.md "The Session strip": Timer and Vote in one strip,
-// always there for an editor, only the running ones for a view-role visitor, and the Timer showing
-// its clock while a timer runs.
+// docs/specs/012-collaboration/session-tools.md "The Session strip": the Timer, always there for an
+// editor, only while one runs for a view-role visitor, and showing its clock while a timer runs.
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -29,45 +28,32 @@ const paused: TabTimer = {
 function strip(overrides: Partial<Parameters<typeof SessionClusterStrip>[0]> = {}) {
   const onToggle = vi.fn();
   render(
-    <SessionClusterStrip
-      timer={null}
-      voteRunning={false}
-      canStart
-      open={null}
-      onToggle={onToggle}
-      {...overrides}
-    />,
+    <SessionClusterStrip timer={null} canStart open={null} onToggle={onToggle} {...overrides} />,
   );
   return onToggle;
 }
 
 describe('SessionClusterStrip', () => {
-  // The Poll left with the Collaborate tools (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
-  it('gives an editor the Timer and the Vote while nothing runs, as icons, and no Poll', () => {
+  // The Poll and the Vote left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements",
+  // "The Vote").
+  it('gives an editor the Timer while nothing runs, as an icon, and no Poll or Vote', () => {
     strip();
     expect(screen.getByRole('button', { name: 'Open Timer' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Start a Vote' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Vote/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
     expect(screen.queryByText(/\d:\d\d/)).toBeNull();
   });
 
   it('shows nothing to a view-role visitor while nothing runs', () => {
     const { container } = render(
-      <SessionClusterStrip
-        timer={null}
-        voteRunning={false}
-        canStart={false}
-        open={null}
-        onToggle={() => {}}
-      />,
+      <SessionClusterStrip timer={null} canStart={false} open={null} onToggle={() => {}} />,
     );
     expect(container.innerHTML).toBe('');
   });
 
-  it('shows a view-role visitor only the running tools', () => {
-    strip({ canStart: false, timer: paused, voteRunning: true });
+  it('shows a view-role visitor the running timer', () => {
+    strip({ canStart: false, timer: paused });
     expect(screen.getByRole('button', { name: /^Timer / })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
   });
 
   it('shows the running timer clock on its button', () => {
@@ -81,48 +67,23 @@ describe('SessionClusterStrip', () => {
     expect(screen.getByRole('button', { name: 'Stopwatch 1:01' })).toBeTruthy();
   });
 
-  it('toggles each segment with its own id and button, pressed while open', () => {
-    const onToggle = strip({ open: 'session-vote', voteRunning: true, timer: paused });
-    const vote = screen.getByRole('button', { name: 'Open Vote' });
-    expect(vote.getAttribute('aria-expanded')).toBe('true');
-    fireEvent.click(vote);
-    expect(onToggle).toHaveBeenCalledWith('session-vote', vote);
+  it('toggles the Timer with its id and button, pressed while open', () => {
+    const onToggle = strip({ open: 'session-timer', timer: paused });
     const timer = screen.getByRole('button', { name: /^Timer / });
+    expect(timer.getAttribute('aria-expanded')).toBe('true');
     fireEvent.click(timer);
     expect(onToggle).toHaveBeenCalledWith('session-timer', timer);
   });
 
-  it('carries your dots left on the Vote button while casting is open', () => {
-    strip({ voteRunning: true, voteDotsLeft: 2 });
-    const vote = screen.getByRole('button', { name: 'Open Vote (2 dots left)' });
-    expect(vote.textContent).toContain('2');
-  });
-});
-
-describe('Pages: a running Vote only', () => {
-  // Pages passes canStart false and offersTimer false (sessionStripTools runningOnly).
-  const pages = { canStart: false, offersTimer: false } as const;
-
-  it('shows nothing while nothing runs, even to an editor', () => {
-    strip(pages);
-    expect(screen.queryByRole('button')).toBeNull();
-  });
-
-  it('shows the running vote so it can be controlled', () => {
-    strip({ ...pages, voteRunning: true });
-    expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Timer/ })).toBeNull();
-  });
-
-  it('never shows a Timer, running or not', () => {
-    strip({ ...pages, timer: paused });
+  it('shows nothing when the mode offers no Timer', () => {
+    strip({ canStart: false, offersTimer: false, timer: paused });
     expect(screen.queryByRole('button')).toBeNull();
   });
 });
 
 describe('sessionStripTools', () => {
-  it('offers Timer and Vote on a meeting board, none in Diagram or Draw', () => {
-    expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true });
+  it('offers the Timer on a meeting board, none in Diagram or Draw', () => {
+    expect(sessionStripTools('workshop')).toEqual({ timer: true });
     expect(sessionStripTools(undefined)).toBeNull();
     expect(sessionStripTools('diagram')).toBeNull();
     expect(sessionStripTools('draw')).toBeNull();
@@ -137,8 +98,8 @@ describe('stripCanStart', () => {
 });
 
 describe('stripSegmentGone', () => {
-  const idle = { timer: false, vote: false };
-  const all = { timer: true, vote: true };
+  const idle = { timer: false };
+  const all = { timer: true };
   const workshop = sessionStripTools('workshop');
 
   it('keeps nothing open when no popover is', () => {
@@ -147,19 +108,21 @@ describe('stripSegmentGone', () => {
     );
   });
 
-  it('closes when the strip or that tool leaves (a mode switch)', () => {
-    const at = { readOnly: false, running: all };
-    expect(stripSegmentGone({ ...at, segment: 'session-vote', tools: null })).toBe(true);
-    expect(
-      stripSegmentGone({ ...at, segment: 'session-timer', tools: { ...all, timer: false } }),
-    ).toBe(true);
+  it('closes when the strip or the Timer leaves (a mode switch)', () => {
+    const at = { readOnly: false, running: all, segment: 'session-timer' } as const;
+    expect(stripSegmentGone({ ...at, tools: null })).toBe(true);
+    expect(stripSegmentGone({ ...at, tools: { timer: false } })).toBe(true);
   });
 
   it("keeps an editor's idle popover open where the strip offers starting one", () => {
-    for (const segment of ['session-timer', 'session-vote'] as const)
-      expect(stripSegmentGone({ segment, tools: workshop, readOnly: false, running: idle })).toBe(
-        false,
-      );
+    expect(
+      stripSegmentGone({
+        segment: 'session-timer',
+        tools: workshop,
+        readOnly: false,
+        running: idle,
+      }),
+    ).toBe(false);
   });
 
   it("closes a view role's popover when its tool ends", () => {
@@ -176,7 +139,7 @@ describe('an embed has no Session strip', () => {
     expect(sessionToolsForSurface(tools, false)).toBe(tools);
   });
 
-  it('is what the editor host feeds the canvas chrome, so the Timer and Vote buttons cannot come back', () => {
+  it('is what the editor host feeds the canvas chrome, so the Timer button cannot come back', () => {
     const host = readFileSync(join(__dirname, 'EditorCanvasHost.tsx'), 'utf8');
     expect(host).toContain('sessionTools={sessionToolsForSurface(sessionTools, embedMode)}');
     expect(host).not.toMatch(/sessionTools=\{sessionTools\}/);

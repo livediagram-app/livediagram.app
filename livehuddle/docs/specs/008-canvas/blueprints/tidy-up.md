@@ -2,10 +2,10 @@
 
 > **Auto Layout is gone from livehuddle's Tidy Up** (Work Tracker #423, part 4): not part of livehuddle's meeting
 > product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). The popover holds the Auto-align row
-> alone; `CleanupKind` is `'align'`, `cleanupElements(elements, layers)`, `previewCleanup()` and
-> `assessCleanup(elements, layers)` take no kind, and the `rearranges-lanes` verdict, `TIDY_LANES_NOTE`, the style
+> alone; `CleanupKind` is `'align'`, `cleanupElements(elements)`, `previewCleanup()` and
+> `assessCleanup(elements)` take no kind, and the `rearranges-lanes` verdict, `TIDY_LANES_NOTE`, the style
 > tiles and their drawings, and the choices file are deleted. The empty note reads "Nothing to tidy yet. Add some notes
-> or frames to this Space first." livediagram keeps the whole design
+> or pictures to this Space first." livediagram keeps the whole design
 > ([its blueprint there](../../../../../livediagram/docs/specs/008-canvas/blueprints/tidy-up.md)). Where the rest of
 > this page describes Auto Layout's tiles, it records what livehuddle had; the `packages/document` tidy profile it
 > names stays, Work Tracker #459's.
@@ -33,7 +33,7 @@ Scope, by file:
 | `apps/editor/components/canvas/TidyUpPopover.tsx`                                                  | The popover: the Auto-align row, the empty and locked notes, Escape                       |
 | `apps/editor/components/canvas/tidy-up-drawings.tsx`                                               | `AutoAlignDrawing`, the row's drawing                                                     |
 | `../packages/ui/src/icons/editor-chrome.tsx`                                                       | `TidyUpIcon`: Lucide `brush-cleaning` at the cluster's 20 px                              |
-| `apps/editor/components/canvas/LayersThemeStrip.tsx`                                               | The Tidy Up segment, first in the strip                                                   |
+| `apps/editor/components/canvas/ThemeStrip.tsx`                                                     | The Tidy Up segment, first in the strip                                                   |
 | `apps/editor/hooks/canvas/useDockPopovers.ts`                                                      | `'tidy-up'` in `DockPanel`, its width, its `UI·Opened·TidyUp`                             |
 | `apps/editor/components/canvas/useCanvasChromePanels.tsx`                                          | `tidyUpPopoverEl`, and closing it when the button goes                                    |
 | `apps/editor/components/canvas/CanvasChrome.tsx`                                                   | Passes the segment to the strip, renders the popover beside the corner layer              |
@@ -47,7 +47,7 @@ Scope, by file:
 
 | Term            | Identifier                                                                                         | Meaning                                               |
 | --------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| Tidy Up button  | segment label `Tidy Up`, `data-tour-id="tidy-up"`                                                  | The cluster segment left of Layers                    |
+| Tidy Up button  | segment label `Tidy Up`, `data-tour-id="tidy-up"`                                                  | The cluster segment left of the Theme brush           |
 | Tidy Up popover | `TidyUpPopover`, dock panel `'tidy-up'`                                                            | What the button opens                                 |
 | Tidier          | `CleanupKind = 'align' \| AutoLayoutChoice`                                                        | Auto-align or one Auto Layout style                   |
 | Tile            | one `AutoLayoutChoice`, in `AUTO_LAYOUT_TILE_ORDER`                                                | A style's button in the grid                          |
@@ -63,7 +63,7 @@ surface.
 
 - **Offered** when, all together: not `isReadOnly` (a Participant and a Viewer are
   read-only for structure), not `zenMode`, not an embed (a phone included). `EditorCanvasHost` passes `tidyUp` only
-  for an Editor's non-embed session; `tidyUpOffered` adds the Zen gate.
+  for an Editor's non-embed session; `tidyUpOffered` is the same gate.
 - **Open state** is the dock slot: `activeDockPanel === 'tidy-up'`. The button
   disappearing closes it (an effect in `useCanvasChromePanels`).
 - **Blocked**: `tidyUp.blocked = activeTabLocked`. The popover renders every tile `disabled` under the locked
@@ -97,7 +97,7 @@ type TidyUpActions = {
   blocked: boolean;
 };
 
-assessCleanup(elements, kind, layers?): CleanupVerdict;
+assessCleanup(elements, kind): CleanupVerdict;
 cleanupVerdict(before, after, { lanes?: boolean }): CleanupVerdict; // lanes: false for Auto-align
 verdictLine(v): string | null; // the tile line; null for 'ok'
 verdictNotice(name, v): string | null; // the palette's notice; null for 'ok'
@@ -194,8 +194,8 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 
 | Spec rule                                                                                                   | Test                                                                                         |
 | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Button left of Layers, only when offered                                                                    | `LayersThemeStrip.test.tsx`                                                                  |
-| Editor-only, not in Zen                                                                                     | `tidy-up-actions.test.ts` (`tidyUpOffered`)                                                  |
+| Button left of the Theme brush, only when offered                                                           | `ThemeStrip.test.tsx`                                                                        |
+| Editor-only                                                                                                 | `tidy-up-actions.test.ts` (`tidyUpOffered`)                                                  |
 | Five tiles in order + Auto-align row                                                                        | `TidyUpPopover.test.tsx`                                                                     |
 | Press ends preview, runs, closes, in order                                                                  | `TidyUpPopover.test.tsx`                                                                     |
 | Mouse hover previews, touch does not                                                                        | `TidyUpPopover.test.tsx`                                                                     |

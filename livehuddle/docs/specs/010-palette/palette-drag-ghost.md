@@ -53,3 +53,32 @@ The ghost follows the cursor, offset by whatever the drag's **snap channel**
 and the drop all read, so the three can't disagree. The **alignment /
 distribution snap** publishes into it, latching the footprint onto its
 neighbours' edges and even spacing.
+
+## Placed pieces preview themselves
+
+Most of a Space's pieces are **placed, not sized**: a chair, a desk, a bar stool, a plant, an Avatar Pad, a
+Portal, a Door. They have a size of their own, so drawing a box for them asks a question nobody needs to answer.
+For these (`isPlacedShape` in `@livehuddle/document`: every fixed-size kind, the seating, every grid-drawn office piece but the Rug, the
+Avatar Pad, the Portal, the Door and the Focus Button), adding one previews **the piece itself**:
+
+- **While its tile is armed** (tapped, waiting for a click on the canvas) **or dragged from the palette**, the real
+  piece, drawn by the same art the canvas draws it with (`PieceArt`), follows the pointer over the canvas at its
+  default size and the current zoom, translucent, centred on the pointer, exactly where a click or a drop puts it.
+  A drag applies the drag's alignment snap, as the ghost does. A kind the art layer does not draw (a Portal, a mode
+  button) shows the dashed footprint and glyph instead.
+- **No box to draw.** A press-and-drag with a placed tile armed places the piece at its own size, centred where
+  the press began, and the draw-to-size outline never shows. A tap places it centred on the tap, as before. The
+  selection's size is not inherited (a placed piece has one size).
+- Over a panel or the strip, or off the canvas, the preview hides. It is `pointer-events-none`, listens to the
+  pointer only while a placed piece is being added, and moves at most once a frame.
+- The Door keeps its wall snap: its preview sits on the wall it would land on
+  ([Room Builder and Door](../009-elements/room-builder.md) "Door").
+- **Placed pieces are not resized.** Once on the canvas a placed piece shows no resize handles (rotation and moving
+  stay), keeps its size through a multi-selection's resize, and its element menu offers no size controls
+  (`isFixedSizeElement`). One resized before this rule keeps the size it was given.
+- Sized pieces (a Room, a Stage, Grass, a Garden Path, a Rug, a Lane, text, stickies) keep the draw-to-size box.
+
+Implementation: `isPlacedShape` and `isFixedSizeElement` in `packages/document/src/placed-kinds.ts`;
+`components/canvas/collab/PlacementPreview.tsx` (generalised from the Door's preview),
+`components/canvas/PieceArt.tsx` (the piece art, shared with `BoxedElementView`); `PaletteDragGhost` stands aside
+for placed kinds; `buildDrawnBoxed` places them as a tap.

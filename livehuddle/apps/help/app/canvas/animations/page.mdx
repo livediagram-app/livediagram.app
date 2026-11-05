@@ -6,25 +6,25 @@ import { SpaceAnimation } from '@/components/illustrations/animations';
 export const metadata = helpMetadata({
   title: 'Animating Elements',
   description:
-    'Animate sticky notes, text, frames, link cards, pictures and icons in a Space: a note that flutters, words that type themselves in, a photo that pans.',
+    'Animate sticky notes, text, link cards, pictures and icons in a Space: a note that flutters, words that type themselves in, a photo that pans.',
   path: '/help/canvas/animations/',
 });
 
-<ArticleLayout title="Animating Elements" description="Each kind of element has animations made for it: words that type themselves in, frames that pulse, notes that flutter, photos that pan, and icons that spin." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("animations")}>
+<ArticleLayout title="Animating Elements" description="Each kind of element has animations made for it: words that type themselves in, cards that pulse, notes that flutter, photos that pan, and icons that spin." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("animations")}>
 
 An animation can signal status, reveal content, or draw the room's eye while you meet. Each kind of element animates in ways that suit what it is, so the right-click menu's **Animation** row offers only the animations that fit what you've selected, grouped by kind: **Shape**, **Text**, **Sticky**, **Media** and **Icon**.
 
-A labelled element shows two sections under **Animation**, **Shape** for the box and **Text** for its words, so a frame can pulse while its label types itself in. Select several different kinds of element together and you get one section per kind, each applying only to the elements it fits. When only one kind applies, such as a single text element, its animations show directly under **Animation**.
+A labelled element shows two sections under **Animation**, **Shape** for the box and **Text** for its words, so a link card can pulse while its label types itself in. Select several different kinds of element together and you get one section per kind, each applying only to the elements it fits. When only one kind applies, such as a single text element, its animations show directly under **Animation**.
 
 Every option shows a tiny live preview of the real animation, paused on a telling moment; hover a tile and it plays. On a desktop you can also **hover a tile to preview the motion live on your selection**: it plays right on the element so you can compare options, and a click locks it in (move off the tiles and it reverts). **None** takes an animation off again.
 
-<Figure caption="A sticky note fluttering beside a frame with a pulse, the kind of motion that draws the room's eye to one spot.">
+<Figure caption="A sticky note fluttering beside a link card with a pulse, the kind of motion that draws the room's eye to one spot.">
   <SpaceAnimation />
 </Figure>
 
 ## Shape
 
-For frames, link cards, and the boxed pieces of a Space such as desks and sofas:
+For link cards and the boxed pieces of a Space such as desks and sofas:
 
 - **Pulse** sends a ring the shape of the outline out from the element.
 - **Blink** gently breathes its opacity, the classic "status light" when paired with a small coloured circle.
@@ -37,7 +37,7 @@ For frames, link cards, and the boxed pieces of a Space such as desks and sofas:
 - **Shake** jitters it side to side, and **Jelly** squashes and stretches it.
 - **Float** drifts it in a slow loop, and **Swing** rocks it like a pendulum from its top edge.
 
-Every effect follows the element's real outline, and the attention animations pause between beats so they read as deliberate rather than frantic. How far an element travels scales with its size, so a tiny status light and a large frame both look right.
+Every effect follows the element's real outline, and the attention animations pause between beats so they read as deliberate rather than frantic. How far an element travels scales with its size, so a tiny status light and a large room both look right.
 
 ### Moving Any Element
 
@@ -47,7 +47,7 @@ On a sticky note or a picture, the element plays one body animation at a time: p
 
 ## Text
 
-For the words of a text element, and for the label of a frame or a sticky note:
+For the words of a text element, and for the label of a link card or a sticky note:
 
 - **Typewriter** types the words in letter by letter behind a blinking caret.
 - **Words** brings each word in, rising into place.
@@ -104,7 +104,7 @@ Below Speed sits a **Repeat** switch, on by default. Leave it on and the animati
 
 <Tip>
   Select several elements first and each section applies to every element it fits at once, so you
-  can set a whole row of notes fluttering in a single action. With notes and a frame selected
+  can set a whole row of notes fluttering in a single action. With notes and a link card selected
   together, **Animation** shows **Shape**, **Text** and **Sticky** side by side.
 </Tip>
 

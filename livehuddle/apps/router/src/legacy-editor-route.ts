@@ -31,6 +31,10 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // Auto Layout, which arranges shapes by their arrows, lands on Layout Cleanup (Work Tracker #494). Shape Libraries and
 // the draw.io, Microsoft Whiteboard and Markdown imports left livehuddle (Work Tracker #423 part 4): Shape Libraries
 // lands on the Explorer Page, and the three imports on Importing a Tab, which names the imports that stay.
+// The Laser, the Spotlight, Isometric mode, Zen mode and the Reaction Pads left livehuddle (owner, 2026-11-05): the
+// three modes and the pads land on Avatar Mode, where walking, pointing and the Reactions live, and Zen on Panel Layout.
+// The Quick Style panel left livehuddle too (owner, 2026-11-05): its article lands on Colours, Borders and Opacity, the
+// element menu's styling that stays.
 // The Self-Hosting category was retired; its pages land on the help centre home (an empty target). The old addresses are
 // links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
@@ -98,6 +102,13 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/workshop-mode': 'collaboration/session-tools',
   'canvas/workshop-mode/workshop-tour': 'selection-modes/avatar-mode/avatar-tour',
   'collaboration/session-tools/polls': 'collaboration/session-tools',
+  // The dot vote left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md, "The Vote").
+  'collaboration/session-tools/voting': 'collaboration/session-tools',
+  'collaboration/session-tools/voting/casting-dots': 'collaboration/session-tools',
+  'collaboration/session-tools/voting/vote-panel': 'collaboration/session-tools',
+  'collaboration/session-tools/voting/vote-privacy': 'collaboration/session-tools',
+  'collaboration/session-tools/voting/vote-results': 'collaboration/session-tools',
+  'collaboration/session-tools/voting/vote-layers': 'collaboration/session-tools',
   'palette/behaviour/done-checks': 'palette/behaviour',
   'palette/behaviour/pickers': 'palette/behaviour',
   'palette/behaviour/reveal-zones': 'palette/behaviour',
@@ -119,20 +130,20 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'palette/arrows/avoiding-elements': 'palette/tools',
   'palette/arrows/curve-and-elbow-handles': 'palette/tools',
   'palette/auto-attach-arrows': 'palette/tools',
-  'palette/badges-and-step-numbers': 'palette/build/frames',
-  'palette/boundaries': 'palette/build/frames',
-  'palette/cards-and-callouts': 'palette/build/frames',
+  'palette/badges-and-step-numbers': 'palette/virtual-office',
+  'palette/boundaries': 'palette/virtual-office',
+  'palette/cards-and-callouts': 'palette/virtual-office',
   'palette/components': 'palette/tools',
-  'palette/diagram-keys': 'palette/build/frames',
+  'palette/diagram-keys': 'palette/virtual-office',
   'palette/embed-elements': 'palette/tools/images',
   'palette/embed-elements/website': 'palette/tools/images',
-  'palette/lanes': 'palette/build/frames',
+  'palette/lanes': 'palette/virtual-office',
   'palette/pointer-notes': 'palette/write',
   'palette/shapes': 'canvas/the-canvas/adding-elements',
   'palette/shapes/shape-markers': 'canvas/the-canvas/adding-elements',
   'palette/shapes/style-presets': 'canvas/the-canvas/adding-elements',
-  'palette/stacks': 'palette/build/frames',
-  'palette/timeline-rail': 'palette/build/frames',
+  'palette/stacks': 'palette/virtual-office',
+  'palette/timeline-rail': 'palette/virtual-office',
   'palette/tools/checklists': 'palette/write',
   'palette/tools/code-blocks': 'palette/write',
   'palette/tools/data-elements': 'palette/tools',
@@ -152,6 +163,15 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'explorer/drawio-import': 'tabs/import-tabs',
   'explorer/microsoft-whiteboard-import': 'tabs/import-tabs',
   'tools/markdown-import': 'tabs/import-tabs',
+  'selection-modes/laser': 'selection-modes/avatar-mode',
+  'selection-modes/spotlight': 'selection-modes/avatar-mode',
+  'selection-modes/isometric-mode': 'selection-modes/avatar-mode',
+  'palette/behaviour/reaction-pads': 'selection-modes/avatar-mode',
+  'palette/build': 'palette/virtual-office',
+  'palette/build/frames': 'palette/virtual-office',
+  'tools/zen-mode': 'user-interface/panel-layout',
+  'canvas/quick-style-panel': 'canvas/colours-borders-opacity',
+  'palette/quick-add-on-hover': 'user-interface/settings',
   'self-hosting': '',
   'self-hosting/self-hosting-overview': '',
   'self-hosting/deploying-livehuddle': '',

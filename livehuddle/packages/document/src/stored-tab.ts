@@ -9,6 +9,8 @@ import { migrateRetiredTheme } from './retired-themes';
 import { dropCustomTheme } from './retired-custom-themes';
 import { dropRetiredPages } from './retired-pages';
 import { dropRetiredPlan } from './retired-plan';
+import { dropRetiredLayers } from './retired-layers';
+import { dropRetiredVote } from './retired-vote';
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
@@ -22,7 +24,11 @@ export function migrateStoredTab<
 >(tab: T): T {
   // A former Pages tab (./retired-pages) opens as an ordinary meeting board, its pages, articles and page-only elements
   // dropped, and a former Plan tab (./retired-plan) the same way, its dashboard, form and Plan-only elements dropped.
-  return upgradeStoredTab(dropRetiredPlan(dropRetiredPages(tab)));
+  // A tab saved with layers (./retired-layers) loses them, so every element is visible and free to pick, and one
+  // saved with a dot vote (./retired-vote) loses that.
+  return upgradeStoredTab(
+    dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab)))),
+  );
 }
 
 /**
@@ -42,7 +48,7 @@ function upgradeStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
-  // Its own fields that renderers read raw (layers, the background colours) are settled before anything reads them.
+  // Its own fields that renderers read raw (the background colours) are settled before anything reads them.
   // A tab on a custom theme, which are gone (./retired-custom-themes), opens on Default.
   const schemed = dropCustomTheme(
     migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),

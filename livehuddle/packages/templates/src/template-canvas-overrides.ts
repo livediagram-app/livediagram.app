@@ -2,7 +2,6 @@
 // own module, apart from the template catalogue in templates.ts, which the editor reads (a template's title) on every
 // load.
 import type { BackgroundPattern, Tab } from '@livehuddle/document';
-import { templateLayers } from './template-layers';
 import { templateEditorMode } from './template-modes';
 import type { TemplateKind } from './templates';
 
@@ -15,6 +14,12 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'coworking-space': 'grid',
   'team-pod': 'grid',
   'all-hands-hall': 'grid',
+  'focus-library': 'grid',
+  'training-room': 'grid',
+  'rooftop-bar': 'grid',
+  cafe: 'grid',
+  'garden-retreat': 'grid',
+  'city-park': 'grid',
 };
 
 // How far each loud backdrop pattern steps back behind a template's content
@@ -32,10 +37,7 @@ const TEMPLATE_PATTERN_OPACITY: Partial<Record<BackgroundPattern, number>> = {
 
 // Tab-level overrides a specific template ships with, applied on top
 // of whatever theme is selected. Each template carries its preferred
-// backdrop pattern (see TEMPLATE_PATTERNS). Layered templates (docs/specs/006-document/layers.md)
-// also carry their `Tab.layers` here, matching the `layerId`s their
-// builder pre-stamps, so every application path lands scaffold and
-// layers in one commit.
+// backdrop pattern (see TEMPLATE_PATTERNS).
 export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   const overrides: Partial<Tab> = {};
   const pattern = TEMPLATE_PATTERNS[kind];
@@ -45,8 +47,6 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY).
   const quiet = pattern ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
   if (quiet !== undefined && quiet < 1) overrides.backgroundOpacity = quiet;
-  const layers = templateLayers(kind);
-  if (layers) overrides.layers = layers;
   // A template's mode (docs/specs/007-editor/templates-by-mode.md): every template opens on a meeting board.
   overrides.opensIn = templateEditorMode(kind);
   return overrides;

@@ -286,7 +286,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabs: {
           type: 'array',
           description:
-            'The tabs to seed. A tab may give `graph`, `mermaid` or `template` in place of `elements`, compiled ' +
+            'The tabs to seed. A tab may give `graph` or `template` in place of `elements`, compiled ' +
             'by the edit-operations engine; a tab it refuses refuses the create (422, with `tabId`).',
           items: {
             anyOf: [
@@ -298,7 +298,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
                   name: { type: 'string' },
                   theme: { type: 'string' },
                   graph: { type: 'object' },
-                  mermaid: { type: 'string' },
                   template: { type: 'string' },
                 },
                 required: ['id'],
@@ -702,13 +701,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/share',
     segment: 'documents',
     tag: 'Sharing',
-    summary: 'Create a share link (edit or view role, optional expiry).',
+    summary:
+      'Create a share link (edit or participate role, optional expiry). livehuddle offers no new Viewer link: role view is 400 level_not_offered.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
       type: 'object',
       properties: {
-        role: ref('ShareRole'),
+        role: { type: 'string', enum: ['participate', 'edit'] },
         expiry: ref('ShareLinkExpiry'),
         tabId: { type: ['string', 'null'] },
       },

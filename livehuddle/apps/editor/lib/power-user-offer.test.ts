@@ -15,7 +15,7 @@ import {
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md): due after 20
 // editing sessions on separate days, or 50 keyboard shortcuts.
 
-const ELIGIBLE_CTX = { editable: true, embed: false, zen: false };
+const ELIGIBLE_CTX = { editable: true, embed: false };
 
 describe('thresholds', () => {
   it('are the operator-chosen 20 days and 50 shortcuts', () => {
@@ -80,10 +80,9 @@ describe('offerEligible', () => {
     expect(offerEligible({ notificationsEnabled: false }, ELIGIBLE_CTX)).toBe(false);
   });
 
-  it('stays away from view-only, embedded and Zen sessions', () => {
+  it('stays away from view-only, and embedded sessions', () => {
     expect(offerEligible({}, { ...ELIGIBLE_CTX, editable: false })).toBe(false);
     expect(offerEligible({}, { ...ELIGIBLE_CTX, embed: true })).toBe(false);
-    expect(offerEligible({}, { ...ELIGIBLE_CTX, zen: true })).toBe(false);
   });
 });
 

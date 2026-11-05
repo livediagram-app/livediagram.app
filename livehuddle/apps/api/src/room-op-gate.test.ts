@@ -99,14 +99,10 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ ...camera, video: at('screen') }, as('edit'))).toEqual(DROP);
   });
 
-  it("routes a participant's element op through the content rule, and relays its own answers", () => {
+  it("routes a participant's element op through the content rule", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',
     });
-    expect(gateClientOp({ kind: 'vote', voter: 'me' }, as('participate'))).toEqual(
-      relay(false, true),
-    );
-    expect(gateClientOp({ kind: 'vote', voter: 'you' }, as('participate'))).toEqual(DROP);
     expect(
       gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't', elements: [] } }, as('participate')),
     ).toEqual(DROP);
@@ -174,9 +170,16 @@ describe('gateClientOp', () => {
     ).toEqual(relay(false));
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot is dropped from every level.
+  it('drops the retired vote op from every level', () => {
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      expect(gateClientOp({ kind: 'vote', tabId: 't', voter: 'me' }, as(level))).toEqual(DROP);
+    }
+  });
+
   it('decides a tab op in well under a microsecond (it runs on every op)', () => {
     const op = { kind: 'tab', tabId: 't1', tab: { id: 't1', elements: [] } };
-    const meta = { kind: 'tab-meta', tabId: 't1', patch: { timer: null, vote: null } };
+    const meta = { kind: 'tab-meta', tabId: 't1', patch: { timer: null } };
     const sender = as('edit', { tabScope: 't1' });
     const n = 200_000;
     const start = performance.now();
@@ -204,5 +207,23 @@ describe('gateClientOp', () => {
     expect(gateClientOp(op, as('participate'))).toEqual(DROP);
     expect(gateClientOp(op, as('view'))).toEqual(DROP);
     expect(gateClientOp({ ...op, targetId: '' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/012-collaboration/knock.md "Share roles": a knock and its answer are presence from every level.
+  it('relays a knock and its answer from every level, and only well formed', () => {
+    const knock = { kind: 'avatar-knock', tabId: 't', roomId: 'room-1' };
+    const answer = {
+      kind: 'avatar-knock-answer',
+      tabId: 't',
+      targetId: 'p2',
+      roomId: 'room-1',
+      answer: 'in',
+    };
+    for (const role of ['edit', 'participate', 'view']) {
+      expect(gateClientOp(knock, as(role))).toEqual(relay(true));
+      expect(gateClientOp(answer, as(role))).toEqual(relay(true));
+    }
+    expect(gateClientOp({ ...knock, roomId: '' }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...answer, answer: 'maybe' }, as('view'))).toEqual(DROP);
   });
 });

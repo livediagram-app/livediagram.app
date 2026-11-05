@@ -49,7 +49,6 @@ function show(el: Element, takePart: boolean) {
             tabLocked: false,
             readOnly: true,
           }}
-          quickRingOpen={false}
         />
       </ViewportStoreProvider>
     </SelectionStoreProvider>,

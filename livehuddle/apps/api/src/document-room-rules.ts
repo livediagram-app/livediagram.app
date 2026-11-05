@@ -144,15 +144,14 @@ export function admitFrame(
   return { admit: true, rate: { count: rate.count + 1, windowStart: rate.windowStart } };
 }
 
-// A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a dot names its voter
-// and a comment reaction its reactor, and each must be the key its own hello published. The key is still the one
+// A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a comment reaction
+// names its reactor, and it must be the key its own hello published. The key is still the one
 // the session claimed at hello (server-derived keys are Later), so
-// this stops a Participant voting in someone else's name in the same room, not one that claimed another's key from
+// this stops a Participant reacting in someone else's name in the same room, not one that claimed another's key from
 // the start.
 export function answersAsSelf(op: unknown, key: string | undefined): boolean {
   if (typeof op !== 'object' || op === null) return false;
-  const o = op as { kind?: unknown; voter?: unknown; delta?: unknown };
-  if (o.kind === 'vote') return key !== undefined && o.voter === key;
+  const o = op as { kind?: unknown; delta?: unknown };
   if (o.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;
   const d = o.delta as { kind?: unknown; by?: unknown };
   // A reaction names its reactor (docs/specs/012-collaboration/comment-reactions.md).

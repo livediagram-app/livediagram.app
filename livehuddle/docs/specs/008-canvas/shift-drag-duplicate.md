@@ -19,7 +19,7 @@ platforms.
   position (keeping their ids, so every arrow pinned to them stays
   attached to the stationary set), and a fresh CLONE set takes over the
   cursor, rendered as a translucent ghost (0.45 opacity, multiplied over
-  any per-layer opacity). The selection follows the cursor set. Releasing
+  any element opacity). The selection follows the cursor set. Releasing
   Shift mid-drag dissolves the clones and hands the cursor back to the
   originals (a plain move); re-pressing re-materialises. The final
   keep/dissolve decision is made at pointer-up (Shift held + a real
@@ -41,7 +41,7 @@ platforms.
   within the 4 px engage threshold) applies the toggle. So shift-click
   still curates the selection, and shift-drag duplicates it.
 - **What clones**: exactly the dragged set, the selection's members plus
-  any follower arrows the move carried (a frame section's connectors),
+  any follower arrows the move carried (a lane's connectors),
   via the same `duplicateElements` machinery as the toolbar's
   Duplicate: fresh ids, internal references remapped, internal connectors ride along,
   external pins stay pinned to the untouched outside elements.
@@ -74,7 +74,7 @@ clones once (plus copies of boundary arrows, re-pinned via the returned
 the clone ids (same start bounds, so the dx/dy math continues
 seamlessly); `dupSwapRef` holds the way back. The clone ids are exposed
 as `shiftDupGhostIds`, which `CanvasElementsLayer` renders at reduced
-opacity (multiplied over the layer-band opacity, for boxed elements and
+opacity (multiplied over the element's own opacity, for boxed elements and
 arrows alike). Shift release mid-drag (or a no-move release) filters the
 clones out, translates the originals to the cursor, and restores the
 selection; a shift-drop just clears the swap bookkeeping. Everything

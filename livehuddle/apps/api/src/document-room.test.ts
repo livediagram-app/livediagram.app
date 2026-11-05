@@ -1155,8 +1155,8 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
 
   it('tells the sender the seq its own op took, and a joiner where the stream stands', () => {
     // The relay skips the sender, so without this a client only learned seqs
-    // from other people's ops and a reconnect replayed its own `vote` deltas
-    // back at it, counting each dot twice.
+    // from other people's ops and a reconnect replayed its own delta ops
+    // back at it, counting each one twice.
     const { room } = newRoom();
     const { editor, peer } = editorAndPeer(room);
     sendFrame(room, editor, {

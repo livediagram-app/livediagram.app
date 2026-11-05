@@ -61,10 +61,6 @@ export type ShapeKind =
   // character into it — takes you to the portal it is paired with, in
   // `portalTarget`.
   | 'portal'
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): press it, or walk an Avatar-mode character onto
-  // it, and a burst of reaction plays over the pad. Which reaction lives in
-  // the element's `reaction` field.
-  | 'reaction-pad'
   // Chair (docs/specs/009-elements/chair.md): furniture an Avatar-mode character sits down in when it
   // walks into one. Which way the seat points lives in `chairFacing`.
   | 'chair'
@@ -90,6 +86,41 @@ export type ShapeKind =
   | 'coffee-machine'
   | 'rug'
   | 'stage'
+  // The Office Pod, the bar and the garden (docs/specs/009-elements/office.md "Office Pod" to "Garden Fence").
+  | 'office-pod'
+  | 'bar'
+  | 'bar-stool'
+  | 'drinks-cabinet'
+  | 'drinks-fridge'
+  | 'outdoor-plant'
+  | 'tree'
+  | 'garden-path'
+  | 'grass'
+  | 'garden-fence'
+  // The social pieces (docs/specs/009-elements/social-pieces.md).
+  | 'notice-board'
+  | 'world-clock'
+  | 'jukebox'
+  | 'ping-pong-table'
+  | 'arcade-machine'
+  | 'fireplace'
+  | 'campfire'
+  | 'bench'
+  | 'picnic-table'
+  | 'hammock'
+  | 'garden-umbrella'
+  | 'fountain'
+  | 'pond'
+  // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
+  | 'door'
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in
+  // each, and a lift between the space's tabs (its floors).
+  | 'directory'
+  | 'elevator'
+  // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a wall screen showing a share from someone in
+  // its room, and a sign by a room's door saying whether it is free.
+  | 'screen'
+  | 'room-sign'
   | 'stadium'
   | 'actor'
   // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the
@@ -101,9 +132,6 @@ export type ShapeKind =
   | 'star'
   // Speech bubble / callout: a rounded body with a tail at the bottom-left.
   | 'speech-bubble'
-  // Frame / section: a transparent outlined container with its label in the
-  // top-left, drawn around a cluster of elements. See docs/specs/008-canvas/canvas-and-palette.md.
-  | 'frame'
   // Progress elements (docs/specs/009-elements/progress.md): a horizontal bar + a donut ring that show a
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).
   | 'progress-bar'

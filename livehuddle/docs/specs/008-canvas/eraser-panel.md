@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Eraser** tool ([Canvas and palette](canvas-and-palette.md)) is active, an **Eraser** panel is present: how it erases, how big it is, and what it is allowed to remove. The fourth mode panel, after [Avatar](avatar-mode.md), [Laser](laser-panel.md), and [Spotlight](spotlight-panel.md).
+While the **Eraser** tool ([Canvas and palette](canvas-and-palette.md)) is active, an **Eraser** panel is present: how it erases, how big it is, and what it is allowed to remove. The second mode panel, after [Avatar](avatar-mode.md).
 
 ## Why
 
@@ -28,7 +28,7 @@ While the tool is active with a size above Point, a ring follows the cursor at t
 
 ## What it does not change
 
-- **Locked elements, and everything on a locked or hidden layer, are still skipped** ([Canvas and palette](canvas-and-palette.md) Locking, [Layers](../006-document/layers.md)). No setting here can erase them; that is what locking is for.
+- **Locked elements are still skipped** ([Canvas and palette](canvas-and-palette.md) Locking). No setting here can erase them; that is what locking is for.
 - **One gesture is still one undo**, however much it removes: the existing checkpoint-then-tick pattern is untouched.
 - Arrows pinned to an erased element still go with it, as they always have.
 

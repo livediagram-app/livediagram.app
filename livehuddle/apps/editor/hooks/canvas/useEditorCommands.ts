@@ -6,7 +6,7 @@
 //
 // Each handler delegates to the SAME editor action the context menu / toolbar
 // / header uses (so behaviour + telemetry can't drift); view-only sessions
-// get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
+// get the view-safe subset only (fit / export, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
@@ -16,7 +16,6 @@ import { isBoxed, renumberSteps, supportsRotation } from '@livehuddle/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   buildEditorCommands,
   type CommandContext,
@@ -51,7 +50,6 @@ const INERT_HANDLERS: CommandHandlers = {
   openCollaborators: noop,
   undo: noop,
   redo: noop,
-  toggleZen: noop,
   fitToScreen: noop,
   autoAlign: noop,
   openExport: noop,
@@ -105,8 +103,6 @@ export function useEditorCommands(open: boolean): {
     redo,
     canUndo,
     canRedo,
-    zenMode,
-    toggleZenMode,
     fitToScreen,
     autoAlignTab,
     setExportOpen,
@@ -122,9 +118,6 @@ export function useEditorCommands(open: boolean): {
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
   const isOffline = useIsOfflineDocument(documentId);
-  // Spotlight is desktop-only, so the tool commands need the same viewport
-  // answer the palette's tool dropdown uses.
-  const isMobile = useIsMobileViewport();
 
   const isMulti = multiSelectedIds.size > 0;
   const selectionCount = isMulti ? multiSelectedIds.size : selectedId ? 1 : 0;
@@ -153,7 +146,6 @@ export function useEditorCommands(open: boolean): {
       isReadOnly,
       canUndo,
       canRedo,
-      zenMode,
       selectionCount,
       singleIsBoxed,
       singleRotates,
@@ -169,7 +161,6 @@ export function useEditorCommands(open: boolean): {
       // content-dependent tools, so search can never offer a tool the palette
       // has greyed out.
       canvasEmpty,
-      isMobile,
       whiteboard,
       tabLocked,
     }),
@@ -177,7 +168,6 @@ export function useEditorCommands(open: boolean): {
       isReadOnly,
       canUndo,
       canRedo,
-      zenMode,
       selectionCount,
       singleIsBoxed,
       singleRotates,
@@ -190,7 +180,6 @@ export function useEditorCommands(open: boolean): {
       workbenchMode,
       canvasTool,
       canvasEmpty,
-      isMobile,
       whiteboard,
       tabLocked,
     ],
@@ -246,12 +235,11 @@ export function useEditorCommands(open: boolean): {
     // which is what the presence-stack entry point passes. The opener tracks
     // its own UI·Opened·Collaborators, so this adds none.
     openCollaborators: () => ctx.openCollaborators(null),
-    // The remaining handlers track internally (undo/redo, zen, fit,
+    // The remaining handlers track internally (undo/redo, fit,
     // auto-align) or have untracked entry points everywhere
     // (export / import / templates), so no extra telemetry here.
     undo,
     redo,
-    toggleZen: toggleZenMode,
     fitToScreen,
     autoAlign: autoAlignTab,
     openExport: () => {

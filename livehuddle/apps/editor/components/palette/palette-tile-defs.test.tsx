@@ -60,7 +60,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 7,
+  build: 6,
   write: 4,
   draw: 6,
   icons: 0,
@@ -68,15 +68,20 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   media: 8,
   components: 11,
   data: 7,
-  // The meeting elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"): 28 tiles between them.
-  'collab-react': 5,
-  'collab-mode': 8,
-  'collab-navigate': 16,
+  // The meeting elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md
+  // "The Space categories"): 33 tiles between them.
+  // Travel holds the Avatar Selection Mode button too (docs/specs/009-elements/mode-button.md "Only Avatar").
+  'collab-travel': 7,
+  'collab-seating': 4,
+  'collab-rooms': 7,
+  'collab-amenities': 4,
+  'collab-bar': 4,
+  // Recreation and the outdoor pieces (docs/specs/009-elements/social-pieces.md).
+  'collab-recreation': 4,
+  'collab-garden': 12,
+  'collab-meeting': 4,
   // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).
   layout: 0,
-  // The meeting palette's Frame, filled by the layout with the frame alone (docs/specs/012-collaboration/workshop-mode.md).
-  frame: 0,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
   participate: 0,
 };
@@ -138,11 +143,13 @@ describe('the Collaborate categories', () => {
     );
   });
 
-  it('are each a catalogue category with tiles in it', () => {
+  // A Space category may wait for its first piece (Bar, Garden): the layout leaves it off until then.
+  it('are each a catalogue category, with tiles in every one but a Space category waiting for its pieces', () => {
     const catalogue = new Set(PALETTE_CATEGORIES.map((c) => c.id));
+    const waiting = new Set<string>([]);
     for (const id of ids) {
       expect(catalogue.has(id), id).toBe(true);
-      expect(tilesForCategory(id).length, id).toBeGreaterThan(0);
+      if (!waiting.has(id)) expect(tilesForCategory(id).length, id).toBeGreaterThan(0);
     }
   });
 });

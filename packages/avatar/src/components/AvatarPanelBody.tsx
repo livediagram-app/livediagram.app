@@ -16,6 +16,7 @@
 // what you're wearing. A cropped portrait sits on top, drawn by the SAME sprite
 // the canvas uses, so what you build here is exactly what walks around.
 
+import { avatarBindings } from '../bindings';
 import {
   AVATAR_STATUSES,
   avatarStatusColour,
@@ -197,7 +198,11 @@ export function AvatarPanelBody({
               one click, for when you'd rather not walk the four rows. */}
               <HoverCard
                 title="Randomise"
-                description="Roll a new character. Your size choice is kept."
+                description={
+                  avatarBindings.sizes
+                    ? 'Roll a new character. Your size choice is kept.'
+                    : 'Roll a new character.'
+                }
               >
                 <button
                   type="button"
@@ -234,14 +239,17 @@ export function AvatarPanelBody({
                 onToggle={() => toggle('hair')}
                 onPick={(id) => onChange('hair', id)}
               />
-              <ToolOptionRow
-                label="Size"
-                options={AVATAR_SIZES}
-                value={config.size}
-                open={openRow === 'size'}
-                onToggle={() => toggle('size')}
-                onPick={(id) => onChange('size', id)}
-              />
+              {/* A product can leave the Size choice out (AvatarBindings.sizes). */}
+              {avatarBindings.sizes ? (
+                <ToolOptionRow
+                  label="Size"
+                  options={AVATAR_SIZES}
+                  value={config.size}
+                  open={openRow === 'size'}
+                  onToggle={() => toggle('size')}
+                  onPick={(id) => onChange('size', id)}
+                />
+              ) : null}
               {onSetStatus ? (
                 <ToolOptionRow
                   label="Status"

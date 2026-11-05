@@ -9,26 +9,32 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// A person's frame drag carries what an agent's `move` carries (docs/specs/008-canvas/canvas-and-palette.md,
+// A person's container drag carries what an agent's `move` carries (docs/specs/009-elements/boundary.md "A container",
 // docs/specs/024-agents/edit-operations.md "Membership"): the centre rule of `containerContents`, driven
 // through the real drag machine.
 
-const shape = (kind: 'frame' | 'square', id: string, x: number, y: number, w: number, h: number) =>
-  ({ ...createShape(kind, x, y), id, width: w, height: h }) as Element;
+const shape = (
+  kind: 'boundary' | 'square',
+  id: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) => ({ ...createShape(kind, x, y), id, width: w, height: h }) as Element;
 
-// The frame spans 100..300 on both axes.
+// The boundary spans 100..300 on both axes.
 const BOARD = (): Element[] => [
-  shape('frame', 'frame', 100, 100, 200, 200),
+  shape('boundary', 'frame', 100, 100, 200, 200),
   shape('square', 'inside', 130, 130, 40, 40),
   // Centre (290, 150) inside; its right half outside: travels.
   shape('square', 'straddling', 270, 130, 40, 40),
   // Centre (320, 150) outside; its left edge inside: stays.
   shape('square', 'mostly-out', 300, 130, 40, 40),
-  // A smaller frame nested inside, with its own member: both travel.
-  shape('frame', 'nested', 140, 200, 120, 80),
+  // A smaller boundary nested inside, with its own member: both travel.
+  shape('boundary', 'nested', 140, 200, 120, 80),
   shape('square', 'nested-member', 160, 220, 30, 30),
-  // A larger frame that only overlaps: stays.
-  shape('frame', 'neighbour', 250, 250, 300, 300),
+  // A larger boundary that only overlaps: stays.
+  shape('boundary', 'neighbour', 250, 250, 300, 300),
   { ...createArrow(120, 120, 200, 140), id: 'loose' },
 ];
 
@@ -122,7 +128,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('useEditorDrag — a frame carries by the centre rule', () => {
+describe('useEditorDrag — a container carries by the centre rule', () => {
   it('carries what an agent move carries, and leaves the rest', () => {
     const before = BOARD();
     const h = harness(before);

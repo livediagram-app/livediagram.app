@@ -4,7 +4,8 @@ import { gateClientOp } from './room-op-gate';
 import { claimBaton, FREE_BATON, grantBaton } from './facilitator';
 
 // docs/specs/013-workspace/share-roles.md "Feature by feature (v1)", as the room enforces it: one block per row of the
-// table, one case per level. What the room does with an op is one of:
+// table, one case per level. livehuddle makes no new Viewer link, so the Viewer cases are a legacy Viewer link's
+// ("Legacy Viewer links"), which keeps every gate it had. What the room does with an op is one of:
 //   relayed  the op reaches the room's peers as sent (presence, an Editor's change, a Participant's own answer)
 //   written  a Participant's element op the participant content rule applied to the stored tab
 //   held     a Participant's element op the rule took with nothing of it landing (no permitted field changed)
@@ -212,26 +213,26 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     'Start, end, reveal or configure a session tool',
     {
       'start the timer': { kind: 'tab-meta', tabId: 't', patch: { timer: { running: true } } },
-      'open a vote': { kind: 'tab-meta', tabId: 't', patch: { vote: { active: true } } },
       'tick the done check': delta({ kind: 'check', index: 0, text: 'a', done: true }),
       'show a drag preview': { kind: 'drag-preview', tabId: 't', ids: ['col'] },
     },
     EDITOR_ONLY,
   );
 
-  // A Participant votes as itself only.
   row(
-    'Take part in a session tool (vote, react)',
+    'Take part in a session tool (react)',
     {
-      vote: { kind: 'vote', tabId: 't', elementId: 'col', voter: ME, delta: 1 },
       react: { kind: 'reaction', tabId: 't', id: 'r1', reaction: 'clap', x: 0, y: 0 },
     },
     TAKING_PART,
   );
 
-  it("Take part: a Participant's vote as somebody else is dropped", () => {
-    const asOther = { kind: 'vote', tabId: 't', elementId: 'col', voter: 'you', delta: 1 };
-    expect(roomDoes(asOther, 'participate')).toBe('dropped');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot reaches nobody, from any role.
+  it("drops an old client's dot from every level", () => {
+    const dot = { kind: 'vote', tabId: 't', elementId: 'col', voter: ME, delta: 1 };
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      expect(roomDoes(dot, level)).toBe('dropped');
+    }
   });
 
   describe('Hold the facilitator baton', () => {
@@ -280,6 +281,42 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     it('view: dropped', () => {
       for (const [label, op] of Object.entries(ops))
         expect(roomDoes(op, 'view'), label).toBe('dropped');
+    });
+  });
+
+  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): an Editor's update relays; a
+  // Participant pins and unpins its own through the rule, never another's; a Viewer's is dropped.
+  describe('Pin a note on a Notice Board, unpin your own', () => {
+    const note = (id: string, by: string) => ({ id, text: 'Lunch at 1', author: 'Sam', by, at: 1 });
+    const board = (notes: unknown[]) =>
+      shape('nb', 'notice-board', { label: '', noticeNotes: notes });
+    const NOTICE = {
+      id: 't',
+      name: 'Office',
+      elements: [board([note('t1', 'b'.repeat(32)), note('m1', ADDER)])],
+    } as unknown as Tab;
+    const pinned = (notes: unknown[]) => el({ kind: 'update', element: board(notes) });
+    const does = (op: unknown, level: Level) => {
+      const gate = gateClientOp(op, { role: level, tabScope: null, key: ME });
+      if (gate.kind !== 'participant-content') return gate.kind === 'drop' ? 'dropped' : 'relayed';
+      const r = applyParticipantOp(NOTICE, (op as { op: ElementOp }).op, ADDER);
+      if (r.result === 'refused') return 'refused';
+      const notes = (r.tab.elements[0] as { noticeNotes?: { id: string }[] }).noticeNotes ?? [];
+      return notes.map((n) => n.id).join(',');
+    };
+    const pin = pinned([note('t1', 'b'.repeat(32)), note('m1', ADDER), note('m2', ADDER)]);
+    const unpinOwn = pinned([note('t1', 'b'.repeat(32))]);
+    const unpinTheirs = pinned([note('m1', ADDER)]);
+    it('edit: relayed', () => {
+      for (const op of [pin, unpinOwn, unpinTheirs]) expect(does(op, 'edit')).toBe('relayed');
+    });
+    it("participate: pins and unpins its own, never another's", () => {
+      expect(does(pin, 'participate')).toBe('t1,m1,m2');
+      expect(does(unpinOwn, 'participate')).toBe('t1');
+      expect(does(unpinTheirs, 'participate')).toBe('t1,m1');
+    });
+    it('view: dropped', () => {
+      for (const op of [pin, unpinOwn, unpinTheirs]) expect(does(op, 'view')).toBe('dropped');
     });
   });
 

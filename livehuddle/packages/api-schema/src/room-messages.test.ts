@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { isParticipationOp, isPresenceOpKind, isRoomOpRef } from './room-messages';
+import {
+  isMutationOpKind,
+  isParticipationOp,
+  isPresenceOpKind,
+  isRetiredOpKind,
+  isRoomOpRef,
+} from './room-messages';
 
 // docs/specs/012-collaboration/realtime-conflict-resolution.md: the `ref` a client puts on an op frame,
 // which the room echoes on that op's cursor frame.
@@ -18,10 +24,7 @@ describe('isRoomOpRef', () => {
 
 // The room's participation class (docs/specs/013-workspace/share-roles.md "Integrity").
 describe('isParticipationOp', () => {
-  it('admits a dot and a comment reaction', () => {
-    expect(
-      isParticipationOp({ kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta: 1 }),
-    ).toBe(true);
+  it('admits a comment reaction', () => {
     expect(
       isParticipationOp({
         kind: 'el-delta',
@@ -39,6 +42,22 @@ describe('isParticipationOp', () => {
     }
     for (const op of [{ kind: 'el' }, { kind: 'tab' }, { kind: 'el-delta' }, null, 'vote', 3]) {
       expect(isParticipationOp(op)).toBe(false);
+    }
+    // The retired Vote's dot (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
+    expect(
+      isParticipationOp({ kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta: 1 }),
+    ).toBe(false);
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot is a retired kind, not a mutation.
+describe('retired op kinds', () => {
+  it('names the vote op, and nothing the room still takes', () => {
+    expect(isRetiredOpKind('vote')).toBe(true);
+    expect(isMutationOpKind('vote')).toBe(false);
+    expect(isPresenceOpKind('vote')).toBe(false);
+    for (const kind of ['tab', 'el', 'el-delta', 'cursor', null, 3]) {
+      expect(isRetiredOpKind(kind)).toBe(false);
     }
   });
 });

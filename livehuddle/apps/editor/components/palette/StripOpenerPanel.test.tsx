@@ -18,9 +18,9 @@ const actions = () =>
 const panel = (a: PaletteTileActions) =>
   render(
     <StripOpenerPanel
-      label="React"
-      description="Celebrate on the canvas."
-      tiles={tilesForCategory('collab-react')}
+      label="Travel"
+      description="How people get somewhere."
+      tiles={tilesForCategory('collab-travel')}
       actions={a}
       pendingDraw={null}
     />,
@@ -29,26 +29,26 @@ const panel = (a: PaletteTileActions) =>
 describe('StripOpenerPanel', () => {
   it('names the category and lists its tiles as cards', () => {
     panel(actions());
-    expect(screen.getByRole('heading', { name: 'React' })).toBeTruthy();
-    expect(screen.getAllByRole('button')).toHaveLength(tilesForCategory('collab-react').length);
+    expect(screen.getByRole('heading', { name: 'Travel' })).toBeTruthy();
+    expect(screen.getAllByRole('button')).toHaveLength(tilesForCategory('collab-travel').length);
   });
 
   it('places what a card stands for', () => {
     const a = actions();
     panel(a);
-    const tile = tilesForCategory('collab-react').find((t) => t.id === 'tools:reaction-sparkles')!;
+    const tile = tilesForCategory('collab-travel').find((t) => t.id === 'tools:mode-avatar')!;
     fireEvent.click(screen.getByRole('button', { name: tile.label }));
     expect(a.addShape).toHaveBeenCalledWith(
-      'reaction-pad',
-      expect.objectContaining({ reaction: 'sparkles' }),
+      'mode-button',
+      expect.objectContaining({ mode: 'avatar' }),
     );
   });
 
   it('clears the canvas preview when a drag ends, dropped or not', () => {
     panel(actions());
-    const tile = tilesForCategory('collab-react').find((t) => t.id === 'tools:reaction-sparkles')!;
+    const tile = tilesForCategory('collab-travel').find((t) => t.id === 'tools:mode-avatar')!;
     const card = screen.getByRole('button', { name: tile.label });
-    setPaletteDragPreview({ kind: 'reaction-pad', width: 10, height: 10 });
+    setPaletteDragPreview({ kind: 'mode-button', width: 10, height: 10 });
     fireEvent.dragEnd(card);
     expect(getPaletteDragPreview()).toBeNull();
   });

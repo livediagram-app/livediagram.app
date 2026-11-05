@@ -24,7 +24,7 @@ describe.each(MODES)('the %s template start', (mode) => {
   // docs/specs/007-editor/start-diagramming.md "The Spaces lead": the Spaces first, and the start opens on them.
   it('leads with the Spaces, and opens on them', () => {
     expect(start.groups[0]!.id).toBe(LEADING_START_GROUP);
-    expect(start.initial).toBe('spaces');
+    expect(start.initial).toBe('office');
   });
 
   it("puts Recommended, the mode's Popular shelf, its blank first, straight after the Spaces", () => {
@@ -80,29 +80,41 @@ describe.each(MODES)('the %s start’s groups', (mode) => {
 
 describe('Start a Space', () => {
   // docs/specs/007-editor/templates-by-mode.md "The catalogue": the Spaces and Recommended, nothing else.
-  it('offers the four Spaces, then Recommended', () => {
-    expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual(['spaces', 'recommended']);
+  it('offers the Office Spaces, then Recommended, then Events, Outdoor and Recreation', () => {
+    expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
+      'office',
+      'recommended',
+      'events',
+      'outdoor',
+      'recreation',
+    ]);
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
-    expect(group('spaces')).toEqual([
+    expect(group('office')).toEqual([
       'virtual-office',
       'coworking-space',
       'team-pod',
-      'all-hands-hall',
+      'focus-library',
     ]);
+    expect(group('events')).toEqual(['all-hands-hall', 'training-room']);
+    expect(group('outdoor')).toEqual(['garden-retreat', 'city-park']);
+    expect(group('recreation')).toEqual(['rooftop-bar', 'cafe']);
     expect(group('recommended')[0]).toBe('blank-session');
   });
 
   it('lists a search match once, under its primary category', () => {
-    expect(TEMPLATE_STARTS.workshop.search('pod')).toEqual([
-      { group: 'spaces', kinds: ['team-pod'] },
+    expect(TEMPLATE_STARTS.workshop.search('standup')).toEqual([
+      { group: 'office', kinds: ['team-pod'] },
+    ]);
+    expect(TEMPLATE_STARTS.workshop.search('drinks')).toEqual([
+      { group: 'recreation', kinds: ['rooftop-bar', 'cafe'] },
     ]);
     // A template that left (Work Tracker #423) is found nowhere.
     expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([]);
   });
 
   it('lists the Spaces first among search matches, in rail order', () => {
-    const groups = TEMPLATE_STARTS.workshop.search('hall').map((g) => g.group);
-    expect(groups[0]).toBe('spaces');
+    const groups = TEMPLATE_STARTS.workshop.search('room').map((g) => g.group);
+    expect(groups[0]).toBe('office');
   });
 });
 

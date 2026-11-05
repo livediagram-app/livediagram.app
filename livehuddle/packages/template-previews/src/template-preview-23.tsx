@@ -8,15 +8,16 @@ import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 // walks in from the corridor.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
-const WALL = 'rgb(148 163 184)';
+// The palette and the room and plant the other Spaces' group (template-preview-24.tsx) draws with too.
+export const WALL = 'rgb(148 163 184)';
 const FLOOR = 'rgb(245 240 230)';
-const FURNITURE = 'rgb(203 213 225)';
-const LEAF = 'rgb(74 222 128)';
+export const FURNITURE = 'rgb(203 213 225)';
+export const LEAF = 'rgb(74 222 128)';
 const POT = 'rgb(234 88 12)';
-const SHIRT = 'rgb(20 184 166)';
+export const SHIRT = 'rgb(20 184 166)';
 
 // A room's walls, broken by a doorway on the corridor side (top or bottom).
-function Room({
+export function Room({
   x,
   y,
   w,
@@ -46,7 +47,7 @@ function Room({
   );
 }
 
-const Plant = ({ x, y }: { x: number; y: number }) => (
+export const Plant = ({ x, y }: { x: number; y: number }) => (
   <>
     <circle cx={x} cy={y} r="1.6" fill={LEAF} />
     <rect x={x - 1} y={y + 1.2} width="2" height="1.6" fill={POT} />

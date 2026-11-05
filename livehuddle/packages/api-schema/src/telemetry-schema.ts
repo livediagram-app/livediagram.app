@@ -51,12 +51,6 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
-  // Layers (docs/specs/006-document/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
-  // 'Reordered' for the layer rows, 'Toggled' with `type`
-  // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
-  // 'Selected' for an active-layer switch, 'Moved' for move-selection-
-  // to-layer, 'Opened' for the panel. Never layer names in `type`.
-  'Layer',
   'Session',
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running a live session.
   // 'Started' when somebody takes a free one, 'Changed' when it is handed on
@@ -242,12 +236,10 @@ export const TELEMETRY_ACTIONS = [
   'SignedIn',
   'SignedUp',
   'SignedOut',
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): a timer / vote started or ended, vote
-  // results revealed, and a dot cast on an element.
+  // Live session tools (docs/specs/012-collaboration/session-tools.md): a timer started or ended. (The retired
+  // Vote's `Revealed` and `Voted` are gone, so an old client's are filtered out at ingest.)
   'Started',
   'Ended',
-  'Revealed',
-  'Voted',
   // Help centre (docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): an article was viewed, and the
   // reader rated it helpful / not-really via the article feedback widget.
   'View',
@@ -354,7 +346,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Trapezoid',
     'Star',
     'Speech-bubble',
-    // The UML final state (a state machine's end), made by graph input and Mermaid.
+    // The UML final state (a state machine's end), made by graph input.
     'Final-state',
   ],
   tools: [
@@ -426,6 +418,39 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Rug',
     // The Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage"), beside the office.
     'Stage',
+    // The Office Pod, the bar, the garden (docs/specs/009-elements/office.md) and the Door
+    // (docs/specs/009-elements/room-builder.md), beside the office.
+    'Office-pod',
+    'Bar',
+    'Bar-stool',
+    'Drinks-cabinet',
+    'Drinks-fridge',
+    'Outdoor-plant',
+    'Tree',
+    'Garden-path',
+    'Grass',
+    'Garden-fence',
+    'Door',
+    // Wayfinding (docs/specs/009-elements/directory.md, elevator.md), beside the office.
+    'Directory',
+    'Elevator',
+    // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md), beside the office.
+    'Screen',
+    'Room-sign',
+    // The social pieces (docs/specs/009-elements/social-pieces.md), beside the office.
+    'Notice-board',
+    'World-clock',
+    'Jukebox',
+    'Ping-pong-table',
+    'Arcade-machine',
+    'Fireplace',
+    'Campfire',
+    'Bench',
+    'Picnic-table',
+    'Hammock',
+    'Garden-umbrella',
+    'Fountain',
+    'Pond',
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
     // token is what elementTelemetryType actually emits for the kind, which
     // for a hyphenated one is the hyphen kept (see Pie-chart above).

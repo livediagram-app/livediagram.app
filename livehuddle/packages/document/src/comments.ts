@@ -193,8 +193,8 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 }
 
 // Full live-state graft for undo/redo: comment threads + assigned actions
-// (above) PLUS the per-tab session tools (docs/specs/012-collaboration/session-tools.md `timer` / `vote`), which
-// also mutate outside undo history — a timer start or a vote dot isn't
+// (above) PLUS the per-tab session timer (docs/specs/012-collaboration/session-tools.md `timer`), which
+// also mutates outside undo history — a timer start isn't
 // undoable, so a restored snapshot predates them and would silently wipe
 // them for the whole room (autosave persists + broadcasts the restored tab).
 export function graftLiveTabState(
@@ -247,12 +247,10 @@ export function graftLiveTabState(
       return next;
     });
     let next = changed ? { ...tab, elements } : tab;
-    if (sessionFields && (src.timer !== tab.timer || src.vote !== tab.vote)) {
+    if (sessionFields && src.timer !== tab.timer) {
       next = next === tab ? { ...tab } : next;
       if (src.timer !== undefined) next.timer = src.timer;
       else delete next.timer;
-      if (src.vote !== undefined) next.vote = src.vote;
-      else delete next.vote;
     }
     return next;
   });

@@ -74,9 +74,7 @@ export function useCleanupPreview(deps: {
     if (snapshot.elements.length === 0) return;
     originalsRef.current = snapshot;
     previewingRef.current = true;
-    // Layers are read live: a preview never changes them, and their locks decide what stays put.
-    const layers = tabsRef.current.find((t) => t.id === activeId)?.layers;
-    writeElements(engine.cleanupElements(snapshot.elements, layers));
+    writeElements(engine.cleanupElements(snapshot.elements));
   };
 
   const endCleanupPreview = () => {
@@ -103,7 +101,7 @@ export function useCleanupPreview(deps: {
       originalsRef.current?.tabId === activeId
         ? originalsRef.current.elements
         : (tab?.elements ?? []);
-    return engine.assessCleanup(elements, tab?.layers);
+    return engine.assessCleanup(elements);
   };
 
   return { previewCleanup, endCleanupPreview, assessCleanup };

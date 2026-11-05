@@ -23,7 +23,7 @@ import { MEETING_TABLE_SEATS } from '@liveworkspace/avatar/seats';
 
 // docs/specs/009-elements/office.md
 describe('the office pieces', () => {
-  it('are eight shape kinds, each made at its drawing’s size', () => {
+  it('are eighteen shape kinds, each made at its drawing’s size', () => {
     expect(OFFICE_KINDS).toEqual([
       'room',
       'meeting-table',
@@ -33,12 +33,40 @@ describe('the office pieces', () => {
       'coffee-machine',
       'rug',
       'stage',
+      'office-pod',
+      'bar',
+      'bar-stool',
+      'drinks-cabinet',
+      'drinks-fridge',
+      'outdoor-plant',
+      'tree',
+      'garden-path',
+      'grass',
+      'garden-fence',
+      'door',
+      'directory',
+      'elevator',
+      // The social pieces (docs/specs/009-elements/social-pieces.md).
+      'notice-board',
+      'world-clock',
+      'jukebox',
+      'ping-pong-table',
+      'arcade-machine',
+      'fireplace',
+      'campfire',
+      'bench',
+      'picnic-table',
+      'hammock',
+      'garden-umbrella',
+      'fountain',
+      'pond',
     ]);
+    const sized = ['room', 'stage', 'garden-path', 'grass', 'garden-fence', 'door', 'pond'];
     for (const kind of OFFICE_KINDS) {
       expect(isOfficeShape(kind)).toBe(true);
       const el = createShape(kind, 0, 0);
       expect(isValidElement(el)).toBe(true);
-      expect(isGridOfficeShape(kind)).toBe(kind !== 'room' && kind !== 'stage');
+      expect(isGridOfficeShape(kind)).toBe(!sized.includes(kind));
       if (isGridOfficeShape(kind)) {
         const view = OFFICE_ART[kind].front;
         expect(el.width / el.height).toBeCloseTo(view.width / view.height, 2);
@@ -53,8 +81,14 @@ describe('the office pieces', () => {
     expect(room.aspectLocked).toBeFalsy();
   });
 
-  it('puts the room, the rug and the stage on the floor, and nothing else', () => {
-    expect(OFFICE_KINDS.filter(isFloorShape)).toEqual(['room', 'rug', 'stage']);
+  it('puts the room, the rug, the stage, the garden path and grass on the floor, and nothing else', () => {
+    expect(OFFICE_KINDS.filter(isFloorShape)).toEqual([
+      'room',
+      'rug',
+      'stage',
+      'garden-path',
+      'grass',
+    ]);
     expect(isGridOfficeShape('chair')).toBe(false);
   });
 

@@ -6,7 +6,6 @@ import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livehuddle/document';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
-  reactionOf,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
@@ -36,7 +35,6 @@ import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
-import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
@@ -50,6 +48,8 @@ import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { DirectoryFace } from '@/components/canvas/wayfinding/DirectoryFace';
+import { ElevatorFace } from '@/components/canvas/wayfinding/ElevatorFace';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Tables are on few boards, so their face loads on demand; its code is fetched as the editor mounts
@@ -85,7 +85,6 @@ type ElementFaceRouterProps = Pick<
   | 'tabSummaries'
   | 'onCommitTable'
   | 'onEnterPortal'
-  | 'onFireReaction'
   | 'onFollowLink'
   | 'onLinkCell'
   | 'onPressModeButton'
@@ -138,7 +137,6 @@ function KnownElementFace({
   tabSummaries,
   onCommitTable,
   onEnterPortal,
-  onFireReaction,
   onFollowLink,
   onLinkCell,
   onPressModeButton,
@@ -212,17 +210,6 @@ function KnownElementFace({
           textColor={textColor}
           onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
         />
-      ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
-        /* Reaction pad (docs/specs/009-elements/reaction-pad.md): a pressable glyph. The burst it throws is
-           rendered OUTSIDE this label stack, below, so it can overflow the
-           element's box — a burst confined to the pad is a burst nobody
-           notices. */
-        <ReactionPadFace
-          label={label}
-          reaction={reactionOf(element.reaction)}
-          textColor={textColor}
-          onFire={onFireReaction ? () => onFireReaction(element) : undefined}
-        />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
         /* Portal (docs/specs/009-elements/portal-element.md): the drawn portal + its label, pressable when paired. */
         <PortalFace
@@ -232,6 +219,18 @@ function KnownElementFace({
           }
           targetName={onEnterPortal?.(element).targetName ?? null}
           onEnter={onEnterPortal?.(element).travel}
+        />
+      ) : element.type === 'shape' && element.shape === 'directory' ? (
+        /* Directory (docs/specs/009-elements/directory.md): a press over the stand opens the space's rooms. */
+        <DirectoryFace elementId={element.id} wayfinding={onEnterPortal?.(element).wayfinding} />
+      ) : element.type === 'shape' && element.shape === 'elevator' && !isEditing ? (
+        /* Elevator (docs/specs/009-elements/elevator.md): a press (or a walk-in) opens the panel; its name under it,
+           retyped like any label while editing. */
+        <ElevatorFace
+          elementId={element.id}
+          label={label}
+          textColor={textColor}
+          wayfinding={onEnterPortal?.(element).wayfinding}
         />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph

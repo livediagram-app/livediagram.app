@@ -69,7 +69,7 @@ async function api(request: Request): Promise<Response> {
   }
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
-    return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
+    return json({ link: { code: 'abc', role: 'participate', expiresAt: null } });
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
@@ -225,8 +225,24 @@ describe('share_document level', () => {
     await client.callTool({ name: 'share_document', arguments: { documentId: 'd1' } });
     await client.callTool({
       name: 'share_document',
-      arguments: { documentId: 'd1', role: 'view' },
+      arguments: { documentId: 'd1', role: 'edit' },
     });
-    expect(roles).toEqual(['participate', 'view']);
+    expect(roles).toEqual(['participate', 'edit']);
+  });
+
+  // "What a new share offers": livehuddle makes no new Viewer link, so the tool refuses one before the api is asked.
+  it('refuses a view link', async () => {
+    const roles: unknown[] = [];
+    const recording = async (request: Request) => {
+      if (new URL(request.url).pathname.endsWith('/share'))
+        roles.push((await request.clone().json<{ role: unknown }>()).role);
+      return api(request);
+    };
+    const client = await connectTestClient(recording);
+    const result = await client
+      .callTool({ name: 'share_document', arguments: { documentId: 'd1', role: 'view' } })
+      .catch((err: unknown) => ({ isError: true, err }));
+    expect((result as { isError?: boolean }).isError).toBe(true);
+    expect(roles).toEqual([]);
   });
 });

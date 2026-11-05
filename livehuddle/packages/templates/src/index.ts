@@ -15,7 +15,6 @@ export {
   popularKindsFor,
 } from './popular';
 export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
-export * from './template-layers';
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
 export * from './template-tab';

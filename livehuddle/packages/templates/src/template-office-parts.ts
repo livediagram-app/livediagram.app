@@ -12,6 +12,7 @@ import {
   type ShapeKind,
 } from '@livehuddle/document';
 import { CANVAS_TONES } from './template-inks';
+import { heading } from './template-session-parts';
 
 // `w`/`h` override the piece's default size (keep its proportion: the drawings are aspect locked).
 export type OfficePiece = {
@@ -46,11 +47,36 @@ function sizeOf(
   return {};
 }
 
-/** Rooms, then rugs and stages, then furniture, each piece placed in its room. `x0, y0` is the plan's top left. */
-export function furnishRooms(rooms: readonly OfficeRoom[], x0: number, y0: number): Element[] {
+/** One piece placed with its top left at (x, y): its facing, cameras and size applied. */
+function placePiece(p: OfficePiece, x: number, y: number): Element {
+  const base = createShape(p.kind, x, y);
+  return {
+    ...base,
+    ...(p.facing ? { chairFacing: p.facing } : {}),
+    ...(p.stageCameras ? { stageCameras: true } : {}),
+    ...sizeOf(p, base),
+  };
+}
+
+/**
+ * Open-air pieces, then rooms, then rugs and stages, then furniture, each room's piece placed in its room. `x0, y0` is
+ * the plan's top left. `open` are pieces under no roof (a lawn, a path, a tree), placed from the plan's top left: their
+ * floors (grass, garden paths) lie under the rooms, their furniture with the rest.
+ */
+export function furnishRooms(
+  rooms: readonly OfficeRoom[],
+  x0: number,
+  y0: number,
+  open: readonly OfficePiece[] = [],
+): Element[] {
+  const ground: Element[] = [];
   const walls: Element[] = [];
   const floor: Element[] = [];
   const furniture: Element[] = [];
+  for (const p of open) {
+    const el = placePiece(p, x0 + p.x, y0 + p.y);
+    (isFloorShape(p.kind) ? ground : furniture).push(el);
+  }
   for (const room of rooms) {
     const rx = x0 + room.x;
     const ry = y0 + room.y;
@@ -62,17 +88,10 @@ export function furnishRooms(rooms: readonly OfficeRoom[], x0: number, y0: numbe
       roomDoor: room.door,
     });
     for (const p of room.pieces) {
-      const base = createShape(p.kind, rx + p.x, ry + p.y);
-      const el: Element = {
-        ...base,
-        ...(p.facing ? { chairFacing: p.facing } : {}),
-        ...(p.stageCameras ? { stageCameras: true } : {}),
-        ...sizeOf(p, base),
-      };
-      (isFloorShape(p.kind) ? floor : furniture).push(el);
+      (isFloorShape(p.kind) ? floor : furniture).push(placePiece(p, rx + p.x, ry + p.y));
     }
   }
-  return [...walls, ...floor, ...furniture];
+  return [...ground, ...walls, ...floor, ...furniture];
 }
 
 const BUTTON_W = 104;
@@ -113,12 +132,38 @@ export function officePlan(
   head: number,
   headingEls: readonly Element[],
   extra: readonly Element[],
+  open: readonly OfficePiece[] = [],
 ): Element[] {
-  const placed = furnishRooms(rooms, x0, y0 + head);
+  const placed = furnishRooms(rooms, x0, y0 + head, open);
   return [
     ...placed.filter(isFloor),
     ...headingEls,
     ...placed.filter((el) => !isFloor(el)),
     ...extra,
   ];
+}
+
+// A space's heading band above its plan, and the band under it the Walk In waits in.
+export const SPACE_HEAD = 96;
+export const SPACE_BELOW = 120;
+
+/** A space's floor plan under its heading (officePlan: floors first, then the heading, then the rest). */
+export function spacePlan(
+  x0: number,
+  y0: number,
+  width: number,
+  rooms: OfficeRoom[],
+  title: { text: string; width: number; sticker: string; subtitle: string },
+  extra: Element[],
+  open: readonly OfficePiece[] = [],
+): Element[] {
+  return officePlan(
+    rooms,
+    x0,
+    y0,
+    SPACE_HEAD,
+    heading(x0, y0, width, title.text, title.width, title.sticker, title.subtitle),
+    extra,
+    open,
+  );
 }

@@ -17,66 +17,12 @@ function setup(overrides: Partial<Deps> = {}) {
     documentShareable: true,
     documentTeamId: null,
     activeId: 'tab1',
-    canvasTool: 'laser',
-    cursorsHidden: false,
     roomSize: 2,
     ...overrides,
   };
   const hook = renderHook((d: Deps) => useEditorBroadcast(d), { initialProps: deps });
   return { hook, deps, sent };
 }
-
-describe('useEditorBroadcast laser trail', () => {
-  it('draws the local trail and clears it on a tool or tab change', () => {
-    let now = 1000;
-    vi.spyOn(performance, 'now').mockImplementation(() => (now += 100));
-    const { hook, deps } = setup();
-    act(() => {
-      hook.result.current.broadcastLaser(1, 2);
-      hook.result.current.broadcastLaser(3, 4);
-    });
-    expect(hook.result.current.localLaserTrail.map((p) => [p.x, p.y])).toEqual([
-      [1, 2],
-      [3, 4],
-    ]);
-    hook.rerender({ ...deps, activeId: 'tab2' });
-    expect(hook.result.current.localLaserTrail).toEqual([]);
-    act(() => hook.result.current.broadcastLaser(5, 6));
-    expect(hook.result.current.localLaserTrail).toHaveLength(1);
-    hook.rerender({ ...deps, activeId: 'tab2', canvasTool: 'select' });
-    expect(hook.result.current.localLaserTrail).toEqual([]);
-  });
-});
-
-// Vote privacy (docs/specs/012-collaboration/session-tools.md).
-describe('useEditorBroadcast hidden cursors', () => {
-  it('retracts the cursor once when a hide-cursors vote opens, and sends nothing while it runs', () => {
-    const { hook, deps, sent } = setup();
-    hook.rerender({ ...deps, cursorsHidden: true });
-    expect(sent).toEqual([{ kind: 'op', op: { kind: 'cursor', tabId: 'tab1', x: null, y: null } }]);
-    act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
-    expect(sent).toHaveLength(1);
-  });
-
-  // docs/specs/008-canvas/avatar-mode.md "Realtime": the vote hides cursors only (owner, 2026-11-03).
-  it('keeps sending characters, shoves, speech and proximity audio while the vote runs', () => {
-    const { hook, sent } = setup({ cursorsHidden: true });
-    sent.length = 0;
-    act(() => {
-      hook.result.current.broadcastAvatar(null);
-      hook.result.current.broadcastAvatarPush('peer', 1, 0);
-      hook.result.current.broadcastAvatarSay({ id: 'b', text: 'hi', x: 0, y: 0 });
-      hook.result.current.broadcastCallSignal({ kind: 'avatar-voice', level: 2 });
-    });
-    expect(sent.map((m) => (m.kind === 'op' ? m.op.kind : m.kind))).toEqual([
-      'avatar',
-      'avatar-push',
-      'avatar-say',
-      'avatar-voice',
-    ]);
-    expect(sent[3]).toEqual({ kind: 'op', op: { kind: 'avatar-voice', level: 2, tabId: 'tab1' } });
-  });
-});
 
 // docs/specs/012-collaboration/proximity-audio.md "The wire".
 describe('useEditorBroadcast call signals', () => {
@@ -109,7 +55,7 @@ describe('useEditorBroadcast avatar packets', () => {
   it('sends the packet a throttle window held back once the window ends', () => {
     vi.useFakeTimers();
     try {
-      const { hook, sent } = setup({ canvasTool: 'avatar' });
+      const { hook, sent } = setup();
       act(() => {
         hook.result.current.broadcastAvatar(packet('focus'));
         // Picked again inside the window: held, not dropped.
@@ -135,7 +81,7 @@ describe('useEditorBroadcast avatar packets', () => {
     vi.spyOn(performance, 'now').mockImplementation(() => now);
     try {
       const walkFor = (roomSize: number) => {
-        const { hook, sent } = setup({ canvasTool: 'avatar', roomSize });
+        const { hook, sent } = setup({ roomSize });
         const avatars = () => sent.filter((m) => m.kind === 'op' && m.op.kind === 'avatar');
         act(() => hook.result.current.broadcastAvatar(packet('focus')));
         now += 40;
@@ -157,7 +103,7 @@ describe('useEditorBroadcast cursor', () => {
     vi.useFakeTimers();
     let now = 1000;
     vi.spyOn(performance, 'now').mockImplementation(() => now);
-    const { hook, sent } = setup({ canvasTool: 'select' });
+    const { hook, sent } = setup();
     act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
     now += 5;
     act(() => hook.result.current.broadcastCursor({ x: 2, y: 2 }));
@@ -176,24 +122,20 @@ describe('useEditorBroadcast cursor', () => {
     vi.useRealTimers();
   });
 
-  it('never follows the pointer leaving, or a hide-cursors vote, with a held-back position', () => {
+  it('never follows the pointer leaving with a held-back position', () => {
     vi.useFakeTimers();
     let now = 1000;
     vi.spyOn(performance, 'now').mockImplementation(() => now);
-    const { hook, sent, deps } = setup({ canvasTool: 'select' });
+    const { hook, sent } = setup();
     act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
     now += 5;
     act(() => hook.result.current.broadcastCursor({ x: 2, y: 2 }));
     act(() => hook.result.current.broadcastCursor(null));
-    now += 5;
-    act(() => hook.result.current.broadcastCursor({ x: 3, y: 3 }));
-    hook.rerender({ ...deps, canvasTool: 'select', cursorsHidden: true });
     act(() => {
       vi.runAllTimers();
     });
     expect(sent.map((m) => (m.kind === 'op' && m.op.kind === 'cursor' ? m.op.x : 'x'))).toEqual([
       1,
-      null,
       null,
     ]);
     vi.useRealTimers();

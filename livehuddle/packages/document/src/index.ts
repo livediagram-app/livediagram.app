@@ -3,7 +3,7 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-// Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
+// Live session-tool types used by the `Tab.timer` field
 // below. Type-only import (erased at build) so the index <-> session
 // circular reference is fine. The runtime helpers are re-exported lower
 // down via `export * from './session'`.
@@ -14,12 +14,7 @@ import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
-import type { TabTimer, TabVote } from './session';
-
-// Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
-// import for the same erasability reason as session; the runtime layer
-// helpers are re-exported lower down via `export * from './layers'`.
-import type { Layer } from './layers';
+import type { TabTimer } from './session';
 
 // Per-range label formatting runs (docs/specs/008-canvas/canvas-and-palette.md). Type-only import so the
 // index <-> rich-text relationship stays erasable; the runtime helpers +
@@ -98,7 +93,7 @@ export type DocumentId = string;
 import type { TabId, ElementId, TextSize } from '@liveworkspace/model-core/basics';
 // livehuddle's patterns: the shared ones plus its own (./background-pattern), Isometric among them.
 import type { BackgroundPattern } from './background-pattern';
-// The selection-mode glyphs: the shared ones plus livehuddle's own (./mode-glyphs), Isometric among them.
+// The selection-mode glyphs (./mode-glyphs).
 export { MODE_GLYPHS, type ModeGlyph } from './mode-glyphs';
 export { isBackgroundPattern, type BackgroundPattern } from './background-pattern';
 export {
@@ -231,16 +226,10 @@ export type Tab = {
   folder?: string;
   // Live session tools (docs/specs/012-collaboration/session-tools.md), facilitator-run + synced to every
   // participant via the normal tab sync. `timer` is a countdown /
-  // stopwatch; `vote` is a dot-voting session. Both are edit-role
-  // controlled (the room drops view-role mutations) and absent until a
-  // facilitator starts one. See session.ts for the pure helpers.
+  // stopwatch. Edit-role controlled (the room drops view-role mutations)
+  // and absent until a facilitator starts one. See session.ts for the pure
+  // helpers. (A stored `vote` is the retired Vote's, dropped on read: ./retired-vote.)
   timer?: TabTimer;
-  vote?: TabVote;
-  // Photoshop-style layers (docs/specs/006-document/layers.md), ordered BOTTOM -> TOP (index 0
-  // paints lowest). Absent = the tab behaves as one implicit default
-  // layer; the array is materialised lazily on the first layer
-  // operation (see layers.ts). Elements point in via `layerId`.
-  layers?: Layer[];
 };
 
 // --- Type guards -----------------------------------------------------------
@@ -356,6 +345,7 @@ export * from './rotation';
 export * from '@liveworkspace/model-core/shape-marker';
 // Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
 export * from './selection-mode';
+export * from './placed-kinds';
 export * from './behaviour-skin';
 export * from './comments';
 export * from './collab-index-rows';
@@ -394,11 +384,19 @@ export * from '@liveworkspace/avatar/fence';
 // The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
 export * from '@liveworkspace/avatar/palette';
 export * from '@liveworkspace/avatar/pad-art';
+export * from './avatar-pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';
+export * from './room-builder';
+export * from './room-outline-field';
+export * from './office-garden';
+export * from './office-social';
+export * from './office-wayfinding';
 // Where calls happen on a tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md): rooms, stages, who may speak.
 export * from './call-geometry';
+// The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md).
+export * from './meeting-pieces';
 export * from './actor-figure';
 export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';
@@ -425,7 +423,6 @@ export * from './factories';
 export * from './whiteboard';
 export * from './whiteboard-stroke';
 export * from './graph-authoring';
-export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
@@ -458,7 +455,7 @@ export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements } from './auto-layout-tidy';
 
-// Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
+// Cluster-aware graph layout: a graph's groups as boundaries.
 export * from './auto-layout-clusters';
 export { frameHeadingRect } from './auto-layout-cluster-seats';
 // The layout engine's gaps, which edit operations place and make room by.
@@ -552,10 +549,12 @@ export { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes
 export { dropRetiredPages, isRetiredPagesElement } from './retired-pages';
 export { dropRetiredPlan, isRetiredPlanElement } from './retired-plan';
 
-// Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
-// above, band-aware render ordering, and the pure layer operations.
-export * from './layers';
-export * from './layer-operations';
+// The order a tab's elements paint in (docs/specs/006-document/layers.md "Stacking"), and the drop of the layers a
+// tab saved before they were removed may carry.
+export { paintOrder } from './paint-order';
+export { dropRetiredLayers } from './retired-layers';
+// The retired Vote's stored dot vote, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
+export { dropRetiredVote } from './retired-vote';
 
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
@@ -578,8 +577,8 @@ export * from './collab-ledger';
 // implementation.
 export * from './tab-folders';
 
-// Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer / TabVote types used by the
-// Tab fields above, plus the pure timer + vote helpers.
+// Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer type used by the
+// Tab field above, plus the pure timer helpers.
 export * from './session';
 
 // Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)

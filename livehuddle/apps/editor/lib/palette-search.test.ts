@@ -23,16 +23,15 @@ describe('buildPaletteSearchItems', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
     const missing = shapeTiles
       .map((t) => {
-        // Tiles that differ only by their creation-time choice (the five
-        // reactions, the mode buttons) each get their own id, or the
+        // Tiles that differ only by their creation-time choice (the mode
+        // buttons) each get their own id, or the
         // panel would show one of them and silently drop the rest.
         const a = t.action as {
           kind: string;
-          reaction?: string;
           mode?: string;
           plan?: string;
         };
-        const choice = a.reaction ?? a.mode ?? a.plan;
+        const choice = a.mode ?? a.plan;
         return choice ? `shape:${a.kind}:${choice}` : `shape:${a.kind}`;
       })
       .filter((id) => !ids.has(id));
@@ -82,10 +81,10 @@ describe('buildPaletteSearchItems', () => {
     // The Page left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2): no
     // search result places one, though a stored Page still draws.
     expect([...ids].filter((id) => id === 'shape:page' || id === 'tile:tools:page')).toEqual([]);
-    // And the split kinds, one entry per choice (docs/specs/009-elements/reaction-pad.md).
-    for (const id of ['shape:reaction-pad:confetti', 'shape:reaction-pad:fireworks']) {
-      expect(ids.has(id)).toBe(true);
-    }
+    // The one Selection Mode button left, the Avatar one (docs/specs/009-elements/mode-button.md "Only Avatar").
+    expect([...ids].filter((id) => id.startsWith('shape:mode-button'))).toEqual([
+      'shape:mode-button:avatar',
+    ]);
   });
 
   it('names each entry from the tile, not from its id', () => {

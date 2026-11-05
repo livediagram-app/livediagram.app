@@ -1,8 +1,7 @@
 'use client';
 
 // The Eraser Panel (docs/specs/008-canvas/eraser-panel.md): mode, size and what it may erase — the fourth
-// mode panel, on the same terms as the Laser and
-// Spotlight ones.
+// mode panel, on the same terms as the Avatar one.
 //
 // The preview here matters more than in the other two: this is the tool that
 // destroys work, so the brush is drawn at its true radius over a scrap of
@@ -94,7 +93,7 @@ export function EraserPanel({
         </div>
         <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
           {config.target === 'anything'
-            ? 'Locked elements and locked layers are never erased. One sweep is one undo.'
+            ? 'Locked elements are never erased. One sweep is one undo.'
             : `Erasing ${config.target === 'drawings' ? 'drawings' : 'arrows'} only; everything else is safe from the brush.`}
         </p>
       </div>

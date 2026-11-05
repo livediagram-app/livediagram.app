@@ -326,7 +326,7 @@ export default [
         ({ snap }) => ({
           pass: ['Candidate', 'Recruiter', /hiring manager/i, 'Panel'].every((w) =>
             find(snap, w).some(
-              (e) => e.shape === 'lane' || e.shape === 'frame' || e.shape === 'pool',
+              (e) => e.shape === 'lane' || e.shape === 'boundary' || e.shape === 'pool',
             ),
           ),
           detail: `lanes: ${shapes(snap, 'lane')
@@ -553,7 +553,7 @@ export default [
       [
         'grouped into edge, services, data and external',
         ({ snap }) => {
-          const groups = [...shapes(snap, 'frame'), ...shapes(snap, 'lane')];
+          const groups = [...shapes(snap, 'boundary'), ...shapes(snap, 'lane')];
           const missing = [/edge/i, /service/i, /data/i, /external|third/i].filter(
             (w) => !groups.some((g) => w.test(g.label ?? '')),
           );

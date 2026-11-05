@@ -119,9 +119,9 @@ describe('setPowerUserMode off', () => {
     const prefs: UserPreferences = {
       powerUserMode: true,
       powerUserBaseline: {
-        futureSetting: { before: {}, applied: { quickAddOnHover: true } },
+        futureSetting: { before: {}, applied: { alignmentGuides: false } },
       },
-      quickAddOnHover: true,
+      alignmentGuides: false,
     };
     expect(off(prefs).prefs).toEqual({});
   });

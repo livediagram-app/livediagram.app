@@ -24,7 +24,7 @@ table of its own for them.
   two scopes: `all`, the keys every app shares (`ALL_SETTING_KEYS` in
   `@liveworkspace/settings`: privacy and accessibility, the
   notification switches, the editors' chrome, custom swatches, and the
-  editor settings two or more apps have: the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover and Presenting), and
+  editor settings two or more apps have: the Home banner, the Collaborate, Quick Style and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover and Presenting), and
   livehuddle's own, `livehuddle.app`. The api joins them into the one
   flat blob the editor knows (`joinSettings`) and splits a change back
   (`splitSettings`), in `apps/api/src/liveworkspace/settings.ts`. A shared
@@ -161,6 +161,8 @@ fetch fails and the cache stays authoritative, as above.
 type UserPreferences = {
   // (`autoRebindArrows`, the Auto-Attach Arrows switch, is gone from livehuddle, Work Tracker #423 part 4:
   // arrows always reattach after a move, ../008-canvas/arrow-anchors.md. A stored value stays, unread.)
+  // (`quickAddOnHover` is gone with Quick Connect, ../002-project-scope/not-in-livehuddle.md. A stored value
+  // stays, unread.)
 
   // When false, the live editor's `track()` helper is a no-op:
   // nothing leaves the browser. Distinct from the build-time
@@ -188,7 +190,7 @@ type UserPreferences = {
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its docked and its
-  // popover branch (so the Explorer, Layers and Collaborate
+  // popover branch (so the Explorer and Collaborate
   // popovers follow it too), the Map, the Quick style panel and the
   // Toolbar strip. Buttons are not panels: the
   // bottom-right cluster buttons and the zoom controls stay opaque.
@@ -215,21 +217,14 @@ type UserPreferences = {
   // Turning a panel off removes the panel and every piece of chrome that
   // exists to reach or mirror it, but never the feature underneath:
   //
-  // `layersPanelEnabled` false: no Layers panel, no Layers cluster button,
-  // no "Move to layer" tiles in the element menus, no "Hidden layers" row
-  // in the image export. Layers keep working: a tab's layers, their
-  // order, visibility, lock and opacity still shape the canvas, and new
-  // elements still land on the active layer.
-  layersPanelEnabled?: boolean;
   // `collaboratePanelEnabled` false: no Collaborate panel and no
   // Collaborate cluster button, even while the tab has comment threads or
   // actions (the only time either shows when on). Comments and actions
   // keep working from the elements themselves.
   collaboratePanelEnabled?: boolean;
-  // `quickStylePanelEnabled` false: the Quick style panel never appears
-  // beside a selection. Style memory (../008-canvas/quick-style-panel.md)
-  // still remembers what you pick in the context menu.
-  quickStylePanelEnabled?: boolean;
+  // `quickStylePanelEnabled`: not read. livehuddle has no Quick Style panel
+  // (../002-project-scope/not-in-livehuddle.md#quick-style); a stored value is
+  // kept, unread, like any key this version does not know.
 
   // When false, the editor suppresses the faint alignment guide
   // lines drawn along the edges / centres a dragged or resized
@@ -371,12 +366,10 @@ Missing key === undefined === default behaviour. Concretely:
   reads as 1, out-of-range values clamp ([UI scale](ui-scale.md)). Emits
   `UI`/`Changed`/`UiScale` (or `UiScalePanels`, `UiScaleToolbar`,
   `UiScaleCornerButtons`) on release.
-- `layersPanelEnabled` / `collaboratePanelEnabled` /
-  `quickStylePanelEnabled` undefined / true → the panel is on (the
+- `collaboratePanelEnabled` undefined / true → the panel is on (the
   default). `false` removes it and the chrome that reaches it, leaving the
   feature working (see the data model). Emits `UI`/`Toggled`/
-  `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
-  and `QuickStylePanel{On,Off}`.
+  `CollaboratePanel{On,Off}`.
 - **Retired keys.** `upgradeLegacyPreferences` (`packages/api-schema/src/legacy-preferences.ts`) drops these on
   read, so the next write stores the blob without them: `activityPanelEnabled` and `activityRevertHoverPreview` (there
   is no Activity panel; Undo and Redo always show in the bottom-right cluster), `illustrateModeEnabled`,
@@ -385,15 +378,12 @@ Missing key === undefined === default behaviour. Concretely:
   `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
   [MCP server](../015-api/mcp-server.md)). Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,
   `contentsPlacement`, the logo guide switches) and livediagram's Diagram and Draw keys (`tourSeen`, `drawTourSeen`,
-  `whiteboardPinnedShapes`, `whiteboardShapePicks`, `whiteboardYourColours`, `whiteboardDockPosition`, `drawPattern`)
-  are read by nothing here
+  `whiteboardPinnedShapes`, `whiteboardShapePicks`, `whiteboardYourColours`, `whiteboardDockPosition`, `drawPattern`), and
+  `layersPanelEnabled` (there is no Layers panel), are read by nothing here
   ([Editor modes](editor-modes.md#stored-tabs-from-other-products-modes)).
-- `quickAddOnHover` undefined / false → click to open an element's quick-add
-  `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
-  opens it on hover instead, closing a beat after the pointer leaves both the
-  `+` and the menu. A click still opens it either way, and the `+` buttons
-  still appear only on the selected element ([Canvas and palette](../008-canvas/canvas-and-palette.md)). Emits
-  `UI`/`Toggled`/`QuickAddHover{On,Off}`.
+- `quickAddOnHover` is not read (Quick Connect, the `+` menu it opened on hover, is gone from livehuddle,
+  [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-connect)). The key stays shared in
+  `@liveworkspace/settings` for livediagram, so a stored value is kept, like any key this version does not know.
 - `reduceMotion` undefined / false → full motion (the default), still
   subject to the OS `prefers-reduced-motion` media query which
   `globals.css` always honours. Setting it to `true` adds
@@ -439,7 +429,7 @@ for this owner, is therefore the "everything on" state.
 that is the only control.
 
 - The **Settings dialog** lists all of them, grouped and searchable by eye.
-  It is the answer to "I half-remember a setting about layer previews" from
+  It is the answer to "I half-remember a setting about the minimap" from
   someone who does not know which panel owns it, and the place a new reader
   goes to see what the editor can be told to do.
 - **One setting, one control.** Panels have no gear popovers of settings: every
@@ -459,7 +449,7 @@ problem: a setting is easy to flip when you are already looking at its
 surface, and impossible to find when you are not. Contextual controls stay,
 and the dialog stays as the one complete, browsable index of them.
 
-- **Panel settings popovers**: removed. The Palette, Layers, Activity, AI and
+- **Panel settings popovers**: removed. The Palette, Activity, AI and
   Map panels each carried a gear popover holding their own preferences plus a
   Reset-position row. Every one of those preferences now has a row in the
   Settings dialog, so the popovers were five second homes for settings that
@@ -542,14 +532,13 @@ and the dialog stays as the one complete, browsable index of them.
 
   **It is the central place to find every preference.** Categories:
   **Editor** (a **Canvas** section: alignment guides,
-  element indicators (Auto-Attach Arrows left in Work Tracker #423 part 4); a **Mouse** section: quick-add on hover, middle-mouse
-  pan; then **Power User**: power user mode, with Minimal chrome and the preset
+  element indicators (Auto-Attach Arrows left in Work Tracker #423 part 4); a **Mouse** section: middle-mouse
+  pan (Quick-Add on Hover left with Quick Connect); then **Power User**: power user mode, with Minimal chrome and the preset
   readout nested under it while the mode is on; no Presenting sub-category since Work Tracker #423 part 2), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
-  sub-categories **Layers**, **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md)) and
-  **Quick Style**, one per panel),
+  sub-categories **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md)), one per panel),
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **Documents** (a **Default Folders** section with one row per
@@ -590,10 +579,9 @@ and the dialog stays as the one complete, browsable index of them.
   `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
   the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
 
-  Panels holds Layers, Map, Collaborate and Quick Style,
+  Panels holds Map and Collaborate,
   one per panel, each its own pane. Each opens with that panel's **Enable
-  switch** ("Enable Layers Panel", "Enable Map",
-  "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
+  switch** ("Enable Map", "Enable Collaborate Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on, the way power
   user mode's rows follow that mode: a setting for a panel you have
@@ -618,12 +606,12 @@ and the dialog stays as the one complete, browsable index of them.
   right-pointing arrow read as the row's own "go" arrow, so the
   sub-categories behind it went unfound.) A
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
-  mark in the editor (Lucide layers for Layers, the Collaborate button's
-  glyph; the Map and Quick Style, which have no
-  toolbar button, take Lucide map and Lucide palette; Notifications and
+  mark in the editor (the Collaborate button's
+  glyph; the Map, which has no
+  toolbar button, takes Lucide map; Notifications and
   API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers", "in Account ›
+  it by path ("in Panels › Map", "in Account ›
   API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
@@ -662,7 +650,7 @@ and the dialog stays as the one complete, browsable index of them.
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
   currently in force** so the picture doubles as a readout: the minimap,
-  alignment guides, layer thumbnails, and the minimap's dimming.
+  alignment guides, and the minimap's dimming.
 
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed
@@ -687,8 +675,8 @@ and the dialog stays as the one complete, browsable index of them.
   applies on a desktop. The Map's rows (Enable Map, Dim Outside the View,
   Map Size) are desktop only: a phone never draws the Map
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
-  and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
-  Pan): a phone has no hover and no middle button.
+  and read as broken. So is the Mouse section's Middle-Mouse
+  Pan: a phone has no middle button.
 
   **Tours** is a category of its own: one switch per guided tour, **Workshop
   Tour** and **Avatar Tour**, each with a line saying where it is on offer and a **Learn more**
@@ -725,7 +713,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
-  Settings and theme, and the bottom-right cluster's (Layers, Style, Tidy Up and
+  Settings and theme, and the bottom-right cluster's (Style, Tidy Up and
   the rest) on a desktop wide enough for them ([Editor app](editor-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.

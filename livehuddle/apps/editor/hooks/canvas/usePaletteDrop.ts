@@ -28,9 +28,8 @@ type PaletteDropDeps = {
   // double-click add path: its rect already bakes in zoom, pan AND the
   // origin-center pivot, so dividing by zoom yields world coords directly.
   wrapperRef: RefObject<HTMLElement | null>;
-  // Any other file dropped on the canvas, with the canvas point it was released at: an Excalidraw
-  // file or export lands there as its scene (docs/specs/020-import-export/excalidraw-import-export.md
-  // "Paste"). Absent where the canvas takes no files.
+  // Any other file dropped on the canvas, with the canvas point it was released at: a picture lands there as an
+  // image (useClipboard dropBoardFile). Absent where the canvas takes no files.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
 };
 
@@ -53,7 +52,7 @@ export function usePaletteDrop({
       e.dataTransfer.dropEffect = 'none';
       return;
     }
-    // A file (an Excalidraw file) is accepted the same way a tile is,
+    // A file (a picture) is accepted the same way a tile is,
     // so the cursor says it will land rather than showing the no-drop sign.
     if (onDropFile && e.dataTransfer.types.includes('Files')) {
       e.preventDefault();

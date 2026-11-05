@@ -92,7 +92,7 @@ nothing, like a box's handles.
 
 - Zero-length chord: `bow` falls back to `insert` of a single point (D29).
 - A bend that would put `t(1-t)` below `1e-6`: impossible after the clamp.
-- Locked arrow, locked tab, read-only, layer-inert: no plan, no frame (existing guards).
+- Locked arrow, locked tab, read-only: no plan, no frame (existing guards).
 - Arrow deleted mid-drag: the tick maps nothing.
 
 ## Observability

@@ -24,7 +24,6 @@ function setup(overrides: Partial<PowerUserOfferDeps> = {}) {
     settled: true,
     editable: true,
     embed: false,
-    zen: false,
     apply: vi.fn((next: UserPreferences) => {
       prefs = next;
     }),

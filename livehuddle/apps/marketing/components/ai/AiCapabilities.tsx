@@ -14,7 +14,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideWorkflow, 20),
     title: 'Sessions from a sentence',
-    body: 'Stand-ups, workshops, offices and processes. Your AI names the boxes and links; livehuddle lays them out. Mermaid works too.',
+    body: 'Stand-ups, workshops, offices and processes. Your AI names the boxes and links; livehuddle lays them out.',
   },
   {
     icon: lucideGlyph(lucideSquareKanban, 20),

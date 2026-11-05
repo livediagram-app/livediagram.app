@@ -4,6 +4,7 @@
 // public `@livehuddle/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { RoomDoor, StageSpeakers } from './office';
+import type { ClockZone, NoticeNote } from './office-social';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -68,11 +69,6 @@ export type ChartLegendPosition = 'top' | 'right' | 'bottom' | 'left';
 export type ShapeElement = {
   id: ElementId;
   type: 'shape';
-  // Layer membership (docs/specs/006-document/layers.md): id of the Tab.layers entry this element
-  // renders inside. Absent / unknown = the tab's default layer, so every
-  // element authored before layers existed keeps rendering unchanged.
-  // Carried by every element variant (arrows included, see index.ts).
-  layerId?: string;
   shape: ShapeKind;
   // Registry key for the glyph (e.g. 'server', 'database', 'user'). Two
   // uses: when `shape === 'icon'` it IS the element (glyph above an
@@ -247,10 +243,22 @@ export type ShapeElement = {
   // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
   // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
   roomDoor?: RoomDoor;
+  // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md): its walls' centre line, the corners
+  // as 0..1 fractions of the box. Absent on a rectangular Room.
+  roomOutline?: { x: number; y: number }[];
   // Stage (docs/specs/009-elements/office.md "Stage"): who may speak from it, and whether its speakers' cameras and
   // screens reach the whole tab. Absent = DEFAULT_STAGE_SPEAKERS ('edit') and off.
   stageSpeakers?: StageSpeakers;
   stageCameras?: boolean;
+  // Notice Board (docs/specs/009-elements/social-pieces.md "Notice Board"): its pinned notes, oldest first.
+  noticeNotes?: NoticeNote[];
+  // World Clock (social-pieces.md "World Clock"): up to six zones; absent = the viewer's own zone.
+  clockZones?: ClockZone[];
+  // Jukebox (social-pieces.md "Jukebox"): the https audio address it plays; absent = no music set.
+  jukeboxSource?: string;
+  // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
+  // shows when nobody in its room is sharing. Absent = none.
+  screenUrl?: string;
   // A timeline rail saved before the Timeline (docs/specs/009-elements/timeline.md): its point count
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
@@ -304,8 +312,8 @@ export type ShapeElement = {
   // the card is usually narrower than the code someone pastes into it. Set
   // false to keep long lines on one line (and off the card).
   codeWrap?: boolean;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst this pad throws. Absent falls back to
-  // REACTION_DEFAULT at render, so a pad from an older file still works.
+  // A retired Reaction Pad's burst (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kept as
+  // stored so a save carries it through, never read.
   reaction?: Reaction;
   // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
@@ -425,8 +433,6 @@ export type TextElement = {
   // Who added it, when a Participant did (docs/specs/013-workspace/share-roles.md "What a Participant changes"):
   // the server-derived adder key the room stamped. Absent on everything an Editor added. Never set by a client.
   addedBy?: string;
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -561,8 +567,6 @@ export type TableCellStyle = {
 export type TableElement = {
   id: ElementId;
   type: 'table';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -679,8 +683,6 @@ export type StickyElement = {
   type: 'sticky';
   // Who added it, when a Participant did: see TextElement.addedBy.
   addedBy?: string;
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -776,8 +778,6 @@ export type StickyElement = {
 export type ImageElement = {
   id: ElementId;
   type: 'image';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -880,8 +880,6 @@ export type ImageElement = {
 export type FreehandElement = {
   id: ElementId;
   type: 'freehand';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1000,8 +998,6 @@ export type PathNode = PathPoint & {
 export type PathElement = {
   id: ElementId;
   type: 'path';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1065,8 +1061,6 @@ export type PathElement = {
 export type AnnotationElement = {
   id: ElementId;
   type: 'annotation';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1156,8 +1150,6 @@ export type LinkCardMeta = {
 export type LinkCardElement = {
   id: ElementId;
   type: 'link-card';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1233,8 +1225,6 @@ export type LinkCardElement = {
 export type VideoElement = {
   id: ElementId;
   type: 'video';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1312,7 +1302,7 @@ export type VideoElement = {
 // Does this element take a TYPED label — i.e. is dropping one an invitation
 // to start writing? True for the paper-and-text kinds (sticky, shape, text,
 // icon), false for the ones whose face is a picture or a control the user
-// configures instead of writes: a sticker is artwork, a reaction pad / mode
+// configures instead of writes: a sticker is artwork, a mode
 // button renders its own caption from its setting, so opening a text caret on
 // them would offer to edit something that isn't theirs to edit. A retired
 // element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired
@@ -1323,8 +1313,12 @@ const UNTYPED_SHAPES = new Set<string>([
   'fence',
   // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) carries no label.
   'avatar-pad',
-  'reaction-pad',
   'mode-button',
+  // The Directory (docs/specs/009-elements/directory.md) carries no label; an Elevator's label is its name.
+  'directory',
+  // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) carry no label.
+  'screen',
+  'room-sign',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {

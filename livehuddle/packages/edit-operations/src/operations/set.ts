@@ -8,7 +8,6 @@ import type { ArrowElement, Element } from '@livehuddle/document';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
-import { layerLockOf } from '../locks';
 import { resolveSome } from '../selectors';
 import {
   currentElements,
@@ -62,8 +61,6 @@ function setOne(
     !written.written.some((key) => ROUTE_KEY_SET.has(key));
   const next = reEnded ? rerouted(fitted.el as ArrowElement, currentElements(state)) : fitted.el;
   if (sameValue(next, el)) return null;
-  const layerLock = layerLockOf(state.tab.layers, next.layerId);
-  if (layerLock) return refuseLocked(state, 'set', operation, next, layerLock);
   writeFields(state, next, operation, written.written);
   state.warnings.push(...written.warnings);
   for (const warning of written.warnings) {

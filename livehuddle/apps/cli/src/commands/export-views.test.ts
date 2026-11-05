@@ -122,23 +122,30 @@ describe('export --all', () => {
     expect(envelope).not.toHaveProperty('livehuddleSync');
   });
 
-  it('writes each tab as SVG, Mermaid and Markdown, telling apart tabs of one name', async () => {
+  it('writes each tab as SVG and Markdown, telling apart tabs of one name', async () => {
     const one = { 'aaaa0001-doc': docs['aaaa0001-doc']! };
     const { out, io } = await cli(
-      ['export', '--all', '--to', 'out', '--format', 'svg, mermaid,md,svg'],
+      ['export', '--all', '--to', 'out', '--format', 'svg, md,svg'],
       host(one),
     );
     expect(out.trim().split('\n')).toEqual([
       'out/shop/flow-flow-0001.svg',
-      'out/shop/flow-flow-0001.mmd',
       'out/shop/flow-flow-0001.md',
       'out/shop/flow-flow-0002.svg',
-      'out/shop/flow-flow-0002.mmd',
       'out/shop/flow-flow-0002.md',
-      '1 document · 6 files',
+      '1 document · 4 files',
     ]);
-    expect(io.fileMap.get('out/shop/flow-flow-0001.mmd')!.data).toContain('Web app');
     expect(io.fileMap.get('out/shop/flow-flow-0001.md')!.data).toContain('Web app');
+  });
+
+  // Mermaid is gone from livehuddle (not-in-livehuddle.md "Imports from other tools").
+  it('refuses the retired mermaid format', async () => {
+    const one = { 'aaaa0001-doc': docs['aaaa0001-doc']! };
+    const { code, err } = await cli(
+      ['export', '--all', '--to', 'out', '--format', 'mermaid'],
+      host(one),
+    );
+    expect([code, err]).toEqual([2, expect.stringContaining('unknown format mermaid')]);
   });
 
   it('waits out the rate limit, and gives up after three tries', async () => {

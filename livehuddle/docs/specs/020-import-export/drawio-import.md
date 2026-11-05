@@ -74,7 +74,7 @@ the graph (`layer`, `node` with `label`, `html` and `metadata.link`, `edge` with
   imported instead, exactly, like any `.drawio` file.
 - Otherwise each page's nodes and edges become a graph that is **laid out automatically** by the same
   layered layout Mermaid import uses (`layoutClusteredGraph`, `packages/document`): nodes as
-  boxes, edges as connections between them, layers in document order. Labels convert from draw.io's
+  boxes, edges as connections between them, in document order. Labels convert from draw.io's
   HTML to plain text by the same HTML parser as every label (`<br>`, `<p>`, `<div>` and headings
   become line breaks, entities decode once, so escaped markup stays text); an empty label stays empty. A node's `metadata.link` becomes its
   link by the same rule as any cell's: a web or email address, or a link to another page of the
@@ -148,9 +148,8 @@ Routes are worked out in draw.io's units first and scale with the page.
 
 ### The cell tree
 
-- **Layers.** The root cell's children are draw.io layers. One layer imports as the tab's implicit
-  default layer; two or more become `Tab.layers` in the same order (bottom to top), with their names,
-  `visible="0"` as a hidden layer and `locked=1` as a locked layer. Every element carries its layer.
+- **Layers.** The root cell's children are draw.io layers. livehuddle has no layers, so their cells come
+  in as one plane, bottom layer first; a layer's name, `visible="0"` and `locked=1` are not kept.
 - **Geometry.** A cell's geometry is relative to its parent's origin; the converter resolves every
   cell to absolute canvas coordinates. A `relative="1"` vertex geometry inside a vertex is a fraction
   of the parent's size plus an offset. Edge waypoints and loose edge ends are in the edge's parent's

@@ -1,7 +1,7 @@
 'use client';
 
 // The empty-canvas card's picture (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a small scene
-// of a Workshop board, stickies with a vote, in the brand's tints. Decorative.
+// of a Workshop board, stickies and a marker, in the brand's tints. Decorative.
 
 const BRAND = 'var(--color-brand-500)';
 const SOFT = 'color-mix(in srgb, var(--color-brand-500) 14%, transparent)';
@@ -34,7 +34,7 @@ function WorkshopScene() {
       {sticky(70, 12, '#fbcfe8', -2)}
       {sticky(28, 40, '#bfdbfe', 2)}
       {sticky(58, 42, '#fde68a', -3)}
-      {/* A vote dot on one. */}
+      {/* A marker on one. */}
       <circle
         cx="80"
         cy="16"

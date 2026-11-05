@@ -163,7 +163,7 @@ mode, none of which a per-kind colour would.
 | Timer           | a dial             | minute ticks along the edge you read                                                                                 |
 | Session button  | a tally sheet      | five-bar gate marks (not on a timer)                                                                                 |
 | Reveal zone     | (moved on)         | none: an accent-lit cover with a lock ([Reveal zone](../009-elements/reveal-zone.md#the-look))                       |
-| Reaction pad    | (moved on)         | none: a glow and a spotlight in the reaction's colour ([The Reaction Pad](../009-elements/reaction-pad.md#the-look)) |
+| Reaction pad    | (moved on)         | none: a glow and a spotlight in the reaction's colour ([The Reaction Pad](../../../../livediagram/docs/specs/009-elements/reaction-pad.md#the-look)) |
 | Mode button     | a keycap           | lit top, shaded skirt, a drop below it                                                                               |
 
 **The kit is being retired, one element at a time.** The [Q&A board](qa-board.md) set a newer

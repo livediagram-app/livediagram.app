@@ -126,7 +126,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   ],
   checklist: ['checklistItems'],
   lane: ['headerFill', 'headerSize', 'titleOrientation'],
-  frame: ['headerFill', 'headerSize'],
   'progress-bar': ['progress'],
   'progress-ring': ['progress'],
   rating: ['rating'],
@@ -143,7 +142,12 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   room: ['roomDoor'],
   // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
   stage: ['stageSpeakers', 'stageCameras'],
+  // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.
+  'world-clock': ['clockZones'],
+  jukebox: ['jukeboxSource'],
   portal: ['portalTarget'],
+  // docs/specs/009-elements/screen-and-room-sign.md "Screen": its Video Link.
+  screen: ['screenUrl'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

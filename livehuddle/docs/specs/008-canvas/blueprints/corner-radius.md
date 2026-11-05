@@ -47,7 +47,7 @@ See the quick style blueprint's "Corners row".
 ## Excalidraw
 
 - Import: `roundness` set (any type) → scene `rounded: true` → `borderRadius: ROUNDED_CORNER_PRESET`
-  (`'lg'`, `apps/editor/lib/board-scene/land-boxes.ts`) on both landing profiles (`land-boxes.ts`,
+  (`'lg'`, `../livediagram/apps/editor/lib/board-scene/land-boxes.ts`) on both landing profiles (`land-boxes.ts`,
   `land-diagram.ts`).
 - Export: unchanged rule, `borderRadius !== 'none'` → `roundness: { type: 3 }`.
 
@@ -59,7 +59,7 @@ See the quick style blueprint's "Corners row".
 | Shorter side at least 4x the preset: unchanged, every preset                                                                                     | same                                                                          |
 | SVG export and hit outline use the rule (small rounded square)                                                                                   | `packages/document/src/corner-radius-renderers.test.ts`, `svg-render.test.ts` |
 | Canvas variant uses the rule (presets, kind defaults, Full)                                                                                      | `apps/editor/components/canvas/element-variant.test.ts`                       |
-| Excalidraw 13.9 x 14.6 type 3 lands `lg` on both profiles, draws about 3.5 px; types 1 and 2 too; matches Excalidraw up to 96 px; exports type 3 | `apps/editor/lib/excalidraw-import.test.ts` "rounded corners"                 |
+| Excalidraw 13.9 x 14.6 type 3 lands `lg` on both profiles, draws about 3.5 px; types 1 and 2 too; matches Excalidraw up to 96 px; exports type 3 | `../livediagram/apps/editor/lib/excalidraw-import.test.ts` "rounded corners"  |
 
 ## Constants and configuration
 

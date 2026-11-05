@@ -7,10 +7,10 @@ import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitiv
 import { SelectGlyph } from './palette-modes-parts';
 
 // The strip's element tiles, drawn as the simple outlines the real tiles use.
-function NavigateGlyph({
+function SpaceGlyph({
   kind,
 }: {
-  kind: 'portal' | 'chair' | 'desk' | 'room' | 'table' | 'plant';
+  kind: 'portal' | 'chair' | 'desk' | 'room' | 'table' | 'plant' | 'sofa';
 }) {
   const s = { className: 'stroke-slate-500', strokeWidth: 1.6, fill: 'none' } as const;
   switch (kind) {
@@ -21,6 +21,14 @@ function NavigateGlyph({
     case 'desk':
       return (
         <path d="M-7 -2 H7 M-5 -2 V6 M5 -2 V6 M-2 -2 V-6 H3 V-2" {...s} strokeLinecap="round" />
+      );
+    case 'sofa':
+      return (
+        <path
+          d="M-7 0 V5 H7 V0 M-5 0 V-4 H5 V0 M-7 0 H-5 M5 0 H7 M-5 2 H5"
+          {...s}
+          strokeLinejoin="round"
+        />
       );
     case 'room':
       return <path d="M-2 -6 H-6 V6 H6 V-6 H2" {...s} strokeLinejoin="round" />;
@@ -83,7 +91,7 @@ function Pill({
 
 // The meeting palette's category bar, as many of its categories as the figure has room for, in order: category
 // names, and '|' for the divider between the bands.
-const BAR: readonly string[] = ['Write', 'Frame', '|', 'Navigate', 'React', '|', 'Icons', 'Media'];
+const BAR: readonly string[] = ['Write', '|', 'Travel', 'Seating', 'Rooms', '|', 'Icons', 'Media'];
 // A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
 // strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in help-pages.md).
 const charW = 4.5;
@@ -217,7 +225,7 @@ export function MenuCard({ x, y, menuOnly = false }: { x: number; y: number; men
 }
 
 /** The editor's top row and bottom row: the menu button and the tab's name top-left,
- *  the strip across the top (ending in Search), and Undo and Redo, Layers and the Theme
+ *  the strip across the top (ending in Search), and Undo and Redo, the Theme
  *  paintbrush, then the zoom bottom-right. */
 export function ToolbarLayoutOverview() {
   const leader = { className: 'stroke-slate-300', strokeWidth: 1 } as const;
@@ -243,39 +251,35 @@ export function ToolbarLayoutOverview() {
       <Label x={78 + STRIP_W - 18} y={80} size={10} anchor="middle" tone="muted">
         Search
       </Label>
-      {/* The bottom row: Undo and Redo, Layers and the paintbrush, then zoom. */}
-      <rect
-        x={170}
-        y={158}
-        width={60}
-        height={26}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <line x1={200} y1={163} x2={200} y2={179} className="stroke-slate-200" strokeWidth={1.2} />
-      <path d="M190 168 h-8 l3 -3 M182 168 l3 3 M182 168 h5 a4.5 4.5 0 0 1 0 9 h-2" {...ink} />
-      <path d="M210 168 h8 l-3 -3 M218 168 l-3 3 M218 168 h-5 a4.5 4.5 0 0 0 0 9 h2" {...ink} />
-      <rect
-        x={238}
-        y={158}
-        width={60}
-        height={26}
-        rx={6}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <line x1={268} y1={163} x2={268} y2={179} className="stroke-slate-200" strokeWidth={1.2} />
-      <path
-        d="M247 170 L253 167 L259 170 L253 173 Z M247 174 L253 177 L259 174"
-        {...ink}
-        strokeLinejoin="round"
-      />
-      <path
-        d="M286 164 l2 2 l-6 6 l-2 -2 Z M280 172 c-2.5 0 -3.5 1.5 -3.5 4 c2.5 0 4 -1 4 -3.5"
-        {...ink}
-        strokeLinejoin="round"
-      />
+      {/* The bottom row: Undo and Redo, the paintbrush, then zoom. */}
+      <g transform="translate(28 0)">
+        <rect
+          x={170}
+          y={158}
+          width={60}
+          height={26}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <line x1={200} y1={163} x2={200} y2={179} className="stroke-slate-200" strokeWidth={1.2} />
+        <path d="M190 168 h-8 l3 -3 M182 168 l3 3 M182 168 h5 a4.5 4.5 0 0 1 0 9 h-2" {...ink} />
+        <path d="M210 168 h8 l-3 -3 M218 168 l-3 3 M218 168 h-5 a4.5 4.5 0 0 0 0 9 h2" {...ink} />
+        <rect
+          x={238}
+          y={158}
+          width={32}
+          height={26}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <path
+          d="M258 164 l2 2 l-6 6 l-2 -2 Z M252 172 c-2.5 0 -3.5 1.5 -3.5 4 c2.5 0 4 -1 4 -3.5"
+          {...ink}
+          strokeLinejoin="round"
+        />
+      </g>
       <rect
         x={306}
         y={158}
@@ -292,30 +296,20 @@ export function ToolbarLayoutOverview() {
   );
 }
 
-/** A category open: resting on Navigate hangs its flyout under it, its tiles in rows. */
+/** A category open: resting on Seating hangs its flyout under it, its tiles in one block. */
 export function ToolbarCategoryFlyout() {
-  const groups = [
-    { title: 'Navigate', tiles: ['portal', 'chair', 'desk'] as const },
-    { title: 'Office', tiles: ['room', 'table', 'plant'] as const },
-  ];
-  const navigate = stripCategory(78, 'Navigate');
-  const panelX = Math.round(navigate.left + navigate.w / 2 - 90);
+  const tiles = ['chair', 'desk', 'sofa', 'table'] as const;
+  const seating = stripCategory(78, 'Seating');
+  const panelX = Math.round(seating.left + seating.w / 2 - 90);
   return (
     <Scene w={420} h={236}>
       <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} open="Navigate" />
-      <Panel x={panelX} y={58} w={180} h={166} title="NAVIGATE">
-        {groups.map((g, gi) => (
-          <g key={g.title}>
-            <Label x={panelX + 10} y={96 + gi * 60} size={9} weight={600} tone="muted">
-              {g.title}
-            </Label>
-            {g.tiles.map((kind, i) => (
-              <Tile key={kind} x={panelX + 10 + i * 54} y={102 + gi * 60} size={34}>
-                <NavigateGlyph kind={kind} />
-              </Tile>
-            ))}
-          </g>
+      <Strip x={78} y={16} open="Seating" />
+      <Panel x={panelX} y={58} w={180} h={126} title="SEATING">
+        {tiles.map((kind, i) => (
+          <Tile key={kind} x={panelX + 10 + (i % 3) * 54} y={90 + Math.floor(i / 3) * 44} size={34}>
+            <SpaceGlyph kind={kind} />
+          </Tile>
         ))}
       </Panel>
     </Scene>

@@ -1,4 +1,4 @@
-import { isFixedSizeShape, REACTION_PAD_LABEL } from '@livehuddle/document';
+import { isFixedSizeShape, isPlacedShape } from '@livehuddle/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -201,7 +201,10 @@ export function buildDrawnBoxed(
   // Drawn in Draw mode (docs/specs/007-editor/editor-modes.md): a text box hugs its text.
   drawMode = false,
 ) {
-  const isTap = isDrawTap(startX, startY, endX, endY);
+  // A placed piece (docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview themselves") has no box to
+  // draw: a drag places it like a tap, at its own size, centred where the press began.
+  const placed = intent.type === 'shape' && isPlacedShape(intent.kind);
+  const isTap = placed || isDrawTap(startX, startY, endX, endY);
   const base =
     intent.type === 'shape'
       ? applyShapeVariant(createShape(intent.kind, startX, startY), intent.variant)
@@ -219,7 +222,7 @@ export function buildDrawnBoxed(
                   // here rather than leaving a bare embed to re-point.
                   createVideo(startX, startY, intent.provider)
                 : createImage(startX, startY);
-  const tapSize = inheritedSizeFor(base, inheritFrom);
+  const tapSize = placed ? base : inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
@@ -279,13 +282,10 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
       : {}),
-    // The palette offers a tile per mode and per reaction (docs/specs/009-elements/reaction-pad.md), so the choice
+    // The palette offers a tile per mode (docs/specs/009-elements/mode-button.md), so the choice
     // arrives with the intent and is applied here rather than left on the factory default for the user to change.
     ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
       ? { mode: intent.mode }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'reaction-pad' && intent.reaction
-      ? { reaction: intent.reaction, label: REACTION_PAD_LABEL[intent.reaction] }
       : {}),
     // Sticker draw intent (docs/specs/010-palette/stickers.md): carry the chosen art. Lands SQUARE to
     // the canvas — an automatic tilt was tried and dropped, see the spec.

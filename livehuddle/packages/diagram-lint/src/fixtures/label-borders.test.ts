@@ -21,7 +21,7 @@ describe('label plates and frame borders', () => {
     ) as Parameters<typeof resolveGraphInput>[0];
     const tab = buildGraphTab('t', 'T', resolveGraphInput(input).graph!, undefined);
     const frames = tab.elements.filter(
-      (e): e is BoxedElement => e.type === 'shape' && e.shape === 'frame',
+      (e): e is BoxedElement => e.type === 'shape' && e.shape === 'boundary',
     );
     const pass = arrowLabelPass(tab.elements);
     const labelled = tab.elements.filter(

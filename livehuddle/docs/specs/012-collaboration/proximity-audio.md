@@ -106,11 +106,6 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
 **your** bars to others but hides **theirs** from you, and closes every subscription (no voice, no bubble, not even a
 stage's). Your microphone carries on under its own Mute, so you are heard if you speak.
 
-## Hide cursors
-
-A [hide-cursors vote](session-tools.md#hide-participant-cursors-default-on) hides **cursors only** (owner,
-2026-11-03): characters, their speech bubbles, their equalisers and the audio carry on through a vote.
-
 ## The wire
 
 Three presence ops in `@livehuddle/api-schema` (`call-voice.ts`), each with a field-by-field parser shared by the room

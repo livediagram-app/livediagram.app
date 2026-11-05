@@ -30,7 +30,7 @@ export type LintOptions = {
 const TAB_CHECKS = [...LINT_CHECKS, textOverprint];
 
 export function lintTab(
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn' | 'kind'>>,
+  tab: Pick<Tab, 'elements' | 'theme'> & Partial<Pick<Tab, 'opensIn' | 'kind'>>,
   options: LintOptions = {},
 ): LintReport {
   const checks = TAB_CHECKS;
@@ -94,7 +94,7 @@ export function graphEdgeIds(input: GraphInput): () => string {
   };
 }
 
-// A graph or Mermaid source, laid out as `create_document` lays it out, then linted.
+// A graph, laid out as `create_document` lays it out, then linted.
 export function lintGraph(
   input: GraphInput,
   options: { log?: LintLogger } = {},

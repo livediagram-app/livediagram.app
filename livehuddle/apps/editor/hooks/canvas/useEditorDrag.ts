@@ -26,6 +26,7 @@ import {
   nearestElementTowards,
   opposingAnchor,
   rebindArrowAnchorsAfterMove,
+  snapMovedDoors,
   type ArrowElement,
   type Element,
 } from '@livehuddle/document';
@@ -304,7 +305,10 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
             // off. Read through a ref so a mid-drag flip lands on the
             // next pointermove; ?? true mirrors its default.
             const autoRebind = depsRef.current.autoRebindArrowsRef.current ?? true;
-            return autoRebind ? rebindArrowAnchorsAfterMove(moved, drag.startBounds) : moved;
+            // A moved door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door"), unless
+            // Cmd / Ctrl places it freely.
+            const onWalls = noSnap ? moved : snapMovedDoors(moved, drag.startBounds);
+            return autoRebind ? rebindArrowAnchorsAfterMove(onWalls, drag.startBounds) : onWalls;
           });
           // Shift-duplicate identity swap (docs/specs/008-canvas/shift-drag-duplicate.md): holding Shift turns
           // this move into a copy by parking the originals and handing the

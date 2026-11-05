@@ -19,7 +19,14 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab, withVariantColours } from '@livehuddle/document';
+import {
+  createFreehand,
+  createOutlinedRoom,
+  snapDoorToWall,
+  type Element,
+  type Tab,
+  withVariantColours,
+} from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
@@ -93,13 +100,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // last one you had selected" behaviour through the combined gesture.
   const inheritSizeRef = useRef<Element | null>(null);
 
-  // The canvas tool an armed draw cannot share the pointer with: laser goes to pan (it swallows pointer-down to paint
-  // trail dots and would block the draw), and the eraser and the format painter to select, as a whiteboard's pens
+  // The canvas tools an armed draw cannot share the pointer with: the eraser and the format painter go to select, as a whiteboard's pens
   // put them down (useWhiteboard armPen). With the eraser still held, A said "drag to draw an arrow" and the drag
   // erased what it crossed.
   const putDownPressTool = () => {
-    if (canvasTool === 'laser') setCanvasTool('pan');
-    else if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
+    if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
   };
 
   // Shared "arm draw mode" path for every palette add. Tap-to-drop and
@@ -181,6 +186,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     if (
       intent.type === 'freehand' ||
       intent.type === 'polygon' ||
+      intent.type === 'room-walls' ||
       intent.type === 'path' ||
       intent.type === 'fill'
     ) {
@@ -214,10 +220,15 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       intent.type === 'shape' && dressed.type === 'shape'
         ? withVariantColours(dressed, intent.variant)
         : dressed;
-    // Frames don't need special-casing here: the canvas + exporters
-    // route through `framesFirst`, which keeps every frame painted
-    // behind its contents regardless of array position (docs/specs/008-canvas/canvas-and-palette.md).
-    commit((els) => [...els, sized]);
+    // Containers don't need special-casing here: the canvas + exporters
+    // route through `framesFirst`, which keeps every container painted
+    // behind its contents regardless of array position.
+    // A door tapped or drawn near a wall lands on it (docs/specs/009-elements/room-builder.md "Door"), against the
+    // live walls.
+    commit((els) => [
+      ...els,
+      sized.type === 'shape' && sized.shape === 'door' ? snapDoorToWall(sized, els) : sized,
+    ]);
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode
     // (matches the double-click-to-add-text path in useElementCreation):
@@ -329,6 +340,30 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     setPendingDraw({ type: 'polygon' });
   };
 
+  // The Room Builder (docs/specs/009-elements/room-builder.md): arms the polygon's click-to-place gesture in room
+  // mode; the corners accumulate canvas-side (useCanvasPolygonGesture).
+  const beginRoomWalls = () => {
+    if (editsBlocked) return;
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    setEditingId(null);
+    putDownPressTool();
+    setPendingDraw({ type: 'room-walls' });
+  };
+
+  // The Room Builder's commit: the corners closed into a custom-shaped Room, selected, one history entry. Fewer than
+  // three corners, or a room with no floor, cancels.
+  const commitRoomWalls = (corners: { x: number; y: number }[]) => {
+    setPendingDraw(null);
+    if (editsBlocked) return;
+    const room = createOutlinedRoom(corners);
+    if (!room) return;
+    const styled = styleNewElement(room);
+    commit((els) => [...els, styled]);
+    setSelectedId(styled.id);
+    track('Element', 'Added', 'CustomRoom');
+  };
+
   // Canvas-driven commit for the pen gesture — see makeCommitFreehand.
   const commitFreehand = makeCommitFreehand({
     editsBlocked,
@@ -373,8 +408,10 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     beginMarker,
     beginShapePen,
     beginPolygon,
+    beginRoomWalls,
     commitFreehand,
     commitPolygon,
+    commitRoomWalls,
     highlighter: {
       colour: highlighterColour,
       width: highlighterWidth,

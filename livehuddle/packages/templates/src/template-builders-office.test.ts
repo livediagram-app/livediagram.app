@@ -255,7 +255,18 @@ describe('furnishRooms', () => {
 // Virtual Office's button once sat over the Focus Room's wall and bookshelf.
 describe('the Walk In button in every Spaces template', () => {
   type Box = { x: number; y: number; width: number; height: number };
-  const kinds = ['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall'] as const;
+  const kinds = [
+    'virtual-office',
+    'coworking-space',
+    'team-pod',
+    'focus-library',
+    'all-hands-hall',
+    'training-room',
+    'rooftop-bar',
+    'cafe',
+    'garden-retreat',
+    'city-park',
+  ] as const;
   const hits = (a: Box, b: Box) =>
     a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 

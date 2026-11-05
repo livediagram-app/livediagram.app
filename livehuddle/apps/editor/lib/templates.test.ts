@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplate, buildTemplatedTab } from './template-builders';
+import { buildTemplatedTab } from './template-builders';
 import {
   BLANK_TEMPLATE_FOR_MODE,
   isBlankTemplate,
@@ -8,7 +8,6 @@ import {
   TEMPLATE_CATEGORIES,
   templateCanvasOverrides,
   templateCategory,
-  templateLayers,
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livehuddle/templates';
@@ -18,7 +17,7 @@ import { getTheme } from './themes';
 // theme have to land in the editor as a fully styled tab, or the person opens an "Untitled" document that doesn't
 // match the option they picked.
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the four Spaces. The
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the ten Spaces. The
 // retrospectives, workshops, planning and strategy boards and the quizzes and games left with Work Tracker #423.
 describe('TEMPLATES catalogue', () => {
   const ALL_KINDS: TemplateKind[] = [
@@ -27,12 +26,18 @@ describe('TEMPLATES catalogue', () => {
     'coworking-space',
     'team-pod',
     'all-hands-hall',
+    'focus-library',
+    'training-room',
+    'rooftop-bar',
+    'cafe',
+    'garden-retreat',
+    'city-park',
   ];
 
   // Hidden templates are buildable but never listed; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists Blank Space and the four Spaces, in that order', () => {
+  it('lists Blank Space and the ten Spaces, in that order', () => {
     expect(listed.map((t) => t.kind)).toEqual(ALL_KINDS);
     expect(listed.map((t) => t.title)).toEqual([
       'Blank Space',
@@ -40,6 +45,12 @@ describe('TEMPLATES catalogue', () => {
       'Coworking Space',
       'Team Pod',
       'All-Hands Hall',
+      'Focus Library',
+      'Training Room',
+      'Rooftop Bar',
+      'Cafe',
+      'Garden Retreat',
+      'City Park',
     ]);
   });
 
@@ -67,12 +78,7 @@ describe('TEMPLATES catalogue', () => {
 
 describe('templateCanvasOverrides', () => {
   it('lays every Space on the dot grid at full strength', () => {
-    for (const kind of [
-      'virtual-office',
-      'coworking-space',
-      'team-pod',
-      'all-hands-hall',
-    ] as const) {
+    for (const kind of TEMPLATES.map((t) => t.kind).filter((k) => k !== 'blank-session')) {
       expect(templateCanvasOverrides(kind), kind).toEqual({
         backgroundPattern: 'grid',
         opensIn: 'workshop',
@@ -84,17 +90,6 @@ describe('templateCanvasOverrides', () => {
     // docs/specs/007-editor/editor-modes.md: the meeting board is the one mode, and it lands on every creation path
     // through here (the template, a new tab, Quick Start, the MCP worker).
     expect(templateCanvasOverrides('blank-session')).toEqual({ opensIn: 'workshop' });
-  });
-});
-
-// Layered templates (docs/specs/006-document/layers.md "Layered templates"): the layered ones left with their
-// templates, so no builder stamps a layer id a tab would not know.
-describe('layered templates (docs/specs/006-document/layers.md)', () => {
-  it('ships no layered template and stamps no layer id', () => {
-    for (const { kind } of TEMPLATES) {
-      expect(templateLayers(kind), kind).toBeUndefined();
-      for (const el of buildTemplate(kind, 0, 0)) expect(el.layerId, kind).toBeUndefined();
-    }
   });
 });
 

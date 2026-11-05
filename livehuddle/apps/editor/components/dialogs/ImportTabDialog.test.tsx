@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The Import dialog's Excalidraw card and its routing: a clean import closes, an
-// import with a report shows the summary (docs/specs/020-import-export/excalidraw-import-export.md).
+// Import to Tab: a livehuddle tab's JSON is the one format (backup and restore); imports from other tools are gone
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools").
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -10,7 +10,7 @@ import { ImportTabDialog } from './ImportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-function open(outcome: ImportOutcome) {
+function open(outcome: ImportOutcome = { status: 'done' }) {
   const onClose = vi.fn();
   const onImportText = vi.fn(async () => outcome);
   render(
@@ -21,117 +21,38 @@ function open(outcome: ImportOutcome) {
       onClose={onClose}
     />,
   );
-  fireEvent.click(screen.getByRole('button', { name: /Excalidraw/ }));
-  fireEvent.change(screen.getByRole('textbox'), { target: { value: '{"type":"excalidraw"}' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Import' }));
   return { onClose, onImportText };
 }
 
-describe('ImportTabDialog, Excalidraw', () => {
-  it('offers Excalidraw and passes the pasted scene to it', async () => {
-    const { onImportText, onClose } = open({ status: 'done' });
-    await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
-    expect(onImportText).toHaveBeenCalledWith(
-      'excalidraw',
-      '{"type":"excalidraw"}',
-      expect.any(Function),
-    );
-  });
-
-  it('shows the summary instead of closing when the import reports changes', async () => {
-    const { onClose } = open({
-      status: 'done',
-      scene: {
-        landed: { shape: 4 },
-        degraded: [
-          { rule: 'Labels were moved inside their shapes or merged onto one line', count: 2 },
-        ],
-        skipped: [],
-      },
-    });
-    await screen.findByTestId('import-image-report');
-    expect(screen.getByText("Here's how your board came across.")).toBeTruthy();
-    expect(screen.queryByText(/This replaces everything/)).toBeNull();
-    expect(onClose).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
-    expect(onClose).toHaveBeenCalledOnce();
-  });
-
-  it('shows the same report for an import that only met images', async () => {
-    open({
-      status: 'done',
-      images: { imported: 2, deduped: 0, placeholders: {} },
-    });
-    expect((await screen.findByTestId('import-image-report')).textContent).toContain(
-      '2 images imported',
-    );
-    expect(screen.getByText("Here's how your images came across.")).toBeTruthy();
-  });
-});
-
-describe('ImportTabDialog, offered formats', () => {
-  const props = {
-    tabName: 'Poster',
-    onImportFile: vi.fn(),
-    onImportText: vi.fn(),
-    onClose: vi.fn(),
-  };
-
-  // The draw.io, Mermaid and Markdown imports left livehuddle (Work Tracker #423, part 4).
-  it('offers a livehuddle tab and Excalidraw, and no diagram tool', () => {
-    render(<ImportTabDialog {...props} />);
-    expect(screen.getByRole('button', { name: /JSON/ })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Excalidraw/ })).toBeTruthy();
-    for (const gone of [/Markdown/, /Mermaid/, /draw\.io/]) {
+describe('ImportTabDialog', () => {
+  it('opens straight at the JSON panel, with no format list and no other tool', () => {
+    open();
+    expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'JSON to import' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    for (const gone of [/Excalidraw/, /Markdown/, /Mermaid/, /draw\.io/]) {
       expect(screen.queryByRole('button', { name: gone })).toBeNull();
     }
   });
 
-  it('opens straight at the one format it offers, with no way back to a list', () => {
-    render(<ImportTabDialog {...props} formats={['json']} />);
-    expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
-    expect(screen.getByRole('textbox')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+  it('passes the pasted JSON on and closes on a clean import', async () => {
+    const { onImportText, onClose } = open();
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '{}' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
+    expect(onImportText).toHaveBeenCalledWith('json', '{}', expect.any(Function));
   });
-});
 
-// Two cards across, a phone too; the warning's keys only for a keyboard.
-describe('ImportTabDialog on a phone', () => {
-  it('lays its formats out two across and names Undo’s keys only on a fine pointer', () => {
-    render(
-      <ImportTabDialog
-        tabName="Board"
-        onImportFile={vi.fn()}
-        onImportText={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const grid = screen.getByRole('button', { name: /Excalidraw/ }).parentElement!;
-    expect(grid.className).toContain('grid-cols-2');
+  it('names Undo’s keys only on a fine pointer', () => {
+    open();
     const keys = screen.getByText(/⌘Z/);
     expect(keys.className).toContain('pointer-coarse:hidden');
     expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
   });
-});
 
-// A screen reader hears what the paste field is for, and why an import did not land.
-describe('ImportTabDialog for a screen reader', () => {
-  it('names the paste field for its format and announces an error', async () => {
-    const onImportText = vi.fn(async (): Promise<ImportOutcome> => ({
-      status: 'error',
-      error: 'No nodes found.',
-    }));
-    render(
-      <ImportTabDialog
-        tabName="Board"
-        onImportFile={vi.fn()}
-        onImportText={onImportText}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: /^JSON/ }));
-    const field = screen.getByRole('textbox', { name: 'JSON to import' });
-    fireEvent.change(field, { target: { value: '{}' } });
+  it('announces an error for a screen reader', async () => {
+    open({ status: 'error', error: 'No nodes found.' });
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '{}' } });
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
     expect((await screen.findByRole('alert')).textContent).toBe('No nodes found.');
   });

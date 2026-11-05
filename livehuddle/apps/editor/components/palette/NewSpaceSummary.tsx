@@ -5,10 +5,10 @@ import { TEMPLATES, templateCategory } from '@livehuddle/templates';
 // How many templates the panel names: one row on a desktop card.
 const NAMED = 3;
 
-// The Virtual Spaces a new Space's start opens on (its first category), by title: what waits there. Titles only,
-// never preview art, so /new's first load carries none of the template previews.
+// The Office Spaces a new Space's start opens on (its first group, LEADING_START_GROUP), by title: what waits there.
+// Titles only, never preview art, so /new's first load carries none of the template previews.
 export const START_TEMPLATE_TITLES: readonly string[] = TEMPLATES.filter(
-  (t) => !t.hidden && templateCategory(t.kind) === 'spaces',
+  (t) => !t.hidden && templateCategory(t.kind) === 'office',
 )
   .slice(0, NAMED)
   .map((t) => t.title);

@@ -1,54 +1,29 @@
 // Per-tab live session tools (docs/specs/012-collaboration/session-tools.md): the facilitator-run TIMER
-// (countdown / stopwatch) and dot-VOTING handlers. State lives on the
-// Tab (`timer`, `vote`) so it rides the normal tab sync + persistence +
+// (countdown / stopwatch) handlers. State lives on the
+// Tab (`timer`) so it rides the normal tab sync + persistence +
 // late-joiner replay; the realtime room already drops view-role
 // mutations, so every handler here is naturally edit-role only.
 //
 // All mutations go through `commitTabs` (which does NOT push undo
-// history), so a timer start or a vote dot isn't undoable.
+// history), so a timer start isn't undoable.
 
-import {
-  applyVoteDelta,
-  canCastVote,
-  isVoteHost,
-  timerDisplayMs,
-  type Tab,
-  type TabVote,
-  type TimerMode,
-  type VoteSetup,
-} from '@livehuddle/document';
+import { timerDisplayMs, type Tab, type TimerMode } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {
   editsBlocked: boolean;
   // Somebody else is facilitating (docs/specs/012-collaboration/facilitator.md), so the lifecycle verbs below are
-  // theirs for now. Casting and retracting a dot stay open: answering is what
-  // the room is for, and a vote only the facilitator can vote in is not a vote.
+  // theirs for now.
   sessionToolsBlocked: boolean;
-  // We hold the facilitator baton, so we may drive a vote somebody else
-  // started (docs/specs/012-collaboration/session-tools.md, "Who runs a vote").
-  isFacilitator: boolean;
   activeId: string;
   activeTab: Tab;
   // Tab mutator that does NOT push undo history (same one the appearance
   // setters use).
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
-  // The local participant id — whose dots a cast/retract adds or removes.
-  selfId: string;
-  // Broadcast ONE dot the instant it is cast or taken back (docs/specs/012-collaboration/session-tools.md).
-  //
-  // Not left to the autosave like every other tab change: dots are the one
-  // field the whole room writes at once, and the debounced whole-object patch
-  // that used to carry them let a peer's stale snapshot erase a dot somebody
-  // had just placed. This sends the CHANGE, immediately, so concurrent dots
-  // commute instead of racing. No-op before the room is open.
-  // `round` is the open vote's (docs/specs/012-collaboration/collab-race-hardening.md), so peers drop a dot meant for
-  // another round.
-  emitVote: (tabId: string, elementId: string, delta: 1 | -1, round?: string) => void;
 };
 
 export function useTabSession(deps: TabSessionDeps) {
-  const { editsBlocked, activeId, commitTabs, selfId, emitVote } = deps;
+  const { editsBlocked, activeId, commitTabs } = deps;
   // One flag for every verb that runs the room, so a new one cannot be added
   // without deciding which side of the line it is on.
   const runBlocked = deps.editsBlocked || deps.sessionToolsBlocked;
@@ -195,135 +170,6 @@ export function useTabSession(deps: TabSessionDeps) {
     track('Tab', 'Ended', mode === 'countdown' ? 'CountdownTimer' : 'StopwatchTimer');
   };
 
-  // --- Voting --------------------------------------------------------------
-
-  // Privacy is decided HERE, at start, and baked into the vote — docs/specs/012-collaboration/session-tools.md
-  // has no mid-vote toggle, so a participant can trust that what was
-  // hidden stayed hidden for the whole vote.
-  const startVote = (votesPerPerson: number, setup?: VoteSetup) => {
-    if (runBlocked) return;
-    const vote: TabVote = {
-      active: true,
-      revealed: false,
-      votesPerPerson,
-      votes: {},
-      hideCursors: setup?.hideCursors === true,
-      hideCounts: setup?.hideCounts === true,
-      // Layer scope (docs/specs/012-collaboration/vote-layer-scope.md). Undefined = every layer, which is what a
-      // single-layer tab always gets since the picker never shows there.
-      voteLayerId: setup?.layerId,
-      // Absent rather than false when off, so an ordinary vote's wire shape
-      // is unchanged.
-      ...(setup?.onePerElement ? { onePerElement: true } : {}),
-      // A vote is one person's to run (docs/specs/012-collaboration/session-tools.md): the starter is the only
-      // one who can end / reveal / clear it or move the results focus.
-      startedBy: selfId,
-      // A fresh round (docs/specs/012-collaboration/collab-race-hardening.md): dots in flight from any earlier vote on this
-      // tab name a different round, so no peer can count them against this one.
-      round: crypto.randomUUID(),
-    };
-    patchActive((t) => ({ ...t, vote }));
-    track('Tab', 'Started', 'Vote');
-    // A second, separate line for the privacy modes so the vote-start series
-    // stays comparable across the change (docs/specs/017-telemetry/telemetry.md): cursors default ON, so
-    // folding it into the 'Vote' type would have hollowed out that series.
-    if (vote.hideCursors || vote.hideCounts) track('Tab', 'Started', 'PrivateVote');
-  };
-
-  // Whether it ended an open vote, so the caller acts only on a real end.
-  const endVote = (): boolean => {
-    if (runBlocked) return false;
-    // Host-only (docs/specs/012-collaboration/session-tools.md). Ending is destructive-ish — you can restart a
-    // vote but every dot is lost — so a participant can't do it by
-    // accident. Re-checked here as well as hidden in the UI, since the
-    // handler is reachable from more than one surface.
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return false;
-    const open = !!deps.activeTab.vote?.active;
-    patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, active: false } } : t));
-    track('Tab', 'Ended', 'Vote');
-    return open;
-  };
-
-  const revealVote = () => {
-    if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
-    // Revealing also seats the shared walkthrough on the top pick, so
-    // every participant lands on the same element as the host.
-    patchActive((t) =>
-      t.vote ? { ...t, vote: { ...t.vote, revealed: true, reviewIndex: 0 } } : t,
-    );
-    track('Tab', 'Revealed', 'Vote');
-  };
-
-  const clearVote = () => {
-    if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
-    if (!deps.activeTab.vote) return;
-    patchActive((t) => {
-      if (!t.vote) return t;
-      const { vote: _drop, ...rest } = t;
-      return rest;
-    });
-    // Distinct from Ended: ending closes casting and keeps the tallies,
-    // clearing discards the round entirely. Conflating them would hide how
-    // often a vote gets thrown away and restarted.
-    track('Tab', 'Cleared', 'Vote');
-  };
-
-  // Add one of MY dots to an element, if a vote is open and I have budget
-  // left. No history (too frequent).
-  //
-  // Whether a dot lands is decided OUTSIDE the state updater, from the
-  // rendered tab: a press with the budget spent (or a second dot on a
-  // one-per-item vote) casts nothing and must not count as Element·Voted
-  // (docs/specs/017-telemetry/telemetry.md), and a flag set inside an updater is unreliable (React may run
-  // it later, or twice). The updater keeps its own guard so the write can
-  // never exceed the budget either way.
-  // Says whether a dot moved, for the keyboard's answer (docs/specs/012-collaboration/blueprints/vote-keys.md).
-  const castVote = (elementId: string): boolean => {
-    if (editsBlocked) return false;
-    const current = deps.activeTab.vote;
-    if (!current || !canCastVote(current, selfId, elementId)) return false;
-    patchActive((t) => {
-      const vote = t.vote;
-      if (!vote || !canCastVote(vote, selfId, elementId)) return t;
-      return { ...t, vote: applyVoteDelta(vote, elementId, selfId, 1) };
-    });
-    // Straight out, ahead of the 600ms autosave: the point of the op is that a
-    // dot stops waiting behind a debounce it can lose a race inside.
-    emitVote(activeId, elementId, 1, current.round);
-    track('Element', 'Voted');
-    return true;
-  };
-
-  // Move the shared results walkthrough to a rank. Host-only: the room
-  // reviews the picks together, so participants follow rather than each
-  // wandering the list on their own screen (docs/specs/012-collaboration/session-tools.md).
-  const setVoteReviewIndex = (index: number) => {
-    if (runBlocked) return;
-    if (!isVoteHost(deps.activeTab.vote, selfId, deps.isFacilitator)) return;
-    patchActive((t) => (t.vote ? { ...t, vote: { ...t.vote, reviewIndex: index } } : t));
-  };
-
-  // Remove ONE of my dots from an element (if any). Decided from the rendered
-  // tab for the same reason as castVote.
-  // A closed vote keeps its dots: the stepper is gone once casting closes, and a key must not reach past it.
-  const retractVote = (elementId: string): boolean => {
-    if (editsBlocked) return false;
-    const current = deps.activeTab.vote;
-    if (!current?.active) return false;
-    const mine = current.votes[elementId] ?? [];
-    if (!mine.includes(selfId)) return false;
-    patchActive((t) =>
-      t.vote ? { ...t, vote: applyVoteDelta(t.vote, elementId, selfId, -1) } : t,
-    );
-    emitVote(activeId, elementId, -1, current.round);
-    // The counterpart to Element·Voted, so "dots cast" can be read net of
-    // second thoughts. Only when a dot actually came off.
-    track('Element', 'Removed', 'Vote');
-    return true;
-  };
-
   return {
     startTimer,
     pauseTimer,
@@ -332,12 +178,5 @@ export function useTabSession(deps: TabSessionDeps) {
     setTimerDuration,
     extendTimer,
     clearTimer,
-    startVote,
-    endVote,
-    revealVote,
-    clearVote,
-    setVoteReviewIndex,
-    castVote,
-    retractVote,
   };
 }

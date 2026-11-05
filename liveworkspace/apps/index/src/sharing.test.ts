@@ -95,6 +95,57 @@ describe('share links', () => {
     expect((await body<{ link: { expiry: string } }>(lasting)).link.expiry).toBe('never');
   });
 
+  it("refuses a level the item's app does not offer, while a legacy link keeps it", async () => {
+    // livehuddle offers no new Viewer link (livehuddle/docs/specs/013-workspace/share-roles.md).
+    const ada = await person('user_a');
+    const space = await makeItem(ada.auth, { app: 'livehuddle' });
+    const post = (b: unknown) =>
+      call(`/items/${space.id}/share`, { method: 'POST', auth: ada.auth, body: b });
+    const refused = await post({ level: 'view' });
+    expect(refused.status).toBe(400);
+    expect(await body(refused)).toEqual({ error: 'level_not_offered' });
+    // Left out, a livehuddle link is a Participant's; a Community post's public link is still `view`.
+    expect(await share(ada.auth, space.id)).toMatchObject({ level: 'participate' });
+    expect(await share(ada.auth, space.id, { level: 'view', public: true })).toMatchObject({
+      level: 'view',
+      public: true,
+    });
+    const participant = await share(ada.auth, space.id, { level: 'participate' });
+    const toView = await call(`/share/${participant.code}`, {
+      method: 'PATCH',
+      auth: ada.auth,
+      body: { level: 'view' },
+    });
+    expect(await body(toView)).toEqual({ error: 'level_not_offered' });
+
+    // A Viewer link made before: it still opens as a Viewer, rescopes as one, and can move up.
+    h.db.sql
+      .prepare('INSERT INTO share_links (code, item_id, level, created_at) VALUES (?, ?, ?, ?)')
+      .run('LEGACYVIEWER23', space.id, 'view', Date.now());
+    const opened = await body<{ level: string }>(await call('/share/LEGACYVIEWER23'));
+    expect(opened.level).toBe('view');
+    const rescoped = await call('/share/LEGACYVIEWER23', {
+      method: 'PATCH',
+      auth: ada.auth,
+      body: { level: 'view', tabId: 'tab-1' },
+    });
+    expect(rescoped.status).toBe(200);
+    expect((await body<{ link: ShareLink }>(rescoped)).link).toMatchObject({
+      level: 'view',
+      tabId: 'tab-1',
+    });
+    const movedUp = await call('/share/LEGACYVIEWER23', {
+      method: 'PATCH',
+      auth: ada.auth,
+      body: { level: 'participate' },
+    });
+    expect((await body<{ link: ShareLink }>(movedUp)).link.level).toBe('participate');
+
+    // Every other app still offers Viewer.
+    const plan = await makeItem(ada.auth);
+    expect(await share(ada.auth, plan.id, { level: 'view' })).toMatchObject({ level: 'view' });
+  });
+
   it('lets a link editor rename, but not move, share or trash', async () => {
     const ada = await person('user_a');
     const bob = await person('user_b');

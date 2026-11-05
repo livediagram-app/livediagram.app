@@ -38,9 +38,31 @@ describe('useCanvasTool: changing tab', () => {
 
   it('leaves every other tool alone on a tab change', () => {
     const { result, rerender } = setup();
-    act(() => result.current.selectCanvasTool('laser'));
+    act(() => result.current.selectCanvasTool('eraser'));
     rerender({ tabId: 'tab-2' });
-    expect(result.current.canvasTool).toBe('laser');
+    expect(result.current.canvasTool).toBe('eraser');
+  });
+
+  // Travel (an Elevator ride, a Portal, the Directory's Go) keeps the mode; the next manual switch still ends it.
+  it('keeps Avatar mode through an Elevator trip, and only that one change of tab', () => {
+    const { result, rerender } = setup();
+    act(() => result.current.selectCanvasTool('avatar'));
+    act(() => result.current.keepWalkingTo('tab-2'));
+    rerender({ tabId: 'tab-2' });
+    expect(result.current.canvasTool).toBe('avatar');
+    act(() => result.current.keepWalkingTo('tab-1'));
+    rerender({ tabId: 'tab-1' });
+    expect(result.current.canvasTool).toBe('avatar');
+    rerender({ tabId: 'tab-2' });
+    expect(result.current.canvasTool).toBe('select');
+  });
+
+  it('a travel mark for another tab does not keep the mode on a different switch', () => {
+    const { result, rerender } = setup();
+    act(() => result.current.selectCanvasTool('avatar'));
+    act(() => result.current.keepWalkingTo('tab-3'));
+    rerender({ tabId: 'tab-2' });
+    expect(result.current.canvasTool).toBe('select');
   });
 
   it('never changes tool when no tab is given', () => {
@@ -76,10 +98,10 @@ describe('useCanvasTool: openWalking', () => {
 
   it('does nothing while already walking', () => {
     const { result } = renderHook(() => useCanvasTool());
-    act(() => result.current.selectCanvasTool('laser'));
+    act(() => result.current.selectCanvasTool('eraser'));
     act(() => result.current.selectCanvasTool('avatar'));
     act(() => result.current.openWalking());
     expect(result.current.canvasTool).toBe('avatar');
-    expect(result.current.toolBeforeCurrent()).toBe('laser');
+    expect(result.current.toolBeforeCurrent()).toBe('eraser');
   });
 });

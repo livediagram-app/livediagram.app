@@ -86,7 +86,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
+      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
     },
     {
       name: 'Booth 2',
@@ -95,7 +95,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
+      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
     },
   ];
   return plan(

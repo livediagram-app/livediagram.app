@@ -258,7 +258,7 @@ and it creates the document when Create is pressed:
 
 - **What it makes** (`NewSpaceSummary`): a quiet panel, not a choice, with Workshop's flipchart mark, **Blank Space**,
   one line on what it opens on ("Opens on its start, with templates and the session tools ready."), and, under
-  "Templates on its start", the first three Virtual Spaces (the category the start opens on: Virtual Office,
+  "Templates on its start", the first three Office Spaces (the category the start opens on: Virtual Office,
   Coworking Space, Team Pod) as small chips, then "and sessions to run". It is static markup in the prerendered page, so the body is never empty, not even before
   hydration or where the Sync switch is not drawn (issue #330: after the mode cards went, the card was a heading over
   a footer, and on a phone the footer floated in the middle of an empty screen). It names templates by their titles

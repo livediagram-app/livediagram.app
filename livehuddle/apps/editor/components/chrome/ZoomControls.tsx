@@ -1,6 +1,4 @@
-import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu } from '@/components/chrome/ZoomMenu';
-import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
 import { HoverCard, Glyph } from '@livehuddle/ui';
 
 type ZoomControlsProps = {
@@ -9,20 +7,6 @@ type ZoomControlsProps = {
   onZoomOut: () => void;
   onSetZoom: (zoom: number) => void;
   onFitToScreen: () => void;
-  // Isometric orbit control (docs/specs/008-canvas/isometric-view.md). When both are set (the isometric
-  // tool is active) the orbit button sits between Fit and Zen: drag to
-  // orbit the camera, click to reset its angle. Omitted on every other
-  // tool → no button.
-  onIsoOrbit?: (clientX: number, clientY: number) => void;
-  onIsoReset?: () => void;
-  // Zen / focus mode (docs/specs/007-editor/zen-mode.md). The dock carries the EXIT button, shown
-  // while zen is active (it is the only chrome left in zen). Entering
-  // lives in the canvas-tool dropdown under Isometric; `zenEnterHere`
-  // restores the old enter button for sessions with no palette (view-only
-  // visitors), who'd otherwise have no visible way in.
-  onToggleZen?: () => void;
-  zenActive?: boolean;
-  zenEnterHere?: boolean;
   // A phone (docs/specs/007-editor/editor-app.md): the cluster also carries Activity + Layers there, so
   // the step buttons go (pinch zooms) and Fit stays.
   pinchOnly?: boolean;
@@ -32,18 +16,13 @@ type ZoomControlsProps = {
 // controls: -10% / current % (click to fit, hover for the preset-level
 // popover — see ZoomMenu) / +10%. Below `sm` the percentage button is
 // hidden (and touch has no hover), so a plain Fit button stands in
-// there. In zen mode it also carries the exit-zen button.
+// there.
 export function ZoomControls({
   zoom,
   onZoomIn,
   onZoomOut,
   onSetZoom,
   onFitToScreen,
-  onIsoOrbit,
-  onIsoReset,
-  onToggleZen,
-  zenActive,
-  zenEnterHere,
   pinchOnly = false,
 }: ZoomControlsProps) {
   return (
@@ -94,34 +73,6 @@ export function ZoomControls({
           </button>
         </HoverCard>
       </span>
-      {onIsoOrbit && onIsoReset ? (
-        <>
-          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
-          <IsometricOrbitButton onOrbit={onIsoOrbit} onReset={onIsoReset} />
-        </>
-      ) : null}
-      {onToggleZen && (zenActive || zenEnterHere) ? (
-        // Exit-only in normal sessions: entering zen moved to the
-        // canvas-tool dropdown (under Isometric), so outside zen the dock
-        // stays minimal. Inside zen the dock is the only chrome left, so
-        // the exit button lives here. zenEnterHere (palette-less sessions)
-        // keeps the old enter button too.
-        <>
-          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
-          <HoverCard
-            title={zenActive ? 'Exit zen mode' : 'Zen mode'}
-            description={
-              zenActive
-                ? 'Bring back the toolbars and panels (Z or Esc).'
-                : 'Hide every panel and toolbar to focus on the canvas (Z).'
-            }
-          >
-            <IconButton onClick={onToggleZen} label={zenActive ? 'Exit zen mode' : 'Zen mode'}>
-              {zenActive ? <ZenExitIcon /> : <ZenIcon />}
-            </IconButton>
-          </HoverCard>
-        </>
-      ) : null}
     </div>
   );
 }

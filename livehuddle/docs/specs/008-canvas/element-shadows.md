@@ -2,7 +2,7 @@
 
 A **Shadow** category in the element style menu: a soft drop shadow behind a
 boxed element, picked from presets or dialled in with sliders. It gives cards,
-frames, and hero shapes depth without faking it with offset duplicate shapes.
+rooms, and hero shapes depth without faking it with offset duplicate shapes.
 
 ## Data model
 

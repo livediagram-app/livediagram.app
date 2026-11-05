@@ -144,7 +144,7 @@ export function useElementHelpers(opts: {
     // z-order: rendering is by array index, lowest first, so the last
     // entry paints on top. Landing new content where the user can see
     // and immediately work with it matches every other editor; the
-    // Layer accordion's "Send to back" covers the rarer reverse case.
+    // Arrange section's "Send to Back" covers the rarer reverse case.
     const before = activeTab.elements;
     // A room or a rug is the floor (docs/specs/009-elements/office.md): it goes in behind everything, so the
     // furniture already there, and any dropped on it later, stands on it.

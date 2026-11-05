@@ -1,3 +1,4 @@
+import { isMeetingPieceShape } from './meeting-pieces';
 import { parseCssColour, parseCssColourAlpha } from '@liveworkspace/model-core/css-colour';
 import {
   DEFAULT_BACKGROUND_COLOR,
@@ -19,6 +20,13 @@ import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
 import { FENCE_WOOD } from '@liveworkspace/avatar/fence';
 import { isOfficeShape, ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, STAGE_FLOOR_DARK } from './office';
+import {
+  GARDEN_PATH_FILL,
+  GARDEN_PATH_FILL_DARK,
+  GRASS_FILL,
+  GRASS_FILL_DARK,
+} from './office-garden';
+import { POND_FILL, POND_FILL_DARK } from './office-social';
 import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
@@ -220,7 +228,16 @@ const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' 
 const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
 // The floor pieces' unstyled fills, [light paper, dark paper] (docs/specs/009-elements/blueprints/DEFAULTS.md D210, D214).
-const FLOOR_FILLS: Record<'room' | 'rug' | 'stage', readonly [string, string]> = {
+const FLOOR_FILLS: Record<
+  'room' | 'rug' | 'stage' | 'garden-path' | 'grass' | 'door' | 'pond',
+  readonly [string, string]
+> = {
+  // A pond's water (docs/specs/009-elements/social-pieces.md "Pond").
+  pond: [POND_FILL, POND_FILL_DARK],
+  // A door paints the gap it cuts in a wall in the room's floor (docs/specs/009-elements/room-builder.md "Door").
+  door: [ROOM_FLOOR, '#292524'],
+  'garden-path': [GARDEN_PATH_FILL, GARDEN_PATH_FILL_DARK],
+  grass: [GRASS_FILL, GRASS_FILL_DARK],
   room: [ROOM_FLOOR, '#292524'],
   rug: [RUG_FILL, '#713f12'],
   stage: [STAGE_FLOOR, STAGE_FLOOR_DARK],
@@ -236,23 +253,34 @@ function behaviourSkin(
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
   // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels in the sprite's palette, no box.
-  if (kind === 'avatar-pad') {
-    return { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
-  }
   if (kind === 'fence') {
     return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
   }
   // A room's floor, a rug and a stage's top are the element's fill (docs/specs/009-elements/office.md): warm on
   // light paper, deep on dark, a stage a little lighter than the room it stands in. Their outlines are the
   // furniture's.
-  if (kind === 'room' || kind === 'rug' || kind === 'stage') {
+  if (
+    kind === 'room' ||
+    kind === 'rug' ||
+    kind === 'stage' ||
+    kind === 'garden-path' ||
+    kind === 'grass' ||
+    kind === 'door' ||
+    kind === 'pond'
+  ) {
     const fill = FLOOR_FILLS[kind][surface === 'dark' ? 1 : 0];
     return surface === 'dark'
       ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
       : { fill, ...OUTLINE_SKIN_LIGHT };
   }
-  if (isSeatingShape(kind) || isOfficeShape(kind)) {
+  // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) paint themselves like the furniture,
+  // and so does an Avatar Pad (docs/specs/009-elements/avatar-pad.md): its outlines in the furniture's ink, no box.
+  if (
+    isSeatingShape(kind) ||
+    isOfficeShape(kind) ||
+    isMeetingPieceShape(kind) ||
+    kind === 'avatar-pad'
+  ) {
     return surface === 'dark'
       ? { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text }
       : { fill: 'transparent', ...OUTLINE_SKIN_LIGHT };
@@ -338,23 +366,9 @@ export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: Tex
 // doesn't override them with explicit `fillColor` / `strokeColor` fields.
 // Hex strings so they can also seed the colour picker UI.
 export function defaultFillColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  // A frame is a section BACKDROP you place elements inside (docs/specs/008-canvas/canvas-and-palette.md), so with
-  // no explicit fill it is see-through on either surface, whatever the shape
-  // default would be. It is still fillable: set `fillColor` and the frame
-  // paints that behind its contents, which is safe because frames sort to the
-  // front of their band and therefore paint below their band-mates (layers.ts).
-  //
-  // This used to be hardcoded as `fill="none"` in the canvas renderer instead,
-  // which had two consequences: a background colour picked in the context menu
-  // did nothing, and the headless renderer (exports, the minimap) never got
-  // the memo and filled every frame with the shape default, so a frame that
-  // was transparent on the canvas exported pale blue.
   // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
   // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
-  if (
-    element.type === 'shape' &&
-    (element.shape === 'frame' || element.shape === 'boundary' || element.shape === 'stack')
-  )
+  if (element.type === 'shape' && (element.shape === 'boundary' || element.shape === 'stack'))
     return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
@@ -452,7 +466,7 @@ export function defaultStrokeColor(
 }
 
 // Whether an element exposes a BACKGROUND colour control. Text and images
-// have no fill to expose; everything else does, including a frame, whose fill
+// have no fill to expose; everything else does, including a boundary, whose fill
 // merely defaults to transparent.
 //
 // Call sites used to ask `defaultFillColor(el) !== 'transparent'` as a proxy
@@ -588,6 +602,36 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'coffee-machine',
   'rug',
   'stage',
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  // The social pieces (docs/specs/009-elements/social-pieces.md). Each draws itself.
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
+  // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) draw themselves.
+  'directory',
+  'elevator',
+  // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) draw themselves.
+  'screen',
+  'room-sign',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.
@@ -606,8 +650,8 @@ export function supportsBorderControls(element: Element): boolean {
 // Whether a shape can carry an INLINE icon beside its label — i.e. whether
 // dropping a palette icon on it (or adding one while it's selected) folds
 // the glyph INTO it. Regular shapes only: the dedicated `icon` shape IS a
-// glyph, and a `frame` is a section container you place elements INSIDE,
-// not decorate (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/009-elements/annotations.md). An icon dropped on those becomes a
+// glyph, and a `stack` is a container you place elements INSIDE,
+// not decorate (docs/specs/009-elements/annotations.md). An icon dropped on those becomes a
 // standalone `icon` element instead of attaching. One predicate so all
 // three fold paths (palette drag-drop, add-while-selected, drag an
 // existing icon onto a shape) agree.
@@ -655,7 +699,6 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
-    element.shape !== 'frame' &&
     element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&

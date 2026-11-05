@@ -158,9 +158,9 @@ help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
-Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Poll, Vote, and
-the six tool panels (Avatar, Laser, Spotlight, Eraser, Format, Slide Deck)
-(a seventh, the Highlighter's, went when the Highlighter became a Draw tile). This closed the gap the feature was written for and had never
+Wired: Palette, Explorer, Activity, Map, Collaborate, Poll, and
+the tool panels (Avatar, Eraser, Format) (the Highlighter's went when it became a Draw tile, and the Laser's,
+the Spotlight's and the Slide Deck's when those left livehuddle). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

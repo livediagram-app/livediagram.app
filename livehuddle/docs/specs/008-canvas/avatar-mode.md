@@ -6,29 +6,29 @@ A canvas tool (a "selection mode", the group the picker at the top of the palett
 
 ## Why
 
-Narrating the canvas on a call today means waving a cursor around, or reaching for Laser / Spotlight ([Canvas and palette](canvas-and-palette.md)), both of which point AT things from outside. Walking a character to the box you are talking about puts the presenter _inside_ the canvas: the audience follows a body moving between places, which reads as a tour rather than a slideshow. It is also the cheapest possible "presentation mode": no authored steps, no reveal order, no schema (contrast [Presentation mode](../012-collaboration/presentation-mode.md), still draft).
+Narrating the canvas on a call today means waving a cursor around, or reaching for a laser pointer, which points AT things from outside. Walking a character to the box you are talking about puts the presenter _inside_ the canvas: the audience follows a body moving between places, which reads as a tour rather than a slideshow. It is also the cheapest possible "presentation mode": no authored steps, no reveal order, no schema (contrast [Presentation mode](../012-collaboration/presentation-mode.md), still draft).
 
 ## Where it lives
 
 - New `CanvasTool` id `'avatar'`. In livehuddle walking is the point, so the mode is **first-class** (D7 (a) in [Open decisions](../005-project-roadmap/open-decisions.md)), reached four ways:
-  - **The picker.** The canvas-tool picker (the Selection Mode menu at the start of the palette strip) lists **Avatar** in its first group, straight after Select and Hand, on every viewport and for every role. It is never disabled: an empty board is still a place to stand in. The search panel finds it as **Avatar Mode** (`tool:avatar`), as it finds every mode the picker lists. There is no keyboard shortcut for it (the arrow keys and Space belong to the walk once in it; a letter key would put a character in front of someone typing a shortcut).
+  - **The picker.** The canvas-tool picker (the Selection Mode menu at the start of the palette strip) lists **Avatar** alone in its last group, **Interact**, after **Build** (Select, Hand) and **Edit** (Eraser, Format), on every viewport and for every role ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)). It is never disabled: an empty board is still a place to stand in. The search panel finds it as **Avatar Mode** (`tool:avatar`), as it finds every mode the picker lists. There is no keyboard shortcut for it (the arrow keys and Space belong to the walk once in it; a letter key would put a character in front of someone typing a shortcut).
   - **A [Selection Mode button](../009-elements/mode-button.md) set to Avatar**, placed on the board, as in livediagram: every Spaces template's **Walk In** button is one, and pressing it again goes back.
   - **Opening walking** ([below](#opening-walking)): a tab that offers the walk puts you in the mode when it is first shown.
   - **The Walk button, for a Viewer** ([below](#the-walk-button)): a Viewer has no palette strip, so no picker; the bottom-right cluster gives them a Walk button instead, so they can walk on any board.
-- **The picker names where you are.** While you are in Avatar mode the picker's current value reads **Avatar**, and picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`, `K`, `I`), reaching for the palette, or pressing an Avatar button again, and for a Viewer, pressing Walk again.
+- **The picker names where you are.** While you are in Avatar mode the picker's current value reads **Avatar**, and picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`), reaching for the palette, or pressing an Avatar button again, and for a Viewer, pressing Walk again.
 - A button hands Avatar out in **every** editor mode, and leaving Workshop while walking does not end the walk.
-- Available on **every viewport** (unlike Spotlight): tap-to-walk works fine on touch, it just loses the arrow keys.
+- Available on **every viewport**: tap-to-walk works fine on touch, it just loses the arrow keys.
 - Available to **view-role** visitors: it is a pure view aid and mutates nothing.
-- **Entering the mode clears the current selection** (an element left selected would keep its handles and reappear on exit, the same reason Spotlight clears it).
+- **Entering the mode clears the current selection** (an element left selected would keep its handles and reappear on exit).
 - The mode's name is **Avatar**, deliberately the same word the user asked for. It is NOT the palette's **Avatar element tile** (a circular photo, [Canvas and palette](canvas-and-palette.md) Components); the two never appear on the same surface, and telemetry keeps them apart via a distinct type token (below).
 
 ## The character
 
-- Drawn in **canvas coordinates** inside the canvas's transformed wrapper, so the avatar pans and zooms with the content. Standing next to a shape therefore means something, unlike the screen-space spotlight beam.
+- Drawn in **canvas coordinates** inside the canvas's transformed wrapper, so the avatar pans and zooms with the content. Standing next to a shape therefore means something.
 - **Habbo style**: a chunky, flat-coloured pixel figure with hard edges, no gradients and no anti-aliased curves: inline SVG on a coarse pixel grid, ~40x56 canvas px, big head, small body, two-tone shading for depth.
 - Its **position is its feet**, not its centre, so it stands _on_ the point you clicked. A soft elliptical contact shadow sits under the feet.
 - **Four facings** (down / up / left / right; right mirrors left), picked from the direction of travel and held when it stops.
-- **Customisable** via the Avatar Panel (below): gender, clothing, hair, and size, all costumes on the SAME skeleton so the walk / hop / flag animations are shared across every combination. **Right-clicking the character toggles gender**: the one choice reachable without the panel (a right-click anywhere else on the canvas does nothing; the context menu stays shut in this mode). None of it carries meaning beyond which sprite is drawn.
+- **Customisable** via the Avatar Panel (below): gender, clothing and hair (no size in livehuddle: see Size below), all costumes on the SAME skeleton so the walk / hop / flag animations are shared across every combination. **Right-clicking the character toggles gender**: the one choice reachable without the panel (a right-click anywhere else on the canvas does nothing; the context menu stays shut in this mode). None of it carries meaning beyond which sprite is drawn.
 - **The shirt is the participant's presence colour**: the same colour as your cursor, your name chip, and your tab-bar dot, so on a shared document you can tell at a glance which character is whose. Falls back to the brand cyan when there is no participant colour. **Colour is deliberately not customisable**: it is the one thing on the character that carries information.
 - **Walk animation**: a two-frame leg swing plus a one-pixel body bob, advanced by **distance travelled** rather than wall-clock, so the step cadence matches the speed at any zoom.
 - Renders **above the element layer** (it is standing in front of what's on the canvas, not behind it) and below the palette / chrome, which stay clickable so you can leave the mode.
@@ -54,11 +54,11 @@ Avatar button or a pad, a Viewer had no way in. So the bottom-right cluster give
 - **Who.** A Viewer only (read-only, no Participant palette): an Editor and a Participant have the picker, and one
   door per role keeps the cluster from growing. A Viewer previewed through the role pill gets it too.
 - **Where not.** Not in an embed, which never walks ([Opening walking](#opening-walking)), and not while the welcome
-  flow is open. Zen keeps it, as it keeps the Avatar button.
+  flow is open.
 
 ## The Avatar Panel
 
-While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (right of the [Walk button](#the-walk-button) for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Layers, Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. Zen keeps the button, the mode's one piece of chrome there, and the panel opens from it as anywhere else; only the welcome flow hides it. The panel is never a corner panel: it does not dock, drag or join a corner stack.
+While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (right of the [Walk button](#the-walk-button) for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. Only the welcome flow hides it. The panel is never a corner panel: it does not dock, drag or join a corner stack.
 
 Contents, top to bottom:
 
@@ -67,7 +67,11 @@ Contents, top to bottom:
   - **Gender**: Male / Female.
   - **Clothing**: sixteen outfits: T-shirt / Stripes / Jumper / Hoodie / Vest / Suit / Dress / Skirt / Polo / Flannel / Overalls / Lab coat / Hawaiian / Varsity / Turtleneck / Apron. Each is a change on the same body: stripes and a jumper's collar + ribbed hem are chest detail, the hoodie adds a hood behind the head and a kangaroo pocket, the vest and the Hawaiian shirt bare the arms, the suit is an open jacket over a white shirt with a tie, overalls and the apron are a bib over whatever is underneath, the lab coat is an open white coat, and the dress / skirt swap trousers for bare legs. The two silhouette rules travel as sets (`BARE_LEG_CLOTHING`, `BARE_ARM_CLOTHING`) so the front, back, and profile views can't disagree about what an outfit implies.
   - **Hair**: fourteen styles: Short / Buzz / Curly / Long / Ponytail / Bun / Mohawk / Bald / Pigtails / Afro / Spiky / Bob / Braid / Top knot, each drawn per view (the bun, the plait, and the tail read from behind; the mohawk shaves the sides to stubble; the afro sits proud of the head on every side).
-  - **Size**: Small / Regular / Tall, a scale on the whole sprite (**1.15 / 1.5 / 1.95**). Every step sits above the base 40x56 sprite: at 1x the character read as a detail on the canvas rather than someone standing in the room, and the costume details (a tie, a bun, a pocket) were too small to see. Size scales the right-click hit box and the name chip's offset with it, so a small character isn't clickable well outside itself.
+  - **Size is not offered in livehuddle.** Everyone's character, yours and every peer's (whatever an older build
+    stored), draws and collides at **Regular**, so a room's seats, doorways and calls read the same for everybody. The
+    Size row is gone from the panel and the randomise button no longer mentions it (`sizes: false` in the editor's
+    `bindAvatar`, read by `avatarScale` and the panel; livediagram keeps the choice). For the shared code:
+    Small / Regular / Tall, a scale on the whole sprite (**1.15 / 1.5 / 1.95**). Every step sits above the base 40x56 sprite: at 1x the character read as a detail on the canvas rather than someone standing in the room, and the costume details (a tie, a bun, a pocket) were too small to see. Size scales the right-click hit box and the name chip's offset with it, so a small character isn't clickable well outside itself.
 
 - Two **action rows** below the settings, behind the same single-open disclosure: **Behaviour** (what the character does with its body) and **Reactions** (a burst thrown around the character).
 - **Behaviour** holds five short one-shot performances:
@@ -79,7 +83,7 @@ Contents, top to bottom:
 
   A Behaviour performance plays **on the spot**: starting one drops any walk in progress (sliding through a routine reads as a bug) and clicking again restarts it rather than queueing. Peers see it: the presence packet carries the **kind plus how far into it the sender is**, and each receiver derives the pose with the same pure `reactionPose` function: a kind and a clock on the wire rather than a pose.
 
-- **Reactions** holds the same five bursts a [Reaction Pad](../009-elements/reaction-pad.md) throws (Confetti, Sparkles, Hearts, Applause, Fireworks), played around the character instead of around a pad. Unlike a Behaviour performance, a Reactions burst plays **on your own screen only**: the room's `reaction` op is keyed to a pad's element id (the character has none), and the avatar presence packet carries no burst. Showing it to peers would mean a burst field on `AvatarPresence` and a peer-side burst layer; it is not built.
+- **Reactions** holds five bursts (Confetti, Sparkles, Hearts, Applause, Fireworks), played around the character instead of around a pad. Unlike a Behaviour performance, a Reactions burst plays **on your own screen only**: the room's `reaction` op is keyed to a pad's element id (the character has none), and the avatar presence packet carries no burst. Showing it to peers would mean a burst field on `AvatarPresence` and a peer-side burst layer; it is not built.
 
 - A **Send a Message** button closes the panel, full width under the action rows, for someone who may [speak](#speech-bubbles). It opens the [message popover](#the-message-popover), and it is the only way to speak on a device with no Enter key. On a desktop it carries an `Enter` key hint, so the shortcut is learned where the button is. A Viewer's panel has no such button.
 
@@ -112,24 +116,61 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - **Arrow keys**: while held, the avatar walks that way, mirroring the direction pressed. Two held keys compose a diagonal (normalised, so diagonal walking isn't faster). Any arrow press cancels a click-walk in progress; releasing every arrow stops the avatar where it stands.
 - **No collision with ordinary elements**: they are scenery, so the avatar walks over anything except a [Fence](../009-elements/fence.md), a [Room](../009-elements/office.md#room)'s walls (it enters by the doorway) and the footprint of a plant or bookshelf ([Office](../009-elements/office.md)), none of which it can cross (it stops, or slides along them). Walking onto a water cooler or coffee machine gives it a drink, carried in its presence as `holding`. The element it is standing on gets a soft brand-tinted "you are here" ring, which is what makes the mode useful for narration: the audience can see what the character has arrived at.
 - **Space hops**, and the character waves a small flag through the hop plus a short tail so it reads as a celebration rather than stopping dead on landing. The hop peaks around 70 canvas px and lands in a bit over half a second; the contact shadow shrinks as it rises, which is what sells leaving the floor. Autorepeat is ignored (one press, one hop) and a second press mid-flight does nothing. Space is the hold-to-pan modifier everywhere else, which this mode can afford to reclaim: it is read-only, so there is no selection to tap-edit, and panning stays on middle-mouse drag, the trackpad, and the zoom controls.
-- **The camera follows**: when the avatar comes within ~120 screen px of a viewport edge, the viewport pans just enough to keep it in view. Zoom is never touched (a mode that zoomed for you would fight the presenter).
+- **The camera is centred on you** ([The camera](#the-camera) below): your character stays in the middle of the screen and the view moves as it walks.
 - Right-click never walks, and the canvas / element context menus stay suppressed while the mode is active (a menu opening mid-walk would interrupt the tour).
-- Panning by hand still works: middle-mouse drag, held-Space drag, two-finger trackpad, and the zoom controls all behave as usual.
+- Panning by hand still works (middle-mouse drag, two-finger trackpad, a finger's drag on touch), and walking then brings the view back to you ([The camera](#the-camera)).
+
+## The camera
+
+In Avatar mode the camera belongs to your character, so a walk reads as moving through the space rather than across a
+picture of it. Select and Hand keep the camera as it is everywhere else (Fit frames the whole tab, the zoom anchors on
+the pointer).
+
+- **Entering centres you at 100%.** However the mode is entered (the picker, a mode button, a pad, Walk In), once the
+  character is placed the view goes to 100% with the character in the middle of the screen.
+- **Walking keeps you in the middle.** While the view is centred on the character, every step moves the view with it:
+  the character holds still on screen and the canvas moves under it.
+- **You can look away, and walking brings you back.** A hand pan moves the view off the character as usual. The view
+  then gravitates back as the character walks, never while it stands still: walking towards the middle of the view
+  leaves the camera where it is (you are walking to what you looked at), and walking any other way pulls the view
+  back towards the character a little with every step, closing about half the gap per 400 canvas px walked. Once it
+  is back within a screen pixel it is centred again and moves with every step. A step never leaves the character
+  further off the middle than it was, so a character on screen stays on screen.
+- **Zoom holds.** Zooming in or out (the zoom menu, the keyboard, a wheel or a pinch) keeps that zoom until you change
+  it again, and in this mode the wheel and pinch zoom about the character rather than the pointer, so a centred
+  character stays centred.
+- **Fit centres you at 100%.** Fit (clicking the zoom percentage, the zoom menu's Fit to screen, the command palette's
+  Fit) goes back to 100% with the character in the middle, instead of framing the whole tab.
+- **Leaving the mode leaves the view where it is.**
+- Implementation: the shared walk hook takes `camera: 'centred'` (livehuddle) or keeps the edge follow
+  (`'edge'`, the default, used by livediagram); `centredCamera` in `@liveworkspace/avatar/walk` is the pure step
+  rule. The editor reads the character's position through `avatarAtRef` for Fit, the entry and the wheel / pinch
+  anchor.
 - **On touch, a finger's drag pans and its tap walks.** A finger has no middle button and no Space to hold, so a one-finger drag pans the canvas, as the Hand tool does, and only a press that lifts without moving (a tap) walks the character there, or to a peer it lands on. Pinching zooms as usual and never walks. A mouse click still walks the moment it is pressed. (`useCanvasSurfaceGestures` starts a pan whose tap is the walk; `useCanvasPanAndMarquee` runs a pan's tap on a release that never moved and counts a pinch as moved.)
 
 ## Read-only while active
 
-"Read-only for me" is enforced the same way Spotlight and Isometric ([Isometric view](isometric-view.md)) do it, plus a keyboard gate:
+"Read-only for me" is enforced by making the canvas layer pointer-inert, plus a keyboard gate:
 
 - The whole canvas layer goes **pointer-inert** (`pointer-events: none`), so no click can select, drag, resize, or double-click-edit any element kind. A per-element guard cannot cover every path (boxed elements, arrow hit-bands, labels), which is why the layer-level switch is the mechanism.
 - The **arrow keys belong to the avatar**, so they never nudge a selection.
-- The **mutating plain-key shortcuts are suppressed** (element adds, Eraser, Pencil). The non-mutating view tools (`V` / `H` / `K` / `I` / `Z`) keep working so you can always leave, and `Escape` exits the mode to Select (Hand on touch), matching Isometric.
+- The **mutating plain-key shortcuts are suppressed** (element adds, Eraser, Pencil). The non-mutating view tools (`V` / `H`) keep working so you can always leave, and `Escape` exits the mode to Select (Hand on touch).
 - Nothing is persisted. The one thing that leaves the browser is the ephemeral presence snapshot peers need to draw the character (below).
-- **Reaching for the palette leaves the mode.** Picking any palette tile, or dragging one onto the canvas, exits Avatar mode back to **whichever tool was active before it** (not a hardcoded Select) and then performs the add, so a click on the palette mid-walk drops the element instead of being swallowed by a read-only canvas. Implemented as one wrapper over the whole tile-action bundle, so tiles added later inherit it.
+- **Reaching for the palette leaves the mode.** Any press on the palette strip (a category, a tile, Search, More, the
+  strip's scroll) exits Avatar mode back to **whichever tool was active before it**, Select or Hand; when there was
+  none (the walk opened with the tab), the device's default: **Select on a desktop, Hand on a touch screen**, the same
+  default a fresh editor starts in. The Selection Mode picker itself is the exception: opening it in Avatar mode still
+  shows Avatar as the current mode, and picking there works as any pick. Picking a tile, or dragging one onto the
+  canvas, also performs the add after leaving, so a click on the palette mid-walk drops the element instead of being
+  swallowed by a read-only canvas (one wrapper over the whole tile-action bundle, so tiles added later inherit it).
+  The strip's press is `onPointerDown` on the palette root (`ToolbarPalette`); the fallback is `useCanvasTool`'s
+  device default.
 
 ## Changing tab
 
-**Avatar mode ends when the active tab changes**, however it changes (the tab bar, the Explorer, a portal, following a presenter): the tool goes back to the one that was active before the mode was entered (Select or Hand), exactly as reaching for the palette does. The character is a point on the tab you left; on the next tab it could stand inside a fence it was meant to be kept out of, so it never carries over. The exit happens in the same render as the tab change (`useCanvasTool({ tabId })`), so the new tab never draws or publishes the character even for one frame. Leaving the mode [publishes `avatar: null`](#realtime), which deletes the entry on every peer, so the character is gone from the tab you left as well. Entering again on the new tab places it as any fresh entry does.
+**Travel keeps the mode.** A Portal paired to another tab, an Elevator ([elevator.md](../009-elements/elevator.md)) and the Directory's Go ([directory.md](../009-elements/directory.md)) take you to a chosen point on the next tab, so they carry the character there: the switch is marked as travel (`useCanvasTool`'s `keepWalkingTo(tabId)`, called with the switch itself), the character is placed at the destination in the same update (`teleportTo`), and the centred camera lands on it at the walk's zoom once the new tab shows. The place it arrives at is chosen for that tab (beside an Elevator, clear of its footprint, its Avatar Pad, a room's doorway), so the fence problem below does not arise. Peers see the character leave one tab and appear on the next: a packet left on the tab you left is dropped once your tab-focus moves (`buildRemoteAvatarRows`).
+
+**Any other change of tab ends the mode** (the tab bar, the Explorer, a tab link, following a presenter): the tool goes back to the one that was active before the mode was entered (Select or Hand), exactly as reaching for the palette does. The character is a point on the tab you left; on the next tab it could stand inside a fence it was meant to be kept out of, so it never carries over. The exit happens in the same render as the tab change (`useCanvasTool({ tabId })`), so the new tab never draws or publishes the character even for one frame. Leaving the mode [publishes `avatar: null`](#realtime), which deletes the entry on every peer, so the character is gone from the tab you left as well. Entering again on the new tab places it as any fresh entry does.
 
 ## Realtime
 
@@ -142,7 +183,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - Peers' characters are **scoped to the tab** they were published on and are drawn with **their own presence colour on the shirt plus a small name chip** above the head, so a room of walkers stays legible. Your own character has no chip (you know who you are).
 - Peer characters render **whether or not you are in Avatar mode yourself**: someone else walking you through their canvas is worth seeing from the Select tool.
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction, so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. **A seated character cannot be pushed** ([Chair](../009-elements/chair.md) "Sitting"): clicking one walks you up beside them and sends nothing, and the owner ignores any push that reaches them while they sit. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample.
-- A **hide-cursors vote ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) hides cursors only** (owner, 2026-11-03): characters keep walking, and are sent and drawn, through a vote, so [Proximity audio](../012-collaboration/proximity-audio.md) keeps working while a room votes. A presenter still sees nobody else's character ([Presentation mode](../012-collaboration/presentation-mode.md)).
+- A presenter still sees nobody else's character ([Presentation mode](../012-collaboration/presentation-mode.md)).
 
 ### A busy room
 
@@ -242,7 +283,6 @@ The panel's **Send a Message** opens a popover over the Avatar button with a tex
 
 - An `avatar-say` presence op: `{ kind: 'avatar-say', tabId, id, text, x, y }`, where `id` is the bubble's random id, `text` the message and `x, y` the canvas point the bubble starts from (the speaker's head). It is **presence**: unordered, never logged, never replayed to a late joiner (a message is about the moment), never written to the document or D1.
 - The room relays it from an Editor or a Participant only, and drops one whose `text` is not a string of at most 300 characters. A receiver parses it field by field, re-applies the 50-word and 300-character limits, ignores one for another tab, ignores repeats of an id it has seen, and draws the text as **plain text**, never markup.
-- A **hide-cursors vote** leaves bubbles alone, as it leaves characters alone.
 - A screen reader hears a peer's message through a polite live region ("Sam says: hello!"); your own is not repeated back to you.
 
 ### Motion
@@ -251,7 +291,7 @@ The pop on opening, the sway and the rise are decoration. Under **reduced motion
 
 ## Opening walking
 
-A tab **offers the walk** when, on its visible layers, it holds an [Avatar Pad](../009-elements/avatar-pad.md) or a
+A tab **offers the walk** when, it holds an [Avatar Pad](../009-elements/avatar-pad.md) or a
 Selection Mode button set to Avatar. Every Spaces template's tab does (its **Walk In** button), and nothing else in
 the catalogue does, so a space made from a Spaces template opens walking while every other template opens on the tool
 it always did ([v1 scope](../002-project-scope/v1-scope.md) feature 1). It is read from what the tab holds rather
@@ -263,7 +303,7 @@ walking too, and a board somebody gives a pad or a Walk In button becomes one th
   mode. Once per tab per visit: leaving the mode, then coming back to the tab, does not put you back in it; a reload
   is a new visit.
 - **Where.** On the tab's pad when it has one ([Entering on a pad](#entering-on-a-pad)); otherwise just below its
-  first Avatar button in layer order, as a press of it would ([Entering from a button](#entering-from-a-button)),
+  first Avatar button in the tab's element order, as a press of it would ([Entering from a button](#entering-from-a-button)),
   the view centring on that spot when it is off screen, and, when it is on screen but within the walk's follow
   margin of an edge (behind the bottom-right cluster, say), moving just far enough to bring it in, as the walk's
   camera follow does.
@@ -337,11 +377,11 @@ Per the no-god-files rule (`../packages/…` paths are the monorepo's shared pac
 - **`../packages/avatar/src/bindings.ts`** and **`apps/editor/lib/avatar-bindings.ts`**: the product's facts (telemetry, storage prefix, colour maths) and where this editor hands them over.
 - **`../packages/avatar/src/scene.ts`**: what the package reads of a board's elements (`AvatarSceneElement`, `isSceneShape`, `hasSceneBox`).
 - **Realtime**: `AvatarPresence` + the `avatar` `RoomOp` in `@liveworkspace/api-schema/avatar`, re-exported by `@livehuddle/api-schema`; `'avatar'` added to `PRESENCE_OP_KINDS` in `@livehuddle/api-schema`; `broadcastAvatar` in `useEditorBroadcast`; the inbound coalescing buffer in `useRoomConnection`; `remoteAvatars` in `usePresenceState`; `buildRemoteAvatarRows` in `lib/presence-rows.ts` (unit-tested).
-- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (the picker entry, listed after Hand), `useOpenWalking.ts` + `lib/walk-entrance.ts` (opening walking: which tab offers the walk and where, composed into `useCanvasAvatar`), `useCanvasTool.ts`'s `openWalking` (the untracked entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button), and **`../packages/avatar/src/components/WalkClusterButton.tsx`** (a Viewer's [Walk button](#the-walk-button), shown by `CanvasChrome.tsx` when `walkButton` is on and the session has no palette strip; `walkButtonShown` in `lib/walk-button.ts` is the rule, unit-tested per role).
+- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (the picker entry, listed after Hand), `useOpenWalking.ts` + `lib/walk-entrance.ts` (opening walking: which tab offers the walk and where, composed into `useCanvasAvatar`), `useCanvasTool.ts`'s `openWalking` (the untracked entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button), and **`../packages/avatar/src/components/WalkClusterButton.tsx`** (a Viewer's [Walk button](#the-walk-button), shown by `CanvasChrome.tsx` when `walkButton` is on and the session has no palette strip; `walkButtonShown` in `lib/walk-button.ts` is the rule, unit-tested per role).
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on a chosen entry (the picker or a button; [opening walking](#opening-walking) is not counted), emitted from `selectCanvasTool` beside the Laser / Spotlight / Eraser lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')`, and the dice button fires `AvatarRandomised`: which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. Opening the panel from its button fires `track('UI', 'Opened', 'AvatarPanel')`. Sending a message fires `track('Canvas', 'Used', 'AvatarMessage')` from the composer and `track('Canvas', 'Used', 'AvatarMessagePanel')` from the panel's popover: that somebody spoke and by which door, **never the text** and never its length. The [Avatar tour](avatar-tour.md) has its own funnel. No per-step, per-click, or per-reaction events (chatty, no signal).
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on a chosen entry (the picker or a button; [opening walking](#opening-walking) is not counted), emitted from `selectCanvasTool` beside the Eraser and Format lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')`, and the dice button fires `AvatarRandomised`: which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. Opening the panel from its button fires `track('UI', 'Opened', 'AvatarPanel')`. Sending a message fires `track('Canvas', 'Used', 'AvatarMessage')` from the composer and `track('Canvas', 'Used', 'AvatarMessagePanel')` from the panel's popover: that somebody spoke and by which door, **never the text** and never its length. The [Avatar tour](avatar-tour.md) has its own funnel. No per-step, per-click, or per-reaction events (chatty, no signal).
 
 ## Out of scope (v1)
 

@@ -44,8 +44,7 @@ export const SNAP_COLOUR_FIELDS: readonly SnapColourField[] = [
 
 type Fields = Record<string, unknown>;
 
-const isProtected = (el: Element, skip: ReadonlySet<string> | undefined) =>
-  el.locked === true || (skip?.has(el.id) ?? false);
+const isProtected = (el: Element) => el.locked === true;
 
 // The custom colours an element would give up, by row.
 function customFieldsOf(el: Element): { row: SnapColourField; hex: string }[] {
@@ -60,16 +59,13 @@ function customFieldsOf(el: Element): { row: SnapColourField; hex: string }[] {
 
 /**
  * The distinct custom colours (lower-cased) a snap would convert, most recently drawn first. Locked
- * elements and the `skip` ids (hidden or locked layers) are left out.
+ * elements are left out.
  */
-export function snappableCustomColours(
-  elements: readonly Element[],
-  skip?: ReadonlySet<string>,
-): string[] {
+export function snappableCustomColours(elements: readonly Element[]): string[] {
   const out = new Set<string>();
   for (let i = elements.length - 1; i >= 0; i--) {
     const el = elements[i]!;
-    if (isProtected(el, skip)) continue;
+    if (isProtected(el)) continue;
     for (const { hex } of customFieldsOf(el)) out.add(hex);
   }
   return [...out];
@@ -80,14 +76,15 @@ export function snappableCustomColours(
  * removed, for the ink). Untouched elements come back by identity; `colours` counts the distinct
  * colours converted, `changed` the elements.
  */
-export function snapTabColours(
-  elements: readonly Element[],
-  skip?: ReadonlySet<string>,
-): { elements: Element[]; colours: number; changed: number } {
+export function snapTabColours(elements: readonly Element[]): {
+  elements: Element[];
+  colours: number;
+  changed: number;
+} {
   const colours = new Set<string>();
   let changed = 0;
   const next = elements.map((el) => {
-    if (isProtected(el, skip)) return el;
+    if (isProtected(el)) return el;
     const fields = customFieldsOf(el);
     if (fields.length === 0) return el;
     const patched: Fields = { ...el };

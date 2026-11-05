@@ -77,7 +77,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Imported',
   'Element·Linked',
   'Element·Locked',
-  'Element·Removed',
   'Element·Reordered',
   // A search submitted in the image picker (docs/specs/009-elements/image-search.md).
   'Element·Searched',
@@ -88,7 +87,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // Playback started on a video element (docs/specs/009-elements/youtube-video.md),
   // or a search result attached to an image (docs/specs/009-elements/image-search.md).
   'Element·Used',
-  'Element·Voted',
   'Error·Api',
   'Error·Client',
   // A recoverable problem: a slow document load, an api warning (docs/specs/017-telemetry/telemetry.md).
@@ -151,7 +149,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Removed',
   'Tab·Renamed',
   'Tab·Reordered',
-  'Tab·Revealed',
   'Tab·Selected',
   'Tab·Started',
   'Tab·Toggled',

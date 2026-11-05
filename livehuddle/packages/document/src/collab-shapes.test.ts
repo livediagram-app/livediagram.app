@@ -56,7 +56,6 @@ describe('hasOwnFace', () => {
       'chair',
       'mode-button',
       'focus-button',
-      'reaction-pad',
       'portal',
     ] as const) {
       expect(hasOwnFace(kind), kind).toBe(true);
@@ -82,7 +81,6 @@ describe('supportsTextAlign', () => {
     const kinds: ShapeKind[] = [
       'chair',
       'focus-button',
-      'reaction-pad',
       'portal',
       'mode-button',
       'stat-row',

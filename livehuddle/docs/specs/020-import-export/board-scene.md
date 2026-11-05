@@ -1,5 +1,7 @@
 # Board scene
 
+> **Gone from livehuddle** (imports from other tools, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)): livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/020-import-export/board-scene.md) is the one to read and change. Every importer that reduced to a board scene is gone from livehuddle, so the scene, its landing and the paste notice are deleted. The rest of this page records what livehuddle had.
+
 A **board scene** is the one source-neutral picture of a board that every
 "bring a board from another tool" path reduces to: Excalidraw copied to the
 clipboard ([Excalidraw import & export](excalidraw-import-export.md)), an
@@ -13,7 +15,7 @@ is a change here, never a parser-local workaround.
 Content that lands on a whiteboard looks and behaves as if it had been drawn
 there: marker strokes with pressure, ink and stock colours that follow light
 and dark boards, text boxes that hug their text, stickies, shapes, lines,
-arrows, images and frames, on a Workshop tab ([Editor modes](../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)).
+arrows, images and boundaries (a scene's frames), on a Workshop tab ([Editor modes](../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)).
 
 ## Where it lives
 
@@ -106,7 +108,7 @@ colours can be snapped afterwards, in one press, if wanted.
 ## Widths
 
 - **Ink** takes the nearest marker width (Fine, Medium, Bold, Thick, Heavy, Broad), nearest by ratio.
-- **Shapes and frames** take the nearest border width
+- **Shapes and frames** (landed as boundaries) take the nearest border width
   (`nearestBorderStroke`); a shape with no stroke has no border.
 - **Lines, paths and arrows** take the nearest border width, an arrow stored as
   that preset's px.
@@ -136,7 +138,7 @@ colours can be snapped afterwards, in one press, if wanted.
 | text       | A text box that hugs its text                                                                                                                                                                                            | A text element                                          |
 | sticky     | A sticky note in the nearest sticky preset, with its text                                                                                                                                                                | A sticky note, its fill verbatim                        |
 | image      | An image placeholder, filled through the [Import image pipeline](import-image-pipeline.md); a cropped image covers its box                                                                                               | The same                                                |
-| frame      | A frame titled with its name, in the palette frame's title look (top right, padded); unnamed, "Frame"                                                                                                                    | The same                                                |
+| frame      | A boundary in Inset style titled with its name (livehuddle has no Frame, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)); unnamed, "Region"                                                            | The same                                                |
 
 - **Heads**: arrow (an open V), triangle, hollow triangle, circle, hollow
   circle, diamond, hollow diamond, and the ER ends one, many and one or many; a bar
@@ -200,7 +202,7 @@ under a skipped rule.
 | text      | text boxes   |
 | sticky    | sticky notes |
 | image     | images       |
-| frame     | frames       |
+| frame     | boundaries   |
 
 An import that makes things outside the open tab names them after the counts, each a link: the new
 documents ("3 new documents:") and, from a draw.io library, the new [Shape libraries](../013-workspace/shape-libraries.md)

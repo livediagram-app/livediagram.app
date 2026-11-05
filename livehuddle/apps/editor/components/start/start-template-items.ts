@@ -33,7 +33,7 @@ type TemplateStartGroup = {
 type TemplateStart = {
   // The mode's blank: Recommended's first card, which starts from nothing.
   blank: TemplateKind;
-  // The group the start opens on: the Spaces (LEADING_START_GROUP).
+  // The group the start opens on: the Office Spaces (LEADING_START_GROUP).
   initial: string;
   // The Spaces, then Recommended, then every other group holding a template.
   groups: readonly TemplateStartGroup[];
@@ -46,8 +46,8 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
 };
 
 // The group the start leads with and opens on (docs/specs/007-editor/start-diagramming.md "The Spaces lead"):
-// livehuddle is a place to meet, so the spaces to walk round come before everything, Recommended included.
-export const LEADING_START_GROUP: TemplateCategory = 'spaces';
+// livehuddle is a place to meet, so the Office Spaces to walk round come before everything, Recommended included.
+export const LEADING_START_GROUP: TemplateCategory = 'office';
 
 const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
 

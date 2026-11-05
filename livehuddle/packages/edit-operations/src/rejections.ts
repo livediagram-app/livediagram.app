@@ -17,8 +17,8 @@ import {
   VALUE_CUT_CHARS,
 } from './vocabulary';
 
-// Why an element may not change: its own lock, or the lock of the layer it sits on.
-export type LockReason = { scope: 'element' } | { scope: 'layer'; layer: string };
+// Why an element may not change: its own lock.
+export type LockReason = { scope: 'element' };
 
 const didYouMean = (word: string, names: readonly string[]) => {
   const near = nearestName(word, names, DID_YOU_MEAN_MAX_DISTANCE);
@@ -140,7 +140,7 @@ export function tabLocked(): EditRejection {
 }
 
 export function elementLocked(operation: number, el: Element, lock: LockReason): EditRejection {
-  const why = lock.scope === 'element' ? '(element)' : `(layer ${JSON.stringify(lock.layer)})`;
+  const why = `(${lock.scope})`;
   return {
     code: 'element_locked',
     operation,

@@ -12,9 +12,10 @@ inside a category that has to be opened first.
   - **Add Link**, reading **Edit Link** once it has one. Not on a link card or a video, whose link is their own
     **Link** category's.
   - **Add Note**, reading **Edit Note** once it has one.
-- At the right, apart from them, **Clear Styles**: the Quick Style panel's own Clear Styles
-  ([Quick style panel](quick-style-panel.md)), the element's quick-style colours, width and line style back to the
-  theme's. It shows while the element takes a quick style, whether or not the panel is on screen.
+- At the right, apart from them, **Clear Styles**: the element's quick-style colours, width and line style back to
+  the theme's, forgetting the style memory of its kind. It shows while the element takes a quick style. livehuddle has
+  no Quick Style panel ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-style)), so this is the
+  one Clear Styles.
 - A button the element already uses (it has an action, a thread, a link or a note) is tinted in the brand colour and
   pressed (`aria-pressed`), so the bar also says what the element carries.
 - Each button has a Tooltip naming it, runs its action and closes the menu, as the tiles it replaced did.
@@ -62,8 +63,8 @@ Every editor (livehuddle, liveplanner, livedocuments, livedesign) opens the same
 
 - `apps/editor/components/palette/ElementMenuQuickBar.tsx`: `ElementMenuQuickBar` (`role="toolbar"`, "Quick actions",
   `data-element-quick-bar`), `quickBarItems(target, handlers)`; rendered first in `EditorContextMenu`.
-- Clear Styles: `QuickStyleHost` publishes the Quick Style view's targets and its `clearStyles` to
+- Clear Styles: `ClearStylesHost` (headless, `components/canvas/ClearStylesHost.tsx`) publishes the Quick Style view's targets and its `clearStyles` to
   `../packages/workbench/src/lib/clear-styles-store.ts` (`publishClearStyles`, `useClearStyles`) whenever the targets change, the
-  press running the latest; the bar shows it when the store's targets include the element. Its telemetry is the
-  panel's (`Element` / `Changed` / `QuickClearStyles`).
+  press running the latest; the bar shows it when the store's targets include the element. Its telemetry is
+  `Element` / `Changed` / `QuickClearStyles`.
 - Tests: `ElementMenuQuickBar.test.tsx`, `EditorContextMenu.plan-attachments.test.tsx`.

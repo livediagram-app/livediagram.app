@@ -44,26 +44,19 @@ import {
 } from '@/lib/clipboard-payload';
 import { pasteTranslation } from '@/lib/paste-placement';
 import { addImageFileForDocument } from '@/lib/upload-image';
-import {
-  DROP_NOT_A_SCENE,
-  excalidrawTextFromPaste,
-  isExcalidrawFileCandidate,
-} from '@/lib/excalidraw-paste';
-import type { BoardScene } from '@/lib/board-scene/scene';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
-import { dropImportHint } from '@/lib/drop-import-hint';
+import { DROP_NOT_TAKEN, dropImportHint } from '@/lib/drop-import-hint';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
-// Whether a paste carries something for the canvas rather than words: a file, an Excalidraw scene, or elements
-// copied here (their JSON or the in-app copy's id).
-function pasteHoldsCanvasContent(data: DataTransfer | null, canPasteScene: boolean): boolean {
+// Whether a paste carries something for the canvas rather than words: a file, or elements copied here (their JSON
+// or the in-app copy's id).
+function pasteHoldsCanvasContent(data: DataTransfer | null): boolean {
   if (!data) return false;
   if (data.files.length > 0) return true;
-  if (canPasteScene && excalidrawTextFromPaste(data)) return true;
   const text = data.getData('text/plain');
   return parseElementsPayload(text) !== null || inAppCopyIdOf(text) !== null;
 }
@@ -77,14 +70,9 @@ type ImageDescriptor = {
 
 type ClipboardDeps = {
   isReadOnly: boolean;
-  // True while new elements can't land: edits are blocked, or the active layer
-  // is hidden or locked (docs/specs/006-document/layers.md). A paste adds
-  // elements, so it obeys the same guard as every other creation path.
+  // True while new elements can't land (edits are blocked). A paste adds elements, so it obeys the
+  // same guard as every other creation path.
   createBlocked?: boolean;
-  // Says why a paste was refused (the layers slice's blocked-creation notice).
-  // A paste is a deliberate keystroke with nothing on screen to show it was
-  // ignored, so unlike the palette gates it explains itself every time.
-  explainCreateBlocked?: () => void;
   // Editable embeds (docs/specs/013-workspace/embeds.md) still don't paste-upload images — see
   // pasteImageFile.
   embedMode: boolean;
@@ -95,8 +83,6 @@ type ClipboardDeps = {
   // typing puts them on the canvas, not in the note.
   setEditingId: (id: string | null) => void;
   activeTab: Tab;
-  // Elements on a locked layer (docs/specs/006-document/layers.md): a delete leaves them, so a Cut copies none.
-  layerLockedIds?: ReadonlySet<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
@@ -113,23 +99,17 @@ type ClipboardDeps = {
   // The canvas-coord rectangle on screen; a paste whose usual spot is outside
   // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
   getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
-  // Lands a board scene pasted from another tool (an Excalidraw copy or file,
-  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"): one undo step, selected, for
-  // the tab's profile. Absent, such a paste is left alone.
-  insertBoardScene?: (scene: BoardScene, at?: { x: number; y: number }) => void;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
   const {
     isReadOnly,
     createBlocked = false,
-    explainCreateBlocked,
     embedMode,
     readSelection,
     editingId,
     setEditingId,
     activeTab,
-    layerLockedIds,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -138,17 +118,12 @@ export function useClipboard(deps: ClipboardDeps) {
     documentId,
     toast,
     getViewportCanvasRect,
-    insertBoardScene,
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
-  // True (after explaining) when nothing may be created right now. Every
-  // paste and drop path that adds elements asks this first.
-  const refuseCreate = () => {
-    if (!createBlocked) return false;
-    explainCreateBlocked?.();
-    return true;
-  };
+  // True when nothing may be created right now. Every paste and drop path that adds elements asks
+  // this first.
+  const refuseCreate = () => createBlocked;
   // Did the last copy actually reach the OS clipboard? It decides who wins
   // when the clipboard holds text that ISN'T ours (see the paste handler):
   // if our write landed, foreign text means the user copied something else
@@ -173,9 +148,9 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
-    // What a Cut's delete leaves (useElementSelectionActions): a locked element, or one on a locked layer. A Cut
-    // copies none of it, so a paste never doubles what stayed.
-    const isProtected = (el: Element) => el.locked === true || !!layerLockedIds?.has(el.id);
+    // What a Cut's delete leaves (useElementSelectionActions): a locked element. A Cut copies none of it, so a
+    // paste never doubles what stayed.
+    const isProtected = (el: Element) => el.locked === true;
     const cutIds = () => {
       const taken = new Set(idSet);
       for (const el of activeTab.elements)
@@ -297,54 +272,17 @@ export function useClipboard(deps: ClipboardDeps) {
       toast.error(err instanceof Error ? err.message : 'Could not paste the image.');
     }
   };
-  // An Excalidraw copy or file: read lazily (the parser stays out of the editor bundle), then
-  // landed by the board-scene insert. A file that turns out not to hold a scene is `otherwise`'s.
-  const pasteExcalidrawText = async (text: string) => {
-    if (!insertBoardScene) return;
-    if (refuseCreate()) return;
-    const { sceneFromExcalidrawText } = await import('@/lib/excalidraw-read');
-    const read = sceneFromExcalidrawText(text);
-    if (!read.ok) {
-      toast.error(read.error);
-      return;
-    }
-    insertBoardScene(read.scene);
-    track('Element', 'Imported', 'Excalidraw');
-  };
-  const pasteExcalidrawFile = async (
-    file: File,
-    otherwise: () => void,
-    at?: { x: number; y: number },
-  ) => {
-    if (!insertBoardScene) return otherwise();
-    if (refuseCreate()) return;
-    const { readExcalidrawFile } = await import('@/lib/excalidraw-read');
-    const read = await readExcalidrawFile(file);
-    if (read.kind === 'not-excalidraw') return otherwise();
-    if (read.kind === 'error') return toast.error(read.error);
-    insertBoardScene(read.scene, at);
-    track('Element', 'Imported', 'Excalidraw');
-  };
-
-  // A file dropped on the canvas, at its canvas point (docs/specs/020-import-export/excalidraw-import-export.md
-  // "Dropped files"): an Excalidraw file or export lands as its scene there; any other image lands as an image
-  // element there, as a pasted one does; a file Import reads is pointed at Import; anything else is not something
-  // the canvas takes, and says so.
+  // A file dropped on the canvas, at its canvas point: an image lands as an image element there, as a pasted one
+  // does; a file Import reads is pointed at Import; anything else is not something the canvas takes, and says so.
+  // (Imports from other tools are gone, docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other
+  // tools": an Excalidraw export lands as the picture it is.)
   const dropBoardFile = (file: File, at: { x: number; y: number }) => {
     if (isReadOnly) return;
-    const refuse = () => toast.info(DROP_NOT_A_SCENE);
-    const asImage = () => void pasteImageFile(file, at);
     // A livehuddle JSON file replaces the tab through Import, and is told so.
     const importHint = dropImportHint(file);
     if (importHint) return toast.info(importHint);
-    const image = file.type.startsWith('image/');
-    // A PNG or SVG may carry an Excalidraw scene: read for one first, the picture itself otherwise.
-    if (insertBoardScene && isExcalidrawFileCandidate(file)) {
-      void pasteExcalidrawFile(file, image ? asImage : refuse, at);
-      return;
-    }
-    if (image) return asImage();
-    refuse();
+    if (file.type.startsWith('image/')) return void pasteImageFile(file, at);
+    toast.info(DROP_NOT_TAKEN);
   };
 
   // Single mutable ref holding the latest paste functions. The paste
@@ -362,9 +300,6 @@ export function useClipboard(deps: ClipboardDeps) {
     pasteFromClipboard,
     pasteInAppCopy,
     pasteImageFile,
-    pasteExcalidrawText,
-    pasteExcalidrawFile,
-    canPasteScene: !!insertBoardScene,
   });
 
   // A middle-button release pastes the Linux primary selection. It is never a
@@ -408,8 +343,7 @@ export function useClipboard(deps: ClipboardDeps) {
       // "Undo and redo reach the editor through an empty search"): elements copied from another tab land on this
       // new one rather than their JSON in the search. Text still searches.
       const intoEmptySearch =
-        passesHistoryChords(target) &&
-        pasteHoldsCanvasContent(e.clipboardData ?? null, pasteRef.current.canPasteScene);
+        passesHistoryChords(target) && pasteHoldsCanvasContent(e.clipboardData ?? null);
       if (!intoEmptySearch && isTypingTarget(target)) {
         return;
       }
@@ -441,17 +375,7 @@ export function useClipboard(deps: ClipboardDeps) {
         if (!chosen) chosen = files[0] ?? null;
         if (chosen) {
           e.preventDefault();
-          const file = chosen;
-          const asImage = () => {
-            void pasteRef.current.pasteImageFile(file);
-          };
-          // An Excalidraw file, or a PNG / SVG export holding a scene, lands as that scene;
-          // anything else pastes exactly as before.
-          if (pasteRef.current.canPasteScene && isExcalidrawFileCandidate(file)) {
-            void pasteRef.current.pasteExcalidrawFile(file, asImage);
-            return;
-          }
-          asImage();
+          void pasteRef.current.pasteImageFile(chosen);
           return;
         }
       }
@@ -480,15 +404,6 @@ export function useClipboard(deps: ClipboardDeps) {
       // event's data needs no permission prompt and arrives synchronously, so
       // the paste cannot land a frame later than the preventDefault that
       // claimed it.
-      // An Excalidraw copy, before our own payload (their envelopes cannot be confused).
-      const excalidraw = pasteRef.current.canPasteScene
-        ? excalidrawTextFromPaste(e.clipboardData ?? null)
-        : null;
-      if (excalidraw) {
-        e.preventDefault();
-        void pasteRef.current.pasteExcalidrawText(excalidraw);
-        return;
-      }
       const text = e.clipboardData?.getData('text/plain') ?? '';
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
@@ -536,16 +451,6 @@ export function useClipboard(deps: ClipboardDeps) {
       const target = e.target as Element | null;
       if (!(target instanceof HTMLElement) || !target.isContentEditable) return;
       if (!target.closest(CANVAS_ROOT_SELECTOR)) return;
-      const excalidraw = pasteRef.current.canPasteScene
-        ? excalidrawTextFromPaste(e.clipboardData ?? null)
-        : null;
-      if (excalidraw) {
-        e.preventDefault();
-        e.stopPropagation();
-        setEditingId(null);
-        void pasteRef.current.pasteExcalidrawText(excalidraw);
-        return;
-      }
       const text = e.clipboardData?.getData('text/plain');
       const elements = parseElementsPayload(text);
       const inAppCopy = elements ? null : inAppCopyIdOf(text);

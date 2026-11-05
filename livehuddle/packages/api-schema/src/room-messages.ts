@@ -7,6 +7,7 @@ import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
 import type { AvatarVoiceOp, CallsCheckOp, CallTrackOp } from './call-voice';
 import type { AvatarHandOp, AvatarLetSpeakOp } from './call-hand';
 import type { CallSessionOp, CallStopShareOp } from './call-control';
+import type { AvatarKnockAnswerOp, AvatarKnockOp } from './knock';
 import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { DragPreviewPatch } from './drag-preview';
@@ -67,6 +68,11 @@ export const PRESENCE_OP_KINDS = [
   // screen share (video-and-screen-bubbles.md "Share roles"): ADDRESSED to the sharer, as a let-speak is.
   'call-session',
   'call-stop-share',
+  // A knock on a room and its answer (docs/specs/012-collaboration/knock.md): a moment, from any level, never ordered,
+  // logged or replayed. A knock is broadcast and each receiver checks it stands inside; an answer is ADDRESSED to the
+  // knocker, as a shove is.
+  'avatar-knock',
+  'avatar-knock-answer',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
@@ -113,12 +119,8 @@ export const MUTATION_OP_KINDS = [
   'tab',
   'tab-meta',
   'el',
-  // One dot placed or taken back (docs/specs/012-collaboration/session-tools.md). A mutation like any other — it
-  // gets a seq, lands in the catch-up log, and is refused from a view-role
-  // sender, because casting already requires edit rights.
-  'vote',
   // One checklist tick or comment change on one element
-  // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
+  // (docs/specs/012-collaboration/collab-race-hardening.md).
   'el-delta',
   'document-meta',
 ] as const;
@@ -160,6 +162,16 @@ export const ROOM_OP_KINDS = [
 
 type PresenceOpKind = (typeof PRESENCE_OP_KINDS)[number];
 
+// Op kinds of features livehuddle no longer has, which an older client may still send: the Vote's one-dot `vote`
+// op (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote"). The wire carries an op as `unknown`, so one
+// still parses; the room drops it at its op gate, so it is never sequenced, relayed, logged for catch-up or noted
+// in the collaboration ledger. Kept out of ROOM_OP_KINDS: nothing sends or handles one now.
+export const RETIRED_OP_KINDS = ['vote'] as const;
+
+export function isRetiredOpKind(kind: unknown): boolean {
+  return typeof kind === 'string' && (RETIRED_OP_KINDS as readonly string[]).includes(kind);
+}
+
 // Membership test for the room's ordering + role gate. Takes a loose string
 // because it reads `op.kind` off an `unknown` wire payload (see ServerMessage
 // below on why the op itself stays untyped).
@@ -171,18 +183,16 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
   return typeof kind === 'string' && (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 }
 
-// A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a person's own dot.
-// A Participant's socket may send these beside presence; every other mutation from it is dropped, except an `el`
-// op, which the room applies through the participant content rule instead of relaying.
-const PARTICIPATION_OP_KINDS = ['vote'] as const;
-// A comment reaction is taking part too (docs/specs/012-collaboration/comment-reactions.md): whoever may comment
-// may react, and the room writes a Participant's reactions as it writes its answers.
+// A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a comment reaction
+// (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, and the room writes a
+// Participant's reactions as it writes its answers. A Participant's socket may send these beside presence; every
+// other mutation from it is dropped, except an `el` op, which the room applies through the participant content
+// rule instead of relaying.
 const PARTICIPATION_DELTA_KINDS = ['comment-react'] as const;
 
 export function isParticipationOp(op: unknown): boolean {
   if (typeof op !== 'object' || op === null) return false;
   const { kind, delta } = op as { kind?: unknown; delta?: unknown };
-  if ((PARTICIPATION_OP_KINDS as readonly unknown[]).includes(kind)) return true;
   if (kind !== 'el-delta' || typeof delta !== 'object' || delta === null) return false;
   return (PARTICIPATION_DELTA_KINDS as readonly unknown[]).includes(
     (delta as { kind?: unknown }).kind,
@@ -292,8 +302,8 @@ export type ServerMessage =
   // `hello` and to the SENDER of each ordered op, which the relay skips. Without
   // it a client only learned seqs from other people's ops, so a reconnect
   // replayed its own ops back at it (and, having heard nothing, the whole log).
-  // Harmless for idempotent element ops; a `vote` op is a delta, so every
-  // replayed dot was counted twice.
+  // Harmless for idempotent element ops; a delta op (a tick, a comment) is
+  // not, so every replayed delta was counted twice.
   | CursorMessage
   | FormatMessage
   | GrantRenewMessage
@@ -388,7 +398,7 @@ export type RoomOp =
   // the element array is untouched, so this rides alongside `el` ops
   // without shipping the whole tab.
   //
-  // `clear` names fields the sender REMOVED (Clear Timer, Clear Vote, a reset
+  // `clear` names fields the sender REMOVED (Clear Timer, a reset
   // background). A removed field serialises to nothing inside `patch`, so it
   // used to force a whole-`tab` op, which replaced every element on every
   // receiver and wiped their unsaved presses (docs/specs/012-collaboration/collab-race-hardening.md).
@@ -398,39 +408,10 @@ export type RoomOp =
       patch: Partial<Omit<Tab, 'elements'>>;
       clear?: string[];
     }
-  // ONE dot, placed (`delta: 1`) or taken back (`delta: -1`) by `voter` on
-  // `elementId` (docs/specs/012-collaboration/session-tools.md).
-  //
-  // Why a dot is not just a `tab-meta` patch, which is what it used to be:
-  // `vote.votes` is a single map that EVERY participant writes at the same
-  // time, and a tab-meta patch replaces a field wholesale. So a peer's patch,
-  // built from a snapshot taken before your dot arrived, silently erased it —
-  // and because the remaining-dots budget is counted out of that same map, the
-  // dot came back to its owner as spendable. A retro with six voters lost dots
-  // and reported votes retracting on their own.
-  //
-  // This op carries the CHANGE rather than the state, so two dots cast in the
-  // same instant commute: each peer applies both, in whatever order they land,
-  // and everybody converges on the same map. It is the same move docs/specs/012-collaboration/realtime-conflict-resolution.md made
-  // for elements, for the same reason, on the one field where concurrent
-  // writers are not the exception but the whole point.
-  //
-  // `round` names the vote the dot was cast in (docs/specs/012-collaboration/collab-race-hardening.md): a receiver drops a
-  // dot for any other round, or for a vote that has closed. Optional so a
-  // peer on an older client still parses.
   // ONE change to a field many people write at once: a checklist tick, a
-  // comment (docs/specs/012-collaboration/collab-race-hardening.md). The `vote` op's reasoning, applied to
-  // element fields: a whole-element `el` update replaced a peer's copy with the
+  // comment (docs/specs/012-collaboration/collab-race-hardening.md): a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people ticking the same checklist row lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
-  | {
-      kind: 'vote';
-      tabId: string;
-      elementId: string;
-      voter: string;
-      delta: 1 | -1;
-      round?: string;
-    }
   // Document-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the
@@ -503,6 +484,8 @@ export type RoomOp =
   | AvatarLetSpeakOp
   | CallSessionOp
   | CallStopShareOp
+  | AvatarKnockOp
+  | AvatarKnockAnswerOp
   // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md): system only, from the room.
   | CallsModeOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor

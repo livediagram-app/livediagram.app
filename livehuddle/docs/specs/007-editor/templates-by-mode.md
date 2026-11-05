@@ -30,11 +30,15 @@ untitled.
 
 ## The catalogue
 
-- **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod** (`team-pod`) and
-  **All-Hands Hall** (`all-hands-hall`), in the one **Virtual Spaces** category ([Virtual Office
-  template](../012-collaboration/virtual-office-template.md)).
-- Start a Space shows them as one group under Recommended, as every start does ([Start
-  diagramming](start-diagramming.md) "Recommended and groups"); the rail holds Virtual Spaces and Recommended.
+- Ten Spaces in four categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
+  [Virtual Office template](../012-collaboration/virtual-office-template.md)):
+  - **Office**: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
+    (`team-pod`) and **Focus Library** (`focus-library`).
+  - **Events**: **All-Hands Hall** (`all-hands-hall`) and **Training Room** (`training-room`).
+  - **Recreation**: **Rooftop Bar** (`rooftop-bar`) and **Cafe** (`cafe`).
+  - **Outdoor**: **Garden Retreat** (`garden-retreat`) and **City Park** (`city-park`).
+- Start a Space shows each category as a group, Office first, then Recommended, then Events, Outdoor and Recreation
+  ([Start diagramming](start-diagramming.md) "The Spaces lead").
 - **Gone** (part 3): the Retrospectives family (`retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`,
   `sailboat`), `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, the
   dot-vote boards (`affinity-map`, `prioritization-matrix`, `risk-matrix`), the fill-in-together boards
@@ -50,8 +54,11 @@ untitled.
 - Every template opens on a meeting board (`templates.test.ts`).
 - Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the four Spaces and the blank, five templates (`templates.test.ts`'s kind list, the `TemplateKind`
+- The catalogue is the ten Spaces and the blank, eleven templates (`templates.test.ts`'s kind list, the `TemplateKind`
   union and `TEMPLATES` move together).
+- Every Space is walkable (`template-builders-spaces-more.test.ts` and `template-builders-office.test.ts`): its floors
+  lie first, it has one Walk In with open floor under it, every piece in a room sits inside its walls, no seat stands
+  in a doorway's first 80 px, and no two pieces of furniture overlap.
 
 ## The tab's name
 

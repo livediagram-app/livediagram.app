@@ -27,7 +27,7 @@ one editor mode, Workshop, and no switch; this records where that rule lives in 
   string, a number, `null`, absent) is `undefined`, and the tab still opens in Workshop through `opensInOf`.
 - **The palette** has one layout: `PALETTE_LAYOUTS.workshop`, landing on `'popular'`; a Participant lands on
   `'participate'` instead (`ToolbarPalette`).
-- **The Session strip** offers Timer, Vote and Poll when the mode is `'workshop'` (always, in livehuddle); any other
+- **The Session strip** offers Timer and Poll when the mode is `'workshop'` (always, in livehuddle); any other
   value answers `null`. An embed gets no strip (`sessionToolsForSurface`).
 - **Stored tabs from other products** pass through `migrateStoredTab` (`packages/document/src/stored-tab.ts`) on every
   way in (the api's tab read and thumbnail render, the offline store, a file import): `dropRetiredPages` then
@@ -38,7 +38,7 @@ one editor mode, Workshop, and no switch; this records where that rule lives in 
 
 - `parseEditorMode(v: unknown): EditorMode | undefined` and `opensInOf(tab?: unknown): EditorMode` are the only ways
   code reads a mode. What writes one writes `'workshop'`: a template landing (`templateOpensIn`, falling back to
-  `'workshop'`), a board scene landing (`apps/editor/lib/board-scene/land.ts`); a file import keeps the stored value
+  `'workshop'`), a board scene landing (`../livediagram/apps/editor/lib/board-scene/land.ts`); a file import keeps the stored value
   it brought (`apps/editor/lib/import-merge.ts`), which reads as Workshop.
 - `isEditorMode(v)` is true for `'workshop'` alone; a capitalised `'Workshop'` is not a mode id.
 - `EDITOR_MODES` stays an array so its readers (the `/new` wizard's early-click script in

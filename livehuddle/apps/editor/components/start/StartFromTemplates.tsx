@@ -6,7 +6,13 @@
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livehuddle/ui';
-import { lucideBuilding2, lucideStar } from '@liveworkspace/icons/lucide';
+import {
+  lucideBuilding2,
+  lucidePresentation,
+  lucideStar,
+  lucideTreePine,
+  lucideWine,
+} from '@liveworkspace/icons/lucide';
 import type { TemplateCategory, TemplateKind } from '@livehuddle/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
@@ -26,7 +32,10 @@ const RAIL_ICONS: Readonly<
   Record<'recommended' | TemplateCategory, ReturnType<typeof lucideGlyph>>
 > = {
   recommended: glyph(lucideStar),
-  spaces: glyph(lucideBuilding2),
+  office: glyph(lucideBuilding2),
+  events: glyph(lucidePresentation),
+  outdoor: glyph(lucideTreePine),
+  recreation: glyph(lucideWine),
 };
 
 const COPY: Record<
@@ -35,7 +44,7 @@ const COPY: Record<
 > = {
   workshop: {
     title: 'Start a Space',
-    line: 'Walk into an office, a team pod or a hall. Close this to start from a blank space.',
+    line: 'Walk into an office, a hall, a bar or a garden. Close this to start from a blank space.',
     noMatch: 'templates',
     help: 'templates',
   },

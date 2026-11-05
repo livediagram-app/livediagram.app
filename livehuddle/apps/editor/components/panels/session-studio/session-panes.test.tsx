@@ -11,35 +11,22 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TabTimer } from '@livehuddle/document';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { TimerPane } from './TimerPane';
-import { VotePane } from './VotePane';
 
-type Props = SessionToolsProps & { selfId: string };
-function Timer(p: Props) {
+function Timer(p: SessionToolsProps) {
   return <TimerPane {...p} />;
 }
-function Vote(p: Props) {
-  return <VotePane {...p} />;
-}
 
-function props(overrides: Partial<SessionToolsProps & { selfId: string }> = {}) {
+function props(overrides: Partial<SessionToolsProps> = {}) {
   return {
-    selfId: 'me',
     timer: null,
-    vote: null,
     onStartTimer: vi.fn(),
     onPauseTimer: vi.fn(),
     onResumeTimer: vi.fn(),
     onResetTimer: vi.fn(),
     onClearTimer: vi.fn(),
     onExtendTimer: vi.fn(),
-    onStartVote: vi.fn(),
-    onEndVote: vi.fn(),
-    onRevealVote: vi.fn(),
-    onClearVote: vi.fn(),
-    voteLayers: [],
-    activeLayerId: 'l1',
     ...overrides,
-  } satisfies SessionToolsProps & { selfId: string };
+  } satisfies SessionToolsProps;
 }
 
 const running: TabTimer = {
@@ -89,33 +76,5 @@ describe('session panes', () => {
     expect(p.onPauseTimer).toHaveBeenCalled();
     expect(p.onResetTimer).toHaveBeenCalled();
     expect(p.onClearTimer).toHaveBeenCalled();
-  });
-
-  it('starts a vote with the budget, privacy and one-per-item choices', () => {
-    const p = props();
-    render(<Vote {...p} />);
-    fireEvent.click(screen.getByRole('radio', { name: '5 dots each' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'One each' }));
-    fireEvent.click(screen.getByRole('button', { name: /Hide running counts/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
-    expect(p.onStartVote).toHaveBeenCalledWith(5, {
-      hideCursors: true,
-      hideCounts: true,
-      layerId: undefined,
-      onePerElement: true,
-    });
-  });
-
-  it('hides the per-item choice when everyone has a single dot', () => {
-    const p = props();
-    render(<Vote {...p} />);
-    fireEvent.click(screen.getByRole('radio', { name: 'One each' }));
-    fireEvent.click(screen.getByRole('radio', { name: '1 dot each' }));
-    expect(screen.queryByRole('radio', { name: 'One each' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
-    expect(p.onStartVote).toHaveBeenCalledWith(
-      1,
-      expect.objectContaining({ onePerElement: false }),
-    );
   });
 });

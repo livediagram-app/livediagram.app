@@ -15,6 +15,9 @@ import {
   type RoomDoor,
 } from '@liveworkspace/avatar/office-geometry';
 import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats';
+import { OFFICE_EXTRA_ART } from './office-garden';
+import { OFFICE_SOCIAL_ART } from './office-social';
+import { WAYFINDING_ART } from './office-wayfinding';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
 // footprints) is @liveworkspace/avatar's, shared with every product that has Avatar mode.
@@ -28,7 +31,37 @@ export type OfficeKind =
   | 'water-cooler'
   | 'coffee-machine'
   | 'rug'
-  | 'stage';
+  | 'stage'
+  // The pod, the bar and the garden (docs/specs/009-elements/office.md "Office Pod" to "Garden Fence").
+  | 'office-pod'
+  | 'bar'
+  | 'bar-stool'
+  | 'drinks-cabinet'
+  | 'drinks-fridge'
+  | 'outdoor-plant'
+  | 'tree'
+  | 'garden-path'
+  | 'grass'
+  | 'garden-fence'
+  // The Door (docs/specs/009-elements/room-builder.md "Door").
+  | 'door'
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
+  | 'directory'
+  | 'elevator'
+  // The social pieces (docs/specs/009-elements/social-pieces.md).
+  | 'notice-board'
+  | 'world-clock'
+  | 'jukebox'
+  | 'ping-pong-table'
+  | 'arcade-machine'
+  | 'fireplace'
+  | 'campfire'
+  | 'bench'
+  | 'picnic-table'
+  | 'hammock'
+  | 'garden-umbrella'
+  | 'fountain'
+  | 'pond';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -39,14 +72,51 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'coffee-machine',
   'rug',
   'stage',
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  'door',
+  'directory',
+  'elevator',
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
 ];
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
-export type SizedOfficeKind = 'room' | 'stage';
+export type SizedOfficeKind =
+  'room' | 'stage' | 'garden-path' | 'grass' | 'garden-fence' | 'door' | 'pond';
+const SIZED_OFFICE_KINDS: readonly string[] = [
+  'room',
+  'stage',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  'door',
+  // The pond (docs/specs/009-elements/social-pieces.md "Pond"): resizable, drawn to its size like grass.
+  'pond',
+];
 /** The pieces drawn from a fixed grid (OFFICE_ART). */
 export type GridOfficeKind = Exclude<OfficeKind, SizedOfficeKind>;
 export function isGridOfficeShape(kind: string): kind is GridOfficeKind {
-  return isOfficeShape(kind) && kind !== 'room' && kind !== 'stage';
+  return isOfficeShape(kind) && !SIZED_OFFICE_KINDS.includes(kind);
 }
 
 export function isOfficeShape(kind: string): kind is OfficeKind {
@@ -269,6 +339,9 @@ export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   'water-cooler': allSides(WATER_COOLER_VIEW),
   'coffee-machine': allSides(COFFEE_MACHINE_VIEW),
   rug: allSides(RUG_VIEW),
+  ...OFFICE_EXTRA_ART,
+  ...OFFICE_SOCIAL_ART,
+  ...WAYFINDING_ART,
 };
 
 // --- The room ----------------------------------------------------------------

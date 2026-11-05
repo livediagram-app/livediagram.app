@@ -9,8 +9,7 @@ import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/P
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
-// the active editor-mode banner. (The session timer and the vote's status and
-// results walkthrough live in the Session strip's popovers,
+// the active editor-mode banner. (The session timer lives in the Session strip's popover,
 // docs/specs/012-collaboration/session-tools.md.) (The multi-selection toolbar now floats over the selection
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre

@@ -46,11 +46,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['V'], label: 'Select Tool  (or 1)' },
       { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
       { keys: ['H'], label: 'Hand Tool' },
-      { keys: ['K'], label: 'Laser Pointer' },
       { keys: ['E'], label: 'Eraser, click / drag to delete  (or 0)' },
-      { keys: ['I'], label: 'Isometric View' },
-      { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
-      { keys: ['Z'], label: 'Zen Mode (focus)' },
     ],
   },
   {
@@ -58,7 +54,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
     rows: [
       { keys: ['T'], label: 'Text  (or 8)' },
       { keys: ['N'], label: 'Note (sticky)' },
-      { keys: ['F'], label: 'Frame' },
       { keys: ['9'], label: 'Image' },
     ],
   },
@@ -81,9 +76,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
       { keys: ['Space'], label: 'Edit label of selected element' },
       { keys: ['Type'], label: 'Replace label of selected element' },
-      // A dot vote's keys (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard").
-      { keys: ['+'], label: 'In an open vote: add one of your dots to the selected element' },
-      { keys: ['-'], label: 'In an open vote: take one of your dots back' },
+
       { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
       { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
     ],

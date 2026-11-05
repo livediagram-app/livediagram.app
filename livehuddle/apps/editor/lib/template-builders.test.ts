@@ -29,6 +29,12 @@ const ALL_KINDS = [
   'coworking-space',
   'team-pod',
   'all-hands-hall',
+  'focus-library',
+  'training-room',
+  'rooftop-bar',
+  'cafe',
+  'garden-retreat',
+  'city-park',
   'blank-session',
 ] as const satisfies readonly TemplateKind[];
 

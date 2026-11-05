@@ -233,8 +233,8 @@ export function KeyCap({
 }
 
 // ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
-// the undo cluster, a layer plane and the Layers panel's eye, a photograph and its selection
-// handles, a palette tile with its key, and a sticky collecting votes.
+// the undo cluster, a photograph and its selection
+// handles, a palette tile with its key, and an idea on a sticky.
 
 // One tab pill in the bottom bar: the mode glyph (a small diagram mark) in the tab's accent, its
 // name, and on the active tab a tint and the people on it.
@@ -369,47 +369,6 @@ export function UndoCluster({ x, y }: { x: number; y: number }) {
   );
 }
 
-// One layer plane in the isometric stack, centred at (110, y).
-export function Plane({
-  y,
-  fill,
-  stroke,
-  className,
-  children,
-}: {
-  y: number;
-  fill: string;
-  stroke: string;
-  className?: string;
-  children?: ReactNode;
-}) {
-  return (
-    <g className={className}>
-      <g transform={`translate(76 ${y})`}>
-        <path d="M-50 0 0 15 50 0 0 -15 Z" className={fill} strokeWidth="1.2" />
-        <path d="M-50 0 0 15 50 0 0 -15 Z" fill="none" className={stroke} strokeWidth="1.2" />
-        {children}
-      </g>
-    </g>
-  );
-}
-
-// An eye in the Layers panel: open, or struck through once the layer is hidden.
-export function Eye({ x, y, hides = false }: { x: number; y: number; hides?: boolean }) {
-  return (
-    <g
-      transform={`translate(${x} ${y})`}
-      className="stroke-slate-500 dark:stroke-slate-400"
-      fill="none"
-      strokeWidth="0.9"
-    >
-      <path d="M-4 0 C-2.2 -2.6 2.2 -2.6 4 0 C2.2 2.6 -2.2 2.6 -4 0 Z" />
-      <circle r="1.1" />
-      {hides ? <path className="fa-b-late" d="M-4 3 L4 -3" strokeWidth="1.1" /> : null}
-    </g>
-  );
-}
-
 // A landscape photograph, drawn: a sky gradient, the sun, two ranges of hills and a lake line.
 export function Photo({
   x,
@@ -531,21 +490,17 @@ export function PaletteTile({
   );
 }
 
-// A sticky with its dot votes landing one by one, and the count badge once they are in.
-export function VoteSticky({
+// A sticky with an idea written on it.
+export function IdeaSticky({
   x,
   fill,
   ink,
   label,
-  votes,
-  i,
 }: {
   x: number;
   fill: string;
   ink: string;
   label: string;
-  votes: number;
-  i: number;
 }) {
   return (
     <g>
@@ -562,19 +517,6 @@ export function VoteSticky({
       <text x={x + 5} y="25" fontSize="6" fontWeight="600" fill={ink}>
         {label}
       </text>
-      {Array.from({ length: votes }, (_, d) => (
-        <circle
-          key={d}
-          className="fa-pop"
-          style={{ animationDelay: `${0.25 + (i * 3 + d) * 0.18}s` }}
-          cx={x + 8 + d * 7}
-          cy="45"
-          r="2.8"
-          fill={SKY}
-          stroke="#fff"
-          strokeWidth="0.8"
-        />
-      ))}
     </g>
   );
 }

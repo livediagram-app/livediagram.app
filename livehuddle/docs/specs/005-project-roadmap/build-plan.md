@@ -165,11 +165,11 @@ marketing decision, not part of this card.
 ## Keeping the two products from drifting
 
 Two copies of what both products carry will drift. Since step 10 that is Avatar mode, the Navigate elements, the
-office pieces, the Spaces templates, the Session strip's Timer and Vote, Bring Focus, the facilitator baton and
+office pieces, the Spaces templates, the Session strip's Timer, Bring Focus, the facilitator baton and
 follow-me; the rest of Workshop mode is livediagram's alone. Four rules keep the drift small:
 
 1. **One copy of what can be shared.** The avatar core and its wire shapes live once, in `packages/` (step 1).
-2. **The next extraction is named now.** The Session strip's Timer and Vote, Bring Focus and the facilitator baton
+2. **The next extraction is named now.** The Session strip's Timer, Bring Focus and the facilitator baton
    are the next candidates (the Collaborate elements were, until step 10 took them out of livehuddle). Their pure parts move to a
    `@liveworkspace/session-tools` package the first time a change has to land in both products, instead of being
    made twice.

@@ -141,7 +141,7 @@ the bench also reports it at the reference speed (4× slower), where it is not a
   today.
 - **A render that changes no element hands on the same board.** A pan, a zoom or a marquee frame
   re-renders the editor without touching an element; every display projection of the board (stock
-  colours, hidden layers) then returns the same array it returned before, so nothing derived from
+  colours) then returns the same array it returned before, so nothing derived from
   the board (the Map, the arrow frames, the endpoint spread) recomputes.
 
 ## Later

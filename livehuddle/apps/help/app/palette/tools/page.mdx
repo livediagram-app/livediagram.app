@@ -6,13 +6,13 @@ import { CommandPalette } from '@/components/illustrations/tips';
 export const metadata = helpMetadata({
   title: 'Palette Tools',
   description:
-    'Where each element lives in the palette: Popular, Write, Frame, Navigate, React, Selection Mode, Icons, Stickers and Media.',
+    'Where each element lives in the palette: Popular, Write, Travel, Seating, Rooms, Amenities, Selection Mode, Icons, Stickers and Media.',
   path: '/help/palette/tools/',
 });
 
 <ArticleLayout
   title="Where each tool lives"
-  description="A map of the palette's categories: Write, Frame, Navigate, React, Selection Mode, Icons, Stickers and Media, and where each tool lives."
+  description="A map of the palette's categories: Write, Travel, Seating, Rooms, Amenities, Selection Mode, Icons, Stickers and Media, and where each tool lives."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("tools")}
@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
 
 The palette's tools are grouped into **categories**, each one press away on the palette strip. This page is a map of where each tool lives.
 
-The categories sit along the strip by name, in three bands with a thin line between each: **Common** (Write, Frame), **Meet** (Navigate, React, Selection Mode) and **Decorate** (Icons, Stickers, Media). Rest on one, or click it, to see its elements.
+The categories sit along the strip by name, in three bands with a thin line between each: **Common** (Write), **Meet** (Travel, Seating, Rooms, Amenities, Selection Mode) and **Decorate** (Icons, Stickers, Media). Rest on one, or click it, to see its elements.
 
 <Figure caption="The palette strip: the selection mode, the categories by name, and Search.">
   <CommandPalette />
@@ -28,7 +28,7 @@ The categories sit along the strip by name, in three bands with a thin line betw
 
 ## The categories
 
-The palette opens on **Popular**: Sticky note, Text, Frame, Image and Link card, then, behind a divider, Room, Meeting Table, Chair, Bring Focus and Avatar Pad. Popular is the palette's landing page rather than a category on the strip; every other category is one level deep.
+The palette opens on **Popular**: Sticky note, Text, Image and Link card, then, behind a divider, Room, Meeting Table, Chair, Bring Focus and Avatar Pad. Popular is the palette's landing page rather than a category on the strip; every other category is one level deep.
 
 Anything you cannot see is still one search away: the strip's Search and the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) add any palette element by name.
 
@@ -36,13 +36,13 @@ Anything you cannot see is still one search away: the strip's Search and the [se
 
 **Write** holds the wordy elements: **Text** drops a free-standing label (`T`) and **Note** is a coloured sticky note card (`N`). See [Write Elements](/help/palette/write/).
 
-**Frame** holds the frame (`F`), a labelled box that groups a room's notes and moves them as one. See [Frame Elements](/help/palette/build/).
+**Travel** holds what takes people somewhere: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Avatar Pad](/help/palette/avatar-pads/) and the [Link card](/help/canvas/links/link-cards/).
 
-**Navigate** holds what people walk round and through: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Chair, Desk and Sofa](/help/palette/chairs/), the [Fence](/help/palette/fences/), the [Avatar Pad](/help/palette/avatar-pads/) and the [Link card](/help/canvas/links/link-cards/), then the [office pieces](/help/palette/virtual-office/): Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine and Rug.
+**Seating** holds what people sit at: the [Chair, Desk and Sofa](/help/palette/chairs/), and the [Meeting Table](/help/palette/virtual-office/).
 
-**React** holds the five [Reaction Pads](/help/palette/behaviour/reaction-pads/): Confetti, Sparkles, Hearts, Applause and Fireworks.
+**Rooms** holds what a floor is laid out with: the [Fence](/help/palette/fences/), and the [Room, Stage and Rug](/help/palette/virtual-office/).
 
-**Selection Mode** holds the [Selection Mode buttons](/help/palette/behaviour/mode-buttons/), one per mode, including **Walk In**, the Avatar one.
+**Amenities** holds what makes a Space feel like a place: the [Plant, Bookshelf, Water Cooler and Coffee Machine](/help/palette/virtual-office/).
 
 **Icons** and **Stickers** are for decoration: a searchable catalogue of single-colour glyphs, and die-cut colour emoji and word badges. See [Icons](/help/palette/icons/) and [Stickers](/help/palette/stickers/).
 
@@ -63,11 +63,6 @@ Several tools have their own walkthroughs, listed below and linked here:
 - [Images](/help/palette/tools/images/) covers uploading, searching for and reusing pictures.
 - [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short notes.
 - [Portals](/help/palette/tools/portals/) covers linking two portals and travelling between them, including across tabs.
-- [Meeting Elements](/help/palette/behaviour/) covers the Navigate, React and Selection Mode categories: Bring Focus, Reaction Pads and Selection Mode buttons.
-
-<Tip>
-  Reach for a Frame when a board grows past one screen: it keeps a section labelled and easy to move
-  as a unit.
-</Tip>
+- [Meeting Elements](/help/palette/behaviour/) covers the Travel, Seating, Rooms and Amenities categories: Bring Focus, the furniture and the Avatar button.
 
 </ArticleLayout>

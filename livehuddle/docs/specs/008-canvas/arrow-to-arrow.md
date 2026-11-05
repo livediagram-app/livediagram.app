@@ -55,7 +55,7 @@ threshold, excludeId)` (`geometry-snapping.ts`) compute the dots + the nearest
   that is on the tab the copy lands on (a paste onto another tab drops an arrow
   whose target arrow did not land); deleting a target arrow cascade-deletes
   the arrows attached to it, and theirs in turn, a connector a deleted box takes
-  included (`withAttachedArrows`, by the delete, the eraser and layer deletion).
+  included (`withAttachedArrows`, by the delete and the eraser).
 - Reveal distance (perpendicular) shows the dots; a tighter threshold connects.
   Drag-snap lives in `apps/editor/hooks/canvas/useEditorDrag.ts`.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Linked', 'ArrowPoint')`, once per drag.

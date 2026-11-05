@@ -30,6 +30,7 @@ import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import type { ResolvedPaletteCategory } from './palette-layouts';
+import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
 
 // Deps are named exactly as the tab bodies' own props, and typed off those
 // components, so the array below is verbatim from where it used to live and
@@ -112,12 +113,13 @@ export function paletteCategoryTabs(
         return <PaletteComponentsTab {...tab} tiles={tiles} />;
       case 'data':
         return <PaletteDataTab {...tab} tiles={tiles} />;
-      case 'collab-react':
-      case 'collab-mode':
-      case 'collab-navigate':
-        return <PaletteCollaborateTab {...tab} tiles={tiles} />;
       default:
-        return <PaletteTileGrid {...tab} tiles={tiles} />;
+        // The meeting categories (the Space categories and Selection Mode) by their group, so a new one needs no case.
+        return c.id in COLLABORATE_CATEGORY_GROUPS ? (
+          <PaletteCollaborateTab {...tab} tiles={tiles} />
+        ) : (
+          <PaletteTileGrid {...tab} tiles={tiles} />
+        );
     }
   };
   return categories.map((c) => ({ ...c, content: bodyFor(c) }));

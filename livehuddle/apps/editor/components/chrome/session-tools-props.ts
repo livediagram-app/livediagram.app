@@ -1,7 +1,7 @@
-import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livehuddle/document';
+import type { TabTimer, TimerMode } from '@livehuddle/document';
 
-// The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/vote-layer-scope.md): the running timer, the
-// dot vote, and every verb that drives them. Both are Tab fields, so they persist with the document.
+// The session-tools bundle (docs/specs/012-collaboration/session-tools.md): the running timer and every verb that
+// drives it. The timer is a Tab field, so it persists with the document.
 //
 // One bundle, read once (useSessionTools) for the bottom bar's Session strip and handed to its
 // popovers' panes (docs/specs/012-collaboration/session-tools.md "The Session strip").
@@ -10,11 +10,9 @@ export type SessionToolsProps = {
   // popovers show the name and disables every control in one place, which is the
   // whole reason these verbs already travel as one bundle.
   facilitatedBy?: string | null;
-  // We hold the facilitator baton, so the vote's controls are ours even when
-  // somebody else started it (docs/specs/012-collaboration/session-tools.md).
+  // We hold the facilitator baton (docs/specs/012-collaboration/facilitator.md).
   facilitating?: boolean;
   timer: TabTimer | null;
-  vote: TabVote | null;
   onStartTimer: (mode: TimerMode, durationMs?: number) => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
@@ -22,11 +20,4 @@ export type SessionToolsProps = {
   onClearTimer: () => void;
   // Add time to a running (or paused) countdown without restarting it.
   onExtendTimer: (deltaMs: number) => void;
-  onStartVote: (votesPerPerson: number, setup?: VoteSetup) => void;
-  onEndVote: () => void;
-  onRevealVote: () => void;
-  onClearVote: () => void;
-  // The tab's layers + the active one, for the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md).
-  voteLayers: Layer[];
-  activeLayerId: string;
 };

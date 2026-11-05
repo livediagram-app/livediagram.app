@@ -4,12 +4,24 @@
 // product's model package beside its element union, which re-exports this module. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { outlineWalls } from './room-outline';
 
 // The floor pieces: placed behind everything, never blocking, never a destination. An Avatar Pad
 // (docs/specs/009-elements/avatar-pad.md) lies on the floor too: characters stand on it, furniture over it. So does
-// livehuddle's Stage (its docs/specs/012-collaboration/meeting-rooms-and-stage.md): a platform people stand on.
-export function isFloorShape(kind: string): kind is 'room' | 'rug' | 'avatar-pad' | 'stage' {
-  return kind === 'room' || kind === 'rug' || kind === 'avatar-pad' || kind === 'stage';
+// livehuddle's Stage (its docs/specs/012-collaboration/meeting-rooms-and-stage.md): a platform people stand on. And
+// livehuddle's Garden Path and Grass (its docs/specs/009-elements/office.md "Garden Path", "Grass"): stones laid
+// in the ground, and a lawn.
+export function isFloorShape(
+  kind: string,
+): kind is 'room' | 'rug' | 'avatar-pad' | 'stage' | 'garden-path' | 'grass' {
+  return (
+    kind === 'room' ||
+    kind === 'rug' ||
+    kind === 'avatar-pad' ||
+    kind === 'stage' ||
+    kind === 'garden-path' ||
+    kind === 'grass'
+  );
 }
 
 // The furniture a character sits down in (docs/specs/009-elements/chair.md "Desk and sofa").
@@ -19,14 +31,56 @@ export function isSeatingShape(kind: string): kind is SeatingKind {
   return kind === 'chair' || kind === 'desk' || kind === 'sofa' || kind === 'meeting-table';
 }
 
+// Seats that never turn, each seat saying which way its sitter faces (livehuddle's docs/specs/009-elements/office.md
+// "Office Pod", "Bar, Bar Stool"). Kept apart from SeatingKind, whose pieces a product draws per facing.
+// livehuddle's social pieces (its docs/specs/009-elements/social-pieces.md) seat people too: a ping-pong table's two
+// ends, a bench, a picnic table and a hammock.
+export type FixedSeatKind =
+  'office-pod' | 'bar-stool' | 'ping-pong-table' | 'bench' | 'picnic-table' | 'hammock';
+
+const FIXED_SEAT_KINDS: readonly string[] = [
+  'office-pod',
+  'bar-stool',
+  'ping-pong-table',
+  'bench',
+  'picnic-table',
+  'hammock',
+];
+
+export function isFixedSeatShape(kind: string): kind is FixedSeatKind {
+  return FIXED_SEAT_KINDS.includes(kind);
+}
+
+// Pieces that hang on a wall (livehuddle's social-pieces.md "How each one walks"): walked past, never blocking and
+// never a destination.
+export function isWallPieceShape(kind: string): boolean {
+  return kind === 'notice-board' || kind === 'world-clock';
+}
+
+/** Every piece a character sits down in: the seating that turns and the fixed seats. */
+export type SitKind = SeatingKind | FixedSeatKind;
+
+/** Whether walking onto a piece sits a character down in it (the walk's chair arrival). */
+export function seatsACharacter(kind: string): kind is SitKind {
+  return isSeatingShape(kind) || isFixedSeatShape(kind);
+}
+
 // Where you get a drink, and which.
-export type DrinkKind = 'water' | 'coffee';
+export type DrinkKind = 'water' | 'coffee' | 'juice' | 'soda';
+export const DRINK_KINDS: readonly DrinkKind[] = ['water', 'coffee', 'juice', 'soda'];
 const DRINK_OF: Partial<Record<string, DrinkKind>> = {
   'water-cooler': 'water',
   'coffee-machine': 'coffee',
+  // livehuddle's bar (its docs/specs/009-elements/office.md "Drinks Cabinet, Drinks Fridge").
+  'drinks-cabinet': 'juice',
+  'drinks-fridge': 'soda',
 };
 export function drinkFrom(kind: string): DrinkKind | null {
   return DRINK_OF[kind] ?? null;
+}
+/** Whether a value is a drink a character may hold: what a receiver accepts of a peer's `holding`. */
+export function isDrinkKind(value: unknown): value is DrinkKind {
+  return (DRINK_KINDS as readonly unknown[]).includes(value);
 }
 // How long a drink is held, and how often a sip (docs/specs/009-elements/office.md "Using it").
 export const DRINK_HOLD_MS = 60_000;
@@ -38,7 +92,24 @@ const OFFICE_FOOTPRINT: Partial<
 > = {
   plant: { x0: 15 / 56, x1: 41 / 56, y0: 63 / 88, y1: 84 / 88 },
   bookshelf: { x0: 0.03, x1: 0.97, y0: 0.75, y1: 0.96 },
+  // livehuddle's bar and garden (its docs/specs/009-elements/office.md): the counter, the planter, the trunk's base.
+  bar: { x0: 0.02, x1: 0.98, y0: 0.5, y1: 0.92 },
+  'outdoor-plant': { x0: 14 / 72, x1: 58 / 72, y0: 56 / 80, y1: 76 / 80 },
+  tree: { x0: 48 / 120, x1: 72 / 120, y0: 136 / 160, y1: 152 / 160 },
+  // livehuddle's social pieces (its docs/specs/009-elements/social-pieces.md): a base, a hearth, a basin, the water.
+  jukebox: { x0: 6 / 72, x1: 66 / 72, y0: 84 / 112, y1: 108 / 112 },
+  'arcade-machine': { x0: 6 / 64, x1: 58 / 64, y0: 88 / 112, y1: 108 / 112 },
+  fireplace: { x0: 4 / 128, x1: 124 / 128, y0: 96 / 120, y1: 116 / 120 },
+  'garden-umbrella': { x0: 50 / 120, x1: 70 / 120, y0: 138 / 152, y1: 148 / 152 },
+  fountain: { x0: 8 / 136, x1: 128 / 136, y0: 72 / 120, y1: 112 / 120 },
+  pond: { x0: 0.06, x1: 0.94, y0: 0.1, y1: 0.92 },
+  campfire: { x0: 10 / 80, x1: 70 / 80, y0: 40 / 72, y1: 66 / 72 },
 };
+
+/** Scenery: blocks with its footprint and is never a destination (walking up to it rings nothing). */
+export function isSceneryShape(kind: string): boolean {
+  return kind in OFFICE_FOOTPRINT;
+}
 
 /** The footprint of a piece that blocks, in canvas coordinates, or null for one that does not. */
 export function officeFootprint(el: Rect & { shape: string }): Rect | null {
@@ -87,7 +158,11 @@ export type WallSegment = { a: { x: number; y: number }; b: { x: number; y: numb
  * A room's walls as lines a character cannot cross, in canvas coordinates, broken at the doorway: along the
  * back wall's foot, down each side wall and along the front wall.
  */
-export function roomWalls(el: Rect & { roomDoor?: RoomDoor }): WallSegment[] {
+export function roomWalls(
+  el: Rect & { roomDoor?: RoomDoor; roomOutline?: readonly { x: number; y: number }[] },
+): WallSegment[] {
+  // A room drawn wall by wall (room-builder.md): its outline's walls, with no doorway of its own.
+  if (el.roomOutline && el.roomOutline.length >= 3) return outlineWalls(el, el.roomOutline);
   const door = el.roomDoor ?? DEFAULT_ROOM_DOOR;
   const { x, y, width: w, height: h } = el;
   const half = ROOM_WALL / 2;

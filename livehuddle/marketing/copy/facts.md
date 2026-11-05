@@ -25,8 +25,8 @@ is the team, not the individual.
 
 ## What it does
 
-- Real-time multiplayer: live cursors, selection rings, comment threads, and
-  laser-pointer broadcast, one Durable Object room per document.
+- Real-time multiplayer: live cursors, selection rings, comment threads and
+  walking characters, one Durable Object room per document.
 - Canvas: ten core shapes, sticky notes, text, images, arrows (straight /
   curved / angled with draggable handles, configurable thickness and arrowheads,
   optional labels), a Freehand pen and a Shape Pen that turns rough strokes
@@ -43,9 +43,9 @@ is the team, not the individual.
 - Share links with three roles (Editor, Participant, Viewer), an optional
   expiry and password, revocable any time. "Shared with you" visitors can make
   their own copy.
-- Export the active tab as a livehuddle JSON file, Mermaid, Markdown,
-  Excalidraw, PNG, SVG or PDF; import JSON, Mermaid, Markdown, Excalidraw and
-  draw.io files.
+- Export the active tab as a livehuddle JSON file, Markdown, PNG, SVG or PDF;
+  import a livehuddle JSON file back. No imports from other tools (Excalidraw,
+  Mermaid, draw.io): livediagram has them.
 - Email notifications (comments, mentions, assigned actions, replies to team invites),
   each with its own switch.
 - Hybrid auth: guests get the full feature set keyed to a per-browser id;

@@ -4,9 +4,9 @@
 import type { ReactNode } from 'react';
 import {
   Handles,
+  IdeaSticky,
   PaletteTile,
   Photo,
-  VoteSticky,
   KeyCap,
   MUTED,
   PANEL,
@@ -152,7 +152,7 @@ export function ShortcutsArt() {
   );
 }
 
-/** The session tools: a timer draining on the canvas, dot votes landing, and the Done check. */
+/** The session tools: a timer draining on the canvas, the ideas on stickies, and the Done check. */
 export function SessionToolsArt() {
   const people = [SKY, PINK, VIOLET, EMERALD, AMBER];
   return (
@@ -201,10 +201,10 @@ export function SessionToolsArt() {
           <path d="M2.4 -2.8 V-1.2 H0.8" strokeLinecap="round" strokeLinejoin="round" />
         </g>
 
-        {/* Dot votes on the ideas. */}
-        <VoteSticky x={124} fill="#fde68a" ink="#78350f" label="Ship v2" votes={4} i={0} />
-        <VoteSticky x={174} fill="#fbcfe8" ink="#831843" label="Onboarding" votes={2} i={1} />
-        <VoteSticky x={224} fill="#bbf7d0" ink="#14532d" label="Dark mode" votes={3} i={2} />
+        {/* The ideas on the board. */}
+        <IdeaSticky x={124} fill="#fde68a" ink="#78350f" label="Ship v2" />
+        <IdeaSticky x={174} fill="#fbcfe8" ink="#831843" label="Onboarding" />
+        <IdeaSticky x={224} fill="#bbf7d0" ink="#14532d" label="Dark mode" />
 
         {/* The Done check: who has marked themselves finished. */}
         <PanelShadow x={124} y={62} w={144} h={20} r={10} />

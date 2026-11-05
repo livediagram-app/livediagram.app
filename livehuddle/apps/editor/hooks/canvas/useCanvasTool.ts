@@ -1,6 +1,6 @@
 // Canvas tool slice, lifted out of useEditorState. Select (default,
 // drag-on-empty marquee-selects) vs Pan (drag-on-empty scrolls) vs
-// Laser (presenter pointer) vs Avatar (walk mode, docs/specs/008-canvas/avatar-mode.md). Holding
+// Avatar (walk mode, docs/specs/008-canvas/avatar-mode.md). Holding
 // Space always pans regardless.
 // Lives in editor state (not Canvas) so other components (e.g. a
 // status bar later) can read it without prop-drilling through Canvas.
@@ -26,35 +26,33 @@ export function useCanvasTool({
   // Hand on every viewport, used by the read-only embed view (docs/specs/013-workspace/embeds.md):
   // there's nothing to select / edit, so panning is the only useful
   // drag-on-empty gesture.
-  const [canvasTool, setCanvasTool] = useState<CanvasTool>(() =>
+  // The device's default (Select on a desktop, Hand on a touch screen), read once: also where leaving Avatar mode
+  // lands when nothing came before it (docs/specs/008-canvas/avatar-mode.md "Reaching for the palette").
+  const [defaultTool] = useState<CanvasTool>(() =>
     defaultPan || isMobileViewportSync() ? 'pan' : 'select',
   );
+  const [canvasTool, setCanvasTool] = useState<CanvasTool>(defaultTool);
   // User-facing tool picker (palette buttons + keyboard). Wraps the raw
-  // setter to emit telemetry when the user enters laser (presenter)
-  // mode, a distinct feature. Pan / select switches stay untracked
-  // (high frequency), and internal auto-switches (e.g. laser to pan
-  // when a draw starts) keep the raw setter so they don't count as
-  // "used laser".
+  // setter to emit telemetry when the user enters a distinct mode (Eraser,
+  // Avatar, Format). Pan / select switches stay untracked (high frequency),
+  // and internal auto-switches keep the raw setter so they don't count as a use.
   // The tool that was active before Avatar mode (docs/specs/008-canvas/avatar-mode.md) took over, so
   // picking a palette tile can put the user back exactly where they were
   // rather than guessing Select. Same idea as useFormatTool's preFormatToolRef.
-  const [preAvatarTool, setPreAvatarTool] = useState<CanvasTool>('select');
+  const [preAvatarTool, setPreAvatarTool] = useState<CanvasTool>(defaultTool);
   // The general form of the same idea: whatever tool you were in before the
   // current one, for any mode. A Selection Mode button (docs/specs/009-elements/mode-button.md) presses back
   // out of its own mode with this, so a button that switches you in is never a
   // one-way door.
-  const priorToolRef = useRef<CanvasTool>('select');
+  const priorToolRef = useRef<CanvasTool>(defaultTool);
   const selectCanvasTool = (tool: CanvasTool) => {
     if (tool !== canvasTool) priorToolRef.current = canvasTool;
     if (tool === 'avatar' && canvasTool !== 'avatar') setPreAvatarTool(canvasTool);
-    if (tool === 'laser' && canvasTool !== 'laser') track('Canvas', 'Used', 'Laser');
-    if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
     if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
     // `AvatarMode`, not `Avatar` — the palette's Avatar photo tile already owns
     // the `Avatar` token on Element·Added (docs/specs/008-canvas/avatar-mode.md).
     if (tool === 'avatar' && canvasTool !== 'avatar') track('Canvas', 'Used', 'AvatarMode');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
-    if (tool === 'isometric' && canvasTool !== 'isometric') track('Canvas', 'Used', 'Isometric');
     setCanvasTool(tool);
   };
   // Opening walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"): a tab that offers the walk puts you in
@@ -75,27 +73,37 @@ export function useCanvasTool({
   const exitAvatarTool = () => {
     if (canvasTool !== 'avatar') return;
     const back = preAvatarTool;
-    setCanvasTool(back === 'avatar' ? 'select' : back);
+    setCanvasTool(back === 'avatar' ? defaultTool : back);
   };
   // Changing tab leaves Avatar mode for the tool you were in before it (docs/specs/008-canvas/avatar-mode.md
   // "Changing tab"): the character stands at a point of the tab you left, which on the new tab can be inside a
   // fence it was meant to be kept out of. Done while rendering, as the tab changes, so the new tab never draws
   // (or publishes to peers) the character even once; leaving the mode is also what tells peers to drop it.
+  // Travel keeps the mode ("Changing tab"): a Portal, an Elevator or the Directory's Go names the tab it is taking
+  // you to, and places the character there in the same update, so that one change of tab is not an exit.
   const [lastTabId, setLastTabId] = useState(tabId);
+  const [travelTabId, setTravelTabId] = useState<string | null>(null);
   if (tabId !== lastTabId) {
     setLastTabId(tabId);
-    if (canvasTool === 'avatar') {
+    const travelling = travelTabId !== null && travelTabId === tabId;
+    if (travelTabId !== null) setTravelTabId(null);
+    if (canvasTool === 'avatar' && !travelling) {
       const back = preAvatarTool;
-      setCanvasTool(back === 'avatar' ? 'select' : back);
+      setCanvasTool(back === 'avatar' ? defaultTool : back);
     }
   }
   // Where "go back" leads: the tool before the current one, never the current
   // one itself (a stale ref must not trap the user in the mode they're leaving).
   const toolBeforeCurrent = (): CanvasTool =>
-    priorToolRef.current === canvasTool ? 'select' : priorToolRef.current;
+    priorToolRef.current === canvasTool ? defaultTool : priorToolRef.current;
+  // Marks the next change of tab, to `id`, as travel, which keeps Avatar mode. Called with the tab switch itself.
+  const keepWalkingTo = (id: string) => {
+    if (id !== tabId) setTravelTabId(id);
+  };
   return {
     canvasTool,
     setCanvasTool,
+    keepWalkingTo,
     selectCanvasTool,
     openWalking,
     exitAvatarTool,

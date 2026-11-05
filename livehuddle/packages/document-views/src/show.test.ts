@@ -18,7 +18,7 @@ describe('showView (R17, VW34)', () => {
     expect(json).toMatchObject({
       ref: '146b',
       kind: 'square',
-      container: { ref: 'c991', kind: 'frame', label: 'Services' },
+      container: { ref: 'c991', kind: 'boundary', label: 'Services' },
       fields: { label: 'Orders service', iconId: 'server', x: 720 },
       omitted: [],
     });

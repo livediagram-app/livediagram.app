@@ -11,8 +11,8 @@ import { isRetiredElement } from './retired-kinds';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, Tab } from './index';
-import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
 import { isValidElement } from './validate';
+import { mergeNoticeNotes } from './office-social';
 
 // The element types a Participant may add.
 const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text', 'image'] as const;
@@ -95,12 +95,9 @@ function sameValue(a: unknown, b: unknown): boolean {
   return a === b || JSON.stringify(a) === JSON.stringify(b);
 }
 
-// An element on a locked layer behaves as if it were locked itself (docs/specs/006-document/layers.md).
-function isHeld(tab: Tab, el: Element): boolean {
-  if ((el as Bag).locked === true) return true;
-  const layers = tabLayers(tab.layers);
-  const layer = layers.find((l) => l.id === resolveLayerId(el.layerId, layers));
-  return layer !== undefined && isLayerLocked(layer);
+// A locked element is held: a participant may not change it.
+function isHeld(el: Element): boolean {
+  return (el as Bag).locked === true;
 }
 
 // A table's cells may change words, never shape: same row count, every row the same length.
@@ -132,7 +129,7 @@ function keepLiveFields(target: Bag, stored: Bag): void {
 
 // What a Participant's update turns another person's element into: the stored element with the permitted fields
 // copied from incoming.
-function mergeOthers(stored: Element, incoming: Element): Element {
+function mergeOthers(stored: Element, incoming: Element, adderKey: string | null): Element {
   const s = stored as Bag;
   const inc = incoming as Bag;
   const next: Bag = { ...s };
@@ -161,6 +158,13 @@ function mergeOthers(stored: Element, incoming: Element): Element {
   }
   if (stored.type === 'image') {
     for (const field of PARTICIPANT_IMAGE_FIELDS) copyField(next, inc, field);
+  }
+  // A notice board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): a Participant pins notes it
+  // signs and unpins those, never anyone else's.
+  if (stored.type === 'shape' && stored.shape === 'notice-board') {
+    const notes = mergeNoticeNotes(stored.noticeNotes, inc.noticeNotes, adderKey);
+    if (notes) next.noticeNotes = notes;
+    else delete next.noticeNotes;
   }
   return next as Element;
 }
@@ -223,7 +227,7 @@ export function applyParticipantOp(
     );
   }
   if (op.kind === 'remove') {
-    if (isHeld(tab, stored)) return refuse('locked', { kind: 'add', element: stored, at: index });
+    if (isHeld(stored)) return refuse('locked', { kind: 'add', element: stored, at: index });
     if (!addedByAdder(stored, adderKey))
       return refuse('not-own', { kind: 'add', element: stored, at: index });
     return {
@@ -239,14 +243,14 @@ export function applyParticipantOp(
   const incoming = op.element;
   const restore: ElementOp = { kind: 'update', element: stored };
   if (incoming.type !== stored.type) return refuse('type-changed', restore);
-  if (isHeld(tab, stored)) return refuse('locked', restore);
+  if (isHeld(stored)) return refuse('locked', restore);
   const own = addedByAdder(stored, adderKey);
-  const merged = own ? mergeOwn(stored, incoming) : mergeOthers(stored, incoming);
+  const merged = own ? mergeOwn(stored, incoming) : mergeOthers(stored, incoming, adderKey);
   if (!isValidElement(merged)) return refuse('invalid', restore);
   // What it added stays something it could add.
   if (own && !addableOn(merged)) return refuse('not-holdable', restore);
   // Its own element moved onto a locked layer would be one it could never touch again.
-  if (isHeld(tab, merged)) return refuse('locked', restore);
+  if (isHeld(merged)) return refuse('locked', restore);
   const changed = !sameValue(merged, stored);
   // Peers get only the fields that changed, never the stored copy whole: theirs may hold an Editor's change the
   // saved tab has not caught up with yet.
@@ -282,7 +286,7 @@ function applyAdd(
   for (const field of LIVE_ELEMENT_FIELDS) delete stamped[field];
   delete stamped.locked;
   const added = stamped as Element;
-  if (isHeld(tab, added)) return refuse('locked', undo);
+  if (isHeld(added)) return refuse('locked', undo);
   if (!isValidElement(added)) return refuse('invalid', undo);
   const index = Number.isInteger(at) ? Math.max(0, Math.min(at, elements.length)) : elements.length;
   return {

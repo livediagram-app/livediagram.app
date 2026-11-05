@@ -12,7 +12,6 @@ import {
   tabKindOf,
   parseEditorMode,
   type EditorMode,
-  type Layer,
   type TabKind,
 } from '@livehuddle/document';
 
@@ -82,7 +81,7 @@ export function isTemplateFamily(value: unknown): value is TemplateFamily {
  * made from. Every board is Workshop; the tab kind is read the way the document model reads it.
  */
 export function creationIntentOf(
-  tab: { kind?: string; opensIn?: string; layers?: Layer[] } | undefined,
+  tab: { kind?: string; opensIn?: string } | undefined,
   templateFamily: TemplateFamily | null = null,
 ): CreationIntent {
   const intent: CreationIntent = {

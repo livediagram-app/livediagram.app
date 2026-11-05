@@ -31,14 +31,10 @@ export const HELP_ARTICLES = {
   embedElements: 'palette/tools/images',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
-  quickAddOnHover: 'palette/quick-add-on-hover',
-  isometricMode: 'selection-modes/isometric-mode',
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
   avatarMode: 'selection-modes/avatar-mode',
-  laser: 'selection-modes/laser',
-  spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
   // AI
@@ -65,11 +61,9 @@ export const HELP_ARTICLES = {
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
-  layers: 'canvas/layers',
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
@@ -88,13 +82,13 @@ export const HELP_ARTICLES = {
   explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md). All but the portal's are
-  // leaving kinds, so they land on Frames, the one container that stays.
-  stacks: 'palette/build/frames',
-  lanes: 'palette/build/frames',
-  boundaries: 'palette/build/frames',
-  diagramKeys: 'palette/build/frames',
+  // leaving kinds, so they land on the Virtual Office, whose Rooms mark out an area of a Space.
+  stacks: 'palette/virtual-office',
+  lanes: 'palette/virtual-office',
+  boundaries: 'palette/virtual-office',
+  diagramKeys: 'palette/virtual-office',
   portals: 'palette/tools/portals',
-  timelineRail: 'palette/build/frames',
+  timelineRail: 'palette/virtual-office',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
@@ -150,25 +144,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
   },
-  quickAddOnHover: {
-    title: 'Learn about quick-add on hover',
-    description: 'Open the element + menu by hovering instead of clicking.',
-  },
-  isometricMode: {
-    title: 'Learn about the isometric view',
-    description: 'How the isometric projection works and when to use it.',
-  },
   avatarMode: {
     title: 'Learn about Avatar mode',
     description: 'Tips for walking the canvas as an avatar and leading a session.',
-  },
-  laser: {
-    title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the canvas.',
-  },
-  spotlight: {
-    title: 'Learn about the Spotlight',
-    description: 'Tips for dimming everything but the part you are talking about.',
   },
   eraser: {
     title: 'Learn about the Eraser',
@@ -239,17 +217,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description:
       'Tips for laying a diagram out in one press, and choosing the style that suits it.',
   },
-  layers: {
-    title: 'Learn about layers',
-    description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
-  },
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionVoting: {
-    title: 'Learn about voting',
-    description: 'Tips for running a quick vote across the elements on the canvas.',
   },
   sessionTimer: {
     title: 'Learn about the timer',

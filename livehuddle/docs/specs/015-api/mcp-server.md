@@ -326,7 +326,7 @@ tweak → `ops`.
 
 **Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
 form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
-what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
+what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in boundary`, `connect a -> b`, `layout`
 of a selection, placement beside another element), and they are the language each [lint](../024-agents/diagram-lint.md)
 finding's fix is written in, so a finding in a write's result can be applied as printed. The base is the revision the
 model read (else the tab as loaded) and every element's fingerprint as loaded, since the text may name any of them.
@@ -410,6 +410,10 @@ enough. The schema text derives from `packages/document` types: single source of
 truth, no hand-maintained copy that can drift.
 
 ### 4.7 Graph-first authoring (the low-burden path)
+
+> **No `mermaid` in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)):
+> the `mermaid` input below is gone from every tool; only `graph` stays (until the diagram engine leaves, #459).
+> Where this section names `mermaid`, it records what livehuddle had.
 
 Emitting raw `elements` with `x/y/width/height`, a shape vocabulary, and
 arrow-endpoint anchor objects is the biggest source of model error (it's why
@@ -497,7 +501,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   sits on a run no other labelled arrow shares (the drop into its target,
   else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
   as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it,
-  and off every frame's and lane's border and heading, and, where any run allows, off every other line too (a
+  and off every boundary's and lane's border and heading, and, where any run allows, off every other line too (a
   neighbour's drop struck a label through); where the middle of a run is not clear, a point a quarter or a
   third of the way along it is tried before the next run. Where no run holds the label on its line, it sits beside
   one, just off the line on either side, where it touches no box, border, heading or line (a wide label on a drop
@@ -524,31 +528,31 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   end takes a free side instead of squeezing in beside the other two.
 - **Groups keep their lines clear.** A node outside a group that a member links to sits by that member, not by the
   middle of the group (a database under the service that owns it), its rank kept in order and its gaps kept. An edge
-  to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
-  the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
-  D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
-  gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
+  to or from the group itself leaves the boundary facing the other end: from the side level with it when it lies under
+  the boundary, else from the boundary's near side, so it never sweeps along the boundary past its members' own drops (the
+  D2 "publish events" bus). An edge between two nodes outside a group is routed round the boundary, never through the
+  gaps between its members. A line into a group's first members lands clear of its heading: down the page, a boundary
   whose first member would take a line through the heading's text is widened on the left until it does not, on the
   heading's side only: the far side hugs the members (a long heading framed two boxes in twice their room), unless
-  an edge meets the group itself, whose frame then stays centred on its members so that edge stays on their line.
+  an edge meets the group itself, whose boundary then stays centred on its members so that edge stays on their line.
   A row of members with no lines among them sits by its links to the group most of the row links to (each store
   under its own service, a service's link to a third party pulling it off none), never by a hub's. A hub (a member
   linked to more outside nodes than half its row, at least three, in a row holding at least three one-link members:
   a Kafka bus every service publishes to) goes to the end of its row rather than mid-row between a service and its
   store. Two members wanting one spot split the difference, unless that spreads along a tight row: then the first
   takes the spot and the next packs beside it, so the rest stay straight.
-  A label's plate keeps 6 px off every frame's and lane's border, inside or out, never sitting on the edge. The
+  A label's plate keeps 6 px off every boundary's and lane's border, inside or out, never sitting on the edge. The
   reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
-  member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
-  refits round them; skipped when the refitted frame would cover another node or frame. A member left within a
+  member by the outside nodes it links to, a database under its service, its order and gaps kept, and its boundary
+  refits round them; skipped when the refitted boundary would cover another node or boundary. A member left within a
   notch (6 px) of its spot sits on it, its gap shrinking by no more than that, so its line drops straight rather
   than as a slant.
 - **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
   stages), keep the spine straight: a group with one entry (the one member a line from outside reaches) moves,
-  frame and members together, until that entry sits on the line of what feeds it, so the spine runs straight
-  through every stage rather than jogging where a stage's own branch pulled its members aside. Each frame keeps
-  its own width, hugging what it holds: stretched to one width, frames of two boxes stood mostly empty. Skipped
-  for a group whose moved frame would cover another node or frame.
+  boundary and members together, until that entry sits on the line of what feeds it, so the spine runs straight
+  through every stage rather than jogging where a stage's own branch pulled its members aside. Each boundary keeps
+  its own width, hugging what it holds: stretched to one width, boundaries of two boxes stood mostly empty. Skipped
+  for a group whose moved boundary would cover another node or boundary.
 - **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
   its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
   than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
@@ -571,7 +575,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   gap between columns (a decision's "Accept" on its point) widens that gap to hold its label, and every later column
   moves along with it, so the label is never cut short ("Accep").
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
-  aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
+  aligned, as every template has. `key` adds a key beside it, a boundary (Inset style) titled "Key" so it moves, in the editor or by
   an edit, as one: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted;
   those exceptions then get a row of their own, "Exception or optional" (`{"muted": "Error path"}` renames it), so a
@@ -604,7 +608,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - **Self-edges**: an edge from a node to itself never loses the node. The flow style (and lanes and tree) draws it as
   a loop round the node; the cycle style has no place for one (a ring's arcs run between stops), so there the node shows and the self-edge is dropped, as if never given: a cycle
   node whose only edge is a self-edge sits at the centre with the other nodes no edge joins.
-- `groups`: named clusters drawn as frames around their members and laid out as
+- `groups`: named clusters drawn as boundaries (Inset style, the title inside the top-left corner; livehuddle has no Frame) around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its
   group itself (`group`), the shape a model reaches for first; it joins that
@@ -622,7 +626,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
   is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
   apart). Where one end's box meets no other line, that box moves across by the step so the line runs true, unless that would
-  take it onto a neighbour or over the border of a frame or lane that holds it; only
+  take it onto a neighbour or over the border of a boundary or lane that holds it; only
   when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen). An elbow
   whose straight line would cross a box it was routed round keeps its bends, and lines are straightened before their
   labels are placed, so a label sits on the line as it is drawn.
@@ -703,7 +707,7 @@ wrongly:
   gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
   for shapes, stickies and tables, `sm` for text) and, where the kind sets
   them, the title alignment and padding (a lane's
-  left title strip and `lg` padding, a frame's header). Unset, text scales to
+  left title strip and `lg` padding, a boundary's title). Unset, text scales to
   fill its box, so a lane title came out as one giant word across
   its contents and a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. This applies to every element on these paths,
@@ -772,9 +776,10 @@ signing in: the verb that turns "the AI made a diagram" into "the AI made a
 diagram and here's a link to send the team." Wraps `POST /api/documents/<id>/share`
 ([Share password](../013-workspace/share-password.md)): `{ documentId, role?, expiry? }` → the public URL
 (`/document/shared?s=<code>`), the granted role, and the expiry. `role` is
-`view`, `participate` or `edit` ([Share roles](../013-workspace/share-roles.md)) and defaults to
-**`participate`**: recipients take part (stickies, text, votes) without reshaping the board, and an automated share
-never silently grants edit; the model passes `edit` to allow any change or `view` for an audience, and
+`participate` or `edit` ([Share roles](../013-workspace/share-roles.md#what-a-new-share-offers): livehuddle offers no
+new Viewer link) and defaults to
+**`participate`**: recipients take part (stickies, text, comments) without reshaping the board, and an automated share
+never silently grants edit; the model passes `edit` to allow any change, and
 the api applies the same owner-only authorization every share route enforces, so
 a token can only share documents its account owns. `expiry` ([Share-link expiry](../013-workspace/share-link-expiry.md)) defaults to
 `never`.
@@ -1095,9 +1100,9 @@ Worker (no DOM, no React).
   family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
   cell's) fetches Inter's italics the same way (`INTER_ITALIC`); resvg drew italic it had no face for upright.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
-  the renderer never relies on it: stretched silhouettes (frames, cylinders) are mapped into the element box point by point
+  the renderer never relies on it: stretched silhouettes (boundaries, cylinders) are mapped into the element box point by point
   (`svg-shape-fit.ts`) rather than nested in a scaled `<svg>`. Before that, a
-  frame's border in the preview grew with the frame, several pixels thick on a
+  group's border in the preview grew with the group, several pixels thick on a
   large group.
 - **Image-element embedding.** When a rendered tab has image elements,
   `imageResult` prefetches their bytes (owner-authed via the caller's token,
@@ -1125,7 +1130,7 @@ Worker (no DOM, no React).
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
   sketches as the canvas draws them (the same Catmull-Rom smoothing, straight
   segments for a polygon-tool path), the full shape-silhouette vocabulary (hexagon /
-  cylinder / document / cloud / actor / frame ...:
+  cylinder / document / cloud / actor / boundary ...:
   `svg-render-shapes.ts`, drawn from the same geometry table as the editor's
   ShapeSvgOverlay: `shape-geometry.ts`, pinned by a test per kind on each side),
   element rotation, and icon glyphs (above). The PNG/PDF canvas path

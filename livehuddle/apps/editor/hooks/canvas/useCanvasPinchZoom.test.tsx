@@ -264,3 +264,56 @@ describe('useCanvasPinchZoom touch pinch', () => {
     expect(result.current.isPinchingRef.current).toBe(false);
   });
 });
+
+// docs/specs/008-canvas/avatar-mode.md "The camera": in Avatar mode the wheel and the pinch zoom about the character.
+describe('useCanvasPinchZoom zoom anchor', () => {
+  // The wrapper's centre sits at (200, 100); the character stands on screen at (300, 150).
+  beforeEach(() => {
+    canvas.getBoundingClientRect = vi.fn(
+      () => ({ left: 0, top: 0, width: 400, height: 200 }) as DOMRect,
+    );
+  });
+  const anchored = () => {
+    viewport = createViewportStore(1);
+    return renderHook(() =>
+      useCanvasPinchZoom({
+        canvasMainRef: { current: canvas },
+        viewport,
+        zoomAnchor: () => ({ x: 300, y: 150 }),
+      }),
+    );
+  };
+  // The canvas point under the anchor, before and after, must match.
+  const under = () => {
+    const { zoom, offset } = viewport.get();
+    return { x: (300 - 200) / zoom - offset.x, y: (150 - 100) / zoom - offset.y };
+  };
+
+  it('holds the anchor still on a Ctrl-wheel, wherever the pointer is', () => {
+    anchored();
+    const before = under();
+    wheel({ deltaY: -40, ctrlKey: true, clientX: 10, clientY: 10 });
+    expect(viewport.get().zoom).toBeGreaterThan(1);
+    expect(under().x).toBeCloseTo(before.x);
+    expect(under().y).toBeCloseTo(before.y);
+  });
+
+  it('holds the anchor still through a pinch, and the fingers moving together never pan', () => {
+    anchored();
+    const before = under();
+    touch('touchstart', [
+      [50, 50],
+      [150, 50],
+    ]);
+    touch('touchmove', [
+      [0, 90],
+      [200, 90],
+    ]);
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    expect(viewport.get().zoom).toBe(2);
+    expect(under().x).toBeCloseTo(before.x);
+    expect(under().y).toBeCloseTo(before.y);
+  });
+});

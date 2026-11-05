@@ -11,7 +11,7 @@ that kind, so every saved one opens as a Timeline.
 
 - **Milestones**: 2 to 8 rows (`conceptRows`), each a name (`label`) and an optional when (`note`): a date, a quarter,
   a sprint.
-- **Add Milestone** on the quick-connect "+" ring adds one at the end, up to 8.
+- **Add Milestone** on the quick-connect "+" ring added one at the end, up to 8; livehuddle has no "+" ring ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-connect)).
 - **Borderless**: the Timeline paints its own spine, dots and words, so it takes no border, fill or label of its own;
   the Border controls are not offered (`SELF_PAINTING_SHAPES`).
 

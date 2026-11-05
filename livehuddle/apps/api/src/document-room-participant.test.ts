@@ -267,30 +267,26 @@ describe('DocumentRoom: a Participant adds and writes', () => {
 });
 
 describe("DocumentRoom: a Participant's answers", () => {
-  it('relays a dot like an Editor and writes it to D1 without one', async () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot reaches nobody and writes nothing.
+  it("drops an old client's dot, from a Participant or an Editor", async () => {
     vi.useFakeTimers();
-    store.data = JSON.stringify({
-      elements: [sticky('ed')],
-      vote: { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' },
-    });
+    store.data = JSON.stringify({ elements: [sticky('ed')] });
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const part = join('P', 'participate', ME);
-    const dot = {
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'ed',
-      voter: 'key-P',
-      delta: 1,
-      round: 'r1',
-    };
-    // A dot in someone else's name goes nowhere.
-    const forged = { ...dot, voter: 'key-E' };
-    room.webSocketMessage(wsOf(part), JSON.stringify({ kind: 'op', op: forged }));
-    room.webSocketMessage(wsOf(part), JSON.stringify({ kind: 'op', op: dot }));
-    expect(ops(editor)).toEqual([expect.objectContaining({ from: 'P', op: dot })]);
-    expect(store.writes).toBe(0);
+    const viewer = join('V', 'view');
+    const dot = { kind: 'vote', tabId: 't1', elementId: 'ed', delta: 1, round: 'r1' };
+    room.webSocketMessage(
+      wsOf(part),
+      JSON.stringify({ kind: 'op', op: { ...dot, voter: 'key-P' } }),
+    );
+    room.webSocketMessage(
+      wsOf(editor),
+      JSON.stringify({ kind: 'op', op: { ...dot, voter: 'key-E' } }),
+    );
+    expect(ops(viewer)).toEqual([]);
+    expect(ops(editor)).toEqual([]);
     await vi.advanceTimersByTimeAsync(ANSWERS_FLUSH_MS);
-    expect(JSON.parse(store.data)).toHaveProperty('vote.votes', { ed: ['key-P'] });
+    expect(store.writes).toBe(0);
   });
 });

@@ -44,7 +44,6 @@ const KINDS: [string, () => Element][] = [
   ['circle', () => createShape('circle', 0, 0)],
   ['diamond', () => createShape('diamond', 0, 0)],
   ['cylinder', () => createShape('cylinder', 0, 0)],
-  ['frame', () => createShape('frame', 0, 0)],
   ['sticky', () => createSticky(0, 0)],
   ['text', () => createText(0, 0)],
   ['image', () => createImage(0, 0)],

@@ -114,7 +114,6 @@ export function EditorSearchPanel() {
           : (add) => {
               if (add.type === 'shape')
                 addShape(add.shapeKind, {
-                  reaction: add.reaction,
                   mode: add.mode,
                   variant: add.variant,
                 });

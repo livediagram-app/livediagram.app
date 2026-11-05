@@ -2,7 +2,6 @@
 // editor's Export dialog and the CLI's export. They share nothing with a rasteriser beyond the Tab data model.
 
 import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from './index';
-import { visibleLayerElements } from './layers';
 
 // ---------------------------------------------------------------------
 // File (JSON)
@@ -68,17 +67,8 @@ export function tabToMarkdownText(tab: Tab): string {
   // doesn't silently drop out of the markdown export. The tag
   // computation below already falls back to `(<type>)` for any
   // non-shape kind.
-  // Hidden layers drop out, as from every other export (docs/specs/006-document/layers.md): what you see is
-  // what you export. An arrow pinned to a hidden element goes with it, as in the Mermaid export.
-  const visible = visibleLayerElements(tab.elements, tab.layers);
-  const shown = visible === tab.elements ? null : new Set(visible.map((e) => e.id));
-  const pinnedToHidden = (end: ArrowElement['from']) =>
-    !!shown && end.kind === 'pinned' && !shown.has(end.elementId);
-  const boxed = visible.filter(isBoxed);
-  const arrows = visible.filter(
-    (e): e is ArrowElement =>
-      e.type === 'arrow' && !pinnedToHidden(e.from) && !pinnedToHidden(e.to),
-  );
+  const boxed = tab.elements.filter(isBoxed);
+  const arrows = tab.elements.filter((e): e is ArrowElement => e.type === 'arrow');
   const labelledBoxed = boxed.filter((b) => b.label && b.label.trim().length > 0);
   labelledBoxed.sort((a, b) => a.y - b.y || a.x - b.x);
   if (labelledBoxed.length > 0) {

@@ -134,8 +134,8 @@ provider, so the Explorer page and `/new` are unaffected.
 
 - `recordEditingSession`: if `day === lastDay`, unchanged; else `days + 1`, `lastDay = day`.
 - `offerDue(c) = c.days >= POWER_USER_OFFER_DAYS || c.shortcuts >= POWER_USER_OFFER_SHORTCUTS`.
-- `offerEligible(prefs, { editable, embed, zen })`: `!powerUserMode && !powerUserOfferShown && notificationsEnabled !==
-false && editable && !embed && !zen`.
+- `offerEligible(prefs, { editable, embed })`: `!powerUserMode && !powerUserOfferShown && notificationsEnabled !==
+false && editable && !embed`.
 - Counting continues after the offer (cheap, harmless); it simply never shows again.
 - Nothing is recorded or offered before `prefsSettled`: until the server copy has merged, a latch set on another
   device could still read as unset.
@@ -232,7 +232,7 @@ export function localDayKey(date: Date): string;
 export function recordEditingSession(c: OfferCounters, day: string): OfferCounters;
 export function recordShortcut(c: OfferCounters): OfferCounters;
 export function offerDue(c: OfferCounters): boolean;
-export function offerEligible(prefs: UserPreferences, ctx: { editable: boolean; embed: boolean; zen: boolean }): boolean;
+export function offerEligible(prefs: UserPreferences, ctx: { editable: boolean; embed: boolean }): boolean;
 export function readOfferCounters(): OfferCounters;
 export function writeOfferCounters(c: OfferCounters): void;
 

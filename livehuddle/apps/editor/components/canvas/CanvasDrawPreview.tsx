@@ -1,6 +1,12 @@
 import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livehuddle/document';
+import {
+  BORDER_STROKE_PX,
+  DEFAULT_BORDER_STROKE,
+  isPlacedShape,
+  isSelfDrawingShape,
+  ROOM_WALL,
+} from '@livehuddle/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';
@@ -50,10 +56,18 @@ export function CanvasDrawPreview({
     !!penPoints &&
     pendingDraw?.type === 'freehand' &&
     penPoints.length >= 2;
-  const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
+  // The Room Builder (docs/specs/009-elements/room-builder.md) previews on the polygon's path, at wall thickness.
+  const roomWalls = pendingDraw?.type === 'room-walls';
+  const showsPolygon = (pendingDraw?.type === 'polygon' || roomWalls) && polygonVertices.length > 0;
   // A line or an arrow previews as the element it lands, in the canvas layer
   // (DrawnArrowPreview, docs/specs/023-draw-mode/draw-mode.md "Shapes"), not here.
-  const showsBox = !!drawDrag && !!pendingDraw && pendingDraw.type !== 'arrow';
+  // A placed piece has no box to draw: it previews itself (PlacementPreview, docs/specs/010-palette/palette-drag-ghost.md
+  // "Placed pieces preview themselves").
+  const showsBox =
+    !!drawDrag &&
+    !!pendingDraw &&
+    pendingDraw.type !== 'arrow' &&
+    !(pendingDraw.type === 'shape' && isPlacedShape(pendingDraw.kind));
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
   // The drawings in progress (pencil, polygon, draw-to-size box).
@@ -107,7 +121,7 @@ export function CanvasDrawPreview({
       {/* Polygon-tool preview (docs/specs/008-canvas/polygon-tool.md): the placed segments, a rubber-band
             segment to the live cursor, a dot per vertex, and a snap ring on
             the START vertex once the cursor is within closing range. */}
-      {showsPolygon && pendingDraw?.type === 'polygon'
+      {showsPolygon
         ? (() => {
             const rect = origin;
             if (!rect) return null;
@@ -133,6 +147,29 @@ export function CanvasDrawPreview({
                 aria-hidden
                 className="pointer-events-none fixed inset-0 z-[var(--z-chrome)] h-screen w-screen"
               >
+                {roomWalls ? (
+                  <>
+                    {/* The walls as they will stand, and the closing wall back to the first corner, dashed. */}
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke="var(--color-brand-500)"
+                      strokeOpacity={0.3}
+                      strokeWidth={ROOM_WALL * viewportZoom}
+                      strokeLinejoin="miter"
+                    />
+                    {pts.length >= 2 && !nearStart ? (
+                      <path
+                        d={`M ${cursor?.x ?? pts[pts.length - 1]!.x} ${cursor?.y ?? pts[pts.length - 1]!.y} L ${pts[0]!.x} ${pts[0]!.y}`}
+                        fill="none"
+                        stroke="var(--color-brand-500)"
+                        strokeOpacity={0.6}
+                        strokeWidth={1}
+                        strokeDasharray="4 4"
+                      />
+                    ) : null}
+                  </>
+                ) : null}
                 <path
                   d={d}
                   fill="none"

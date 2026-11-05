@@ -91,26 +91,12 @@ describe('writeParticipantOp', () => {
 });
 
 describe('writeParticipantAnswers', () => {
-  const ledger: TabLedger = {
-    vote: { round: 'r1', votes: { s1: ['k1'] }, seq: 3 },
-    elements: {},
-  };
-  const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' };
+  // A room's ledger may still hold a retired Vote's dots (docs/specs/002-project-scope/not-in-livehuddle.md "The
+  // Vote"); with no reaction to write, nothing is written.
+  const ledger: TabLedger = { elements: {} };
 
-  it("folds the room's dots into the stored tab", async () => {
-    db.getTabData.mockResolvedValue(stored([sticky('s1')], { vote }));
-    expect(
-      await writeParticipantAnswers({} as never, { documentId: 'd1', tabId: 't1', ledger }),
-    ).toEqual({ ok: true, changed: true });
-    expect(JSON.parse(db.swapTabData.mock.calls[0]![4] as string)).toHaveProperty('vote.votes', {
-      s1: ['k1'],
-    });
-  });
-
-  it('writes nothing when the row already holds them', async () => {
-    db.getTabData.mockResolvedValue(
-      stored([sticky('s1')], { vote: { ...vote, votes: { s1: ['k1'] } } }),
-    );
+  it('writes nothing when the ledger holds no answers', async () => {
+    db.getTabData.mockResolvedValue(stored([sticky('s1')]));
     expect(
       await writeParticipantAnswers({} as never, { documentId: 'd1', tabId: 't1', ledger }),
     ).toEqual({ ok: true, changed: false });

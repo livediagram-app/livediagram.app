@@ -18,14 +18,13 @@ import {
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useState } from 'react';
-import { isVoteHost } from '@livehuddle/document';
+
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import {
   LockedElementMenu,
   type LockHolder,
 } from '@liveworkspace/workbench/components/canvas/LockedElementMenu';
-import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
-import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
+
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import {
@@ -48,21 +47,14 @@ import { useWorkbenchSession } from '@/components/providers/workbench-session-co
 // ~500 lines of prop plumbing for it). Reads everything straight from
 // EditorContext — the same host pattern as EditorModals /
 // EditorContextMenuHost — plus the handful of locals only the Canvas
-// props consume (the quick-connect arrow starter, the memoised Explorer
-// list props, the owner-badge resolution).
+// props consume (the memoised Explorer list props, the owner-badge
+// resolution).
 export function EditorCanvasHost() {
   const {
     activeTab,
     activeTabLoadState,
     activeTabLocked,
     commitElements,
-    layers,
-    activeLayerId,
-    layerInertIds,
-    layerCounts,
-    laserPanelPosition,
-    spotlightPanelPosition,
-    setSpotlightPanelPosition,
     eraserPanelPosition,
     setEraserPanelPosition,
     eraserConfig,
@@ -72,24 +64,7 @@ export function EditorCanvasHost() {
     onSetFormatMode,
     formatPanelPosition,
     setFormatPanelPosition,
-    laserConfig,
-    onChangeLaserField,
-    setLaserPanelPosition,
-    voteResults,
-    jumpToVoteResult,
-    setActiveLayer,
-    addLayer,
-    renameLayer,
-    removeLayer,
-    toggleLayerVisibility,
-    toggleLayerLock,
-    reorderLayer,
-    mergeActiveLayer,
-    setLayerOpacityLive,
-    clearLayer,
-    hideOtherLayersOp,
-    layerPreviewId,
-    setLayerPreviewId,
+
     addAnnotation,
     addArrow,
     addAvatar,
@@ -113,9 +88,6 @@ export function EditorCanvasHost() {
     addTechIcon,
     addText,
     anyWelcomeOpen,
-    appendTableColumnSelected,
-    appendTableRowSelected,
-    beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
     beginArrowElbowDrag,
@@ -131,6 +103,7 @@ export function EditorCanvasHost() {
     beginMarker,
     beginShapePen,
     beginPolygon,
+    beginRoomWalls,
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
@@ -138,12 +111,9 @@ export function EditorCanvasHost() {
     callsRoom,
     avatarShove,
     walkIn,
-    fireReaction,
+    avatarAtRef,
     pressFocusButton,
-    reactionBursts,
-    clearReactionBurst,
     broadcastCursor,
-    broadcastLaser,
     canvasPointerRef,
     cancelConnect,
     cancelDrawShape,
@@ -152,10 +122,12 @@ export function EditorCanvasHost() {
     canUndo,
     canvasMainRef,
     canvasTool,
-    castVote,
+    participantsByTab,
+    keepWalkingTo,
+
     confirmIdentity,
     cancelIdentity,
-    clearVote,
+
     accountDisplayName,
     accountUserId,
     actionRows,
@@ -164,6 +136,7 @@ export function EditorCanvasHost() {
     commitDraw,
     commitFreehand,
     commitPolygon,
+    commitRoomWalls,
     commitPath,
     paintBucket,
     commitPathEdit,
@@ -188,7 +161,7 @@ export function EditorCanvasHost() {
     editingId,
     embedMode,
     workbenchMode,
-    endVote,
+
     exitFormatTool,
     fitToScreen,
     followLink,
@@ -208,7 +181,6 @@ export function EditorCanvasHost() {
     isReadOnly,
     can,
     participating,
-    laserTrailRows,
     livePresence,
     lockedByOther,
     mapPosition,
@@ -225,14 +197,9 @@ export function EditorCanvasHost() {
     remoteAvatarRows,
     remoteCursorRows,
     remoteSelectionsByElement,
-    retractVote,
-    voteReview,
-    nextVoteResult,
-    prevVoteResult,
-    doneVoteReview,
+
     retryActiveTabLoad,
-    revealVote,
-    readSelection,
+
     selectElement,
     selectMarquee,
     selfParticipant,
@@ -257,24 +224,20 @@ export function EditorCanvasHost() {
     toggleChecklistItem,
     setPageHeading,
     setWebRows,
-    appendWebRowTo,
     setHeroCaptionLine,
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
     shiftDupGhostIds,
     snapGuideStore,
-    spawnConnectSelected,
-    startVote,
+
     tabSummaries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
     toggleLockMultiSelected,
     toggleLockSelected,
-    toggleZenMode,
     undo,
     userPreferences,
-    zenMode,
     whiteboardDock,
     drag,
     editorMode,
@@ -351,8 +314,6 @@ export function EditorCanvasHost() {
   // gates editsBlocked there, so the pointer overlay and the edit lock
   // can't disagree); consumed here for the overlay.
   const tabLoadState = activeTabLoadState;
-  // Quick add + connect Arrow starter (docs/specs/008-canvas/canvas-and-palette.md) — see useQuickConnectStart.
-  const { handleStartArrow } = useQuickConnectStart({ readSelection, beginAnchorDrag });
 
   // While a label is being edited, ride the element context menu alongside
   // the editor (docs/specs/008-canvas/canvas-and-palette.md) — see useEditModeContextMenu.
@@ -412,7 +373,6 @@ export function EditorCanvasHost() {
           }}
           setViewportOffset={setViewportOffset}
           elements={canvasElements}
-          tabLayers={activeTab.layers}
           editorMode={editorMode.mode}
           whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
           whiteboardInk={PEN_INK[surface]}
@@ -425,7 +385,6 @@ export function EditorCanvasHost() {
               surface,
             })
           }
-          layerInertIds={layerInertIds}
           shiftDupGhostIds={shiftDupGhostIds}
           snapGuideStore={snapGuideStore}
           remoteSelectionsByElement={remoteSelectionsByElement}
@@ -442,27 +401,16 @@ export function EditorCanvasHost() {
           onCallSignal={callsRoom ? broadcastCallSignal : undefined}
           avatarShove={avatarShove}
           walkIn={walkIn}
+          avatarAtRef={avatarAtRef}
           walkButton={!embedMode}
-          onFireReaction={can.takePart ? fireReaction : undefined}
           // Bring Focus (docs/specs/012-collaboration/bring-focus.md) moves everyone's view, so it is running the
           // session: an Editor's (docs/specs/013-workspace/share-roles.md), and the facilitator's while somebody holds the
           // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
           // stop and listen". Undefined renders the face inert, which is what a
           // read-only surface already gets.
           onPressFocusButton={gates.run ? pressFocusButton : undefined}
-          reactionBursts={reactionBursts}
-          onReactionBurstDone={clearReactionBurst}
-          laserTrails={laserTrailRows}
           onCanvasPointerMove={(x, y, target) => {
             canvasPointerRef.current = pastePointer(x, y, target ?? null);
-            if (canvasTool === 'laser' && x !== null && y !== null) {
-              // The pen rides the sample so peers draw MY laser (docs/specs/008-canvas/laser-panel.md).
-              broadcastLaser(x, y, laserConfig);
-              // Laser mode hides the cursor indicator on peer screens —
-              // the laser dot is the cursor. Clear any prior position.
-              broadcastCursor(null);
-              return;
-            }
             broadcastCursor(x !== null && y !== null ? { x, y } : null);
           }}
           onSelectMarquee={selectMarquee}
@@ -475,6 +423,21 @@ export function EditorCanvasHost() {
           // again, while already in that mode, hands you back your previous one.
           // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the Eraser or
           // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
+          // Avatar Pad (docs/specs/009-elements/avatar-pad.md "Pressing it"): every role may walk, so a press is the
+          // Avatar pick for anyone; the canvas has already told the walk which pad to start on.
+          onPressAvatarPad={() => pressModeButton('avatar')}
+          // The Directory's Walk There and a ride's arrival (docs/specs/009-elements/directory.md, elevator.md): the
+          // Avatar pick for anyone, only when not already walking (the pick toggles).
+          onEnterAvatarMode={() => {
+            if (canvasTool !== 'avatar') pressModeButton('avatar');
+          }}
+          tabPresence={participantsByTab}
+          // Travel (a Portal, an Elevator, the Directory's Go) switches tab without ending Avatar mode
+          // (docs/specs/008-canvas/avatar-mode.md "Changing tab").
+          onTravelToTab={(tabId) => {
+            keepWalkingTo(tabId);
+            followLink({ kind: 'tab', tabId });
+          }}
           onPressModeButton={(element) => {
             const mode = element.mode ?? DEFAULT_BUTTON_MODE;
             if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
@@ -544,10 +507,12 @@ export function EditorCanvasHost() {
           onBeginMarker={beginMarker}
           onBeginShapePen={beginShapePen}
           onBeginPolygon={beginPolygon}
+          onBeginRoomWalls={beginRoomWalls}
           pendingDraw={pendingDraw}
           onCommitDraw={commitDraw}
           onCommitFreehand={commitFreehand}
           onCommitPolygon={commitPolygon}
+          onCommitRoomWalls={commitRoomWalls}
           onCommitPath={commitPath}
           onPaintBucket={paintBucket}
           onCommitPathEdit={commitPathEdit}
@@ -563,13 +528,8 @@ export function EditorCanvasHost() {
             setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
           }
           onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
-          layers={layers}
-          activeLayerId={activeLayerId}
-          layerCounts={layerCounts}
           sessionTools={sessionToolsForSurface(sessionTools, embedMode)}
           userPreferences={userPreferences}
-          laserPanelPosition={laserPanelPosition}
-          spotlightPanelPosition={spotlightPanelPosition}
           eraserPanelPosition={eraserPanelPosition}
           eraserConfig={eraserConfig}
           onChangeEraserField={onChangeEraserField}
@@ -593,24 +553,7 @@ export function EditorCanvasHost() {
           onResetFormatPanel={() => setFormatPanelPosition(null)}
           onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
           onResetEraserPanel={() => setEraserPanelPosition(null)}
-          onMoveSpotlightPanel={(x, y) => setSpotlightPanelPosition({ x, y })}
-          onResetSpotlightPanel={() => setSpotlightPanelPosition(null)}
-          laserConfig={laserConfig}
-          onChangeLaserField={onChangeLaserField}
-          onMoveLaserPanel={(x, y) => setLaserPanelPosition({ x, y })}
-          onResetLaserPanel={() => setLaserPanelPosition(null)}
-          voteResults={voteResults}
-          onJumpToVoteResult={jumpToVoteResult}
-          // A vote's starter is not its host while somebody else facilitates: every control would be refused.
-          isVoteHost={
-            !runBlocked &&
-            isVoteHost(activeTab.vote, participantKey(selfParticipant), facilitator.isFacilitator)
-          }
-          // Who can cast, ourselves included (livePresence is the REMOTE roster): one per person, never a
-          // view-link guest or an agent row (answeringKeys), so turnout never waits on someone who cannot vote.
-          participantCount={
-            answeringKeys([selfInRoom(selfParticipant, can.level), ...livePresence]).length
-          }
+
           // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
           // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
           onOpenCanvasTheme={
@@ -622,19 +565,6 @@ export function EditorCanvasHost() {
                 }
           }
           // No Tidy Up button: it was Diagram mode's (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-          onSelectLayer={setActiveLayer}
-          onAddLayer={addLayer}
-          onRemoveLayer={removeLayer}
-          onRenameLayer={renameLayer}
-          onToggleLayerVisibility={toggleLayerVisibility}
-          onToggleLayerLock={toggleLayerLock}
-          onReorderLayer={reorderLayer}
-          onMergeLayer={mergeActiveLayer}
-          onSetLayerOpacity={setLayerOpacityLive}
-          onClearLayer={clearLayer}
-          onHideOtherLayers={hideOtherLayersOp}
-          layerPreviewId={layerPreviewId}
-          onPreviewLayer={setLayerPreviewId}
           commentRows={commentRows}
           commentsPanelPosition={commentsPanelPosition}
           onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
@@ -781,13 +711,10 @@ export function EditorCanvasHost() {
           onCommitLabel={commitLabel}
           onCommitTable={commitTable}
           onCommitHeaderSize={commitHeaderSize}
-          onAddTableRow={appendTableRowSelected}
-          onAddTableColumn={appendTableColumnSelected}
           onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
           onSetPageHeading={setPageHeading}
           onSetWebRows={isReadOnly ? undefined : setWebRows}
           onSetPointerTip={isReadOnly ? undefined : setPointerTip}
-          onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
           onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
           chartPalette={themeChartPalette(activeTheme)}
           onCancelEdit={cancelEdit}
@@ -824,22 +751,9 @@ export function EditorCanvasHost() {
           onConfirmIdentity={confirmIdentity}
           onCancelIdentity={cancelIdentity}
           tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
-          tabVote={activeTab.vote}
-          onStartVote={startVote}
-          onEndVote={endVote}
-          onRevealVote={revealVote}
-          onClearVote={clearVote}
-          onCastVote={castVote}
-          onRetractVote={retractVote}
-          voteReview={voteReview}
-          onNextVoteResult={nextVoteResult}
-          onPrevVoteResult={prevVoteResult}
-          onDoneVoteReview={doneVoteReview}
+
           onToggleAspectLock={toggleAspectLockSelected}
           onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
-          onSpawnConnect={spawnConnectSelected}
-          onStartArrow={handleStartArrow}
-          onStartPencil={beginFreehand}
           onToggleLockSelected={toggleLockSelected}
           onDeleteSelected={deleteSelected}
           // One gesture, one answer: while the element menu is open the
@@ -851,16 +765,12 @@ export function EditorCanvasHost() {
           onCanvasDoubleClick={handleCanvasDoubleClick}
           tabLoadState={tabLoadState}
           onRetryTabLoad={retryActiveTabLoad}
-          // Embeds (docs/specs/013-workspace/embeds.md) ride the zen chrome-hide gates: every panel
-          // and badge zen hides, embeds hide too. The zen TOGGLE is
-          // withheld so the ZoomControls dock doesn't offer an exit
-          // from a mode the embed can't actually leave.
-          zenMode={zenMode || embedMode}
+          // Embeds (docs/specs/013-workspace/embeds.md) hide every floating panel and badge.
+          chromeAway={embedMode}
           // A phone held sideways has no Explorer at all (docs/specs/007-editor/editor-app.md "A phone
           // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
           explorerHidden={workbenchMode || landscapePhone}
           workbenchBack={workbenchFrame}
-          onToggleZen={embedMode ? undefined : toggleZenMode}
         />
         {lockedMenu ? (
           <LockedElementMenu

@@ -17,7 +17,7 @@ export type OfferCounters = { days: number; lastDay: string | null; shortcuts: n
 
 export const EMPTY_OFFER_COUNTERS: OfferCounters = { days: 0, lastDay: null, shortcuts: 0 };
 
-type OfferContext = { editable: boolean; embed: boolean; zen: boolean };
+type OfferContext = { editable: boolean; embed: boolean };
 
 // The local calendar day, so "separate days" means the reader's days.
 export function localDayKey(date: Date): string {
@@ -45,8 +45,7 @@ export function offerEligible(prefs: UserPreferences, ctx: OfferContext): boolea
     // The offer is an in-editor notification; a quieter editor includes it.
     prefs.notificationsEnabled !== false &&
     ctx.editable &&
-    !ctx.embed &&
-    !ctx.zen
+    !ctx.embed
   );
 }
 

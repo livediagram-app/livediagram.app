@@ -11,7 +11,7 @@
 // handed rather than from a render closure, so a commit taken while a preview
 // is on screen still starts from the real pre-hover state.
 
-import type { Element, Layer } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import { lockedElementIds } from '@/lib/locked-element-ids';
 import { autoAlignElements } from '@/lib/auto-align';
 
@@ -19,11 +19,10 @@ import { autoAlignElements } from '@/lib/auto-align';
  * Run a cleanup over a tab's elements. Pure: same input, same output, no
  * commit, no telemetry. Auto-align only grid-snaps what is already there.
  */
-export function cleanupElements(elements: Element[], layers?: Layer[]): Element[] {
+export function cleanupElements(elements: Element[]): Element[] {
   if (elements.length === 0) return elements;
-  // Locked elements, and everything on a locked layer, stay exactly where they are
-  // (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
-  return autoAlignElements(elements, lockedElementIds(elements, layers));
+  // Locked elements stay exactly where they are (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
+  return autoAlignElements(elements, lockedElementIds(elements));
 }
 
 export { lockedElementIds };

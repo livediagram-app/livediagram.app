@@ -20,7 +20,7 @@ const stroke = (id: string, strokeColor?: string): Element => ({
   ...(strokeColor ? { strokeColor } : {}),
 });
 
-function setup(elements: Element[], over: { inertIds?: Set<string>; editsBlocked?: boolean } = {}) {
+function setup(elements: Element[], over: { editsBlocked?: boolean } = {}) {
   let live = elements;
   const commit = vi.fn((map: (els: Element[]) => Element[]) => {
     live = map(live);
@@ -28,7 +28,6 @@ function setup(elements: Element[], over: { inertIds?: Set<string>; editsBlocked
   const hook = renderHook(() =>
     useSnapColours({
       elements,
-      inertIds: over.inertIds ?? new Set(),
       editsBlocked: over.editsBlocked ?? false,
       commit,
     }),
@@ -40,10 +39,9 @@ afterEach(() => vi.mocked(track).mockClear());
 
 // docs/specs/023-draw-mode/draw-mode.md "Snap colours".
 describe('useSnapColours', () => {
-  it('lists the snappable custom colours, leaving protected layers out', () => {
-    const { hook } = setup([stroke('a', '#e03131'), stroke('b', '#1971c2'), stroke('c')], {
-      inertIds: new Set(['b']),
-    });
+  it('lists the snappable custom colours, leaving locked elements out', () => {
+    const locked = { ...stroke('b', '#1971c2'), locked: true } as Element;
+    const { hook } = setup([stroke('a', '#e03131'), locked, stroke('c')]);
     expect(hook.result.current.colours).toEqual(['#e03131']);
     expect(hook.result.current.blocked).toBe(false);
   });
@@ -62,7 +60,6 @@ describe('useSnapColours', () => {
     const hook = renderHook(() =>
       useSnapColours({
         elements,
-        inertIds: new Set(),
         editsBlocked: false,
         commit: (map) => void later.push(map),
       }),

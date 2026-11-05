@@ -1,10 +1,15 @@
 # Office
 
-Eight pieces that turn a canvas into a **virtual office** people walk around in [Avatar mode](../008-canvas/avatar-mode.md):
+Pieces that turn a canvas into a **virtual office** people walk around in [Avatar mode](../008-canvas/avatar-mode.md):
 a **Room**, a **Meeting Table**, a **Plant**, a **Bookshelf**, a **Water Cooler**, a **Coffee Machine**, a **Rug** and
-a **Stage**.
+a **Stage**; an **Office Pod** for two; a bar (a **Bar**, a **Bar Stool**, a **Drinks Cabinet** and a **Drinks
+Fridge**); and a garden (an **Outdoor Plant**, a **Tree**, a **Garden Path**, **Grass** and a **Garden Fence**).
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
+The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Recreation corner (Jukebox, Ping-Pong Table,
+Arcade Machine, Fireplace) and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
+A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meeting** category), and a busy room
+or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
 ## Why
 
@@ -15,9 +20,11 @@ places, so an office is drawn with the same tools as a diagram.
 
 ## Where they live
 
-Shape kinds in the palette's **Collaborate** category under **Navigate**, after the chair, desk, sofa and fence:
-`room`, `stage`, `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine` and `rug` (the Stage's tile
-from Work Tracker #319 part 4).
+Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `stage` and `rug` in **Rooms**
+(with the fence), `meeting-table` in **Seating** (with the chair, desk and sofa), and `plant`, `bookshelf`,
+`water-cooler` and `coffee-machine` in **Amenities** (the Stage's tile from Work Tracker #319 part 4). `office-pod`
+joins **Seating**; `bar`, `bar-stool`, `drinks-cabinet` and `drinks-fridge` make a **Bar** category, and
+`outdoor-plant`, `tree`, `garden-path`, `grass` and `garden-fence` a **Garden** category.
 Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
 pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, lock, copy,
 theme, export. None has a settings `…`; a room's one setting, a stage's two and a table's are in the element menu.
@@ -41,6 +48,8 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
 - **It is a call of its own** while calls are on: everyone inside hears everyone else inside at full volume, and
   nobody outside hears them; the walls block sound as they block walking, and the doorway's threshold is the line
   of the walls ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)).
+- **Any shape, any doors**: the [Room Builder](room-builder.md) draws a room of any outline wall by wall, snapped
+  to 45 degrees, and a [Door](room-builder.md#door) put on any wall of any room is another way through it.
 - **It is the floor, not a destination**: standing in a room never rings it as the element you are on, and it is
   placed **behind everything** on the tab, so furniture dropped in it stands on its floor. Not aspect locked: a
   room is any shape of rectangle. Default 480 × 320.
@@ -67,8 +76,9 @@ Scenery that **blocks**: a character walks round them, not through.
   drawing) blocks.
 - **Bookshelf**: shelves of coloured book spines. Default 120 × 132. Its footprint (the bottom quarter, full width)
   blocks, so it stands against a wall and you walk along in front of it.
-- A footprint blocks as a fence round its edge does (same reach, same slide). The upper part of the drawing never
-  blocks: it is what stands up from the floor, and a character in front of it is drawn in front of it.
+- A footprint blocks as a fence round its edge does (same reach, same slide). It is solid: a character inside one
+  walks out of it and never deeper in ([Fence](fence.md#blocking)). The upper part of the drawing never blocks: it is
+  what stands up from the floor, and a character in front of it is drawn in front of it.
 - Neither is a destination: walking up to one does not ring it.
 
 ## Water Cooler, Coffee Machine
@@ -111,6 +121,88 @@ A raised platform for an all-hands: whoever stands on it is heard by the whole t
   **Editors** and **Editors and Participants**, and a **Show Cameras** switch
   ([The stage's way in](../012-collaboration/meeting-rooms-and-stage.md#the-stages-way-in-part-4-built)).
 
+## Office Pod
+
+A booth for two, with a sliding glass door that **closes by itself when both seats are taken**.
+
+- **Drawn from the room's camera** like a small room: a back wall with a window in its face, side walls, a front
+  wall with a doorway in its middle, and inside two padded benches facing each other across a little table. The
+  door is a glass panel that sits slid behind the right of the front wall while the pod is open.
+- **Two seats**, one on each bench, the left sitter facing right and the right sitter facing left. Walking in
+  through the doorway sits you on the free seat nearest where you came in, by the [Chair](chair.md) rules: one
+  sitter a seat, a taken seat skipped, a full pod stops you beside it. Who sits is presence, never stored, and the
+  pod names its sitters in a pill above it like the meeting table.
+- **The door closes when two people sit in it**, and opens the moment either stands up or leaves. Every machine
+  works it out from the same presence (both seats held), so everyone sees the same door. It **slides** shut or open
+  over 0.6 seconds; under reduced motion it jumps to where it ends.
+- **The walls block** walking as a room's do, on all four sides, so the only way in is the doorway; while the door
+  is closed the doorway blocks too, and nobody else can walk in. The two inside walk out the moment one stands
+  (the door opens for them).
+- **It is a call of its own** while calls are on, like a room ([Meeting rooms and the
+  stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)): the two inside hear each
+  other and nobody outside hears them, door open or shut. A pod in a room is the innermost call, so it is private
+  from the room around it.
+- It does not turn. Aspect locked. Default 176 × 144.
+
+## Bar, Bar Stool
+
+- **Bar**: a long counter with a dark top, bottles and glasses on a back shelf behind it, and a foot rail along its
+  front. Default 240 × 120. Its **footprint** (the counter, the lower half, full width) blocks, so people stand at it
+  and walk round its ends.
+- **Bar Stool**: a round padded seat on a tall stem, with a foot ring. **One seat**, its sitter facing up the canvas
+  (their back to you, toward a bar placed above the stools). Seat rules as the [Chair](chair.md): walk onto it to sit,
+  one sitter, a ring in the sitter's colour and their name above it. It reads the same from every side and does not
+  turn. Aspect locked. Default 44 × 64. A stool tucked under the counter seats its sitter in the counter's footprint;
+  standing up there, the character walks out of the counter toward its nearer side, never deeper in, so it is never
+  stuck in the bar ([Fence](fence.md#blocking)).
+- Neither has a settings `…`; the stool's sitters, like every seat's, are presence.
+
+## Drinks Cabinet, Drinks Fridge
+
+Walk up to one and your character **gets a drink**, as at the [Water Cooler and Coffee
+Machine](#water-cooler-coffee-machine).
+
+- **Drinks Cabinet**: a wooden cabinet with glass doors and bottles on its shelves. Walking onto it gives a **juice**
+  (an orange cup). Default 88 × 120.
+- **Drinks Fridge**: a tall glass-fronted fridge of coloured cans. Walking onto it gives a **soda** (a red cup).
+  Default 72 × 128.
+- The drink is held, sipped and seen by everyone exactly as water or coffee (`holding: 'juice' | 'soda'`), for the
+  same minute; it never steams.
+- Neither blocks, so you walk right up to one; neither plays an answer.
+
+## Outdoor Plant, Tree
+
+Garden scenery that **blocks** like the [Plant](#plant-bookshelf):
+
+- **Outdoor Plant**: a round leafy shrub in a stone planter, a few flowers in it. Default 72 × 80. Its footprint (the
+  planter) blocks.
+- **Tree**: a trunk under a full round canopy, a soft shadow on the ground. Default 120 × 160. Its footprint (the
+  base of the trunk) blocks, so a character walks round the trunk and passes in front of the canopy; the canopy
+  never blocks.
+- Neither is a destination.
+
+## Garden Path
+
+Stepping stones laid in a gravel strip: a **floor piece** like a [Rug](#rug), placed behind everything, never blocks,
+never a destination. Drawn to its size like a room, so a path is stretched to any length without the stones
+stretching: the stones run along its longer side, evenly spaced. Not aspect locked. Default 240 × 64. The gravel takes
+the element's fill (a warm sand when unstyled).
+
+## Grass
+
+A patch of lawn: a **floor piece** like a [Rug](#rug) and the [Garden Path](#garden-path), placed behind everything,
+never blocks, never a destination. Drawn to its size like a room, so it is stretched to any width and height: a soft
+rounded green area with a fine tuft texture that repeats as a pattern tile, so a large lawn looks the same close up as
+a small one and costs the same to draw (no per-blade drawing that grows with its size, no filters). Not aspect locked.
+Default 240 × 160. The lawn takes the element's fill (a fresh green when unstyled, a deep green on dark paper).
+
+## Garden Fence
+
+A low white picket fence: a short run of pointed pickets on two rails, drawn to its size along its longer side like
+the [Fence](fence.md). It **blocks walking exactly as a Fence does** (the same line along its run, the same reach and
+slide), so a garden fence and a fence join up into one barrier. Not aspect locked. Default 200 × 28. Unstyled it is
+white with the theme's stroke round each picket.
+
 ## Share roles
 
 - **Editor**: places, moves, renames, recolours and deletes every piece; sets a room's doorway and a stage's Who Can
@@ -121,14 +213,19 @@ A raised platform for an all-hands: whoever stands on it is heard by the whole t
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - Placing one: `Element · Added · <Kind>` (`Room`, `Meeting-table`, `Plant`, `Bookshelf`, `Water-cooler`,
-  `Coffee-machine`, `Rug`, `Stage`: a hyphenated kind keeps its hyphen, as every element's token does).
+  `Coffee-machine`, `Rug`, `Stage`, `Office-pod`, `Bar`, `Bar-stool`, `Drinks-cabinet`, `Drinks-fridge`,
+  `Outdoor-plant`, `Tree`, `Garden-path`, `Grass`, `Garden-fence`: a hyphenated kind keeps its hyphen, as every element's
+  token does).
 - A room's doorway changed: `Element · Changed · Room`; a stage's Who Can Speak or Show Cameras: `Element · Changed ·
 Stage`.
-- Getting a drink: `Canvas · Used · WaterCooler` or `CoffeeMachine`. Never who, never how often in a session.
+- Getting a drink: `Canvas · Used · WaterCooler`, `CoffeeMachine`, `DrinksCabinet` or `DrinksFridge`. Never who, never
+  how often in a session.
 
 ## Not in scope
 
-- Doors that open and close, or that lock.
+- Doors that open and close, or that lock, on a Room (the Office Pod's door is the one door that moves, and only by
+  who sits in it).
+- Day and night in the garden, weather, or seasons.
 - Light switches, day and night, or sound.
 - Tables of other sizes (a four- or eight-seater). Chairs round any table do this today.
 - Anyone else using your drink, handing a cup over, or drinks that run out.

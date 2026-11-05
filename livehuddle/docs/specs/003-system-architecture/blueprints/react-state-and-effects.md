@@ -55,9 +55,8 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 
 ### Ref-only wrappers: the sites
 
-| Site                                                        | The wrapper carried          | Becomes                                                          |
-| ----------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
+No site in livehuddle wraps a node only to get a ref. A confirm popover anchors on the click's `currentTarget`
+(`MenuActionRow` hands its click on).
 
 Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase
 ones among them) and `../packages/help-site/src/components/ArticleShell.tsx` (reads `textContent`).
@@ -134,7 +133,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 | Footer year from the build               | `packages/ui` SiteFooter test renders `NEXT_PUBLIC_BUILD_YEAR`, and no year without it           |
 | Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
 | Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
-| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`, `LayerRowMenu.test.tsx`: focus and anchor with no bare node             |
+| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`: focus and anchor with no bare node             |
 
 ## Constants and configuration
 

@@ -11,12 +11,11 @@ import {
   createText,
   type BoxedElement,
   type Element,
-  REACTION_PAD_LABEL,
-  type Reaction,
   type SelectionMode,
   type ShapeKind,
   type Tab,
   withVariantColours,
+  snapDoorToWall,
 } from '@livehuddle/document';
 import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
@@ -82,7 +81,7 @@ export function useElementCreation(opts: {
   // useShapeDrawing.commitDraw), once the tap / drag actually lands the
   // element — not here, where the gesture is only queued.
   // `opts` carries a creation-time choice for the kinds that have one: which
-  // reaction (docs/specs/009-elements/reaction-pad.md), which mode. The palette offers a
+  // mode (docs/specs/009-elements/mode-button.md). The palette offers a
   // tile per choice, so it has to survive the draw gesture and land on the
   // element rather than leaving the factory default in place.
   const addShape = (kind: ShapeKind, opts?: AddShapeOptions) => {
@@ -90,7 +89,6 @@ export function useElementCreation(opts: {
     beginDraw({
       type: 'shape',
       kind,
-      ...(opts?.reaction ? { reaction: opts.reaction } : {}),
       ...(opts?.mode ? { mode: opts.mode } : {}),
       ...(opts?.variant ? { variant: opts.variant } : {}),
       ...(opts?.name ? { name: opts.name } : {}),
@@ -339,12 +337,6 @@ export function useElementCreation(opts: {
               // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
               // /135). Applied by the kind that owns the field, so one payload
               // serves all four without the drop path knowing which is which.
-              ...(art?.choice && kind === 'reaction-pad'
-                ? {
-                    reaction: art.choice as Reaction,
-                    label: REACTION_PAD_LABEL[art.choice as Reaction],
-                  }
-                : {}),
               ...(art?.choice && kind === 'mode-button'
                 ? { mode: art.choice as SelectionMode }
                 : {}),
@@ -356,8 +348,13 @@ export function useElementCreation(opts: {
         edit: true,
         style: (el) => {
           const styled = styleNewElement(el);
+          // A dropped door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door").
+          const placed =
+            styled.type === 'shape' && styled.shape === 'door'
+              ? snapDoorToWall(styled, activeTab.elements)
+              : styled;
           return (
-            styled.type === 'shape' ? withVariantColours(styled, art?.choice) : styled
+            placed.type === 'shape' ? withVariantColours(placed, art?.choice) : placed
           ) as typeof el;
         },
       },
@@ -373,11 +370,7 @@ export function useElementCreation(opts: {
 
   const handleCanvasDoubleClick = (x: number, y: number) => {
     // Same creation gate as every other add path (addShape, addIcon, ...):
-    // a locked/loading tab, a view-only session, or a hidden/locked active
-    // layer silently no-ops (the layers slice toasts WHY once). Without
-    // this, double-click was the one path that bypassed the gate — on a
-    // hidden active layer it stamped the text onto an unrendered layer,
-    // which read as "double-click does nothing".
+    // a locked/loading tab or a view-only session silently no-ops.
     if (editsBlocked) return;
     const TEXT_W = 160;
     const TEXT_H = 48;

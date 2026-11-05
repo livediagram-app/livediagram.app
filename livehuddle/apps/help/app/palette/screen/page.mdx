@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Screen',
+  description:
+    'A wall screen for a meeting room: it shows a screen share from someone in the room, or plays a video link, and opens large with a click.',
+  path: '/help/palette/screen/',
+});
+
+<ArticleLayout
+  title="Screen"
+  description="Put a Screen on a meeting room's wall and whatever someone in the room shares shows on it for everyone in there."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("screen")}
+>
+
+A **Screen** is the TV on a meeting room's wall. When someone standing in the room shares their screen in the call, the Screen shows it, for everyone in the room.
+
+It lives in the palette's **Meeting** category, one of the [meeting elements](/help/palette/behaviour/), beside the [Room Sign](/help/palette/room-sign/), and search adds one too.
+
+## What it shows
+
+Each person sees the first of these that applies:
+
+1. **A screen share in its room.** When someone whose character stands in the Screen's room shares their screen in the call, the share shows on the Screen, fitted inside it, with the sharer's name in its corner. Your own share shows on the Screen of the room you're in. With two sharers in a room, it shows the one nearer the Screen.
+2. **Its video link.** A YouTube, Vimeo or Loom link set from its menu shows the video's picture with a play button. Nothing from the video site loads until somebody opens it.
+3. **No one is sharing**: the screen rests, dark.
+
+The Screen belongs to the room it's in, or, placed just outside, the room within a short step of it. People outside the room never see the room's share on it: a room's call stays in the room.
+
+## Opening it large
+
+Click the Screen:
+
+- a share opens large, exactly as clicking the sharer's bubble does, with **Restore** to put it back;
+- a video opens in a large player with **Close**. It plays for whoever opened it, from the start: play and pause aren't shared with the room yet.
+
+## Setting a video link
+
+Right-click the Screen and open **Screen**. Paste a link into **Video Link** and press **Set** (or Enter); **Clear** takes it off. A link that isn't a YouTube, Vimeo or Loom video says **That isn't a video link** and isn't saved.
+
+## Who can do what
+
+- **Editors** place, move and delete a Screen, and set its video link. Sharing a screen in the call is an Editor's too.
+- **Everyone**, Editors, Participants and Viewers, sees what's on it and can open it large.
+
+## The look
+
+A dark flat screen in a thin frame, a small light on its lower edge that glows green while it shows something. It has no label and no **…** on its face, and characters walk past it freely. Otherwise it is an ordinary element: move, resize (it keeps its shape), lock, copy and export (an export shows the screen at rest).
+
+</ArticleLayout>

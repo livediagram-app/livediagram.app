@@ -20,10 +20,7 @@ import { documentOf } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or livehuddle URL');
 const sourceFlags = {
-  file: z
-    .string()
-    .optional()
-    .describe('A graph, Mermaid or elements file to fill it from, or - for stdin'),
+  file: z.string().optional().describe('A graph or elements file to fill it from, or - for stdin'),
   template: z.string().optional().describe('A template kind to build it from'),
 };
 
@@ -38,7 +35,7 @@ async function send(ctx: VerbContext, path: string, init: RequestInit): Promise<
 
 const docPath = (id: string) => `/documents/${encodeURIComponent(id)}`;
 
-// What a new tab is made from: a file's graph, Mermaid or elements, a template, or nothing (an empty tab).
+// What a new tab is made from: a file's graph or elements, a template, or nothing (an empty tab).
 async function replaceSourceOf(
   ctx: VerbContext,
   input: { file?: string; template?: string },
@@ -68,7 +65,7 @@ async function replaceSourceOf(
       status: 400,
       code: 'unknown_source',
       message: `can't tell what ${named} holds`,
-      hint: 'expected a graph, Mermaid or elements: livehuddle guide build',
+      hint: 'expected a graph or elements: livehuddle guide build',
     });
   return source.body.replace!;
 }
@@ -79,9 +76,9 @@ const quietId = ({ id }: { id: string }) => [id];
 
 export const documentCreate = defineVerb({
   id: 'document.create',
-  summary: 'Create a Space, empty or from a graph, Mermaid, elements or a template',
+  summary: 'Create a Space, empty or from a graph, elements or a template',
   description:
-    'Creates a Space with one tab, compiled by the api from -f (a graph, Mermaid or elements) or --template; empty without either. Prints its ref, name and link.',
+    'Creates a Space with one tab, compiled by the api from -f (a graph or elements) or --template; empty without either. Prints its ref, name and link.',
   behaviour: 'write',
   input: z.object({
     name: z.string().min(1).describe('The new Space\u2019s name'),
@@ -158,7 +155,7 @@ export const documentShare = defineVerb({
   id: 'document.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a Space: participate (default) lets people comment, add stickies, write and vote without reshaping it, view lets them only open and read it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a Space: participate (default) lets people comment, add stickies and write without reshaping it, view lets them only open and read it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -270,9 +267,9 @@ export const documentRestore = defineVerb({
 
 export const tabAdd = defineVerb({
   id: 'tab.add',
-  summary: 'Add a tab, empty or from a graph, Mermaid, elements or a template',
+  summary: 'Add a tab, empty or from a graph, elements or a template',
   description:
-    'Adds a tab to a Space as one changeset on a new tab, filled from -f (a graph, Mermaid or elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
+    'Adds a tab to a Space as one changeset on a new tab, filled from -f (a graph or elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -323,7 +320,7 @@ export const tabAdd = defineVerb({
     positionals: ['doc', 'name'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livehuddle tab add "Auth flow" Details -f detail.mmd',
+      'livehuddle tab add "Auth flow" Details -f detail.json',
       'livehuddle tab add 3f9c Hall --template all-hands-hall',
     ],
     prints:

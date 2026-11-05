@@ -31,6 +31,7 @@ import {
   TOOLBAR_TRIGGER_TONE,
 } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { CATEGORY_BANDS } from './palette-category-bands';
+import { CANVAS_TOOL_GROUP_LABELS } from './canvas-tool-options';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
@@ -79,7 +80,6 @@ type Props = Pick<
   | 'canvasTool'
   | 'onSetCanvasTool'
   | 'onExitAvatarMode'
-  | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
   | 'themeTint'
@@ -388,7 +388,16 @@ export function ToolbarPalette(props: Props) {
       className={`pointer-events-none absolute inset-x-0 top-3 ${
         popoverOpen ? 'z-[var(--z-popover)]' : 'z-[var(--z-toolbar)]'
       } flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
-      onPointerDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        // Any press on the strip but the Selection Mode picker leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md
+        // "Reaching for the palette"); the picker shows Avatar as current and picks as usual.
+        if (
+          canvasTool === 'avatar' &&
+          !(e.target as HTMLElement | null)?.closest?.('[data-canvas-tool-picker]')
+        )
+          props.onExitAvatarMode?.();
+      }}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -420,6 +429,7 @@ export function ToolbarPalette(props: Props) {
                   }
                 >
                   <>
+                    <span data-canvas-tool-picker="" className="contents">
                     <PaletteDropdown
                       ariaLabel="Selection mode"
                       dataTourId="canvas-tool"
@@ -431,10 +441,11 @@ export function ToolbarPalette(props: Props) {
                       autoHeight
                       grid
                       menuClassName=""
-                      groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                      groupLabels={CANVAS_TOOL_GROUP_LABELS}
                       onChange={onCanvasToolChange}
                       options={canvasToolOptions}
                     />
+                    </span>
                     {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
                     {swipe ? null : <Divider />}
                     {categoryBar ? (

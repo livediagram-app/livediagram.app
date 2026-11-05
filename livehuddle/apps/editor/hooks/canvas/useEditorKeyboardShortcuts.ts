@@ -34,7 +34,6 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { avatarActionForKey } from '@liveworkspace/avatar/action-keys';
 import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
-import { voteKeyDelta } from '@/lib/vote-by-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -63,7 +62,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       formatSourceId === null &&
       pendingDraw === null &&
       canvasTool !== 'format' &&
-      canvasTool !== 'isometric' &&
       canvasTool !== 'avatar' &&
       !whiteboardEraser
     )
@@ -102,7 +100,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           live.formatSourceId !== null ||
           live.pendingDraw !== null ||
           live.canvasTool === 'format' ||
-          live.canvasTool === 'isometric' ||
           live.canvasTool === 'avatar' ||
           (live.whiteboard !== null && live.canvasTool === 'eraser')
         ) {
@@ -117,14 +114,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Persistent Format tool: Escape exits the tool entirely (back to
         // Select) from either phase, not just disarming the base.
         if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
-        // Isometric: Escape leaves the view back to the normal editing tool —
-        // Select on desktop, Hand (pan) on touch where Select isn't the
-        // default. Mirrors how Spotlight reverts to Select.
-        if (liveRef.current.canvasTool === 'isometric') {
-          liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
-        }
         // Avatar mode (docs/specs/008-canvas/avatar-mode.md): Escape puts the walking character away and
-        // hands editing back, same revert rule as Isometric.
+        // hands editing back: Select on desktop, Hand on touch.
         if (liveRef.current.canvasTool === 'avatar') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
@@ -173,37 +164,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const key = e.key;
       const lower = key.toLowerCase();
 
-      // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
-      // Escape leaves zen mode. Only when actually in zen, not mid-
-      // edit / typing (there Escape cancels the label edit instead),
-      // and with nothing MORE transient to peel first: an active mode
-      // (format / draw / isometric — the narrow effect above
-      // owns those) or a live selection each take their own Escape, so
-      // one press exits exactly one layer instead of snapping the whole
-      // stack back at once.
-      if (
-        key === 'Escape' &&
-        live.zenMode &&
-        !inText &&
-        live.editingId === null &&
-        live.formatSourceId === null &&
-        live.pendingDraw === null &&
-        live.canvasTool !== 'format' &&
-        live.canvasTool !== 'isometric' &&
-        live.canvasTool !== 'avatar' &&
-        !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
-        selectedId === null &&
-        multiSelectedIds.size === 0
-      ) {
-        e.preventDefault();
-        live.onToggleZen();
-        return;
-      }
-
       // --- Escape clears the selection ---
       // When Escape has no transient mode to cancel (the narrow first
-      // effect above owns format / pending-draw / Format /
-      // Isometric) and the user isn't typing, a live selection is
+      // effect above owns format / pending-draw / Format) and the user isn't typing, a live selection is
       // dropped, mirroring a click on empty canvas. Guarded on the same
       // mode flags so a single Escape does one thing: cancel the mode
       // OR deselect, never both.
@@ -214,7 +177,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.formatSourceId === null &&
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
-        live.canvasTool !== 'isometric' &&
         live.canvasTool !== 'avatar' &&
         // A whiteboard eraser in hand is put down first (the narrow listener).
         !(live.whiteboard !== null && live.canvasTool === 'eraser') &&
@@ -259,8 +221,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // --- Plain key tool + element-add shortcuts ---
       // Standards-aligned bindings (Excalidraw / tldraw / Figma / Miro),
       // dispatched via VIEW_TOOL_KEYS / EDIT_KEYS above:
-      //   V (S alias) = Select, H = Hand, K = Laser, I = Isometric,
-      //   Z = Zen, E = Eraser, P (F alias) = Pencil (tools)
+      //   V (S alias) = Select, H = Hand,
+      //   E = Eraser, P (F alias) = Pencil (tools)
       //   R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
       //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)
       //   1-9/0 mirror the same actions (Excalidraw number row).
@@ -304,17 +266,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         e.preventDefault();
         live.onFitToScreen();
         return;
-      }
-
-      // --- Dot voting (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard") ---
-      // `+` / `-` on the one selected element while a vote is open: the stepper's buttons, which Tab never
-      // reaches inside the canvas. Before type-to-edit, which would otherwise seed the label with the key.
-      if (live.onVoteKey && selectedId !== null && multiSelectedIds.size === 0) {
-        const delta = voteKeyDelta(e);
-        if (delta !== null && live.onVoteKey(selectedId, delta)) {
-          e.preventDefault();
-          return;
-        }
       }
 
       // --- Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels) ---
@@ -362,8 +313,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // Non-mutating view tools (Select / Hand / Laser / Isometric /
-      // Zen): before the read-only gate so view-role visitors get them.
+      // Non-mutating view tools (Select / Hand / Zen): before the read-only gate so view-role visitors get them.
       const viewAction = VIEW_TOOL_KEYS[lower];
       if (viewAction) {
         e.preventDefault();

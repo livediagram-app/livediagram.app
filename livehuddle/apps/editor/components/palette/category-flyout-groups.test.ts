@@ -34,7 +34,6 @@ describe('the category bar', () => {
 
   it('names every category in one word', () => {
     expect(barLabel('write', 'Write & Build')).toBe('Write');
-    expect(barLabel('collab-mode', 'Selection Mode')).toBe('Modes');
     expect(barLabel('shapes', 'Shapes')).toBe('Shapes');
   });
 });
@@ -57,10 +56,12 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('heads Navigate by the tile that starts each group: the places and seats, then the office', () => {
-    const groups = flyoutGroups('collab-navigate', tiles('workshop', 'collab-navigate'));
-    expect(groups.map((g) => g.title)).toEqual(['Around the Space', 'Office Pieces']);
-    expect(groups[1]!.tiles[0]!.id).toBe('tools:room');
+  it('shows each Space category as one block, unheaded', () => {
+    for (const id of ['collab-travel', 'collab-seating', 'collab-rooms', 'collab-amenities']) {
+      const groups = flyoutGroups(id, tiles('workshop', id));
+      expect(groups, id).toHaveLength(1);
+      expect(groups[0]!.title, id).toBeNull();
+    }
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {

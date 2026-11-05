@@ -1,14 +1,21 @@
 'use client';
 
-// Share an item through links, each drawn as a pass: a level (Editor, Participant, Viewer), every tab or one, lasting
-// forever or a while; one password guards every link at once. Top to bottom: a status line saying who can open the
+// Share an item through links, each drawn as a pass: a level (Editor, Participant, Viewer, as the item's app offers),
+// every tab or one, lasting forever or a while; one password guards every link at once. Top to bottom: a status line saying who can open the
 // item right now, the composer that issues (and copies) a pass, the live passes with their count, the expired ones,
 // and Password Protection; a guest's "Sharing as" name sits in the footer. It loads the item's links once when it
 // opens and applies each change at once, taking it back if the index refuses. Everything app-specific (the links'
 // address, the embed and live image, help articles, telemetry, the guest's name) comes from the host.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { IndexClient, Level, ShareLinkExpiry } from '@liveworkspace/index-client';
+import {
+  APP_DEFAULT_LINK_LEVEL,
+  APP_LINK_LEVELS,
+  type IndexClient,
+  type Level,
+  type ShareLink,
+  type ShareLinkExpiry,
+} from '@liveworkspace/index-client';
 import { useShareLinks } from '../data/useShareLinks';
 import { useNow } from '../time';
 import { Button, CountBadge, DialogCloseButton, DialogHeader } from '@liveworkspace/ui';
@@ -136,6 +143,10 @@ export function ShareDialog({
   const tabs = useLoadedTabs(givenTabs, loadTabs);
   const multiTab = tabs.length > 1;
   const word = kindWords(item.app).lowerOne;
+  // The levels the item's app offers a new pass (livehuddle: Editor and Participant, Participant to start). A pass
+  // holding another (made before) keeps working and reads Legacy; a public link (a Community post's) is always `view`.
+  const levels = APP_LINK_LEVELS[item.app];
+  const legacy = (link: ShareLink) => !link.public && !levels.includes(link.level);
   const shareTour = useShareTour(multiTab, word, onTelemetry);
   // Show Me walks the passes, so it starts on their tab.
   const tour = {
@@ -250,6 +261,8 @@ export function ShareDialog({
             tabs={tabs}
             busy={share.busy}
             helpHref={helpHref}
+            levels={levels}
+            defaultLevel={APP_DEFAULT_LINK_LEVEL[item.app]}
             onIssue={(level, expiry, tabId) => void issue(level, expiry, tabId)}
           />
 
@@ -280,6 +293,7 @@ export function ShareDialog({
                     <ActivePass
                       key={link.code}
                       link={link}
+                      legacy={legacy(link)}
                       url={url}
                       now={now}
                       copied={copiedCode === link.code}
@@ -339,6 +353,7 @@ export function ShareDialog({
                   <ExpiredPass
                     key={link.code}
                     link={link}
+                    legacy={legacy(link)}
                     url={shareUrl(link, item)}
                     busy={share.busy}
                     onExtend={() =>
