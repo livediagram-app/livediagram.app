@@ -91,7 +91,7 @@ function Reach({ cx, cy }: { cx: number; cy: number }) {
 export function StageHall() {
   const speaker = { x: STAGE.x + STAGE.w / 2, y: STAGE.y + 16 };
   const door = { x: HALL.x + HALL.w / 2, w: 44 };
-  const corridor = { x: 360, y: 196 };
+  const corridor = { x: 370, y: 176 };
   return (
     <Scene w={420} h={240}>
       {/* The hall's floor and walls, a doorway in the front wall. */}
@@ -116,17 +116,20 @@ export function StageHall() {
       <Label x={HALL.x + 10} y={HALL.y + 14} size={10} weight={600} tone="muted">
         All-Hands
       </Label>
-      <Label x={corridor.x} y={corridor.y + 22} anchor="middle" size={10} tone="muted">
-        Outside: hears it
+      <Label x={corridor.x} y={corridor.y + 24} anchor="middle" size={10} tone="muted">
+        Outside,
+      </Label>
+      <Label x={corridor.x} y={corridor.y + 37} anchor="middle" size={10} tone="muted">
+        hears it
       </Label>
       <Label x={340} y={44} size={11} weight={700} tone="accent">
         On the stage
       </Label>
       <Label x={340} y={60} size={10} tone="body">
-        Heard by everyone
+        Heard by
       </Label>
       <Label x={340} y={74} size={10} tone="body">
-        on the tab
+        the whole tab
       </Label>
       <path d="M336 52H252" className="stroke-brand-400" strokeWidth={1.5} strokeDasharray="2 3" />
     </Scene>

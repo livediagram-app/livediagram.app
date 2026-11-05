@@ -140,7 +140,8 @@ screen reader hears it once on stepping on.
   a stand. Its line: "A raised platform: whoever stands on it is heard by the whole tab." A new stage goes in behind
   everything, like a room or a rug, so chairs already placed stand in front of it. Only an Editor's palette offers
   it ([Share roles](#share-roles)).
-- **Its settings** are in the element menu's **Tools › Stage** section, as a room's doorway is in Tools › Room:
+- **Its settings** are in the element menu's **Tools › Stage** section, as a room's doorway is in Tools › Room (a Tools flyout
+  holding one section shows that section at the menu's top level, so the menu reads **Stage**):
   - **Who Can Speak**: two tiles, **Editors** (the default) and **Editors and Participants** (`stageSpeakers`:
     `'edit'`, `'take-part'`), with the line "Who the whole tab hears from the stage. Anyone else standing on it is
     heard as the audience is."
