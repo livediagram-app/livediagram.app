@@ -62,14 +62,19 @@ Scope, by file:
   `EXPORT_STATUS_KEYS_MAX`) answers `{ exports: { [key]: ExportView | null } }`; `GET /internal/exports/<key>/file`
   streams with `Content-Length`; `DELETE /internal/exports/<key>` answers `204`.
 - **The service to accounts** (`ACCOUNTS` binding, same key): `POST /api/account/internal/data-export/ready`
-  `{ key, exportId, requestedBy, status: 'ready' | 'failed', bytes, expiresAt, teamName? }`, `204`.
+  `{ key, exportId, requestedBy, status: 'ready' | 'failed', bytes, expiresAt, teamName? }`, `204`. For a `team:` key
+  accounts first checks `requestedBy` is still the team's admin (the same `adminOf` query as the start and the
+  download: joined, `admin`, team not deleted) and sends nothing otherwise, still answering `204` so the service
+  settles as usual.
 - **The browser** (session): `GET /api/account/data-export` answers `{ personal: ExportView | null, teams: [{ id, name,
 export }] }`, each ready view carrying `downloadUrl` (a signed link for this person); `POST /api/account/data-export`
   `{ team? }` answers `202 { export }`, `403 admin_only`, `409 export_running`, `503 export_unavailable`.
 - **The link**: `sig` is lowercase hex HMAC-SHA-256 of `exportLinkMessage(requestedBy, key, exportId, exp)`
   (`<requestedBy>\n<key>\n<exportId>\n<exp>`) under a key derived from `BETTER_AUTH_SECRET` by HKDF-SHA-256 (info
-  `liveworkspace data export link`). The download checks the session, the signature (constant time), the expiry, that
-  the export named is still the scope's ready one, and for a team the admin, then streams. Refusals redirect to
+  `liveworkspace data export link`). The download checks the session, the signature (constant time), the scope (a
+  personal key is the person's own; a team's needs them its admin now), then the expiry and that the export named is
+  still the scope's ready one, then streams. The scope comes before the expiry and the file, so someone no longer an
+  admin learns nothing of the export. Refusals redirect to
   `/explorer?settings=data&export=<reason>` (`expired`, `other-account`, `missing`); no session redirects to
   `/sign-in?return=<the link>`.
 - **The doors**: [data-export.md "The apps"](../data-export.md#the-apps); `@liveworkspace/app-doors` maps a `204` or
@@ -90,7 +95,9 @@ expiry clear all but the job row. R2 keeps one object per run; the next run dele
   the README's problems. A tab whose drawing fails is left without a picture.
 - An empty scope still makes a zip: the README, the profile or team file and empty comment files.
 - A name that is empty after cleaning is `Untitled`. Two tabs of the same name are told apart by their number.
-- A team deleted, or the requester no longer its admin, by the download: the download redirects `other-account`.
+- A team deleted, or the requester no longer its admin (demoted or removed from the team), by the time it finishes:
+  no ready or failed email. By the download: the download redirects `other-account`, lapsed or not. The file stays
+  for the team's other admins until it lapses.
 - The service unbound or unkeyed: accounts answers `503 export_unavailable` and Settings shows the category's error.
 
 ## Security and trust
