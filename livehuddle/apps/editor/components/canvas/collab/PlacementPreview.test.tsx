@@ -49,9 +49,9 @@ describe('placingKind', () => {
   it('names the armed or dragged placed piece, and nothing for a sized one', () => {
     expect(placingKind(DOOR, null)).toBe('door');
     expect(placingKind(null, 'door')).toBe('door');
-    expect(placingKind({ type: 'shape', kind: 'chair' } as PendingDraw, null)).toBe('chair');
+    expect(placingKind({ type: 'shape', kind: 'chair' }, null)).toBe('chair');
     expect(placingKind(null, 'avatar-pad')).toBe('avatar-pad');
-    expect(placingKind({ type: 'shape', kind: 'room' } as PendingDraw, 'grass')).toBeNull();
+    expect(placingKind({ type: 'shape', kind: 'room' }, 'grass')).toBeNull();
     expect(placingKind(null, null)).toBeNull();
   });
 });
@@ -118,7 +118,7 @@ describe('DoorPlacementPreview', () => {
   it('draws the piece itself for an armed chair, following the pointer', () => {
     render(
       <PlacementPreview
-        pendingDraw={{ type: 'shape', kind: 'chair' } as PendingDraw}
+        pendingDraw={{ type: 'shape', kind: 'chair' }}
         elements={[]}
         wrapperRef={{ current: wrapper }}
         zoom={1}
