@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AVATAR_TEXT_CONTRAST, avatarFill, whiteContrast } from './avatar-fill';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const rgbOf = (hex: string) =>
   [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
@@ -50,9 +51,10 @@ describe('avatarFill', () => {
 
   // Every avatar on a long inbox asks; a cheap guard against it ever becoming a hot spot.
   it('answers 10,000 avatars well inside a frame', () => {
-    const start = performance.now();
-    for (let i = 0; i < 10_000; i++) avatarFill(PRESENCE[i % PRESENCE.length]!);
-    for (let i = 0; i < 200; i++) avatarFill(`#${(i * 81).toString(16).padStart(6, '0')}`);
-    expect(performance.now() - start).toBeLessThan(50);
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 10_000; i++) avatarFill(PRESENCE[i % PRESENCE.length]!);
+      for (let i = 0; i < 200; i++) avatarFill(`#${(i * 81).toString(16).padStart(6, '0')}`);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 });
