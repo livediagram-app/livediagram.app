@@ -93,10 +93,11 @@ describe('the room and the calls checks', () => {
     await prove(viewer, 'S-vw');
     await vi.waitFor(() => expect(viewer.attachment.callSession).toBe('S-vw'));
     await prove(other, 'S-ed', 'l.forged');
-    await new Promise((r) => setTimeout(r, 0));
+    // The token is checked asynchronously (Web Crypto), so wait for its refusal rather than one tick: on a busy
+    // runner one tick ended before the check did (#1306, 2026-11-05).
+    await vi.waitFor(() => expect(console.warn).toHaveBeenCalledWith('[calls] token', 'room'));
     expect(other.attachment.callSession).toBeUndefined();
     expect(ops(other).some((f) => f.op?.kind === 'call-session')).toBe(false);
-    expect(console.warn).toHaveBeenCalledWith('[calls] token', 'room');
   });
 
   it('answers the mint route from where each call stands (#483), for every level', async () => {
