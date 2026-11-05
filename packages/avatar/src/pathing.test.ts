@@ -222,8 +222,10 @@ describe('findWalkPath on a big board', () => {
     const build = cpuMsOf(() => {
       grid = buildNavGrid(fences, REACH);
     });
-    // Measured 12 to 14 ms on a laptop (2,100 fence lines, 118,604 cells); built once per change to the walls.
-    expect(build).toBeLessThan(cpuBudgetMs(60));
+    // Measured 12 to 14 ms on a laptop (2,100 fence lines, 118,604 cells); built once per change to the walls, in idle
+    // time. CI's coverage run measured 232 ms, so the budget allows for instrumentation and still fails a quadratic
+    // build, which runs to seconds at this size.
+    expect(build).toBeLessThan(cpuBudgetMs(150));
     // Corner to corner across the board, from behind one room's back wall into the far room.
     const from = { x: 240, y: -40 };
     const to = { x: 9 * 640 + 240, y: 9 * 480 + 160 };

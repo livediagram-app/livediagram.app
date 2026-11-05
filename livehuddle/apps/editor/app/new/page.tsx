@@ -329,12 +329,13 @@ export default function NewDocumentPage() {
     });
   };
 
-  // Created on mount. commitNewDocument waits out the identity bootstrap itself (resolveSelf), so firing at once is
-  // safe; the ref makes it once-only under Strict Mode's double-invoked effects.
+  // Created once sign-in has answered (authLoaded, which gives up after 5 s, so a guest is never held): the save
+  // location follows who is signed in, and firing before that made a signed-in person's Space in This Browser when
+  // their browser carried no signed-in hint yet. The ref makes it once-only under Strict Mode's double-invoked effects.
   const fired = useRef(false);
   const createOnMount = useLatest(createFromUrl);
   useEffect(() => {
-    if (fired.current) return;
+    if (fired.current || !authLoaded) return;
     fired.current = true;
     // Link adoption (docs/specs/017-telemetry/telemetry.md): a fixed token per entry point, never user content. The
     // template itself is reported by the Document / Created event the commit fires.
@@ -342,7 +343,7 @@ export default function NewDocumentPage() {
     if (startsBlank(search)) track('UI', 'Used', 'JustDraw');
     else if (linkedTemplateKind(search)) track('UI', 'Used', 'TemplateLink');
     void createOnMount.current();
-  }, [createOnMount]);
+  }, [createOnMount, authLoaded]);
 
   // Keyed on the id so a second handoff (not reachable today) would remount a fresh editor.
   if (openedId) return <EditorPage key={openedId} />;
