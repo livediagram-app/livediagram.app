@@ -96,6 +96,17 @@ staging on every push to `main`, production through the manual gate. It is in th
 `apps/accounts/wrangler.toml`) apply before its code. Email goes out through the `EMAIL` binding to Cloudflare Email
 Service, with no key ([email.md](email.md)).
 
+Because the migrations always apply before the code, the Worker never checks the database's tables while it runs.
+Better Auth's own check would read D1's schema on every Worker's first request, before answering, which made the
+first sign-in after a quiet spell (and the status page's Accounts check) wait on several round trips to the
+database's region. The same check runs in CI instead, against a database built from the migrations, so a migration
+that leaves out a table or column Better Auth needs still fails before it ships.
+
+Better Auth answers a database failure itself, as a 500 or as no session. When D1 is unavailable during a request
+and Better Auth's answer is an error, the Worker answers `503 storage_unavailable` instead
+([architecture.md](../002-architecture/architecture.md) "When a request fails"), so an outage is retryable and never
+reads as someone signed out.
+
 What a deploy never writes, set once per environment and kept across deploys:
 
 - **Secrets**, with `wrangler secret put`: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,

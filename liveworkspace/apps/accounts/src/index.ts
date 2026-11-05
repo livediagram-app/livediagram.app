@@ -27,6 +27,7 @@ import {
 } from './end-session.ts';
 import type { Env } from './env.ts';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { withD1OutageWatch } from './d1-outage.ts';
 import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 import { sweepIdleGuests } from './guest-sweep.ts';
 import {
@@ -281,7 +282,7 @@ export default {
   // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
   fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     return guardRequest(
-      () => serve(request, env, ctx),
+      () => withD1OutageWatch(() => serve(request, env, ctx)),
       () => ({ route: routeLabel(request.method, request.url), json: failureJson }),
     );
   },
