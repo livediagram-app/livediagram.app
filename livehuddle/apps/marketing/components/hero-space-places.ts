@@ -19,7 +19,7 @@ export const OFFICE: SpaceSceneSpec = {
       name: 'Leo',
       colour: '#f59e0b',
       config: { gender: 'male', clothing: 'flannel', hair: 'curly', size: 'regular' },
-      from: { x: -210, y: -303 },
+      from: { x: -220, y: -303 },
       start: 0,
       path: [],
       rest: 'up',
@@ -30,7 +30,7 @@ export const OFFICE: SpaceSceneSpec = {
       name: 'Ana',
       colour: '#8b5cf6',
       config: { gender: 'female', clothing: 'suit', hair: 'long', size: 'regular' },
-      from: { x: 90, y: -303 },
+      from: { x: 20, y: -303 },
       start: 0,
       path: [],
       rest: 'up',
@@ -108,33 +108,33 @@ export const OFFICE: SpaceSceneSpec = {
   },
 };
 
-// The All-Hands Hall's front: the stage (x -200..200, y -329..-169) with its Bring Focus button, and the first two
-// rows of chairs facing it either side of the aisle (x -79..80), the room's door far below the window's edge.
+// The All-Hands Hall's front: the stage (x -200..200, y -514..-354) with its Bring Focus button, and the front row of
+// chairs facing it either side of the aisle (x -79..80), the room's door far below the window's edge.
 export const HALL: SpaceSceneSpec = {
   id: 'all-hands-hall',
   template: 'all-hands-hall',
-  stage: { x: -560, y: -392, width: 1120, height: 500 },
+  stage: { x: -560, y: -577, width: 1120, height: 500 },
   cast: [
     // On the stage, facing the room.
     {
       name: 'Ana',
       colour: '#8b5cf6',
       config: { gender: 'female', clothing: 'suit', hair: 'long', size: 'regular' },
-      from: { x: -30, y: -236 },
+      from: { x: -30, y: -421 },
       start: 0,
       path: [],
       rest: 'down',
       reaction: { kind: 'wave', at: 2.0 },
     },
-    // The room, seated with their backs to us.
+    // The front row, seated with their backs to us.
     ...(
       [
-        ['Maya', '#10b981', { gender: 'female', clothing: 'tee', hair: 'ponytail' }, -287, -55],
-        ['Jo', '#ef4444', { gender: 'male', clothing: 'stripes', hair: 'spiky' }, -202, -55],
-        ['Priya', '#ec4899', { gender: 'female', clothing: 'jumper', hair: 'bob' }, 118, -55],
-        ['Sam', '#0ea5e9', { gender: 'male', clothing: 'hoodie', hair: 'short' }, 288, -55],
-        ['Kit', '#14b8a6', { gender: 'female', clothing: 'dress', hair: 'afro' }, -372, 45],
-        ['Raj', '#6366f1', { gender: 'male', clothing: 'polo', hair: 'buzz' }, 203, 45],
+        ['Maya', '#10b981', { gender: 'female', clothing: 'tee', hair: 'ponytail' }, -287, -240],
+        ['Jo', '#ef4444', { gender: 'male', clothing: 'stripes', hair: 'spiky' }, -202, -240],
+        ['Priya', '#ec4899', { gender: 'female', clothing: 'jumper', hair: 'bob' }, 118, -240],
+        ['Sam', '#0ea5e9', { gender: 'male', clothing: 'hoodie', hair: 'short' }, 288, -240],
+        ['Kit', '#14b8a6', { gender: 'female', clothing: 'dress', hair: 'afro' }, -372, -240],
+        ['Raj', '#6366f1', { gender: 'male', clothing: 'polo', hair: 'buzz' }, 203, -240],
       ] as const
     ).map(([name, colour, config, x, y]) => ({
       name,
@@ -151,11 +151,11 @@ export const HALL: SpaceSceneSpec = {
       name: 'Leo',
       colour: '#f59e0b',
       config: { gender: 'male', clothing: 'flannel', hair: 'curly', size: 'regular' },
-      from: { x: 0, y: 150 },
+      from: { x: 0, y: -35 },
       start: 3.0,
       path: [
-        { x: 0, y: -55 },
-        { x: -117, y: -55 },
+        { x: 0, y: -240 },
+        { x: -117, y: -240 },
       ],
       rest: 'up',
       sits: true,

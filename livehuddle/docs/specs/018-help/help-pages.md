@@ -53,26 +53,26 @@ scene on unbroken ground: never cropped, and never shrunk to a strip of icons.
 
 livehuddle's scenes:
 
-| Scene                | Where                | What it shows                                                                                     |
-| -------------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
-| Getting Started      | own                  | a first Space: pick a starting point, walk in, share the link                                     |
-| About                | own                  | three windows: the day's stickies, a Team Pod with the team round its table, a timer              |
-| Canvas               | own                  | a flowchart mid-build, a sticky note, the palette strip, undo and zoom                            |
-| Palette              | own                  | the Shapes category open and a diamond dragged onto the canvas                                    |
-| Selection Modes      | own                  | the mode picker and a marquee                                                                     |
-| Collaboration        | own                  | three people on one canvas: cursors, a live selection, a comment thread, Share                    |
-| Explorer             | own                  | My Work and a grid of Spaces                                                                      |
-| Tabs                 | own                  | one document's canvases stacked behind the tab bar                                                |
-| User Interface       | own                  | the editor with numbered callouts on its parts                                                    |
-| Tools                | shared, with its own | Auto-align snapping a meeting's notes into line, beside the shared appearance switch          |
-| Tips and Tricks      | shared, with its own | the command palette on ⌘K (Zoom to fit, Next editor mode) and R, T and N                          |
-| Search Panel         | shared, with its own | "roadmap" finding a canvas, a tab, a sticky note and a guide                                      |
-| Supported Devices    | shared, with its own | a little diagram on a laptop, a tablet and a phone                                                |
-| Developers           | shared, with its own | `POST /api/documents` making a Service map                                                        |
-| Account and Data     | shared, with its own | a profile, synced diagrams, and PNG, SVG, PDF and JSON                                            |
-| Troubleshooting      | shared, with its own | a canvas that didn't load and the checklist fixing it                                             |
-| Privacy and Security | shared, with its own | a livehuddle.app share link with its safeguards                                                   |
-| Policies             | shared, the same     | the terms and the privacy policy, sealed                                                          |
+| Scene                | Where                | What it shows                                                                        |
+| -------------------- | -------------------- | ------------------------------------------------------------------------------------ |
+| Getting Started      | own                  | a first Space: pick a starting point, walk in, share the link                        |
+| About                | own                  | three windows: the day's stickies, a Team Pod with the team round its table, a timer |
+| Canvas               | own                  | a flowchart mid-build, a sticky note, the palette strip, undo and zoom               |
+| Palette              | own                  | the Shapes category open and a diamond dragged onto the canvas                       |
+| Selection Modes      | own                  | the mode picker and a marquee                                                        |
+| Collaboration        | own                  | three people on one canvas: cursors, a live selection, a comment thread, Share       |
+| Explorer             | own                  | My Work and a grid of Spaces                                                         |
+| Tabs                 | own                  | one document's canvases stacked behind the tab bar                                   |
+| User Interface       | own                  | the editor with numbered callouts on its parts                                       |
+| Tools                | shared, with its own | Auto-align snapping a meeting's notes into line, beside the shared appearance switch |
+| Tips and Tricks      | shared, with its own | the command palette on ⌘K (Zoom to fit, Next editor mode) and R, T and N             |
+| Search Panel         | shared, with its own | "roadmap" finding a canvas, a tab, a sticky note and a guide                         |
+| Supported Devices    | shared, with its own | a little diagram on a laptop, a tablet and a phone                                   |
+| Developers           | shared, with its own | `POST /api/documents` making a Service map                                           |
+| Account and Data     | shared, with its own | a profile, synced diagrams, and PNG, SVG, PDF and JSON                               |
+| Troubleshooting      | shared, with its own | a canvas that didn't load and the checklist fixing it                                |
+| Privacy and Security | shared, with its own | a livehuddle.app share link with its safeguards                                      |
+| Policies             | shared, the same     | the terms and the privacy policy, sealed                                             |
 
 ## Home page
 

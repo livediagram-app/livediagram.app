@@ -17,7 +17,7 @@ const POD_TABLE = [-260, -150, 560, 190] as const;
 const OFFICE_DESKS = [-300, -445, 470, 170] as const;
 const OFFICE_MEETING = [400, -445, 420, 170] as const;
 const OFFICE_CORRIDOR = [-120, -200, 600, 200] as const;
-const HALL_ROOM = [-470, -180, 900, 290] as const;
+const HALL_ROOM = [-470, -365, 900, 290] as const;
 
 /** A small pill over a character's head: a status, a role, a view being followed. */
 function Pill({
