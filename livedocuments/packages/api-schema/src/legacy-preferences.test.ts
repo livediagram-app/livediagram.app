@@ -56,6 +56,58 @@ describe('upgradeLegacyPreferences', () => {
     expect(upgradeLegacyPreferences({ skipLocationStep: null })).toEqual({});
   });
 
+  // docs/specs/007-editor/power-user-mode.md "What happens to stored preferences": the mode's keys go, and
+  // everything its preset wrote stays as it is.
+  it('drops the retired Power user mode keys and keeps what its preset set', () => {
+    expect(
+      upgradeLegacyPreferences({
+        powerUserMode: true,
+        powerUserBaseline: { alignmentGuides: { before: {}, applied: { alignmentGuides: true } } },
+        minimalChrome: true,
+        powerUserOfferShown: true,
+        alignmentGuides: true,
+        autoRebindArrows: false,
+        elementToursSeen: true,
+        pagesTourSeen: true,
+      }),
+    ).toEqual({
+      alignmentGuides: true,
+      autoRebindArrows: false,
+      elementToursSeen: true,
+      pagesTourSeen: true,
+      pagesTourKinds: ['slide', 'infographic', 'article', 'flashcard'],
+    });
+  });
+
+  it('keeps the Pages tour seen for someone who had the mode on, adding to the kinds already answered', () => {
+    expect(
+      upgradeLegacyPreferences({
+        powerUserMode: true,
+        pagesTourSeen: true,
+        pagesTourKinds: ['article'],
+      }).pagesTourKinds,
+    ).toEqual(['article', 'slide', 'infographic', 'flashcard']);
+    // The Illustrate names, carried over first, count too.
+    expect(
+      upgradeLegacyPreferences<Record<string, unknown>>({
+        powerUserMode: true,
+        illustrateTourSeen: true,
+      }).pagesTourKinds,
+    ).toEqual(['slide', 'infographic', 'article', 'flashcard']);
+  });
+
+  it('leaves the Pages tour kinds alone when the mode was off or the tour was offered again', () => {
+    expect(upgradeLegacyPreferences({ powerUserMode: false, pagesTourSeen: true })).toEqual({
+      pagesTourSeen: true,
+    });
+    expect(upgradeLegacyPreferences({ powerUserMode: true, pagesTourSeen: false })).toEqual({
+      pagesTourSeen: false,
+    });
+    expect(upgradeLegacyPreferences({ minimalChrome: false, theme: 'light' })).toEqual({
+      theme: 'light',
+    });
+  });
+
   it('returns the same object when there is nothing to upgrade', () => {
     const prefs = { notifyDocumentJoin: false };
     expect(upgradeLegacyPreferences(prefs)).toBe(prefs);
