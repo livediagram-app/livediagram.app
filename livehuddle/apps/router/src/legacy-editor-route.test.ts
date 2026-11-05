@@ -178,6 +178,12 @@ describe('legacyHelpRedirect', () => {
       ],
       // Auto Layout arranges shapes by their arrows, which a Space no longer draws (Work Tracker #494).
       ['/help/tools/layout-cleanup/auto-layout/', '/help/tools/layout-cleanup/'],
+      // Shape Libraries and the draw.io, Microsoft Whiteboard and Markdown imports left livehuddle (Work Tracker #423
+      // part 4).
+      ['/help/explorer/shape-libraries/', '/help/explorer/explorer-page/'],
+      ['/help/explorer/drawio-import/', '/help/tabs/import-tabs/'],
+      ['/help/explorer/microsoft-whiteboard-import/', '/help/tabs/import-tabs/'],
+      ['/help/tools/markdown-import/', '/help/tabs/import-tabs/'],
       // A retired category's link that lost its `/help` prefix lands on the help centre home too.
       ['/self-hosting', '/help/'],
       ['/self-hosting/', '/help/'],

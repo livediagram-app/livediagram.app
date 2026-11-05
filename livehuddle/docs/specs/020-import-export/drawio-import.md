@@ -1,5 +1,7 @@
 # draw.io import
 
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/020-import-export/drawio-import.md) is the one to read and change. livehuddle's Import to Tab, its Explorer's Import from and its /import page offer no draw.io, and its code for it is deleted. What a draw.io import already brought into a Space stays and draws as before. The rest of this page records what livehuddle had.
+
 A diagram made in draw.io (diagrams.net, the desktop app, the VS Code and Confluence plugins) comes
 into livehuddle near-losslessly, two ways: the Import dialog's **draw.io** format fills the active tab
 (and adds a tab per further page), and the Explorer's **Import from draw.io** turns any number of files,
@@ -23,7 +25,7 @@ Two promises shape the design:
   labels, edges, convert), entry point `importDrawio(input, options)`. Sibling of the
   Excalidraw importer (`excalidraw-read.ts`); lazy-loaded by `useTabImport` so none of it lands in the editor's first
   load. It never throws on bad input: it returns `{ ok: false, error }` with a human-readable message.
-- `apps/editor/lib/drawio/report.ts`: draw.io's notes turned into the one import report every
+- `../livediagram/apps/editor/lib/drawio/report.ts`: draw.io's notes turned into the one import report every
   importer shares ([Board scene](board-scene.md) "The report"): what landed, counted by kind, and
   each change as a rule with its count.
 - In the same folder: `json-export.ts` (the JSON export, below), `library.ts` (shape libraries,
@@ -502,7 +504,7 @@ draw.io reports through the **one import report every importer shares** ([Board 
 (shapes, arrows, text boxes, sticky notes, images, frames, lines), then every change on the way in as
 a rule with its count, changes first and things left out after, then how the images came across (the
 [import image pipeline](import-image-pipeline.md)'s report). The importer tallies closed note kinds
-(`ImportNoteKind`) and `lib/drawio/report.ts` gives each its rule, in this order:
+(`ImportNoteKind`) and `../livediagram/apps/editor/lib/drawio/report.ts` gives each its rule, in this order:
 
 | Kind                      | Rule (the report shows "count · rule")                                         | Shown as |
 | ------------------------- | ------------------------------------------------------------------------------ | -------- |

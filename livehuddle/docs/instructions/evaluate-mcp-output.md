@@ -8,8 +8,8 @@ finding earns a fix only when it recurs; the same benchmark then shows whether t
 
 The kit lives in `apps/mcp/eval/`:
 
-- `bench/tasks/*.mjs`: the task bank, one file per area (`diagram.mjs`: `D` diagrams and `W` draw;
-  `workshop.mjs`: `F` workshop). Each task is a prompt as a user would type it, its checks, an optional `after`
+- `bench/tasks/*.mjs`: the task bank, one file per area (`diagram.mjs`: `D` diagrams; the workshop area left with
+  the Collaborate elements, Work Tracker #423 part 4). Each task is a prompt as a user would type it, its checks, an optional `after`
   (an edit, run as a second turn of the same session), an optional `setup` (what the prompt takes for granted,
   made in the run's empty library) and an optional `gallery` (pictures from `bench/fixtures/` the user has uploaded,
   seeded into the run's image gallery before the round starts, under the names the prompt's user would have). Ids are stable: rounds compare on the ids they share.
@@ -34,8 +34,8 @@ The kit lives in `apps/mcp/eval/`:
 ## Run a round
 
 6. Run from `apps/mcp/eval`: `node bench/run.mjs --round <name> --tasks all --models haiku,sonnet,opus --repeat 2
---concurrency 6`. `--tasks` takes `all`, an area (`workshop`) or ids (`D1,F2`), mixed. A whole-bank round of these settings is 22 tasks, three models,
-   twice: 132 runs.
+--concurrency 6`. `--tasks` takes `all`, an area (`diagram`) or ids (`D1,D2`), mixed. A whole-bank round of these settings is 12 tasks, three models,
+   twice: 72 runs.
 7. Each run gets its own throwaway account and API token from the local accounts Worker (its development-only
    `POST /api/auth/internal/bench-accounts`, with the accounts Worker's `ADMIN_TOKEN`, `local-admin-token` by default),
    so it starts in an empty library and never sees another run's documents ("our retro" finds its own). The tokens are kept in `runs/<round>/tokens.json` so a

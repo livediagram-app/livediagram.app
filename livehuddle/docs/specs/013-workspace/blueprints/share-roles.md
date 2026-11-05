@@ -22,7 +22,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `packages/api-schema/src/room-messages.ts`                                                                     | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
 | `packages/document/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets   |
 | `packages/document/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
-| `packages/document/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes, responses and ideas only                                  |
+| `packages/document/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: votes and reactions only (responses and ideas gone in part 4)    |
 | `../liveworkspace/apps/index/migrations/0001_index.sql`                                                        | A `level` column on `share_links`                                                             |
 | `apps/api/src/room-op-gate.ts`, `apps/api/src/adder-key.ts`                                                    | Readers through `parseStoredLevel`; the room's `adderKeyFor`                                  |
 | `apps/api/src/routes/context.ts`                                                                               | Gates compare levels on the index's grant                                                     |
@@ -65,21 +65,21 @@ Doors by level (server):
 | Door                                                                                       | Needs                             |
 | ------------------------------------------------------------------------------------------ | --------------------------------- |
 | Reads (document, tabs, images, comment threads, the Timeline); share resolve; make a copy  | view                              |
-| Room: presence (cursor, select, laser, follow, focus); never `poll-answer` or `reaction`   | view                              |
+| Room: presence (cursor, select, laser, follow, focus); never `reaction`                    | view                              |
 | Comments: add, reply, resolve, reopen, delete own                                          | participate (`deniedParticipate`) |
-| Q&A: add a note, upvote; room `poll-answer` and `reaction`                                 | participate                       |
-| Room: `vote`; `el-delta` `response` or `idea`                                              | participate                       |
+| Room: `reaction`                                                                           | participate                       |
+| Room: `vote`; `el-delta` `comment-react`                                                   | participate                       |
 | Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                       |
 | Tab PUT, tab DELETE, document PUT; room `tab`, `tab-meta`, `document-meta`, `el` `reorder` | edit                              |
-| Room: `el-delta` `check`, `comment-*`; `poll-start`, `poll-end`; `drag-preview`            | edit                              |
+| Room: `el-delta` `check`, other `comment-*`; `drag-preview`                                | edit                              |
 | Facilitator baton                                                                          | edit (`canHold`, unchanged)       |
 
 An Editor's `el` op is relayed as today. A Participant's `el` op takes the participant path:
 
 1. **Gate.** The session's level is `participate`, the op's tab passes the tab-scope check, and the op kind is `add`,
    `update` or `remove`. A `reorder` is dropped.
-2. **Queue.** The op joins the room's tab write queue (`tabWriteQueue`, the Q&A board's queue renamed, SR2), so
-   participant writes and Q&A writes on a document run one at a time.
+2. **Queue.** The op joins the room's tab write queue (`tabWriteQueue`, SR2), so a document's participant writes
+   run one at a time. (The Q&A board's writes shared it until part 4 of Work Tracker #423 removed the board.)
 3. **Write.** `writeParticipantOp(env, { documentId, tabId, ops: [op], adderKey })` reads the stored tab, runs
    `applyParticipantOp` and compare-and-swaps the result (up to `TAB_CAS_MAX_ATTEMPTS`).
 4. **Relay.** An `applied` op is sequenced from the sender to everyone but the sender when it equals what the sender
@@ -313,7 +313,7 @@ lands in a new document, where no adder key matches it.
 - **E8** The write loses the compare-and-swap `TAB_CAS_MAX_ATTEMPTS` times, the tab is gone, or the tab is over its
   cap: the sender gets `catchup { resync: true }`; nothing is relayed.
 - **E9** A Participant socket without an adder key adds a sticky: refused `no-adder`.
-- **E10** A Participant socket sends `tab`, `tab-meta`, `reorder`, `check`, `board`, `poll-start` or `drag-preview`:
+- **E10** A Participant socket sends `tab`, `tab-meta`, `reorder`, `check`, `board`, `response`, `idea` or `drag-preview`:
   dropped.
 - **E11** A tab-scoped Participant link: its ops on another tab are dropped by the scope check first.
 - **E12** An embed of a Participant link: renders as a Viewer (SR6).

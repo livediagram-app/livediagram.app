@@ -1,5 +1,7 @@
 # Markdown import
 
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/020-import-export/markdown-import.md) is the one to read and change. livehuddle's Import to Tab offers no Markdown card, and its code for it is deleted. A tree a Markdown import already drew stays and draws as before. The rest of this page records what livehuddle had.
+
 Import a Markdown document and turn it into a real, themed diagram on the
 current tab, replacing its contents (one undo step puts them back). The goal is to ingest outlines exported from other tools (XMind
 mind-map → Markdown, Obsidian/Logseq outlines, any heading/bullet notes)
@@ -144,7 +146,7 @@ solve a _different_ problem:
   parser deliberately skips code fences, so a future "Mermaid blocks
   inside Markdown" pass could claim them.
 
-Implementation: `apps/editor/lib/markdown-import.ts` (pure parser + layout +
+Implementation: `../livediagram/apps/editor/lib/markdown-import.ts` (pure parser + layout +
 `buildTabFromMarkdown`, unit-tested), dynamically imported by
 `useTabActions.importIntoActiveTab` (which replaces the active tab) so the
 parser stays out of the initial editor bundle. The dialog is

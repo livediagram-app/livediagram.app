@@ -110,9 +110,9 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your spaces, folders, teams, and assets easy to find and manage.',
-    articleCount: 16,
+    articleCount: 13,
     kind: 'feature',
-    groups: ['Your Library', 'Activity', 'Assets and Imports'],
+    groups: ['Your Library', 'Activity', 'Assets'],
   },
   {
     slug: 'selection-modes',
@@ -160,8 +160,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 4,
+      'Do more with less effort using the editor helpers: zen mode, light and dark mode, and cleanup.',
+    articleCount: 3,
     kind: 'feature',
   },
   {
@@ -1207,39 +1207,6 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'shape-libraries',
-    title: 'Shape libraries',
-    description:
-      'The draw.io libraries you imported, kept as named shape libraries you rename and tidy on the Explorer page.',
-    keywords:
-      'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
-    slug: 'drawio-import',
-    title: 'Importing draw.io files',
-    description:
-      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own space with a tab per page.',
-    keywords:
-      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop document',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
-    slug: 'microsoft-whiteboard-import',
-    title: 'Importing Microsoft Whiteboard boards',
-    description:
-      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated canvas: ink with pressure, colours, notes, text, shapes and images.',
-    keywords:
-      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue document',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
@@ -1360,7 +1327,7 @@ export const articles: Article[] = [
     keywords: 'uploads pictures photos assets manage delete media guest upload used unused',
     category: 'Explorer',
     categorySlug: 'explorer',
-    group: 'Assets and Imports',
+    group: 'Assets',
   },
   {
     slug: 'profile',
@@ -1405,14 +1372,6 @@ export const articles: Article[] = [
     description: 'Set livehuddle to light, dark, or your device setting, everywhere at once.',
     keywords:
       'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
-    slug: 'markdown-import',
-    title: 'Markdown Import',
-    description: 'Turn a Markdown outline into a themed tree diagram.',
-    keywords: 'outline text to diagram tree convert bullet list paste',
     category: 'Tools',
     categorySlug: 'tools',
   },

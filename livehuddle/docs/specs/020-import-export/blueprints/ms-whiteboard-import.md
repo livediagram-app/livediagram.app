@@ -1,5 +1,7 @@
 # Microsoft Whiteboard import: blueprint
 
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/020-import-export/blueprints/ms-whiteboard-import.md) is the one to read and change. livehuddle's parser, dialogs and their tests are deleted, so the files this page names live on in livediagram only. The rest of this page records what livehuddle had.
+
 Derived from [Microsoft Whiteboard import](../whiteboard-import.md). The parser turns board exports
 into [Board scenes](../board-scene.md); the landing, the new-tab commit path and the image pipeline
 are the board scene's and the [Import image pipeline](import-image-pipeline.md)'s and are not
@@ -7,37 +9,37 @@ restated. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md).
 
 Scope, by file (all under `apps/editor/lib/ms-whiteboard/` unless a path says otherwise):
 
-| File                                                                | Role                                                                                                                                                      |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `format.ts`                                                         | The ids (`MSWB_COMMAND`, `MSWB_COMMAND_TRAIT`, `MSWB_TYPE`, `MSWB_TRAIT`) and enum tables                                                                 |
-| `values.ts`                                                         | Payload readers: number, ARGB colour, pen colour, text, varint, doubles                                                                                   |
-| `tree.ts`                                                           | `WbNode`, building nodes from JSON, the id index, single-value reads                                                                                      |
-| `replay.ts`                                                         | Change ordering, undo and redo, applying edits: `replayBoard`                                                                                             |
-| `pen-stroke.ts`                                                     | `decodePenStroke`: the packed stroke payload to points                                                                                                    |
-| `elements.ts`                                                       | `readBoard`: the replayed tree to typed `WbElement`s                                                                                                      |
-| `colours.ts`                                                        | Appearance, colour normalisation to light-reference                                                                                                       |
-| `to-scene.ts`                                                       | `boardToScene`: `WbBoard` to `BoardScene`                                                                                                                 |
-| `ink-scene.ts`                                                      | Ink groups, strokes, presets and arrowheads to scene `ink` items                                                                                          |
-| `simplify.ts`                                                       | `simplifyStroke`: Ramer-Douglas-Peucker over x, y and pressure × width                                                                                    |
-| `board-export.ts`                                                   | Finding boards in a file set; reading one board's files                                                                                                   |
-| `import.ts`                                                         | `listBoards`, `boardSceneOf`: the import's two steps                                                                                                      |
-| `board-identity.ts`                                                 | `boardTitle`, `boardDates`: the board record's title and dates, cleaned (the document name is `boardDocumentName` in `lib/board-scene/board-document.ts`) |
-| `ms-whiteboard-fixtures.ts`                                         | Test-only encoder: readable board descriptions to export files                                                                                            |
-| `apps/editor/lib/zip-reader.ts`                                     | Generic Zip reading (stored and deflated entries, byte budget)                                                                                            |
-| `apps/editor/lib/zip-writer-fixture.ts`                             | Test-only Zip writer (Node)                                                                                                                               |
-| `apps/editor/lib/pick-folder.ts`                                    | A folder pick or drop to a file set                                                                                                                       |
-| `apps/editor/components/dialogs/MsWhiteboardImportPanel.tsx`        | The import panel: pick, list, progress, result                                                                                                            |
-| `apps/editor/hooks/persistence/useMsWhiteboardImport.ts`            | The panel's flow: read, list, build scenes, hand them to the host's commit (`importBoardsAsDocuments`)                                                    |
-| `apps/editor/components/dialogs/MsWhiteboardImportDialog.tsx`       | The "Import from Microsoft Whiteboard" dialog hosting the panel                                                                                           |
-| `apps/editor/hooks/persistence/useMsWhiteboardImportLauncher.tsx`   | `openMicrosoftWhiteboardImport` and the dialog element, for any host                                                                                      |
-| `apps/editor/app/import/import-sources.tsx`                         | `IMPORT_SOURCES`: the shipped sources (id, name, icon), one entry each                                                                                    |
-| `packages/explorer/src/library/import-source-icons.tsx` (repo root) | `MsWhiteboardSourceIcon`, the original glyph (art, on the raw-svg allowlist)                                                                              |
-| `apps/editor/app/import/useImportDialogs.tsx`                       | The host: launcher, `importBoardsAsDocuments` with the folder, list refresh                                                                               |
-| `../packages/explorer/src/library/ImportToolbar.tsx`                | The "Import from" toolbar                                                                                                                                 |
-| `../packages/explorer/src/explorer/ItemsPane.tsx`                   | Puts the toolbar in the header of a personal folder                                                                                                       |
-| `apps/editor/e2e/ms-whiteboard-board.ts`                            | The synthesised export the end-to-end spec imports                                                                                                        |
-| `apps/editor/scripts/ms-whiteboard-verify.mts`                      | Local verification over real exports (path argument; prints counts only)                                                                                  |
-| `file-sets.ts`                                                      | A `.zip` or a folder pick as an `ExportFileSet` (`MAX_IMPORT_BYTES`)                                                                                      |
+| File                                                                             | Role                                                                                                                                                      |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format.ts`                                                                      | The ids (`MSWB_COMMAND`, `MSWB_COMMAND_TRAIT`, `MSWB_TYPE`, `MSWB_TRAIT`) and enum tables                                                                 |
+| `values.ts`                                                                      | Payload readers: number, ARGB colour, pen colour, text, varint, doubles                                                                                   |
+| `tree.ts`                                                                        | `WbNode`, building nodes from JSON, the id index, single-value reads                                                                                      |
+| `replay.ts`                                                                      | Change ordering, undo and redo, applying edits: `replayBoard`                                                                                             |
+| `pen-stroke.ts`                                                                  | `decodePenStroke`: the packed stroke payload to points                                                                                                    |
+| `elements.ts`                                                                    | `readBoard`: the replayed tree to typed `WbElement`s                                                                                                      |
+| `colours.ts`                                                                     | Appearance, colour normalisation to light-reference                                                                                                       |
+| `to-scene.ts`                                                                    | `boardToScene`: `WbBoard` to `BoardScene`                                                                                                                 |
+| `ink-scene.ts`                                                                   | Ink groups, strokes, presets and arrowheads to scene `ink` items                                                                                          |
+| `simplify.ts`                                                                    | `simplifyStroke`: Ramer-Douglas-Peucker over x, y and pressure × width                                                                                    |
+| `board-export.ts`                                                                | Finding boards in a file set; reading one board's files                                                                                                   |
+| `import.ts`                                                                      | `listBoards`, `boardSceneOf`: the import's two steps                                                                                                      |
+| `board-identity.ts`                                                              | `boardTitle`, `boardDates`: the board record's title and dates, cleaned (the document name is `boardDocumentName` in `lib/board-scene/board-document.ts`) |
+| `ms-whiteboard-fixtures.ts`                                                      | Test-only encoder: readable board descriptions to export files                                                                                            |
+| `../livediagram/apps/editor/lib/zip-reader.ts`                                   | Generic Zip reading (stored and deflated entries, byte budget)                                                                                            |
+| `../livediagram/apps/editor/lib/zip-writer-fixture.ts`                           | Test-only Zip writer (Node)                                                                                                                               |
+| `../livediagram/apps/editor/lib/pick-folder.ts`                                  | A folder pick or drop to a file set                                                                                                                       |
+| `../livediagram/apps/editor/components/dialogs/MsWhiteboardImportPanel.tsx`      | The import panel: pick, list, progress, result                                                                                                            |
+| `../livediagram/apps/editor/hooks/persistence/useMsWhiteboardImport.ts`          | The panel's flow: read, list, build scenes, hand them to the host's commit (`importBoardsAsDocuments`)                                                    |
+| `../livediagram/apps/editor/components/dialogs/MsWhiteboardImportDialog.tsx`     | The "Import from Microsoft Whiteboard" dialog hosting the panel                                                                                           |
+| `../livediagram/apps/editor/hooks/persistence/useMsWhiteboardImportLauncher.tsx` | `openMicrosoftWhiteboardImport` and the dialog element, for any host                                                                                      |
+| `apps/editor/app/import/import-sources.tsx`                                      | `IMPORT_SOURCES`: the shipped sources (id, name, icon), one entry each                                                                                    |
+| `packages/explorer/src/library/import-source-icons.tsx` (repo root)              | `MsWhiteboardSourceIcon`, the original glyph (art, on the raw-svg allowlist)                                                                              |
+| `apps/editor/app/import/useImportDialogs.tsx`                                    | The host: launcher, `importBoardsAsDocuments` with the folder, list refresh                                                                               |
+| `../packages/explorer/src/library/ImportToolbar.tsx`                             | The "Import from" toolbar                                                                                                                                 |
+| `../packages/explorer/src/explorer/ItemsPane.tsx`                                | Puts the toolbar in the header of a personal folder                                                                                                       |
+| `../livediagram/apps/editor/e2e/ms-whiteboard-board.ts`                          | The synthesised export the end-to-end spec imports                                                                                                        |
+| `apps/editor/scripts/ms-whiteboard-verify.mts`                                   | Local verification over real exports (path argument; prints counts only)                                                                                  |
+| `file-sets.ts`                                                                   | A `.zip` or a folder pick as an `ExportFileSet` (`MAX_IMPORT_BYTES`)                                                                                      |
 
 ## Domain and naming
 
@@ -337,26 +339,26 @@ scene` (items per kind, notes), `[ms-whiteboard] import failed` (an unexpected t
 
 ## Testing
 
-| Rule                                                                                         | Test file                           |
-| -------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Number, colour, pen colour, varint, packed double                                            | `values.test.ts`                    |
-| Encoder round trip of every value and stroke                                                 | `ms-whiteboard-fixtures.test.ts`    |
-| Stroke layouts (current, older, extension bits)                                              | `pen-stroke.test.ts`                |
-| Replay: insert, delete, replace, move, group, order, undo, redo, missing nodes, latest value | `replay.test.ts`                    |
-| Each element kind read                                                                       | `elements.test.ts`                  |
-| Appearance, ink on dark, invisible strokes                                                   | `colours.test.ts`                   |
-| Scene mapping per kind (ink placement, presets, arrowheads, rotation), notes                 | `to-scene.test.ts`                  |
-| Stroke thinning: lines, corners, curves within tolerance, pressure swings, short strokes     | `simplify.test.ts`                  |
-| Zip and folder picks as file sets                                                            | `file-sets.test.ts`                 |
-| The import flow: single board, list, ticks, zip, errors, failures, telemetry                 | `useMsWhiteboardImport.test.ts`     |
-| The dialog (title, panel, close) and the launcher                                            | `MsWhiteboardImportDialog.test.tsx` |
-| The toolbar: label, one named button per source, tooltip, opening                            | `ImportFromToolbar.test.tsx`        |
-| End to end in the browser, synthesised export                                                | `e2e/ms-whiteboard-import.spec.ts`  |
-| Board finding, rejections                                                                    | `board-export.test.ts`              |
-| Zip reading                                                                                  | `zip-reader.test.ts`                |
-| Listing and importing                                                                        | `import.test.ts`                    |
-| Document name and dates (blank and null titles, invalid, future, reversed dates)             | `board-identity.test.ts`            |
-| Panel states                                                                                 | `MsWhiteboardImportPanel.test.tsx`  |
+| Rule                                                                                         | Test file                                                     |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Number, colour, pen colour, varint, packed double                                            | `values.test.ts`                                              |
+| Encoder round trip of every value and stroke                                                 | `ms-whiteboard-fixtures.test.ts`                              |
+| Stroke layouts (current, older, extension bits)                                              | `pen-stroke.test.ts`                                          |
+| Replay: insert, delete, replace, move, group, order, undo, redo, missing nodes, latest value | `replay.test.ts`                                              |
+| Each element kind read                                                                       | `elements.test.ts`                                            |
+| Appearance, ink on dark, invisible strokes                                                   | `colours.test.ts`                                             |
+| Scene mapping per kind (ink placement, presets, arrowheads, rotation), notes                 | `to-scene.test.ts`                                            |
+| Stroke thinning: lines, corners, curves within tolerance, pressure swings, short strokes     | `simplify.test.ts`                                            |
+| Zip and folder picks as file sets                                                            | `file-sets.test.ts`                                           |
+| The import flow: single board, list, ticks, zip, errors, failures, telemetry                 | `useMsWhiteboardImport.test.ts`                               |
+| The dialog (title, panel, close) and the launcher                                            | `MsWhiteboardImportDialog.test.tsx`                           |
+| The toolbar: label, one named button per source, tooltip, opening                            | `ImportFromToolbar.test.tsx`                                  |
+| End to end in the browser, synthesised export                                                | `../livediagram/apps/editor/e2e/ms-whiteboard-import.spec.ts` |
+| Board finding, rejections                                                                    | `board-export.test.ts`                                        |
+| Zip reading                                                                                  | `zip-reader.test.ts`                                          |
+| Listing and importing                                                                        | `import.test.ts`                                              |
+| Document name and dates (blank and null titles, invalid, future, reversed dates)             | `board-identity.test.ts`                                      |
+| Panel states                                                                                 | `MsWhiteboardImportPanel.test.tsx`                            |
 
 ## Assets and external resources
 

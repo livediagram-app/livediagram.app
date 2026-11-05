@@ -15,14 +15,13 @@ flipped from its row in Settings, and it follows the account across devices.
 
 Switching the mode **on** writes these values, once:
 
-| Setting            | Preference key     | Value |
-| ------------------ | ------------------ | ----- |
-| Alignment guides   | `alignmentGuides`  | on    |
-| Auto-attach arrows | `autoRebindArrows` | on    |
-| Workshop tour      | `workshopTourSeen` | seen  |
-| Avatar tour        | `avatarTourSeen`   | seen  |
-| Element tours      | `elementToursSeen` | seen  |
-| Minimal chrome     | `minimalChrome`    | on    |
+| Setting          | Preference key     | Value |
+| ---------------- | ------------------ | ----- |
+| Alignment guides | `alignmentGuides`  | on    |
+| Workshop tour    | `workshopTourSeen` | seen  |
+| Avatar tour      | `avatarTourSeen`   | seen  |
+| Element tours    | `elementToursSeen` | seen  |
+| Minimal chrome   | `minimalChrome`    | on    |
 
 The [element tours](element-tours.md) record each toured kind once taken (`elementTourKinds`); their seen
 flag counts every track only while the mode is on, so switching it off gives back every track not yet taken. Marking
@@ -59,7 +58,7 @@ directly, indented beneath it as one group named "Power User Mode settings":
 
 1. The power-user-only settings: **Minimal Chrome**.
 2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Alignment
-   Guides, Auto-Attach Arrows, the Workshop and Avatar tours), each with its current value
+   Guides, the Workshop and Avatar tours; Auto-Attach Arrows left with its setting in Work Tracker #423 part 4), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
    switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise

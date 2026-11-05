@@ -86,7 +86,6 @@ already the stored name without waiting on a round trip:
 
 - `useSelectionEditing`: the auto-name path.
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
-- The ms-whiteboard importer's board name (`lib/ms-whiteboard/board-identity.ts`).
 - `EditorView`'s header rename.
 
 A rename from the Explorer is the shared Explorer's ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)); the

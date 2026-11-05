@@ -329,12 +329,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 12h4l2 5 4-12 2 7h6" />
     </Glyph>
   ),
-  'markdown-import': (
-    <Glyph>
-      <rect x="3" y="6" width="18" height="12" rx="2" />
-      <path d="M6 14V10l2 2 2-2v4M14 10v4M14 14l2-2M14 14l-2-2" />
-    </Glyph>
-  ),
   history: (
     <Glyph>
       <path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8" />
@@ -1017,28 +1011,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A stack of cards with a shape on the top one: a set of shapes that is yours.
-  'shape-libraries': (
-    <Glyph>
-      <path d="M6 5h12a1.5 1.5 0 0 1 1.5 1.5V17" />
-      <rect x="3.5" y="8" width="13" height="12" rx="1.5" />
-      <circle cx="10" cy="14" r="3" />
-    </Glyph>
-  ),
   // A diagram's box and decision, joined by a bent connector, arriving as a document.
-  'drawio-import': (
-    <Glyph>
-      <rect x="3" y="4" width="8" height="5" rx="1" />
-      <path d="M7 9v6h4" />
-      <path d="M16.5 11.5l3.5 3.5-3.5 3.5-3.5-3.5z" />
-    </Glyph>
-  ),
   // A board's ink arriving in a tab.
-  'microsoft-whiteboard-import': (
-    <Glyph>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M6.5 14c1.5-3 3-3 4 0s2.5 3 4 0 2.5-2 3 0" />
-    </Glyph>
-  ),
   'export-tabs': (
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />

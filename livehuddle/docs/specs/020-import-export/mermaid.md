@@ -1,5 +1,12 @@
 # Mermaid import & export
 
+> **Mermaid import is gone from livehuddle's editor** (Work Tracker #423, part 4): not part of livehuddle's meeting
+> product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Import to Tab has no Mermaid card, and the
+> editor's import code for it is deleted; livediagram keeps it ([its spec there](../../../../livediagram/docs/specs/020-import-export/mermaid.md)).
+> What stays in livehuddle: the **export** (Export Tab's Mermaid card), and the parser in `packages/document`, which
+> the API's and MCP's `mermaid` input still read. What a Mermaid import already drew stays and draws as before. Where
+> this page describes the editor's import (the Import dialog, its telemetry), it records what livehuddle had.
+
 Import and export [Mermaid](https://mermaid.js.org/) **flowchart** text: the
 lingua franca of diagram-as-code, sitting in countless READMEs, issues, and AI
 outputs. Unlike the Markdown outline import ([Markdown import](markdown-import.md)), Mermaid carries the full
@@ -218,13 +225,13 @@ took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119`
 
 Mermaid introduced a **two-step** panel (pasting/copying text is as common as a
 file for a text format), and that panel is now the shared pattern for **every
-text format** in both dialogs (JSON, Mermaid, Markdown), not just Mermaid:
+text format** in both dialogs, not just Mermaid:
 
-- **Import → JSON / Mermaid / Markdown** → a panel with a textarea to
+- **Import → JSON / Excalidraw** (JSON, Mermaid and Markdown before Work Tracker #423 part 4) → a panel with a textarea to
   **paste or write** the content (Import button) **and** an **Import a file
   instead** button (the format's file picker). Either path runs the format's
   parser and replaces the active tab (same single-undo-step replace as every
-  import, [Markdown import](markdown-import.md)). Shared component: `TextImportPanel`, driven by
+  import). Shared component: `TextImportPanel`, driven by
   `importTextIntoActiveTab(format, text)` which both the paste and file routes
   call, so they can't diverge.
 - **Export → JSON / Mermaid / Markdown** → a panel with a textarea pre-filled

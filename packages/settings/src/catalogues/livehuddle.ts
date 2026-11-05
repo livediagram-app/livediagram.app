@@ -163,24 +163,6 @@ export const CATALOGUE: AppCatalogue = {
           },
         },
         {
-          kind: 'toggle',
-          id: 'autoRebindArrows',
-          label: 'Auto-Attach Arrows',
-          description:
-            'After a move, an arrow that cuts through its shape reattaches to the side facing its other end.',
-          keywords: 'connector reattach sticky arrows connections',
-          section: 'Canvas',
-          key: 'autoRebindArrows',
-          on: true,
-          off: false,
-          fallback: true,
-          event: {
-            category: 'UI',
-            on: 'AutoRebindOn',
-            off: 'AutoRebindOff',
-          },
-        },
-        {
           kind: 'choice',
           id: 'elementIndicatorStyle',
           label: 'Element Indicators',

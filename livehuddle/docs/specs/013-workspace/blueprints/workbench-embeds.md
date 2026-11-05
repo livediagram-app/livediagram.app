@@ -197,7 +197,7 @@ any one segment but `usage`, `invites`, `invite-link`, `invite-decline`):
 | GET              | `documents/:doc/tabs/:p/render.svg`                                                         |
 | POST             | `documents/:doc/tabs/:p/comments`, `.../comments/:p/reply`, `.../resolve`, `.../reopen`     |
 | DELETE           | `documents/:doc/tabs/:p/comments/:p`                                                        |
-| POST             | `documents/:doc/tabs/:p/qa`, `documents/:doc/room-ticket`                                   |
+| POST             | `documents/:doc/room-ticket` (the Q&A board's `tabs/:p/qa` left with part 4 of #423)        |
 | DELETE           | `workbench/sessions/current`                                                                |
 
 Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `shared-tabs`, `share*`, `community`,

@@ -289,9 +289,9 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     share: shareOf(itemTabsPath('designs'), 'livedesign tab', itemCommunityPath('designs')),
   },
   // Forked from livediagram, so its addresses are livediagram's; a person reads "Space"
-  // (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D6). No imports in the Explorer's Import from in v1;
-  // its shape libraries (livehuddle/docs/specs/013-workspace/shape-libraries.md) are managed in the Explorer, as
-  // livediagram's are.
+  // (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D6). No imports in the Explorer's Import from in v1,
+  // and no Shape Libraries: they left livehuddle (livehuddle/docs/specs/013-workspace/shape-libraries.md, Work Tracker
+  // #423 part 4).
   livehuddle: {
     site: 'livehuddle.app',
     noun: 'Space',
@@ -303,7 +303,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     offlineConversions: true,
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
-    shapeLibrariesPath: '/api/shape-libraries',
+    shapeLibrariesPath: null,
     imports: [],
     importPath: null,
     share: shareOf(itemTabsPath('documents'), 'livehuddle tab', itemCommunityPath('documents')),
