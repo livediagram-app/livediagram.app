@@ -106,9 +106,10 @@ type Style = {
 
 const BUSY_CARDS = 2000;
 // Measured locally: a pick that redraws no card 15-60 ms (it was 1,100-2,300 ms, redrawing every card), a theme
-// 730-930 ms (every card once, as it must).
+// 730-930 ms (every card once, as it must). CI's coverage run measured a theme at 6,906 ms of CPU, past the old 2,000
+// (scaled to 6,000 there); 3,000 still fails a theme that redraws the board several times over.
 const NO_CARD_BUDGET_MS = 250;
-const THEME_BUDGET_MS = 2000;
+const THEME_BUDGET_MS = 3000;
 
 describe('A Tab Style pick on a busy board', () => {
   it(`redraws only the cards it changes, inside its budget (${BUSY_CARDS} cards)`, () => {

@@ -88,6 +88,10 @@ export function useLogoPaletteSwitch(
   // A new logo page: one not here before (the first render with pages only records what is there,
   // and looks at the page in view).
   const known = useRef<Set<string> | null>(null);
+  // The opening's second look, cancelled if the canvas goes first: firing after it had gone read a page that was no
+  // longer there (and a torn-down test's missing document).
+  const retry = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(retry.current), []);
   useEffect(() => {
     const before = known.current;
     known.current = pages.length ? new Set(pages.map((p) => p.id)) : null;
@@ -100,7 +104,7 @@ export function useLogoPaletteSwitch(
       // opening) and its category again (the palette may mount after the pages).
       // Only while nothing has moved them on meanwhile (a page added, a press, a page gone to).
       const openedId = opened?.id ?? null;
-      window.setTimeout(() => {
+      retry.current = window.setTimeout(() => {
         if (last.current !== openedId) return;
         const again = pageInView(latest.current);
         if (again && again.id !== openedId) onPage(again);
