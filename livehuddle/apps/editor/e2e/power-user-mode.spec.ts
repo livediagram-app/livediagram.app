@@ -105,7 +105,7 @@ test.describe('Power user mode', () => {
     );
     await expect(
       children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
-    ).toHaveCount(4);
+    ).toHaveCount(3);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
@@ -201,6 +201,8 @@ test.describe('Power user mode', () => {
     // Change one preset setting while the mode is on, reached from the readout.
     await dialog(page).getByRole('button', { name: 'Change Avatar Tour in Tours' }).click();
     await dialog(page).getByRole('switch', { name: 'Avatar Tour' }).click();
+    // The readout sits with the mode's row in Editor (power-user-mode.md "In Settings"); Change went to Tours.
+    await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
     const readout = dialog(page).getByRole('list', { name: 'Set By Power User Mode' });
     await expect(readout.getByRole('listitem').first()).toContainText(
       'Restored when you switch off',
