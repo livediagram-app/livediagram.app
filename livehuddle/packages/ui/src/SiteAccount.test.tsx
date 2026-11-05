@@ -7,7 +7,7 @@ import { SiteHeader } from './SiteHeader';
 // account menu, read from the api's readable cookies; a visitor's ends with the same control as Guest, and asks
 // nothing.
 const clear = () => {
-  for (const name of ['ld_signed_in', 'ld_account']) {
+  for (const name of ['lh_signed_in', 'lh_account']) {
     document.cookie = `${name}=; max-age=0; path=/`;
   }
 };
@@ -37,8 +37,8 @@ describe('the site header account menu', () => {
   it("shows the signed-in person's menu from the cookies, with no request", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    document.cookie = 'ld_signed_in=1; path=/';
-    document.cookie = 'ld_account=Ada%20Lovelace; path=/';
+    document.cookie = 'lh_signed_in=1; path=/';
+    document.cookie = 'lh_account=Ada%20Lovelace; path=/';
     render(<SiteHeader ctaSurface="Home" account />);
     expect(
       await screen.findByRole(
@@ -51,15 +51,15 @@ describe('the site header account menu', () => {
   });
 
   it('is left out where the surface does not ask for it (help, the dashboard)', () => {
-    document.cookie = 'ld_signed_in=1; path=/';
-    document.cookie = 'ld_account=Ada; path=/';
+    document.cookie = 'lh_signed_in=1; path=/';
+    document.cookie = 'lh_account=Ada; path=/';
     const { container } = render(<SiteHeader ctaSurface="Home" />);
     expect(container.querySelector('[aria-label$="account menu"]')).toBeNull();
   });
 
   it('keeps the marketing bar for someone signed in: the three links, then the menu at the far right', async () => {
-    document.cookie = 'ld_signed_in=1; path=/';
-    document.cookie = 'ld_account=Ada; path=/';
+    document.cookie = 'lh_signed_in=1; path=/';
+    document.cookie = 'lh_account=Ada; path=/';
     const { container } = render(<SiteHeader ctaSurface="Home" buildWithAi="link" account />);
     const menu = await screen.findByRole(
       'button',

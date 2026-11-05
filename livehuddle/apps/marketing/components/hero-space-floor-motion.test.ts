@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { createShape } from '@livehuddle/document';
 import {
+  FLOOR_CLIP_Y,
   FLOOR_FURNITURE_SCALE,
+  FLOOR_MOTION,
+  FLOOR_ONLY,
   FLOOR_STAGES,
   LOOP_S,
   SETTLED_AT,
@@ -30,7 +34,7 @@ const overlaps = (a: Rect, b: Rect) =>
 const inside = (a: Rect, b: Rect) =>
   a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
 
-const every = FLOOR_STAGES.flatMap((stage) =>
+const every = FLOOR_MOTION.flatMap((stage) =>
   stage.cast.map((walker) => [stage.key, walker.name, stage, walker] as const),
 );
 
@@ -113,6 +117,63 @@ describe('the hero floor keeps the copy clear', () => {
   );
 });
 
+// Between sm and lg the wide stage shows its floor alone, clipped above FLOOR_CLIP_Y (Work Tracker #440): a walker
+// who crossed that line would vanish mid-walk, so each one shown there stays wholly on one side of it all loop, and a
+// walker whose own path crosses it walks its floor path instead (FLOOR_ONLY).
+describe('the hero floor between sm and lg', () => {
+  const wide = FLOOR_STAGES.find((s) => s.key === 'wide')!;
+  const shownBelowLg = wide.cast.map(
+    (walker) => FLOOR_ONLY.cast.find((twin) => twin.name === walker.name) ?? walker,
+  );
+  const STEP = 0.05;
+  const moments = Array.from({ length: Math.round(LOOP_S / STEP) + 1 }, (_, i) => i * STEP);
+  const side = (rect: Rect) =>
+    rect.y >= FLOOR_CLIP_Y ? 'floor' : rect.y + rect.height <= FLOOR_CLIP_Y ? 'clipped' : 'cut';
+
+  it.each(shownBelowLg.map((walker) => [walker.name, walker] as const))(
+    'keeps %s wholly on the floor or wholly clipped away at every moment of the loop',
+    (_, walker) => {
+      const sides = new Set(moments.map((t) => side(figureRect(walker, positionAt(walker, t)))));
+      expect([...sides]).not.toContain('cut');
+      expect(sides.size, `${walker.name} crosses the clip line`).toBe(1);
+      // A line said on the floor is said wholly on it, never cut by the clip.
+      const stage = FLOOR_ONLY.cast.includes(walker) ? FLOOR_ONLY : wide;
+      if (sides.has('floor'))
+        for (const { rect } of bubbleRects(stage, walker)) expect(side(rect)).toBe('floor');
+    },
+  );
+
+  it('gives a floor path to exactly the walkers whose own path crosses the line', () => {
+    const crossing = wide.cast.filter(
+      (walker) =>
+        new Set(moments.map((t) => side(figureRect(walker, positionAt(walker, t))))).size > 1,
+    );
+    expect(crossing.map((w) => w.name)).toEqual(FLOOR_ONLY.cast.map((w) => w.name));
+    expect(crossing.length).toBeGreaterThan(0);
+  });
+
+  it('talks in turn with the walkers it shares the floor with', () => {
+    const lines = shownBelowLg.flatMap((walker) =>
+      bubbleRects(FLOOR_ONLY.cast.includes(walker) ? FLOOR_ONLY : wide, walker),
+    );
+    for (const a of lines)
+      for (const b of lines) {
+        if (a === b) continue;
+        const near = Math.hypot(a.seg.to.x - b.seg.to.x, a.seg.to.y - b.seg.to.y) < 320;
+        const together = a.seg.start < b.seg.end && b.seg.start < a.seg.end;
+        if (near) expect(together, `${a.seg.say} / ${b.seg.say}`).toBe(false);
+      }
+  });
+
+  it('clips the stage on the same line the paths keep to', () => {
+    const css = readFileSync(
+      new URL('../app/hero-scenes/space-floor.css', import.meta.url),
+      'utf8',
+    );
+    expect(css).toContain(`clip-path: inset(${FLOOR_CLIP_Y}px 0 0 0);`);
+  });
+});
+
 describe('the hero floor’s loop', () => {
   it.each(every)('closes %s %s’s loop in straight legs inside %ss', (_, __, ___, walker) => {
     expect(beatsLength(walker)).toBeLessThanOrEqual(LOOP_S);
@@ -125,7 +186,7 @@ describe('the hero floor’s loop', () => {
     expect(positionAt(walker, LOOP_S)).toEqual(walker.from);
   });
 
-  it.each(FLOOR_STAGES.map((s) => [s.key, s] as const))(
+  it.each(FLOOR_MOTION.map((s) => [s.key, s] as const))(
     'talks in turn in each of the %s stage’s groups',
     (_, stage) => {
       const lines = stage.cast.flatMap((walker) =>
@@ -145,7 +206,7 @@ describe('the hero floor’s loop', () => {
   );
 
   it('says short, warm lines about meeting, never about workshops', () => {
-    const lines = FLOOR_STAGES.flatMap((s) =>
+    const lines = FLOOR_MOTION.flatMap((s) =>
       s.cast.flatMap((w) => timelineOf(w).flatMap((seg) => seg.say ?? [])),
     );
     expect(lines.length).toBeGreaterThan(8);
@@ -155,7 +216,7 @@ describe('the hero floor’s loop', () => {
     }
   });
 
-  it.each(FLOOR_STAGES.map((s) => [s.key, s] as const))(
+  it.each(FLOOR_MOTION.map((s) => [s.key, s] as const))(
     'holds a settled %s frame for reduced motion: everyone stopped, every group talking',
     (_, stage) => {
       const talking = new Set<string>();
@@ -164,7 +225,8 @@ describe('the hero floor’s loop', () => {
         expect(seg.walking, walker.name).toBe(false);
         if (seg.say) talking.add(walker.name);
       }
-      expect(talking.size).toBeGreaterThanOrEqual(stage.key === 'wide' ? 3 : 1);
+      // The floor paths are one walker at a desk at that moment, in no group.
+      expect(talking.size).toBeGreaterThanOrEqual({ wide: 3, phone: 1, floor: 0 }[stage.key]);
     },
   );
 });
@@ -194,7 +256,7 @@ describe('the hero floor’s stills', () => {
 });
 
 describe('the hero floor’s keyframes', () => {
-  const css = floorCss(FLOOR_STAGES);
+  const css = floorCss(FLOOR_MOTION);
 
   it('moves only transform and opacity', () => {
     const inKeyframes = [...css.matchAll(/@keyframes [^{]+\{([\s\S]*?)\n\}/g)].map((m) => m[1]!);
@@ -207,7 +269,7 @@ describe('the hero floor’s keyframes', () => {
 
   it('holds still under reduced motion', () => {
     const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
-    for (const stage of FLOOR_STAGES) {
+    for (const stage of FLOOR_MOTION) {
       for (const walker of stage.cast)
         expect(reduced).toContain(`.hsf-${stage.key}-${walker.name.toLowerCase()} {`);
     }
