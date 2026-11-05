@@ -1,7 +1,5 @@
 // Behaviour faces in the headless render (docs/specs/009-elements/mode-button.md to /137): the buttons,
-// the reveal cover, the picker, the reaction pad, the comment and action
-// panels, the portal, the chair. The Collaborate panels have their own module
-// (svg-render-collab-faces.ts); both draw with svg-render-face-kit.ts.
+// the reaction pad, the portal, the seating and the office pieces. They draw with svg-render-face-kit.ts.
 //
 // These kinds all once exported as the SAME thing: a rounded box with the
 // kind's name centred in it. What they draw here is each face's structure and
@@ -43,26 +41,9 @@ import { chairSeatFill } from './shape-geometry';
 import type { ResolveEmojiArt } from './svg-render-describe';
 import { REACTION_EMOJI, REACTION_HUES, reactionOf } from './data-shapes';
 import { r2, xmlEscape } from './svg-render-primitives';
-import { formatTimerClock } from './session';
-import {
-  DEFAULT_BUTTON_MODE,
-  SELECTION_MODE_LABEL,
-  sessionButtonPlan,
-  type SessionButtonConfig,
-} from './selection-mode';
-import { sessionButtonText } from './session-button-text';
+import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';
 import { borderOf } from './svg-render-border';
-import { REVEAL_COVER_BASE, type CanvasSurface } from './colors';
-import {
-  collabAccent,
-  fitLine,
-  glow,
-  pill,
-  text,
-  wrapLines,
-  type Face,
-} from './svg-render-face-kit';
-import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
+import { text, type Face } from './svg-render-face-kit';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@liveworkspace/icons';
 import { MODE_GLYPHS } from './mode-glyphs';
 
@@ -91,12 +72,7 @@ function modeGlyph(mode: string, cx: number, cy: number, color: string): string 
  *  to print the generic centred label over the top of one. */
 export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'mode-button',
-  'session-button',
-  'reveal',
-  'picker',
   'reaction-pad',
-  'comment-pin',
-  'action-card',
   'portal',
   'chair',
   'desk',
@@ -123,10 +99,7 @@ export function svgBehaviourFace(
   label: string,
   color: string,
   stroke: string,
-  // The paper under the element, for the faces whose base follows it (the
-  // Reveal cover), exactly as the canvas face reads it.
-  surface: CanvasSurface = 'light',
-  // The card's resolved fill, for the Comment and Action panels' accent ink.
+  // The element's resolved fill, for the floor pieces (a rug, a room, a stage) drawn in it.
   fill?: string,
   // An emoji's art, for the reaction pad's glyph where no emoji font is.
   resolveEmojiArt?: ResolveEmojiArt,
@@ -183,23 +156,6 @@ export function svgBehaviourFace(
           : text(cx, cy + 27, title, { size: 12, weight: 600, color, anchor: 'middle' }))
       );
     }
-    case 'session-button': {
-      // The tool as the canvas reads it, through its plan: a missing or unknown tool is the timer, and a poll not
-      // set up yet is still a poll.
-      const tool =
-        sessionButtonPlan(el.session)?.tool ?? (el.session?.tool === 'poll' ? 'poll' : 'timer');
-      // A timer reads as the canvas's idle dial (SessionTimerFace): ticks
-      // along the top edge, the kicker and the configured length. The Start
-      // control is editor chrome and stays out of the image.
-      if (tool === 'timer') return timerFace(el, cx, cy, color);
-      // The other tools: the tool's glyph (SessionButtonFace's), over its label or, with none, what pressing it does
-      // ("Start vote" over "3 dots each").
-      return sessionToolGlyph(tool, cx, cy - 12, color) + sessionWords(el, title, cx, cy, color);
-    }
-    case 'reveal':
-      return el.revealed === true ? '' : revealCover(el, cx, cy, title, color, stroke, surface);
-    case 'picker':
-      return picker(el, cx, cy, title, color, surface);
     case 'reaction-pad':
       return reactionPad(el, cx, cy, title, color, resolveEmojiArt);
     case 'chair':
@@ -228,12 +184,6 @@ export function svgBehaviourFace(
       return fenceArt(el, stroke);
     case 'avatar-pad':
       return avatarPadArt(el);
-    case 'comment-pin':
-      // docs/specs/012-collaboration/comment-pin.md "The look": the thread as bubbles, the composer.
-      return svgCommentPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
-    case 'action-card':
-      // docs/specs/012-collaboration/action-panel.md "The card": a row per action, the Add Action bar.
-      return svgActionPanel(el, title, color, collabAccent(stroke, fill ?? '#ffffff', color));
     case 'portal':
       return portalArt(el, stroke);
     default:
@@ -251,29 +201,6 @@ export function svgBehaviourFace(
 export function svgFace(body: string, fontFamily?: string): string {
   if (!body) return '';
   return `<g font-family="${xmlEscape(fontFamily ?? 'system-ui, sans-serif')}">${body}</g>`;
-}
-
-// SessionTimerFace idle: DialTicks (24 ticks, every sixth a taller quarter
-// mark) along the top edge, then "TIMER" and the clock side by side.
-const DIAL_TICKS = 24;
-function timerFace(el: Face, cx: number, cy: number, color: string): string {
-  const ticks = Array.from({ length: DIAL_TICKS }, (_, i) => {
-    const quarter = i % 6 === 0;
-    const x = el.x + 0.5 + (i / (DIAL_TICKS - 1)) * (el.width - 1);
-    return `<rect x="${r2(x - 0.5)}" y="${r2(el.y)}" width="1" height="${quarter ? 7 : 4}" fill="${xmlEscape(color)}" fill-opacity="${quarter ? 0.3 : 0.16}"/>`;
-  }).join('');
-  const clock = formatTimerClock((el.session?.minutes ?? 5) * 60_000);
-  // Kicker ~33px wide, 8px gap, clock at ~8px a digit: the pair centred.
-  const kickerW = 33;
-  const clockW = clock.length * 8;
-  const x0 = cx - (kickerW + 8 + clockW) / 2;
-  return (
-    // Clipped to the rounded box, as the face's overflow-hidden clips them.
-    `<clipPath id="dial-${xmlEscape(el.id)}"><rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(borderOf(el).radius)}"/></clipPath>` +
-    `<g clip-path="url(#dial-${xmlEscape(el.id)})">${ticks}</g>` +
-    text(x0, cy + 3.5, 'Timer', { size: 10, weight: 500, color, opacity: 0.7, uppercase: true }) +
-    text(x0 + kickerW + 8, cy + 5, clock, { size: 14, weight: 600, color })
-  );
 }
 
 // PortalFace's art on its own 24x36 grid, kept in proportion as the canvas
@@ -384,151 +311,6 @@ function roundedPath(x: number, y: number, w: number, h: number, r: number): str
     ` V ${r2(y + h - q)} A ${r2(q)} ${r2(q)} 0 0 1 ${r2(x + w - q)} ${r2(y + h)}` +
     ` H ${r2(x + q)} A ${r2(q)} ${r2(q)} 0 0 1 ${r2(x)} ${r2(y + h - q)}` +
     ` V ${r2(y + q)} A ${r2(q)} ${r2(q)} 0 0 1 ${r2(x + q)} ${r2(y)} Z`
-  );
-}
-
-// RevealFace's cover (docs/specs/009-elements/reveal-zone.md "The look"): an opaque panel in the paper's
-// tone with the self-painting wrapper's 4px corners, washed by two soft glows
-// of its accent from opposite corners, a 1.5px accent border inside the box,
-// then the column of a 40px lock disc (with its 6px halo), the label and the
-// gesture chip, 8px apart. The sweep of light is motion and isn't reproduced.
-const REVEAL_RADIUS_PX = 4;
-function revealCover(
-  el: Face,
-  cx: number,
-  cy: number,
-  title: string,
-  color: string,
-  stroke: string,
-  surface: CanvasSurface,
-): string {
-  const { x, y, width: w, height: h } = el;
-  const a = xmlEscape(stroke);
-  // Disc 40, gap 8, label ~17.5, gap 8, chip 21: the column centred.
-  const top = cy - 47;
-  const discY = top + 20;
-  const gesture = 'Double-click to reveal';
-  const chipW = gesture.length * 5.2 + 20;
-  const chipY = top + 73.5;
-  return (
-    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="${REVEAL_RADIUS_PX}" fill="${REVEAL_COVER_BASE[surface]}"/>` +
-    glow(`reveal-a-${el.id}`, x, y, w, h, stroke, { cx: 0, cy: 0 }, 0.22, REVEAL_RADIUS_PX) +
-    glow(`reveal-b-${el.id}`, x, y, w, h, stroke, { cx: 1, cy: 1 }, 0.16, REVEAL_RADIUS_PX) +
-    `<rect x="${r2(x + 0.75)}" y="${r2(y + 0.75)}" width="${r2(w - 1.5)}" height="${r2(h - 1.5)}" rx="${REVEAL_RADIUS_PX - 0.75}" fill="none" stroke="${a}" stroke-opacity="0.55" stroke-width="1.5"/>` +
-    `<circle cx="${r2(cx)}" cy="${r2(discY)}" r="26" fill="${a}" fill-opacity="0.07"/>` +
-    `<circle cx="${r2(cx)}" cy="${r2(discY)}" r="20" fill="${REVEAL_COVER_BASE[surface]}"/>` +
-    `<circle cx="${r2(cx)}" cy="${r2(discY)}" r="20" fill="${a}" fill-opacity="0.14"/>` +
-    // qa-parts' LockGlyph, 18px on its 16-unit grid.
-    `<svg x="${r2(cx - 9)}" y="${r2(discY - 9)}" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="${a}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">` +
-    `<rect x="3.5" y="7" width="9" height="6.5" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>` +
-    text(cx, top + 59.5, title || 'Hidden', { size: 14, weight: 600, color, anchor: 'middle' }) +
-    `<rect x="${r2(cx - chipW / 2)}" y="${r2(chipY)}" width="${r2(chipW)}" height="21" rx="10.5" fill="${xmlEscape(color)}" fill-opacity="0.07"/>` +
-    text(cx, chipY + 14.5, gesture, { size: 10.5, weight: 600, color, anchor: 'middle' })
-  );
-}
-
-// PickerFace at rest: the reel window (a shade at the top and bottom lips,
-// clear through the middle, paper-kit's ReelWindow) behind a column of the
-// tracked kicker, the landed name at 17px, and the Pick / Again button.
-function picker(
-  el: Face,
-  cx: number,
-  cy: number,
-  title: string,
-  color: string,
-  surface: CanvasSurface,
-): string {
-  const b = borderOf(el);
-  const id = xmlEscape(el.id);
-  const c = xmlEscape(color);
-  const result = el.pickerResult;
-  const action = result ? 'Again' : 'Pick';
-  const buttonW = action.length * 6.4 + 24;
-  // Kicker 15, gap 4, name 21, gap 4 + 2, button 24.5: the column centred,
-  // one line shorter without a kicker.
-  const top = cy - (title ? 35 : 25);
-  const nameY = top + (title ? 19 : 0);
-  return (
-    `<defs><linearGradient id="reel-${id}" x1="0" y1="0" x2="0" y2="1">` +
-    `<stop offset="0" stop-color="${c}" stop-opacity="0.16"/><stop offset="0.26" stop-color="${c}" stop-opacity="0"/>` +
-    `<stop offset="0.74" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}" stop-opacity="0.16"/>` +
-    `</linearGradient></defs>` +
-    `<rect x="${r2(el.x + b.width)}" y="${r2(el.y + b.width)}" width="${r2(el.width - b.width * 2)}" height="${r2(el.height - b.width * 2)}" rx="${r2(Math.max(0, b.radius - b.width))}" fill="url(#reel-${id})"/>` +
-    (title
-      ? text(cx, top + 11, title, {
-          size: 10,
-          weight: 500,
-          color,
-          anchor: 'middle',
-          opacity: 0.6,
-          uppercase: true,
-          tracking: 0.08,
-        })
-      : '') +
-    text(cx, nameY + 16, result ?? '—', { size: 17, weight: 600, color, anchor: 'middle' }) +
-    pill(cx - buttonW / 2, nameY + 27, buttonW, 24.5, color, surface === 'dark' ? 0.1 : 0.06) +
-    text(cx, nameY + 43, action, { size: 11, weight: 600, color, anchor: 'middle' })
-  );
-}
-
-// A Session tool's glyph, 20 px, centred at (x, y): a stopwatch, three vote dots, or a poll's bars.
-function sessionToolGlyph(tool: string | undefined, x: number, y: number, color: string): string {
-  const ink = xmlEscape(color);
-  if (tool === 'vote')
-    return [-7, 0, 7]
-      .map((dx) => `<circle cx="${r2(x + dx)}" cy="${r2(y)}" r="3" fill="${ink}"/>`)
-      .join('');
-  if (tool === 'poll')
-    return [
-      [-6, 4],
-      [0, -2],
-      [6, 1],
-    ]
-      .map(
-        ([dx, top]) =>
-          `<rect x="${r2(x + dx! - 2)}" y="${r2(y + top!)}" width="4" height="${r2(8 - top!)}" rx="1" fill="${ink}"/>`,
-      )
-      .join('');
-  return (
-    `<circle cx="${r2(x)}" cy="${r2(y)}" r="10" fill="none" stroke="${ink}" stroke-width="1.5"/>` +
-    `<path d="M ${r2(x)} ${r2(y - 6)} L ${r2(x)} ${r2(y)} L ${r2(x + 5)} ${r2(y + 3)}" fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round"/>`
-  );
-}
-
-// A Session button's words: its own label, or what pressing it does, as the editor's face says it.
-function sessionWords(
-  el: { session?: SessionButtonConfig; width: number },
-  title: string,
-  cx: number,
-  cy: number,
-  color: string,
-): string {
-  // Within the button, as the canvas's face clamps them: the kicker on one line, the action on at most two (a poll's
-  // question can run to a sentence).
-  const room = Math.max(24, el.width - 16);
-  if (title)
-    return text(cx, cy + 16, fitLine(title, room, 12), {
-      size: 12,
-      weight: 600,
-      color,
-      anchor: 'middle',
-    });
-  const { kicker, action } = sessionButtonText(sessionButtonPlan(el.session));
-  const lines = wrapLines(action, room, 12, 2);
-  return (
-    text(cx, cy + 12, fitLine(kicker, room, 9), {
-      size: 9,
-      weight: 500,
-      color,
-      anchor: 'middle',
-      opacity: 0.7,
-      uppercase: true,
-    }) +
-    lines
-      .map((line, i) =>
-        text(cx, cy + 27 + i * 14, line, { size: 12, weight: 600, color, anchor: 'middle' }),
-      )
-      .join('')
   );
 }
 

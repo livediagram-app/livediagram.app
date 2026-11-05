@@ -10,7 +10,7 @@
 
 import type { Element, Layer } from './index';
 import { resolveLayerId, tabLayers } from './layers';
-import { isCollabPanelShape } from './collab-shapes';
+import { SHAPE_KINDS } from './shape-kinds';
 
 // --- Timer -----------------------------------------------------------------
 
@@ -29,9 +29,8 @@ export type TabTimer = {
   // countdown, elapsed ms for a stopwatch. Undefined before the first run.
   frozenMs?: number;
   // The instant this run was started (`startTimer`), carried unchanged through
-  // pause, resume and extend, so something that started it (an Agenda
-  // segment, docs/specs/012-collaboration/agenda.md) can tell it is still the
-  // same run. Absent on a timer started before this existed.
+  // pause, resume and extend, so a reader can tell it is still the same run.
+  // Absent on a timer started before this existed.
   startedAt?: number;
 };
 
@@ -172,10 +171,8 @@ export function voteHidesTallies(vote: TabVote | null | undefined): boolean {
 // Which element kinds a dot-vote can land on (docs/specs/012-collaboration/session-tools.md): stickies, images,
 // and shapes — but NOT a `frame` (it's a section backdrop, not content),
 // and not text / freehand / table / arrow / annotation.
-// Interactive Behaviour elements (docs/specs/009-elements/mode-button.md, /104, /105, /106, /107): a mode
-// button, portal, session button, reveal, picker or reaction pad DOES
-// something when you
-// press it. Voting turns a press into a dot, so a votable behaviour element
+// Interactive Behaviour elements (docs/specs/009-elements/mode-button.md): a mode
+// button, portal or reaction pad DOES something when you press it. Voting turns a press into a dot, so a votable behaviour element
 // would have two conflicting meanings for the same tap — and the one the user
 // gets would depend on whether a vote happens to be running. They are
 // controls, not candidates.
@@ -184,14 +181,7 @@ const NON_VOTABLE_SHAPES = new Set([
   'frame',
   'mode-button',
   'portal',
-  'session-button',
-  'reveal',
-  'picker',
   'reaction-pad',
-  // A comment pin (docs/specs/012-collaboration/comment-pin.md) IS a remark; a dot on one means nothing.
-  'comment-pin',
-  // An action panel (docs/specs/012-collaboration/action-panel.md) is a task, not a candidate.
-  'action-card',
   // Readouts (docs/specs/012-collaboration/session-tools.md "Votable targets"): a stat row, a chart, a progress
   // bar or ring, a legend or key shows a number or a key to one; it is what a board says, not an idea to rank.
   'stat-row',
@@ -202,19 +192,18 @@ const NON_VOTABLE_SHAPES = new Set([
   'line-chart',
   'legend',
   'diagram-key',
-  // A checklist is a to-do list, a task like the action panel, not a candidate.
+  // A checklist is a to-do list, a task, not a candidate.
   'checklist',
 ]);
 
 export function isVotable(element: Element): boolean {
   if (element.type === 'sticky' || element.type === 'image') return true;
-  // The collaboration panels (estimate, quiz, idea box, ...) are controls for the same reason as the Behaviour
-  // elements above: their buttons let the press through to the element, so pressing an estimate mid-vote both
-  // answered and spent a dot.
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is a placeholder for
+  // something livehuddle no longer has, not an idea to rank.
   return (
     element.type === 'shape' &&
     !NON_VOTABLE_SHAPES.has(element.shape) &&
-    !isCollabPanelShape(element.shape)
+    SHAPE_KINDS.has(element.shape)
   );
 }
 

@@ -5,6 +5,7 @@
 export { validateEditOperation, validateEditOperations } from './parse-json';
 export { parseEditOperations } from './parse';
 export { formatOperation } from './format-operation';
+export { AGENT_SHAPE_KINDS } from './operations/add-kind';
 export {
   addableKinds,
   elementFormatText,

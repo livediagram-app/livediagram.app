@@ -19,6 +19,15 @@ describe('the element format', () => {
     expect(text).toContain('image, video, freehand, path: made in the editor');
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md: no agent schema names the Page or a retired kind.
+  it('never offers the Page or a retired kind', () => {
+    for (const kind of ['page', 'agenda', 'qa-board', 'session-button', 'quiz']) {
+      expect(addableKinds(), kind).not.toContain(kind);
+      expect(elementFormatText(kind), kind).toBeNull();
+    }
+    expect(elementKindsText()).not.toMatch(/\bpage\b/);
+  });
+
   it('keeps every kind within its budget', () => {
     for (const kind of [...addableKinds(), 'arrow'])
       expect(estimateTokens(elementFormatText(kind)!), kind).toBeLessThanOrEqual(

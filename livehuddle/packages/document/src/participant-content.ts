@@ -7,6 +7,7 @@
 // remove is refused with the op that puts the sender's screen back.
 
 import { isBehaviourShape } from './behaviour-shapes';
+import { isRetiredElement } from './retired-kinds';
 import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, Tab } from './index';
@@ -60,10 +61,11 @@ export type ParticipantOpResult =
 
 type Bag = Record<string, unknown>;
 
-// Whether a Participant may write on an element someone else added. A Behaviour's words (a poll's question, a
-// timer's or mode button's caption) are how the facilitator runs the session, so they stay an Editor's.
+// Whether a Participant may write on an element someone else added. A Behaviour's words (a mode button's or a
+// Bring Focus caption) are how the facilitator runs the session, so they stay an Editor's; a retired element
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") takes no typed label at all.
 export function participantWritesOn(el: Element): boolean {
-  return !(el.type === 'shape' && isBehaviourShape(el.shape));
+  return !(el.type === 'shape' && (isBehaviourShape(el.shape) || isRetiredElement(el)));
 }
 
 function isParticipantAddable(type: string): boolean {

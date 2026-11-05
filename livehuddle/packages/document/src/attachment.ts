@@ -46,6 +46,8 @@ const NOT_HOSTS = new Set([
   'badge',
   'step',
   'annotation',
+  // A stored Comment Panel (a retired element, docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements")
+  // never held a mark, and still doesn't.
   'comment-pin',
   'frame',
   'lane',

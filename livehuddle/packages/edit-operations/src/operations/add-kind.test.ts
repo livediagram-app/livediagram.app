@@ -71,6 +71,15 @@ describe('add <kind>', () => {
     expect(refused(run('add square below:nope')).code).toBe('target_not_found');
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md: no agent verb makes a Page; a stored one still draws.
+  it('makes a square for the Page, as for any kind it does not offer', () => {
+    const outcome = run('add page label=Notes');
+    expect(applied(outcome).warnings).toEqual([
+      { code: 'shape_coerced', ref: 'notes', message: 'notes kind "page" drawn as square' },
+    ]);
+    expect(added('add page label=Notes')).toMatchObject({ shape: 'square' });
+  });
+
   it("paints with the tab's theme", () => {
     const theme = getBuiltInTheme('forest');
     const el = added('add square label=Themed', { ...checkoutFlow(), theme: 'forest' });

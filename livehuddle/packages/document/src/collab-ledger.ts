@@ -8,8 +8,6 @@
 // so the result is exactly what a peer receiving those deltas would hold.
 //
 // What is kept is the minimum that reproduces the state, not a log:
-//   - answers: each participant's LATEST cast or withdraw, this round;
-//   - ideas: the cards posted this round, in order;
 //   - ticks: each checklist row's latest state, by index and text;
 //   - dots: the round's votes map (a round starts empty, so its deltas are
 //     the whole map).
@@ -18,25 +16,22 @@
 //     resolve, and each person's latest reaction per comment and emoji
 //     (docs/specs/012-collaboration/comment-reactions.md).
 //
-// Each answer, tick and the vote carry the room seq that last set them, and a
+// Each tick and the vote carry the room seq that last set them, and a
 // merge only applies what the SAVING client had not yet seen (seq past the
 // cursor it sent). Anything it had seen is already in its snapshot, or it
-// changed it since: a withdraw made while its socket was down never reached
-// the room, and re-applying the older cast would bring the answer back.
+// changed it since: an untick made while its socket was down never reached
+// the room, and re-applying the older tick would bring it back.
+//
+// A room may still hold entries from the retired answer and idea cards (`round`, `retired`, `responses`, `ideas`,
+// docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): nothing reads them, so a merge never writes
+// them onto the element, which keeps its stored fields exactly as they were.
 //
 // Pure, and a LEAF module: the DO stores these values, it doesn't interpret
 // them.
 
 import type { Tab } from './index';
 import type { Comment } from './comments';
-import {
-  applyElementDelta,
-  COLLAB_ROUND_MAX,
-  isComment,
-  type ElementDelta,
-} from './element-deltas';
-import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
-import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
+import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { applyVoteDelta, type TabVote } from './session';
 import {
@@ -45,15 +40,9 @@ import {
 } from '@liveworkspace/model-core/comment-reactions';
 
 export type ElementLedger = {
-  round?: string;
-  // Rounds this element has moved past, newest last (see `retire`). An op
-  // naming one is late and dropped. The round before the first one is '' here.
-  retired?: string[];
-  responses?: Record<string, { value: string | null; at: number; seq: number }>;
-  ideas?: string[];
   // Keyed `${index}\u0000${text}`, the row name a `check` delta carries.
   ticks?: Record<string, { done: boolean; seq: number }>;
-  // The thread's changes. Comments have no round: a clear doesn't touch them.
+  // The thread's changes.
   comments?: {
     // A comment on a Sheet cell (Plan, now in liveplanner) carried a `cell`: stored ledgers may still hold one,
     // and it is never replayed onto the element's own thread.
@@ -78,15 +67,17 @@ export type TabLedger = { vote?: VoteLedger; elements: Record<string, ElementLed
 // Bounds on what one ledger entry may hold, so a flood of hand-crafted ops
 // can't grow a room's storage without end. Past a bound, new keys are dropped
 // and the merge falls back to what the save carried.
+// A vote round's id, which is otherwise opaque.
+export const COLLAB_ROUND_MAX = 64;
 const TICKS_MAX = 200;
 const COMMENT_EVENTS_MAX = 500;
 const DOTS_MAX = 5000;
 const ID_MAX = 200;
-// How many past rounds an entry remembers, so a late op naming one of them is
-// dropped instead of flipping the entry back to it (and wiping the current
-// round's answers or dots). A round is retired by a clear or a new vote, a
-// human action, so a late op is at most a few rounds stale; 16 ids of at most
-// COLLAB_ROUND_MAX characters keep the entry around 1KB.
+// How many past vote rounds the ledger remembers, so a late dot naming one of them is
+// dropped instead of flipping the ledger back to it (and wiping the current
+// round's dots). A round is retired by a new vote, a human action, so a late op
+// is at most a few rounds stale; 16 ids of at most COLLAB_ROUND_MAX characters
+// keep the entry around 1KB.
 export const RETIRED_ROUNDS_MAX = 16;
 
 const isStr = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max;
@@ -127,7 +118,7 @@ export function recordInLedger(
   const o = op as { kind?: unknown };
   if (o.kind === 'vote') return recordVote(prev as VoteLedger | undefined, op, seq);
   if (o.kind === 'el-delta') {
-    return recordElement(prev, (op as { delta?: unknown }).delta, seq);
+    return recordElement(prev as ElementLedger | undefined, (op as { delta?: unknown }).delta, seq);
   }
   return null;
 }
@@ -165,48 +156,7 @@ function recordElement(
 ): ElementLedger | null {
   if (!delta || typeof delta !== 'object') return null;
   const d = delta as Record<string, unknown>;
-  if (d.round !== undefined && !isStr(d.round, COLLAB_ROUND_MAX)) return null;
-  const round = d.round;
-  // Answers and ideas belong to a round; a delta for another one starts it,
-  // retiring the one it replaces. A delta naming a retired round is late and
-  // dropped (null). Ticks and comments have no round and carry over.
-  const inRound = (e: ElementLedger | undefined): ElementLedger | null => {
-    if (e && (e.round ?? undefined) === round) return e;
-    if (e?.retired?.includes(round ?? '')) return null;
-    return {
-      ...(round !== undefined ? { round } : {}),
-      ...(e ? { retired: retire(e.retired, e.round ?? '') } : {}),
-      ...(e?.ticks ? { ticks: e.ticks } : {}),
-      ...(e?.comments ? { comments: e.comments } : {}),
-    };
-  };
   switch (d.kind) {
-    case 'response': {
-      if (!isStr(d.participantId, ID_MAX)) return null;
-      if (d.value !== null && !isStr(d.value, RESPONSE_VALUE_MAX)) return null;
-      if (typeof d.at !== 'number' || !Number.isFinite(d.at)) return null;
-      const base = inRound(prev);
-      if (!base) return null;
-      const responses = base.responses ?? {};
-      if (!(d.participantId in responses) && Object.keys(responses).length >= RESPONSES_MAX) {
-        return null;
-      }
-      return {
-        ...base,
-        responses: {
-          ...responses,
-          [d.participantId]: { value: d.value, at: d.at, seq },
-        },
-      };
-    }
-    case 'idea': {
-      if (!isStr(d.text, IDEA_MAX_TEXT) || !d.text.trim()) return null;
-      const base = inRound(prev);
-      if (!base) return null;
-      const ideas = base.ideas ?? [];
-      if (ideas.length >= IDEA_MAX_CARDS) return null;
-      return { ...base, ideas: [...ideas, d.text.trim()] };
-    }
     case 'check': {
       if (typeof d.index !== 'number' || !Number.isInteger(d.index) || d.index < 0) return null;
       if (!isStr(d.text, CHECKLIST_MAX_TEXT) || typeof d.done !== 'boolean') return null;
@@ -291,12 +241,10 @@ export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]
 
 // Fold the ledger into a tab a client is saving, given the room seq that
 // client had caught up to (`since`). Everything the save carries stays, except
-// where the room knows something the saver didn't: answers and ticks set after
-// `since` are re-applied, ideas the snapshot is missing are appended (ideas are
-// only ever added, so there is nothing of the saver's to overrule), and the
-// round's dots replace the snapshot's if any changed after `since`. An entry
-// for a different round than the element (or vote) is ignored: the save
-// carries a clear the ledger hasn't seen a delta for yet.
+// where the room knows something the saver didn't: ticks and thread changes set
+// after `since` are re-applied, and the round's dots replace the snapshot's if
+// any changed after `since`. A vote entry for a different round than the tab's
+// vote is ignored: the save carries a new vote the ledger hasn't seen a dot for yet.
 export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): Tab {
   let changed = false;
   const elements = tab.elements.map((el) => {
@@ -307,20 +255,6 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
     if (el.type !== 'shape') {
       if (next !== el) changed = true;
       return next;
-    }
-    const round = el.collabRound;
-    if ((entry.round ?? undefined) === (round ?? undefined)) {
-      for (const [participantId, r] of Object.entries(entry.responses ?? {})) {
-        if (r.seq <= since) continue;
-        next = applyElementDelta(next, {
-          kind: 'response',
-          participantId,
-          value: r.value,
-          at: r.at,
-          ...(round ? { round } : {}),
-        }) as typeof el;
-      }
-      next = appendMissingIdeas(next, entry.ideas ?? [], round);
     }
     for (const [key, tick] of Object.entries(entry.ticks ?? {})) {
       if (tick.seq <= since) continue;
@@ -348,21 +282,16 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's dots, responses, ideas and comment reactions itself, since a Participant never saves a
-// whole tab. Only those are taken from the ledger, every one the room holds (they are idempotent: a response or a
-// reaction is the latest per person, an idea is added once, the dots are the round's whole map), and only while the
-// stored round still matches; ticks and the rest of a thread stay with an Editor's save.
+// writes a Participant's dots and comment reactions itself, since a Participant never saves a whole tab. Only those
+// are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest per person, the
+// dots are the round's whole map), and the dots only while the stored round still matches; ticks and the rest of a
+// thread stay with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {
     const reacts = entry.comments?.reacts;
-    if (!entry.responses && !entry.ideas && !reacts) continue;
-    elements[id] = {
-      ...(entry.round !== undefined ? { round: entry.round } : {}),
-      ...(entry.responses ? { responses: entry.responses } : {}),
-      ...(entry.ideas ? { ideas: entry.ideas } : {}),
-      ...(reacts ? { comments: { adds: {}, removes: {}, reacts } } : {}),
-    };
+    if (!reacts) continue;
+    elements[id] = { comments: { adds: {}, removes: {}, reacts } };
   }
   return mergeLedgerIntoTab(tab, { ...(ledger.vote ? { vote: ledger.vote } : {}), elements }, 0);
 }
@@ -418,27 +347,4 @@ export function ledgerCommentAuthors(
     }
   }
   return out;
-}
-
-// Cards have no ids, so the snapshot's cards are matched to the ledger's by
-// text: for each text, the ledger's count of it is how many the round holds
-// at least, and the shortfall is appended.
-function appendMissingIdeas<E extends Tab['elements'][number]>(
-  el: E,
-  ideas: string[],
-  round: string | undefined,
-): E {
-  if (el.type !== 'shape' || ideas.length === 0) return el;
-  const have = new Map<string, number>();
-  for (const text of el.ideaCards ?? []) have.set(text, (have.get(text) ?? 0) + 1);
-  let next: E = el;
-  for (const text of ideas) {
-    const n = have.get(text) ?? 0;
-    if (n > 0) {
-      have.set(text, n - 1);
-      continue;
-    }
-    next = applyElementDelta(next, { kind: 'idea', text, ...(round ? { round } : {}) }) as E;
-  }
-  return next;
 }

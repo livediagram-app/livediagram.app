@@ -3,7 +3,8 @@
 // them as UUIDs.
 import { cutSlug, slugText, uniqueSlug } from './slug';
 import type { Element } from './index';
-import { ELEMENT_TYPES, SHAPE_KINDS } from './validate';
+import { ELEMENT_TYPES } from './validate';
+import { SHAPE_KINDS } from './shape-kinds';
 
 const SLUG_ID_PATTERN = /^[a-z][a-z0-9_-]{0,23}$/;
 export const SLUG_ID_MAX_LENGTH = 24;

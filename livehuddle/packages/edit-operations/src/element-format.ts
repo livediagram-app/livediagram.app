@@ -5,7 +5,6 @@
 import {
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
-  SHAPE_KINDS,
   STICKY_PRESETS,
   TEXT_PX_MAX,
   TEXT_PX_MIN,
@@ -15,7 +14,7 @@ import {
 } from '@livehuddle/document';
 import { fillSlotNames } from './colours';
 import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
-import { buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
+import { AGENT_SHAPE_KINDS, buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
 
 export const SCHEMA_KIND_MAX_TOKENS = 300;
 
@@ -37,7 +36,7 @@ function wrapped(words: readonly string[], indent: string, sep = ' '): string[] 
 
 // Every kind `add` makes: the boxed kinds, then the shape kinds.
 export function addableKinds(): string[] {
-  return [...OTHER_KINDS, ...SHAPE_KINDS];
+  return [...OTHER_KINDS, ...AGENT_SHAPE_KINDS];
 }
 
 export function elementKindsText(): string {
@@ -45,7 +44,7 @@ export function elementKindsText(): string {
     'Element kinds: add <kind> makes one; livehuddle schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
-    ...wrapped([...SHAPE_KINDS], '    ', ', '),
+    ...wrapped(AGENT_SHAPE_KINDS, '    ', ', '),
     '  arrow: connect <a> -> <b>',
     `  ${Object.keys(NOT_ADDED)
       .filter((k) => k !== 'arrow')
@@ -132,17 +131,11 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'progress-ring': ['progress'],
   rating: ['rating'],
   legend: ['legendItems'],
-  agenda: ['agendaItems'],
-  decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
-  quiz: ['quizOptions', 'quizCorrect', 'quizSeconds'],
-  picker: ['pickerOptions', 'pickerSource'],
   'stat-row': ['stats'],
   process: ['processSteps'],
   'site-header': ['navLinks'],
-  page: ['pageTitle', 'pageSubtitle'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
-  estimate: ['estimateScale'],
   chair: ['chairFacing'],
   desk: ['chairFacing'],
   sofa: ['chairFacing'],

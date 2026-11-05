@@ -7,14 +7,6 @@
 // odd but not our call to forbid, and the author picks from a menu that names
 // each one.
 
-import {
-  isPollStyle,
-  POLL_OPTIONS_MAX,
-  POLL_OPTIONS_MIN,
-  pollStyleNeedsOptions,
-  type PollStyle,
-} from './poll-style';
-
 export const SELECTION_MODES = [
   'select',
   'pan',
@@ -54,13 +46,8 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
 // resize handles, ignore a drag-to-draw's size, and are left alone when a
 // multi-selection is scaled — a button that is 40px on one canvas and 400 on
 // another stops looking like part of the product.
-// The Done check (docs/specs/012-collaboration/done-check.md) is one too: it is a roster and a button, laid
-// out for its own content, and stretching it only spreads the same three
-// things over empty card.
 const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
   'mode-button',
-  'session-button',
-  'done-check',
   // A badge fits its text (docs/specs/009-elements/badge.md): it is never resized by hand.
   'badge',
 ]);
@@ -110,152 +97,15 @@ export function isLegacyModeButtonSkin(el: {
 // Today's default skin, for the elements above.
 export const MODE_BUTTON_SKIN = { fill: '#ffffff', stroke: '#cbd5e1', text: '#0f172a' } as const;
 
-// --- Session button (docs/specs/012-collaboration/session-button.md) ----------------------------------------------
+// --- The Session strip's tools (docs/specs/012-collaboration/session-tools.md) ------------------------------------
 
-// Which session tool a `session-button` starts when pressed. The vocabulary
-// lives here with the other Behaviour-element data (rather than in the editor)
-// because a saved element carries it, so validation has to reach it.
-// `stopwatch` is its own tool rather than a mode of `timer` (docs/specs/012-collaboration/session-button.md). The
-// two share a clock and nothing else: a countdown is placed with a LENGTH and
-// the question is "how long", a stopwatch has no length and the question is
-// only "start it". Folding them together meant a timer element's settings
-// offered to turn it into a different element, which is not a setting.
-export const SESSION_TOOLS = ['timer', 'stopwatch', 'vote', 'poll'] as const;
+// The tools the Session strip starts for the room: the Timer (a countdown, or a stopwatch when it counts up) and the
+// dot Vote. The live poll and the Session button that once started these from the canvas are gone from livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
+export const SESSION_TOOLS = ['timer', 'stopwatch', 'vote'] as const;
 export type SessionTool = (typeof SESSION_TOOLS)[number];
 
-// What a button with no configuration does. A timer is the safest default: it
-// starts nothing that anyone has to answer, and it is the tool most often
-// reached for.
-export const DEFAULT_SESSION_TOOL: SessionTool = 'timer';
-export const DEFAULT_TIMER_MINUTES = 5;
-export const DEFAULT_VOTE_DOTS = 3;
-
-// Bounds, applied wherever a value is read rather than only where it is typed:
-// a hand-written API payload gets the same treatment as the menu's own input.
+// Bounds, applied wherever a value is read rather than only where it is typed.
 export const TIMER_MINUTES_RANGE = { min: 1, max: 120 } as const;
 
 export const VOTE_DOTS_RANGE = { min: 1, max: 10 } as const;
-
-// The answer shape a poll button takes when it carries none. `choice` rather
-// than `yesNo` because the author writes the answers here in advance — the
-// palette drops the button with two of them already filled in — and a button
-// that silently ignored what you typed is the bug this default replaces.
-export const DEFAULT_SESSION_POLL_STYLE: PollStyle = 'choice';
-
-// What pressing a session button starts. One object rather than five loose
-// fields on ShapeElement: the settings only mean anything together, and only
-// for this kind.
-export type SessionButtonConfig = {
-  tool: SessionTool;
-  // Timer: how long to count down. Vote: dots per person.
-  minutes?: number;
-  dots?: number;
-  // Poll: the question and its answers, written in advance so the press opens
-  // the poll rather than a composer.
-  question?: string;
-  options?: string[];
-  // Poll: how the answers are shaped (docs/specs/012-collaboration/live-poll.md) — Yes/No, +Abstain, the written
-  // `options`, a 1-5 rating, or free text. Absent means `choice`, NOT the
-  // wire default: a button authored before this field existed was written by
-  // `defaultSessionConfig` with two answers and meant them to be the answers.
-  style?: PollStyle;
-};
-
-/**
- * A ready-to-use config for one session tool (docs/specs/012-collaboration/session-button.md).
- *
- * The palette offers a tile PER TOOL rather than one button you then
- * reconfigure, so "Add poll" has to place a working poll. A poll in
- * particular needs a question and two answers to be startable at all —
- * `sessionPlan` returns null below that — so dropping one with an empty
- * config would place a button that cannot be pressed.
- */
-export function defaultSessionConfig(tool: SessionTool): SessionButtonConfig {
-  // A stopwatch has nothing to configure — that is the whole difference.
-  if (tool === 'stopwatch') return { tool };
-  if (tool === 'vote') return { tool, dots: DEFAULT_VOTE_DOTS };
-  if (tool === 'poll') {
-    return {
-      tool,
-      style: DEFAULT_SESSION_POLL_STYLE,
-      question: 'Which option?',
-      options: ['Option A', 'Option B'],
-    };
-  }
-  return { tool, minutes: DEFAULT_TIMER_MINUTES };
-}
-
-export function isSessionTool(value: unknown): value is SessionTool {
-  return typeof value === 'string' && (SESSION_TOOLS as readonly string[]).includes(value);
-}
-
-// What a press actually starts, once defaults are filled in and the numbers
-// are clamped. Null means "this button can't start anything yet" — today only
-// a poll with fewer than two answers, which is a half-written button rather
-// than a broken one, so the face goes inert and says so.
-export type SessionPlan =
-  | { tool: 'timer'; minutes: number }
-  // No length: a stopwatch counts up until somebody stops it.
-  | { tool: 'stopwatch' }
-  | { tool: 'vote'; dots: number }
-  // `options` is empty for every style but `choice`, matching `LivePoll`: the
-  // other styles' answers are fixed, so carrying a stale written list would
-  // give the poll two disagreeing answers to the same question.
-  | { tool: 'poll'; style: PollStyle; question: string; options: string[] };
-
-const clamp = (
-  value: number | undefined,
-  fallback: number,
-  range: { min: number; max: number },
-) => {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
-  return Math.min(range.max, Math.max(range.min, Math.round(value)));
-};
-
-// Read a button's configuration into the thing to do. Clamping lives HERE
-// rather than in the menu that types the number, so a value that arrived from
-// the API, an import, or an older client gets the same treatment as one typed
-// today — and a tab never fails to load over a duration someone can just fix.
-export function sessionButtonPlan(config: SessionButtonConfig | undefined): SessionPlan | null {
-  const tool = isSessionTool(config?.tool) ? config.tool : DEFAULT_SESSION_TOOL;
-  if (tool === 'timer') {
-    return { tool, minutes: clamp(config?.minutes, DEFAULT_TIMER_MINUTES, TIMER_MINUTES_RANGE) };
-  }
-  if (tool === 'stopwatch') return { tool };
-  if (tool === 'vote') {
-    return { tool, dots: clamp(config?.dots, DEFAULT_VOTE_DOTS, VOTE_DOTS_RANGE) };
-  }
-  // A style we don't recognise (an older client, a hand-written API payload)
-  // takes the default rather than making the button inert: the question is
-  // still answerable, and the author can fix the shape from the menu.
-  const style = isPollStyle(config?.style) ? config.style : DEFAULT_SESSION_POLL_STYLE;
-  // Only a `choice` poll reads the written answers. Every other style has a
-  // fixed set (Yes / No, 1-5, free text), so a list left behind from an
-  // earlier style is dropped rather than shipped alongside them.
-  const options = pollStyleNeedsOptions(style)
-    ? (config?.options ?? [])
-        .map((option) => (typeof option === 'string' ? option.trim() : ''))
-        .filter((option) => option.length > 0)
-        .slice(0, POLL_OPTIONS_MAX)
-    : [];
-  // Two written answers is the floor for a `choice` poll only — that is the
-  // one style with nothing to press below it. A Yes/No or rating button is
-  // startable the moment it has a question.
-  if (pollStyleNeedsOptions(style) && options.length < POLL_OPTIONS_MIN) return null;
-  // A question that is not text (an API write, an import) reads as none, like a missing one.
-  const question = typeof config?.question === 'string' ? config.question.trim() : '';
-  return { tool, style, question: question || 'Quick question', options };
-}
-
-// --- Picker (docs/specs/012-collaboration/picker.md) ------------------------------------------------------
-
-// Where a picker draws its candidates from: the people currently in the room,
-// or a list written on the element.
-export const PICKER_SOURCES = ['participants', 'options'] as const;
-export type PickerSource = (typeof PICKER_SOURCES)[number];
-export const DEFAULT_PICKER_SOURCE: PickerSource = 'participants';
-export const PICKER_MAX_OPTIONS = 24;
-
-export function isPickerSource(value: unknown): value is PickerSource {
-  return typeof value === 'string' && (PICKER_SOURCES as readonly string[]).includes(value);
-}

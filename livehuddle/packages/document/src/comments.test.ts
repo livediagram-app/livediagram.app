@@ -74,36 +74,6 @@ describe('graftLiveTabState session fields (docs/specs/012-collaboration/session
 });
 
 describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
-  // A snapshot taken before anybody answered: undoing some earlier edit
-  // restores it, and must not take the room's answers with it.
-  it('keeps answers, ideas, the roll and the picker result through an undo', () => {
-    const answered: ShapeElement = {
-      ...shape('card'),
-      responses: [{ participantId: 'k1', value: 'done', at: 1 }],
-      responsesRevealed: true,
-      ideaCards: ['more coffee'],
-      ideasRevealed: true,
-      rollCall: [{ name: 'Sam', color: '#f00', at: 1 }],
-      agendaCurrent: 2,
-      pickerResult: 'Sam',
-    };
-    const restored = graftLiveTabState(
-      [tab('t1', [answered])],
-      [tab('t1', [{ ...shape('card'), x: 40 }])],
-    );
-    const card = restored[0]!.elements[0] as ShapeElement;
-    // The undone edit (the move) is undone...
-    expect(card.x).toBe(40);
-    // ...and nobody's answer is.
-    expect(card.responses).toEqual(answered.responses);
-    expect(card.responsesRevealed).toBe(true);
-    expect(card.ideaCards).toEqual(['more coffee']);
-    expect(card.ideasRevealed).toBe(true);
-    expect(card.rollCall).toEqual(answered.rollCall);
-    expect(card.agendaCurrent).toBe(2);
-    expect(card.pickerResult).toBe('Sam');
-  });
-
   it("keeps checklist ticks but undoes the rows' own edit", () => {
     const live: ShapeElement = {
       ...shape('list'),
@@ -121,15 +91,6 @@ describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/c
     expect((restored[0]!.elements[0] as ShapeElement).checklistItems).toEqual([
       { text: 'one', done: true },
     ]);
-  });
-
-  it('keeps a clear: answers the present no longer has stay gone', () => {
-    const snapshot: ShapeElement = {
-      ...shape('card'),
-      responses: [{ participantId: 'k1', value: '8', at: 1 }],
-    };
-    const restored = graftLiveTabState([tab('t1', [shape('card')])], [tab('t1', [snapshot])]);
-    expect('responses' in restored[0]!.elements[0]!).toBe(false);
   });
 });
 

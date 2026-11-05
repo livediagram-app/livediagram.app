@@ -15,7 +15,7 @@ import {
 const card = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 'card',
   type: 'shape',
-  shape: 'done-check',
+  shape: 'square',
   x: 0,
   y: 0,
   width: 100,
@@ -36,8 +36,6 @@ const delta = (d: Record<string, unknown>, elementId = 'card') => ({
   elementId,
   delta: d,
 });
-const done = (participantId: string, value: string | null = 'done') =>
-  delta({ kind: 'response', participantId, value, at: 1 });
 
 // Record ops in order the way the room does, one seq each.
 function ledgerOf(ops: unknown[], startSeq = 1): TabLedger {
@@ -55,47 +53,33 @@ function ledgerOf(ops: unknown[], startSeq = 1): TabLedger {
   return tabLedgerFrom('t1', store);
 }
 
-const who = (t: Tab) =>
-  ((t.elements[0] as ShapeElement).responses ?? []).map((r) => r.participantId).sort();
-
 describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md phase 3)', () => {
-  // THE bug: a save snapshotted before b's mark reached the saver wrote D1
-  // without it.
-  it("puts back an answer the saver hadn't seen", () => {
-    const ledger = ledgerOf([done('a'), done('b')]);
-    const staleSave = tab([card({ responses: [{ participantId: 'a', value: 'done', at: 1 }] })]);
-    // The saver had seen seq 1 (its own cast), not seq 2.
-    expect(who(mergeLedgerIntoTab(staleSave, ledger, 1))).toEqual(['a', 'b']);
-  });
-
-  it('does not overrule what the saver HAD seen (a withdraw made offline stays)', () => {
-    // a cast (seq 1), then withdrew with the socket down: the room never
-    // heard, and the save is the newer truth.
-    const ledger = ledgerOf([done('a')]);
-    expect(who(mergeLedgerIntoTab(tab([card()]), ledger, 1))).toEqual([]);
-  });
-
-  it('applies a withdraw it had not seen', () => {
-    const ledger = ledgerOf([done('a'), done('a', null)]);
-    const stale = tab([card({ responses: [{ participantId: 'a', value: 'done', at: 1 }] })]);
-    expect(who(mergeLedgerIntoTab(stale, ledger, 1))).toEqual([]);
-  });
-
-  it('ignores answers from another round than the save (a clear it had not seen)', () => {
-    const ledger = ledgerOf([done('a')]);
-    const cleared = tab([card({ collabRound: 'r2', responses: [] })]);
-    expect(who(mergeLedgerIntoTab(cleared, ledger, 0))).toEqual([]);
-  });
-
-  it('appends ideas the snapshot is missing, without duplicating ones it has', () => {
-    const box = (ideaCards: string[]) => tab([card({ shape: 'idea-box', ideaCards })]);
-    const ledger = ledgerOf([
-      delta({ kind: 'idea', text: 'coffee' }),
-      delta({ kind: 'idea', text: 'tea' }),
-      delta({ kind: 'idea', text: 'coffee' }),
-    ]);
-    const merged = mergeLedgerIntoTab(box(['coffee']), ledger, 0);
-    expect((merged.elements[0] as ShapeElement).ideaCards).toEqual(['coffee', 'tea', 'coffee']);
+  // A retired element's answers and ideas (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"):
+  // a delta for one is refused, and a room's old entries are never written onto the element, which keeps its stored
+  // fields exactly as they were.
+  it('records no answer or idea, and merges none a room still holds', () => {
+    expect(
+      recordInLedger(
+        undefined,
+        delta({ kind: 'response', participantId: 'a', value: '3', at: 1 }),
+        1,
+      ),
+    ).toBeNull();
+    expect(recordInLedger(undefined, delta({ kind: 'idea', text: 'coffee' }), 1)).toBeNull();
+    const stored = {
+      ...card(),
+      shape: 'estimate',
+      responses: [{ participantId: 'a', value: '3', at: 1 }],
+      collabRound: 'r1',
+    } as unknown as ShapeElement;
+    const old = {
+      round: 'r1',
+      responses: { b: { value: '5', at: 2, seq: 9 } },
+      ideas: ['tea'],
+    } as unknown as ElementLedger;
+    const save = tab([stored]);
+    expect(mergeLedgerIntoTab(save, { elements: { card: old } }, 0)).toBe(save);
+    expect(mergeLedgerAnswersIntoTab(save, { elements: { card: old } })).toBe(save);
   });
 
   it("re-sets a tick the saver hadn't seen", () => {
@@ -137,32 +121,8 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
     expect(mergeLedgerIntoTab(next, ledger, 0)).toBe(next);
   });
 
-  // A late op naming a round the room has moved past used to flip the entry
-  // back to that round, dropping the current round's answers and dots.
-  it('drops a late answer naming a retired round', () => {
-    const inRound = (participantId: string, round: string, value: string | null = 'done') =>
-      delta({ kind: 'response', participantId, value, at: 1, round });
-    const ledger = ledgerOf([inRound('a', 'r1'), inRound('b', 'r2'), inRound('a', 'r1', null)]);
-    expect(ledger.elements.card?.round).toBe('r2');
-    expect(ledger.elements.card?.retired).toEqual(['r1']);
-    const save = tab([card({ collabRound: 'r2' })]);
-    expect(who(mergeLedgerIntoTab(save, ledger, 0))).toEqual(['b']);
-    // The round before any id (a card never cleared) retires as well.
-    const fromNone = ledgerOf([done('a'), inRound('b', 'r1'), done('c')]);
-    expect(Object.keys(fromNone.elements.card?.responses ?? {})).toEqual(['b']);
-  });
-
-  it('drops a late idea naming a retired round, keeping ticks across rounds', () => {
-    const ledger = ledgerOf([
-      delta({ kind: 'check', index: 0, text: 'one', done: true }),
-      delta({ kind: 'idea', text: 'old', round: 'r1' }),
-      delta({ kind: 'idea', text: 'new', round: 'r2' }),
-      delta({ kind: 'idea', text: 'late', round: 'r1' }),
-    ]);
-    expect(ledger.elements.card?.ideas).toEqual(['new']);
-    expect(Object.keys(ledger.elements.card?.ticks ?? {})).toHaveLength(1);
-  });
-
+  // A late op naming a round the room has moved past used to flip the vote
+  // back to that round, dropping the current round's dots.
   it('drops a late dot or withdraw naming a retired vote round', () => {
     const dot = (voter: string, round: string, d: 1 | -1 = 1) => ({
       kind: 'vote',
@@ -177,17 +137,22 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
   });
 
   it(`remembers at most ${RETIRED_ROUNDS_MAX} retired rounds`, () => {
-    const ops = Array.from({ length: RETIRED_ROUNDS_MAX + 5 }, (_, i) =>
-      delta({ kind: 'idea', text: 'x', round: `r${i}` }),
-    );
-    const retired = ledgerOf(ops).elements.card?.retired ?? [];
+    const ops = Array.from({ length: RETIRED_ROUNDS_MAX + 5 }, (_, i) => ({
+      kind: 'vote',
+      tabId: 't1',
+      elementId: 'e1',
+      voter: 'a',
+      delta: 1,
+      round: `r${i}`,
+    }));
+    const retired = ledgerOf(ops).vote?.retired ?? [];
     expect(retired).toHaveLength(RETIRED_ROUNDS_MAX);
     expect(retired.at(-1)).toBe(`r${RETIRED_ROUNDS_MAX + 3}`);
   });
 
   it('skips malformed and untracked ops', () => {
     expect(ledgerKey({ kind: 'el', tabId: 't1' })).toBeNull();
-    expect(recordInLedger(undefined, delta({ kind: 'response', participantId: 7 }), 1)).toBeNull();
+    expect(recordInLedger(undefined, delta({ kind: 'check', index: -1 }), 1)).toBeNull();
     expect(recordInLedger(undefined, delta({ kind: 'comment-add', comment: {} }), 1)).toBeNull();
     expect(
       recordInLedger(
@@ -289,12 +254,11 @@ describe('mergeLedgerAnswersIntoTab (docs/specs/013-workspace/share-roles.md "In
     round: 'r1',
   });
 
-  it('writes every answer, idea and dot the room holds into the stored tab, once', () => {
-    const ledger = ledgerOf([done('a'), done('b'), dot('a')]);
+  it('writes every dot the room holds into the stored tab, once', () => {
+    const ledger = ledgerOf([dot('a')]);
     const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' };
     const stored = tab([card()], { vote });
     const merged = mergeLedgerAnswersIntoTab(stored, ledger);
-    expect(who(merged)).toEqual(['a', 'b']);
     expect(merged.vote?.votes).toEqual({ e1: ['a'] });
     expect(mergeLedgerAnswersIntoTab(merged, ledger)).toBe(merged);
   });
@@ -306,10 +270,11 @@ describe('mergeLedgerAnswersIntoTab (docs/specs/013-workspace/share-roles.md "In
     expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
   });
 
-  it('ignores answers from a round the stored tab has moved past', () => {
-    const ledger = ledgerOf([done('a')]);
-    const cleared = tab([card({ collabRound: 'r2', responses: [] })]);
-    expect(who(mergeLedgerAnswersIntoTab(cleared, ledger))).toEqual([]);
+  it('ignores dots from a round the stored tab has moved past', () => {
+    const ledger = ledgerOf([dot('a')]);
+    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r2' };
+    const stored = tab([card()], { vote });
+    expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
   });
 });
 

@@ -1,5 +1,6 @@
 import type { Element, ShapeKind } from './index';
 import { CHART_TYPE_LABELS, chartTypeOf } from './chart-types';
+import { isRetiredElement, retiredElementName } from './retired-kinds';
 
 // Human-readable name for a shape kind, e.g. 'square' -> 'Square',
 // 'speech-bubble' -> 'Speech Bubble'. Used in selection labels and any
@@ -12,11 +13,6 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   // Named for what it does, not its internal kind — titleCase would say
   // 'Mode Button' (docs/specs/009-elements/mode-button.md).
   'mode-button': 'Selection Mode',
-  // Both would title-case to a bare noun that says the wrong thing on its own
-  // ('Decision', 'Temperature'), so they carry the full name (docs/specs/012-collaboration/temperature-check.md,
-  // docs/specs/012-collaboration/decision-record.md).
-  decision: 'Decision Record',
-  temperature: 'Temperature Check',
 };
 
 function titleCase(s: string): string {
@@ -36,6 +32,8 @@ export function elementKindLabel(el: Element): string {
       // was "Selected Bar Chart", from its stored kind, and an area chart read as a line chart.
       const chart = chartTypeOf(el);
       if (chart) return `${CHART_TYPE_LABELS[chart]} Chart`;
+      // A retired element goes by its placeholder's name (docs/specs/002-project-scope/not-in-livehuddle.md).
+      if (isRetiredElement(el)) return retiredElementName(el);
       return SHAPE_LABELS[el.shape] ?? titleCase(el.shape);
     }
     case 'text':

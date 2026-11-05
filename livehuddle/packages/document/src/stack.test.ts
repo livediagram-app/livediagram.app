@@ -64,12 +64,14 @@ describe('a stack', () => {
       attachedTo: 'a',
       attachAt: 'top-right',
     } as ShapeElement;
+    // A stored Comment Panel, a retired element (docs/specs/002-project-scope/not-in-livehuddle.md).
     const pin = {
-      ...createShape('comment-pin', 0, 0),
+      ...createShape('square', 0, 0),
+      shape: 'comment-pin',
       id: 'p',
       x: 300,
       y: 80,
-    } as ShapeElement;
+    } as unknown as ShapeElement;
     const els = [stack(), box('a', 30, 40), badge, pin];
     expect(stackChildren(els, els[0] as ShapeElement).map((k) => k.id)).toEqual(['a']);
   });
