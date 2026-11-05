@@ -478,6 +478,48 @@ describe('planListing', () => {
       expect(writes).toEqual(['set', 'add']);
     });
 
+    // docs/specs/026-plan/plan-agents.md "Clearing a field": [], null and "" clear it, as the clear list does.
+    it('clears the field given [], null or "", once with the clear list, and leaves a new card unset', async () => {
+      for (const blank of [[], null, '']) {
+        const { api: a, seen } = api(
+          {
+            [`/projects/${D}/items`]: (r: Request) =>
+              r.method === 'GET'
+                ? Response.json({ items: cards, rev: 1 })
+                : r.text().then((t) => {
+                    seen.push({ method: 'POST', path: 'add', body: JSON.parse(t) });
+                    return Response.json({ item: { ...cards[0], id: 'new' }, rev: 2 });
+                  }),
+            [`/projects/${D}/items/jjj333`]: (r: Request) =>
+              r.text().then((t) => {
+                seen.push({ method: 'POST', path: 'set', body: JSON.parse(t) });
+                return Response.json({
+                  item: { ...cards[2], fields: { ...cards[2]!.fields } },
+                  rev: 2,
+                });
+              }),
+          },
+          plan,
+        );
+        const result = await applyItemChanges(
+          a,
+          D,
+          [
+            { op: 'set', item: '#3', fields: { 'Blocked By': blank }, clear: ['f-blk'] },
+            { op: 'add', title: 'Later', type: 'Job', fields: { 'f-blk': blank } },
+          ],
+          await readPlanState(a, D),
+        );
+        expect(result.refusal).toBeUndefined();
+        expect(seen.find((c) => c.path === 'set')?.body).toEqual({ clear: ['f-blk'] });
+        expect(seen.find((c) => c.path === 'add')?.body).toEqual({
+          type: 'job',
+          fields: { title: 'Later' },
+        });
+        expect(result.applied[0]).toContain('cleared Blocked By');
+      }
+    });
+
     it('reads the api’s loop refusal in the same words', () => {
       const refusal = apiRefusalOf(new ApiError(400, '{"error":"blocks_cycle"}'));
       expect(refusal?.message).toContain('block each other in a loop');

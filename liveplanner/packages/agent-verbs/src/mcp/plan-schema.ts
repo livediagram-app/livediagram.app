@@ -53,7 +53,7 @@ const fieldsArg = z
       PLAN_TYPE_COLOURS.slice(0, 4).join(' ') +
       '), checklist [{text,done}], parent ("#12", a Project), and the card type’s custom fields by name ' +
       '("Severity": "S2"; a Card field takes "#12"; a field marked multiple takes a list or a comma list, "Sam, Ana" or ' +
-      '"#3, #5"; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
+      '"#3, #5", and [] or null clears it; a longtext field takes Markdown, as description does). A field the card type lacks is refused: add it with ' +
       'change_card_types. A new card must give every custom field list_items marks required. Attachments ' +
       '(pictures) are added in the card panel only: they can be cleared, never set.',
   );
@@ -88,7 +88,13 @@ const itemChange = z.discriminatedUnion('op', [
     op: z.literal('set'),
     item: itemRef,
     fields: fieldsArg.optional(),
-    clear: z.array(z.string()).optional().describe('Fields to clear, by name (never title).'),
+    clear: z
+      .array(z.string())
+      .optional()
+      .describe(
+        'Fields to clear, by name or id (never title), e.g. ["Blocked By", "due"]: empties any field, ' +
+          'a field that holds several values among them.',
+      ),
     type: typeArg.optional().describe('Change its card type.'),
   }),
   z.strictObject({

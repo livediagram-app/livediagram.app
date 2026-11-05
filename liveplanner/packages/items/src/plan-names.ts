@@ -204,14 +204,35 @@ export function fieldKeyOf(key: string, type: ItemTypeDef): Named<{ key: string 
   );
 }
 
+// The parts of a value for a field that holds several: a list's items or a comma list's, trimmed, blanks dropped.
+function severalParts(value: unknown): unknown[] {
+  return (
+    Array.isArray(value)
+      ? (value as unknown[])
+      : typeof value === 'string'
+        ? value.split(',')
+        : [value]
+  )
+    .map((p: unknown) => (typeof p === 'string' ? p.trim() : p))
+    .filter((p) => p !== '' && p !== null && p !== undefined);
+}
+
+// Whether a value for a field that holds several values says "none": [], null, "" or ", " (docs/specs/026-plan/
+// plan-agents.md "Clearing a field"). A Person or Card field holding several, and a Multiple Choice, hold several.
+function blankSeveral(field: CustomFieldDef, value: unknown): boolean {
+  return (holdsSeveral(field) || field.kind === 'multichoice') && severalParts(value).length === 0;
+}
+
 // Fields as an agent writes them, for an item of `type`: keys as fieldKeyOf reads them, a status by column name,
-// an assignee by name, a parent or Card field by item number, a priority or Choice option case aside.
+// an assignee by name, a parent or Card field by item number, a priority or Choice option case aside. A field that
+// holds several given an empty value is answered in `clear` (absent when none), for the write to clear.
 export function resolveFields(
   input: Readonly<Record<string, unknown>>,
   type: ItemTypeDef,
   naming: FieldNaming,
-): Named<{ fields: Record<string, unknown> }> {
+): Named<{ fields: Record<string, unknown>; clear?: string[] }> {
   const out: Record<string, unknown> = {};
+  const clear: string[] = [];
   for (const [rawKey, value] of Object.entries(input)) {
     const named = fieldKeyOf(rawKey, type);
     // A repeat needs the setter's time zone, which an agent's call does not carry: an Editor sets it in the editor
@@ -251,6 +272,10 @@ export function resolveFields(
         'value_invalid',
         `${field.label} is tracked: people add time in the card panel.`,
       );
+    if (blankSeveral(field, value)) {
+      clear.push(key);
+      continue;
+    }
     // A Person or Card field that holds several takes a comma list or a list (item-types.md "Holds Several").
     if (holdsSeveral(field)) {
       const v = severalNamed(field, value, naming);
@@ -397,27 +422,18 @@ export function resolveFields(
       out[key] = value;
     }
   }
-  return { ok: true, fields: out };
+  return { ok: true, fields: out, ...(clear.length ? { clear } : {}) };
 }
 
 // A field that holds several, from "Sam, Ana" or ["Sam", "Ana"] (people by name, cards by number or "#12 Title"), or a
-// value of one: each resolved as one value of its kind is, each once, at most FIELD_VALUES_MAX.
+// value of one: each resolved as one value of its kind is, each once, at most FIELD_VALUES_MAX. A blank value never
+// reaches here: resolveFields clears the field instead.
 function severalNamed(
   field: CustomFieldDef,
   value: unknown,
   naming: FieldNaming,
 ): Named<{ value: unknown }> {
-  const parts = (
-    Array.isArray(value)
-      ? (value as unknown[])
-      : typeof value === 'string'
-        ? value.split(',')
-        : [value]
-  )
-    .map((p: unknown) => (typeof p === 'string' ? p.trim() : p))
-    .filter((p) => p !== '' && p !== null && p !== undefined);
-  if (parts.length === 0)
-    return refuse('value_invalid', `${field.label}: give at least one, or clear the field.`);
+  const parts = severalParts(value);
   if (parts.length > FIELD_VALUES_MAX)
     return refuse('value_invalid', `${field.label} holds up to ${FIELD_VALUES_MAX}.`);
   if (field.kind === 'person') {
