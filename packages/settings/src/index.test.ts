@@ -6,6 +6,7 @@ import {
   isAllSettingRow,
   isCommonSetting,
   joinSettings,
+  RETIRED_ALL_SETTING_KEYS,
   settingKeyOfRow,
   splitSettings,
 } from './index';
@@ -25,6 +26,30 @@ describe('settings scopes', () => {
         { reduceMotion: false, tourSeen: true },
       ),
     ).toEqual({ reduceMotion: true, tourSeen: true });
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Retired shared keys".
+  describe('retired shared keys', () => {
+    it('are no longer shared keys', () => {
+      for (const key of RETIRED_ALL_SETTING_KEYS) {
+        expect(isAllSetting(key)).toBe(false);
+        expect(isAllSettingRow(key)).toBe(false);
+      }
+    });
+
+    it('come through a read from all, over a stale app copy, so the editor can drop and clear them', () => {
+      expect(
+        joinSettings({ powerUserMode: true, minimalChrome: true }, { powerUserMode: false }),
+      ).toEqual({ powerUserMode: true, minimalChrome: true });
+      expect(joinSettings({}, { minimalChrome: true })).toEqual({ minimalChrome: true });
+    });
+
+    it('are deleted from both scopes by a write, whatever value it names', () => {
+      expect(splitSettings({ powerUserMode: null, minimalChrome: true, tourSeen: true })).toEqual({
+        all: { powerUserMode: null, minimalChrome: null },
+        app: { powerUserMode: null, minimalChrome: null, tourSeen: true },
+      });
+    });
   });
 
   it('round-trips', () => {
