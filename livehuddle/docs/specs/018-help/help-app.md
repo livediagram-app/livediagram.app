@@ -286,6 +286,10 @@ live. The pitch it opens with is the product's, "Meet and run workshops together
   ([Proximity audio](../012-collaboration/proximity-audio.md#turning-calls-on)), so both say that where they are off
   there is no Join Audio button, and neither promises when they come on. Calls cannot run locally without the
   Realtime secrets, so their figures are drawn from the call components' own labels and states rather than shot.
+  The **Stage** ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)) has its own article
+  under Palette › Virtual Office (`/help/palette/virtual-office/stage/`: adding one, speaking from it, Who Can Speak
+  and Show Cameras, who may do what), linked from the Virtual Office article's Stage section, its figures drawn the
+  same way.
 - **The palette's groups** follow Workshop's palette: Everyday Elements, **Layout Kits** (lanes, frames, stacks,
   boundaries, keys, cards and callouts, pointer notes, the timeline), Workshop Kits and Palette Settings.
 

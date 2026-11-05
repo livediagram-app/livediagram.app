@@ -127,17 +127,17 @@ livehuddle keeps every feature the platform gives all its apps, and cuts only wh
 Each is cut at the fork. "Later" means it can come back by its own spec change; "Not here" means it belongs to
 another product.
 
-| Left out                                                        | Why                                                                                                                     | When        |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------- |
-| Diagram and Draw modes, Diagrams, Concepts, Technology, Devices | Building diagrams is livediagram's job. Workshop's Draw category leaves with #423 too                                   | Not here    |
-| Event Storming boards, the wall-photo import                    | A diagram kind with its own rules; livediagram's                                                                        | Not here    |
-| Pages, slides, presenting as a deck                             | livedocuments' (decks and presenting stay in livediagram's Workshop mode)                                               | Not here    |
-| Retros, workshops, quizzes and games, the Collaborate elements  | Running a workshop is livediagram's Workshop mode (Work Tracker #423, [Not in livehuddle](not-in-livehuddle.md))        | Not here    |
-| Shapes, arrows, drawing, layout containers, tables, charts      | Diagram tools; livediagram's. A Space keeps sticky notes, text, images, link cards and frames                           | Not here    |
-| Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                           | Later       |
-| Audio calls, video calls, screen sharing                        | Need media infrastructure (TURN, an SFU) the stack does not have ([Future work](../005-project-roadmap/future-work.md)) | Next        |
-| Calendar invites, recordings, transcripts                       | Each is a product of its own; none is asked for                                                                         | Not planned |
-| A paid tier                                                     | No liveworkspace product has one                                                                                        | Never       |
+| Left out                                                        | Why                                                                                                                                                                        | When        |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Diagram and Draw modes, Diagrams, Concepts, Technology, Devices | Building diagrams is livediagram's job. Workshop's Draw category leaves with #423 too                                                                                      | Not here    |
+| Event Storming boards, the wall-photo import                    | A diagram kind with its own rules; livediagram's                                                                                                                           | Not here    |
+| Pages, slides, presenting as a deck                             | livedocuments' (decks and presenting stay in livediagram's Workshop mode)                                                                                                  | Not here    |
+| Retros, workshops, quizzes and games, the Collaborate elements  | Running a workshop is livediagram's Workshop mode (Work Tracker #423, [Not in livehuddle](not-in-livehuddle.md))                                                           | Not here    |
+| Shapes, arrows, drawing, layout containers, tables, charts      | Diagram tools; livediagram's. A Space keeps sticky notes, text, images, link cards and frames                                                                              | Not here    |
+| Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                                                                              | Later       |
+| Audio calls, video calls, screen sharing                        | Built for staging on Cloudflare Realtime ([Future work](../005-project-roadmap/future-work.md)); off in production until the calls kill switch (Work Tracker #316) is live | Staging     |
+| Calendar invites, recordings, transcripts                       | Each is a product of its own; none is asked for                                                                                                                            | Not planned |
+| A paid tier                                                     | No liveworkspace product has one                                                                                                                                           | Never       |
 
 ## The apps livehuddle ships
 
