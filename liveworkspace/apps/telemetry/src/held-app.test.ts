@@ -37,7 +37,7 @@ describe('livehuddle in the telemetry service', () => {
   // Both are closed vocabularies that diverged when livehuddle cut Diagram mode and gained the Stage. The
   // event gate (category, action) is still the same list in both, so the difference shows in the type
   // tokens each app ranks and in the api routes each app names.
-  it("has a vocabulary of its own: livehuddle's Stage, livediagram's AI route", () => {
+  it("has a vocabulary of its own: livehuddle's Space pieces, livediagram's AI route", () => {
     const palette = (types: Record<string, readonly string[]>) => Object.values(types).flat();
     // Only livehuddle has a Stage to place.
     expect(palette(LIVEHUDDLE_PALETTE_TYPES)).toContain('Stage');
@@ -45,10 +45,41 @@ describe('livehuddle in the telemetry service', () => {
     // Only livediagram has an /api/ai door; livehuddle reads it as an unknown route.
     expect(livediagramRouteLabel('POST', '/api/ai/notes')).toBe('Post.Ai');
     expect(livehuddleRouteLabel('POST', '/api/ai/notes')).toBe('Post.Unknown');
-    // And the palette tokens livehuddle ranks that livediagram does not are exactly the Stage.
+    // And the palette tokens livehuddle ranks that livediagram does not are its Space pieces: the Stage, and the
+    // meeting, wayfinding, recreation and garden pieces only a Space holds.
     const huddleOnly = palette(LIVEHUDDLE_PALETTE_TYPES).filter(
       (t) => !palette(LIVEDIAGRAM_PALETTE_TYPES).includes(t),
     );
-    expect(huddleOnly).toEqual(['Stage']);
+    expect(huddleOnly).toEqual([
+      'Stage',
+      'Office-pod',
+      'Bar',
+      'Bar-stool',
+      'Drinks-cabinet',
+      'Drinks-fridge',
+      'Outdoor-plant',
+      'Tree',
+      'Garden-path',
+      'Grass',
+      'Garden-fence',
+      'Door',
+      'Directory',
+      'Elevator',
+      'Screen',
+      'Room-sign',
+      'Notice-board',
+      'World-clock',
+      'Jukebox',
+      'Ping-pong-table',
+      'Arcade-machine',
+      'Fireplace',
+      'Campfire',
+      'Bench',
+      'Picnic-table',
+      'Hammock',
+      'Garden-umbrella',
+      'Fountain',
+      'Pond',
+    ]);
   });
 });
