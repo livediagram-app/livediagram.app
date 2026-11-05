@@ -114,7 +114,7 @@ strokes in its own rows:
   its flyout holds. Every marker shows the same rows, so Marker width stays at the same height
   whichever is in hand; Marker 1's colour row holds its one colour, the Ink.
 - A caption above the rows names whose style it is ("Marker 2", "Marker stroke", "3 marker
-  strokes"); a mixed selection counts every element styled. Power user mode leaves it out.
+  strokes"); a mixed selection counts every element styled.
 
 ## The Fill tool
 
