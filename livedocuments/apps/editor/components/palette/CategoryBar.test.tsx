@@ -6,7 +6,6 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
-import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
@@ -25,20 +24,18 @@ afterEach(() => {
   cleanup();
 });
 
-function show({ minimal = false }: { minimal?: boolean } = {}) {
+function show() {
   const h = Object.fromEntries(
     PALETTE_ADD_HANDLER_KEYS.map((k) => [k, vi.fn()]),
   ) as unknown as PaletteAddHandlers;
   render(
-    <MinimalChromeProvider value={minimal}>
-      <ToolbarPalette
-        canvasTool="select"
-        onSetCanvasTool={vi.fn()}
-        canvasEmpty={false}
-        pendingDraw={null}
-        {...h}
-      />
-    </MinimalChromeProvider>,
+    <ToolbarPalette
+      canvasTool="select"
+      onSetCanvasTool={vi.fn()}
+      canvasEmpty={false}
+      pendingDraw={null}
+      {...h}
+    />,
   );
   return h;
 }
@@ -192,12 +189,12 @@ describe('hover intent', () => {
   });
 });
 
-describe('minimal chrome (docs/specs/007-editor/power-user-mode.md)', () => {
-  it('shows a picture tile’s icon alone, keeping its name, and a card its name', () => {
-    show({ minimal: true });
+describe('tile captions (docs/specs/007-editor/toolbar-layout.md)', () => {
+  it('shows a picture tile’s caption under its icon, and a card its name', () => {
+    show();
     fireEvent.click(button('Shapes'), { detail: 1 });
     const square = within(flyout()!).getByRole('button', { name: 'Add Square' });
-    expect(square.textContent).not.toContain('Square');
+    expect(square.textContent).toContain('Square');
     fireEvent.click(button('Components'), { detail: 1 });
     expect(within(flyout()!).getAllByRole('button', { name: /Hero/ })[0]!.textContent).toContain(
       'Hero',

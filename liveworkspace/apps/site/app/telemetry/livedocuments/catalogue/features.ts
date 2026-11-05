@@ -770,14 +770,6 @@ export const ELEMENT_TOURS_OFFERED = opened(
   (t) => elementTourTokens('Offer').includes(t ?? ''),
 );
 
-// The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on
-// the Visitors tab.
-export const POWER_USER_OFFERED = opened(
-  'Power User Mode Offered',
-  'The offer shown, after 20 editing days or 50 shortcuts on one device.',
-  (t) => t === 'PowerUserOffer',
-);
-
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md); charted with its reloads
 // on the Visitors tab.
 export const NEW_VERSION_OFFERED = opened(

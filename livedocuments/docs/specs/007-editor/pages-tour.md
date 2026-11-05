@@ -43,18 +43,18 @@ and the closing card. This tour's part:
   tour stayed on the button for good (Work Tracker #177).
 - **Taken, on every device.** As a run starts and however it ends (completed or skipped), the synced
   `pagesTourKinds` user preference ([User preferences](user-preferences.md)) records its kind. The record feeds the
-  Settings rows, which page a press prefers, and whether the button offers the tour at all. `pagesTourSeen` true counts every kind as taken only
-  while [Power user mode](power-user-mode.md) is on (`apps/editor/lib/tour-tracks.ts`, shared with the [element
-  tours](element-tours.md)).
+  Settings rows, which page a press prefers, and whether the button offers the tour at all. The older single flag `pagesTourSeen`
+  counts no kind on its own: an answer given before the tour split stands for no kind in particular
+  (`apps/editor/lib/pages-tour.ts`). Someone who had the retired [Power user mode](power-user-mode.md) on keeps every
+  kind taken: its preset's flag is folded into `pagesTourKinds` as the stored preferences are read.
 - **Rerun from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
   while any is untaken; off marks them all taken, on forgets every record), and one switch per kind sits nested beneath
   it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**, **Flashcards Tour**; the Flashcards
   row came with the button leaving once a track is taken, since without it a taken Flashcards track had no switch of
   its own to bring it back). On means that kind has not been taken. Turning one off marks that kind alone;
-  turning one on forgets that kind alone (and folds a Power user's single `pagesTourSeen` into the taken list
-  first, so the other kinds stay as they were). Closing Settings with a kind newly on starts the tour when it is on
-  offer right now; otherwise it does nothing, and the button is there when the person is in Pages. Power user
-  mode's readout lists **Pages Tours**.
+  turning one on forgets that kind alone (and clears the single `pagesTourSeen`, so the other kinds stay as they
+  were). Closing Settings with a kind newly on starts the tour when it is on offer right now; otherwise it does
+  nothing, and the button is there when the person is in Pages.
 - **Replayable from the page**: every page's panel carries **Show Me**, which runs that page's track on demand
   ([Show Me](show-me.md)).
 
@@ -199,10 +199,11 @@ The tour's funnel; the track shows in the step tokens:
 - **Page Show Me**: `UI` · `Started` · `<Kind>Tour`, and `UI` · `Ended` · `<Kind>TourCompleted` |
   `<Kind>TourSkipped`, for `SlideTour`, `InfographicTour` and `ArticleTour` ([Show Me](show-me.md)).
 
-## Power user mode
+## Power user mode (retired)
 
-[Power user mode](power-user-mode.md) marks the Pages tour seen (`pagesTourSeen`, every kind while the mode
-is on) and every element tour (`elementToursSeen`).
+The retired [Power user mode](power-user-mode.md) marked the Pages tour seen (`pagesTourSeen`) and every element
+tour (`elementToursSeen`). Both stay seen for someone who had it on: `upgradeLegacyPreferences`
+(`packages/api-schema/src/legacy-preferences.ts`) adds every kind to `pagesTourKinds` when it drops the mode's keys.
 
 ## Code
 

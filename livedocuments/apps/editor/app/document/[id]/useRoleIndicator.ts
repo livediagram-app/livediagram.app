@@ -2,7 +2,7 @@ import { resolveOwnerBadge } from '@/lib/presence-rows';
 import type { Role } from '@/components/chrome/RoleIndicator';
 import { useEditorContext } from './EditorContext';
 
-// What the role pill and its Minimal chrome icon show
+// What the role pill shows
 // (docs/specs/007-editor/editor-app.md#role-pill): the role in force (view preview included), the
 // owner it discloses, and the toggle when the session's role allows editing.
 export function useRoleIndicator(): {

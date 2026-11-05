@@ -80,20 +80,6 @@ export const EDITOR_SETTINGS = settingsStack(
       'Contents Side',
       "Pages mode's Contents sidebar dragged to the canvas's left or right edge.",
     ),
-    toggle(
-      'UI',
-      'PowerUserModeOn',
-      'PowerUserModeOff',
-      'Power User Mode',
-      'The recommended-settings preset, from Settings or the offer.',
-    ),
-    toggle(
-      'UI',
-      'MinimalChromeOn',
-      'MinimalChromeOff',
-      'Minimal Chrome',
-      'Labels and hints hidden, for power users.',
-    ),
   ],
 );
 
