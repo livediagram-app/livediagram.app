@@ -167,7 +167,9 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
+  // On the right edge, always (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left holds the
+  // Contents sidebar.
+  test('sits on the right edge, vertically centred', async ({ page, pageErrors }) => {
     await openBoard(page);
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
@@ -175,7 +177,7 @@ test.describe('quick style panel', () => {
     await expect(async () => {
       const canvas = (await page.locator(CANVAS).boundingBox())!;
       const q = (await panel(page).boundingBox())!;
-      expect(Math.abs(q.x - (canvas.x + 12))).toBeLessThan(1);
+      expect(Math.abs(q.x + q.width - (canvas.x + canvas.width - 12))).toBeLessThan(1);
       expect(Math.abs(q.y + q.height / 2 - (canvas.y + canvas.height / 2))).toBeLessThan(1);
     }).toPass();
     expectNoPageErrors(pageErrors);
@@ -249,7 +251,7 @@ test.describe('quick style panel', () => {
     pageErrors,
   }) => {
     await openBoard(page);
-    // Clear of the panel, which sits on the canvas's left (docs/specs/008-canvas/quick-style-panel.md
+    // Clear of the panel, which sits on the canvas's right edge (docs/specs/008-canvas/quick-style-panel.md
     // "Where it sits"), so the right-click below lands on the circle.
     await drawShape(page, 'o', { x: 800, y: 300 });
     const widths = panel(page).getByRole('radiogroup', { name: 'Stroke width' });

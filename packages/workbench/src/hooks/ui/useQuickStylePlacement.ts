@@ -29,6 +29,15 @@ const toRect = (r: DOMRect): Rect => ({
   height: r.height,
 });
 
+// The boxes an obstacle takes up. The bottom-right cluster is a row of strips that, beside a docked Contents sidebar,
+// reaches left to the sidebar (so it can wrap upward short of it) while its strips sit at the right: its own box
+// covers empty canvas, so the strips are the obstacles, not the row.
+function obstacleBoxes(el: HTMLElement): Rect[] {
+  const parts =
+    el.matches('[data-zoom-cluster]') && el.children.length > 0 ? Array.from(el.children) : [el];
+  return parts.map((part) => toRect(part.getBoundingClientRect()));
+}
+
 type QuickStyleSpot = { left: number; top: number };
 
 export function useQuickStylePlacement(
@@ -51,7 +60,7 @@ export function useQuickStylePlacement(
 
     const measure = () => {
       const obstacles = obstacleEls()
-        .map((el) => toRect(el.getBoundingClientRect()))
+        .flatMap(obstacleBoxes)
         .filter((r) => r.width > 0 && r.height > 0);
       const box = panel.getBoundingClientRect();
       // The panel never scrolls (one compact form), so its box is its natural size.

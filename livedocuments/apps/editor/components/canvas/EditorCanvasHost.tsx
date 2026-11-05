@@ -29,7 +29,7 @@ import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
-import { useTemplateStartShown } from '@/components/start/useTemplateStartShown';
+import { useTemplateStartOpen } from '@/components/start/useTemplateStartShown';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import {
@@ -234,9 +234,10 @@ export function EditorCanvasHost() {
   useLayoutEffect(() => setBandDocumentName(documentName), [documentName]);
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  // Open, or about to open (its code still loading): either way the tab's first page waits.
-  const templateStartShown = useTemplateStartShown();
-  const startPanelOpen = useStartPanelOpen() || templateStartShown;
+  // Open, or about to open (its code still loading): either way the tab's first page waits. Closed for an explicit
+  // blank, it is not open, and the page is drawn to ask its kind.
+  const templateStartOpen = useTemplateStartOpen();
+  const startPanelOpen = useStartPanelOpen() || templateStartOpen;
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&

@@ -50,7 +50,9 @@ export function ContentsAddPage({
           aria-label={!full && another === short ? short : `${short}: ${full ? limit : another}`}
           data-contents-add=""
           onClick={() => (addLike ? addLike() : add?.('infographic'))}
-          className={`${BUTTON} ${IDLE} min-w-0 flex-1 px-3 py-2`}
+          // optical-edges pulls the leading + in by its blank margin, so the icon and label centre by their ink
+          // (docs/specs/004-interface-design/optical-alignment.md "A chip is centred as a whole").
+          className={`optical-edges ${BUTTON} ${IDLE} min-w-0 flex-1 px-3 py-2`}
         >
           <AddIcon />
           <span className="truncate">{short}</span>

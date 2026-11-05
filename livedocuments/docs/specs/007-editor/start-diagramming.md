@@ -105,7 +105,9 @@ key and follow each other as it changes.
 The tab's first page is drawn only once the start is done: while Start Making Pages is open there is no page behind
 it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. That holds from the tab's first frame:
 the canvas reads the same rule the panel does (`useTemplateStartShown`), not the panel's mount, so a new tab never
-flashes an empty page while the panel's code is still loading. Picking a template lands its pages. A blank of
+flashes an empty page while the panel's code is still loading. A start closed for the tab (an explicit blank, "Bringing
+it back") is not open: the canvas reads `useTemplateStartOpen`, the rule and the tab's closed key together, so the
+explicit blank's one page is drawn at once, asking What Is This Page For? Picking a template lands its pages. A blank of
 a page kind (Blank Slide Deck, Blank Article, Blank Infographic) lands one page of that kind, already
 chosen, so it asks nothing and the start does not come back over it.
 

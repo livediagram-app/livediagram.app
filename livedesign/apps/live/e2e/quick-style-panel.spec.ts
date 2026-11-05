@@ -168,15 +168,21 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
+  // On the left, vertically centred; the left edge holds the Contents sidebar, docked from the first page, so it
+  // stands directly right of it (docs/specs/008-canvas/quick-style-panel.md "Where it sits", candidate 4).
+  test('sits on the left, beside the Contents sidebar, vertically centred', async ({
+    page,
+    pageErrors,
+  }) => {
     await openBoard(page);
     await drawShape(page, 'o', [0.4, 0.45]);
     await expect(panel(page)).toBeVisible();
     await expect(panel(page).getByText('Quick style', { exact: true })).toHaveCount(0);
     await expect(async () => {
       const canvas = (await page.locator(CANVAS).boundingBox())!;
+      const contents = (await page.locator('[data-contents-sidebar]').boundingBox())!;
       const q = (await panel(page).boundingBox())!;
-      expect(Math.abs(q.x - (canvas.x + 12))).toBeLessThan(1);
+      expect(Math.abs(q.x - (contents.x + contents.width + 12))).toBeLessThan(1);
       expect(Math.abs(q.y + q.height / 2 - (canvas.y + canvas.height / 2))).toBeLessThan(1);
     }).toPass();
     expectNoPageErrors(pageErrors);
