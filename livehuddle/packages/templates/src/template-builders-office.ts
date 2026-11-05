@@ -12,8 +12,10 @@ import { officePlan, walkIn, type OfficeRoom } from './template-office-parts';
 
 // The office's footprint: two rows of rooms either side of a corridor.
 const ROW_H = 340;
-const CORRIDOR = 130;
+// Deep enough for the Walk In button and the figure that opens below it (see the test), without reaching a room.
+const CORRIDOR = 270;
 const GAP = 60;
+const WALK_IN_TOP = 10;
 const HEAD = 96;
 const WIDTH = 1560;
 const HEIGHT = HEAD + ROW_H * 2 + CORRIDOR;
@@ -132,10 +134,11 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
       'Walk in, find a desk, meet round the table and grab a coffee together. Rename the rooms to fit your team.',
     ),
     [
-      // At the corridor's end: the way in, and what to do once you are.
+      // At the corridor's end: the way in, and what to do once you are. Its top sits WALK_IN_TOP under the top row, so
+      // the character that opens below it stands in the corridor, clear of the bottom row's walls and furniture.
       ...walkIn(
         x0 + WIDTH - 20,
-        top + ROW_H + CORRIDOR / 2,
+        top + ROW_H + WALK_IN_TOP + 48,
         'Press Walk In (or W) to walk round. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
       ),
     ],

@@ -21,6 +21,11 @@ six [rooms](../009-elements/office.md#room) either side of a corridor, every doo
 At the corridor's end: a [Selection Mode button](../009-elements/mode-button.md) set to Avatar, labelled **Walk In**,
 so one press puts a visitor's character at the door, and a line saying how to walk, talk, sit and get a coffee.
 
+Every **Walk In** button in the office and the Spaces below has open floor under it: the character opens a full figure
+below the button ([Entering from a button](../008-canvas/avatar-mode.md)), so that spot is never furniture or a wall.
+The Virtual Office's corridor is deep enough for the button and that figure, and a test checks the spawn rectangle in
+all four templates.
+
 - The rooms are first in the tab, so they lie under the furniture; the rugs come next.
 - Every room keeps its name as its label, so renaming one is renaming the room.
 - The tab opens on a meeting board ([The meeting board](workshop-mode.md)) on grid paper.
