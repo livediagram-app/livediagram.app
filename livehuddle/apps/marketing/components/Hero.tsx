@@ -46,7 +46,8 @@ export function Hero() {
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10">
           <a href={ctaHref('/new', 'Home.Hero')} className={PRIMARY}>
-            Open a Space
+            {/* The label's cap band, not its line box, sits on the button's middle (optical-alignment.md). */}
+            <span className="text-optical-centre">Open a Space</span>
             <ChevronRightIcon size={18} aria-hidden />
           </a>
           <a href="/#templates" className={SECONDARY}>

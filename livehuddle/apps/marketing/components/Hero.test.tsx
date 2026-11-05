@@ -18,7 +18,7 @@ describe('the hero', () => {
   });
 
   it('opens a Space from its own funnel slot, and browses the templates under it', () => {
-    expect(html).toMatch(/href="\/new\?via=Home\.Hero"[^>]*>Open a Space/);
+    expect(html).toMatch(/href="\/new\?via=Home\.Hero"[^>]*>(?:<span[^>]*>)?Open a Space/);
     expect(html).toMatch(/href="\/#templates"[^>]*>Browse Templates/);
   });
 
@@ -37,7 +37,7 @@ describe('the hero', () => {
       expect(
         before
           .slice(before.lastIndexOf('<div'))
-          .startsWith('<div aria-hidden="true" class="hsf-stage'),
+          .startsWith('<div aria-hidden="true" data-optical-ignore="true" class="hsf-stage'),
       ).toBe(true);
       const markup = html.slice(start);
       expect(markup).toContain(`src="${floorArtHref(stage.key, 'light')}"`);
