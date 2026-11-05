@@ -213,7 +213,7 @@ export const COMMUNITY_APP_CATEGORIES = {
     },
     OTHER,
   ],
-  // A meetings and workshops product (livehuddle/docs/specs/025-community/community.md "Categories").
+  // A product for meeting in Spaces (livehuddle/docs/specs/025-community/community.md "Categories").
   'livehuddle.app': [
     {
       id: 'offices',
@@ -224,37 +224,25 @@ export const COMMUNITY_APP_CATEGORIES = {
     {
       id: 'meetings',
       label: 'Meetings',
-      blurb: 'Stand-ups, agendas, town halls, all-hands',
+      blurb: 'Stand-ups, one-to-ones, all-hands, town halls',
       type: 'Meetings',
     },
     {
-      id: 'retrospectives',
-      label: 'Retrospectives',
-      blurb: 'Retros, lessons learned, health checks',
-      type: 'Retrospectives',
+      id: 'socials',
+      label: 'Socials & Events',
+      blurb: 'Meetups, parties, launches, team socials',
+      type: 'Socials',
     },
     {
-      id: 'workshops',
-      label: 'Workshops',
-      blurb: 'Brainstorms, crazy eights, lean coffee, ideas',
-      type: 'Workshops',
-    },
-    {
-      id: 'decisions',
-      label: 'Votes & Decisions',
-      blurb: 'Dot votes, polls, estimates, priorities',
-      type: 'Decisions',
-    },
-    {
-      id: 'games',
-      label: 'Quizzes & Games',
-      blurb: 'Quizzes, icebreakers, team games',
-      type: 'Games',
+      id: 'communities',
+      label: 'Communities & Clubs',
+      blurb: 'Community hangouts, clubs, study groups',
+      type: 'Communities',
     },
     {
       id: 'learning',
       label: 'Learning & Teaching',
-      blurb: 'Classes, training, lessons',
+      blurb: 'Classrooms, training rooms, office hours',
       type: 'Learning',
     },
     OTHER,
@@ -271,15 +259,14 @@ export type CommunityCategory =
   | 'art'
   | 'articles'
   | 'budgets'
+  | 'communities'
   | 'dashboards'
   | 'data'
-  | 'decisions'
   | 'decks'
   | 'design'
   | 'events'
   | 'flows'
   | 'forms'
-  | 'games'
   | 'guides'
   | 'illustrations'
   | 'infographics'
@@ -296,9 +283,9 @@ export type CommunityCategory =
   | 'posters'
   | 'projects'
   | 'proposals'
-  | 'retrospectives'
   | 'roadmaps'
   | 'social'
+  | 'socials'
   | 'trackers'
   | 'wireframes'
   | 'workflows'
