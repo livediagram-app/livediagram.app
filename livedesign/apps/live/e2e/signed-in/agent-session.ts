@@ -88,5 +88,6 @@ export async function open(page: Page, s: Setup) {
   const ws = await socket;
   await ws.waitForEvent('framereceived', (f) => String(f.payload).includes('"kind":"presence"'));
   await page.locator(CANVAS).waitFor();
-  await expect(page.getByText('API', { exact: true })).toBeVisible();
+  // The square on the canvas: the Pages list draws each page's content too, so the bare text is there twice.
+  await expect(page.getByRole('img', { name: 'Square "API"' })).toBeVisible();
 }
