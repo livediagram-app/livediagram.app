@@ -28,11 +28,12 @@ describe('element tours', () => {
     );
   });
 
-  it('remembers an answer, and counts every kind seen for a power user only', () => {
+  it('remembers an answer, and counts every kind seen under the blanket flag', () => {
     expect(elementTourSeen({}, 'timeline')).toBe(false);
     expect(elementTourSeen(markElementTourSeen({}, 'timeline'), 'timeline')).toBe(true);
-    expect(elementTourSeen({ elementToursSeen: true }, 'timeline')).toBe(false);
-    expect(elementTourSeen({ elementToursSeen: true, powerUserMode: true }, 'timeline')).toBe(true);
+    // The flag the retired Power user mode's preset wrote keeps every kind answered
+    // (docs/specs/007-editor/power-user-mode.md "What happens to stored preferences").
+    expect(elementTourSeen({ elementToursSeen: true }, 'timeline')).toBe(true);
   });
 
   it('marks an answer once', () => {
@@ -40,13 +41,9 @@ describe('element tours', () => {
     expect(markElementTourSeen(once, 'timeline')).toEqual({ elementTourKinds: ['timeline'] });
   });
 
-  it('offers a kind again, even to a power user', () => {
-    const power = {
-      powerUserMode: true,
-      elementToursSeen: true,
-      elementTourKinds: ['timeline' as const],
-    };
-    const again = offerElementTourAgain(power, 'timeline');
+  it('offers a kind again, even under the blanket flag', () => {
+    const all = { elementToursSeen: true, elementTourKinds: ['timeline' as const] };
+    const again = offerElementTourAgain(all, 'timeline');
     expect(elementTourSeen(again, 'timeline')).toBe(false);
     expect(again.elementToursSeen).toBe(false);
   });

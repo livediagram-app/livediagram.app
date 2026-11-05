@@ -64,14 +64,16 @@ function fullAccount(): UserPreferences {
   return {
     ...({
       recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
+      // Written by the retired Power user mode (docs/specs/007-editor/power-user-mode.md), until a read drops them.
+      powerUserBaseline: {
+        showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
+        notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
+      },
+      powerUserMode: true,
     } as UserPreferences),
     whiteboardShapePicks: picks,
     whiteboardPinnedShapes: ['arrow', 'rectangle'],
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
-    powerUserBaseline: {
-      showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
-      notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
-    },
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
     customSwatches: Array.from({ length: 100 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     whiteboardYourColours: Array.from({ length: 50 }, (_, i) => `#${String(i).padStart(6, 'a')}`),
@@ -83,7 +85,6 @@ function fullAccount(): UserPreferences {
     elementIndicatorStyle: 'footer',
     drawPattern: 'graph',
     reduceMotion: true,
-    powerUserMode: true,
     notifyTips: false,
     notifyMilestones: false,
   };
