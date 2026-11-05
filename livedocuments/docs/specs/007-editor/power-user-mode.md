@@ -40,9 +40,9 @@ the three-step Appearance control, and More plus the bin in the multi-selection 
   ([User preferences](user-preferences.md), "Retired keys"). Nothing is written on load. A blob that still carries
   them loads cleanly, its other settings intact. The offer's device-local counters
   (`livedocuments:power-user-offer:v1` in `localStorage`) are left in place and never read.
-- **Every app shares two of them.** `powerUserMode` and `minimalChrome` live in the `all` scope every app reads, so the
-  write that drops them here drops them for the other apps too: an app that still offers the mode shows it off, with
-  every setting as it was.
+- **Every app shares two of them.** `powerUserMode` and `minimalChrome` lived in the `all` scope every app reads.
+  `@liveworkspace/settings` lists them as retired keys (`RETIRED_ALL_SETTING_KEYS`): no app shows them, and the next
+  write any app makes clears them from that scope, with nothing written on load.
 - **Telemetry.** `PowerUserModeOn`/`Off`, `MinimalChromeOn`/`Off` and the `PowerUserOffer` events are no longer sent,
   and the public dashboard no longer charts them ([Telemetry](../017-telemetry/telemetry.md)).
 
@@ -52,10 +52,9 @@ The help article (User Interface › Power User Mode) is retired: its address la
 the help app (`powerUserModeMoved` in help-site), and the Settings, Quick Controls, Title Bar, Toolbar, Dark Mode,
 Explorer panel, Multi-select and Pages tour articles no longer mention the mode.
 
-## Where it is still to go
+## Shared code
 
-livediagram, liveplanner and livedesign have dropped it too; livehuddle follows. Until it has gone, the shared pieces
-stay in `packages/` (`MinimalChromeProvider` in workbench, the `powerUser` rows and preset readout in settings-ui, the
-keys in `@liveworkspace/settings`, the quick switch's helpers in ui), and the Explorer's last Minimal chrome reads
-(`components/panels/Explorer.tsx`, `ExplorerHeaderMenu.tsx`, [Explorer structure](../013-workspace/explorer-structure.md))
-stay with them: nothing provides the flag any more, so they always read it off.
+The mode is gone from every editor (livediagram, liveplanner, livedesign, livedocuments, then livehuddle), so the
+shared pieces went with the last of them (Work Tracker #500 part 5): `MinimalChromeProvider` and `useMinimalChrome`
+(workbench), the `powerUser` rows and the preset readout (settings-ui), the quick switch's helpers (ui), the
+Explorer's last Minimal chrome reads, and the help site's Settings illustration's Power User row.
