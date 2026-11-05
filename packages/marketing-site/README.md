@@ -28,7 +28,8 @@ packages/marketing-site/src
 │  ├─ hero-fan-boot.ts          the inline script that deals the hero fan's shuffled hand
 │  ├─ silent-sign-in.ts         the inline script that signs a liveworkspace session in once the page is idle
 │  └─ eyebrow, band-classes, feature-anchor, shelf-scroll
-├─ css/                         hero-fan, promises, page-motion and licences stylesheets
+├─ css/                         hero-fan, hero-tall (the landing hero's screen-filling height),
+│                               promises, page-motion and licences stylesheets
 └─ guards/                      the source guards, run over every product's marketing app and this
                                 package (optical, touch targets, dark borders, rail, motion, size)
 

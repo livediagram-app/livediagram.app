@@ -10,18 +10,47 @@
 import { useSyncExternalStore } from 'react';
 import {
   parseAvatarHand,
-  parseAvatarLetSpeak,
   parseAvatarVoice,
   parseCallsModeOp,
   parseCallTrack,
-  parseStoredLevel,
-  ROOM_MAX_CONNECTIONS,
-  type AccessLevel,
   type CallsMode,
   type CallTrackLocator,
   type VoiceLevel,
 } from '@livehuddle/api-schema';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
+import { pruneHands, resetHands, setCallLevels, setHand } from './calls-hands-store';
+
+export {
+  callHands,
+  callLetByMe,
+  callLevels,
+  HANDS_MAX,
+  noteLetSpeak,
+  onCallHands,
+  onCallLevels,
+  onLetSpeak,
+  receiveLetSpeak,
+  setCallLevels,
+  useCallHands,
+  type CallHand,
+  type CallHandsView,
+} from './calls-hands-store';
+export {
+  callMaximised,
+  callMedia,
+  onCallMaximised,
+  onStopShare,
+  receiveStopShare,
+  resetCallMedia,
+  SELF_MEDIA_ID,
+  setCallMaximised,
+  setCallMedia,
+  useCallMaximised,
+  useCallMedia,
+  type CallMaximised,
+  type CallMedia,
+  type CallMediaStreams,
+} from './calls-media-store';
 
 /** A level not refreshed for this long reads as stopped: a lost stop clears itself. */
 export const VOICE_STALE_MS = 8000;
@@ -33,6 +62,9 @@ export type CallPeer = {
   tabId: string | null;
   level: VoiceLevel;
   levelAt: number;
+  // When they last showed a talking level (performance.now ms); absent for never. A big room receives its talkers
+  // (meeting-rooms-and-stage.md "A big room hears its talkers").
+  talkedAt?: number;
   // The microphone's locator; null while it is not published.
   track: CallTrackLocator | null;
   // The camera's and the shared screen's, null while off.
@@ -40,20 +72,9 @@ export type CallPeer = {
   screen: CallTrackLocator | null;
 };
 
-/** What a bubble shows. */
-export type CallMedia = 'video' | 'screen';
 export type CameraState = 'off' | 'starting' | 'on' | 'blocked';
 export type ScreenState = 'off' | 'starting' | 'on';
-/** Your own bubbles are keyed by this in the media store; everyone else's by presence id. */
-export const SELF_MEDIA_ID = 'self';
-/** The one bubble this viewer has opened large. */
-export type CallMaximised = { id: string; media: CallMedia };
-export type CallMediaStreams = { readonly video?: MediaStream; readonly screen?: MediaStream };
 
-/** A peer's raised hand: the tab it went up on, who let it speak (a presence id, or null), and when it went up. */
-export type CallHand = { tabId: string; letSpeak: string | null; at: number };
-/** One hand a connection: the room holds at most this many, so the store never holds more. */
-export const HANDS_MAX = ROOM_MAX_CONNECTIONS;
 /** Where you stand towards a live stage (meeting-rooms-and-stage.md): the call strip reads it. */
 export type StagePlace = 'none' | 'audience' | 'speaker' | 'barred';
 /** Your own hand: down, raised, or let speak. */
@@ -128,25 +149,9 @@ let actions: CallActions | null = null;
 const peerListeners = createListeners();
 const selfListeners = createListeners();
 const trackListeners = createListeners();
+const talkListeners = createListeners();
 const modeListeners = createListeners();
-const mediaListeners = createListeners();
-const maximisedListeners = createListeners();
-let media: ReadonlyMap<string, CallMediaStreams> = new Map();
-let maximised: CallMaximised | null = null;
 let peerNotifyDue: ReturnType<typeof setTimeout> | null = null;
-let levels: ReadonlyMap<string, AccessLevel> = new Map();
-const levelListeners = createListeners();
-let hands: ReadonlyMap<string, CallHand> = new Map();
-const handListeners = createListeners();
-let letByMe: ReadonlySet<string> = new Set();
-/** What the canvas draws hands from: every raised hand, and the ones this browser let speak. */
-export type CallHandsView = {
-  readonly hands: ReadonlyMap<string, CallHand>;
-  readonly letByMe: ReadonlySet<string>;
-};
-let handsView: CallHandsView = { hands, letByMe };
-type LetSpeakListener = (from: string, on: boolean) => void;
-const letSpeakListeners = new Set<LetSpeakListener>();
 
 const now = () => performance.now();
 
@@ -184,8 +189,19 @@ export function receiveCallOp(from: string, op: unknown): void {
   }
   const voice = parseAvatarVoice(op);
   if (voice) {
-    peers.set(from, { ...peerOf(from), tabId: voice.tabId, level: voice.level, levelAt: now() });
+    const prev = peerOf(from);
+    const at = now();
+    const talking = voice.level > 0;
+    peers.set(from, {
+      ...prev,
+      tabId: voice.tabId,
+      level: voice.level,
+      levelAt: at,
+      ...(talking ? { talkedAt: at } : {}),
+    });
     notifyPeers();
+    // Someone starting to talk may need receiving in a big room.
+    if (talking && levelNow(prev, at) === 0) talkListeners.notify();
     return;
   }
   const track = parseCallTrack(op);
@@ -268,6 +284,11 @@ export function onCallTracks(listener: () => void): () => void {
   return trackListeners.subscribe(listener);
 }
 
+/** Subscribe to a peer starting to talk, for a big room's subscriptions. */
+export function onCallTalkStart(listener: () => void): () => void {
+  return talkListeners.subscribe(listener);
+}
+
 export function callSelf(): CallSelf {
   return self;
 }
@@ -307,182 +328,7 @@ export function resetCallPeers(): void {
   publishPeers();
   trackListeners.notify();
   setCallLevels([]);
-  pruneHands(new Set());
-  letByMe = new Set();
-}
-
-// --- Raised hands (meeting-rooms-and-stage.md "Raise hand") --------------------------------------------------------
-
-// React reads one snapshot of both, taken when either changes.
-function publishHands(): void {
-  handsView = { hands, letByMe };
-  handListeners.notify();
-}
-
-// A hand keeps the time it first went up, so the order is the order hands were raised; a full store takes no more.
-function setHand(id: string, next: Omit<CallHand, 'at'> | null): void {
-  const prev = hands.get(id);
-  if (!next) {
-    if (!prev) return;
-    const copy = new Map(hands);
-    copy.delete(id);
-    hands = copy;
-    letByMe = withoutId(letByMe, id);
-    publishHands();
-    return;
-  }
-  if (prev && prev.tabId === next.tabId && prev.letSpeak === next.letSpeak) return;
-  if (!prev && hands.size >= HANDS_MAX) return;
-  const copy = new Map(hands);
-  copy.set(id, { ...next, at: prev?.at ?? now() });
-  hands = copy;
-  publishHands();
-}
-
-function withoutId(set: ReadonlySet<string>, id: string): ReadonlySet<string> {
-  if (!set.has(id)) return set;
-  const copy = new Set(set);
-  copy.delete(id);
-  return copy;
-}
-
-function pruneHands(present: ReadonlySet<string>): void {
-  const gone = [...hands.keys()].filter((id) => !present.has(id));
-  if (gone.length === 0) return;
-  const copy = new Map(hands);
-  for (const id of gone) {
-    copy.delete(id);
-    letByMe = withoutId(letByMe, id);
-  }
-  hands = copy;
-  publishHands();
-}
-
-/** Every peer's raised hand, by presence id (the call reads this). */
-export function callHands(): ReadonlyMap<string, CallHand> {
-  return hands;
-}
-
-const handsForRender = () => handsView;
-
-export function useCallHands(): CallHandsView {
-  return useSyncExternalStore(handListeners.subscribe, handsForRender, handsForRender);
-}
-
-/** Subscribe to a hand going up, down or being let speak (the running call recounts). */
-export function onCallHands(listener: () => void): () => void {
-  return handListeners.subscribe(listener);
-}
-
-/**
- * An addressed `avatar-let-speak` reached this browser: someone let your hand speak, or pressed Done. Handed to the
- * running call, which checks the sender may; malformed, it is ignored.
- */
-export function receiveLetSpeak(from: string, op: unknown): void {
-  const parsed = parseAvatarLetSpeak(op);
-  if (!parsed) return;
-  for (const listener of letSpeakListeners) listener(from, parsed.on);
-}
-
-/** Subscribe to let-speaks addressed to you (the running call). */
-export function onLetSpeak(listener: LetSpeakListener): () => void {
-  letSpeakListeners.add(listener);
-  return () => letSpeakListeners.delete(listener);
-}
-
-/**
- * You let `id` speak, or pressed Done: kept because a browser never learns its own presence id, so it cannot see
- * itself in their hand's `letSpeak`. Their hand going down forgets it.
- */
-export function noteLetSpeak(id: string, on: boolean): void {
-  if (on === letByMe.has(id)) return;
-  if (on) letByMe = new Set([...letByMe, id]);
-  else letByMe = withoutId(letByMe, id);
-  publishHands();
-}
-
-/** The hands this browser let speak. */
-export function callLetByMe(): ReadonlySet<string> {
-  return letByMe;
-}
-
-// --- Levels, for the stage (meeting-rooms-and-stage.md "Share roles") ---------------------------------------------
-
-/**
- * Every peer's level from the room's presence list: the `role` the room stamps from each grant, never one a browser
- * claims. A missing or unknown one is a Viewer's. Listeners hear only when a level changed.
- */
-export function setCallLevels(participants: readonly { id: string; role?: unknown }[]): void {
-  const next = new Map<string, AccessLevel>();
-  for (const p of participants) next.set(p.id, parseStoredLevel(p.role));
-  if (next.size === levels.size && [...next].every(([id, level]) => levels.get(id) === level))
-    return;
-  levels = next;
-  levelListeners.notify();
-}
-
-/** Each peer's level by presence id (the call reads this when it works out the stage). */
-export function callLevels(): ReadonlyMap<string, AccessLevel> {
-  return levels;
-}
-
-/** Subscribe to a peer's level changing (the running call re-stages). */
-export function onCallLevels(listener: () => void): () => void {
-  return levelListeners.subscribe(listener);
-}
-
-// --- The bubbles' streams and the maximised one (docs/specs/012-collaboration/video-and-screen-bubbles.md) ---------
-
-/** Show (or with null, stop showing) a stream in someone's bubble; `SELF_MEDIA_ID` for your own. */
-export function setCallMedia(id: string, kind: CallMedia, stream: MediaStream | null): void {
-  const prev = media.get(id) ?? {};
-  if ((prev[kind] ?? null) === stream) return;
-  const next = new Map(media);
-  const streams: CallMediaStreams = { ...prev, [kind]: stream ?? undefined };
-  if (!streams.video && !streams.screen) next.delete(id);
-  else next.set(id, streams);
-  media = next;
-  mediaListeners.notify();
-  // A bubble that is no longer received cannot stay maximised.
-  if (!stream && maximised?.id === id && maximised.media === kind) setCallMaximised(null);
-}
-
-/** Every bubble's streams, by presence id. */
-export function callMedia(): ReadonlyMap<string, CallMediaStreams> {
-  return media;
-}
-
-export function useCallMedia(): ReadonlyMap<string, CallMediaStreams> {
-  return useSyncExternalStore(mediaListeners.subscribe, callMedia, callMedia);
-}
-
-/** Open a bubble large, or with null restore it. Only one at a time. */
-export function setCallMaximised(next: CallMaximised | null): void {
-  if (maximised?.id === next?.id && maximised?.media === next?.media) return;
-  maximised = next;
-  maximisedListeners.notify();
-}
-
-export function callMaximised(): CallMaximised | null {
-  return maximised;
-}
-
-export function useCallMaximised(): CallMaximised | null {
-  return useSyncExternalStore(maximisedListeners.subscribe, callMaximised, callMaximised);
-}
-
-/** Subscribe to a maximise or a restore (the running call switches that camera's layer). */
-export function onCallMaximised(listener: () => void): () => void {
-  return maximisedListeners.subscribe(listener);
-}
-
-/** Every bubble goes: the call ended. */
-export function resetCallMedia(): void {
-  maximised = null;
-  maximisedListeners.notify();
-  if (media.size === 0) return;
-  media = new Map();
-  mediaListeners.notify();
+  resetHands();
 }
 
 /** Back to no call at all (the hook unmounting). */

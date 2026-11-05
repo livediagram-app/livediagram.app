@@ -38,6 +38,9 @@ import {
   type RealtimeEnv,
   type RealtimeRemoteTrack,
 } from '../calls/realtime-api';
+import type { HearingAnswer, HearingAsk } from '../calls/room-calls';
+import { splitByHearing, withRefusals } from '../calls/subscribe-hearing';
+import { documentRoom } from '../document-client';
 import { documentTrashed, json, notFound } from '../responses';
 import type { RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
@@ -205,12 +208,16 @@ async function mintSession(
   );
 }
 
+/** Asks the Space's room which tracks a call session may hear (calls/room-calls.ts). */
+type Hearing = (subscriberSession: string, asks: HearingAsk[]) => Promise<HearingAnswer[]>;
+
 async function tracks(
   env: RealtimeEnv,
   documentId: string,
   body: Record<string, unknown>,
   level: AccessLevel,
   mode: Exclude<CallsMode, 'off'>,
+  hearing: Hearing,
 ): Promise<Response> {
   const session = await provenSession(env, documentId, body);
   if (!session) return invalid();
@@ -246,10 +253,15 @@ async function tracks(
       locators.map((l) => l.trackName),
     );
     if (paused) return paused;
-    const tracks = locators.map(remoteTrack);
+    // The room says which of them this session may hear now (#483); the rest are answered `not_heard`.
+    const { allowed, refused } = await splitByHearing(locators, (asks) =>
+      hearing(session.sessionId, asks),
+    );
+    if (allowed.length === 0) return json(withRefusals(locators, refused, null));
+    const tracks = allowed.map(remoteTrack);
     return upstream(
       () => newTracks(env, session.sessionId, { tracks }),
-      (answer) => json(answer),
+      (answer) => json(withRefusals(locators, refused, answer)),
     );
   }
   return invalid();
@@ -340,7 +352,9 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   const body = await bodyOf(request);
   if (!body) return invalid();
   if (gate.open && segments[4] === 'tracks') {
-    return tracks(realtime, documentId, body, grant.level, gate.mode);
+    return tracks(realtime, documentId, body, grant.level, gate.mode, (subscriber, asks) =>
+      documentRoom(env, documentId).callsHearing(subscriber, asks),
+    );
   }
   if (gate.open && segments[4] === 'layer') return layer(realtime, documentId, body, gate.mode);
   const session = await provenSession(realtime, documentId, body);

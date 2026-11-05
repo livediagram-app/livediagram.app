@@ -188,4 +188,21 @@ describe('gateClientOp', () => {
     // Measured about 0.1 µs per op; the budget leaves room for a busy CI machine.
     expect(perOpUs).toBeLessThan(5);
   });
+
+  // docs/specs/012-collaboration/proximity-audio.md "The wire": a call proves its session from any level.
+  it('takes a call-session op from every level, and only well formed', () => {
+    const op = { kind: 'call-session', tabId: 't', sessionId: 's', sessionToken: 'l.x' };
+    for (const role of ['edit', 'participate', 'view'])
+      expect(gateClientOp(op, as(role))).toEqual(relay(true));
+    expect(gateClientOp({ ...op, sessionToken: '' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles" (#469): an Editor's alone.
+  it('relays a stop-share from an Editor only, and only well formed', () => {
+    const op = { kind: 'call-stop-share', tabId: 't', targetId: 'p2' };
+    expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp(op, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(op, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ ...op, targetId: '' }, as('edit'))).toEqual(DROP);
+  });
 });

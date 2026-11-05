@@ -23,6 +23,19 @@ vi.mock('../calls/calls-mode', async (load) => {
     callTrackKind: (name: string) => (trackKinds.asVideo ? 'video' : real.callTrackKind(name)),
   };
 });
+// The Space's room answers the hearing check (#483): every track heard, unless a test says otherwise.
+const room = vi.hoisted(() => ({
+  answers: null as null | ((asks: { sessionId: string }[]) => string[]),
+  asked: [] as { subscriber: string; asks: unknown }[],
+}));
+vi.mock('../document-client', () => ({
+  documentRoom: () => ({
+    callsHearing: async (subscriber: string, asks: { sessionId: string }[]) => {
+      room.asked.push({ subscriber, asks });
+      return room.answers ? room.answers(asks) : asks.map(() => 'heard');
+    },
+  }),
+}));
 const { handleCallRoutes, MAX_SUBSCRIBE_BATCH, mediaRefused } = await import('./calls');
 
 const SECRETS = {
@@ -94,6 +107,8 @@ beforeEach(() => {
     }),
   );
   vi.spyOn(console, 'warn').mockImplementation(() => {});
+  room.answers = null;
+  room.asked = [];
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -267,6 +282,51 @@ describe('POST tracks', () => {
         { location: 'remote', sessionId: 'pub2', trackName: 'mic' },
       ],
     });
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Trust" (#483): the room says who may hear whom.
+  it('subscribes only what the room says the caller may hear, answering the rest not_heard in place', async () => {
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      grant = grantAt(level);
+      upstream = [];
+      room.answers = (asks) => asks.map((a) => (a.sessionId === 'pub2' ? 'heard' : 'apart'));
+      const res = await call('POST', 'tracks', {
+        ...(await listenerProof()),
+        subscribe: [await locator(), await locator(DOC, 'pub2')],
+      });
+      expect(res.status).toBe(200);
+      expect(room.asked.at(-1)).toEqual({
+        subscriber: 'sess1',
+        asks: [
+          { sessionId: 'pub1', trackName: 'mic' },
+          { sessionId: 'pub2', trackName: 'mic' },
+        ],
+      });
+      expect(upstream[0]!.body).toEqual({
+        tracks: [{ location: 'remote', sessionId: 'pub2', trackName: 'mic' }],
+      });
+      const body = (await res.json()) as { tracks: unknown[] };
+      expect(body.tracks[0]).toEqual({
+        sessionId: 'pub1',
+        trackName: 'mic',
+        errorCode: 'not_heard',
+      });
+      expect(body.tracks[1]).toMatchObject({ mid: '0' });
+    }
+  });
+
+  it('asks Realtime nothing when the room refuses every track', async () => {
+    room.answers = (asks) => asks.map(() => 'unknown-session');
+    const res = await call('POST', 'tracks', {
+      ...(await listenerProof()),
+      subscribe: [await locator()],
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      requiresImmediateRenegotiation: false,
+      tracks: [{ sessionId: 'pub1', trackName: 'mic', errorCode: 'not_heard' }],
+    });
+    expect(upstream).toEqual([]);
   });
 
   it('refuses a locator from another Space, a forged one, a camera, an empty or oversized batch', async () => {

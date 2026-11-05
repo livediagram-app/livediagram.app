@@ -84,7 +84,7 @@ describe('CallBubbles', () => {
     const rowOf = (container: HTMLElement, id: string) =>
       container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubbles-row]`)!;
     const nudge = (row: HTMLElement) =>
-      Number(/translateX\((-?[\d.]+)px\)/.exec(row.style.transform)![1]);
+      Number(/translate\((-?[\d.]+)px,/.exec(row.style.transform)![1]);
 
     it('slides two people side by side apart, tails still on their heads, and hands on where they went', () => {
       const rects = { current: [] as readonly BubbleRect[] };
@@ -193,6 +193,77 @@ describe('CallBubbles', () => {
     // Your own, once you stop walking, keeps a neutral colour.
     act(() => setCallMaximised({ id: 'self', media: 'video' }));
     expect(screen.getByRole('dialog', { name: 'Your Camera' })).toBeTruthy();
+  });
+
+  // video-and-screen-bubbles.md "Share roles" (#469): Stop Sharing on someone else's screen, an Editor's alone.
+  describe('stop sharing', () => {
+    const stops = () => screen.queryAllByRole('button', { name: /^Stop / });
+
+    it("shows an Editor Stop Sharing on someone else's screen, not a camera or their own, and on the panel", () => {
+      const onStopShare = vi.fn();
+      render(
+        <CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} onStopShare={onStopShare} />,
+      );
+      act(() => {
+        setCallMedia('p1', 'video', stream('a'));
+        setCallMedia('p1', 'screen', stream('b'));
+        setCallMedia('self', 'screen', stream('c'));
+      });
+      expect(stops().map((b) => b.getAttribute('aria-label'))).toEqual(["Stop Sam's Screen"]);
+      const down = new Event('pointerdown', { bubbles: true });
+      const halt = vi.spyOn(down, 'stopPropagation');
+      stops()[0]!.dispatchEvent(down);
+      expect(halt).toHaveBeenCalled();
+      fireEvent.click(stops()[0]!);
+      expect(onStopShare).toHaveBeenCalledWith('p1');
+      expect(callMaximised()).toBeNull();
+      // The panel's bar: Stop Sharing beside Restore, and focus on the panel, never on Stop.
+      act(() => setCallMaximised({ id: 'p1', media: 'screen' }));
+      const dialog = screen.getByRole('dialog', { name: "Sam's Screen" });
+      expect(document.activeElement).toBe(dialog);
+      fireEvent.click(dialog.querySelector('[data-call-panel-stop]')!);
+      expect(onStopShare).toHaveBeenCalledTimes(2);
+      // Not on a camera, nor your own screen.
+      act(() => setCallMaximised({ id: 'p1', media: 'video' }));
+      expect(screen.getByRole('dialog').querySelector('[data-call-panel-stop]')).toBeNull();
+      act(() => setCallMaximised({ id: 'self', media: 'screen' }));
+      expect(screen.getByRole('dialog').querySelector('[data-call-panel-stop]')).toBeNull();
+    });
+
+    it('shows a Participant or a Viewer no Stop Sharing anywhere', () => {
+      render(<CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} />);
+      act(() => {
+        setCallMedia('p1', 'screen', stream('b'));
+        setCallMaximised({ id: 'p1', media: 'screen' });
+      });
+      expect(stops()).toEqual([]);
+      expect(document.querySelector('[data-call-panel-stop]')).toBeNull();
+    });
+  });
+
+  // "A row wider than the view wraps" (#487).
+  it('lifts a wrapped bubble onto a row above and hides its tail', () => {
+    const { container } = render(
+      <CallBubbles
+        peers={[peer('p1', 'Sam', 200), peer('p2', 'Kim', 230), peer('p3', 'Lee', 260)]}
+        self={null}
+        view={{ left: 0, width: 450 }}
+      />,
+    );
+    act(() => {
+      setCallMedia('p1', 'video', stream('a'));
+      setCallMedia('p1', 'screen', stream('b'));
+      setCallMedia('p2', 'video', stream('c'));
+      setCallMedia('p3', 'video', stream('d'));
+    });
+    const row = (id: string) =>
+      container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubbles-row]`)!;
+    const tail = (id: string) =>
+      container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubble-tail]`)!;
+    expect(row('p1').style.transform).toMatch(/, 0px\)$/);
+    expect(row('p3').style.transform).toMatch(/, -75\.5px\)$/);
+    expect(tail('p1').hidden).toBe(false);
+    expect(tail('p3').hidden).toBe(true);
   });
 
   it('names a bubble for its person, or yours', () => {

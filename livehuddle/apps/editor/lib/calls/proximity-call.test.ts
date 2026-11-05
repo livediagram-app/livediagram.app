@@ -7,6 +7,7 @@ import {
   noteLetSpeak,
   receiveCallOp,
   receiveLetSpeak,
+  receiveStopShare,
   receiveCallsMode,
   resetCallMedia,
   resetCallPeers,
@@ -21,6 +22,7 @@ import {
   LOCATOR_RESEND_MS,
   MIC_IDLE_CLOSE_MS,
   ProximityCall,
+  REPROVE_MS,
   SCREEN_CONSTRAINTS,
   type CallSignal,
 } from './proximity-call';
@@ -38,6 +40,7 @@ const sfu = vi.hoisted(() => ({
       onFailed: () => void;
       onPaused: () => void;
       onAudioOnly: () => void;
+      onNotHeard: () => void;
     };
     publish: ReturnType<typeof vi.fn>;
     replaceMic: ReturnType<typeof vi.fn>;
@@ -134,6 +137,8 @@ function makeCall(
   } = {},
 ) {
   const sent: CallSignal[] = [];
+  // The call's proof of its session to the room (meeting-rooms-and-stage.md "Trust"), kept apart from what it says.
+  const proved: CallSignal[] = [];
   const mic = micStream();
   const camera = videoStream();
   const display = videoStream();
@@ -147,12 +152,12 @@ function makeCall(
     canSpeak: opts.canSpeak ?? true,
     canShare: opts.canShare ?? false,
     context,
-    send: (s) => sent.push(s),
+    send: (s) => (s.kind === 'call-session' ? proved : sent).push(s),
     getUserMedia,
     getDisplayMedia,
     ...(opts.visible ? { pageVisible: opts.visible } : {}),
   });
-  return { call, sent, mic, camera, display, getUserMedia, getDisplayMedia };
+  return { call, sent, proved, mic, camera, display, getUserMedia, getDisplayMedia };
 }
 
 const scene = (walkers: [string, number][], tabId = 't1') => ({
@@ -187,6 +192,28 @@ describe('ProximityCall', () => {
     call.stop();
     expect(sent.at(-1)).toEqual({ kind: 'call-track', track: null });
     expect(callSelf().phase).toBe('off');
+  });
+
+  // The server hearing check (meeting-rooms-and-stage.md "Trust", #483).
+  it('proves its session to the room once minted, and again when the room says a track is not heard', async () => {
+    vi.useFakeTimers({ toFake: ['performance'] });
+    try {
+      const { call, proved } = makeCall({ canSpeak: false });
+      await call.start();
+      const proof = { kind: 'call-session', sessionId: 'me', sessionToken: 's.x' };
+      expect(proved).toEqual([proof]);
+      const s = sfu.instances[0]!;
+      // At once: just proved, so only counted.
+      s.events.onNotHeard();
+      expect(proved).toHaveLength(1);
+      expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'CallNotHeard');
+      vi.advanceTimersByTime(REPROVE_MS);
+      s.events.onNotHeard();
+      expect(proved).toEqual([proof, proof]);
+      call.stop();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('a listener joins without a microphone and never publishes', async () => {
@@ -461,6 +488,33 @@ describe('ProximityCall video and screens', () => {
     await call.toggleScreen();
     expect(callSelf().screen).toBe('off');
     call.stop();
+  });
+
+  // video-and-screen-bubbles.md "Share roles" (#469): an Editor can stop someone else's share.
+  it('stops its share when an Editor asks, and not when a Participant or a Viewer does', async () => {
+    setCallLevels([
+      { id: 'ed', role: 'edit' },
+      { id: 'pt', role: 'participate' },
+      { id: 'vw', role: 'view' },
+    ]);
+    const { call, sent } = makeCall({ canShare: true });
+    await call.start();
+    await call.toggleScreen();
+    const stop = { kind: 'call-stop-share', tabId: 't1', targetId: 'me' };
+    receiveStopShare('pt', stop);
+    receiveStopShare('vw', stop);
+    receiveStopShare('ed', { kind: 'call-stop-share' });
+    expect(callSelf().screen).toBe('on');
+    receiveStopShare('ed', stop);
+    expect(callSelf().screen).toBe('off');
+    expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), screen: null });
+    // Nothing to stop: nothing said.
+    const count = sent.length;
+    receiveStopShare('ed', stop);
+    expect(sent).toHaveLength(count);
+    call.stop();
+    // A call that has ended ignores it.
+    receiveStopShare('ed', stop);
   });
 
   it('a cancelled picker is no error, and only an Editor shares', async () => {

@@ -19,15 +19,22 @@ import { createLabelPrefix } from '@/lib/create-label';
 const at = (rem: number, spread = 1) =>
   `calc(50% ${rem < 0 ? '-' : '+'} (${Math.abs(rem)}rem + ${spread} * var(--spread)))`;
 
+// How far down: the place on the band's 47.5rem floor, plus `share` of whatever height the band has past that
+// floor when it fills a taller screen (docs/specs/019-marketing/marketing-site.md "Hero"). The card takes 6/11
+// of the extra (Hero.tsx splits it 6 to 5, as its padding is), so the pieces peeking round it take the same and
+// stay with it, while the side cards spread out with the band: the top pair a little, the bottom pair most.
+const down = (rem: number, share: number) => `calc(${rem}rem + (100% - 47.5rem) * ${share})`;
+const WITH_CARD = 6 / 11;
+
 // Where each card sits, as the picked mockup lays them on a 1280px band: the left column 30-60px in from
 // its edge, the right ending as far from the other.
 const SLOTS: readonly { left: string; top: string; width: string; tilt: string }[] = [
-  { left: at(-38.125, 1.5), top: '2.5rem', width: '12.5rem', tilt: '-3deg' },
-  { left: at(-37.5, 1.5), top: '18.75rem', width: '13.75rem', tilt: '2deg' },
-  { left: at(-36.25, 1.5), top: '35rem', width: '11.875rem', tilt: '-2deg' },
-  { left: at(25, 1.5), top: '2.5rem', width: '12.5rem', tilt: '3deg' },
-  { left: at(24.375, 1.5), top: '18.75rem', width: '13.75rem', tilt: '-2deg' },
-  { left: at(26.25, 1.5), top: '35rem', width: '11.875rem', tilt: '2deg' },
+  { left: at(-38.125, 1.5), top: down(2.5, 0.1), width: '12.5rem', tilt: '-3deg' },
+  { left: at(-37.5, 1.5), top: down(18.75, 0.5), width: '13.75rem', tilt: '2deg' },
+  { left: at(-36.25, 1.5), top: down(35, 0.9), width: '11.875rem', tilt: '-2deg' },
+  { left: at(25, 1.5), top: down(2.5, 0.1), width: '12.5rem', tilt: '3deg' },
+  { left: at(24.375, 1.5), top: down(18.75, 0.5), width: '13.75rem', tilt: '-2deg' },
+  { left: at(26.25, 1.5), top: down(35, 0.9), width: '11.875rem', tilt: '2deg' },
 ];
 
 const SWATCHES = ['bg-rose-300', 'bg-rose-500', 'bg-rose-700', 'bg-rose-900'];
@@ -35,9 +42,9 @@ const SWATCHES = ['bg-rose-300', 'bg-rose-500', 'bg-rose-700', 'bg-rose-900'];
 const PIECE =
   'absolute h-24 w-[9.375rem] rounded-[0.875rem] shadow-[0_22px_40px_-22px_var(--hero-card-shadow)]';
 
-const piece = (left: number, top: string, tilt: string): CSSProperties => ({
+const piece = (left: number, top: number, tilt: string): CSSProperties => ({
   left: at(left),
-  top,
+  top: down(top, WITH_CARD),
   transform: `rotate(${tilt})`,
 });
 
@@ -62,7 +69,7 @@ export function HeroBoard() {
       <div aria-hidden>
         <div
           className={`${PIECE} flex gap-1 border border-rose-100 bg-white p-1.5 dark:border-slate-800 dark:bg-slate-900`}
-          style={piece(-23.125, '1.25rem', '4deg')}
+          style={piece(-23.125, 1.25, '4deg')}
         >
           {SWATCHES.map((s) => (
             <span key={s} className={`flex-1 rounded-md ${s}`} />
@@ -70,15 +77,15 @@ export function HeroBoard() {
         </div>
         <div
           className={`${PIECE} bg-linear-to-br from-rose-300 to-rose-700`}
-          style={piece(13.75, '1.5rem', '-3deg')}
+          style={piece(13.75, 1.5, '-3deg')}
         />
         <div
           className={`${PIECE} bg-[radial-gradient(circle_at_30%_40%,var(--color-rose-200),var(--color-rose-500))]`}
-          style={piece(-23.125, '40.625rem', '3deg')}
+          style={piece(-23.125, 40.625, '3deg')}
         />
         <div
           className={`${PIECE} flex h-[6.875rem] w-[8.75rem] items-center justify-center border border-rose-100 bg-white font-serif text-[3.5rem] font-semibold text-(--hero-ink) dark:border-slate-800 dark:bg-slate-900`}
-          style={piece(14.375, '40rem', '-5deg')}
+          style={piece(14.375, 40, '-5deg')}
         >
           Aa
         </div>

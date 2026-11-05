@@ -18,6 +18,17 @@ Derived from [Proximity audio](../proximity-audio.md). Paths are livehuddle's; `
 
 ## Behaviour and state
 
+**Module layout** (#496, no behaviour of its own): the call (`lib/calls/proximity-call.ts`) is the orchestrator and
+composes focused parts. `call-config.ts` holds the timings, media constraints, `CallSignal`, `CallScene` and
+`ProximityCallInput`; `call-mic.ts` (`CallMic`) the microphone, its idle close, mute and the voice sampler;
+`call-video.ts` (`CallVideo`) the camera and the shared screen; `call-beacon.ts` (`CallBeacon`, `trackSignalOf`) the
+`call-track` locator, its resend throttle and the quiet-spell `calls-check`; `call-subscriptions.ts`
+(`chooseSubscriptions`, `seeable`, `presenceOf`) who is heard and which tracks are wanted; `call-staging.ts`
+(`stageScene`) the stage and hands for one scene; `call-receiver.ts` (`CallReceiver`) arriving tracks into the audio
+graph or a bubble, and their placing. The store is three modules behind one door, `calls-store.ts` (peers, your own
+call, the kill-switch mode), which re-exports `calls-hands-store.ts` (hands, let-speaks, stamped levels) and
+`calls-media-store.ts` (the bubbles' streams and the maximised one).
+
 **Call phase** (`lib/calls/calls-store.ts`): `off` → (Join Audio) `joining` → `live`; `joining` → `error` on a refused
 session or a failed connection; `live`/`error` → (Leave Audio, leaving the mode, changing tab, unmount) `off`.
 `micState`: `closed` (no other walker for `MIC_IDLE_CLOSE_MS`, or a listener), `open`, `blocked` (getUserMedia
@@ -89,6 +100,10 @@ Nothing is stored: no table, no Durable Object storage, no log. The room keeps n
 held frames for one step. The editor's store is memory only and empties on leaving.
 
 ## Errors and edge cases
+
+- **`not_heard`** (the server hearing check, meeting-rooms-and-stage blueprint "Security and trust"): a subscribed
+  track the room refuses is not a dead locator; `SfuSession` holds it back 2 s (doubling to 16 s) and asks again, and
+  the call re-sends `call-session`. Every other `errorCode` is still a refusal never asked for again.
 
 - Calls off, or no shared room: no controls; the store stays `off`.
 - Session refused (`calls_off` after capabilities said on): phase `error`, the button reads **Audio Unavailable**;

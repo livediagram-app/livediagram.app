@@ -14,10 +14,11 @@ const BADGE =
 
 export function Hero() {
   return (
-    // On a wide screen its height is its content's, with room to breathe; on a phone it fills the
+    // From `sm` it fills the first screen under the header, up to a cap (hero-tall.css in
+    // @liveworkspace/marketing-site), the extra shared above and below the copy; on a phone it fills the
     // screen under the header, the fan along its foot.
-    <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col xl:min-h-[52rem]">
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-40 lg:pt-52 xl:pt-36">
+    <section className="hero-band hero-tall relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col xl:[--hero-tall-floor:52rem]">
+      <div className="hero-tall-copy relative z-10 mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-40 lg:pt-52 xl:pt-36 xl:pb-[16.25rem]">
         {/* An arrow drawn on load from the end of the question down onto the search; the wall has none. */}
         <HeroConnectors wide={false} />
         {/* Two promises, each its own badge and each true today (free with no trackers, no account needed). A
@@ -34,13 +35,13 @@ export function Hero() {
         </ul>
         <h1
           data-hero-anchor="title"
-          className="mx-auto mt-7 max-w-4xl text-balance text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
+          className="mx-auto mt-7 max-w-4xl text-balance sm:mt-8 text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
         >
           What are you planning today?
         </h1>
         <p
           data-hero-anchor="lead"
-          className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
+          className="mx-auto mt-6 sm:mt-7 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
           Pick a starting point: a board, a sheet, a dashboard or a form. Share one link and plan
           the work together, live.
