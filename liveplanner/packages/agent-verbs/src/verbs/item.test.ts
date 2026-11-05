@@ -28,7 +28,10 @@ const BUG = {
   ...ITEM_TYPES[1],
   id: 'bug',
   label: 'Bug',
-  custom: [{ id: 'f-severity', label: 'Severity', kind: 'text' }],
+  custom: [
+    { id: 'f-severity', label: 'Severity', kind: 'text' },
+    { id: 'f-watchers', label: 'Watchers', kind: 'person', multiple: true },
+  ],
 };
 const PLAN = {
   boards: [
@@ -151,6 +154,19 @@ describe('item writes', () => {
     const rm = await itemRm.run!(ctx, { project: DOC_A, item: 'itembbb' });
     expect(rm.text).toBe('- #1 [bug] Fix login (!high)');
     expect(seen[2]).toMatchObject({ method: 'DELETE' });
+  });
+
+  // docs/specs/026-plan/plan-agents.md "Clearing a field": an empty value clears a field that holds several.
+  it('clears a field that holds several given an empty value', async () => {
+    const { ctx, seen } = api();
+    await itemSet.run!(
+      ctx,
+      itemSet.input.parse({ project: DOC_A, item: '#1', fields: ['Watchers='] }),
+    );
+    expect(seen[0]).toMatchObject({
+      path: `${path}/itembbb111`,
+      body: { clear: ['f-watchers'] },
+    });
   });
 
   it('refuses an item it cannot name, and a field without a value', async () => {
