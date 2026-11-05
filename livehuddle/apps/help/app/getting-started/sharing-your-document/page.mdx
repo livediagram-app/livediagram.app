@@ -6,13 +6,13 @@ import { SharePassesDialog } from '@/components/illustrations/sharing';
 export const metadata = helpMetadata({
   title: 'Sharing Your Space',
   description:
-    'Hand a colleague a share link and collaborate on the same livehuddle in real time, even if they never sign in.',
+    'Hand a colleague a share link and they walk into the same livehuddle Space with you, live, even if they never sign in.',
   path: '/help/getting-started/sharing-your-document/',
 });
 
-<ArticleLayout title="Sharing Your Space" description="Hand over a link and build the same space together, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
+<ArticleLayout title="Sharing Your Space" description="Hand over a link and meet in the same Space, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
 
-livehuddle is multiplayer from the first sticky note. Sharing is just creating a link and handing it over: whoever opens it joins the same space, sees live cursors, and edits alongside you. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
+livehuddle is multiplayer from the moment someone walks in. Sharing is just creating a link and handing it over: whoever opens it joins the same Space, walks round it as their character, and sees everyone else live. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
 
 ## Create a share link
 
@@ -23,11 +23,11 @@ livehuddle is multiplayer from the first sticky note. Sharing is just creating a
 </Step>
 
 <Step n={2}>
-  Under **Issue a pass**, click the role card to choose a role: **Editor** (draws with you in real
-  time, the default), **Participant** (adds stickies, writes and votes, but can't reshape the board)
-  or **Viewer** (watches, pans and zooms; can't comment, vote or change a thing). **Valid** sets how
-  long it lasts: Forever, 1 week, 1 month or 6 months. In a space with several tabs, **Opens** can
-  limit the link to one tab.
+  Under **Issue a pass**, click the role card to choose a role: **Editor** (changes the Space with
+  you in real time, the default), **Participant** (walks in, talks in speech bubbles, adds stickies,
+  comments and votes, but can't reshape the Space) or **Viewer** (walks round and watches; can't
+  speak, comment, vote or change a thing). **Valid** sets how long it lasts: Forever, 1 week, 1
+  month or 6 months. In a space with several tabs, **Opens** can limit the link to one tab.
 </Step>
 
 <Step n={3}>
@@ -45,15 +45,15 @@ saved to **This Browser** has to be synced to your account before it can be shar
 
 ## What happens when they open it
 
-Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands on the canvas:
+Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands in the Space:
 
 <Figure caption="Everyone in a shared space sees the others' live cursors and a presence stack of who is here.">
   <LiveCursors />
 </Figure>
 
-- **Live cursors and selections.** Everyone sees where everyone else is and what they have selected.
+- **Characters, cursors and selections.** Everyone sees where everyone else is standing and pointing, and what they have selected. Walking in [Avatar mode](/help/selection-modes/avatar-mode/), each person shows their name and status over their character.
 - **Simultaneous editing.** On an Editor pass, you both change the space at once. To avoid clashes, an element one person has selected is gently locked for the others while they hold it.
-- **No sign-in required.** A guest can edit straight away, the space never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
+- **No sign-in required.** A guest walks in straight away, the Space never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
 
 ## Managing and ending access
 

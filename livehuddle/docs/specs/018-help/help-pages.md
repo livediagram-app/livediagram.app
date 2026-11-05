@@ -55,8 +55,8 @@ livehuddle's scenes:
 
 | Scene                | Where                | What it shows                                                                                     |
 | -------------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
-| Getting Started      | own                  | a first Space: pick a starting point, add to the board, share the link                            |
-| About                | own                  | three windows: a retro's stickies, a Team Pod with the team round its table, a vote               |
+| Getting Started      | own                  | a first Space: pick a starting point, walk in, share the link                                     |
+| About                | own                  | three windows: the day's stickies, a Team Pod with the team round its table, a vote               |
 | Canvas               | own                  | a flowchart mid-build, a sticky note, the palette strip, undo and zoom                            |
 | Palette              | own                  | the Shapes category open and a diamond dragged onto the canvas                                    |
 | Selection Modes      | own                  | the mode picker, a marquee and the laser's trail                                                  |
@@ -80,10 +80,10 @@ Top to bottom:
 
 1. **Hero.** The canvas wash; two pills (the guide count, "Search them from inside the editor too"); the display
    heading "How can we help?"; one line of lede; the large search box; and a row of **popular topics**, chips that
-   link straight to the articles most readers come for (Your first diagram, Sharing, Keyboard shortcuts, Templates,
-   Exporting, Editor modes). The list is `HOME.popular` in `apps/help/lib/home-sections.ts`, and the shared suite
+   link straight to the articles most readers come for (Your first Space, Sharing, Keyboard shortcuts, Templates,
+   Exporting, Avatar mode). The list is `HOME.popular` in `apps/help/lib/home-sections.ts`, and the shared suite
    (`help-site.test.ts`) checks every entry names a real article.
-2. **Start here.** A full-width card: livehuddle's own Getting Started scene (opening a first Space: pick a starting point, add to the board, share the link) beside
+2. **Start here.** A full-width card: livehuddle's own Getting Started scene (opening a first Space: pick a starting point, walk in, share the link) beside
    the first four Getting Started guides as numbered steps and a link to the rest, then About livehuddle and
    Tips and Tricks as two wide cards.
 3. **Editor guides.** The feature categories as art cards, three across on a computer.

@@ -1,18 +1,10 @@
 import { Label } from '@liveworkspace/help-site/art/primitives';
 import { Chip, Stage, Window } from '@liveworkspace/help-site/art/parts';
+import { Character } from './character';
 
-// About livehuddle: what it is in one picture. Three windows fanned out, one per way a team meets (a retro's
-// sticky notes, a Space with the team round its table, a dot vote), under the two promises: free, and open source.
-
-// A character as Avatar mode draws one, seen from above at this size: a head over a shirt in its own colour.
-function Character({ x, y, shirt }: { x: number; y: number; shirt: string }) {
-  return (
-    <g>
-      <rect x={x - 5} y={y + 2} width={10} height={9} rx={3} className={shirt} />
-      <circle cx={x} cy={y} r={4} className="fill-amber-200 stroke-amber-700" strokeWidth={0.8} />
-    </g>
-  );
-}
+// About livehuddle: what it is in one picture. Three windows fanned out, one per part of a meeting in a Space (the
+// day's sticky notes on the wall, the team round its table, a quick vote), under the two promises: free, and open
+// source.
 
 // How many dots each of the Vote window's three options holds.
 const DOTS = [3, 1, 2];
@@ -20,9 +12,9 @@ const DOTS = [3, 1, 2];
 export function AboutArt() {
   return (
     <Stage>
-      {/* Workshop: a retro's sticky notes, tilted back on the left. */}
+      {/* Notes: the day's sticky notes on the wall, tilted back on the left. */}
       <g transform="rotate(-7 92 120)">
-        <Window x={18} y={52} w={150} h={118} title="Retro">
+        <Window x={18} y={52} w={150} h={118} title="Notes">
           {[0, 1, 2, 3, 4, 5].map((n) => (
             <rect
               key={n}
@@ -92,7 +84,7 @@ export function AboutArt() {
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Meet · Workshop · Decide
+        Meet · Talk · Decide
       </Label>
     </Stage>
   );

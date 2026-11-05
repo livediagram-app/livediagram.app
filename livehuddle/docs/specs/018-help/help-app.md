@@ -4,7 +4,7 @@
 > livehuddle, with their help registry entries, figures and links, and redirects their addresses to the nearest article
 > that stays ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), listed with the other retired articles
 > under [Renamed articles](#renamed-articles). Part 2 has removed the slide deck, presenting and Page articles. Part 5
-> rewrites the About and Getting Started articles for meeting in Spaces. Work Tracker #494 retired Auto Layout and
+> has rewritten the About and Getting Started articles for meeting in Spaces. Work Tracker #494 retired Auto Layout and
 > rewrote the articles that still taught shapes and arrows (Shape Libraries, the draw.io and tab imports, Layout
 > Cleanup, Animating Elements, Copy and Paste, Default Folders, Filters and the CLI) for what a Space holds; an
 > import still brings a diagram's shapes and arrows in as they were, and those articles say so rather than teach
@@ -267,8 +267,14 @@ the same surface recurs rather than redrawn.
 
 livehuddle's help centre holds the articles for what [v1](../002-project-scope/v1-scope.md) holds, cut from
 livediagram's at the fork, and it is written about livehuddle: **Spaces** people meet in, the **boards** (tabs) a
-Space holds, **Avatar mode** and the Spaces templates, Workshop's palette and session tools, and working together
-live. The pitch it opens with is the product's, "Meet and run workshops together" ([Open decisions](../005-project-roadmap/open-decisions.md) D5).
+Space holds, **Avatar mode** and the Spaces templates, the meeting palette and session tools, and meeting together
+live. The pitch it opens with is the product's: a team **meets in a shared Space** ([Purpose](../001-project-vision/purpose.md)).
+
+- **About and Getting Started** (Work Tracker #423 part 5) say what livehuddle is today: a Space a team walks into
+  as characters, with rooms, presence and status, speech bubbles and reactions, comments, the four Spaces and Blank
+  Space, the Timer and Vote, the facilitator, Bring Focus, Follow, the laser and the spotlight, and share links. They
+  name no workshop, retro, poll, quiz, deck, diagram or drawing tool, and they never say calls are on: proximity
+  audio is mentioned only as built and not switched on everywhere, linking to its article.
 
 - **What was cut, and when.** Each cut in the [Build plan](../005-project-roadmap/build-plan.md) removed its feature's
   articles with its code: Diagram and Draw modes and their mode-only elements (step 5.1), Event Storming and
