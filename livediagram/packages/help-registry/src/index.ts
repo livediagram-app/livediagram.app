@@ -101,8 +101,8 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Get your bearings in the editor: the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls, and power user mode.',
-    articleCount: 10,
+      'Get your bearings in the editor: the panels, toolbar, context menus, the Map, zoom and tab bars, and quick controls.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -254,15 +254,6 @@ export const articles: Article[] = [
     categorySlug: 'user-interface',
   },
 
-  {
-    slug: 'power-user-mode',
-    title: 'Power User Mode',
-    description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
-    keywords:
-      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
-    category: 'User Interface',
-    categorySlug: 'user-interface',
-  },
   {
     slug: 'title-bar',
     title: 'The Title Bar',

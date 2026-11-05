@@ -49,4 +49,7 @@ livediagram and livedesign have dropped it too; livehuddle and livedocuments fol
 shared pieces stay in `packages/` (`MinimalChromeProvider` in workbench, the `powerUser` rows and preset readout in
 settings-ui, the quick switch's helpers in ui), and the Explorer's last Minimal chrome reads
 (`components/panels/Explorer.tsx`, `ExplorerHeaderMenu.tsx`) stay with them: nothing provides the flag any more, so
-they always read it off. The help article is retired with a redirect in a later change.
+they always read it off. The help article
+(User Interface › Power user mode) is retired: its address lands on Settings through a moved stub in the help app
+(`powerUserModeMoved` in help-site), and the Settings, Quick Controls, Title Bar, Dark Mode, Explorer panel, Search
+panel and Plan tour articles no longer mention the mode.

@@ -35,7 +35,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'side-by-side': '#0ea5e9',
   about: '#0891b2',
   settings: '#475569',
-  'power-user-mode': '#0f766e',
   // Canvas sub-article guides
   'changing-theme': '#d946ef',
   undo: '#0ea5e9',

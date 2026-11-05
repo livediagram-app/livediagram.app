@@ -58,7 +58,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 The feature categories group the feature guides by area:
 
 - **Plan**: boards of cards, sheets, forms and dashboards, in four groups: **Getting Going**, **Boards and Cards**, **Sheets**, and **Forms and Dashboards**.
-- **User Interface**: the editor's chrome: the title and tab bars, quick controls, zoom controls, panel layout, Settings, Power User Mode, themes, and Undo and Redo.
+- **User Interface**: the editor's chrome: the title and tab bars, quick controls, zoom controls, panel layout, Settings, themes, and Undo and Redo.
 - **Explorer**: the library every liveworkspace app shares (one guide per sidebar row), in two groups: **Your Library** and **Activity**.
 - **Tabs**: a plan's tabs: Tab Folders, side by side tabs, locking, adding a tab to another plan, importing and exporting.
 - **Collaboration**: comments, live presence, teams, sharing and embeds, and session tools.

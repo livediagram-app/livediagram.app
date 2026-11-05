@@ -44,4 +44,6 @@ Everyone now gets the same interface, today's default.
 The same mode lives in the other editors (liveplanner, livedocuments, livedesign, livehuddle) and comes out of each in
 turn; until the last has gone, the shared pieces stay in `packages/` (`MinimalChromeProvider` in workbench, the
 `powerUser` rows and preset readout in settings-ui, the quick switch's helpers in ui). The help article
-(User Interface › Power user mode) is retired with a redirect in a later change.
+(User Interface › Power user mode) is retired: its address lands on Settings (the router's `LEGACY_HELP_ARTICLES` and a
+moved stub in the help app, `powerUserModeMoved` in help-site), and the Settings, Quick Controls, Title Bar, Toolbar,
+Dark Mode, Explorer panel, Multi-select and Search panel articles no longer mention the mode.
