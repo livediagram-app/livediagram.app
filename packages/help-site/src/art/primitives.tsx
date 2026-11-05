@@ -574,6 +574,63 @@ export function Button({
   );
 }
 
+/** One tab on an editor's bottom bar (the shared TabFrame): the open tab is a white card that
+ *  stands on the bar's bottom edge, rounded only at the top, its name in the accent; the others are
+ *  bare names. `beside` outlines a tab open in the other pane with a dashed line. The tab occupies
+ *  (x, y) to (x + w, y + h) and stands on y + h. `children` draw inside it (presence avatars). */
+export function BarTab({
+  x,
+  y,
+  w,
+  h,
+  label,
+  active = false,
+  beside = false,
+  size = 10,
+  anchor = 'middle',
+  children,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label: string;
+  active?: boolean;
+  beside?: boolean;
+  size?: number;
+  anchor?: 'start' | 'middle';
+  children?: ReactNode;
+}) {
+  const r = Math.min(5, h / 3);
+  const bottom = y + h;
+  const card = `M${x} ${bottom} V${y + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom}`;
+  return (
+    <g>
+      {active && <path d={`${card} Z`} className="fill-white stroke-slate-300" strokeWidth={1} />}
+      {beside && !active && (
+        <path
+          d={card}
+          fill="none"
+          className="stroke-brand-400"
+          strokeWidth={1.2}
+          strokeDasharray="3 2"
+        />
+      )}
+      <Label
+        x={anchor === 'middle' ? x + w / 2 : x + 10}
+        y={y + h / 2 + 1}
+        anchor={anchor}
+        size={size}
+        weight={active ? 700 : 500}
+        tone={active ? 'accent' : 'muted'}
+      >
+        {label}
+      </Label>
+      {children}
+    </g>
+  );
+}
+
 /** A segmented control / tab strip. The `active` index is brand-filled. */
 export function Tabs({
   x,

@@ -12,9 +12,11 @@ import {
   Button,
   Label,
   Tabs,
+  BarTab,
   TextBar,
 } from '../primitives';
 import { plural } from '../noun';
+import { Chip } from '../parts';
 
 // --- Comments ----------------------------------------------------------------
 
@@ -22,7 +24,7 @@ import { plural } from '../noun';
  *  thread, Resolve in the header, and the Add a comment box with its Comment button. */
 export function CommentThread() {
   return (
-    <Scene w={420} h={240}>
+    <Scene w={420} h={258}>
       <Shape x={30} y={92} w={110} h={56} kind="rect" label="Checkout" />
       {/* The comment indicator near the element's top-right, with its count. */}
       <g transform="translate(116 98)">
@@ -40,7 +42,7 @@ export function CommentThread() {
         x={170}
         y={24}
         width={234}
-        height={196}
+        height={214}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={2}
@@ -62,29 +64,33 @@ export function CommentThread() {
         5m ago
       </Label>
       <TextBar x={206} y={86} w={160} />
+      {/* Reactions: the chips under the comment, yours highlighted (CommentReactions) */}
+      <Chip x={206} y={94} w={34} h={16} size={9.5} label="👍 2" tone="brand" />
+      <Chip x={244} y={94} w={34} h={16} size={9.5} label="🎉 1" tone="slate" />
+      <Chip x={282} y={94} w={34} h={16} size={9.5} label="👀 1" tone="slate" />
       {/* Reply */}
-      <Avatar cx={190} cy={114} r={10} initial="J" colour="violet" />
-      <Label x={206} y={110} size={10} weight={700} tone="strong">
+      <Avatar cx={190} cy={134} r={10} initial="J" colour="violet" />
+      <Label x={206} y={130} size={10} weight={700} tone="strong">
         Jae
       </Label>
-      <Label x={232} y={110} size={10} tone="muted">
+      <Label x={232} y={130} size={10} tone="muted">
         just now
       </Label>
-      <TextBar x={206} y={122} w={130} />
+      <TextBar x={206} y={142} w={130} />
       {/* Composer */}
       <rect
         x={182}
-        y={144}
+        y={162}
         width={210}
         height={38}
         rx={7}
         className="fill-white stroke-slate-300"
         strokeWidth={1.5}
       />
-      <Label x={192} y={157} size={10} tone="muted">
+      <Label x={192} y={175} size={10} tone="muted">
         Add a comment…
       </Label>
-      <Button x={322} y={188} w={70} h={24} label="Comment" variant="primary" />
+      <Button x={322} y={206} w={70} h={24} label="Comment" variant="primary" />
     </Scene>
   );
 }
@@ -94,32 +100,20 @@ export function CommentThread() {
 /** A shared canvas with several live cursors carrying name tags, plus a
  *  presence avatar stack in the corner. */
 export function LiveCursors() {
-  // A tab pill with the initials of who is on that tab at its right.
+  // A tab with the initials of who is on that tab at its right.
   const pill = (x: number, w: number, label: string, on: boolean, people: Person[]) => (
-    <g>
-      <rect
-        x={x}
-        y={206}
-        width={w}
-        height={24}
-        rx={7}
-        className={on ? 'fill-white stroke-brand-400' : 'fill-slate-100 stroke-slate-200'}
-        strokeWidth={1.4}
-      />
-      <Label x={x + 10} y={219} size={10} weight={on ? 700 : 500} tone={on ? 'accent' : 'body'}>
-        {label}
-      </Label>
+    <BarTab x={x} y={206} w={w} h={32} label={label} active={on} anchor="start">
       {people.map((p, i) => (
         <Avatar
           key={p.initial}
           cx={x + w - 12 - (people.length - 1 - i) * 11}
-          cy={218}
+          cy={223}
           r={7}
           initial={p.initial}
           colour={p.colour}
         />
       ))}
-    </g>
+    </BarTab>
   );
   return (
     <Scene w={420} h={246}>
@@ -172,29 +166,10 @@ export function PresenceSelection() {
 // --- Sharing ------------------------------------------------------------------
 
 /** A visitor on a one-tab link: their tab's canvas above a tab bar where the
- *  shared tab sits between two nameless "Not shared" pills. */
+ *  shared tab sits between two nameless "Not shared" tabs. */
 export function OneTabShare() {
   const pill = (x: number, w: number, label: string, shared: boolean) => (
-    <g transform={`translate(${x} 196)`}>
-      <rect
-        width={w}
-        height={24}
-        rx={7}
-        className={shared ? 'fill-white stroke-brand-400' : 'fill-transparent stroke-slate-400'}
-        strokeWidth={1.5}
-        strokeDasharray={shared ? undefined : '4 3'}
-      />
-      <Label
-        x={w / 2}
-        y={13}
-        anchor="middle"
-        size={10}
-        weight={600}
-        tone={shared ? 'strong' : 'muted'}
-      >
-        {label}
-      </Label>
-    </g>
+    <BarTab x={x} y={202} w={w} h={38} label={label} active={shared} />
   );
   return (
     <Scene w={420} h={240}>
