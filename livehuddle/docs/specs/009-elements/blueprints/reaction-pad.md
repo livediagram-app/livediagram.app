@@ -17,7 +17,7 @@ Scope, by file:
 | `packages/document/src/svg-render-faces.ts`                | `reactionPad`: the export wash, spot, emoji and label chip        |
 | `packages/api-schema/src/room-messages.ts`                 | The `reaction` op; `'reaction'` in `PRESENCE_OP_KINDS`            |
 | `apps/editor/components/canvas/ReactionPadFace.tsx`        | The face: glow, emoji, spot, press ring, label pill; the press    |
-| `apps/editor/app/meeting-motion.css`                             | `pad-bob`, `pad-ring`, the hover lift and the press squash        |
+| `apps/editor/app/meeting-motion.css`                       | `pad-bob`, `pad-ring`, the hover lift and the press squash        |
 | `apps/editor/components/canvas/ReactionBurst.tsx`          | Canvas surface, clock, reduced motion, cleanup                    |
 | `apps/editor/lib/reaction-particles.ts`                    | Pure spawn, step, alpha, draw                                     |
 | `apps/editor/hooks/canvas/useReactionBursts.ts`            | Bursts keyed by element id; play, receive, clear                  |
