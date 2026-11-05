@@ -23,6 +23,7 @@ import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
+import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
   commentWithReactions,
@@ -58,7 +59,12 @@ export type ElementDelta =
       by: string;
       name: string;
       on: boolean;
-    };
+    }
+  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): pin one, or take one down by id.
+  // An unpin names the note's signer too, and removes the note only while that is still its `by`: the room lets a
+  // Participant send only its own key there, so it can unpin only what it pinned.
+  | { kind: 'notice-pin'; note: NoticeNote }
+  | { kind: 'notice-unpin'; noteId: string; by: string };
 
 export function isComment(value: unknown): value is Comment {
   if (!value || typeof value !== 'object') return false;
@@ -86,6 +92,17 @@ const threadOf = (el: Element): CommentThread | undefined =>
 function withThread(el: Element, thread: CommentThread | undefined): Element {
   const { commentThread: _drop, ...rest } = el as Element & { commentThread?: CommentThread };
   return (thread ? { ...rest, commentThread: thread } : rest) as Element;
+}
+
+// A notice board that takes note changes: a locked board refuses them, on every screen alike.
+function openNoticeBoard(el: Element): ShapeElement | null {
+  return el.type === 'shape' && el.shape === 'notice-board' && el.locked !== true ? el : null;
+}
+
+// The board with its notes set, the field dropped when none are left.
+function withNotes(el: ShapeElement, notes: NoticeNote[]): ShapeElement {
+  const { noticeNotes: _drop, ...rest } = el;
+  return notes.length > 0 ? { ...rest, noticeNotes: notes } : rest;
 }
 
 const holdsComment = (el: Element, commentId: string): boolean =>
@@ -168,6 +185,26 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       });
       return changed ? withThread(el, { ...thread, comments }) : el;
     }
+    case 'notice-pin': {
+      const board = openNoticeBoard(el);
+      if (!board || !isNoticeNote(delta.note)) return el;
+      const notes = board.noticeNotes ?? [];
+      // A replay, or a board already full: the note does not land (two pins racing for the last place settle in
+      // the room's order).
+      if (notes.length >= NOTES_MAX || notes.some((n) => n.id === delta.note.id)) return el;
+      return withNotes(board, [...notes, delta.note]);
+    }
+    case 'notice-unpin': {
+      const board = openNoticeBoard(el);
+      if (!board || typeof delta.noteId !== 'string' || typeof delta.by !== 'string') return el;
+      const notes = board.noticeNotes ?? [];
+      const at = notes.findIndex((n) => n.id === delta.noteId && n.by === delta.by);
+      if (at === -1) return el;
+      return withNotes(
+        board,
+        notes.filter((_, i) => i !== at),
+      );
+    }
     default:
       return el;
   }
@@ -205,15 +242,25 @@ export function mergeIncomingElement(local: Element, incoming: Element): Element
       const items = keepLocalTicks(local.checklistItems, shape.checklistItems);
       if (items !== shape.checklistItems) next = { ...shape, checklistItems: items };
     }
+    // A notice board's notes are ours whole: every pin and unpin reached us as a delta, so a peer's update (an
+    // Editor moving the board) never carries its older list over somebody's new note.
+    if (local.noticeNotes !== shape.noticeNotes) {
+      next = local.noticeNotes ? { ...next, noticeNotes: local.noticeNotes } : withoutNotes(next);
+    }
   }
   return next;
+}
+
+function withoutNotes(el: ShapeElement): ShapeElement {
+  const { noticeNotes: _drop, ...rest } = el;
+  return rest;
 }
 
 // Everything about an element EXCEPT what deltas carry, for comparing.
 function withoutDeltaFields(el: Element): unknown {
   const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
   if (rest.type !== 'shape') return rest;
-  const { checklistItems, ...shape } = rest as ShapeElement;
+  const { checklistItems, noticeNotes: _n, ...shape } = rest as ShapeElement;
   return checklistItems
     ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
     : shape;

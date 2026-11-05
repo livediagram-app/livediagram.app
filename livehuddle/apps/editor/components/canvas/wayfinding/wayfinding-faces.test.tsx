@@ -6,6 +6,7 @@ import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { createWayfindingStore, type Wayfinding } from './wayfinding-store';
 import { DirectoryList } from './DirectoryFace';
 import { ElevatorPanel } from './ElevatorFace';
+import { elevatorExitPoint } from '@/lib/wayfinding';
 
 // docs/specs/009-elements/directory.md and elevator.md: the list and the floor panel, and that every role may
 // press both (docs/specs/013-workspace/share-roles.md: an Editor, a Participant and a Viewer all walk and travel).
@@ -141,7 +142,8 @@ describe('the Elevator panel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Go to Elevator 2' }));
     expect(w.go).toHaveBeenLastCalledWith({
       tabId: 'b',
-      point: { x: 456, y: 576 },
+      // In front of its doors, below its name (elevator.md "Where a floor arrives").
+      point: elevatorExitPoint({ x: 400, y: 400, width: 112, height: 140 }),
       ignoreId: 'elevator-400-400',
     });
     fireEvent.click(screen.getByRole('button', { name: 'Go to Elevator 1 on Lobby' }));

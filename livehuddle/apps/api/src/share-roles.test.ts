@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyParticipantOp, type ElementOp, type Tab } from '@livehuddle/document';
+import {
+  applyElementDelta,
+  applyParticipantOp,
+  type ElementDelta,
+  type ElementOp,
+  type Tab,
+} from '@livehuddle/document';
 import { gateClientOp } from './room-op-gate';
 import { claimBaton, FREE_BATON, grantBaton } from './facilitator';
 
@@ -222,7 +228,14 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   row(
     'Take part in a session tool (react)',
     {
-      react: { kind: 'reaction', tabId: 't', id: 'r1', reaction: 'clap', x: 0, y: 0 },
+      react: delta({
+        kind: 'comment-react',
+        commentId: 'c1',
+        emoji: 'thumbs-up',
+        by: ME,
+        name: 'Me',
+        on: true,
+      }),
     },
     TAKING_PART,
   );
@@ -232,6 +245,11 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     const dot = { kind: 'vote', tabId: 't', elementId: 'col', voter: ME, delta: 1 };
     for (const level of ['edit', 'participate', 'view'] as const) {
       expect(roomDoes(dot, level)).toBe('dropped');
+      // The laser's trail and a Reaction Pad's burst left with them (not-in-livehuddle.md "The presenting tools").
+      expect(roomDoes({ kind: 'laser', tabId: 't', x: 1, y: 2 }, level)).toBe('dropped');
+      expect(
+        roomDoes({ kind: 'reaction', tabId: 't', elementId: 'p', reaction: 'clap' }, level),
+      ).toBe('dropped');
     }
   });
 
@@ -318,6 +336,42 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     it('view: dropped', () => {
       for (const op of [pin, unpinOwn, unpinTheirs]) expect(does(op, 'view')).toBe('dropped');
     });
+
+    // What the editor sends now: one delta per pin or unpin (docs/specs/012-collaboration/collab-race-hardening.md).
+    // The room relays a Participant's only when it is signed with its own adder key, and every screen and the stored
+    // board apply it against the stored note's signer.
+    const noteDelta = (d: ElementDelta) => ({ ...delta(d), elementId: 'nb' });
+    const doesDelta = (d: ElementDelta, level: Level) => {
+      const gate = gateClientOp(noteDelta(d), {
+        role: level,
+        tabScope: null,
+        key: ME,
+        adderKey: ADDER,
+      });
+      if (gate.kind !== 'relay') return 'dropped';
+      const next = applyElementDelta(NOTICE.elements[0]!, d) as { noticeNotes?: { id: string }[] };
+      return (next.noticeNotes ?? []).map((n) => n.id).join(',');
+    };
+    const pinMine: ElementDelta = { kind: 'notice-pin', note: note('m2', ADDER) };
+    const pinAsOther: ElementDelta = { kind: 'notice-pin', note: note('x1', 'b'.repeat(32)) };
+    const unpinMine: ElementDelta = { kind: 'notice-unpin', noteId: 'm1', by: ADDER };
+    const unpinOther: ElementDelta = { kind: 'notice-unpin', noteId: 't1', by: 'b'.repeat(32) };
+    const unpinOtherAsMe: ElementDelta = { kind: 'notice-unpin', noteId: 't1', by: ADDER };
+    it('edit, by delta: pins as anyone and unpins any note', () => {
+      expect(doesDelta(pinAsOther, 'edit')).toBe('t1,m1,x1');
+      expect(doesDelta(unpinOther, 'edit')).toBe('m1');
+    });
+    it("participate, by delta: pins and unpins as itself, never another's", () => {
+      expect(doesDelta(pinMine, 'participate')).toBe('t1,m1,m2');
+      expect(doesDelta(unpinMine, 'participate')).toBe('t1');
+      expect(doesDelta(pinAsOther, 'participate')).toBe('dropped');
+      expect(doesDelta(unpinOther, 'participate')).toBe('dropped');
+      // Its own key on someone else's note: relayed, and a no-op on every screen and in the store.
+      expect(doesDelta(unpinOtherAsMe, 'participate')).toBe('t1,m1');
+    });
+    it('view, by delta: dropped', () => {
+      for (const d of [pinMine, unpinMine]) expect(doesDelta(d, 'view')).toBe('dropped');
+    });
   });
 
   // A Participant comments through the comment routes (gateParticipate, routes/comment-routes.test.ts: a
@@ -351,13 +405,12 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     });
   });
 
-  // Panning and zooming are the viewport a follower follows; spotlight and export write nothing and send nothing.
+  // Panning and zooming are the viewport a follower follows; export writes nothing and sends nothing.
   row(
-    'Pan, zoom, laser, spotlight, export',
+    'Pan, zoom, export',
     {
       pan: { kind: 'viewport', tabId: 't', x: 40, y: 0, zoom: 1 },
       zoom: { kind: 'viewport', tabId: 't', x: 0, y: 0, zoom: 2 },
-      laser: { kind: 'laser', tabId: 't', x: 1, y: 2 },
       cursor: { kind: 'cursor', tabId: 't', x: 1, y: 2 },
       select: { kind: 'select', tabId: 't', ids: ['col'] },
     },
@@ -397,7 +450,6 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   it('treats an unknown level as a Viewer', () => {
     const ops = [
       { kind: 'avatar-say', tabId: 't', id: 'b1', text: 'Hello', x: 0, y: 0 },
-      { kind: 'reaction', tabId: 't', id: 'r1', reaction: 'clap', x: 0, y: 0 },
       { kind: 'drag-preview', tabId: 't', ids: ['col'] },
       add(sticky('n1')),
     ];

@@ -18,16 +18,16 @@ a divider into "Around the Space" and "Office Pieces". The catalogue is growing,
 Space holds would only get longer. So the meeting palette offers them as **four top-level categories**, each a
 question somebody building a Space asks, in the Meet band:
 
-| Category      | id                 | Holds                                                     | The question                     |
-| ------------- | ------------------ | --------------------------------------------------------- | -------------------------------- |
-| **Travel**    | `collab-travel`    | Portal, Bring Focus, Avatar Pad, Directory, Elevator, Avatar Button, Link card | How do people get somewhere?     |
-| **Seating**   | `collab-seating`   | Chair, Desk, Sofa, Meeting Table                          | Where do people sit?             |
-| **Rooms**     | `collab-rooms`     | Fence, Room, Room Builder, Door, Stage, Rug, Office Pod   | How is the floor laid out?       |
-| **Amenities** | `collab-amenities` | Plant, Bookshelf, Water Cooler, Coffee Machine, Notice Board, World Clock | What makes it feel like a place? |
-| **Bar**       | `collab-bar`       | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge             | Where do people gather after?    |
-| **Recreation** | `collab-recreation` | Jukebox, Ping-Pong Table, Arcade Machine, Fireplace | Where do people unwind?          |
-| **Garden**    | `collab-garden`    | Outdoor Plant, Tree, Garden Path, Grass, Garden Fence, Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire | Can we take it outside?          |
-| **Meeting**   | `collab-meeting`   | Screen, Room Sign                                         | What does a meeting room need?   |
+| Category       | id                  | Holds                                                                                                                          | The question                     |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| **Travel**     | `collab-travel`     | Portal, Bring Focus, Avatar Pad, Directory, Elevator, Avatar Button, Link card                                                 | How do people get somewhere?     |
+| **Seating**    | `collab-seating`    | Chair, Desk, Sofa, Meeting Table                                                                                               | Where do people sit?             |
+| **Rooms**      | `collab-rooms`      | Fence, Room, Room Builder, Door, Stage, Rug, Office Pod                                                                        | How is the floor laid out?       |
+| **Amenities**  | `collab-amenities`  | Plant, Bookshelf, Water Cooler, Coffee Machine                                                                                 | What makes it feel like a place? |
+| **Bar**        | `collab-bar`        | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge                                                                                  | Where do people gather after?    |
+| **Recreation** | `collab-recreation` | Jukebox, Ping-Pong Table, Arcade Machine, Fireplace                                                                            | Where do people unwind?          |
+| **Garden**     | `collab-garden`     | Outdoor Plant, Tree, Garden Path, Grass, Garden Fence, Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire | Can we take it outside?          |
+| **Meeting**    | `collab-meeting`    | Screen, Room Sign, Notice Board, World Clock                                                                                   | What does a meeting room need?   |
 
 - **Data, not special cases.** Each tile names its category through its `tileGroup` (`travel`, `seating`, `rooms`,
   `amenities`), and `COLLABORATE_CATEGORY_GROUPS` maps each category id to its group. A new piece of furniture

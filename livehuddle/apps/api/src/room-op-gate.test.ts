@@ -32,10 +32,9 @@ describe('gateClientOp', () => {
     expect(gateClientOp(tab, as('admin'))).toEqual(DROP);
   });
 
-  it('keeps a viewer from taking part: reactions, speech and focus', () => {
-    for (const op of [{ kind: 'reaction' }, say, { kind: 'focus-here' }])
+  it('keeps a viewer from taking part: speech and focus', () => {
+    for (const op of [say, { kind: 'focus-here' }])
       expect(gateClientOp(op, as('view'))).toEqual(DROP);
-    expect(gateClientOp({ kind: 'reaction' }, as('participate'))).toEqual(relay(true));
     expect(gateClientOp(say, as('participate'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'focus-here' }, as('participate'))).toEqual(DROP);
   });
@@ -120,6 +119,32 @@ describe('gateClientOp', () => {
     expect(gateClientOp(react('me'), as('participate'))).toEqual(relay(false, true));
     expect(gateClientOp(react('you'), as('participate'))).toEqual(DROP);
     expect(gateClientOp(react('me'), as('view'))).toEqual(DROP);
+  });
+
+  // docs/specs/009-elements/social-pieces.md "Notice Board": a Participant pins and unpins as itself, signed with its
+  // server-verified adder key, never its claimed collab key.
+  it('relays a notice board pin or unpin from a Participant only when signed with its adder key', () => {
+    const op = (delta: Record<string, unknown>) => ({
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'nb',
+      delta,
+    });
+    const note = (by: string) => ({ id: 'n', text: 'Hi', author: 'Me', by, at: 1 });
+    const pin = (by: string) => op({ kind: 'notice-pin', note: note(by) });
+    const unpin = (by: string) => op({ kind: 'notice-unpin', noteId: 'n', by });
+    const participant = as('participate', { adderKey: 'adder' });
+    for (const mine of [pin('adder'), unpin('adder')]) {
+      expect(gateClientOp(mine, participant)).toEqual(relay(false, true));
+      expect(gateClientOp(mine, as('edit'))).toEqual(relay(false));
+      expect(gateClientOp(mine, as('view', { adderKey: 'adder' }))).toEqual(DROP);
+    }
+    // Another's key, its claimed collab key, or no adder key at all.
+    for (const other of [pin('someone'), unpin('someone'), pin('me'), unpin('me')])
+      expect(gateClientOp(other, participant)).toEqual(DROP);
+    expect(gateClientOp(pin('adder'), as('participate'))).toEqual(DROP);
+    expect(gateClientOp(unpin(''), as('participate', { adderKey: '' }))).toEqual(DROP);
+    expect(gateClientOp(op({ kind: 'notice-pin', note: null }), participant)).toEqual(DROP);
   });
 
   it("shows only an editor's drag preview", () => {

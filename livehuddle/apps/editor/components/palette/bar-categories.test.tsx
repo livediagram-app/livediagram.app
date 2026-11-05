@@ -17,6 +17,10 @@ describe('the category bar’s categories', () => {
       'collab-seating',
       'collab-rooms',
       'collab-amenities',
+      'collab-bar',
+      'collab-recreation',
+      'collab-garden',
+      'collab-meeting',
       'icons',
       'stickers',
       'media',
@@ -27,6 +31,10 @@ describe('the category bar’s categories', () => {
       'Seating',
       'Rooms',
       'Amenities',
+      'Bar',
+      'Recreation',
+      'Garden',
+      'Meeting',
       'Icons',
       'Stickers',
       'Media',
@@ -38,6 +46,6 @@ describe('the category bar’s categories', () => {
   });
 
   it('keeps the bands: Write, then the meeting categories, then the decorations', () => {
-    expect(bar().map((c) => c.group)).toEqual([0, 6, 6, 6, 6, 2, 2, 2]);
+    expect(bar().map((c) => c.group)).toEqual([0, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2]);
   });
 });

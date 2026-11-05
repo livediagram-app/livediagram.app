@@ -35,7 +35,7 @@ Scope, by file:
 | Approach point | `SpacePlace.approach`                              | Just outside the doorway (null: no doorway)                |
 | Arrival point  | `SpacePlace.arrival`                               | Just inside the doorway, else the centre / the stage's top |
 | Floor          | `SpaceFloor = { tabId, name, elevators, arrival }` | A tab, its Elevators and where it arrives                  |
-| Exit point     | `elevatorExitPoint(el)`                            | Bottom centre, 36px below the box (clear of it)            |
+| Exit point     | `elevatorExitPoint(el)`                            | Bottom centre, the figure's head under the name's line     |
 | Occupancy      | `whoIsWhere(...)`                                  | Person id to place id (null: Around)                       |
 | Wayfinding     | `Wayfinding` handle                                | Store plus actions, stable for the canvas's life           |
 
@@ -55,7 +55,10 @@ arrivalSeq }`. `set` notifies only when a field changes by reference; the hook p
   by-value key (id, tab, place) changes, so a walk does not re-render an open popover each frame. Faces read with
   selectors (`useWayfindingSelect`), an Elevator only its own open / arrival flags.
 - **Walk There.** Not walking: `enter()` (the Avatar pick), the target kept in a ref and started by an effect once
-  the walk has a position. Then `walkTo(approach, () => walkTo(arrival))`, or `walkTo(arrival)`.
+  the walk has a position. Then the route `walkThereRoute(feet, place)` is walked leg by leg, each `walkTo`'s
+  arrival starting the next: from outside, the corners of the place's walls box (`SpacePlace.bounds`, rooms and pods
+  only) grown by 28px when the straight line to the approach crosses that box (the nearer way round, at most two
+  corners), then the approach, then the arrival; from inside the box, the arrival alone.
 - **Go / Ride.** `go({ tabId, point, ignoreId })`: while walking, arm the ignored Elevator and `teleportTo(point)`
   first. Same tab: centre the camera (`viewportOffsetCentredOn` on a zero box at the point). Another tab: remember
   `{ tabId, point, ignoreId }` and call `onTravelToTab(tabId)` (EditorCanvasHost: `keepWalkingTo(tabId)` then the

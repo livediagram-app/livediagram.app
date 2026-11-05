@@ -18,7 +18,7 @@ These pieces give a Space those small, social places, built from the same parts 
 
 | Category             | Pieces                                                                  |
 | -------------------- | ----------------------------------------------------------------------- |
-| **Amenities**        | Notice Board, World Clock                                               |
+| **Meeting**          | Notice Board, World Clock                                               |
 | **Recreation** (new) | Jukebox, Ping-Pong Table, Arcade Machine, Fireplace                     |
 | **Garden**           | Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire |
 
@@ -70,16 +70,30 @@ A cork board in a wooden frame, hung on a wall, that holds pinned notes.
   body with a live 280 counter, the five colour dots, **Pin Note**) for those who may pin. Escape or a click outside
   closes it.
 - **Who may do what**: an Editor or a Participant pins a note and unpins their own; an Editor unpins any note. A
-  Viewer reads the notes and sees no add box or Unpin buttons. Unpin asks no confirmation (a note is small, and undo
-  brings it back for an Editor).
+  Viewer reads the notes and sees no add box or Unpin buttons. Unpin asks no confirmation (a note is small). A pin
+  and an unpin are not undoable, like a comment: they are the room's, and one person's undo never takes them back.
 - **Stored on the element** (`ShapeElement.noticeNotes`, an array oldest first): each `{ id, title?, text, author,
 by, at, color? }`, where `by` is the pinner's adder key (an Editor without one writes their participant key) and
-  `at` the epoch ms it was pinned. Synced like any other element field.
-- **A Participant's pin goes through the participant content rule** ([Share
-  roles](../013-workspace/share-roles.md)): on a notice board a Participant's update may add notes signed with its own
-  adder key and remove notes it signed; every other note stays as stored, whatever its screen sent. Two people pinning
-  at once both land, since the room applies each against the stored board.
+  `at` the epoch ms it was pinned.
+- **Notes travel as deltas** ([Collab race hardening](../012-collaboration/collab-race-hardening.md)), never inside a
+  whole-element update. A pin is one `notice-pin` delta carrying the note; an unpin is one `notice-unpin` naming the
+  note's id and its signer's `by`, and removes the note only while that is still its signer. A whole-element update
+  (an Editor moving the board, say) keeps every receiver's own notes, so one sent in the same moment as somebody's
+  pin can no longer carry the old list over the new note, on screens or in the store; two people pinning at once
+  both land, in the room's order. A board's 50-note cap, a duplicate id and a locked board are checked where the
+  delta is applied, on every screen alike: a pin past the cap, a replayed note or a pin on a locked board changes
+  nothing.
+- **A Participant pins and unpins as itself** ([Share roles](../013-workspace/share-roles.md)): the room relays a
+  Participant's `notice-pin` only when the note's `by` is the sender's server-verified adder key, and its
+  `notice-unpin` only when the `by` it names is that key, so it can remove only notes it signed (each screen, and the
+  room's write into the stored board, check the stored note's signer). A Viewer's is dropped. The room writes a
+  Participant's notes into the stored board itself, as it writes its comment reactions. The participant content
+  rule still keeps every note a Participant did not sign as stored, should an older screen send notes inside an
+  update.
 - Its label is not drawn. It does not turn. Aspect locked.
+- **A face's controls are their own**: pressing the **Notes** button (or the Jukebox's **Play**) never selects,
+  drags, label-edits or erases the piece, never starts a draw over it, and is not a walk in Avatar mode. The count
+  beside **Notes** is a badge ([Counts are badges](../004-interface-design/counts.md)), never "(3)".
 
 ## World Clock
 
@@ -168,7 +182,7 @@ Gathering spots with a fire that flickers.
 
 - **Editor**: places, moves and deletes every piece; sets a World Clock's zones and a Jukebox's source; pins notes and
   unpins any note.
-- **Participant**: pins a note and unpins its own; walks, sits and uses everything like everyone; the participant
+- **Participant**: pins a note and unpins its own, signed with its adder key, which the room checks; walks, sits and uses everything like everyone; the participant
   palette does not offer the pieces.
 - **Viewer**: reads the notes; walks, sits and listens like everyone (all of it is presence or local).
 

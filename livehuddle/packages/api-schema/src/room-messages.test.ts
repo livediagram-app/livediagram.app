@@ -24,15 +24,12 @@ describe('isRoomOpRef', () => {
 
 // The room's participation class (docs/specs/013-workspace/share-roles.md "Integrity").
 describe('isParticipationOp', () => {
-  it('admits a comment reaction', () => {
-    expect(
-      isParticipationOp({
-        kind: 'el-delta',
-        tabId: 't',
-        elementId: 'e',
-        delta: { kind: 'comment-react' },
-      }),
-    ).toBe(true);
+  it('admits a comment reaction and a notice board pin or unpin', () => {
+    for (const kind of ['comment-react', 'notice-pin', 'notice-unpin']) {
+      expect(
+        isParticipationOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind } }),
+      ).toBe(true);
+    }
   });
 
   it('refuses every other mutation and anything malformed', () => {
@@ -52,10 +49,12 @@ describe('isParticipationOp', () => {
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot is a retired kind, not a mutation.
 describe('retired op kinds', () => {
-  it('names the vote op, and nothing the room still takes', () => {
-    expect(isRetiredOpKind('vote')).toBe(true);
-    expect(isMutationOpKind('vote')).toBe(false);
-    expect(isPresenceOpKind('vote')).toBe(false);
+  it('names the vote, laser and reaction ops, and nothing the room still takes', () => {
+    for (const kind of ['vote', 'laser', 'reaction']) {
+      expect(isRetiredOpKind(kind)).toBe(true);
+      expect(isMutationOpKind(kind)).toBe(false);
+      expect(isPresenceOpKind(kind)).toBe(false);
+    }
     for (const kind of ['tab', 'el', 'el-delta', 'cursor', null, 3]) {
       expect(isRetiredOpKind(kind)).toBe(false);
     }

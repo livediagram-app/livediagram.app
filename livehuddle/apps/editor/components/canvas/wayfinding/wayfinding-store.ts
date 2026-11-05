@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { WayPerson, WayPoint, WayTab } from '@/lib/wayfinding';
+import type { WayBox, WayPerson, WayPoint, WayTab } from '@/lib/wayfinding';
 
 // The Directory's and the Elevator's view of the space (docs/specs/009-elements/blueprints/wayfinding.md "Store"):
 // one store per canvas, filled by useWayfinding and read by the faces through selectors, so a face re-renders only
@@ -59,10 +59,17 @@ export function useWayfindingSelect<T>(
   );
 }
 
+/** Where a Walk There goes: a place's approach and arrival, and the box its own walls stand in (walkThereRoute). */
+export type WalkTarget = {
+  approach: WayPoint | null;
+  arrival: WayPoint;
+  bounds?: WayBox | null;
+};
+
 /** What a place row or a floor row does: the actions the hook owns, stable for the canvas's life. */
 export type WayfindingActions = {
   /** Walk your character to a place on this tab (entering Avatar mode first when needed). */
-  walkThere: (place: { approach: WayPoint | null; arrival: WayPoint }) => void;
+  walkThere: (place: WalkTarget) => void;
   /** Jump to a point on a tab, like a Portal; `ignoreId` is an Elevator to step out of without calling it. */
   go: (to: { tabId: string; point: WayPoint; ignoreId?: string }) => void;
   /** Close a panel a walk-in opened. */

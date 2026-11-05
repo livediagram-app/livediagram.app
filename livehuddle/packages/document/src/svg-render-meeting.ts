@@ -11,6 +11,7 @@ import {
 } from './meeting-pieces';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { text, type Face } from './svg-render-face-kit';
+import type { CanvasSurface } from './colors';
 
 // The piece's design box scaled onto the element's box.
 function scaled(el: Face, w: number, h: number, body: string): string {
@@ -31,9 +32,10 @@ export function screenSvg(el: Face): string {
 }
 
 // A plaque is a real sign, so the export draws the light one on every paper.
-export function roomSignSvg(el: Face): string {
+export function roomSignSvg(el: Face, surface?: CanvasSurface): string {
   const a = ROOM_SIGN_ART;
-  const t = a.tones.light;
+  // The plaque the canvas shows on this paper (RoomSignView), so a dark export has no white card on it.
+  const t = surface === 'dark' ? a.tones.dark : a.tones.light;
   const clip = `room-sign-${xmlEscape(el.id)}`;
   const body =
     `<clipPath id="${clip}"><rect width="${a.plaque.w}" height="${a.plaque.h}" rx="${a.plaque.rx}"/></clipPath>` +

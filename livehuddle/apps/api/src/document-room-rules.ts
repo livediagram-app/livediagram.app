@@ -149,12 +149,27 @@ export function admitFrame(
 // the session claimed at hello (server-derived keys are Later), so
 // this stops a Participant reacting in someone else's name in the same room, not one that claimed another's key from
 // the start.
-export function answersAsSelf(op: unknown, key: string | undefined): boolean {
+//
+// A notice board note is signed with the server-verified adder key instead (docs/specs/009-elements/social-pieces.md
+// "Notice Board"): a pin's note and an unpin must both name it. Every screen, and the room's write into the stored
+// board, removes a note only while the unpin's `by` is still its signer, so a Participant unpins only what it
+// pinned.
+export function answersAsSelf(
+  op: unknown,
+  key: string | undefined,
+  adderKey: string | null = null,
+): boolean {
   if (typeof op !== 'object' || op === null) return false;
   const o = op as { kind?: unknown; delta?: unknown };
   if (o.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;
-  const d = o.delta as { kind?: unknown; by?: unknown };
+  const d = o.delta as { kind?: unknown; by?: unknown; note?: unknown };
   // A reaction names its reactor (docs/specs/012-collaboration/comment-reactions.md).
   if (d.kind === 'comment-react') return key !== undefined && d.by === key;
+  const signer = adderKey !== null && adderKey !== '' ? adderKey : null;
+  if (d.kind === 'notice-pin') {
+    const note = d.note as { by?: unknown } | null | undefined;
+    return signer !== null && typeof note === 'object' && note !== null && note.by === signer;
+  }
+  if (d.kind === 'notice-unpin') return signer !== null && d.by === signer;
   return false;
 }

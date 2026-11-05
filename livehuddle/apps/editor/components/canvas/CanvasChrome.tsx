@@ -95,7 +95,7 @@ type ChromeExtras = {
   // Roll a whole new character, and play one of the panel's reactions.
   onRandomiseAvatar: () => void;
   onAvatarReaction: (kind: import('@liveworkspace/avatar/reactions').AvatarReactionKind) => void;
-  // Throw one of the Reaction Pad's bursts (docs/specs/009-elements/reaction-pad.md) around the character.
+  // Throw one of the Reactions bursts (docs/specs/008-canvas/avatar-mode.md) around the character.
   onAvatarBurst?: (reaction: import('@livehuddle/document').Reaction) => void;
   // Say something from the Avatar panel (docs/specs/008-canvas/avatar-mode.md "The message popover"): absent for
   // a Viewer, who may not speak. Answers whether the message went; `avatarSpeechCooling` holds Send meanwhile.

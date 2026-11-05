@@ -150,13 +150,12 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
     const links = screen.getByRole('navigation', { name: 'Panels sub-categories' });
     expect(Array.from(links.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
-      'Layers',
       'Map',
       'Collaborate',
     ]);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Layers' }));
-    expect(screen.getByRole('heading', { name: 'Layers' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Map' }));
+    expect(screen.getByRole('heading', { name: 'Map' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /^Panels./ }));

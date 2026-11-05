@@ -281,9 +281,8 @@ each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-proj
 - **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
   Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
   (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
-- **The light meeting tools**: the Session strip's Timer, Bring Focus, the Reaction Pads, the
-  facilitator baton and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`,
-  `docs/specs/009-elements/reaction-pad.md`).
+- **The light meeting tools**: the Session strip's Timer, Bring Focus, the facilitator baton and follow-me
+  (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`).
 - **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
 - **The Spaces templates**: Virtual Office, Coworking Space, Team Pod and All-Hands Hall (`packages/templates`,
   `docs/specs/012-collaboration/virtual-office-template.md`).

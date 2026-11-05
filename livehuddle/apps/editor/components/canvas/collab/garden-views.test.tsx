@@ -70,11 +70,11 @@ describe('the pod, bar and garden views', () => {
     const path = render(
       <GardenPathView element={shape('garden-path')} stroke="#94a3b8" floor="#e7dcc4" />,
     );
-    expect(path.container.querySelector('svg')?.getAttribute('aria-label')).toBe('Garden path');
+    expect(path.container.querySelector('svg')?.getAttribute('aria-label')).toBe('Garden Path');
     expect(path.container.querySelector('rect[fill="#e7dcc4"]')).not.toBeNull();
     path.unmount();
     const fence = render(<GardenFenceView element={shape('garden-fence')} stroke="#94a3b8" />);
-    expect(fence.container.querySelector('svg')?.getAttribute('aria-label')).toBe('Garden fence');
+    expect(fence.container.querySelector('svg')?.getAttribute('aria-label')).toBe('Garden Fence');
     expect(fence.container.querySelectorAll('path[fill="#ffffff"]').length).toBeGreaterThan(5);
   });
 

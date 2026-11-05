@@ -611,17 +611,23 @@ describe('DocumentRoom op-role enforcement', () => {
   // below), so "a peer received it" is not the right assertion for it.
   // A let-speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand") is addressed too.
   // So is an Editor's stop-share (video-and-screen-bubbles.md "Share roles"; document-room-calls.test.ts).
-  const ADDRESSED_PRESENCE_KINDS = ['avatar-push', 'avatar-let-speak', 'call-stop-share'];
+  // A knock's answer goes to the knocker alone; the knock itself is throttled and needs its room (both pinned below).
+  const ADDRESSED_PRESENCE_KINDS = [
+    'avatar-push',
+    'avatar-let-speak',
+    'call-stop-share',
+    'avatar-knock-answer',
+  ];
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   // `calls-check` is the room's too: never relayed, it reads the calls kill switch (document-room-fanout.test.ts).
   // `call-session` too: the room checks and keeps it, never relays it (document-room-calls.test.ts).
-  const ROOM_DECIDED_PRESENCE_KINDS = ['follow', 'calls-check', 'call-session'];
-  // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
-  // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
-  const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];
+  const ROOM_DECIDED_PRESENCE_KINDS = ['follow', 'calls-check', 'call-session', 'avatar-knock'];
+  // Speaking is taking part (docs/specs/008-canvas/avatar-mode.md "Who may speak"): a Participant's, never a
+  // Viewer's (docs/specs/013-workspace/share-roles.md).
+  const PARTICIPANT_PRESENCE_KINDS = ['avatar-say'];
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
     it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
       const { room } = newRoom();
@@ -703,6 +709,37 @@ describe('DocumentRoom op-role enforcement', () => {
       expect(opsReceived(editor.ws)).toHaveLength(1);
     });
   }
+
+  // A knock (docs/specs/012-collaboration/knock.md): a Viewer walks too, so it may knock; once per 10 seconds, and its
+  // answer reaches the knocker alone.
+  it("relays a Viewer's knock once per 10 seconds, and sends its answer to the knocker alone", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const bystander = connect(room, 'bystander', 'edit');
+    for (const c of [editor, viewer, bystander]) c.ws.sent.length = 0;
+    const knock = { kind: 'avatar-knock', tabId: 't', roomId: 'room-1' };
+    sendFrame(room, viewer.ws, { kind: 'op', op: knock });
+    sendFrame(room, viewer.ws, { kind: 'op', op: knock });
+    expect(opsReceived(editor.ws)).toHaveLength(1);
+    expect(opsReceived(bystander.ws)).toHaveLength(1);
+    editor.ws.sent.length = 0;
+    bystander.ws.sent.length = 0;
+    const knockerId = storedPresence(viewer.ws)?.id;
+    expect(knockerId).toBeTruthy();
+    sendFrame(room, editor.ws, {
+      kind: 'op',
+      op: {
+        kind: 'avatar-knock-answer',
+        tabId: 't',
+        targetId: knockerId,
+        roomId: 'room-1',
+        answer: 'in',
+      },
+    });
+    expect(opsReceived(viewer.ws)).toHaveLength(1);
+    expect(opsReceived(bystander.ws)).toHaveLength(0);
+  });
 
   // Avatar-mode shove (docs/specs/008-canvas/avatar-mode.md). It is ADDRESSED, not broadcast: the room
   // delivers it to the named presence and nobody else. That routing has to live

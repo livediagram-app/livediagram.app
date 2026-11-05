@@ -128,7 +128,7 @@ export function RoomSignView({
         {/* The status stripe: the state readable from across the room. */}
         <span
           aria-hidden
-          className="absolute inset-y-0 left-0 transition-colors duration-300 motion-reduce:transition-none"
+          className="lh-sign-stripe absolute inset-y-0 left-0 motion-reduce:transition-none"
           style={{ width: scale(A.stripe, A.plaque.w), background: tone }}
         />
         {A.screws.map((c, i) => (

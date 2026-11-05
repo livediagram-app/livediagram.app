@@ -54,6 +54,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
     'directory kiosk map wayfinding rooms who is where people find go walk there sign lobby',
   elevator: 'elevator lift floor floors tab tabs stairs up down travel go building level',
   room: 'office room walls door doorway meeting kitchen lounge area space zone floor virtual office',
+  door: 'door doorway entrance exit way in opening wall gap room builder',
   'meeting-table': 'meeting table conference boardroom seats chairs sit together team office',
   plant: 'plant pot potted green leaves foliage decoration office scenery',
   bookshelf: 'bookshelf books shelves library bookcase office scenery',

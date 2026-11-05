@@ -52,11 +52,13 @@ function keepsToItsTab(op: unknown): boolean {
   return true;
 }
 
-/** The sender as the gate needs it: its server-verified role, tab scope and published key. */
+/** The sender as the gate needs it: its server-verified role, tab scope, published key and adder key. */
 export type GateSender = {
   role: unknown;
   tabScope: string | null;
   key: string | undefined;
+  // A Participant's server-verified adder key (X-Verified-Adder): what signs its notice board notes.
+  adderKey?: string | null;
 };
 
 export function gateClientOp(op: unknown, sender: GateSender): OpGate {
@@ -90,9 +92,6 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // reactions relay like an Editor's; its `el` op goes through the participant content rule and
   // never relays as sent; everything else needs an Editor.
   const level = parseStoredLevel(sender.role);
-  // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a reaction is taking
-  // part, so it needs a Participant.
-  if (level === 'view' && opKind === 'reaction') return DROP;
   // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
   // the limits here as every receiver holds it, so a malformed one reaches nobody.
   if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
@@ -129,7 +128,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (!presence && level !== 'edit') {
     if (level !== 'participate') return DROP;
     if (opKind === 'el') return { kind: 'participant-content' };
-    if (!isParticipationOp(op) || !answersAsSelf(op, sender.key)) return DROP;
+    if (!isParticipationOp(op) || !answersAsSelf(op, sender.key, sender.adderKey ?? null))
+      return DROP;
     participantAnswers = true;
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only

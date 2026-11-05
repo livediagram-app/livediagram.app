@@ -72,7 +72,7 @@ export function ScreenMenuSection({
             type="button"
             onClick={commit}
             disabled={!url || url === saved}
-            className="h-7 flex-1 cursor-pointer rounded-md bg-brand-600 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-50"
+            className="h-7 flex-1 cursor-pointer rounded-md bg-brand-700 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 disabled:cursor-default disabled:opacity-50"
           >
             Set
           </button>

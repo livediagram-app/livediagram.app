@@ -67,7 +67,7 @@ export function GardenPathView({
       element={element}
       stroke={stroke}
       seat={floor}
-      label="Garden path"
+      label="Garden Path"
       animClass={animClass}
     />
   );
@@ -157,7 +157,7 @@ export function GardenFenceView({
       element={element}
       stroke={stroke}
       seat={GARDEN_TONES.picket}
-      label="Garden fence"
+      label="Garden Fence"
       animClass={animClass}
     />
   );

@@ -12,6 +12,7 @@ import {
   NOTES_MAX,
   notesNewestFirst,
   type NoteColor,
+  type ElementDelta,
   type NoticeNote,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -22,9 +23,10 @@ import { track } from '@/lib/telemetry';
 
 // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): every note newest first, and an
 // add box for those who may pin. An Editor or a Participant pins and unpins its own; an Editor unpins any; a Viewer
-// reads. A pin is an ordinary commit, so a Participant's passes the participant content rule (signed with its adder
-// key) and an Editor's is an Editor's element update. Only this open popover reads the editor's context, so the
-// boards on the canvas never re-render with it.
+// reads. A pin and an unpin are each one delta (docs/specs/012-collaboration/collab-race-hardening.md), never a
+// whole-element update, so an Editor moving the board in the same moment cannot carry the old notes over a new one;
+// the room relays a Participant's only when signed with its own adder key. Not undoable, like a comment. Only this
+// open popover reads the editor's context, so the boards on the canvas never re-render with it.
 
 const DATE = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
 
@@ -55,18 +57,8 @@ export function NoticeBoardPopover({
     !!editor && (isEditor || (level === 'participate' && !!myKey)) && element.locked !== true;
   const full = notes.length >= NOTES_MAX;
 
-  const writeNotes = (next: (current: NoticeNote[]) => NoticeNote[]) => {
-    editor?.commitElements((els) =>
-      els.map((el) =>
-        el.id === element.id && el.type === 'shape' && el.shape === 'notice-board'
-          ? (() => {
-              const notesNext = next(el.noticeNotes ?? []);
-              const { noticeNotes: _drop, ...rest } = el;
-              return notesNext.length > 0 ? { ...rest, noticeNotes: notesNext } : rest;
-            })()
-          : el,
-      ),
-    );
+  const send = (delta: ElementDelta) => {
+    editor?.applyElementDelta(element.id, delta);
     track('Element', 'Changed', 'Notice-board');
   };
 
@@ -82,12 +74,12 @@ export function NoticeBoardPopover({
       at: Date.now(),
       ...(color !== DEFAULT_NOTE_COLOR ? { color } : {}),
     };
-    writeNotes((current) => [...current, note]);
+    send({ kind: 'notice-pin', note });
     setTitle('');
     setText('');
   };
 
-  const unpin = (id: string) => writeNotes((current) => current.filter((n) => n.id !== id));
+  const unpin = (note: NoticeNote) => send({ kind: 'notice-unpin', noteId: note.id, by: note.by });
 
   return (
     <AnchoredPopover anchor={anchor} name="Notice Board" width={300} onClose={onClose} pointer>
@@ -182,7 +174,7 @@ export function NoticeBoardPopover({
                     {mayUnpin ? (
                       <button
                         type="button"
-                        onClick={() => unpin(note.id)}
+                        onClick={() => unpin(note)}
                         className="ml-auto cursor-pointer rounded px-1 font-semibold text-slate-700 hover:bg-black/10"
                       >
                         Unpin

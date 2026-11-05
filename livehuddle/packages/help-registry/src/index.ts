@@ -119,7 +119,7 @@ export const categories: Category[] = [
     title: 'Selection Modes',
     description:
       'The pointer modes at the top of the palette: Select, Hand, Avatar, Eraser and Format Painter.',
-    articleCount: 9,
+    articleCount: 6,
     kind: 'feature',
   },
   {
@@ -161,7 +161,7 @@ export const categories: Category[] = [
     title: 'Tools',
     description:
       'Do more with less effort using the editor helpers: light and dark mode, and cleanup.',
-    articleCount: 3,
+    articleCount: 2,
     kind: 'feature',
   },
   {
@@ -918,7 +918,7 @@ export const articles: Article[] = [
     description:
       'Rooms of any shape with doors, a stage, an office pod, a meeting table, a bar, a garden, a recreation corner, a notice board, world clocks, plants, shelves, drinks and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong table tennis arcade game recreation team avatar walk sit navigate',
+      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis arcade game recreation team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',

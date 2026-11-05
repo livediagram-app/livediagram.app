@@ -10,8 +10,9 @@
 //   - refused: the correction to the sender alone; an element not saved yet, or no write at all (a failure, a
 //     flood past PARTICIPANT_PENDING_MAX), and the sender re-hydrates (`catchup { resync: true }`).
 //
-// Answers: a Participant's dot or comment reaction relays and enters the ledger like an Editor's, and the room
-// writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab for a burst.
+// Answers: a Participant's dot, comment reaction or notice board pin and unpin relays and enters the ledger like an
+// Editor's, and the room writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab
+// for a burst.
 
 import { isRoomOpRef, type ServerMessage } from '@livehuddle/api-schema';
 import type { ElementOp, TabLedger } from '@livehuddle/document';

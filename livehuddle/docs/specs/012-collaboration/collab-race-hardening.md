@@ -79,6 +79,12 @@ applied by the sender and every receiver through the same pure
   one change to a thread, by comment id, so a replay is a no-op. A remove and a rekey
   find their comment in whichever thread holds it. (An add naming a Sheet cell, `cell`, was Plan's and is
   refused now; a stored ledger entry that still carries one is read and ignored.)
+- `notice-pin` / `notice-unpin`: one note pinned on a Notice Board, or one taken down by id and its signer's `by`
+  ([Social pieces](../009-elements/social-pieces.md) "Notice Board"). A pin whose id the board holds is a replay and a
+  no-op; a pin past `NOTES_MAX` or on a locked board changes nothing; an unpin removes the note only while `by` is
+  still its signer, which is how a Participant, whose `by` the room checks, removes only its own. Before, an Editor
+  moving the board while somebody pinned sent the old list in a whole-element update and the new note vanished.
+  The ledger records each pin and unpin, and a Participant's are written into the stored board with its answers.
 
 Every delta is idempotent or order-free, so concurrent presses commute, and
 a malformed frame is dropped rather than applied.
@@ -88,7 +94,7 @@ Two rules keep the whole-element path from undoing it:
 - **Receivers keep their own copy of these fields.** An `el` add/update or
   an element inside a whole `tab` op is merged over the local element
   (`mergeIncomingElement`): everything else is taken, but answers, ideas,
-  checklist ticks and the comment thread stay ours, because every change to
+  checklist ticks, the comment thread and a notice board's notes stay ours, because every change to
   them reached us as a delta. The sender's copy is a snapshot from their
   last save and can be missing somebody.
 - **Senders don't restate them.** The autosave drops an `el` update whose
@@ -122,6 +128,7 @@ the DO only stores it):
   current round;
 - ideas: the cards posted this round, in order;
 - checklist ticks: each row's latest state, by index and text.
+- notice board notes: each note pinned and each note unpinned, by id.
 
 A delta for a new round replaces that element's answers and ideas (ticks
 carry over, since rows have no round) and retires the round it replaced. The entry keeps the

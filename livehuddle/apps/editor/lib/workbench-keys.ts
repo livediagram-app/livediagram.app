@@ -33,7 +33,7 @@ export const EMPTY_CARD_DISMISSED_KEY = 'livehuddle:v2:empty-card-dismissed';
 /** The localStorage key of the Format panel's configuration (docs/specs/008-canvas/format-panel.md). */
 export const FORMAT_CONFIG_KEY = 'livehuddle:v2:format-config';
 
-/** The localStorage key of the Spotlight panel's configuration (docs/specs/008-canvas/spotlight-panel.md). */
+/** The localStorage key of the Spotlight panel's configuration (docs/specs/002-project-scope/not-in-livehuddle.md#the-presenting-tools-isometric-and-zen). */
 export const SPOTLIGHT_CONFIG_KEY = 'livehuddle:v2:spotlight-config';
 
 /** The localStorage key of the Hide Participant Cursors switch (docs/specs/012-collaboration/collaborator-enhancements.md). */

@@ -125,7 +125,7 @@ export function DirectoryList({
                   ) : null}
                 </h3>
                 {places.length === 0 ? (
-                  <p className="px-1.5 py-1 text-[11px] text-slate-400 dark:text-slate-500">
+                  <p className="px-1.5 py-1 text-[11px] text-slate-500 dark:text-slate-400">
                     No rooms on this floor
                   </p>
                 ) : null}

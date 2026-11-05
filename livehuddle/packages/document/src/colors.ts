@@ -632,6 +632,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) draw themselves.
   'screen',
   'room-sign',
+  // A Door (docs/specs/009-elements/room-builder.md "Door") draws its jambs, leaf and swing: no border of its own.
+  'door',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.

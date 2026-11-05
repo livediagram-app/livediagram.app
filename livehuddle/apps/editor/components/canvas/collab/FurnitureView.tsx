@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef } from 'react';
-import { POD_DOOR_MS, podClosed } from '@liveworkspace/avatar/pod';
+import { podClosed } from '@liveworkspace/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
 import { hasSocialArt, SocialArt } from './SocialArt';
@@ -181,11 +181,8 @@ function PodDoor({ closed, stroke }: { closed: boolean; stroke: string }) {
       </clipPath>
       <g clipPath={`url(#${clip})`}>
         <g
-          className="motion-reduce:transition-none"
-          style={{
-            transform: `translateX(${closed ? 0 : w}px)`,
-            transition: `transform ${POD_DOOR_MS}ms ease-in-out`,
-          }}
+          className="lh-pod-door motion-reduce:transition-none"
+          style={{ transform: `translateX(${closed ? 0 : w}px)` }}
         >
           <rect
             x={x}

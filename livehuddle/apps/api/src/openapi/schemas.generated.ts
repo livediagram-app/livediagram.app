@@ -986,6 +986,23 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ClockZone": {
+    "additionalProperties": false,
+    "description": "One time zone on a world clock: an IANA zone and its label.",
+    "properties": {
+      "label": {
+        "type": "string"
+      },
+      "zone": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "zone",
+      "label"
+    ],
+    "type": "object"
+  },
   "CodeLanguage": {
     "enum": [
       "plain",
@@ -3696,6 +3713,51 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "NoteColor": {
+    "enum": [
+      "yellow",
+      "pink",
+      "blue",
+      "green",
+      "purple"
+    ],
+    "type": "string"
+  },
+  "NoticeNote": {
+    "additionalProperties": false,
+    "description": "One note pinned on a notice board (docs/specs/009-elements/social-pieces.md \"Notice Board\").",
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "author": {
+        "type": "string"
+      },
+      "by": {
+        "type": "string"
+      },
+      "color": {
+        "$ref": "#/components/schemas/NoteColor"
+      },
+      "id": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "author",
+      "by",
+      "at"
+    ],
+    "type": "object"
+  },
   "OutlineNode": {
     "additionalProperties": false,
     "properties": {
@@ -4079,23 +4141,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "$ref": "#/components/schemas/TextRun"
         },
-        "type": "array"
-      },
-      "noticeNotes": {
-        "items": {
-          "properties": {
-            "at": { "type": "number" },
-            "author": { "maxLength": 60, "type": "string" },
-            "by": { "maxLength": 128, "type": "string" },
-            "color": { "enum": ["yellow", "pink", "blue", "green", "purple"], "type": "string" },
-            "id": { "maxLength": 64, "type": "string" },
-            "text": { "maxLength": 280, "type": "string" },
-            "title": { "maxLength": 60, "type": "string" }
-          },
-          "required": ["id", "text", "author", "by", "at"],
-          "type": "object"
-        },
-        "maxItems": 50,
         "type": "array"
       },
       "opacity": {
@@ -4830,14 +4875,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "clockZones": {
         "items": {
-          "properties": {
-            "label": { "maxLength": 24, "type": "string" },
-            "zone": { "maxLength": 94, "type": "string" }
-          },
-          "required": ["zone", "label"],
-          "type": "object"
+          "$ref": "#/components/schemas/ClockZone"
         },
-        "maxItems": 6,
         "type": "array"
       },
       "code": {
@@ -4922,7 +4961,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/ElementId"
       },
       "jukeboxSource": {
-        "maxLength": 500,
         "type": "string"
       },
       "keyMeanings": {
@@ -4985,6 +5023,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "noteRich": {
         "items": {
           "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "noticeNotes": {
+        "items": {
+          "$ref": "#/components/schemas/NoticeNote"
         },
         "type": "array"
       },

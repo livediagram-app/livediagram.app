@@ -12,7 +12,9 @@
 //   - comments: each one posted (as the room stamped it, see
 //     `stampCommentAuthor`), each one removed, the thread's latest
 //     resolve, and each person's latest reaction per comment and emoji
-//     (docs/specs/012-collaboration/comment-reactions.md).
+//     (docs/specs/012-collaboration/comment-reactions.md);
+//   - notes: each note pinned on a notice board and each one unpinned, by id
+//     (docs/specs/009-elements/social-pieces.md "Notice Board").
 //
 // Each tick carries the room seq that last set them, and a
 // merge only applies what the SAVING client had not yet seen (seq past the
@@ -33,6 +35,7 @@ import type { Tab } from './index';
 import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
+import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
 import {
   isReactionChange,
   type CommentReactionId,
@@ -51,6 +54,11 @@ export type ElementLedger = {
     // Reactions, keyed `${commentId}\u0000${emoji}\u0000${by}`: each person's latest on or off.
     reacts?: Record<string, { on: boolean; name: string; seq: number }>;
   };
+  // A notice board's notes: each pinned note, and each unpin with the signer it named, by note id.
+  notes?: {
+    pins: Record<string, { note: NoticeNote; seq: number }>;
+    unpins: Record<string, { by: string; seq: number }>;
+  };
 };
 
 export type TabLedger = { elements: Record<string, ElementLedger> };
@@ -61,6 +69,8 @@ export type TabLedger = { elements: Record<string, ElementLedger> };
 const TICKS_MAX = 200;
 const COMMENT_EVENTS_MAX = 500;
 const ID_MAX = 200;
+// A board holds NOTES_MAX notes; room for them to turn over a few times before new pins stop being recorded.
+const NOTE_EVENTS_MAX = NOTES_MAX * 4;
 
 const isStr = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max;
 
@@ -164,9 +174,36 @@ function recordElement(
         comments: { ...comments, resolved: { value: d.resolved, seq } },
       };
     }
+    case 'notice-pin':
+    case 'notice-unpin':
+      return recordNote(prev, d, seq);
     default:
       return null;
   }
+}
+
+function recordNote(
+  prev: ElementLedger | undefined,
+  d: Record<string, unknown>,
+  seq: number,
+): ElementLedger | null {
+  const notes = prev?.notes ?? { pins: {}, unpins: {} };
+  const events = Object.keys(notes.pins).length + Object.keys(notes.unpins).length;
+  if (d.kind === 'notice-pin') {
+    if (!isNoticeNote(d.note)) return null;
+    const id = d.note.id;
+    if (id in notes.pins || id in notes.unpins || events >= NOTE_EVENTS_MAX) return null;
+    return {
+      ...(prev ?? {}),
+      notes: { ...notes, pins: { ...notes.pins, [id]: { note: d.note, seq } } },
+    };
+  }
+  if (!isStr(d.noteId, ID_MAX) || !isStr(d.by, ID_MAX)) return null;
+  if (events >= NOTE_EVENTS_MAX && !(d.noteId in notes.pins)) return null;
+  return {
+    ...(prev ?? {}),
+    notes: { ...notes, unpins: { ...notes.unpins, [d.noteId]: { by: d.by, seq } } },
+  };
 }
 
 // The ledger key of one person's reaction on one comment.
@@ -213,6 +250,7 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
         done,
       }) as typeof el;
     }
+    next = applyNoteEvents(next, entry, since);
     if (next !== el) changed = true;
     return next;
   });
@@ -221,17 +259,42 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's comment reactions itself, since a Participant never saves a whole tab. Only those are
-// taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest per person); ticks
-// and the rest of a thread stay with an Editor's save.
+// writes a Participant's comment reactions and notice board notes itself, since a Participant never saves a whole
+// tab. Only those are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest
+// per person, a pin whose id the board holds is a no-op, and an unpin follows its pin in the room's order, checked
+// against the stored note's signer); ticks and the rest of a thread stay with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {
     const reacts = entry.comments?.reacts;
-    if (!reacts) continue;
-    elements[id] = { comments: { adds: {}, removes: {}, reacts } };
+    const notes = entry.notes;
+    if (!reacts && !notes) continue;
+    elements[id] = {
+      ...(reacts ? { comments: { adds: {}, removes: {}, reacts } } : {}),
+      ...(notes ? { notes } : {}),
+    };
   }
   return mergeLedgerIntoTab(tab, { elements }, 0);
+}
+
+// The note pins and unpins the saver hadn't seen, in the room's order, each through `applyElementDelta`: a pin on
+// a full board or an unpin naming another signer lands as it did live, which is to say not at all.
+function applyNoteEvents<E extends Tab['elements'][number]>(
+  el: E,
+  entry: ElementLedger,
+  since: number,
+): E {
+  const n = entry.notes;
+  if (!n) return el;
+  const events: { seq: number; delta: ElementDelta }[] = [];
+  for (const { note, seq } of Object.values(n.pins)) {
+    if (seq > since) events.push({ seq, delta: { kind: 'notice-pin', note } });
+  }
+  for (const [noteId, { by, seq }] of Object.entries(n.unpins)) {
+    if (seq > since) events.push({ seq, delta: { kind: 'notice-unpin', noteId, by } });
+  }
+  events.sort((a, b) => a.seq - b.seq);
+  return events.reduce<E>((acc, e) => applyElementDelta(acc, e.delta) as E, el);
 }
 
 // The thread changes the saver hadn't seen, in the order the room took them,

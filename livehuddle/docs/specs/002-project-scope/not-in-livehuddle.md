@@ -67,9 +67,9 @@ with the code, not kept with a banner.
   button reads as an Avatar button.
 - **A stored Reaction Pad** is a [retired element](#retired-elements) named "Reaction Pad": kept untouched, drawn as
   the placeholder, pressing and walking onto it do nothing.
-- **The wire.** The room still classes `laser` and `reaction` ops as presence (relayed, never logged or replayed), so
-  a tab on an older build that sends one costs nothing: dropping them from the presence list would make them fall
-  through to the logged mutation branch. The editor no longer sends either and ignores both on receipt.
+- **The wire.** `laser` and `reaction` are retired op kinds, as the Vote's `vote` is ([The Vote](#the-vote)): the
+  room drops one at its op gate before anything else reads it, so a tab on an older build that sends one costs
+  nothing (never sequenced, relayed, logged or replayed). The editor no longer sends either.
 - **Stored view choices.** A browser that stored Zen as on, or a laser or spotlight pen, keeps the key; nothing reads
   it. The Isometric dot-grid **background** is not Isometric mode and stays.
 

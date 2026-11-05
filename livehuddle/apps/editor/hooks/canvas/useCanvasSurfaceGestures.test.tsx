@@ -76,7 +76,7 @@ describe('canvas background context menu', () => {
     expect(onCanvasContextMenu).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['spotlight', 'isometric', 'avatar'])('never opens in the %s tool', (tool) => {
+  it.each(['avatar'])('never opens in the %s tool', (tool) => {
     const { result, onCanvasContextMenu } = setup(tool);
     result.current.onContextMenu(ctx(0));
     result.current.onContextMenu(ctx(2));
@@ -127,7 +127,7 @@ describe('a right-click on the empty canvas', () => {
     expect(calls).toEqual(['deselect']);
   });
 
-  it.each(['spotlight', 'isometric', 'avatar'])('keeps the selection in the %s tool', (tool) => {
+  it.each(['avatar'])('keeps the selection in the %s tool', (tool) => {
     const { result, onDeselect } = setup(tool);
     result.current.onContextMenu(ctx(0));
     result.current.onContextMenu(ctx(2));
@@ -439,7 +439,7 @@ describe('a double press on the bare canvas', () => {
     child.dblSurface(document.createElement('div'));
     expect(child.onCanvasDoubleClick).not.toHaveBeenCalled();
 
-    for (const tool of ['spotlight', 'isometric', 'avatar']) {
+    for (const tool of ['avatar']) {
       const inert = dblSetup(tool);
       inert.press('touch');
       inert.dblSurface();

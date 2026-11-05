@@ -137,7 +137,7 @@ export function ElevatorPanel({
         <section aria-label={`This Floor, ${here.name}`} className="px-2 pt-2">
           <FloorHeading number={index + 1} name={here.name} current />
           {sameFloor.length === 0 ? (
-            <p className="px-1.5 pb-1 pl-10 text-[11px] text-slate-400 dark:text-slate-500">
+            <p className="px-1.5 pb-1 pl-10 text-[11px] text-slate-500 dark:text-slate-400">
               No other Elevator on this floor
             </p>
           ) : null}
@@ -204,7 +204,7 @@ function FloorHeading({
             : 'border border-slate-300 bg-white text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300'
         }`}
       >
-        {number}
+        <span className="text-optical-centre">{number}</span>
       </span>
       <span className="min-w-0 flex-1 truncate text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
         {name}

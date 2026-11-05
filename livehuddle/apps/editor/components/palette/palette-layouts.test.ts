@@ -38,7 +38,7 @@ describe('palette layouts', () => {
     }
   });
 
-  it('is Popular; Write; Travel, Seating, Rooms, Amenities; Icons, Stickers, Media', () => {
+  it('is Popular; Write; the Space categories; Icons, Stickers, Media', () => {
     expect(ids()).toEqual([
       'popular',
       'write',
@@ -46,6 +46,10 @@ describe('palette layouts', () => {
       'collab-seating',
       'collab-rooms',
       'collab-amenities',
+      'collab-bar',
+      'collab-recreation',
+      'collab-garden',
+      'collab-meeting',
       'icons',
       'stickers',
       'media',
@@ -80,11 +84,13 @@ describe('palette layouts', () => {
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "The Space categories".
-  it('splits the Space pieces into Travel, Seating, Rooms and Amenities', () => {
+  it('splits the Space pieces into their categories', () => {
     expect(tileIds('collab-travel')).toEqual([
       'tools:door',
       'tools:focus-button',
       'tools:avatar-pad',
+      'tools:directory',
+      'tools:elevator',
       'tools:mode-avatar',
       'tools:link-card',
     ]);
@@ -108,6 +114,18 @@ describe('palette layouts', () => {
       'tools:bookshelf',
       'tools:water-cooler',
       'tools:coffee-machine',
+    ]);
+    expect(tileIds('collab-recreation')).toEqual([
+      'tools:jukebox',
+      'tools:ping-pong-table',
+      'tools:arcade-machine',
+      'tools:fireplace',
+    ]);
+    expect(tileIds('collab-meeting')).toEqual([
+      'tools:screen',
+      'tools:room-sign',
+      'tools:notice-board',
+      'tools:world-clock',
     ]);
   });
 

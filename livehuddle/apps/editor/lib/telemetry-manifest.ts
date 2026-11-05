@@ -62,10 +62,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Renamed',
   // A pass issued in the Share dialog, typed by its level (Edit / Participate / View).
   'Document·Shared',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a Whiteboard tab created (Template /
-  // NewTab / Import), a pen picked, the eraser mode or background changed, recognition toggled.
+  // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a pen picked, the eraser mode or background changed,
+  // recognition toggled.
   'Draw·Changed',
-  'Draw·Created',
   'Draw·Selected',
   'Draw·Toggled',
   'Document·Undone',
@@ -74,7 +73,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Copied',
   'Element·Deleted',
   'Element·Duplicated',
-  'Element·Imported',
   'Element·Linked',
   'Element·Locked',
   'Element·Reordered',
@@ -107,17 +105,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Home·Loaded',
   'Home·Opened',
   'Home·Selected',
-  'Layer·Added',
-  'Layer·Changed',
-  'Layer·Cleared',
-  'Layer·Deleted',
-  'Layer·Moved',
-  'Layer·Opened',
-  'Layer·Removed',
-  'Layer·Renamed',
-  'Layer·Reordered',
-  'Layer·Selected',
-  'Layer·Toggled',
   'Note·Added',
   'Note·Changed',
   'Note·Deleted',

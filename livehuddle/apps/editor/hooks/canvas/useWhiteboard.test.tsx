@@ -348,11 +348,11 @@ describe('shapes from the catalogue', () => {
 
   it('arms any catalogue shape plain, as a board shape, with its creation choice', () => {
     const { deps, hook } = setup(board());
-    act(() => hook.result.current.pickShape('mode-button:eraser'));
+    act(() => hook.result.current.pickShape('mode-button:avatar'));
     expect(deps.beginDraw).toHaveBeenLastCalledWith({
       type: 'shape',
       kind: 'mode-button',
-      mode: 'eraser',
+      mode: 'avatar',
       board: true,
     });
   });

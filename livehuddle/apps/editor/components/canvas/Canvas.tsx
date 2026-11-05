@@ -85,6 +85,7 @@ import { TalkingBars } from '@/components/calls/TalkingBars';
 import { RaisedHands } from '@/components/calls/RaisedHands';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
+import { isPieceControlPress } from '@/lib/piece-control';
 
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
@@ -266,8 +267,13 @@ function CanvasView(props: CanvasProps) {
     ),
   );
 
-  const { eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
-    useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
+  const { eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
+    canvasTool,
+    mainRef,
+    onCanvasPointerMove,
+    wrapperRef,
+    viewportZoom,
+  });
 
   const {
     avatar,
@@ -440,7 +446,9 @@ function CanvasView(props: CanvasProps) {
           onDrop={paletteDrop.onDrop}
           onPointerDownCapture={(e) => {
             surface.onPointerDownCapture(e);
-            if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
+            // A piece's own control is never a double-tap on its piece either (lib/piece-control).
+            if (!e.isPropagationStopped() && !isPieceControlPress(e.target))
+              smallElementTap.onPointerDownCapture(e);
           }}
           // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
           // ink is tuned for light paper and vanishes on a dark wall. Flagged
@@ -526,9 +534,7 @@ function CanvasView(props: CanvasProps) {
             // ignores pointer events (a per-element capture guard can't catch every select path) and every click falls
             // through to <main>, where the capture handler turns it into a walk.
             className={`absolute inset-0 origin-center touch-none ${
-              canvasTool === 'avatar'
-                ? 'pointer-events-none'
-                : ''
+              canvasTool === 'avatar' ? 'pointer-events-none' : ''
             } ${pendingDraw ? '' : cursorClass}`}
             // A whiteboard pen draws wherever it presses, so nothing under it swaps
             // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").

@@ -132,7 +132,7 @@ export function PeopleChips({
             className={`flex h-5 w-5 items-center justify-center rounded-full text-[8.5px] font-semibold text-white ring-2 ring-white dark:ring-slate-900 ${IDENTITY_FILL} ${i > 0 ? '-ml-1.5' : ''}`}
             style={identityVars(p.color)}
           >
-            {initialsOf(p.name)}
+            <span className="text-optical-centre">{initialsOf(p.name)}</span>
           </span>
         ))}
         {people.length > MAX_FACES ? (

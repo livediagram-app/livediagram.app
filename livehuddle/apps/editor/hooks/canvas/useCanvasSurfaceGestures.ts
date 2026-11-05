@@ -19,6 +19,7 @@ import { markPenSeen, penSeen } from '@/lib/pen-seen';
 import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
+import { isPieceControlPress } from '@/lib/piece-control';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -165,6 +166,9 @@ export function useCanvasSurfaceGestures({
     if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
     // The bottom-right cluster is chrome too (see inCornerCluster).
     if (inCornerCluster(e.target)) return;
+    // A piece's own control (the Notice Board's Notes button, the Jukebox's Play) is the control's: no walk, erase,
+    // marquee or draw starts on it (lib/piece-control).
+    if (isPieceControlPress(e.target)) return;
     // Same for anything rendered through a PORTAL — the palette's category
     // dropdown, a context menu, a dialog. React routes events through the
     // component tree rather than the DOM tree, so a click inside a portal whose

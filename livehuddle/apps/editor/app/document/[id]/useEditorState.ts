@@ -2657,6 +2657,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     participating: participant.participating,
     // A Participant's adder key: whose notes on a Notice Board are its own (docs/specs/009-elements/social-pieces.md).
     adderKey: participant.adderKey,
+    // One delta to an element (docs/specs/012-collaboration/collab-race-hardening.md): a notice board's pin and unpin.
+    applyElementDelta,
     linkActiveTabTo,
     linkPickerOpenForId,
     linkPickerInitialMode,

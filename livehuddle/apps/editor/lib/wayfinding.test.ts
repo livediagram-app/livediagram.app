@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livehuddle/document';
+import { fenceSegments, fenceStalled, fenceStep } from '@liveworkspace/avatar/collision';
+import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import {
   elevatorExitPoint,
   peopleKey,
@@ -8,7 +10,9 @@ import {
   spaceFloors,
   spacePlaces,
   tabPlaces,
+  walkThereRoute,
   whoIsWhere,
+  type WayPoint,
 } from './wayfinding';
 
 const at = (kind: Parameters<typeof createShape>[0], x: number, y: number, over = {}) =>
@@ -171,8 +175,15 @@ describe('spaceFloors', () => {
     expect(floors[3]!.arrival).toEqual({ x: 0, y: 0 });
   });
 
-  it('steps out below the Elevator, centred', () => {
-    expect(elevatorExitPoint({ x: 0, y: 0, width: 112, height: 140 })).toEqual({ x: 56, y: 176 });
+  it('steps out centred below the Elevator, the whole figure clear of its name', () => {
+    const lift = { x: 40, y: 20, width: 112, height: 140 };
+    const exit = elevatorExitPoint(lift);
+    expect(exit.x).toBe(96);
+    // The name's line runs 16px under the box (ElevatorFace); the Regular figure's head stands below it, not over it.
+    const nameBottom = lift.y + lift.height + 16;
+    expect(exit.y - avatarFigureHeight(1.5)).toBeGreaterThan(nameBottom);
+    // A nudge, not a trip: still within a figure and a half of the doors.
+    expect(exit.y - (lift.y + lift.height)).toBeLessThan(1.5 * avatarFigureHeight(1.5));
   });
 
   it('groups places per tab in tab order', () => {
@@ -184,5 +195,105 @@ describe('spaceFloors', () => {
       ['a', 1],
       ['b', 0],
     ]);
+  });
+});
+
+// The ordinary walk, as useAvatarWalk steps it: straight at each point in turn, a step at a time, fenced by the walls
+// (a Regular character's 12px reach). A leg a wall stalls ends the walk, as a click-walk does.
+function walk(elements: readonly Element[], from: WayPoint, route: readonly WayPoint[]): WayPoint {
+  const fences = fenceSegments(elements);
+  let at = from;
+  for (const target of route) {
+    for (let i = 0; i < 2000; i++) {
+      const d = Math.hypot(target.x - at.x, target.y - at.y);
+      if (d < 0.5) break;
+      const step = Math.min(4, d);
+      const wanted = {
+        x: at.x + ((target.x - at.x) / d) * step,
+        y: at.y + ((target.y - at.y) / d) * step,
+      };
+      const next = fenceStep(at, wanted, fences, 12);
+      const moved = Math.hypot(next.pos.x - at.x, next.pos.y - at.y);
+      at = next.pos;
+      if (next.blocked && fenceStalled(moved, step)) return at;
+    }
+  }
+  return at;
+}
+
+describe('walkThereRoute', () => {
+  const near = (a: WayPoint, b: WayPoint) => Math.hypot(a.x - b.x, a.y - b.y) < 1;
+  const below = { x: 260, y: 600 };
+
+  it('walks round a room to a doorway in its top wall, where the straight walk stopped at the near wall', () => {
+    const room = at('room', 0, 0, { width: 400, height: 300, roomDoor: 'n' });
+    const [place] = tabPlaces('t', [room]);
+    // The straight walk to the approach meets the bottom wall head-on.
+    expect(near(walk([room], below, [place!.approach!, place!.arrival]), place!.arrival)).toBe(
+      false,
+    );
+    const route = walkThereRoute(below, place!);
+    expect(route.length).toBe(4);
+    expect(route.slice(-2)).toEqual([place!.approach, place!.arrival]);
+    expect(near(walk([room], below, route), place!.arrival)).toBe(true);
+  });
+
+  it('walks round a Room Builder room to a Door on its top wall', () => {
+    const outline = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 0, y: 1 },
+    ];
+    const room = at('room', 0, 0, { width: 400, height: 300, roomOutline: outline });
+    const door = at('door', 152, -12, { width: 96, height: 24 });
+    const [place] = tabPlaces('t', [room, door]);
+    expect(place!.approach!.y).toBeLessThan(0);
+    const route = walkThereRoute(below, place!);
+    expect(near(walk([room, door], below, route), place!.arrival)).toBe(true);
+  });
+
+  it('takes the nearer way round', () => {
+    const room = at('room', 0, 0, { width: 400, height: 300, roomDoor: 'n' });
+    const [place] = tabPlaces('t', [room]);
+    // From the lower right, round the right-hand side.
+    const route = walkThereRoute({ x: 380, y: 360 }, place!);
+    expect(route[0]!.x).toBeGreaterThan(400);
+    expect(route[1]!.x).toBeGreaterThan(400);
+  });
+
+  it('goes straight when nothing of the place is in the way, or from inside it', () => {
+    const room = at('room', 0, 0, { width: 400, height: 300, roomDoor: 'n' });
+    const [place] = tabPlaces('t', [room]);
+    expect(walkThereRoute({ x: 200, y: -200 }, place!)).toEqual([place!.approach, place!.arrival]);
+    expect(walkThereRoute({ x: 200, y: 200 }, place!)).toEqual([place!.arrival]);
+    const southern = tabPlaces('t', [at('room', 0, 0, { width: 400, height: 300 })])[0]!;
+    expect(walkThereRoute(below, southern)).toEqual([southern.approach, southern.arrival]);
+  });
+
+  it('walks to a place without a doorway, and onto a stage, as before', () => {
+    const none = tabPlaces('t', [at('room', 0, 0, { roomDoor: 'none' })])[0]!;
+    expect(walkThereRoute(below, none)).toEqual([none.arrival]);
+    const stage = tabPlaces('t', [at('stage', 0, 0)])[0]!;
+    expect(stage.bounds).toBeNull();
+    expect(walkThereRoute({ x: 0, y: -500 }, stage)).toEqual([stage.approach, stage.arrival]);
+  });
+
+  it('leaves an approach inside the box to the ordinary walk', () => {
+    const place = {
+      approach: { x: 50, y: 50 },
+      arrival: { x: 60, y: 60 },
+      bounds: { x: 0, y: 0, width: 100, height: 100 },
+    };
+    expect(walkThereRoute({ x: 50, y: 300 }, place)).toEqual([place.approach, place.arrival]);
+  });
+
+  it('falls back to the straight walk round a box with no inside', () => {
+    const place = {
+      approach: { x: 50, y: -10 },
+      arrival: { x: 50, y: 10 },
+      bounds: { x: 0, y: 0, width: 100, height: 0 },
+    };
+    expect(walkThereRoute({ x: 50, y: 100 }, place)).toEqual([place.approach, place.arrival]);
   });
 });

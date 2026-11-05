@@ -244,6 +244,17 @@ export function graftLiveTabState(
           next = { ...next, checklistItems: items };
         }
       }
+      // A notice board's notes are live whole (docs/specs/009-elements/social-pieces.md "Notice Board"): a pin is
+      // not undoable, like a comment, so a restored snapshot keeps the board's notes as they are now.
+      if (
+        next.type === 'shape' &&
+        liveEl?.type === 'shape' &&
+        next.noticeNotes !== liveEl.noticeNotes
+      ) {
+        changed = true;
+        const { noticeNotes: _drop, ...rest } = next;
+        next = liveEl.noticeNotes ? { ...rest, noticeNotes: liveEl.noticeNotes } : rest;
+      }
       return next;
     });
     let next = changed ? { ...tab, elements } : tab;

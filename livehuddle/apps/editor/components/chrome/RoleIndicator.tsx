@@ -4,8 +4,6 @@ import { useId } from 'react';
 import { Tooltip } from '@livehuddle/ui';
 import type { AccessLevel } from '@livehuddle/api-schema';
 
-const EyeIcon = lucideGlyph(lucideEye, 13);
-
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md): the title bar's pill (docs/specs/007-editor/editor-app.md#role-pill). It
 // steps the local preview (Editing, Participating, Viewing, back to Editing) when `onToggle` is given, i.e. when your

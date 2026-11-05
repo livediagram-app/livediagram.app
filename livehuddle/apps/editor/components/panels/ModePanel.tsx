@@ -8,8 +8,8 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 
 // The chrome every MODE panel wears: Avatar, Eraser, Format.
 //
-// These five are the panels that exist only while their tool does (docs/specs/008-canvas/laser-panel.md for
-// the Laser, docs/specs/008-canvas/avatar-mode.md for Avatar, and the same shape for the rest). They are
+// These three are the panels that exist only while their tool does (docs/specs/008-canvas/avatar-mode.md for
+// Avatar, and the same shape for the rest). They are
 // deliberately identical outside their bodies (same corner, same width, same
 // collapse behaviour) because the bottom-right column, above the bottom
 // cluster, has to read as one edge rather than five panels that each drifted

@@ -19,55 +19,6 @@ import {
   VIOLET,
 } from '@liveworkspace/marketing-site/components/feature-art/page-kit';
 
-// One plane of the tilted canvas: a rhombus centred on (110, y).
-function Plane({
-  y,
-  className,
-  fill,
-  stroke,
-}: {
-  y: number;
-  className: string;
-  fill: string;
-  stroke: string;
-}) {
-  return (
-    <path
-      className={className}
-      d={`M64 ${y} L150 ${y + 17} L236 ${y} L150 ${y - 17} Z`}
-      fill={fill}
-      stroke={stroke}
-      strokeWidth="0.8"
-      strokeLinejoin="round"
-    />
-  );
-}
-
-// A box standing on the plane, drawn as a solid: top face, left side, right side.
-function IsoBox({ cx, cy, color }: { cx: number; cy: number; color: string }) {
-  const w = 10;
-  const h = 5.2;
-  const lift = 7;
-  return (
-    <g strokeLinejoin="round">
-      <path
-        d={`M${cx - w} ${cy - lift} L${cx} ${cy - lift + h} L${cx} ${cy + h} L${cx - w} ${cy} Z`}
-        fill={color}
-        fillOpacity="0.75"
-      />
-      <path
-        d={`M${cx} ${cy - lift + h} L${cx + w} ${cy - lift} L${cx + w} ${cy} L${cx} ${cy + h} Z`}
-        fill={color}
-        fillOpacity="0.55"
-      />
-      <path
-        d={`M${cx - w} ${cy - lift} L${cx} ${cy - lift + h} L${cx + w} ${cy - lift} L${cx} ${cy - lift - h} Z`}
-        fill={color}
-      />
-    </g>
-  );
-}
-
 // A person in the room, as the presence stack draws them.
 function Avatar({
   cx,

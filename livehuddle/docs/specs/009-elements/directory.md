@@ -72,6 +72,13 @@ Shown on rows of the current tab. It walks your character to the place:
    then on to the point just inside it. The centred camera follows ([Avatar mode](../008-canvas/avatar-mode.md) "The
    camera"). A place with no doorway (a box room set to **None**, a Room Builder room without a Door) is walked to
    its centre, and a Stage to the middle of its front edge, then up onto its top.
+   - **Round the place's own walls.** When the straight line to the approach point would cross the room's or the
+     Office Pod's own box (a doorway on the far side, such as a Door on a room's top wall walked to from below), the
+     walk first goes round the outside of that box, by the nearer way, through its corners a little clear of the
+     walls, and then on to the approach point (`walkThereRoute`). Without it the walk met the near wall head-on and
+     stopped there.
+   - **Already inside.** A character already standing in the place walks straight to the point inside its doorway,
+     never out and back in.
 3. The walk is the ordinary walk: walls and fences still stop it, sliding along them, and any key or click takes
    over. Go is the way that always arrives.
 
@@ -101,7 +108,8 @@ going are navigation, the same as panning, and are not tracked.
 - **`packages/document/src/office-wayfinding.ts`**: the drawing (`WAYFINDING_ART.directory`), joined to `OFFICE_ART`;
   the kind is a grid office piece (`OfficeKind`), so it is placed, previewed and exported like one.
 - **`apps/editor/lib/wayfinding.ts`**: the pure half: `spacePlaces` (places per tab, named and ordered), each
-  place's approach and arrival points, and `whoIsWhere` (presence into places). Unit-tested.
+  place's approach and arrival points and its walls' box, `walkThereRoute` (the waypoints a Walk There follows), and
+  `whoIsWhere` (presence into places). Unit-tested.
 - **`apps/editor/components/canvas/wayfinding/`**: the per-canvas store the popovers read
   (`wayfinding-store.ts`), the hook that fills it and owns Walk There and Go (`useWayfinding.ts`, composed into
   `useCanvasAvatar`), and the face and popover (`DirectoryFace.tsx`).
@@ -110,6 +118,6 @@ going are navigation, the same as panning, and are not tracked.
 
 ## Out of scope
 
-- Pathfinding round walls for Walk There.
+- Pathfinding round other walls for Walk There: only the destination's own walls are walked round.
 - Who is in which room on a tab you are not on (the relay does not carry it).
 - A Directory that lists other spaces.

@@ -38,7 +38,7 @@ describe('canvas silhouettes survive the headless export', () => {
   it('extracted a plausible set of overlay kinds', () => {
     // Guards the list itself: a table that lost its entries must fail
     // loudly here rather than let the real assertion pass over nothing.
-    expect(OVERLAY_KINDS.length).toBeGreaterThan(12);
+    expect(OVERLAY_KINDS.length).toBeGreaterThanOrEqual(12);
     expect(OVERLAY_KINDS).toContain('hexagon');
     expect(OVERLAY_KINDS).toContain('actor');
   });

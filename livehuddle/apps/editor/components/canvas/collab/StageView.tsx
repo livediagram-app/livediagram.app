@@ -43,7 +43,7 @@ export const StageView = memo(function StageView({
       <div
         aria-hidden
         data-stage-spotlight={live ? '' : undefined}
-        className={`pointer-events-none absolute inset-0 rounded-sm transition-opacity duration-500 motion-reduce:transition-none ${
+        className={`lh-stage-spot pointer-events-none absolute inset-0 rounded-sm motion-reduce:transition-none ${
           live ? 'opacity-100' : 'opacity-0'
         }`}
         style={{

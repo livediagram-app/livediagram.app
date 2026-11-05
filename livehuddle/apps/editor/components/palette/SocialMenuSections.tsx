@@ -24,7 +24,7 @@ type SectionProps = (id: string) => { open: boolean; onToggle: () => void };
 const FIELD =
   'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
 const PRIMARY =
-  'h-7 cursor-pointer rounded-md bg-brand-600 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:cursor-default disabled:opacity-50';
+  'h-7 cursor-pointer rounded-md bg-brand-700 px-2 text-[11px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 disabled:cursor-default disabled:opacity-50';
 const SECONDARY =
   'h-7 cursor-pointer rounded-md bg-slate-100 px-2 text-[11px] font-medium text-slate-700 transition hover:bg-slate-200 disabled:cursor-default disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700';
 

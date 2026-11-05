@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
-import { Glyph, Tooltip } from '@livehuddle/ui';
+import { useState, type ReactNode } from 'react';
+import { CountBadge, Glyph, Tooltip } from '@livehuddle/ui';
 import { drawnRect } from '@liveworkspace/avatar/seats';
 import {
   CLOCK_DIALS_ON_FACE,
@@ -16,6 +16,7 @@ import {
   type ShapeElement,
 } from '@livehuddle/document';
 import { useMinuteNow } from '@/lib/minute-clock';
+import { pieceControlProps } from '@/lib/piece-control';
 import {
   toggleJukeboxListening,
   useJukeboxFailed,
@@ -75,8 +76,8 @@ function Overlay({ element, children }: { element: ShapeElement; children: React
   );
 }
 
-// A press on a face's control is the control's, never the start of a drag or a selection on the canvas.
-const keepPress = (e: ReactPointerEvent) => e.stopPropagation();
+// A press on a face's control is the control's, never the start of a drag, a selection, a label edit or a walk on
+// the canvas (pieceControlProps).
 
 const PILL =
   'pointer-events-auto absolute left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-2 py-[2px] text-[9px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-sky-500 dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700';
@@ -200,7 +201,7 @@ function NoticeBoardFace({ element }: { element: ShapeElement }) {
           className={`${PILL} -top-[14px]`}
           aria-label={`Open Notes, ${notes.length} pinned`}
           aria-expanded={anchor !== null}
-          onPointerDown={keepPress}
+          {...pieceControlProps}
           onClick={(e) => {
             e.stopPropagation();
             const at = e.currentTarget;
@@ -208,7 +209,8 @@ function NoticeBoardFace({ element }: { element: ShapeElement }) {
           }}
         >
           <PinGlyph />
-          Notes{notes.length > 0 ? ` (${notes.length})` : ''}
+          Notes
+          {notes.length > 0 ? <CountBadge count={notes.length} className="-my-1" /> : null}
         </button>
       </Tooltip>
       {anchor ? (
@@ -418,7 +420,7 @@ function JukeboxFace({ element }: { element: ShapeElement }) {
           type="button"
           className={`${PILL} top-[calc(100%+3px)]`}
           aria-pressed={listening === 'on'}
-          onPointerDown={keepPress}
+          {...pieceControlProps}
           onClick={(e) => {
             e.stopPropagation();
             // Applied inside this press: the gesture a browser needs before it lets a page play sound.

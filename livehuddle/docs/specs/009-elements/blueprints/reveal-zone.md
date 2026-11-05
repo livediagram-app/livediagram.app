@@ -22,7 +22,7 @@ Scope, by file:
 | `../packages/workbench/src/lib/double-press.ts`                   | `DOUBLE_PRESS_MS`                                               |
 | `../livediagram/apps/editor/hooks/canvas/useBehaviourElements.ts` | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`              | `onToggleReveal={runBlocked ? undefined : toggleRevealForMe}`   |
-| `apps/editor/components/palette/BehaviourMenuSections.tsx`        | `RevealMenuSection`                                             |
+| apps/editor/components/palette/BehaviourMenuSections.tsx (gone)   | `RevealMenuSection`                                             |
 | `apps/editor/hooks/canvas/usePortalSetters.ts`                    | `setRevealedSelected` (`Element·Changed·Reveal`)                |
 | `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:reveal` in Behaviours                                    |
 

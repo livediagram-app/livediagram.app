@@ -4,8 +4,15 @@ import type { AvatarPresence } from '@livehuddle/api-schema';
 import type { AvatarPoint } from '@liveworkspace/avatar/walk';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { viewportOffsetCentredOn } from '@/lib/portals';
-import { peopleKey, placeFinder, whoIsWhere, type WayPoint, type WayTab } from '@/lib/wayfinding';
-import { createWayfindingStore, type Wayfinding } from './wayfinding-store';
+import {
+  peopleKey,
+  placeFinder,
+  walkThereRoute,
+  whoIsWhere,
+  type WayPoint,
+  type WayTab,
+} from '@/lib/wayfinding';
+import { createWayfindingStore, type WalkTarget, type Wayfinding } from './wayfinding-store';
 
 // The Directory's and the Elevator's half of the canvas (docs/specs/009-elements/directory.md, elevator.md;
 // blueprints/wayfinding.md): fills the store the faces read (the space's tabs and who is where), and owns what their
@@ -113,12 +120,18 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
     if (elevatorId)
       store.set({ arrivalElevatorId: elevatorId, arrivalSeq: store.get().arrivalSeq + 1 });
   };
-  const startWalk = (to: { approach: WayPoint | null; arrival: WayPoint }) => {
-    const walk = latest.current.avatar.walkTo;
-    if (to.approach) walk(to.approach, () => latest.current.avatar.walkTo(to.arrival));
-    else walk(to.arrival);
+  // Leg by leg (directory.md "Walk There"): round the place's own walls when its doorway is on the far side, then the
+  // approach and the arrival, each leg's arrival starting the next. A leg a wall stops ends the walk there.
+  const startWalk = (to: WalkTarget) => {
+    // Started only once the character stands somewhere (walkThere, settle); the arrival stands in for a missing one.
+    const route = walkThereRoute(latest.current.avatar.pos ?? to.arrival, to);
+    const leg = (i: number) => {
+      const next = i + 1 < route.length ? () => leg(i + 1) : undefined;
+      latest.current.avatar.walkTo(route[i]!, next);
+    };
+    leg(0);
   };
-  const pendingWalkRef = useRef<{ approach: WayPoint | null; arrival: WayPoint } | null>(null);
+  const pendingWalkRef = useRef<WalkTarget | null>(null);
   const pendingGoRef = useRef<PendingGo | null>(null);
 
   // A walk asked for before Avatar mode was on starts once the character stands somewhere (directory.md

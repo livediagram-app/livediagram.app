@@ -23,6 +23,18 @@ describe('the jukebox whose area holds you', () => {
   const inLounge = box('in', 40, 40);
   const outside = box('out', 1000, 1000);
 
+  it('follows a room that moved: a new board finds each jukebox its room again', () => {
+    const rooms = [lounge];
+    expect(jukeboxAt({ x: 500, y: 300 }, [inLounge], rooms)?.id).toBe('in');
+    // The lounge moved away from the jukebox: a fresh rooms list, as the hook builds on every change of the board.
+    const moved = [room('lounge', 2000, 2000, 600, 400)];
+    // Now in no room, it is heard round its base (a stale cache would still look for you in the old lounge)...
+    expect(jukeboxAt({ x: 100, y: 150 }, [inLounge], moved)?.id).toBe('in');
+    // ...and no longer across the room it left, nor in the room that moved.
+    expect(jukeboxAt({ x: 500, y: 300 }, [inLounge], moved)).toBeNull();
+    expect(jukeboxAt({ x: 2300, y: 2200 }, [inLounge], moved)).toBeNull();
+  });
+
   it('is the jukebox in the room you stand in, wherever in the room', () => {
     expect(jukeboxAt({ x: 500, y: 300 }, [inLounge, outside], [lounge])?.id).toBe('in');
   });

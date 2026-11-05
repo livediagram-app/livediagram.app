@@ -5,9 +5,6 @@
 
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
-  ArrowHead,
-  Chip,
-  LINK,
   MONO,
   MUTED_TEXT,
   Node,

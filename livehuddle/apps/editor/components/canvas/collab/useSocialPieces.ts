@@ -43,6 +43,26 @@ const inside = (p: Point, b: { x: number; y: number; width: number; height: numb
 
 const baseOf = (b: Box): Point => ({ x: b.x + b.width / 2, y: b.y + b.height * 0.9 });
 
+// The room each jukebox stands in depends on the board, not on your feet: kept per rooms list (the hook's memoised
+// one, so a walk reuses it) and per jukebox, so each step costs one look-up per jukebox, not a scan of every room.
+const roomCache = new WeakMap<readonly Box[], WeakMap<Box, Box | null>>();
+
+// The innermost (smallest) room a jukebox's base stands in, or null.
+function jukeboxRoom(b: Box, rooms: readonly Box[]): Box | null {
+  let byJukebox = roomCache.get(rooms);
+  if (!byJukebox) roomCache.set(rooms, (byJukebox = new WeakMap()));
+  const cached = byJukebox.get(b);
+  if (cached !== undefined) return cached;
+  const base = baseOf(b);
+  let best: Box | null = null;
+  for (const r of rooms) {
+    if (!inside(base, roomInterior(r))) continue;
+    if (!best || r.width * r.height < best.width * best.height) best = r;
+  }
+  byJukebox.set(b, best);
+  return best;
+}
+
 /**
  * The jukebox whose area holds `feet`: the innermost room's jukebox when you stand in a room that has one, else the
  * nearest roomless jukebox within its radius. Null when none.
@@ -53,11 +73,7 @@ export function jukeboxAt(
   rooms: readonly Box[],
 ): Jukebox | null {
   if (jukeboxes.length === 0) return null;
-  // The rooms each jukebox stands in, innermost (smallest) first.
-  const roomOf = (b: Box) =>
-    rooms
-      .filter((r) => inside(baseOf(b), roomInterior(r)))
-      .sort((a, c) => a.width * a.height - c.width * c.height)[0] ?? null;
+  const roomOf = (b: Box) => jukeboxRoom(b, rooms);
   const feetRooms = rooms
     .filter((r) => inside(feet, roomInterior(r)))
     .sort((a, c) => a.width * a.height - c.width * c.height);

@@ -64,6 +64,7 @@ import { borderOf } from './svg-render-border';
 import { text, type Face } from './svg-render-face-kit';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@liveworkspace/icons';
 import { MODE_GLYPHS } from './mode-glyphs';
+import type { CanvasSurface } from './colors';
 
 // The canvas draws a mode glyph at the palette's 14px weight and scales the
 // SVG to 22px on the button face, with non-scaling strokes, so its lines stay
@@ -148,6 +149,8 @@ export function svgBehaviourFace(
   stroke: string,
   // The element's resolved fill, for the floor pieces (a rug, a room, a stage) drawn in it.
   fill?: string,
+  // The paper it lands on, for the pieces with a dark look of their own (the Room Sign's plaque).
+  surface?: CanvasSurface,
 ): string | null {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
@@ -270,7 +273,7 @@ export function svgBehaviourFace(
     case 'screen':
       return screenSvg(el);
     case 'room-sign':
-      return roomSignSvg(el);
+      return roomSignSvg(el, surface);
     case 'fence':
       return fenceArt(el, stroke);
     case 'avatar-pad':

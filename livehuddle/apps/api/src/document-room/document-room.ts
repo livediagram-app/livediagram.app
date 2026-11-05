@@ -1446,6 +1446,7 @@ export class DocumentRoom extends DurableObject<Env> {
         role: sender.role,
         tabScope: session.tabScope ?? null,
         key: sender.key,
+        adderKey: session.adderKey ?? null,
       });
       if (gate.kind === 'drop') return;
       if (gate.kind === 'participant-content') {
