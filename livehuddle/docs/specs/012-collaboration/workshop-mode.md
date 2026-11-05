@@ -1,7 +1,7 @@
 # The meeting board (Workshop mode in the code)
 
-Status: **approved, being built** (Work Tracker #423, owner, 2026-11-04). Parts 2 and 3 are done: the palette,
-the Session strip, the templates and the help are the meeting board's. Part 4 deletes the leaving code
+Status: **approved, being built** (Work Tracker #423, owner, 2026-11-04). Parts 2, 3 and 4 are done: the palette,
+the Session strip, the templates and the help are the meeting board's, and the leaving code is deleted
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
 Every tab of a Space is a **meeting board**: a floor to walk round, meet on and leave a few notes on. It is
@@ -128,8 +128,8 @@ Every gate reads the session's `can`, never `isReadOnly` alone. A locked tab beh
   `EditorMode` enum); every other stored value reads as it.
 - No tool takes a mode. A template, or `blank-session`, makes a meeting board like any other. `list_templates` and
   the CLI list the five templates.
-- The element kinds an agent may add are the meeting palette's ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md),
-  part 4).
+- No agent schema, verb or enum names a retired kind or the Page (part 4, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#retired-elements));
+  the diagram kinds an agent may still add leave with the element engine (Work Tracker #459).
 
 ## Workspace
 

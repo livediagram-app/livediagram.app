@@ -84,8 +84,8 @@ There is one palette layout, the meeting palette (`apps/editor/components/palett
   id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
 - **Catalogue categories** (My shapes, Icons, Stickers) are bodies with their own content and take no tile list.
 - **Popular** is the landing category: Sticky note, Text, Frame, Image, Link card, then behind a divider (`DIVIDE`)
-  Room, Meeting Table, Chair, Bring Focus and Avatar Pad. No category holds an opener; the `palette-openers` module
-  waits, unused, for part 4 to delete it with the Collaborate code.
+  Room, Meeting Table, Chair, Bring Focus and Avatar Pad. No category holds an opener (the openers module went with
+  the Collaborate code in part 4).
 - The tool a tab starts with is **Select**; on a phone **Hand**. An embedded viewer always starts on Hand.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
