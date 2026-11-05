@@ -222,7 +222,9 @@ describe('claiming a returning guest of the old livediagram.app', () => {
     });
     const first = claim({ legacyId: OLD, signature, into: NEW_GUEST });
     const second = claim({ legacyId: OLD, signature, into: 'user_ada' });
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    // Whichever claim takes the hold waits in its merge, so the other answers first. Release only then: a fixed
+    // wait raced a busy CI runner, where the first claim sometimes finished before the second had started.
+    await Promise.race([first, second]);
     release();
     const answers = await Promise.all([first, second]);
     expect(merges).toHaveLength(1);
