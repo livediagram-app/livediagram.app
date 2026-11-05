@@ -94,7 +94,7 @@ export const mcpCreateDocument = mcpTool('create_document', {
     'Space), a "graph" (nodes and edges, laid out in the template look: sizes, elbows, side ' +
     'exits, loops round the outside, title and key), "mermaid" or raw "elements" (the full format is ' +
     'documented inline on the "tabs" argument below). One tab, or several for a multi-tab Space in ' +
-    'one call (an agenda plus a tab per breakout). The server validates, lays ' +
+    'one call (a welcome tab plus a tab per breakout). The server validates, lays ' +
     "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
     "files it at the root of the user's My Work (or in their default folder for what that " +
     'Space is made as, when they have set one), and returns the link, the folder, and an inline ' +

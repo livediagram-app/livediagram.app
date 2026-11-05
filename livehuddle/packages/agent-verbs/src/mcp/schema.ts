@@ -34,18 +34,20 @@ import {
   GRAPH_LAYOUT_MAX_EDGES,
   GRAPH_LAYOUT_MAX_NODES,
   NAME_MAX_LENGTH,
-  SHAPE_KINDS,
   STEP_LABEL_MAX,
   STICKY_PRESETS,
   THEMES,
   truncateName,
 } from '@livehuddle/document';
+import { AGENT_SHAPE_KINDS } from '@livehuddle/edit-operations';
 
 export const SCHEMA_RESOURCE_URI = 'livehuddle://schema/elements';
 
 const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
-const shapeKinds = [...SHAPE_KINDS].join(', ');
+// The shape kinds an agent may make: every one but the Page, which a stored Space may still hold
+// (docs/specs/002-project-scope/not-in-livehuddle.md).
+const shapeKinds = AGENT_SHAPE_KINDS.join(', ');
 const themeIds = THEMES.map((t) => t.id).join(', ');
 
 // The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as
@@ -125,13 +127,9 @@ const STYLE_FIELDS =
   'one-or-many), "arrowheadStartShape" (the start\u2019s, when it differs: a one at one table, a many at the ' +
   'other). A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
-  'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
-  '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
-  'unless it has a label; "agenda" its "agendaItems" ([{"label", "minutes"}]); "checklist" its "checklistItems" ' +
+  'Kinds that hold a list: "checklist" its "checklistItems" ' +
   '([{"text", "done"}]); a stat row its "stats" ([{"value", "caption"}]); a callout its "pageTitle" over its "label" ' +
-  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). The entries of a "qa-board", ' +
-  '"idea-box" and "temperature" are the people\u2019s, never an edit\u2019s: starter questions or ideas go on ' +
-  'stickies beside them. ';
+  '(the body); a banner its "pageTitle" and "pageSubtitle"; "sticker" a "stickerId" (an emoji- id from search_icons). ';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
@@ -169,7 +167,7 @@ A livehuddle Space (a document, in the tools' names and arguments) is a shared
 place a team meets in. It has one or more tabs, each its own
 canvas. A tab is { name, elements: Element[] }. Every element needs a unique
 string "id". create_document makes a Space with one or more tabs at once; add_tab
-appends another tab to an existing Space (e.g. an agenda tab, then a tab per
+appends another tab to an existing Space (e.g. a welcome tab, then a tab per
 breakout).
 
 ## Element types
@@ -596,7 +594,7 @@ export const createDocumentShape = {
     .optional()
     .describe(
       'One or more tabs, each its own canvas. Preferred: several make a multi-tab Space in one ' +
-        'call (e.g. an agenda tab plus a tab per breakout).',
+        'call (e.g. a welcome tab plus a tab per breakout).',
     ),
   // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
   // whole element format, and a definition twice its size is one a client's tool search ranks out of sight.

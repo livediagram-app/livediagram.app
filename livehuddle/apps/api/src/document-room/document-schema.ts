@@ -153,8 +153,9 @@ CREATE TABLE IF NOT EXISTS agent_changeset_parts (
   PRIMARY KEY (changeset_id, part)
 );
 
--- Who has voted as a guest (docs/specs/012-collaboration/vote-integrity.md): a guest id costs nothing to make, so a
--- guest's Q&A upvote is admitted against a cap of guest voters per network (vote-integrity.ts).
+-- Who has voted as a guest (docs/specs/012-collaboration/vote-integrity.md): a guest's Q&A upvote was admitted
+-- against a cap of guest voters per network. Nothing writes it since the Q&A board left (Work Tracker #423, part 4);
+-- kept so an existing document's store is never migrated.
 CREATE TABLE IF NOT EXISTS guest_voters (
   document_id TEXT    NOT NULL,
   network_tag TEXT    NOT NULL,

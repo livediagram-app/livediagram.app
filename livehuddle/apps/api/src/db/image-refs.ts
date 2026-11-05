@@ -27,7 +27,7 @@ export function imageRefReplaceStatements(
   ];
 }
 
-// Add only: for a write that may have lost a race (a participant swap, the Q&A swap), where deleting could remove a
+// Add only: for a write that may have lost a race (a participant swap), where deleting could remove a
 // reference the winner wrote.
 export function imageRefAddStatements(
   env: DocumentEnv,

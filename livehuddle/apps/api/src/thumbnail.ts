@@ -51,8 +51,8 @@ export type DrawOptions = {
 
 // The first tab (or `tabId`) drawn, or null when there is nothing to draw: no tab, an empty or unparseable one.
 // `community`: a Community visitor's drawing (docs/specs/025-community/community.md "Viewing a post's document"),
-// from the redacted tab, so comment threads, their authors, action assignees, roll-call names and Q&A authors never
-// reach the public card image or a Community thumbnail.
+// from the redacted tab, so comment threads, their authors, action assignees and the names a stored retired element
+// holds (a roll call's, a Q&A board's authors) never reach the public card image or a Community thumbnail.
 export async function drawDocument(
   env: DocumentEnv,
   doc: DrawSubject,

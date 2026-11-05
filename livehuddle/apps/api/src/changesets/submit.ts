@@ -5,7 +5,7 @@ import type {
   LintReport,
 } from '@livehuddle/api-schema';
 import { lintFooterPart } from '@livehuddle/diagram-lint';
-import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livehuddle/document';
+import { migrateIncomingTab, type Tab } from '@livehuddle/document';
 import {
   applyEditOperations,
   applyReplace,
@@ -244,16 +244,16 @@ function rejected(
   return { status: r.status, body: r.body };
 }
 
-// The rules every tab write meets (CS30): migrated elements, a created tab's name capped, Q&A
-// notes kept at their newest, new comments credited to the author whatever the body claimed.
+// The rules every tab write meets (CS30): migrated elements, a created tab's name capped, new comments credited to
+// the author whatever the body claimed.
 export function withServerRules(tab: Tab, stored: StoredTab | null, author: Author): Tab {
   const migrated = migrateIncomingTab(tab) as Tab;
   const previous = stored?.tab.elements ?? [];
-  const elements = rewriteCommentAuthors(
-    stored ? preferNewerQaAll(previous, migrated.elements) : migrated.elements,
-    previous,
-    { id: author.id, name: author.name, color: author.color },
-  );
+  const elements = rewriteCommentAuthors(migrated.elements, previous, {
+    id: author.id,
+    name: author.name,
+    color: author.color,
+  });
   const name = stored ? stored.tab.name : capStoredName(migrated.name, null, 'tab');
   return { ...migrated, name, elements };
 }

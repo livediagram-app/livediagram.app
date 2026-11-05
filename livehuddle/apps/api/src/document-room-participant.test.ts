@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // A Participant in the room (docs/specs/013-workspace/share-roles.md "Integrity"): content ops go through the
-// participant content rule against what D1 holds and only the rule's result reaches anyone; dots, responses and
-// ideas relay like an Editor's and reach D1 without one; everything else from a Participant is dropped.
+// participant content rule against what D1 holds and only the rule's result reaches anyone; dots and comment
+// reactions relay like an Editor's and reach D1 without one; everything else from a Participant is dropped.
 
 const { store } = vi.hoisted(() => {
   const store: { data: string | null; writes: number } = { data: '', writes: 0 };
@@ -34,7 +34,7 @@ const sticky = (id: string, extra: Record<string, unknown> = {}) => ({
 const shape = (id: string, extra: Record<string, unknown> = {}) => ({
   id,
   type: 'shape',
-  shape: 'rectangle',
+  shape: 'square',
   ...box,
   label: 'Column',
   ...extra,
@@ -233,7 +233,6 @@ describe('DocumentRoom: a Participant adds and writes', () => {
         elementId: 'col',
         delta: { kind: 'check', index: 0, text: 'a', done: true },
       },
-      { kind: 'poll-start', poll: {} },
       { kind: 'drag-preview', tabId: 't1', ids: ['col'] },
     ]) {
       await send(room, part, op);

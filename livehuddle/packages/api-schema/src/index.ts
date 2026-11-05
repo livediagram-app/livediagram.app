@@ -284,7 +284,6 @@ export * from './participant-colours';
 export * from '@liveworkspace/api-schema/image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './poll';
 export * from './room-messages';
 export * from './call-voice';
 export * from './call-hand';

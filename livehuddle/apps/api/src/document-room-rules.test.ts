@@ -216,16 +216,18 @@ describe('admitFrame', () => {
 describe('answersAsSelf', () => {
   const vote = (voter: unknown) => ({ kind: 'vote', voter });
   const delta = (d: Record<string, unknown>) => ({ kind: 'el-delta', delta: d });
-  it('admits its own dot and response, and any idea', () => {
+  it('admits its own dot and comment reaction', () => {
     expect(answersAsSelf(vote('k'), 'k')).toBe(true);
-    expect(answersAsSelf(delta({ kind: 'response', participantId: 'k' }), 'k')).toBe(true);
-    expect(answersAsSelf(delta({ kind: 'idea', text: 'x' }), undefined)).toBe(true);
+    expect(answersAsSelf(delta({ kind: 'comment-react', by: 'k' }), 'k')).toBe(true);
   });
   it("refuses another's key, no key, and anything else", () => {
     expect(answersAsSelf(vote('other'), 'k')).toBe(false);
     expect(answersAsSelf(vote('k'), undefined)).toBe(false);
-    expect(answersAsSelf(delta({ kind: 'response', participantId: 'other' }), 'k')).toBe(false);
+    expect(answersAsSelf(delta({ kind: 'comment-react', by: 'other' }), 'k')).toBe(false);
     expect(answersAsSelf(delta({ kind: 'check' }), 'k')).toBe(false);
+    // The retired per-participant responses and idea box take no Participant answer any more.
+    expect(answersAsSelf(delta({ kind: 'response', participantId: 'k' }), 'k')).toBe(false);
+    expect(answersAsSelf(delta({ kind: 'idea', text: 'x' }), 'k')).toBe(false);
     expect(answersAsSelf(null, 'k')).toBe(false);
   });
 });
