@@ -5,8 +5,8 @@ import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one complex element type, on the footer's
-// Start Tour button while one is selected. The synced `elementTourKinds` lists the kinds taken, for Settings alone; `elementToursSeen` counts them all only for a power
-// user (tourTrackSeen), as the Pages tour's kinds do.
+// Start Tour button while one is selected. The synced `elementTourKinds` lists the kinds taken, for Settings alone;
+// `elementToursSeen` counts them all (tourTrackSeen).
 
 export const ELEMENT_TOUR_KINDS = [
   'sankey',
@@ -91,7 +91,7 @@ export function elementTourSeen(
   prefs: UserPreferences | null | undefined,
   kind: ElementTourKind,
 ): boolean {
-  return tourTrackSeen(prefs, prefs?.elementTourKinds, prefs?.elementToursSeen, kind);
+  return tourTrackSeen(prefs?.elementTourKinds, prefs?.elementToursSeen, kind);
 }
 
 /** The preferences with `kind` answered. */
@@ -103,8 +103,8 @@ export function markElementTourSeen(
 }
 
 /**
- * The preferences with `kind` offered again (the Settings switch turned on): its answer forgotten, and the power
- * user's blanket flag lifted, which would otherwise keep counting it as seen. Every other kind answered stays so.
+ * The preferences with `kind` offered again (the Settings switch turned on): its answer forgotten, and the blanket
+ * flag lifted, which would otherwise keep counting it as seen. Every other kind answered stays so.
  */
 export function offerElementTourAgain(
   prefs: UserPreferences,

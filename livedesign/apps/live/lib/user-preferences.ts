@@ -44,6 +44,7 @@ import {
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { upgradeLegacyPreferences } from '@livedesign/api-schema';
 
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
@@ -196,8 +197,8 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
-  // The Pages tour's seen-guard (docs/specs/007-editor/pages-tour.md): true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
+  // The Pages tour's older single seen-guard (docs/specs/007-editor/pages-tour.md): written with every kind by
+  // Settings' Pages Tours switch, off; on its own it counts no kind (lib/pages-tour.ts).
   pagesTourSeen?: boolean;
   // The page kinds whose Pages tour track has been offered and answered (taken, skipped or declined), so each
   // kind offers its own once ever. Cleared with `pagesTourSeen` when the Settings switch is turned on.
@@ -206,7 +207,8 @@ export type UserPreferences = {
   // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
   elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
+  // Counts every element tour as answered (lib/tour-tracks.ts): Settings' Show Me on Every Element, switched off,
+  // writes it, as the retired Power user mode's preset did.
   elementToursSeen?: boolean;
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the design, kept with its tabs, not a per-user list. Nothing reads or writes this any
@@ -217,19 +219,6 @@ export type UserPreferences = {
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB cap.
   quickSwatchOverrides?: SwatchOverrideStore;
-  // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
-  // lib/power-user-mode.ts, never directly: switching it applies or restores
-  // the preset, recorded in `powerUserBaseline` while the mode is on.
-  powerUserMode?: boolean;
-  powerUserBaseline?: Record<
-    string,
-    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
-  >;
-  // A power-user-only setting: honoured only while `powerUserMode` is on,
-  // where missing means on. Read through `isMinimalChrome`.
-  minimalChrome?: boolean;
-  // One-way latch: the power user mode offer has been shown to this account.
-  powerUserOfferShown?: boolean;
   // How Pages mode's Contents shows on a desktop (docs/specs/007-editor/pages-mode.md
   // "Contents"): docked as a sidebar down the canvas's left, or minimised to its cluster button. Read
   // through lib/contents-placement. Missing (or anything but 'button') === the sidebar.
@@ -268,8 +257,9 @@ export function readUserPreferences(): UserPreferences {
     const parsed = JSON.parse(raw) as unknown;
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
-    // a different client may have written.
-    return parsed;
+    // a different client may have written. Retired keys are dropped
+    // (docs/specs/007-editor/user-preferences.md "Retired keys").
+    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
   } catch {
     return {};
   }
@@ -373,8 +363,10 @@ async function loadUserPreferences(ownerId: string): Promise<UserPreferences | n
   }
   if (remote === null) return null;
   const local = readUserPreferences();
-  const server = remote as UserPreferences;
-  markPreferencesSynced(ownerId, server);
+  // Remembered as the server holds it, so the next write sends a null for each retired key dropped here
+  // (docs/specs/007-editor/user-preferences.md "Retired keys").
+  markPreferencesSynced(ownerId, remote as UserPreferences);
+  const server = upgradeLegacyPreferences(remote) as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));

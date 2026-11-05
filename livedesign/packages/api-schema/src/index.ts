@@ -329,3 +329,6 @@ export * from '@liveworkspace/api-schema/teams';
 export * from '@liveworkspace/api-schema/share-links';
 export * from '@liveworkspace/api-schema/participants';
 export * from '@liveworkspace/api-schema/image-summary';
+
+// Preference keys whose feature is gone, dropped as a stored blob is read (./legacy-preferences.ts).
+export { upgradeLegacyPreferences } from './legacy-preferences';

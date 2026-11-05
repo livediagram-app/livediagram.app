@@ -21,9 +21,6 @@ export type EditorKeyboardShortcutsDeps = {
   // (Alt+Cmd+B), an Editor's. Absent, the chords do nothing.
   onMakeComponent?: () => void;
   onDetachComponent?: () => void;
-  // Called once per key the editor acted on: the power user mode offer counts
-  // them (docs/specs/007-editor/power-user-mode.md).
-  onShortcutUsed?: () => void;
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
   setFormatSourceId: (v: string | null) => void;

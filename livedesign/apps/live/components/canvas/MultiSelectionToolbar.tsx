@@ -7,11 +7,6 @@ import {
   TOOLBAR_BTN,
   TOOLBAR_BTN_ON,
 } from '@liveworkspace/workbench/components/canvas/toolbar-buttons';
-import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
-import {
-  useMinimalChrome,
-  usePowerUser,
-} from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 type MultiSelectionToolbarProps = {
   // True when EVERY member is locked. The Lock button reads as Unlock only then, since a click unlocks only a
@@ -55,14 +50,9 @@ export function MultiSelectionToolbar({
   // trailing divider must share the SAME predicate — gating on `onFilter`
   // alone leaves a stray divider when the funnel button self-hides.
   const filterable = !!onFilter && buildFilterGroups(selectedElements).length >= 2;
-  // Same rule as the single-selection popover (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
-  const touch = useCoarsePointer();
-  const minimalChrome = useMinimalChrome();
-  const powerUser = usePowerUser();
-  const showDelete = touch || !minimalChrome;
   return (
     <>
-      {onOpenContextMenu && (touch || !powerUser) ? (
+      {onOpenContextMenu ? (
         <>
           <HoverCard title="More" description="Open the selection menu.">
             <button
@@ -133,28 +123,26 @@ export function MultiSelectionToolbar({
           <LockIcon closed={allLocked} size={14} />
         </button>
       </HoverCard>
-      {showDelete ? (
-        <HoverCard
-          title="Delete"
-          description={
-            allLocked ? 'All locked. Unlock to delete.' : 'Delete selected (locked ones are kept).'
+      <HoverCard
+        title="Delete"
+        description={
+          allLocked ? 'All locked. Unlock to delete.' : 'Delete selected (locked ones are kept).'
+        }
+      >
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={allLocked}
+          aria-label="Delete selected elements"
+          className={
+            allLocked
+              ? 'flex h-7 w-7 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
+              : TOOLBAR_BTN
           }
         >
-          <button
-            type="button"
-            onClick={onDelete}
-            disabled={allLocked}
-            aria-label="Delete selected elements"
-            className={
-              allLocked
-                ? 'flex h-7 w-7 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
-                : TOOLBAR_BTN
-            }
-          >
-            <TrashIcon size={14} />
-          </button>
-        </HoverCard>
-      ) : null}
+          <TrashIcon size={14} />
+        </button>
+      </HoverCard>
     </>
   );
 }
