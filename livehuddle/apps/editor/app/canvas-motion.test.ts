@@ -56,3 +56,26 @@ describe('the element plane rule', () => {
     expect(read('./globals.css')).toMatch(/\[data-element-plane\]\s*\{[^}]*cursor:\s*auto/);
   });
 });
+
+// A Tab Style change on a busy Space eases the canvas, not its parts (docs/specs/008-canvas/canvas-performance.md):
+// the surface always takes the colour ease, its parts only while the canvas is not busy.
+describe('the Tab Style ease', () => {
+  const selectors = () => {
+    const match = /((?::root\.lvd-style-transition [^,{]+,?\s*)+)\{\s*transition-property/.exec(
+      read('./globals.css'),
+    );
+    if (!match) throw new Error('the Tab Style ease rule is missing from globals.css');
+    return match[1]!.split(',').map((s) => s.trim());
+  };
+
+  it('eases the canvas surface itself', () => {
+    expect(selectors()).toContain(':root.lvd-style-transition [data-canvas-root]');
+  });
+
+  it('eases the parts only on a canvas that is not busy', () => {
+    const parts = selectors().filter((s) => s.endsWith('*'));
+    expect(parts).toEqual([
+      ':root.lvd-style-transition [data-canvas-root]:not([data-canvas-busy]) *',
+    ]);
+  });
+});
