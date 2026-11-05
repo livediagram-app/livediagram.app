@@ -93,10 +93,17 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
   });
 }
 
-export const test = base.extend<{ pageErrors: string[] }>({
-  context: async ({ context }, use) => {
+// Signed-in and workbench runs sign their pages in (signed-in/session.ts, the workbench pairing): no guest for them.
+const PAGES_SIGN_IN = process.env.E2E_SIGNED_IN === '1' || process.env.E2E_WORKBENCH === '1';
+
+export const test = base.extend<{ pageErrors: string[]; freshVisitor: boolean }>({
+  // A test of the first visit itself opts out of holdMintedGuest (docs/specs/003-system-architecture/e2e-smoke.md
+  // "Every test opens as a returning guest"); e2e/guest-first.test.ts keeps it to that one test.
+  freshVisitor: [false, { option: true }],
+  context: async ({ context, freshVisitor }, use) => {
     await enableDebugLogs(context);
     await markModeToursSeen(context);
+    if (!freshVisitor && !PAGES_SIGN_IN) await holdMintedGuest(context);
     await use(context);
   },
   pageErrors: async ({ page }, use) => {
@@ -310,6 +317,23 @@ export async function adoptGuest(target: Page | BrowserContext, owner: string): 
       // A page with no storage keeps none.
     }
   }, token);
+}
+
+// Every test's context opens as a returning guest (docs/specs/003-system-architecture/e2e-smoke.md "Every test opens as
+// a returning guest"): a browser with no token leaves /new, the Explorer and the canvas for the guest handoff and comes
+// back, and a check that lands during that round trip loses its page ("Execution context was destroyed"). Kept only
+// while the page holds no token, so a spec's own adoptGuest wins whichever init script runs first.
+async function holdMintedGuest(context: BrowserContext): Promise<void> {
+  const owner = await mintGuest(context.request);
+  adoptedGuests.set(context, owner);
+  await context.addInitScript((t) => {
+    try {
+      if (!localStorage.getItem('livedesign:v2:guest-token'))
+        localStorage.setItem('livedesign:v2:guest-token', t);
+    } catch {
+      // A page with no storage keeps none.
+    }
+  }, guestTokens.get(owner));
 }
 
 // The page opens signed in as this account (signed-in/session.ts installSession puts the session where the app reads

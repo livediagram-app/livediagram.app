@@ -71,6 +71,17 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   `ownerHeaders` (its token as the Bearer) for Playwright requests, `adoptGuest` to put it where the
   page keeps it, and `designHeaders` to add the index's grant on a design as `X-Index-Grant`
   (`apps/live/e2e/fixtures.ts`).
+- **Every test opens as a returning guest.** A browser with no guest token leaves `/new` (and `/import`, the
+  Explorer and the canvas) for the guest handoff and comes back, and a check that lands during that round trip (a
+  `page.evaluate`, `untilHydrated`, an `expect.poll` over the page) fails with "Execution context was destroyed". So
+  the shared `test` fixture mints a guest for each test's browser context and puts its token where the app keeps it
+  before any page loads, as a returning guest holds it; `serverNewUrl` files under that guest. A spec's own
+  `adoptGuest` wins over it, so a spec that seeds as a guest it minted still opens as that guest. Contexts a spec makes
+  itself (`browser.newContext()`, a share link's visitor) stay fresh unless the spec adopts a guest there. The first
+  visit has one test of its own (`smoke.spec.ts`, under `test.use({ freshVisitor: true })`), which waits for the round
+  trip to come back before it checks the page. Signed-in and workbench runs skip it: their pages sign in.
+  `e2e/guest-first.test.ts` holds every spec that opens a page to the shared fixture, and `freshVisitor` to that one
+  test.
 - **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-design/save-locations.md#the-default-depends-on-who-is-creating)),
   and the index holds no item for it, so its grant request answers 404. A spec that needs its new design on the
   server (it seeds it through the api with `seedTab`, watches the api's saves, or shares it) opens `/new` through
