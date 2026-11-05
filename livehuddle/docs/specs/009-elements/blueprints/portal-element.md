@@ -213,21 +213,21 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 ## Testing
 
-| Rule                                                   | Test                                            | File                                                  |
-| ------------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- |
-| Defaults: taller than wide, unlinked, unlabelled, lock | "makes a portal portal-shaped and unpaired"     | `packages/document/src/factories.test.ts`             |
-| Candidates and positional names                        | `portalsOnTab`, `portalName` blocks             | `apps/editor/lib/portals.test.ts`                     |
-| Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/editor/lib/portals.test.ts`                     |
-| Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/editor/lib/portals.test.ts`                     |
-| Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/editor/lib/portals.test.ts`                     |
-| Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/editor/lib/portals.test.ts`                     |
-| Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/editor/components/canvas/portal-travel.test.ts` |
-| Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`               |
-| Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`    |
-| Export ring lit when linked, dim when not              | "draws a portal as its lit ring when paired, …" | `packages/document/src/svg-render-fidelity.test.ts`   |
-| Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [QF9] [QF10]                                    |
-| Walk-in once, exit ignored (I3)                        | none                                            | (gap)                                                 |
-| Drag never travels                                     | none                                            | (gap)                                                 |
+| Rule                                                   | Test                                            | File                                                                                               |
+| ------------------------------------------------------ | ----------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Defaults: taller than wide, unlinked, unlabelled, lock | "makes a portal portal-shaped and unpaired"     | `packages/document/src/factories.test.ts`                                                          |
+| Candidates and positional names                        | `portalsOnTab`, `portalName` blocks             | `apps/editor/lib/portals.test.ts`                                                                  |
+| Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/editor/lib/portals.test.ts`                                                                  |
+| Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/editor/lib/portals.test.ts`                                                                  |
+| Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/editor/lib/portals.test.ts`                                                                  |
+| Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/editor/lib/portals.test.ts`                                                                  |
+| Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/editor/components/canvas/portal-travel.test.ts`                                              |
+| Not votable                                            | "rejects the interactive Behaviour shapes"      | retired with the Vote ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-vote)) |
+| Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`                                                 |
+| Export ring lit when linked, dim when not              | "draws a portal as its lit ring when paired, …" | `packages/document/src/svg-render-fidelity.test.ts`                                                |
+| Two-way link, release, unlink, create, rename (I2)     | none                                            | (gap) [QF9] [QF10]                                                                                 |
+| Walk-in once, exit ignored (I3)                        | none                                            | (gap)                                                                                              |
+| Drag never travels                                     | none                                            | (gap)                                                                                              |
 
 ## Constants and configuration
 

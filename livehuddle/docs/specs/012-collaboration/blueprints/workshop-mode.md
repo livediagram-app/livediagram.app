@@ -9,15 +9,15 @@ livehuddle's one editor mode, every tab is in it, and there is no switch.
 
 ## Domain and naming
 
-| Concept                | Identifier                                                                                    |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| The mode               | `'workshop'`, the only member of `EditorMode` (`packages/document/src/editor-mode.ts`)        |
-| Its catalogue entry    | `EDITOR_MODE_CATALOGUE`'s one row `{ id: 'workshop', label: 'Workshop', description }` (D2)   |
-| Its mark               | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop` |
-| Its palette layout     | `MEETING: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`               |
-| The strip's tools      | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
-| Its blank              | template kind `'blank-session'`, label "Blank Space", document name "Untitled Space"          |
-| Its default folder key | `'mode:workshop'`, words `{ label: 'Spaces', noun: 'spaces' }` (`MODE_WORDS`)                 |
+| Concept                | Identifier                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| The mode               | `'workshop'`, the only member of `EditorMode` (`packages/document/src/editor-mode.ts`)                                   |
+| Its catalogue entry    | `EDITOR_MODE_CATALOGUE`'s one row `{ id: 'workshop', label: 'Workshop', description }` (D2)                              |
+| Its mark               | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop`                            |
+| Its palette layout     | `MEETING: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`                                          |
+| The strip's tools      | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| Its blank              | template kind `'blank-session'`, label "Blank Space", document name "Untitled Space"                                     |
+| Its default folder key | `'mode:workshop'`, words `{ label: 'Spaces', noun: 'spaces' }` (`MODE_WORDS`)                                            |
 
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
 name "Facilitate", which survives only where something stored is read: `LEGACY_EDITOR_MODES`
@@ -119,19 +119,19 @@ export function parseEditorMode(v: unknown): EditorMode | undefined; // 'worksho
 
 ## Testing
 
-| Spec rule                                      | Test                                                                                      |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| One mode; every stored value reads as Workshop | `packages/document/src/editor-mode.test.ts`                                               |
-| The meeting palette and its Popular            | `components/palette/palette-layouts.test.ts`, `bar-categories.test.tsx`                   |
-| Search finds only the palette                  | `palette-tile-search.test.ts`, `ToolbarPalette.test.tsx`                                  |
-| Timer only; a running stored poll ends         | `components/canvas/SessionClusterStrip.test.tsx`                                          |
-| No diagram-tool keys                           | `hooks/canvas/useEditorKeyboardShortcuts.test.ts`, `shortcut-sections.test.ts`            |
-| The five templates; a retired one is unknown   | `packages/templates` `template-catalogue.test.ts`, `retired-templates.test.ts`            |
-| Strip on every tab                             | `components/canvas/SessionClusterStrip.test.tsx`                                          |
-| Share roles                                    | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles) |
-| Templates open in Workshop; blank              | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`             |
-| Default folder key + label                     | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                    |
-| OpenAPI enum current                           | `apps/api` `manifest.test.ts`                                                             |
+| Spec rule                                      | Test                                                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| One mode; every stored value reads as Workshop | `packages/document/src/editor-mode.test.ts`                                                                              |
+| The meeting palette and its Popular            | `components/palette/palette-layouts.test.ts`, `bar-categories.test.tsx`                                                  |
+| Search finds only the palette                  | `palette-tile-search.test.ts`, `ToolbarPalette.test.tsx`                                                                 |
+| Timer only; a running stored poll ends         | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| No diagram-tool keys                           | `hooks/canvas/useEditorKeyboardShortcuts.test.ts`, `shortcut-sections.test.ts`                                           |
+| The five templates; a retired one is unknown   | `packages/templates` `template-catalogue.test.ts`, `retired-templates.test.ts`                                           |
+| Strip on every tab                             | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| Share roles                                    | `lib/share-roles.test.ts` (the role matrix; a Participant has no palette)                                                |
+| Templates open in Workshop; blank              | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                            |
+| Default folder key + label                     | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                   |
+| OpenAPI enum current                           | `apps/api` `manifest.test.ts`                                                                                            |
 
 ## Defaults ledger
 

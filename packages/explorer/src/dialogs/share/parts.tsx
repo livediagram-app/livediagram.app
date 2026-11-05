@@ -39,7 +39,8 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
     blurb: 'Comments, votes and works items. Can’t reshape it.',
     Icon: () => <VoteIcon />,
     solid: 'bg-teal-700 text-white dark:bg-teal-600/60',
-    button: 'bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-700',
+    // Dark mode keeps teal-700 under the white label: teal-600 read 3.67:1, under WCAG AA's 4.5.
+    button: 'bg-teal-700 hover:bg-teal-800 dark:bg-teal-700 dark:hover:bg-teal-800',
     selected: 'border-teal-600 bg-teal-50/70 dark:border-teal-400 dark:bg-teal-500/10',
     text: 'text-teal-800 dark:text-teal-300',
     hover: 'hover:bg-teal-50 dark:hover:bg-teal-500/10',

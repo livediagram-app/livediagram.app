@@ -5,16 +5,16 @@ one editor mode, Workshop, and no switch; this records where that rule lives in 
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                  | File                                                    |
-| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| editor mode       | `EditorMode` (the one id `'workshop'`)                                                      | `packages/document/src/editor-mode.ts`                  |
-| the modes         | `EDITOR_MODE_CATALOGUE` (id, label, description), `EDITOR_MODES`                            | `packages/document/src/editor-mode.ts`                  |
-| the default       | `DEFAULT_EDITOR_MODE` (`'workshop'`)                                                        | `packages/document/src/editor-mode.ts`                  |
-| the mode's name   | `editorModeLabel` ("Workshop")                                                              | `packages/document/src/editor-mode.ts`                  |
-| a tab's mode      | `Tab.opensIn` (stored name kept), read through `opensInOf`                                  | `packages/document/src/editor-mode.ts`                  |
-| a stored mode     | `parseEditorMode`, over the private `LEGACY_EDITOR_MODES` set                               | `packages/document/src/editor-mode.ts`                  |
-| the palette       | `PALETTE_LAYOUTS` (one entry, `workshop`), `paletteCategoriesFor`, `paletteLandingCategory` | `apps/editor/components/palette/palette-layouts.ts`     |
-| the Session strip | `sessionStripTools(mode)`                                                                   | `apps/editor/components/canvas/SessionClusterStrip.tsx` |
+| Spec term         | Identifier                                                                                  | File                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| editor mode       | `EditorMode` (the one id `'workshop'`)                                                      | `packages/document/src/editor-mode.ts`                                                                                   |
+| the modes         | `EDITOR_MODE_CATALOGUE` (id, label, description), `EDITOR_MODES`                            | `packages/document/src/editor-mode.ts`                                                                                   |
+| the default       | `DEFAULT_EDITOR_MODE` (`'workshop'`)                                                        | `packages/document/src/editor-mode.ts`                                                                                   |
+| the mode's name   | `editorModeLabel` ("Workshop")                                                              | `packages/document/src/editor-mode.ts`                                                                                   |
+| a tab's mode      | `Tab.opensIn` (stored name kept), read through `opensInOf`                                  | `packages/document/src/editor-mode.ts`                                                                                   |
+| a stored mode     | `parseEditorMode`, over the private `LEGACY_EDITOR_MODES` set                               | `packages/document/src/editor-mode.ts`                                                                                   |
+| the palette       | `PALETTE_LAYOUTS` (one entry, `workshop`), `paletteCategoriesFor`, `paletteLandingCategory` | `apps/editor/components/palette/palette-layouts.ts`                                                                      |
+| the Session strip | `sessionStripTools(mode)`                                                                   | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
 
 "Diagram mode" and "Draw mode" name livediagram's modes only; no livehuddle identifier carries them as a live value.
 
@@ -68,15 +68,15 @@ one editor mode, Workshop, and no switch; this records where that rule lives in 
 
 ## Testing
 
-| Rule                                                                    | Test                                                                                 |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Workshop is the only mode, named "Workshop"                             | `packages/document/src/editor-mode.test.ts` ("is Workshop, and only Workshop")       |
-| Only `'workshop'` is a mode id                                          | `packages/document/src/editor-mode.test.ts` ("recognises Workshop and nothing else") |
-| Every stored mode livediagram or an older build wrote reads as Workshop | `packages/document/src/editor-mode.test.ts`                                          |
-| One palette layout, its categories and tiles                            | `apps/editor/components/palette/palette-layouts.test.ts`                             |
-| The Session strip offers all three tools in Workshop only               | `apps/editor/components/canvas/SessionClusterStrip.test.tsx` (`sessionStripTools`)   |
-| Pages and Plan content is dropped on the way in                         | `packages/document/src/retired-pages.test.ts`, `retired-plan.test.ts`                |
-| A whiteboard tab becomes a general tab                                  | `packages/document/src/legacy-whiteboard-tab.test.ts`                                |
+| Rule                                                                    | Test                                                                                                                     |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Workshop is the only mode, named "Workshop"                             | `packages/document/src/editor-mode.test.ts` ("is Workshop, and only Workshop")                                           |
+| Only `'workshop'` is a mode id                                          | `packages/document/src/editor-mode.test.ts` ("recognises Workshop and nothing else")                                     |
+| Every stored mode livediagram or an older build wrote reads as Workshop | `packages/document/src/editor-mode.test.ts`                                                                              |
+| One palette layout, its categories and tiles                            | `apps/editor/components/palette/palette-layouts.test.ts`                                                                 |
+| The Session strip offers all three tools in Workshop only               | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| Pages and Plan content is dropped on the way in                         | `packages/document/src/retired-pages.test.ts`, `retired-plan.test.ts`                                                    |
+| A whiteboard tab becomes a general tab                                  | `packages/document/src/legacy-whiteboard-tab.test.ts`                                                                    |
 
 ## Constants and configuration
 

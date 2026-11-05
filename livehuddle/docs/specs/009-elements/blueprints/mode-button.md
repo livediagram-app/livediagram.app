@@ -227,29 +227,29 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 ## Testing
 
-| Rule                                                 | Test                                                      | File                                                   |
-| ---------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------ |
-| Defaults: 104x96-ish, Avatar, no label, skin, shadow | `createShape (mode button, …)` block                      | `packages/document/src/factories.test.ts`              |
-| Legacy skin is unset, not a choice                   | "treats the pre-redesign button skin as unset"            | `packages/document/src/factories.test.ts`              |
-| Created with no stored colour                        | "are created with no stored colour"                       | `packages/document/src/behaviour-skin.test.ts`         |
-| Skin follows the paper                               | "resolve light ink on dark paper and dark ink …"          | `packages/document/src/behaviour-skin.test.ts`         |
-| A stamped skin reads as unset; a pick is kept        | "treat the skin …", "keep a colour the author picked"     | `packages/document/src/behaviour-skin.test.ts`         |
-| Drag tolerance is 4 px, radial (D108)                | `isDragTravel` block                                      | `../packages/workbench/src/lib/press-gestures.test.ts` |
-| Unknown `mode` rejected, every mode accepted (I4)    | `mode button validation` block                            | `packages/document/src/validate.test.ts`               |
-| A stored retired mode migrates to the default        | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts`    |
-| Fixed size                                           | "names the controls that never take resize handles"       | `packages/document/src/selection-mode.test.ts`         |
-| No resize handles on fixed-size elements             | fixed-size block                                          | `apps/editor/lib/canvas-selection.test.ts`             |
-| Shared settings `…` on the face                      | "gives the shared menu to a kind with settings behind it" | `packages/document/src/behaviour-shapes.test.ts`       |
-| Not votable                                          | "rejects the interactive Behaviour shapes"                | `packages/document/src/session.test.ts`                |
-| Draw banner spells the kind                          | "spells out a hyphenated kind"                            | `apps/editor/lib/draw-mode.test.ts`                    |
-| Telemetry token `ModeButton`                         | palette census                                            | `apps/editor/lib/palette-telemetry-coverage.test.ts`   |
-| Export draws a face                                  | "draws more than a box and a label"                       | `packages/document/src/export-consistency.test.ts`     |
-| Export names an unlabelled button by its mode        | "names an unlabelled Mode button by its destination"      | `packages/document/src/svg-render-fidelity.test.ts`    |
-| Drag never presses (I2)                              | none (`usePressWithoutDrag`)                              | (gap)                                                  |
-| Leave returns to the prior tool (I3)                 | none                                                      | (gap)                                                  |
-| Avatar spawns below the button                       | none                                                      | (gap)                                                  |
-| Press works in pointer-inert modes; right-click menu | none                                                      | (gap, e2e) [QF5]                                       |
-| Embed face inert                                     | none                                                      | (gap) [QF4]                                            |
+| Rule                                                 | Test                                                      | File                                                                                               |
+| ---------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Defaults: 104x96-ish, Avatar, no label, skin, shadow | `createShape (mode button, …)` block                      | `packages/document/src/factories.test.ts`                                                          |
+| Legacy skin is unset, not a choice                   | "treats the pre-redesign button skin as unset"            | `packages/document/src/factories.test.ts`                                                          |
+| Created with no stored colour                        | "are created with no stored colour"                       | `packages/document/src/behaviour-skin.test.ts`                                                     |
+| Skin follows the paper                               | "resolve light ink on dark paper and dark ink …"          | `packages/document/src/behaviour-skin.test.ts`                                                     |
+| A stamped skin reads as unset; a pick is kept        | "treat the skin …", "keep a colour the author picked"     | `packages/document/src/behaviour-skin.test.ts`                                                     |
+| Drag tolerance is 4 px, radial (D108)                | `isDragTravel` block                                      | `../packages/workbench/src/lib/press-gestures.test.ts`                                             |
+| Unknown `mode` rejected, every mode accepted (I4)    | `mode button validation` block                            | `packages/document/src/validate.test.ts`                                                           |
+| A stored retired mode migrates to the default        | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts`                                                |
+| Fixed size                                           | "names the controls that never take resize handles"       | `packages/document/src/selection-mode.test.ts`                                                     |
+| No resize handles on fixed-size elements             | fixed-size block                                          | `apps/editor/lib/canvas-selection.test.ts`                                                         |
+| Shared settings `…` on the face                      | "gives the shared menu to a kind with settings behind it" | `packages/document/src/behaviour-shapes.test.ts`                                                   |
+| Not votable                                          | "rejects the interactive Behaviour shapes"                | retired with the Vote ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-vote)) |
+| Draw banner spells the kind                          | "spells out a hyphenated kind"                            | `apps/editor/lib/draw-mode.test.ts`                                                                |
+| Telemetry token `ModeButton`                         | palette census                                            | `apps/editor/lib/palette-telemetry-coverage.test.ts`                                               |
+| Export draws a face                                  | "draws more than a box and a label"                       | `packages/document/src/export-consistency.test.ts`                                                 |
+| Export names an unlabelled button by its mode        | "names an unlabelled Mode button by its destination"      | `packages/document/src/svg-render-fidelity.test.ts`                                                |
+| Drag never presses (I2)                              | none (`usePressWithoutDrag`)                              | (gap)                                                                                              |
+| Leave returns to the prior tool (I3)                 | none                                                      | (gap)                                                                                              |
+| Avatar spawns below the button                       | none                                                      | (gap)                                                                                              |
+| Press works in pointer-inert modes; right-click menu | none                                                      | (gap, e2e) [QF5]                                                                                   |
+| Embed face inert                                     | none                                                      | (gap) [QF4]                                                                                        |
 
 ## Constants and configuration
 
