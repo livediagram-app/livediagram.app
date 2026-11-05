@@ -164,6 +164,10 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
       }),
       database: {
         generateId: ({ model }) => (model === 'user' ? newUserId() : crypto.randomUUID()),
+        // CI's migrations shape the database before the code ships, and schema-check.test.ts runs this check
+        // against them, so a Worker's first request doesn't wait on D1 to read the schema
+        // (liveworkspace/docs/specs/003-accounts/sign-in.md "Deploys").
+        validateSchema: false,
       },
     },
     plugins: [
