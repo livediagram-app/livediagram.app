@@ -69,7 +69,6 @@ import {
   PANELS_OPENED,
   PLAN_BOARDS,
   PLAN_TOUR,
-  POWER_USER_OFFER,
   PROJECTS_CREATED,
   PROJECT_ACTIONS,
   REALTIME_RESYNCS,
@@ -323,7 +322,7 @@ export const LIVEPLANNER: TelemetryAppConfig = {
       title: 'Tours',
       metrics: [WELCOME_DIALOG_CLOSED, PLAN_TOUR, FORM_TOUR, SHOW_ME_TOURS],
     },
-    { title: 'Prompts', metrics: [POWER_USER_OFFER, NEW_VERSION_PROMPT] },
+    { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
   ],
   exceptions: {
     groups: [

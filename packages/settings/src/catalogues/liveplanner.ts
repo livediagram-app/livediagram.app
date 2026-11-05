@@ -17,17 +17,6 @@ export const CATALOGUE: AppCatalogue = {
       },
     },
     {
-      key: 'minimalChrome',
-      on: true,
-      off: false,
-      fallback: true,
-      event: {
-        category: 'UI',
-        on: 'MinimalChromeOn',
-        off: 'MinimalChromeOff',
-      },
-    },
-    {
       key: 'notificationsEnabled',
       on: true,
       off: false,

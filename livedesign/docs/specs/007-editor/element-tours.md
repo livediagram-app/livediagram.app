@@ -48,8 +48,9 @@ Sankey Tour**, **Start Layer Stack Tour**, **Start Hub and Spoke Tour** (`tourNa
 - A synced user preference, `elementTourKinds`, lists the toured kinds whose tour has been started, so the record
   follows the account ([User preferences](user-preferences.md)). It feeds the Settings rows and hides that kind's
   tour from the Start Tour button until its switch is turned on again.
-- `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as taken
-  while the mode is on, as `pagesTourSeen` does for its kinds.
+- `elementToursSeen` counts every kind as taken: **Show Me on Every Element** switched off writes it (with every kind
+  listed), and so did the retired [Power user mode](power-user-mode.md)'s preset, which listed none. Turning a kind's
+  switch back on lifts it, keeping every other kind answered.
 
 ## Settings
 
@@ -60,8 +61,7 @@ over them all ("Every element’s Show Me at once": on while any kind is untaken
 forgets every record), with one switch per toured kind nested beneath it, named for the element alone: **Sankey
 Diagram**, linking the Sankey Diagram article. On means not yet taken. On puts the kind's tour back on the
 Start Tour button whenever its element is selected; off takes it off the button. The accordion opens on its own when
-Settings is opened on one of its rows (a search result) or on the section. Power user mode's readout lists the
-switch over them all as **Show Me on Every Element**.
+Settings is opened on one of its rows (a search result) or on the section.
 
 ## Menu steps
 
@@ -246,7 +246,7 @@ the canvas, not in a Rows section.
 
 The chart and stack are edited mostly from their own section of the
 element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
-otherwise the element itself, with "Right-click it" in place of "More" (a power user on a desktop has no More button).
+otherwise the element itself, with "Right-click it" in place of "More".
 The tour points at the section by name; it never opens the menu itself.
 
 ## The Chart tour

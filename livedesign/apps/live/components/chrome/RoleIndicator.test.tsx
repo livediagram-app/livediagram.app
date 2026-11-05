@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { RolePill, RoleStatusIcon, roleOwnerLabel } from './RoleIndicator';
+import { RolePill, roleOwnerLabel } from './RoleIndicator';
 
-// The role pill (docs/specs/007-editor/live-app.md#role-pill) and its Minimal chrome icon
-// (docs/specs/007-editor/power-user-mode.md).
+// The role pill (docs/specs/007-editor/live-app.md#role-pill).
 
 afterEach(() => {
   cleanup();
@@ -61,20 +60,5 @@ describe('RolePill', () => {
   it('drops the owner phrase when the owner is unknown', () => {
     render(<RolePill role="edit" ownerName={null} isSelf={false} onToggle={() => {}} />);
     expect(screen.getByRole('button', { name: 'Editing' })).toBeTruthy();
-  });
-});
-
-describe('RoleStatusIcon', () => {
-  it('names the role and toggles', () => {
-    const onToggle = vi.fn();
-    render(<RoleStatusIcon role="edit" onToggle={onToggle} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Editing' }));
-    expect(onToggle).toHaveBeenCalledTimes(1);
-  });
-
-  it('says read-only while viewing, and is not a button without a toggle', () => {
-    render(<RoleStatusIcon role="view" />);
-    expect(screen.queryByRole('button')).toBeNull();
-    expect(screen.getByRole('img', { name: 'Viewing (read-only)' })).toBeTruthy();
   });
 });

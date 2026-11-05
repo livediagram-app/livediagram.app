@@ -15,7 +15,7 @@ There is no other mode and no switch between modes (see "Other mode ids").
 | **tab kind**    | What a tab **is** ([Project](../006-project/project.md)): the general tab, or a Board, Sheet, Dashboard or Form.        |
 | **editor mode** | How a tab is worked on: always `plan` (`EditorMode`, `EDITOR_MODE_CATALOGUE` in `packages/project/src/editor-mode.ts`). |
 
-- "Mode" on its own is ambiguous (Zen mode, Presentation mode, Power user mode); in specs and code say **editor
+- "Mode" on its own is ambiguous (Zen mode, Presentation mode); in specs and code say **editor
   mode**. The interface says **Plan** where it names the mode at all (a project's Type in the Explorer's Details
   view, the "New projects that open as" default-folder list).
 

@@ -8,7 +8,7 @@ import {
 } from '@liveworkspace/settings-ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { SETTINGS_CATEGORIES, type SettingsCategorySpec } from './settings-catalogue';
+import type { SettingsCategorySpec } from './settings-catalogue';
 import { SETTINGS_KIT } from './settings-kit';
 import { settingsModel } from './settings-model';
 
@@ -19,7 +19,6 @@ export function SettingsCategoryPane({
   focusRowKey = null,
   onGoToRow,
   onOpenCategory,
-  offeredRowKeys,
   focusSectionId = null,
 }: {
   category: SettingsCategorySpec;
@@ -28,14 +27,10 @@ export function SettingsCategoryPane({
   focusRowKey?: string | null;
   onGoToRow?: (categoryId: string, rowKey: string) => void;
   onOpenCategory?: (categoryId: string) => void;
-  // Without a list, every row of the catalogue counts as offered.
-  offeredRowKeys?: ReadonlySet<string>;
   focusSectionId?: string | null;
 }) {
   const isMobile = useIsMobileViewport();
-  const offered =
-    offeredRowKeys ?? new Set(SETTINGS_CATEGORIES.flatMap((c) => c.rows.map((r) => r.key)));
-  const [model] = settingsModel([category], settings, onChange, offered);
+  const [model] = settingsModel([category], settings, onChange);
   return (
     <SettingsUiKitProvider kit={SETTINGS_KIT}>
       <SharedPane

@@ -214,8 +214,7 @@ rows and its Current Design card, and the Trash.
   pill is a link like any other.
 - **It replaces the "Offline" visibility badge** in the Explorer's lists: an
   offline design shows the pill beside its name at every width, and its
-  visibility column stays empty. Minimal chrome keeps the words: the pill is a
-  warning, not a teaching hint.
+  visibility column stays empty.
 
 ## Converting between Offline and Cloud
 

@@ -38,6 +38,7 @@ import {
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
 
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
@@ -180,8 +181,8 @@ export type UserPreferences = {
   notifyMentions?: boolean;
   // "Someone fills in one of my forms" (docs/specs/030-forms/forms.md "Hearing about responses").
   notifyFormResponses?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
-  // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
+  // The Plan tour's older single seen-guard (docs/specs/026-plan/plan-tour.md): written with every track by Settings'
+  // Plan Tours switch, off; on its own it counts no track (lib/plan-tour.ts).
   planTourSeen?: boolean;
   // The Plan tour tracks (Boards, Sheets, Dashboards) whose offer has been answered (taken, skipped or declined), so each offers
   // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
@@ -197,19 +198,6 @@ export type UserPreferences = {
   // swatches") went with the panel. Nothing reads or writes this any more; it stays in the type because it is
   // already stored for existing users.
   quickSwatchOverrides?: unknown;
-  // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
-  // lib/power-user-mode.ts, never directly: switching it applies or restores
-  // the preset, recorded in `powerUserBaseline` while the mode is on.
-  powerUserMode?: boolean;
-  powerUserBaseline?: Record<
-    string,
-    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
-  >;
-  // A power-user-only setting: honoured only while `powerUserMode` is on,
-  // where missing means on. Read through `isMinimalChrome`.
-  minimalChrome?: boolean;
-  // One-way latch: the power user mode offer has been shown to this account.
-  powerUserOfferShown?: boolean;
 };
 
 // Re-exported under this module's own name because everything here reads it
@@ -240,8 +228,9 @@ export function readUserPreferences(): UserPreferences {
     const parsed = JSON.parse(raw) as unknown;
     if (typeof parsed !== 'object' || parsed === null) return {};
     // Keep unknown keys: forward-compat for future-versioned flags
-    // a different client may have written.
-    return parsed;
+    // a different client may have written. Retired keys are dropped
+    // (docs/specs/007-editor/user-preferences.md "Retired keys").
+    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
   } catch {
     return {};
   }
@@ -348,8 +337,10 @@ async function loadUserPreferences(ownerId: string): Promise<UserPreferences | n
   }
   if (remote === null) return null;
   const local = readUserPreferences();
-  const server = remote as UserPreferences;
+  // Remembered as the server holds it, so the next write sends a null for each retired key dropped here
+  // (docs/specs/007-editor/user-preferences.md "Retired keys").
   setServerPreferences(ownerId, remote);
+  const server = upgradeLegacyPreferences(remote) as UserPreferences;
   const unsynced = preferencesUnsynced(ownerId);
   const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));

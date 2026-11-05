@@ -148,12 +148,8 @@ export function QuickStylePanel({
   quickStyle,
   hidden,
   showTitles,
-  powerUser = false,
 }: {
   quickStyle: QuickStyleApi;
-  // Power user mode (docs/specs/007-editor/power-user-mode.md) drops the caption naming the pen
-  // or strokes a whiteboard's pen rows style.
-  powerUser?: boolean;
   // Zen, embeds, or a context menu open: the panel stands down.
   hidden: boolean;
   // Section titles; on unless a caller turns them off. The rows keep their
@@ -165,8 +161,8 @@ export function QuickStylePanel({
   // placement's screen-px spot is converted to the panel's own px.
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
-  // Section titles stay under Minimal chrome: they are what tells two rows of
-  // coloured squares (Stroke, Background) apart at a glance.
+  // Section titles are what tell two rows of coloured squares (Stroke,
+  // Background) apart at a glance.
   const titles = showTitles ?? true;
   const { view } = quickStyle;
   const active = !hidden && !isMobile && view !== null;
@@ -218,7 +214,6 @@ export function QuickStylePanel({
           view={view}
           quickStyle={quickStyle}
           showTitles={titles}
-          showSubject={!powerUser}
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
         {view.targetIds.length > 0 ? (
@@ -280,13 +275,11 @@ function QuickStyleSections({
   view,
   quickStyle,
   showTitles,
-  showSubject,
   onEditSwatch,
 }: {
   view: QuickStyleView;
   quickStyle: QuickStyleApi;
   showTitles: boolean;
-  showSubject: boolean;
   onEditSwatch: (role: QuickSwatchRole, slot: QuickSwatchSlot, anchor: HTMLButtonElement) => void;
 }) {
   // Slot 0 is the way back to the theme and is never overridden.
@@ -298,11 +291,11 @@ function QuickStyleSections({
   const { width, style, textAlign, iconAlign } = view.sections;
   const surface = useCanvasSurface();
   // Whose style this is when it is not plainly the selection: the pen in hand,
-  // the selected strokes, or a tool's next mark. Power user mode leaves it out.
+  // the selected strokes, or a tool's next mark.
   const caption = view.caption ?? view.pen?.subject.name ?? view.highlighter?.subject.name;
   return (
     <>
-      {showSubject && caption ? (
+      {caption ? (
         <p className="px-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">{caption}</p>
       ) : null}
       {view.pen ? (

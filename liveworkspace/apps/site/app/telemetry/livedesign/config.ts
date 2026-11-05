@@ -71,7 +71,6 @@ import {
   PAGE_WORK,
   PALETTE_USE,
   PANELS_OPENED,
-  POWER_USER_OFFER,
   REALTIME_RESYNCS,
   RETURNING_VISITORS,
   SERVER_CRASHES,
@@ -324,7 +323,7 @@ export const LIVEDESIGN: TelemetryAppConfig = {
       title: 'Tours',
       metrics: [PAGES_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
-    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, POWER_USER_OFFER, NEW_VERSION_PROMPT] },
+    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
   ],
   exceptions: {
     groups: [

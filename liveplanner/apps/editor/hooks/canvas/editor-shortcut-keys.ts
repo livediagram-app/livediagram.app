@@ -10,9 +10,6 @@ import { isSheetCovering } from '@/hooks/plan/plan-cover-store';
 import { setSheetZoom, stepSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 export type EditorKeyboardShortcutsDeps = {
-  // Called once per key the editor acted on: the power user mode offer counts
-  // them (docs/specs/007-editor/power-user-mode.md).
-  onShortcutUsed?: () => void;
   // A Plan board or view covers the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md): the
   // canvas's own shortcuts stand down (no nudge, delete, select-all, paste, duplicate or tool key), as its pointer
   // input does. Read when a key is pressed.

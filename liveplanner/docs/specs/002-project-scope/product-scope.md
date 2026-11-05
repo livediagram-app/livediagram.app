@@ -27,7 +27,7 @@ says why; this says what. A feature outside the **In** list needs this spec chan
 - Sign-in and identity, guests included ([Identity](../014-identity/README.md)).
 - Real-time collaboration and presence, comments, mentions and assigned actions, and the session tools Plan's
   templates use: timer, vote, picker and temperature check ([Collaboration](../012-collaboration/README.md)).
-- Settings and preferences, theming, the command palette, power user mode and Offline Mode
+- Settings and preferences, theming, the command palette and Offline Mode
   ([Editor](../007-editor/README.md), [Theme](../011-theme/README.md)).
 - Export of a tab as PNG, SVG, PDF, Markdown, CSV or JSON ([Export fidelity](../020-import-export/export-fidelity.md)).
 - The Community: publishing a plan to the public gallery, the gallery itself and the landing page's From the

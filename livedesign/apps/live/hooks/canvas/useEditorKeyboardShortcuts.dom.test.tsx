@@ -6,8 +6,7 @@ import { modalClosed, modalOpened } from '@liveworkspace/workbench/lib/modal-gua
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection
-// (docs/specs/008-canvas/canvas-and-palette.md#selection-popover), and every key the editor acts on
-// is counted once for the power user mode offer (docs/specs/007-editor/power-user-mode.md).
+// (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
 
 // A case states the selection as values; the hook reads it through readSelection.
 type Overrides = Partial<EditorKeyboardShortcutsDeps> & {
@@ -19,7 +18,6 @@ function deps(overrides: Overrides = {}) {
   const spies = {
     deleteSelected: vi.fn(),
     deleteMultiSelected: vi.fn(),
-    onShortcutUsed: vi.fn(),
     setCanvasTool: vi.fn(),
   };
   const target: Record<string, unknown> = {
@@ -147,26 +145,6 @@ describe("a Participant's palette keys", () => {
   });
 });
 
-describe('onShortcutUsed', () => {
-  it('counts a key the editor acted on, once', () => {
-    const { bag, spies } = deps();
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Delete');
-    press('v');
-    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(2);
-  });
-
-  it('does not count a key nothing acted on, or one already claimed', () => {
-    const { bag, spies } = deps({ selectedId: null });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('Delete');
-    const claimed = new KeyboardEvent('keydown', { key: 'v', bubbles: true, cancelable: true });
-    claimed.preventDefault();
-    window.dispatchEvent(claimed);
-    expect(spies.onShortcutUsed).not.toHaveBeenCalled();
-  });
-});
-
 // docs/specs/004-interface-design/menus.md: while focus is inside a menu of either kind the
 // canvas's shortcuts stand down.
 describe('inside a menu', () => {
@@ -184,7 +162,6 @@ describe('inside a menu', () => {
       expect(e.defaultPrevented).toBe(false);
     }
     expect(spies.deleteSelected).not.toHaveBeenCalled();
-    expect(spies.onShortcutUsed).not.toHaveBeenCalled();
     menu.remove();
   });
 });

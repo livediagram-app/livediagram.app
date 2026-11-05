@@ -80,7 +80,7 @@ only small per-browser state, under `liveplanner:*` keys:
   (`lib/local-identity.ts`); signed-in people key their data off their account id instead.
 - **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)),
   the UI mode, the panel layout, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
-- **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer,
+- **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals,
   the last active day.
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate
   ([Share password](../013-workspace/share-password.md)).

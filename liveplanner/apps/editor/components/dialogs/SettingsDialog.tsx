@@ -33,7 +33,6 @@ import {
 } from '@/components/dialogs/settings/settings-panel-host';
 import { preferencesKeptLocally } from '@/lib/preferences-sync';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 type SettingsDialogProps = {
@@ -78,10 +77,7 @@ export function SettingsDialog({
   // A workbench's Settings reach nothing beyond its one project (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, Surface table).
   const workbench = useWorkbenchSession() !== null;
-  // Power-user-only rows appear the moment the mode's own row switches on
-  // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
-  const powerUserMode = isPowerUserMode(settings);
-  // Live settings too: a panel's rows follow its Enable switch the same way.
+  // Live settings, not a snapshot: a panel's rows follow its Enable switch the moment it flips.
   // The Hide Participant Cursors row only where the tab draws cursors (collaborator-enhancements.md).
   const cursorsDrawn = useCursorsDrawn();
   const categories = useMemo(
@@ -89,12 +85,11 @@ export function SettingsDialog({
       visibleCategories({
         emailEnabled,
         signedIn,
-        powerUserMode,
         preferences: settings,
         workbench,
         cursorsDrawn,
       }),
-    [emailEnabled, signedIn, powerUserMode, settings, workbench, cursorsDrawn],
+    [emailEnabled, signedIn, settings, workbench, cursorsDrawn],
   );
 
   // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
