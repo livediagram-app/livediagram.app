@@ -197,7 +197,10 @@ export const itemSet = defineVerb({
     project: projectArg,
     item: itemArg,
     fields: z.array(z.string()).default([]).describe('Fields to set, as key=value'),
-    clear: z.array(z.string()).default([]).describe('Fields to clear, by name'),
+    clear: z
+      .array(z.string())
+      .default([])
+      .describe('Fields to clear, by name (a field that holds several also clears with key=)'),
     type: z.string().optional().describe('A new type'),
   }),
   output: lineOut,

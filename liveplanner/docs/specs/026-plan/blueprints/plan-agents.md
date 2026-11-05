@@ -32,6 +32,11 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   `assignedto`, `owner`), custom field id or name on the item's type. Values: `status` by column name, `assignee`
   string by `personNamed`, Card fields (Parent among them) by item ref, `priority` lowercased when it is one of
   `PRIORITIES`, `labels` string split on commas, Choice by option name; others as given (the api validates).
+  It answers `{ fields, clear }`: a custom field that holds several (`holdsSeveral`, or `multichoice`) given a blank
+  value (`blankSeveral`: `null`, `undefined`, a string of only commas and spaces, a list of only those) goes in
+  `clear`, never `fields`. `applyItemChanges`' `set` adds them to its `clear` list (an `add` drops them), and the
+  editor's sheet-to-card sync (`card-table-sync.ts`) adds them to its patch's `clear`, so each write path clears
+  the same way.
 - `descriptionFromMarkdown(markdown)` (`packages/items/src/rich-text-markdown.ts`) → `{ plain, runs }`: line
   marks `#`/`##`/`###` (a heading on the line's runs) and `- `/`* ` (a "• " prefix); inline `**`/`__` bold,
   `*`/`_` italic, `~~` strikethrough, `[text](url)` (link kept when it passes the item store's safe-link check),
