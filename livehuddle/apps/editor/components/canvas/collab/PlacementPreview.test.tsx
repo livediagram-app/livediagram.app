@@ -63,7 +63,8 @@ describe('DoorPlacementPreview', () => {
     vi.useFakeTimers();
     main = document.createElement('main');
     wrapper = document.createElement('div');
-    wrapper.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1000, height: 1000 }) as DOMRect;
+    wrapper.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 1000, height: 1000 }) as DOMRect;
     main.append(wrapper);
     document.body.append(main);
   });
@@ -73,7 +74,12 @@ describe('DoorPlacementPreview', () => {
     setPaletteDragPreview(null);
   });
 
-  const move = (type: 'pointermove' | 'dragover', x: number, y: number, target: EventTarget = wrapper) =>
+  const move = (
+    type: 'pointermove' | 'dragover',
+    x: number,
+    y: number,
+    target: EventTarget = wrapper,
+  ) =>
     act(() => {
       const e = new MouseEvent(type, { bubbles: true, clientX: x, clientY: y });
       target.dispatchEvent(e);
@@ -84,7 +90,12 @@ describe('DoorPlacementPreview', () => {
 
   it('follows the pointer onto a wall while the Door tile is armed', () => {
     render(
-      <PlacementPreview pendingDraw={DOOR} elements={[room]} wrapperRef={{ current: wrapper }} zoom={1} />,
+      <PlacementPreview
+        pendingDraw={DOOR}
+        elements={[room]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
       { container: wrapper },
     );
     expect(preview()).toBeNull();
@@ -97,7 +108,12 @@ describe('DoorPlacementPreview', () => {
 
   it('hides off the canvas', () => {
     render(
-      <PlacementPreview pendingDraw={DOOR} elements={[room]} wrapperRef={{ current: wrapper }} zoom={1} />,
+      <PlacementPreview
+        pendingDraw={DOOR}
+        elements={[room]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
       { container: wrapper },
     );
     move('pointermove', 200, 120);
@@ -108,7 +124,12 @@ describe('DoorPlacementPreview', () => {
   it('follows a Door dragged from the palette', () => {
     setPaletteDragPreview({ kind: 'door', width: 96, height: 24 });
     render(
-      <PlacementPreview pendingDraw={null} elements={[room]} wrapperRef={{ current: wrapper }} zoom={1} />,
+      <PlacementPreview
+        pendingDraw={null}
+        elements={[room]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
       { container: wrapper },
     );
     move('dragover', 200, 120);
@@ -136,7 +157,12 @@ describe('DoorPlacementPreview', () => {
 
   it('listens to nothing and shows nothing while no placed piece is being added', () => {
     render(
-      <PlacementPreview pendingDraw={null} elements={[room]} wrapperRef={{ current: wrapper }} zoom={1} />,
+      <PlacementPreview
+        pendingDraw={null}
+        elements={[room]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
       { container: wrapper },
     );
     move('pointermove', 200, 120);

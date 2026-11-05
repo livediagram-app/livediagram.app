@@ -40,7 +40,6 @@ export function isFixedSizeShape(kind: string): boolean {
   return FIXED_SIZE_SHAPES.has(kind);
 }
 
-
 // The Selection Mode button's original default skin (docs/specs/009-elements/mode-button.md): a solid brand
 // fill with white text. It was replaced by a light button surface, but the
 // colours are stored ON the element, so every button authored before the

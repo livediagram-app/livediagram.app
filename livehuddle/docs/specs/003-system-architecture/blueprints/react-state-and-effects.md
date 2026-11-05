@@ -133,7 +133,7 @@ No new log lines: a refused fullscreen and a Trusted Types violation are logged 
 | Footer year from the build               | `packages/ui` SiteFooter test renders `NEXT_PUBLIC_BUILD_YEAR`, and no year without it           |
 | Reduced motion starts no transition      | The slide and mode-switch tests stub `prefersReducedMotion` and assert no `startTransition` type |
 | Steps count from `asked`                 | `PresentationHost` test: three quick steps land three slides on                                  |
-| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`: focus and anchor with no bare node             |
+| Ref-only wrappers are gone               | `ShapesFlyout.test.tsx`: focus and anchor with no bare node                                      |
 
 ## Constants and configuration
 

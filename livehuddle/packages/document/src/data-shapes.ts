@@ -259,4 +259,3 @@ export { clampPercent } from '@liveworkspace/model-core/progress-label';
 // The five reactions a walking character throws (docs/specs/008-canvas/avatar-mode.md "Reactions"), their names and
 // glyphs, are @liveworkspace/avatar's.
 export * from '@liveworkspace/avatar/reaction-bursts';
-

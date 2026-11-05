@@ -75,7 +75,11 @@ describe('boundary (docs/specs/009-elements/boundary.md)', () => {
   it('paints the larger backdrop first whatever the array order', () => {
     const inner = boundary('inner', 100, 100, 100, 100);
     const outer = boundary('outer', 0, 0, 500, 500);
-    expect(paintOrder([inner, square('s', 120, 120), outer]).map((e) => e.id)).toEqual(['outer', 'inner', 's']);
+    expect(paintOrder([inner, square('s', 120, 120), outer]).map((e) => e.id)).toEqual([
+      'outer',
+      'inner',
+      's',
+    ]);
   });
 
   it('switches to C4 with the long dash, and back', () => {

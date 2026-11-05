@@ -5,7 +5,6 @@
 // Palette-specific by design: ./primitives holds the house style every
 // illustration category shares.
 
-
 // The glyphs every product's help shares; livehuddle's own mode (Avatar) is drawn below.
 export {
   SelectGlyph,
@@ -35,4 +34,3 @@ export function AvatarGlyph({ on = false }: { on?: boolean }) {
     </g>
   );
 }
-

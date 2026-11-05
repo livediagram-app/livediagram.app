@@ -89,12 +89,7 @@ export function ImageExportPanel({
         </p>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => onExport({ pattern })}
-          busy={busy}
-        >
+        <Button variant="primary" size="md" onClick={() => onExport({ pattern })} busy={busy}>
           {busy ? 'Exporting…' : `Download ${label}`}
         </Button>
       </div>

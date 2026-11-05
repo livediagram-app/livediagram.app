@@ -102,7 +102,6 @@ export function SelectionModesArt() {
         className="fill-brand-500 stroke-white"
         strokeWidth={1.2}
       />
-
     </Stage>
   );
 }

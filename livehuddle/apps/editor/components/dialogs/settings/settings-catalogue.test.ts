@@ -308,11 +308,7 @@ describe('settings sub-categories', () => {
 
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual([
-      'alignmentGuides',
-      'elementIndicatorStyle',
-      'middleMousePan',
-    ]);
+    expect(keys).toEqual(['alignmentGuides', 'elementIndicatorStyle', 'middleMousePan']);
   });
 
   it('nests one sub-category per panel under Panels, directly after it and in order', () => {

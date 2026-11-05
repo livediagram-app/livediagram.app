@@ -49,7 +49,9 @@ describe('HELP_SEARCH_ITEMS', () => {
     });
     const helpBySynonym = bySynonym.find((g) => g.key === 'help')!;
     expect(
-      helpBySynonym.items.some((i) => i.kind === 'help' && i.href === '/help/canvas/colours-borders-opacity/'),
+      helpBySynonym.items.some(
+        (i) => i.kind === 'help' && i.href === '/help/canvas/colours-borders-opacity/',
+      ),
     ).toBe(true);
   });
 });

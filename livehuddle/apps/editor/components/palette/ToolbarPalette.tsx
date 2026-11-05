@@ -430,21 +430,21 @@ export function ToolbarPalette(props: Props) {
                 >
                   <>
                     <span data-canvas-tool-picker="" className="contents">
-                    <PaletteDropdown
-                      ariaLabel="Selection mode"
-                      dataTourId="canvas-tool"
-                      hoverCardTitle="Selection Mode"
-                      hoverCardDescription="Choose how the pointer acts on the canvas."
-                      value={canvasTool}
-                      variant="toolbar"
-                      iconOnly
-                      autoHeight
-                      grid
-                      menuClassName=""
-                      groupLabels={CANVAS_TOOL_GROUP_LABELS}
-                      onChange={onCanvasToolChange}
-                      options={canvasToolOptions}
-                    />
+                      <PaletteDropdown
+                        ariaLabel="Selection mode"
+                        dataTourId="canvas-tool"
+                        hoverCardTitle="Selection Mode"
+                        hoverCardDescription="Choose how the pointer acts on the canvas."
+                        value={canvasTool}
+                        variant="toolbar"
+                        iconOnly
+                        autoHeight
+                        grid
+                        menuClassName=""
+                        groupLabels={CANVAS_TOOL_GROUP_LABELS}
+                        onChange={onCanvasToolChange}
+                        options={canvasToolOptions}
+                      />
                     </span>
                     {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
                     {swipe ? null : <Divider />}

@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  SESSION_TOOLS,
-  TIMER_MINUTES_RANGE,
-  isFixedSizeShape,
-} from './selection-mode';
+import { SESSION_TOOLS, TIMER_MINUTES_RANGE, isFixedSizeShape } from './selection-mode';
 import { isFixedSizeElement } from './placed-kinds';
 
 describe('fixed-size shapes', () => {

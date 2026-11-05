@@ -289,12 +289,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual([
-      'tool:pan',
-      'tool:avatar',
-      'tool:eraser',
-      'tool:format',
-    ]);
+    expect(got).toEqual(['tool:pan', 'tool:avatar', 'tool:eraser', 'tool:format']);
     // Select is the current tool, so it is not offered.
     expect(got).not.toContain('tool:select');
     // ...and it comes back once you are somewhere else.
