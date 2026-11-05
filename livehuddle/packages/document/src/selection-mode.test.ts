@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SESSION_TOOLS, TIMER_MINUTES_RANGE, isFixedSizeShape } from './selection-mode';
+import { isFixedSizeShape } from './selection-mode';
 import { isFixedSizeElement } from './placed-kinds';
 
 describe('fixed-size shapes', () => {
@@ -23,15 +23,5 @@ describe('fixed-size shapes', () => {
   it('leaves a retired control resizable', () => {
     expect(isFixedSizeShape('session-button')).toBe(false);
     expect(isFixedSizeShape('done-check')).toBe(false);
-  });
-});
-
-describe('the Session strip tools (docs/specs/012-collaboration/session-tools.md)', () => {
-  it('are the timer and its stopwatch: no poll, no vote', () => {
-    expect(SESSION_TOOLS).toEqual(['timer', 'stopwatch']);
-  });
-
-  it('bound a countdown to a sensible range', () => {
-    expect(TIMER_MINUTES_RANGE.min).toBeLessThan(TIMER_MINUTES_RANGE.max);
   });
 });

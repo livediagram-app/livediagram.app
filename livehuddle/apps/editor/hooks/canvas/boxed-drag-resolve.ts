@@ -4,6 +4,8 @@ import {
   distributionSnap,
   isBoxed,
   snapResizeBounds,
+  snapRoomWalls,
+  snapRoomWallsResize,
   snapToAlignment,
   type AlignmentGuide,
   type BoxedElement,
@@ -49,6 +51,12 @@ const FIXED_SIGN: Partial<Record<DragMode, { sx: number; sy: number }>> = {
   'resize-nw': { sx: 1, sy: 1 },
 };
 
+// Whether the element is a rectangular Room, which snaps wall to wall (a custom room's walls are not on its box).
+function isBoxRoomId(elements: readonly Element[], id: string): boolean {
+  const el = elements.find((e) => e.id === id);
+  return !!el && el.type === 'shape' && el.shape === 'room' && !el.roomOutline;
+}
+
 // Resolve one move frame: snap the primary's candidate bounds to align
 // with other elements' edges / centres (equal-spacing distribution
 // filling the axes alignment didn't claim), returning the total
@@ -89,7 +97,20 @@ export function resolveBoxedMove({
     height: primaryStart.height,
   };
   const aligned = elements;
-  const snap = snapToAlignment(candidate, aligned, memberIds, ALIGN_SNAP_THRESHOLD);
+  const edge = snapToAlignment(candidate, aligned, memberIds, ALIGN_SNAP_THRESHOLD);
+  // A room also snaps wall to wall (docs/specs/009-elements/office.md "Rooms line up"): sharing a neighbour's wall
+  // line wins an axis over the box-edge snap when it is as near, since box edge to box edge leaves a double wall.
+  const walls = isBoxRoomId(elements, primaryId)
+    ? snapRoomWalls(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD)
+    : null;
+  const wallX = !!walls?.snappedX && (!edge.snappedX || Math.abs(walls.dx) <= Math.abs(edge.dx));
+  const wallY = !!walls?.snappedY && (!edge.snappedY || Math.abs(walls.dy) <= Math.abs(edge.dy));
+  const snap = {
+    dx: wallX ? walls.dx : edge.dx,
+    dy: wallY ? walls.dy : edge.dy,
+    snappedX: edge.snappedX || wallX,
+    snappedY: edge.snappedY || wallY,
+  };
   let snapDx = snap.dx;
   let snapDy = snap.dy;
   // Equal-spacing (distribution) snap fills the axes alignment didn't
@@ -113,12 +134,17 @@ export function resolveBoxedMove({
   // once the snap has aligned an edge / centre. Suppressed entirely when
   // the user has turned guides off (the snap above still applies; only
   // the hint is hidden).
+  const landed = { ...candidate, x: candidate.x + snapDx, y: candidate.y + snapDy };
   const guides = guidesOn
-    ? alignmentGuides(
-        { ...candidate, x: candidate.x + snapDx, y: candidate.y + snapDy },
-        aligned,
-        memberIds,
-      )
+    ? [
+        ...alignmentGuides(landed, aligned, memberIds),
+        // The shared wall line, when a wall snap placed the room.
+        ...(walls && (wallX || wallY)
+          ? snapRoomWalls(landed, elements, memberIds, 0.5).guides.filter((g) =>
+              g.axis === 'x' ? wallX : wallY,
+            )
+          : []),
+      ]
     : [];
   // Distribution guides only for the axis distribution actually drove
   // (alignment didn't already claim it).
@@ -262,7 +288,7 @@ export function resolveBoxedResize({
     // other side is re-derived from the ratio, so the snap can't bend it
     // (docs/specs/008-canvas/canvas-and-palette.md "Resize"). The floor stays the
     // start box's, expressed relative to the candidate.
-    const next =
+    const edgeNext =
       !snapMode || noSnap
         ? raw
         : constrain
@@ -275,10 +301,21 @@ export function resolveBoxedResize({
               (minUniformScale(start) * start.width) / raw.width,
             )
           : snapResizeBounds(raw, snapMode, aligned, memberIds, ALIGN_SNAP_THRESHOLD, MIN_SIZE);
+    // A room's moving wall also lands on a neighbouring room's wall line (docs/specs/009-elements/office.md "Rooms
+    // line up"), from the raw drag so the box-edge snap above cannot pull it a wall's width off.
+    const walls =
+      snapMode && !noSnap && !constrain && isBoxRoomId(elements, primaryId)
+        ? snapRoomWallsResize(raw, snapMode, elements, memberIds, ALIGN_SNAP_THRESHOLD)
+        : null;
+    const wallSnapped = !!walls && walls.guides.length > 0;
+    const next = wallSnapped ? walls.bounds : edgeNext;
     // Guide off the snapped bounds (same rationale as move), so guides
     // only appear when an edge / centre genuinely lines up. Suppressed
     // when the user has turned alignment guides off.
-    const guides = guidesOn && !noSnap ? alignmentGuides(next, aligned, memberIds) : [];
+    const guides =
+      guidesOn && !noSnap
+        ? [...alignmentGuides(next, aligned, memberIds), ...(wallSnapped ? walls.guides : [])]
+        : [];
     return { boundsById: new Map([[primaryId, next]]), guides };
   }
 

@@ -80,6 +80,8 @@ describe('livehuddle in the telemetry service', () => {
       'Garden-umbrella',
       'Fountain',
       'Pond',
+      'Timer',
+      'Stopwatch',
     ]);
   });
 });

@@ -121,6 +121,11 @@ describe('legacyHelpRedirect', () => {
       ['/help/canvas/quick-style-panel/', '/help/canvas/colours-borders-opacity/'],
       // Quick Connect left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect).
       ['/help/palette/quick-add-on-hover/', '/help/user-interface/settings/'],
+      // The Icons category left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md#icons).
+      ['/help/palette/icons/', '/help/palette/stickers/'],
+      // Image and Link card left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md).
+      ['/help/palette/tools/images/', '/help/palette/tools/'],
+      ['/help/canvas/links/link-cards/', '/help/canvas/links/'],
       // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
       ['/help/activity-panel/', '/help/canvas/undo/'],
       ['/help/activity-panel/undo/', '/help/canvas/undo/'],
@@ -181,7 +186,7 @@ describe('legacyHelpRedirect', () => {
       ['/help/palette/lanes/', '/help/palette/virtual-office/'],
       ['/help/palette/timeline-rail/', '/help/palette/virtual-office/'],
       ['/help/palette/pointer-notes/', '/help/palette/write/'],
-      ['/help/palette/embed-elements/website/', '/help/palette/tools/images/'],
+      ['/help/palette/embed-elements/website/', '/help/palette/tools/'],
       ['/help/palette/tools/tables/', '/help/palette/write/'],
       ['/help/palette/tools/drawing/shape-recognition/', '/help/palette/tools/'],
       ['/help/palette/tools/data-elements/pie-chart/', '/help/palette/tools/'],

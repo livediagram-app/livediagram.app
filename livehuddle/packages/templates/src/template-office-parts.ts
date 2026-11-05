@@ -6,6 +6,7 @@ import {
   createShape,
   createText,
   isFloorShape,
+  roomWithDoorPiece,
   type ChairFacing,
   type Element,
   type RoomDoor,
@@ -24,6 +25,8 @@ export type OfficePiece = {
   h?: number;
   // A stage's Show Cameras (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in").
   stageCameras?: boolean;
+  // A piece's label: an Elevator's name (docs/specs/009-elements/elevator.md "Names").
+  label?: string;
 };
 export type OfficeRoom = {
   name: string;
@@ -54,12 +57,13 @@ function placePiece(p: OfficePiece, x: number, y: number): Element {
     ...base,
     ...(p.facing ? { chairFacing: p.facing } : {}),
     ...(p.stageCameras ? { stageCameras: true } : {}),
+    ...(p.label ? { label: p.label } : {}),
     ...sizeOf(p, base),
   };
 }
 
 /**
- * Open-air pieces, then rooms, then rugs and stages, then furniture, each room's piece placed in its room. `x0, y0` is
+ * Open-air pieces, then rooms, then rugs and stages, then the rooms' Doors, then furniture, each room's piece placed in its room. `x0, y0` is
  * the plan's top left. `open` are pieces under no roof (a lawn, a path, a tree), placed from the plan's top left: their
  * floors (grass, garden paths) lie under the rooms, their furniture with the rest.
  */
@@ -72,6 +76,7 @@ export function furnishRooms(
   const ground: Element[] = [];
   const walls: Element[] = [];
   const floor: Element[] = [];
+  const doors: Element[] = [];
   const furniture: Element[] = [];
   for (const p of open) {
     const el = placePiece(p, x0 + p.x, y0 + p.y);
@@ -80,18 +85,21 @@ export function furnishRooms(
   for (const room of rooms) {
     const rx = x0 + room.x;
     const ry = y0 + room.y;
-    walls.push({
+    // The doorway is a Door piece (docs/specs/009-elements/office.md "The doorway is a Door"), on the wall asked for.
+    const { room: el, door } = roomWithDoorPiece({
       ...createShape('room', rx, ry),
       width: room.w,
       height: room.h,
       label: room.name,
       roomDoor: room.door,
     });
+    walls.push(el);
+    if (door) doors.push(door);
     for (const p of room.pieces) {
       (isFloorShape(p.kind) ? floor : furniture).push(placePiece(p, rx + p.x, ry + p.y));
     }
   }
-  return [...ground, ...walls, ...floor, ...furniture];
+  return [...ground, ...walls, ...floor, ...doors, ...furniture];
 }
 
 const BUTTON_W = 104;

@@ -37,14 +37,28 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   showing its face (so it reads as a wall standing up, not a line), the side walls as bars, the front wall a low
   bar you see the top of. Walls are a fixed thickness however big the room, so a big room is a big floor, not
   thick walls.
-- **The doorway** is a gap in one wall, centred, 96 canvas px wide (narrower if the wall is short), which leaves a character 72 px to walk through once the wall ends keep their reach, with a mat
-  across it. `ShapeElement.roomDoor`: `'n' | 'e' | 's' | 'w' | 'none'`, the wall it is in; absent means the front
-  wall (`'s'`). **None** makes a closed room you reach only through a [Portal](portal-element.md). Set from the
-  element menu's **Room** section: Top, Right, Bottom, Left, None.
+- **The doorway is a Door.** A new Room comes with a [Door](room-builder.md#door) piece standing in the middle of
+  its front wall: an element of its own on top of the room, so a click selects it (not the room under it), a drag
+  slides it along the walls (onto any wall of the room, snapping as every Door does), and Delete removes it like any
+  piece. The room itself stores `roomDoor: 'none'` and draws no gap of its own; the Door cuts the wall. Adding the
+  room and its Door is one change: one undo takes both away. Every way a Room is added does this: a tap or a draw
+  with the tile armed, a drop from the palette, and a template's rooms (`roomWithDoorPiece` in
+  `@livehuddle/document`, which also stands a Door where a template asked for a doorway on another wall). Delete
+  the Door for a closed room you reach only through a [Portal](portal-element.md); add more Doors for more ways in.
+- **Older rooms keep their built-in doorway.** A room stored before this (`ShapeElement.roomDoor`: `'n' | 'e' |
+'s' | 'w'`, absent meaning the front wall `'s'`) still draws, walks and calls exactly as it did: a centred gap in
+  that wall, 96 canvas px wide (narrower if the wall is short), leaving a character 72 px to walk through once the
+  wall ends keep their reach, with a mat across it. Nothing is migrated: the stored room is left as it is, so an
+  older client reading a new Space and a new client reading an old one both see the walls they expect (converting
+  on load or on first edit would rewrite rooms nobody touched, and a half-converted room would have two doorways
+  or none). Such a room's element menu still has the **Room** section (Top, Right, Bottom, Left, None) for its
+  built-in doorway; a room with no built-in doorway (`'none'`, every new one) shows no such section, since its
+  doors are Door pieces.
 - **The name** is the element's label, on a plate at the left of the back wall: "Kitchen", "Meeting Room 2". A new
   room is called **Room**.
 - **The walls block** walking exactly as a [Fence](fence.md#blocking) does: same reach, same slide along them, from
-  either side; the doorway does not. A character inside a closed room stays inside until it takes a portal.
+  either side; a Door (or an older room's built-in doorway) does not. A character inside a room with no door stays
+  inside until it takes a portal.
 - **It is a call of its own** while calls are on: everyone inside hears everyone else inside at full volume, and
   nobody outside hears them; the walls block sound as they block walking, and the doorway's threshold is the line
   of the walls ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)).
@@ -53,6 +67,19 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
 - **It is the floor, not a destination**: standing in a room never rings it as the element you are on, and it is
   placed **behind everything** on the tab, so furniture dropped in it stands on its floor. Not aspect locked: a
   room is any shape of rectangle. Default 480 × 320.
+- **Dropped, then sized.** A Room is added like a placed piece: with its tile armed, the room itself follows the
+  pointer at its default size, and a click (or a press-and-drag, which places it where the press began) drops it
+  there; there is no draw-to-size box (`dropsAtOwnSize`). Unlike a placed piece it keeps its resize handles, so it
+  is sized after it lands. The [Room Builder](room-builder.md) keeps its own wall-by-wall gesture.
+- **Rooms line up.** Moving, resizing, dragging in from the palette or placing an armed Room snaps it to its
+  neighbours like any element (edges and centres, with the alignment guides), and also **wall to wall**: within the
+  same snap distance, a room beside another lands on the other's wall line, so the two **share one wall** instead of
+  standing two walls back to back (box edge to box edge leaves a double wall). Side by side the rooms overlap by a
+  wall's thickness; one below another stands its back wall face on the other's front wall line. The guide is drawn
+  along the shared wall line, spanning both rooms. A resize lands the moving wall the same way, its opposite wall
+  staying put. When a shared-wall snap and an edge snap are both in range on an axis, the nearer wins, the wall on a
+  tie. Custom rooms snap by their box only (their walls are not on it). Cmd / Ctrl places freely, as every snap
+  ([Snap override](../008-canvas/snap-override.md)). (`snapRoomWalls`, `snapRoomWallsResize` in `@livehuddle/document`.)
 
 ## Meeting Table
 
@@ -185,8 +212,20 @@ Garden scenery that **blocks** like the [Plant](#plant-bookshelf):
 
 Stepping stones laid in a gravel strip: a **floor piece** like a [Rug](#rug), placed behind everything, never blocks,
 never a destination. Drawn to its size like a room, so a path is stretched to any length without the stones
-stretching: the stones run along its longer side, evenly spaced. Not aspect locked. Default 240 × 64. The gravel takes
-the element's fill (a warm sand when unstyled).
+stretching. Not aspect locked. Default 240 × 64. The gravel takes the element's fill (a warm sand when unstyled).
+
+- **Whole stones only.** The stones run along the longer side, the same size however long the path, spaced evenly
+  between two insets: every stone stays at least 0.7 of the path's width in from each end, so the first and last are
+  whole and the rounded ends are bare gravel. A path too short for two holds one stone in its middle. However the
+  path is stretched, no stone is ever cut by its own edge.
+- **Round when about square.** A path whose longer side is at most 1.25 times its shorter is a **plaza**: a round
+  paved patch filling its box, a kerb round the rim, a ring of setts inside it and an open middle for a fountain or a
+  statue. Placed where paths meet, a small one reads as a junction; a large one is a square to gather in.
+- **Joining paths.** A path that meets another ends under it: its rounded end lies on the other's gravel (the
+  other path or plaza drawn over it), and its stones, kept back from its end, stop at the other's edge, so a junction
+  never shows one path's stones under another's. Paths never cross: where two would, a plaza is the junction.
+- **Nothing on the stones.** In a template no piece stands on a path's stones and no path runs under a piece, a
+  plaza's open middle aside (the template guard test).
 
 ## Grass
 
@@ -205,9 +244,10 @@ white with the theme's stroke round each picket.
 
 ## Share roles
 
-- **Editor**: places, moves, renames, recolours and deletes every piece; sets a room's doorway and a stage's Who Can
+- **Editor**: places, moves, renames, recolours and deletes every piece, a room's Doors included; sets an older
+  room's built-in doorway and a stage's Who Can
   Speak and Show Cameras.
-- **Participant**: the participant palette does not offer them; walks, sits and drinks like everyone.
+- **Participant**: has no palette, so it places none; walks, sits and drinks like everyone.
 - **Viewer**: walks, sits and drinks like everyone (all of it is presence, which a Viewer has).
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))

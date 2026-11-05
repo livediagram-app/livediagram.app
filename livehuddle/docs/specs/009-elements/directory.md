@@ -31,8 +31,14 @@ go.
 
 A press (a click that has not moved further than a wobble, `usePressWithoutDrag`, so a drag still moves it) opens
 the **Directory popover** beside the stand. Every role may press it ([Share roles](../013-workspace/share-roles.md)):
-an Editor, a Participant and a Viewer all walk and travel. Escape, a click outside or pressing the stand again closes
-it.
+an Editor, a Participant and a Viewer all walk and travel.
+
+**It stays open until you close it**: pressing the stand again, the **Close** button in its header, or Escape (which
+closes the popover only, never Avatar mode with it). A click elsewhere does **not** close it, so you can walk round
+the canvas with the list open: the popover is not modal (no backdrop), so the canvas behind it still takes every
+walking click, and it follows the stand on screen, kept inside the viewport, beside the stand on the side with room.
+In Avatar mode a press on the stand never walks you to it ([Avatar mode](../008-canvas/avatar-mode.md) "Clicking a
+piece"). Go, and Walk There, close it as they act (below).
 
 ## The list
 
@@ -72,15 +78,14 @@ Shown on rows of the current tab. It walks your character to the place:
    then on to the point just inside it. The centred camera follows ([Avatar mode](../008-canvas/avatar-mode.md) "The
    camera"). A place with no doorway (a box room set to **None**, a Room Builder room without a Door) is walked to
    its centre, and a Stage to the middle of its front edge, then up onto its top.
-   - **Round the place's own walls.** When the straight line to the approach point would cross the room's or the
-     Office Pod's own box (a doorway on the far side, such as a Door on a room's top wall walked to from below), the
-     walk first goes round the outside of that box, by the nearer way, through its corners a little clear of the
-     walls, and then on to the approach point (`walkThereRoute`). Without it the walk met the near wall head-on and
-     stopped there.
+   - **Round the walls in the way.** Each leg is an ordinary routed walk ([Avatar mode](../008-canvas/avatar-mode.md)
+     "Finding the way"), so a doorway on the far side of the place (a Door on a room's top wall walked to from below),
+     or any other room or fence between, is walked round to the approach point. (Before routing, `walkThereRoute`
+     went round only the place's own box; that special case is gone.)
    - **Already inside.** A character already standing in the place walks straight to the point inside its doorway,
      never out and back in.
-3. The walk is the ordinary walk: walls and fences still stop it, sliding along them, and any key or click takes
-   over. Go is the way that always arrives.
+3. The walk is the ordinary walk: it routes round walls and fences, stops at the nearest point it can reach when a
+   shut door is in the way, and any key or click takes over. Go is the way that always arrives.
 
 The popover closes as the walk starts.
 
@@ -118,6 +123,5 @@ going are navigation, the same as panning, and are not tracked.
 
 ## Out of scope
 
-- Pathfinding round other walls for Walk There: only the destination's own walls are walked round.
 - Who is in which room on a tab you are not on (the relay does not carry it).
 - A Directory that lists other spaces.

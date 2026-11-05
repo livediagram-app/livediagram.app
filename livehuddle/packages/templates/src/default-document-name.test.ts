@@ -30,6 +30,12 @@ describe('isDefaultDocumentName', () => {
       expect(isDefaultDocumentName(name)).toBe(true);
   });
 
+  it('keeps small words low in a template name, and still knows the older spelling', () => {
+    expect(untitledNameForTemplate('hotel-and-suites')).toBe('Untitled Hotel and Suites');
+    expect(isDefaultDocumentName('Untitled Hotel and Suites')).toBe(true);
+    expect(isDefaultDocumentName('Untitled Hotel And Suites')).toBe(true);
+  });
+
   it('never counts a name someone gave it', () => {
     for (const name of ['Q3 roadmap', 'Untitled', 'untitled flowchart', 'Untitled Flowchart 2', ''])
       expect(isDefaultDocumentName(name)).toBe(false);

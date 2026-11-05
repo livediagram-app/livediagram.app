@@ -63,3 +63,45 @@ describe('a social face control keeps its press', () => {
     expect(isPieceControlPress(null)).toBe(false);
   });
 });
+
+// docs/specs/008-canvas/avatar-mode.md "The reader": while walking, a reading piece opens large on screen.
+describe('the reader while walking', () => {
+  const note = { id: 'n', title: 'Lunch', text: 'Pizza at one', author: 'Sam', by: 'k', at: 1 };
+
+  it('opens the Notice Board large from a press anywhere on it, and closes on Escape', () => {
+    render(<SocialFace element={piece('notice-board', { noticeNotes: [note] })} walking />);
+    fireEvent.click(screen.getByRole('button', { name: 'Read the Notice Board' }));
+    const dialog = screen.getByRole('dialog', { name: 'Notice Board' });
+    expect(dialog.textContent).toContain('Pizza at one');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('opens the reader from the Notes button while walking, the popover otherwise', () => {
+    const { unmount } = render(
+      <SocialFace element={piece('notice-board', { noticeNotes: [note] })} walking />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Open Notes/ }));
+    expect(document.querySelector('[data-notice-reader]')).not.toBeNull();
+    unmount();
+    render(<SocialFace element={piece('notice-board', { noticeNotes: [note] })} />);
+    expect(screen.queryByRole('button', { name: 'Read the Notice Board' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Open Notes/ }));
+    expect(document.querySelector('[data-notice-reader]')).toBeNull();
+  });
+
+  it('opens every World Clock zone large, past the three the face shows', () => {
+    const zones = ['London', 'Paris', 'Tokyo', 'Sydney'].map((label) => ({
+      zone: 'UTC',
+      label,
+    }));
+    render(<SocialFace element={piece('world-clock', { clockZones: zones })} walking />);
+    fireEvent.click(screen.getByRole('button', { name: 'Read the World Clock' }));
+    const dialog = screen.getByRole('dialog', { name: 'World Clock' });
+    for (const z of zones) expect(dialog.textContent).toContain(z.label);
+    // The bar's Close (the backdrop is a second, untabbable Close).
+    const close = screen.getAllByRole('button', { name: 'Close' }).find((b) => b.tabIndex !== -1);
+    fireEvent.click(close!);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});

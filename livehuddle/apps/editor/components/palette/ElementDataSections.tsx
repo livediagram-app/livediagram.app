@@ -20,6 +20,7 @@ import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import {
+  hasBuiltInDoorway,
   isChipShape,
   isConceptShape,
   LINE_DEFAULT_SERIES,
@@ -140,7 +141,7 @@ export function ElementDataSections({
     isLegend ||
     isPortal ||
     isChair ||
-    (shapeTarget?.shape === 'room' && !shapeTarget.roomOutline) ||
+    (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
     shapeTarget?.shape === 'stage' ||
     (shapeTarget?.shape === 'screen' && !!props.onSetScreenUrl) ||
     shapeTarget?.shape === 'world-clock' ||
@@ -228,8 +229,9 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* A custom room (docs/specs/009-elements/room-builder.md) has no doorway of its own: Doors are its way in. */}
-          {shapeTarget?.shape === 'room' && !shapeTarget.roomOutline ? (
+          {/* Only an older room keeps a doorway of its own (docs/specs/009-elements/office.md "Older rooms keep their
+          built-in doorway"): a new Room's and a custom room's ways in are Door pieces. */}
+          {shapeTarget && hasBuiltInDoorway(shapeTarget) ? (
             <RoomMenuSection
               target={shapeTarget}
               sectionProps={sectionProps}

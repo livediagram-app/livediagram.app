@@ -6,7 +6,8 @@ under the [calls kill switch](../016-platform/calls-kill-switch.md) (#316). Off 
 
 People talking in proximity can turn on a camera, or share a screen, and it shows as a small **bubble above their
 character's head** to the people in earshot. Anyone watching a bubble can press it to **maximise** it, and restore it
-again. Both kinds share one bubble.
+again. Both kinds share one bubble. With no call to send it on, the same buttons give a [local preview](#local-preview)
+that only you see.
 
 ## Who sees what
 
@@ -27,13 +28,14 @@ On top of earshot, a bubble is received only while it can be seen:
 
 ## The camera (#317)
 
-- **Camera** is one button beside the microphone in the call's strip, once you have joined. Off by default. Pressing
-  it asks for the camera (once per site, as the browser decides) and turns it on; pressing again turns it off and the
-  browser's camera light goes out.
+- **Camera** is one button beside the microphone in the call's strip. Off by default. Pressing it asks for the camera
+  (once per site, as the browser decides) and turns it on; pressing again turns it off and the browser's camera light
+  goes out. Before you join, or where there is no call at all, it is a [local preview](#local-preview).
 - Your own bubble shows above your own head, mirrored, so you see what others see. Others see it unmirrored.
 - **Camera Blocked** (amber): the browser refused the camera. The hover card says how to allow it.
 - The camera stays on while you walk alone: it is your choice to make. Nothing is sent to anyone not in earshot.
-- Leaving the call, the mode or the tab turns it off.
+- Leaving the call, the mode or the tab turns it off. A camera you only previewed and never sent stays a preview when
+  a call ends (see [Local preview](#local-preview)).
 
 ### Two layers (simulcast)
 
@@ -65,6 +67,34 @@ waits for it.
   control, when they leave the call, the mode or the tab, and when the kill switch tightens. Walking away from people
   stops them receiving it, as with a voice; the share itself carries on for whoever is still near.
 - No audio from the shared screen or tab: voices stay the call's only sound.
+
+## Local preview
+
+Owner, 2026-11-05: camera and screen work in Avatar mode even with no call. With no call your bubble shows only on
+your own screen and nothing is sent; once a call is joined, the same bubble is sent exactly as above.
+
+- **Offered whenever the browser can capture.** In Avatar mode, the Camera button shows wherever the browser has a
+  camera API in a secure context, and Share Screen wherever it has a screen picker (not on a phone), whether or not
+  calls are on: in a This Browser Space, in a private Space nobody else can open, with calls off on the deployment or
+  paused by the kill switch, and before you join. With no call to offer, the strip holds just the two buttons and the
+  `?`; with Join Audio (or Calls Paused) on offer, they sit beside it.
+- **No call, nothing sent.** With no call joined (no room, calls off or paused, or not joined yet), turning one on
+  captures locally, at the same sizes and frame rates as a sent one, and shows your own bubble above your own head.
+  Nothing goes to the room or to Cloudflare: no session, no `call-track` op, no publish.
+- **"Only You".** A preview bubble carries a small **Only You** tag, and its hover card says "Only you see this.
+  Nothing is sent." The strip's button reads **Only You See Your Camera** (or Screen) in its hover card, and the top bar
+  reads **Only you see your screen** (with the same Stop Sharing) in place of "You are sharing your screen".
+- **Joining sends it.** When a call goes live while a preview is on, the call takes the track already captured: no
+  second permission prompt, no second picker. From then on it is an ordinary camera or share (counted, capped and
+  received as above) and the tag goes. A preview turned on while a call is joining is taken the moment it goes live.
+- **What the call may not send stays a preview.** A Participant may preview a screen, but sharing one is an Editor's
+  ([Share roles](#share-roles)), so a Participant's screen stays local in a call too, tag and all. Under **audio
+  only** in a live call the strip reads Video Paused, so a preview stops there as a sent camera does; outside a call
+  the switch does not touch a preview, which sends nothing.
+- **When it stops.** Pressing the button again, the browser's own Stop on a screen, leaving the mode, changing tab and
+  closing the page all stop a preview and release the camera or screen. Leaving a call stops what that call was sending,
+  as before; a preview it never sent stays as it was.
+- Do Not Disturb and the hidden-tab rule are about what reaches you: neither changes your own preview.
 
 ## The bubble
 
@@ -123,10 +153,14 @@ From [Future work](../005-project-roadmap/future-work.md#share-roles) and [Proxi
 | See bubbles of the people near you        | Yes    | Yes         | Yes    |
 | Maximise and restore a bubble (your view) | Yes    | Yes         | Yes    |
 | Turn on a camera                          | Yes    | Yes         | No     |
+| Preview your own camera or screen         | Yes    | Yes         | No     |
 | Share a screen                            | Yes    | No          | No     |
 | Stop someone else's screen share          | Yes    | No          | No     |
 
 - A camera is taking part, like speaking: an Editor's or a Participant's, guests included, no sign-in.
+- A [local preview](#local-preview) sends nothing, so it is allowed to anyone who can take part (`can.takePart`): an
+  Editor's or a Participant's. Sending still follows the rows above, so a Participant's screen preview stays local even
+  in a call, with its Only You tag. A Viewer, who neither speaks nor shows a camera, has no preview.
 - Sharing a screen is an Editor's act (Future work's role table). The card asked for the bubble above the sharer in
   place of the table's "into a frame on the board"; this spec records that change.
 - Gated in the editor on `can.takePart` (camera) and `can.level === 'edit'` (screen), never on read-only; on the server
@@ -184,7 +218,8 @@ Cloudflare bills $0.05 per GB of egress after the account's first 1,000 GB a mon
 ## Telemetry
 
 `track('Canvas', 'Used', 'CameraOn')` on turning the camera on, `track('Canvas', 'Used', 'ScreenShare')` on starting a
-share, `track('Canvas', 'Used', 'BubbleMaximise')` on maximising, `track('Canvas', 'Used', 'StopOthersShare')` on an
+share (a local preview counts the same: both answer "did people turn it on", and a later join sends the same track
+without counting again), `track('Canvas', 'Used', 'BubbleMaximise')` on maximising, `track('Canvas', 'Used', 'StopOthersShare')` on an
 Editor stopping someone else's share. Never who, never what was shown.
 
 ## Out of scope

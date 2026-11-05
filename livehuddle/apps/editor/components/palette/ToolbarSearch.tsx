@@ -73,7 +73,7 @@ export function ToolbarSearchPanel({
 }) {
   // Mounted only while the popover is open, so it resets each time it opens.
   const [query, setQuery] = useState('');
-  // Icons and Stickers load as a chunk of their own: re-rendered when it lands.
+  // Stickers load as a chunk of their own: re-rendered when it lands.
   const cataloguesLoaded = useIconCatalogs();
   const elements = searchElementTiles({ query, mode, hasImage: actions.hasImage, tabElements });
   const catalogues = searchCatalogueTiles({ query, mode, tabElements, loaded: cataloguesLoaded });

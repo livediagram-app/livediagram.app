@@ -18,6 +18,14 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   cafe: null,
   'garden-retreat': null,
   'city-park': null,
+  'company-campus': null,
+  'conference-venue': null,
+  'startup-hq': null,
+  'school-quad': null,
+  'hotel-and-suites': null,
+  'coworking-tower': null,
+  'expo-hall': null,
+  'beach-offsite': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

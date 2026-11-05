@@ -20,7 +20,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `../packages/api-schema/src/access-levels.ts` (new)                                                            | `ACCESS_LEVELS`, `AccessLevel`, the ladder, `parseStoredLevel`, `LEVEL_TELEMETRY_TYPE`        |
 | `packages/api-schema/src/index.ts`                                                                             | `ShareRole` becomes an alias of `AccessLevel`                                                 |
 | `packages/api-schema/src/room-messages.ts`                                                                     | `PARTICIPATION_OP_KINDS`, `PARTICIPATION_DELTA_KINDS`, `isParticipationOp`                    |
-| `packages/document/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets   |
+| `packages/document/src/participant-content.ts` (new)                                                           | The participant content rule: `applyParticipantOp`, the piece fields, `participantTabChange`  |
 | `packages/document/src/element-types.ts`, `validate.ts`                                                        | `addedBy?: string` on `StickyElement` and `TextElement`; validated                            |
 | `packages/document/src/collab-ledger.ts`                                                                       | `mergeLedgerAnswersIntoTab`: reactions only (responses and ideas gone in part 4, votes later) |
 | `../liveworkspace/apps/index/migrations/0001_index.sql`                                                        | A `level` column on `share_links`                                                             |
@@ -89,26 +89,25 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
 `applyParticipantOp(tab, op, adderKey)` (pure), returning `{ result: 'applied', tab, op } | { result: 'refused',
 correction: ElementOp | null, reason }`:
 
-| Op        | Applied when                                                    | Result                                                                                                                                                                              | Refusal correction                       |
-| --------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `add`     | `addableOn(tab, element)`; `adderKey` present; id unused        | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
-| `update`  | The stored element exists, same type, not `locked`              | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
-| `remove`  | The stored element exists, `addedBy === adderKey`, not `locked` | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
-| `reorder` | never                                                           | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
+A Participant changes no element but through a piece ([A Participant walks](../share-roles.md#a-participant-walks),
+owner 2026-11-05): before, it added stickies, text and images and wrote on others' elements; those rows are gone.
 
-Permitted fields on another's element:
+| Op        | Applied when                                       | Result                                                                                           | Refusal correction                       |
+| --------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `add`     | never (`not-addable`)                              | n/a                                                                                              | `remove` of the id (unless id existed)   |
+| `update`  | The stored element exists, same type, not `locked` | Stored, with the piece fields below copied from incoming; its own earlier element no differently | `update` with the stored element         |
+| `remove`  | never (`not-own`, or `locked` when held)           | n/a                                                                                              | `add` of the stored element at its index |
+| `reorder` | never                                              | n/a                                                                                              | `reorder` with the stored ids            |
 
-| Element                   | Fields                                                                                                            |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`) |
-| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                 |
-| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)       |
-| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                       |
-| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                     |
-| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture        |
+Piece fields a Participant may change, on anyone's element:
 
-`addableOn(tab, el)`: `sticky`, `text` and `image` anywhere. An own
-element's update must leave it `addableOn` the tab, else `refused` (`not-holdable`).
+| Element                | Fields                                                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| `shape` `door`         | `doorClosed` (not when the door is `locked`, which refuses the whole update)                          |
+| `shape` `notice-board` | `noticeNotes`, through `mergeNoticeNotes`: notes signed with its adder key added or removed, no other |
+
+Every other field stays as stored, so a stale or crafted update that also moves, recolours or rewrites an element
+lands as its piece change alone, or as nothing (`changed: false`).
 
 - An `update` whose merge equals the stored element is `applied` with no write (`unchanged`) and no relay.
 - The applied tab must pass `isValidTab`; one that does not is refused with the stored element as correction.
@@ -116,8 +115,6 @@ element's update must leave it `addableOn` the tab, else `refused` (`not-holdabl
 - An applied update's `op` is an `ElementPatchOp` (`{ kind: 'patch', id, set, clear? }`) of the fields that changed
   between stored and merged, a room-only op (`RoomElementOp`, `applyRoomElementOp`) that peers apply over their live
   copy. It is never the stored element whole: the stored tab can be behind an Editor's unsaved change.
-- On its own element a Participant cannot change `locked`
-  `locked`.
 
 Answers as self: a Participant's `response`
 delta must name a `participantId` equal to its session's presence `key` (`answersAsSelf`); an `idea` names nobody. Anything else is dropped.
@@ -149,15 +146,17 @@ Editor state:
 
 `EditorCapabilities` for a session that is not an Editor; an Editor holds every flag:
 
-| Flag            | participate                                     | view  |
-| --------------- | ----------------------------------------------- | ----- |
-| `takePart`      | true                                            | false |
-| `addContent`    | true (sticky and text)                          | false |
-| `writeText(el)` | true unless `el.locked` or a Behaviour          | false |
-| `move(el)`      | a sticky, image or own; not locked              | false |
-| `resize(el)`    | a sticky, image or own; not locked              | false |
-| `recolour(el)`  | `el.type === 'sticky'` or own                   | false |
-| `remove(el)`    | own (`el.addedBy === selfAdderKey`); not locked | false |
+| Flag            | participate             | view  |
+| --------------- | ----------------------- | ----- |
+| `takePart`      | true                    | false |
+| `addContent`    | false                   | false |
+| `writeText(el)` | false                   | false |
+| `move(el)`      | false                   | false |
+| `resize(el)`    | false                   | false |
+| `recolour(el)`  | false                   | false |
+| `remove(el)`    | false                   | false |
+| `swingDoor(el)` | true unless `el.locked` | false |
+| `alwaysWalks`   | true                    | false |
 
 `roleGates(can, runBlocked)` answers the canvas's role gates from `can`, never from `isReadOnly`: `run` is
 `level === 'edit' && !runBlocked` (start, end, reveal or configure a session tool; Bring Focus), `shape` is
@@ -180,12 +179,13 @@ Hooks that write a tab's structure, or write without passing `commit`, take `str
 `editsBlocked`: lane settling, element helpers, tab canvas, images, paths, the eraser, swatch overrides, the cleanup preview, board scenes and library inserts.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 
-Gestures opened for a Participant, each beside `isReadOnly`: the palette strip in its `participant` variant
-(`ToolbarPalette participant`, `usePaletteCatalogue participant`): one category, `participate`
-(`participantPaletteCategories`: the Sticky and Text tiles),
-the selection modes in `PARTICIPANT_CANVAS_TOOLS`, no Search, on every mode; inline text edit (`canWriteText`); a
-move drag (`canMove`, never a resize); the Delete, type-to-edit and Space-to-edit keys; the quick-style panel for
-what `recolour` admits (`canStyle`); answering session tools (`takePart`).
+Gestures opened for a Participant, each beside `isReadOnly`: answering session tools (`takePart`), the pieces
+(`swingDoor`, a Notice Board's pin and unpin, a Timer's controls) and the walk. It has no palette strip (the
+`participate` category and `participantPaletteCategories` are gone), no tile keys, and the keyboard treats it as a
+Viewer (`useEditorKeyboardShortcuts` takes no `participant` flag). `can.alwaysWalks` holds it in Avatar mode:
+`useCanvasTool({ alwaysWalking })` reports `'avatar'` and refuses every other tool, from the picker, a view-tool key,
+a Selection Mode button, an Avatar Pad, the palette reach and a change of tab alike; the cluster's Walk button is not
+drawn for it (`walkButton` false), and a Selection Mode button's face is inert.
 
 Invariants:
 
@@ -215,26 +215,6 @@ export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 
 `packages/document/src/participant-content.ts`:
 
 ```ts
-export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text', 'image'];
-export const PARTICIPANT_IMAGE_FIELDS: readonly [
-  'imageId',
-  'naturalWidth',
-  'naturalHeight',
-  'alt',
-  'credit',
-];
-export function addableOn(tab: Tab, el: Element): boolean;
-export function participantWritesOn(el: Element): boolean;
-export const PARTICIPANT_TEXT_FIELDS: readonly ['label', 'richText'];
-export const PARTICIPANT_PLACE_TYPES: readonly ['sticky', 'image'];
-export const PARTICIPANT_PLACE_FIELDS: readonly ['x', 'y', 'width', 'height'];
-export function isParticipantPlaceable(el: Element): boolean;
-export const PARTICIPANT_STICKY_FIELDS: readonly [
-  'fillColor',
-  'strokeColor',
-  'textColor',
-  'penTextColour',
-];
 export type ParticipantOpResult =
   | { result: 'applied'; tab: Tab; op: ElementOp; changed: boolean }
   | { result: 'refused'; correction: ElementOp | null; reason: ParticipantRefusal };
@@ -303,21 +283,22 @@ lands in a new document, where no adder key matches it.
 - **E2** An editor bundle older than this change opens a Participant link: it reads the level as edit, shows edit
   controls, its tab PUT is refused 403 and `writesForbiddenRef` stops its autosave; its room ops below the
   participant classes are dropped.
-- **E3** A Participant adds a shape (crafted client): refused `not-addable`; the sender gets `remove`.
-- **E4** A Participant deletes an Editor's sticky: refused `not-own`; the sender gets the sticky back at its index.
-- **E5** A Participant resizes an Editor's shape while editing its label: applied as the label alone; the sender gets
-  the merged element.
+- **E3** A Participant adds anything, a sticky or text included (crafted client, a paste): refused `not-addable`;
+  the sender gets `remove`.
+- **E4** A Participant deletes any element, its own earlier sticky included: refused `not-own`; the sender gets it
+  back at its index.
+- **E5** A Participant's update that moves a Door as it swings it: applied as the swing alone (`doorClosed`); the
+  sender gets the merged element. One that rewrites a label or moves a sticky: applied with nothing changed.
 - **E6** A Participant edits an element an Editor deleted meanwhile: refused `missing`, no correction (the Editor's
   remove reaches the sender too).
 - **E7** A Participant edits a locked element: refused `locked`, correction the stored element.
 - **E8** The write loses the compare-and-swap `TAB_CAS_MAX_ATTEMPTS` times, the tab is gone, or the tab is over its
   cap: the sender gets `catchup { resync: true }`; nothing is relayed.
-- **E9** A Participant socket without an adder key adds a sticky: refused `no-adder`.
+- **E9** A Participant socket without an adder key pins a note: the merge keeps the stored notes (no note is its own).
 - **E10** A Participant socket sends `tab`, `tab-meta`, `reorder`, `check`, `board`, `response`, `idea` or `drag-preview`:
   dropped.
 - **E11** A tab-scoped Participant link: its ops on another tab are dropped by the scope check first.
 - **E12** An embed of a Participant link: renders as a Viewer (SR6).
-- **E13** A Participant's text in a table reshapes `cells` (adds a row): the merge keeps the stored cells.
 - **E15** A Participant edits an element an Editor added within its autosave window (not stored yet): refused
   `missing`; the sender re-hydrates.
 - **E16** A socket with `PARTICIPANT_PENDING_MAX` writes waiting sends another: refused, the sender re-hydrates.
@@ -354,11 +335,11 @@ lands in a new document, where no adder key matches it.
 
 Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 
-| Level       | Title / blurb                                                                    | Stub          | Glyph              | Solid (stub)                                 |
-| ----------- | -------------------------------------------------------------------------------- | ------------- | ------------------ | -------------------------------------------- |
-| edit        | **Editor** / "Draws with you in real time."                                      | `EDITOR`      | `lucidePencilLine` | as today                                     |
-| participate | **Participant** / "Adds stickies, writes and comments. Can't reshape the board." | `PARTICIPANT` | `lucideVote`       | `bg-teal-700 text-white dark:bg-teal-600/60` |
-| view        | **Viewer** / "Watches, pans and zooms. Can't comment or change a thing."         | `VIEWER`      | `lucideEye`        | as today                                     |
+| Level       | Title / blurb                                                                                                     | Stub          | Glyph              | Solid (stub)                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- | ------------- | ------------------ | -------------------------------------------- |
+| edit        | **Editor** / "Draws with you in real time."                                                                       | `EDITOR`      | `lucidePencilLine` | as today                                     |
+| participate | **Participant** / "Walks, talks and uses the pieces; adds nothing." (livehuddle's, `APP_LEVEL_BLURBS.livehuddle`) | `PARTICIPANT` | `lucideVote`       | `bg-teal-700 text-white dark:bg-teal-600/60` |
+| view        | **Viewer** / "Watches, pans and zooms. Can't comment or change a thing."                                          | `VIEWER`      | `lucideEye`        | as today                                     |
 
 - livehuddle's picker lists the levels in `APP_LINK_LEVELS.livehuddle = ['edit', 'participate']`
   (`packages/index-client/src/constants.ts`), so it shows the Editor and Participant cards, one per row at every
@@ -373,8 +354,8 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
   `shareDocumentShape.role` is `z.enum(['participate', 'edit'])`.
 - Arrow keys step through the offered levels, wrapping; Home and End reach the ends.
 - Pill: **Participating**, `bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200`, the vote glyph; static.
-- A Participant's palette strip: the selection-mode dropdown (Select, Hand, Avatar), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
-  and its tiles; tab add, rename and delete and context menus' structural rows are absent.
+- A Participant has no palette strip and no Walk button; it is always walking. Tab add, rename and delete and context
+  menus' structural rows are absent.
 - A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt, no Q&A
   add or upvote, no reactions. Its selection holds nothing
   (`RemoteSelector.holds`, `lockedByOther`).
@@ -424,18 +405,17 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 
 ## Constants and configuration
 
-| Constant                    | Value                                           | Provenance                                     | Safe range          |
-| --------------------------- | ----------------------------------------------- | ---------------------------------------------- | ------------------- |
-| `ACCESS_LEVELS`             | `['view', 'participate', 'edit']`               | Spec, ascending                                | fixed               |
-| `DEFAULT_LINK_LEVEL`        | `'edit'`                                        | Spec: an omitted role is edit                  | fixed               |
-| `DEFAULT_MCP_SHARE_LEVEL`   | `'participate'`                                 | Spec                                           | fixed               |
-| `LEVEL_ORDER`               | `['edit', 'participate', 'view']`               | Spec's card order                              | fixed               |
-| `PARTICIPANT_ADDABLE_TYPES` | `['sticky', 'text', 'image', 'shape', 'arrow']` | Spec (shape and arrow narrowed by `addableOn`) | grows with the spec |
-| `TAB_CAS_MAX_ATTEMPTS`      | 8                                               | The Q&A write's existing bound                 | 3 to 20             |
-| `ADDER_KEY_LENGTH`          | 32                                              | 128 bits of hex (SR4)                          | 16 to 64            |
-| `ANSWERS_FLUSH_MS`          | 1500                                            | SR9                                            | 250 to 10000        |
-| `PARTICIPANT_PENDING_MAX`   | 64                                              | SR12                                           | 8 to 512            |
-| `HELD_BACK_NOTICE_MS`       | 4000                                            | SR13                                           | 1000 to 30000       |
+| Constant                  | Value                             | Provenance                     | Safe range    |
+| ------------------------- | --------------------------------- | ------------------------------ | ------------- |
+| `ACCESS_LEVELS`           | `['view', 'participate', 'edit']` | Spec, ascending                | fixed         |
+| `DEFAULT_LINK_LEVEL`      | `'edit'`                          | Spec: an omitted role is edit  | fixed         |
+| `DEFAULT_MCP_SHARE_LEVEL` | `'participate'`                   | Spec                           | fixed         |
+| `LEVEL_ORDER`             | `['edit', 'participate', 'view']` | Spec's card order              | fixed         |
+| `TAB_CAS_MAX_ATTEMPTS`    | 8                                 | The Q&A write's existing bound | 3 to 20       |
+| `ADDER_KEY_LENGTH`        | 32                                | 128 bits of hex (SR4)          | 16 to 64      |
+| `ANSWERS_FLUSH_MS`        | 1500                              | SR9                            | 250 to 10000  |
+| `PARTICIPANT_PENDING_MAX` | 64                                | SR12                           | 8 to 512      |
+| `HELD_BACK_NOTICE_MS`     | 4000                              | SR13                           | 1000 to 30000 |
 
 No new environment variable or binding; deploying needs nothing more.
 

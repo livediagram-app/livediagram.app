@@ -26,6 +26,7 @@ import {
   type BubbleRect,
   type BubbleView,
 } from '@/lib/calls/bubble-layout';
+import { useLocalOnly } from '@/lib/calls/local-preview';
 import { track } from '@/lib/telemetry';
 import { MaximisedBubble } from './MaximisedBubble';
 import { BUBBLE_WIDTH_PX, MediaBubble } from './MediaBubble';
@@ -62,6 +63,7 @@ function Group({
   name,
   color,
   onStopShare,
+  localOnly,
 }: {
   id: string;
   at: Point;
@@ -77,6 +79,8 @@ function Group({
   name: string | null;
   color: string;
   onStopShare?: () => void;
+  // Your own bubbles that are local previews, nobody else's (video-and-screen-bubbles.md "Local preview").
+  localOnly?: { video: boolean; screen: boolean };
 }) {
   const placed = useRef<HTMLDivElement>(null);
   const from = useRef(at);
@@ -131,6 +135,7 @@ function Group({
               color={color}
               // Your own camera is a mirror, as every video call shows it; others see it the right way round.
               mirrored={name === null && media === 'video'}
+              localOnly={localOnly?.[media] === true}
               onStopShare={onStopShare}
               onMaximise={() => {
                 track('Canvas', 'Used', 'BubbleMaximise');
@@ -157,6 +162,7 @@ export function CallBubbles(props: {
   const { onStopShare } = props;
   const media = useCallMedia();
   const own = media.get(SELF_MEDIA_ID);
+  const previews = useLocalOnly();
   const boxes: BubbleBox[] = [];
   const box = (id: string, at: Point, scale: number, streams: CallMediaStreams | undefined) => {
     const count = streams ? countOf(streams) : 0;
@@ -219,6 +225,7 @@ export function CallBubbles(props: {
           streams={own}
           name={null}
           color={props.self.color}
+          localOnly={previews}
         />
       ) : null}
       <MaximisedBubble

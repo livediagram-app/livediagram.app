@@ -2,7 +2,7 @@
 
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -13,7 +13,6 @@ import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
-import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { tidyUpOffered } from './tidy-up-actions';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
@@ -26,12 +25,6 @@ const CollaboratePanel = dynamic(
   () => import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
   { ssr: false },
 );
-
-// Lazy for the same reason: the Session strip's popovers (docs/specs/012-collaboration/session-tools.md
-// "The Session strip") load on the first press of the Timer button.
-const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.SessionPopover), {
-  ssr: false,
-});
 
 // Lazy for the same reason: the Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button")
 // loads on the first press of its button.
@@ -63,15 +56,12 @@ function LazyPopover({ onError, children }: { onError: () => void; children: Rea
 
 export function useCanvasChromePanels({
   props,
-  stripTools,
   chromeHidden,
   isMobile,
   panelWiringFor,
   panelsOn,
 }: {
   props: CanvasChromeProps;
-  // The tools the mode's Session strip offers (sessionStripTools), as CanvasChrome drew them.
-  stripTools: SessionStripTools | null;
   chromeHidden: boolean;
   isMobile: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
@@ -83,8 +73,6 @@ export function useCanvasChromePanels({
   // The Explorer, a popover under the menu button (docs/specs/007-editor/toolbar-layout.md).
   explorerEl: ReactNode;
   collaborateEl: ReactNode;
-  // The Session strip's open popover (the Timer), over its button.
-  sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button.
   tidyUpPopoverEl: ReactNode;
   // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
@@ -109,7 +97,6 @@ export function useCanvasChromePanels({
     activeTabId,
     onOpenCommentsForElement,
     onResetCommentsPanel,
-    readOnly,
 
     setActiveDockAnchor,
     setActiveDockPanel,
@@ -291,46 +278,6 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  // The Session strip's popovers (docs/specs/012-collaboration/session-tools.md "The Session strip"). A
-  // segment whose button has gone (a view-role visitor's tool ended, a poll dismissed) closes its
-  // popover rather than leaving it floating with no button under it.
-  const sessionSegment = activeDockPanel === 'session-timer' ? activeDockPanel : null;
-  // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
-  const sessionTools = stripTools ? props.sessionTools : undefined;
-  const sessionButtonGone = stripSegmentGone({
-    segment: sessionSegment,
-    tools: sessionTools ? stripTools : null,
-    readOnly: !!readOnly,
-    running: { timer: !!sessionTools?.timer },
-  });
-  useEffect(() => {
-    if (sessionButtonGone) closeDockPanel();
-  }, [sessionButtonGone, closeDockPanel]);
-  // A running tool's popover stays up until its button closes it, and goes when the activity ends
-  // (docs/specs/012-collaboration/session-tools.md "The Session strip"), rather than turning back
-  // into the set-up under the facilitator's pointer.
-  const sessionRunning = sessionSegment === 'session-timer' ? !!sessionTools?.timer : false;
-  // Per segment: switching from a running tool's popover to an idle one is not an ending.
-  const wasRunning = useRef({ segment: sessionSegment, running: sessionRunning });
-  useEffect(() => {
-    const prev = wasRunning.current;
-    wasRunning.current = { segment: sessionSegment, running: sessionRunning };
-    if (sessionSegment && prev.segment === sessionSegment && prev.running && !sessionRunning)
-      closeDockPanel();
-  }, [sessionRunning, sessionSegment, closeDockPanel]);
-  const sessionPopoverEl =
-    !chromeHidden && sessionSegment && sessionTools && !sessionButtonGone ? (
-      <LazyPopover onError={closeDockPanel}>
-        <SessionPopover
-          segment={sessionSegment}
-          anchor={activeDockAnchor ?? undefined}
-          onClose={closeDockPanel}
-          session={sessionTools}
-          readOnly={!!readOnly}
-        />
-      </LazyPopover>
-    ) : null;
-
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
@@ -356,7 +303,6 @@ export function useCanvasChromePanels({
           />
         </LazyPopover>
       ) : null,
-    sessionPopoverEl,
     paletteTint,
   };
 }

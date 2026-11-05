@@ -255,6 +255,19 @@ describe('useShapeDrawing Room Builder', () => {
     expect(selection.get().selectedId).toBe(added[0]!.id);
   });
 
+  // docs/specs/009-elements/office.md "The doorway is a Door": a tapped or drawn Room comes with its Door, one commit.
+  it('adds a tapped Room with its Door on the front wall in one commit, the room selected', () => {
+    const { result, commit, selection } = roomSetup(false);
+    act(() => result.current.commitDraw({ type: 'shape', kind: 'room' }, 500, 400, 500, 400));
+    expect(commit).toHaveBeenCalledTimes(1);
+    const added = commit.mock.calls[0]![0]([]);
+    expect(added).toHaveLength(2);
+    expect(added[0]).toMatchObject({ shape: 'room', roomDoor: 'none', width: 480, height: 320 });
+    expect(added[1]).toMatchObject({ shape: 'door' });
+    expect((added[1] as { rotation?: number }).rotation ?? 0).toBe(0);
+    expect(selection.get().selectedId).toBe(added[0]!.id);
+  });
+
   it('commits nothing for fewer than three corners', () => {
     const { result, commit } = roomSetup(false);
     act(() => result.current.beginRoomWalls());

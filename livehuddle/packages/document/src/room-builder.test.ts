@@ -4,15 +4,23 @@ import {
   createShape,
   doorOnRoom,
   doorParts,
+  doorsFollowRooms,
+  DOOR_REACH,
+  isNextToDoor,
+  toggledDoor,
+  hasBuiltInDoorway,
   isOutlinedRoom,
   isRoomOutline,
   isValidElement,
   outlinedRoomPaths,
   roomOutlinePoints,
+  roomWalls,
+  roomWithDoorPiece,
   roomZones,
   snapDoorToWall,
   snapMovedDoors,
   withAttachedDoors,
+  withDoorPiece,
   zoneAt,
   ROOM_WALL,
   type Element,
@@ -223,6 +231,36 @@ describe('drawing', () => {
     expect(p.swing.startsWith('M90 12 A84 84')).toBe(true);
     // A narrow door keeps its jambs a quarter of it each.
     expect(doorParts(8, 24).jambs[0]!.w).toBe(2);
+    // Closed, the leaf lies across the opening from the same hinge, as long as it stood.
+    expect(p.shut).toEqual({ x: p.leaf.x, y: p.leaf.y - 1.5, w: p.leaf.h, h: 3 });
+  });
+});
+
+// docs/specs/009-elements/room-builder.md "Opening and closing".
+describe('opening and closing a door', () => {
+  // A door across x 100..196 on the line y 0.
+  const door = { ...createShape('door', 100, -12), width: 96, height: 24 };
+
+  it('is next to a character within DOOR_REACH of its opening, on either side', () => {
+    expect(isNextToDoor({ x: 148, y: DOOR_REACH }, door)).toBe(true);
+    expect(isNextToDoor({ x: 148, y: -DOOR_REACH }, door)).toBe(true);
+    expect(isNextToDoor({ x: 148, y: DOOR_REACH + 1 }, door)).toBe(false);
+    // Past its end, measured to the end of the opening.
+    expect(isNextToDoor({ x: 196 + 30, y: 30 }, door)).toBe(true);
+    expect(isNextToDoor({ x: 196 + 40, y: 40 }, door)).toBe(false);
+    // Only a door is a door; a zero-width one is its one point.
+    expect(isNextToDoor({ x: 148, y: 0 }, { ...door, shape: 'chair' })).toBe(false);
+    expect(isNextToDoor({ x: 100, y: 10 }, { ...door, width: 0 })).toBe(true);
+  });
+
+  it('turns open to closed and back, an open door storing nothing', () => {
+    const shut = toggledDoor(door);
+    expect(shut.doorClosed).toBe(true);
+    const open = toggledDoor(shut);
+    expect('doorClosed' in open).toBe(false);
+    expect(open).toEqual(door);
+    expect(isValidElement(shut)).toBe(true);
+    expect(isValidElement({ ...door, doorClosed: 'yes' })).toBe(false);
   });
 });
 
@@ -253,5 +291,122 @@ describe('a custom room is a call of its own', () => {
       ],
     };
     expect(roomZones([flat])).toEqual([]);
+  });
+});
+
+// docs/specs/009-elements/office.md "The doorway is a Door"
+describe("a Room's doorway as a Door piece", () => {
+  const room = (over: Partial<ShapeElement> = {}): ShapeElement => ({
+    ...createShape('room', 100, 200),
+    ...over,
+  });
+  const middle = (d: ShapeElement) => ({ x: d.x + d.width / 2, y: d.y + d.height / 2 });
+
+  it('closes the room and stands a Door in the middle of its front wall', () => {
+    const r = room({ roomDoor: undefined, fillColor: '#abcdef', strokeColor: '#123456' });
+    const { room: closed, door } = roomWithDoorPiece(r);
+    expect(closed).toMatchObject({ id: r.id, roomDoor: 'none', width: 480, height: 320 });
+    expect(door).toMatchObject({
+      shape: 'door',
+      rotation: 0,
+      fillColor: '#abcdef',
+      strokeColor: '#123456',
+    });
+    expect(middle(door!)).toEqual({ x: 100 + 240, y: 200 + 320 - ROOM_WALL / 2 });
+    expect(doorOnRoom(door!, closed)).toBe(true);
+    expect(hasBuiltInDoorway(closed)).toBe(false);
+  });
+
+  it('stands it on whichever wall the doorway was in', () => {
+    for (const side of ['n', 'e', 's', 'w'] as const) {
+      const { room: closed, door } = roomWithDoorPiece(room({ roomDoor: side }));
+      expect(doorOnRoom(door!, closed), side).toBe(true);
+      expect(door!.rotation ?? 0, side).toBe(side === 'e' || side === 'w' ? 90 : 0);
+    }
+  });
+
+  it('gives no door to a closed room, a wall too short, a custom room or another kind', () => {
+    expect(roomWithDoorPiece(room({ roomDoor: 'none' })).door).toBeNull();
+    const tiny = roomWithDoorPiece(room({ width: 60, height: 60 }));
+    expect(tiny.door).toBeNull();
+    expect(tiny.room.roomDoor).toBe('none');
+    const custom = createOutlinedRoom([
+      { x: 0, y: 0 },
+      { x: 300, y: 0 },
+      { x: 0, y: 300 },
+    ])!;
+    expect(roomWithDoorPiece(custom)).toEqual({ room: custom, door: null });
+    const chair = createShape('chair', 0, 0);
+    expect(roomWithDoorPiece(chair)).toEqual({ room: chair, door: null });
+  });
+
+  it('adds the Door after a new room, and leaves anything else alone', () => {
+    const [closed, door] = withDoorPiece(room());
+    expect(closed).toMatchObject({ shape: 'room', roomDoor: 'none' });
+    expect(door).toMatchObject({ shape: 'door' });
+    const chair = createShape('chair', 0, 0);
+    expect(withDoorPiece(chair)).toEqual([chair]);
+    expect(withDoorPiece(room({ roomDoor: 'none' }))).toHaveLength(1);
+  });
+
+  it('cuts the wall where the doorway was: walls block, the Door lets through', () => {
+    const { room: closed, door } = roomWithDoorPiece(room());
+    // The closed room's front wall runs unbroken; the Door standing on it is the way in.
+    const front = roomWalls(closed).filter(
+      (w) => w.a.y === w.b.y && w.a.y === 200 + 320 - ROOM_WALL / 2,
+    );
+    expect(front).toHaveLength(1);
+    expect(snapDoorToWall(door!, [closed])).toBe(door);
+  });
+
+  it('says which rooms keep a doorway of their own', () => {
+    expect(hasBuiltInDoorway(room({ roomDoor: undefined }))).toBe(true);
+    expect(hasBuiltInDoorway(room({ roomDoor: 'e' }))).toBe(true);
+    expect(hasBuiltInDoorway(room({ roomDoor: 'none' }))).toBe(false);
+    expect(hasBuiltInDoorway(createShape('chair', 0, 0))).toBe(false);
+  });
+});
+
+// docs/specs/009-elements/room-builder.md "It rides its room": a resize carries the room's Doors.
+describe('doorsFollowRooms', () => {
+  const [room, door] = withDoorPiece({ ...createShape('room', 0, 0), width: 400, height: 300 }) as [
+    ShapeElement,
+    ShapeElement,
+  ];
+  const middle = (d: Element) =>
+    d.type === 'shape' ? { x: d.x + d.width / 2, y: d.y + d.height / 2 } : null;
+
+  it('keeps a door in the middle of its wall through a resize', () => {
+    const wider = { ...room, width: 600, height: 400 };
+    const out = doorsFollowRooms([room, door], [wider, door]);
+    expect(middle(out[1]!)).toEqual({ x: 300, y: 400 - ROOM_WALL / 2 });
+    expect(doorOnRoom(out[1] as ShapeElement, wider)).toBe(true);
+  });
+
+  it('keeps its fraction along the wall, and stays on a wall that shrinks past it', () => {
+    const slid = snapDoorToWall({ ...door, x: 260 }, [room]);
+    const half = { ...room, width: 200 };
+    const out = doorsFollowRooms([room, slid], [half, slid]);
+    expect(doorOnRoom(out[1] as ShapeElement, half)).toBe(true);
+    const narrow = { ...room, width: 110 };
+    const squeezed = doorsFollowRooms([room, slid], [narrow, slid]);
+    // Clamped clear of the wall's end: its far edge at the wall's end.
+    expect(middle(squeezed[1]!)!.x).toBeCloseTo(110 - 48, 5);
+  });
+
+  it('carries a door on a side wall, and leaves a door elsewhere alone', () => {
+    const side = snapDoorToWall({ ...door, x: 400 - 48, y: 150 - 12 }, [room]);
+    const free = { ...createShape('door', 1000, 1000), id: 'free' };
+    const taller = { ...room, height: 500 };
+    const out = doorsFollowRooms([room, side, free], [taller, side, free]);
+    expect(middle(out[1]!)!.y).toBeCloseTo(250, 5);
+    expect(out[2]).toBe(free);
+  });
+
+  it('returns the same array when no room changed', () => {
+    const after = [room, door];
+    expect(doorsFollowRooms([room, door], after)).toBe(after);
+    const moved = [{ ...room }, door];
+    expect(doorsFollowRooms([room, door], moved)).toBe(moved);
   });
 });

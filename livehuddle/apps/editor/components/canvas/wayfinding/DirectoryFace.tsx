@@ -41,6 +41,7 @@ export function DirectoryFace({
           aria-expanded={open}
           aria-haspopup="dialog"
           {...press}
+          data-piece-main=""
           className="pointer-events-auto relative h-full w-full cursor-pointer rounded-md transition duration-100 active:scale-[0.98] sm:hover:brightness-[1.06]"
         />
       </HoverCard>
@@ -49,6 +50,8 @@ export function DirectoryFace({
           elementId={elementId}
           label="Directory"
           width={320}
+          // Open until the stand is pressed again (or Close, or Escape): walking clicks never shut it.
+          pinned
           onClose={() => setOpen(false)}
         >
           <DirectoryList wayfinding={wayfinding} onDone={() => setOpen(false)} />
@@ -88,7 +91,11 @@ export function DirectoryList({
   const anyPlace = groups.some((g) => g.places.length > 0);
   return (
     <div>
-      <WayfindingHeader title="Directory" line="Every room in this space, and who is in it now." />
+      <WayfindingHeader
+        title="Directory"
+        line="Every room in this space, and who is in it now."
+        onClose={onDone}
+      />
       {!anyPlace ? (
         <div className="flex flex-col items-center gap-1.5 px-4 py-6 text-center">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950 dark:text-sky-300">

@@ -227,6 +227,14 @@ export function useDataShapeSetters({
   });
   const setScreenUrlSelected = (url: string | undefined) =>
     patchScreens({ screenUrl: url }, 'Screen');
+  // The same patch on one Screen by id: the walking reader's Set Link (docs/specs/008-canvas/avatar-mode.md "The
+  // reader"), which edits the Screen it opened, not the selection.
+  const setScreenUrlOf = (id: string, url: string | undefined) =>
+    makeShapePatcher({
+      currentSelectionIds: () => new Set([id]),
+      commit,
+      matches: (kind) => kind === 'screen',
+    })({ screenUrl: url }, 'Screen');
   // A World Clock's zones and a Jukebox's source (docs/specs/009-elements/social-pieces.md); undefined clears them.
   const patchClocks = makeShapePatcher({
     currentSelectionIds,
@@ -282,6 +290,7 @@ export function useDataShapeSetters({
     setRoomDoorSelected: setRoomDoor,
     setStageSelected,
     setScreenUrlSelected,
+    setScreenUrlOf,
     setClockZonesSelected,
     setJukeboxSourceSelected,
   };

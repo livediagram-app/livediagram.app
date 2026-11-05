@@ -1,6 +1,8 @@
 # Browsing the palette by category
 
-Status: shipped
+Status: shipped. **In livehuddle, the Icons tab is gone** ([Icons](../002-project-scope/not-in-livehuddle.md#icons)):
+the browse below serves the Stickers category alone; the Icons sections record livediagram's, whose spec is the one
+to change.
 
 ## What
 

@@ -18,8 +18,6 @@ const POPOVER_WIDTH = 256;
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
-  // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
-  'session-timer': 288,
   // The Tidy Up popover's `w-80`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
   'tidy-up': 320,
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
@@ -29,8 +27,6 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
 export type DockPanel =
   | 'explorer'
   | 'collaborate'
-  // The Session strip's Timer (docs/specs/012-collaboration/session-tools.md "The Session strip").
-  | 'session-timer'
   // The Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
   | 'tidy-up'
   // Avatar mode's character sheet (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
@@ -43,7 +39,6 @@ export type { DockAnchor };
 // new open.
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-  else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');
   else if (id === 'avatar') track('UI', 'Opened', 'AvatarPanel');
 }

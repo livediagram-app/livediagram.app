@@ -20,6 +20,15 @@ import { whiteboardPointerRoute } from '@/lib/whiteboard-tool';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isPanThrough, panThroughTap } from '@liveworkspace/workbench/hooks/canvas/pan-through';
 import { isPieceControlPress } from '@/lib/piece-control';
+import {
+  avatarClickIntent,
+  elementClickKind,
+  isInPlacePress,
+  pressPieceMain,
+} from '@/lib/avatar-click-intent';
+import { elementAt, onPaintedText } from '@/lib/avatar-press-target';
+import { avatarDoorPress } from '@/lib/avatar-door-press';
+import type { Element as CanvasElement } from '@livehuddle/document';
 
 type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 
@@ -54,6 +63,9 @@ export function useCanvasSurfaceGestures({
   avatar,
   peerAvatars,
   onPushPeer,
+  elements,
+  onToggleDoor,
+  onReadElement,
   beginPendingDrawGesture,
   interceptPress,
   onEraseStart,
@@ -79,6 +91,12 @@ export function useCanvasSurfaceGestures({
   peerAvatars: CanvasProps['remoteAvatars'];
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
+  // The tab's elements, for the Door under a walking click (lib/avatar-door-press), and the swing it may ask for:
+  // false when the viewer may not swing that door (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+  elements?: readonly CanvasElement[];
+  onToggleDoor?: (doorId: string) => boolean;
+  // Open an element large in the reader (docs/specs/008-canvas/avatar-mode.md "The reader").
+  onReadElement?: (elementId: string) => void;
   // Starts the queued draw-to-size / freehand gesture; true when it
   // claimed the press (see useCanvasDrawGesture).
   beginPendingDrawGesture: (e: ReactPointerEvent) => boolean;
@@ -221,6 +239,13 @@ export function useCanvasSurfaceGestures({
       // A talker's bars are a button of their own (docs/specs/012-collaboration/proximity-audio.md): its press walks
       // over, so it is not a walk to the spot under it.
       if (e.target instanceof Element && e.target.closest('[data-talking-bars]')) return;
+      // A piece with something to do in place (a Directory, an Elevator, a Notice Board): its own press opens it,
+      // and the character stays put (docs/specs/008-canvas/avatar-mode.md "Clicking a piece"). Its click still
+      // reaches the face; only the press is kept from the element, which would select or drag it.
+      if (e.button === 0 && isInPlacePress(e.target)) {
+        e.stopPropagation();
+        return;
+      }
       focusCanvas();
       e.preventDefault();
       e.stopPropagation();
@@ -232,6 +257,7 @@ export function useCanvasSurfaceGestures({
       // the context menu stays shut in this mode either way.
       if (e.button === 0) {
         const detail = e.detail;
+        const { clientX, clientY } = e;
         const walk = () => {
           // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
           // out of a chair. A single click deliberately does nothing — walkTo
@@ -251,9 +277,36 @@ export function useCanvasSurfaceGestures({
               peer.standAt,
               seated ? undefined : () => onPushPeer?.(peer.id, peer.dx, peer.dy),
             );
-          } else {
-            avatar.walkTo(point);
+            return;
           }
+          // A Door: next to it the click swings it where you stand; farther away (or a Viewer) it walks you to its
+          // near side and swings nothing (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+          const door =
+            elements && avatar.pos
+              ? avatarDoorPress(elements, point, avatar.pos, viewportZoom)
+              : null;
+          if (door) {
+            if (door.next && onToggleDoor?.(door.doorId)) return;
+            avatar.walkTo(door.nearSide);
+            return;
+          }
+          // The piece under the click, from its footprint (the layer is pointer-inert): only a `walk` kind is
+          // walked to; a `use` piece does its main action (or opens in the reader when it has none right now), and a
+          // `read` element opens in the reader (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+          const hit = elements
+            ? elementAt(
+                elements,
+                point,
+                (el) => el.type !== 'text' || onPaintedText(el.id, clientX, clientY),
+              )
+            : null;
+          const intent = hit ? avatarClickIntent(elementClickKind(hit)) : 'walk';
+          if (hit && intent !== 'walk') {
+            if (intent === 'use' && pressPieceMain(hit.id)) return;
+            onReadElement?.(hit.id);
+            return;
+          }
+          avatar.walkTo(point);
         };
         // A finger has no middle button or Space to pan with (docs/specs/008-canvas/avatar-mode.md "Walking"):
         // its drag pans, and only a press that never moved, a tap, walks.

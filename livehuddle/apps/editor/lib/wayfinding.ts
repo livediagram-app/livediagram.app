@@ -4,7 +4,9 @@
 import {
   callStages,
   DEFAULT_ROOM_DOOR,
+  doorOnRoom,
   isRoomOutline,
+  ROOM_BACK_FACE,
   ROOM_WALL,
   roomDoorSpan,
   roomInterior,
@@ -40,7 +42,13 @@ export type SpacePlace = {
 };
 
 /** A tab as the wayfinding reads it. */
-export type WayTab = { id: string; name: string; elements: readonly Element[] };
+export type WayTab = {
+  id: string;
+  name: string;
+  elements: readonly Element[];
+  /** False for a lazy tab not fetched yet, whose elements are a placeholder (elevator.md "The panel"). */
+  loaded?: boolean;
+};
 
 const NOUN: Record<PlaceKind, string> = { room: 'Room', pod: 'Office Pod', stage: 'Stage' };
 // How far outside and inside a doorway the approach and arrival points sit, in canvas px.
@@ -52,9 +60,6 @@ const STAGE_OUT = 18;
 // The Elevator's name line under its box (ElevatorFace: a 2px margin and an 11px line, leading-tight), which the
 // figure stepping out stands below.
 const ELEVATOR_NAME = 16;
-// How far outside a place's walls box a Walk There goes round it: clear of the walls' reach (a Regular character's
-// 12px from a wall line drawn 5px inside the box) with room to spare, and inside the 32px a room's approach sits out.
-const ROUND_CLEAR = 28;
 
 function placeKind(el: Element): PlaceKind | null {
   if (el.type !== 'shape') return null;
@@ -69,37 +74,42 @@ function byPosition(a: ShapeElement, b: ShapeElement): number {
   return a.y - b.y || a.x - b.x || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 }
 
+// A rectangular Room's walls' centre line (where roomWalls draws them), corners in canvas px.
+function rectWalls(el: ShapeElement): WayPoint[] {
+  const half = ROOM_WALL / 2;
+  const top = el.y + ROOM_BACK_FACE - half;
+  const bottom = el.y + el.height - half;
+  const left = el.x + half;
+  const right = el.x + el.width - half;
+  return [
+    { x: left, y: top },
+    { x: right, y: top },
+    { x: right, y: bottom },
+    { x: left, y: bottom },
+  ];
+}
+
 function centre(box: { x: number; y: number; width: number; height: number }): WayPoint {
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
-// A Room Builder room: its outline in canvas px, and the door standing on it if any.
-function outlineRoomPoints(
+// A room whose ways in are Door pieces (a Room Builder room, or a Room with no built-in doorway): its walls' centre
+// line in canvas px, and the first door standing on it if any.
+function doorPiecePoints(
   room: ShapeElement,
-  outline: readonly WayPoint[],
+  poly: readonly WayPoint[],
   elements: readonly Element[],
 ): Pick<SpacePlace, 'approach' | 'arrival'> {
-  const poly = outline.map((p) => ({
-    x: room.x + p.x * room.width,
-    y: room.y + p.y * room.height,
-  }));
   const mean = {
     x: poly.reduce((s, p) => s + p.x, 0) / poly.length,
     y: poly.reduce((s, p) => s + p.y, 0) / poly.length,
   };
   const inside = pointInPolygon(mean, poly) ? mean : centre(room);
   for (const el of elements) {
-    if (el.type !== 'shape' || el.shape !== 'door') continue;
+    // A door standing on one of this room's walls.
+    if (el.type !== 'shape' || !doorOnRoom(el, room)) continue;
     const line = doorLine(el);
     const mid = { x: (line.a.x + line.b.x) / 2, y: (line.a.y + line.b.y) / 2 };
-    // A door on this room's outline: its middle within a wall's reach of the room's box.
-    if (
-      mid.x < room.x - ROOM_WALL ||
-      mid.x > room.x + room.width + ROOM_WALL ||
-      mid.y < room.y - ROOM_WALL ||
-      mid.y > room.y + room.height + ROOM_WALL
-    )
-      continue;
     const len = Math.hypot(line.b.x - line.a.x, line.b.y - line.a.y) || 1;
     const nx = -(line.b.y - line.a.y) / len;
     const ny = (line.b.x - line.a.x) / len;
@@ -131,13 +141,20 @@ export function placePoints(
     const x = inner.x + inner.width / 2;
     return { approach: { x, y: front + POD_OUT }, arrival: { x, y: front - POD_IN } };
   }
-  if (isRoomOutline(el.roomOutline)) return outlineRoomPoints(el, el.roomOutline, elements);
+  if (isRoomOutline(el.roomOutline)) {
+    const outline = el.roomOutline.map((p) => ({
+      x: el.x + p.x * el.width,
+      y: el.y + p.y * el.height,
+    }));
+    return doorPiecePoints(el, outline, elements);
+  }
   const inner = roomInterior(el);
   const door = el.roomDoor ?? DEFAULT_ROOM_DOOR;
   const half = ROOM_WALL / 2;
   const along = door === 'n' || door === 's' ? el.width : el.height;
   const span = roomDoorSpan(along, door);
-  if (!span) return { approach: null, arrival: centre(inner) };
+  // No built-in doorway (every new Room, docs/specs/009-elements/office.md "The doorway is a Door"): its Doors.
+  if (!span) return doorPiecePoints(el, rectWalls(el), elements);
   const mid = (span[0] + span[1]) / 2;
   switch (door) {
     case 'n':
@@ -218,6 +235,8 @@ export type SpaceFloor = {
   arrival: WayPoint;
   /** What the arrival is, for the panel's words. */
   arrivesAt: 'elevator' | 'pad' | 'middle';
+  /** Its tab not fetched yet: its Elevators are not known (elevator.md "The panel" "Floors not opened yet"). */
+  loading: boolean;
 };
 
 /**
@@ -235,50 +254,11 @@ function strictlyInside(p: WayPoint, box: WayBox): boolean {
   return p.x > box.x && p.x < box.x + box.width && p.y > box.y && p.y < box.y + box.height;
 }
 
-/** Whether the segment a-b passes through the box's inside (running along an edge or touching a corner does not). */
-function crossesBox(a: WayPoint, b: WayPoint, box: WayBox): boolean {
-  // Liang-Barsky: clip the segment's parameter range to the box's four slabs, then test the clipped middle.
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  let t0 = 0;
-  let t1 = 1;
-  const slabs: [number, number][] = [
-    [-dx, a.x - box.x],
-    [dx, box.x + box.width - a.x],
-    [-dy, a.y - box.y],
-    [dy, box.y + box.height - a.y],
-  ];
-  for (const [p, q] of slabs) {
-    if (p === 0) {
-      if (q <= 0) return false;
-      continue;
-    }
-    const t = q / p;
-    if (p < 0) t0 = Math.max(t0, t);
-    else t1 = Math.min(t1, t);
-    if (t0 >= t1) return false;
-  }
-  const mid = (t0 + t1) / 2;
-  return strictlyInside({ x: a.x + dx * mid, y: a.y + dy * mid }, box);
-}
-
-function pathLength(from: WayPoint, points: readonly WayPoint[]): number {
-  let at = from;
-  let sum = 0;
-  for (const p of points) {
-    sum += Math.hypot(p.x - at.x, p.y - at.y);
-    at = p;
-  }
-  return sum;
-}
-
 /**
- * The points a Walk There walks through, in order, from the character's feet (docs/specs/009-elements/directory.md
- * "Walk There"): the approach, then the arrival. When the straight line to the approach would cross the place's own
- * walls box (a doorway on its far side, such as a Door on a room's top wall walked to from below), the walk first goes
- * round the outside of the box by the nearer way, through at most two of its corners grown by ROUND_CLEAR: walked
- * straight, it met the near wall head-on and stopped there. A character already inside the box walks straight to the
- * arrival. Any other wall is the ordinary walk's, and still stops it.
+ * The points a Walk There walks to, in order, from the character's feet (docs/specs/009-elements/directory.md
+ * "Walk There"): the approach, then the arrival. Each is an ordinary `walkTo`, which routes round the walls in the
+ * way (avatar-mode.md "Finding the way"), so a doorway on the far side of the place is reached round its walls. A
+ * character already inside the place's walls box walks straight to the arrival, never out and back in.
  */
 export function walkThereRoute(
   from: WayPoint,
@@ -287,41 +267,8 @@ export function walkThereRoute(
   const { approach, arrival } = place;
   if (!approach) return [arrival];
   const box = place.bounds;
-  if (!box || strictlyInside(approach, box)) return [approach, arrival];
-  if (strictlyInside(from, box)) return [arrival];
-  if (!crossesBox(from, approach, box)) return [approach, arrival];
-  const g = {
-    x: box.x - ROUND_CLEAR,
-    y: box.y - ROUND_CLEAR,
-    right: box.x + box.width + ROUND_CLEAR,
-    bottom: box.y + box.height + ROUND_CLEAR,
-  };
-  // Ring order, so a corner's neighbours are the ones either side of it.
-  const corners: WayPoint[] = [
-    { x: g.x, y: g.y },
-    { x: g.right, y: g.y },
-    { x: g.right, y: g.bottom },
-    { x: g.x, y: g.bottom },
-  ];
-  const clear = (via: readonly WayPoint[]) => {
-    let at = from;
-    for (const p of [...via, approach]) {
-      if (crossesBox(at, p, box)) return false;
-      at = p;
-    }
-    return true;
-  };
-  let best: { via: WayPoint[]; length: number } | null = null;
-  for (let i = 0; i < 4; i++) {
-    const first = corners[i]!;
-    for (const via of [[first], [first, corners[(i + 1) % 4]!], [first, corners[(i + 3) % 4]!]]) {
-      if (!clear(via)) continue;
-      const length = pathLength(from, [...via, approach]);
-      if (!best || length < best.length) best = { via, length };
-    }
-  }
-  // From outside a box, two corners always reach a point outside it; kept for a degenerate (zero-size) box.
-  return best ? [...best.via, approach, arrival] : [approach, arrival];
+  if (box && !strictlyInside(approach, box) && strictlyInside(from, box)) return [arrival];
+  return [approach, arrival];
 }
 
 function middleOf(elements: readonly Element[]): WayPoint {
@@ -371,7 +318,14 @@ export function spaceFloors(tabs: readonly WayTab[]): SpaceFloor[] {
     );
     const arrival = elevators[0]?.exit ?? (pad ? avatarPadCore(pad) : middleOf(tab.elements));
     const arrivesAt = elevators[0] ? 'elevator' : pad ? 'pad' : 'middle';
-    return { tabId: tab.id, name: tab.name, elevators, arrival, arrivesAt };
+    return {
+      tabId: tab.id,
+      name: tab.name,
+      elevators,
+      arrival,
+      arrivesAt,
+      loading: tab.loaded === false,
+    };
   });
 }
 

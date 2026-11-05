@@ -293,6 +293,10 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   offering it) keeps working, opens at its level and can be rescoped to another tab. A public link is always `view`,
   outside the table. The shared Share dialog reads the same table for the item's app: its role picker lists the
   offered levels with the default chosen, and a pass whose level is no longer offered reads "Viewer (Legacy)".
+  Each level's card carries a one-line blurb, the same for every app (`LEVEL_PASS` in
+  `packages/explorer/src/dialogs/share/parts.tsx`) unless the app words it its own way (`APP_LEVEL_BLURBS`, keyed
+  by app and level, read for the item's app): livehuddle's Participant reads "Walks, talks and uses the pieces; adds
+  nothing." ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#a-participant-walks)).
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right

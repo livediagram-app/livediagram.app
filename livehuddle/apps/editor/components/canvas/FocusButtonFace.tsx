@@ -65,6 +65,7 @@ export function FocusButtonFace({
           // Press on a click, silent on a drag: the button is an element too,
           // so dragging it must move it without also asking the room to look.
           {...press}
+          data-piece-main=""
           // Hover treatment is desktop-only (`sm:`): a tap would leave it stuck
           // on a phone.
           className={`${chip} pointer-events-auto cursor-pointer transition duration-100 active:scale-[0.92] sm:hover:scale-105 sm:hover:bg-black/[0.06] sm:hover:ring-2 sm:hover:ring-black/10 dark:sm:hover:bg-white/10 dark:sm:hover:ring-white/20`}

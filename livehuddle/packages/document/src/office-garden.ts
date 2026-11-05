@@ -283,25 +283,79 @@ export const OFFICE_EXTRA_ART = {
 
 // --- Drawn to their size --------------------------------------------------------------------------------------
 
+// A path whose longer side is at most this times its shorter is a round plaza (docs/specs/009-elements/office.md
+// "Garden Path").
+export const PLAZA_RATIO = 1.25;
+// Every stone stays this share of the path's width in from each end, so its rounded ends are bare gravel and a path
+// ending under another never shows a stone there.
+export const PATH_STONE_INSET = 0.7;
+
+/** Whether a path of this size draws as a round plaza. */
+export function isPlazaPath(width: number, height: number): boolean {
+  return Math.max(width, height) <= PLAZA_RATIO * Math.min(width, height);
+}
+
 /**
- * A garden path's drawing, in its own px: a rounded strip of gravel in the element's fill (the floor), stepping
- * stones evenly along its longer side, each the same size however long the path.
+ * A garden path's drawing, in its own px (docs/specs/009-elements/office.md "Garden Path"): a rounded strip of gravel in
+ * the element's fill (the floor), stepping stones evenly along its longer side, each the same size however long the
+ * path and every one whole, kept back from both ends. About square, it is a round plaza instead (plazaParts).
  */
 export function gardenPathParts(width: number, height: number): FurniturePart[] {
   if (width <= 0 || height <= 0) return [];
+  if (isPlazaPath(width, height)) return plazaParts(width, height);
   const { horizontal, length, thickness } = fenceRun({ width, height });
   const parts: FurniturePart[] = [rect('floor', 0, 0, width, height, thickness / 2)];
   const rx = thickness * 0.3;
   const ry = thickness * 0.24;
   const pitch = thickness * 0.95;
-  const count = Math.max(1, Math.floor(length / pitch));
-  const gap = length / count;
+  // The first and last stone's middles: each stone's end PATH_STONE_INSET widths in from the path's end.
+  const first = thickness * PATH_STONE_INSET + rx;
+  const last = length - first;
+  // Spaced at least 0.7 of a pitch, so the stones never touch; a path with no room for two holds one in its middle.
+  const count = last - first >= pitch * 0.7 ? Math.round((last - first) / pitch) + 1 : 1;
+  const step = count > 1 ? (last - first) / (count - 1) : 0;
   for (let i = 0; i < count; i += 1) {
-    const along = gap * (i + 0.5);
+    const along = count > 1 ? first + step * i : length / 2;
     // Every other stone sits a little off the middle, so the stones read as laid by hand.
     const across = thickness / 2 + (i % 2 === 0 ? -1 : 1) * thickness * 0.06;
     const [cx, cy] = horizontal ? [along, across] : [across, along];
     parts.push(ellipse('panel', cx, cy, horizontal ? rx : ry, horizontal ? ry : rx, T.stone));
+  }
+  return parts;
+}
+
+/**
+ * A round plaza filling the box: paving in the element's fill, a kerb just inside the rim, an inner ring and a ring of
+ * small setts between them, the middle left open. The setts are whole and evenly spaced round the ring, however big.
+ */
+function plazaParts(width: number, height: number): FurniturePart[] {
+  const cx = width / 2;
+  const cy = height / 2;
+  const rx = width / 2;
+  const ry = height / 2;
+  const kerb = Math.min(6, Math.min(rx, ry) * 0.08);
+  const parts: FurniturePart[] = [
+    ellipse('floor', cx, cy, rx, ry),
+    ellipse('rail', cx, cy, rx - kerb, ry - kerb),
+    ellipse('rail', cx, cy, rx * 0.62, ry * 0.62),
+  ];
+  // The setts' ring halfway between the inner ring and the kerb.
+  const ring = (0.62 + (1 - kerb / Math.min(rx, ry))) / 2;
+  const size = Math.min(rx, ry) * 0.07;
+  const around = Math.PI * (rx + ry) * ring;
+  const count = Math.max(6, Math.floor(around / (size * 4)));
+  for (let i = 0; i < count; i += 1) {
+    const a = (2 * Math.PI * i) / count;
+    parts.push(
+      ellipse(
+        'panel',
+        cx + Math.cos(a) * rx * ring,
+        cy + Math.sin(a) * ry * ring,
+        size,
+        size,
+        T.stone,
+      ),
+    );
   }
   return parts;
 }

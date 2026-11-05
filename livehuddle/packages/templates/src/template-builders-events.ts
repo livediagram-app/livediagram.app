@@ -14,7 +14,7 @@ import {
 } from './template-office-parts';
 
 const ROOM_W = 1100;
-const ROOM_H = 660;
+const ROOM_H = 800;
 // The stage at its own size, centred across the room.
 const STAGE_W = 360;
 const STAGE_X = (ROOM_W - STAGE_W) / 2;
@@ -34,11 +34,12 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
       door: 's',
       pieces: [
         { kind: 'stage', x: STAGE_X, y: 40, stageCameras: true },
-        // Four tables for group work, two each side of the aisle up from the doorway.
+        // Four tables for group work, two each side of the aisle up from the doorway, an aisle between the rows
+        // (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
         { kind: 'meeting-table', x: 100, y: 240 },
         { kind: 'meeting-table', x: 768, y: 240 },
-        { kind: 'meeting-table', x: 100, y: 450 },
-        { kind: 'meeting-table', x: 768, y: 450 },
+        { kind: 'meeting-table', x: 100, y: 528 },
+        { kind: 'meeting-table', x: 768, y: 528 },
         { kind: 'coffee-machine', x: 40, y: 48 },
         { kind: 'water-cooler', x: 130, y: 40 },
         { kind: 'plant', x: 920, y: 60 },

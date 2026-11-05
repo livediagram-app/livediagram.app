@@ -1,7 +1,15 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createArrow, type Element, type StickyElement, type Tab } from '@livehuddle/document';
+import {
+  createArrow,
+  createShape,
+  doorOnRoom,
+  type Element,
+  type ShapeElement,
+  type StickyElement,
+  type Tab,
+} from '@livehuddle/document';
 import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@liveworkspace/workbench/lib/format-config';
 import { useElementHelpers } from './useElementHelpers';
 
@@ -53,6 +61,21 @@ describe('addBoxedAt', () => {
     const { helpers, commitTabs } = harness();
     helpers.addBoxedAt(372, 100, (x) => note('new', x), { edit: true });
     expect(committedXs(commitTabs, ROW)).toEqual([0, 272, 544, 272]);
+  });
+
+  // docs/specs/009-elements/office.md "The doorway is a Door": a dropped Room brings its Door in the same change.
+  it('drops a Room behind everything with its Door in front, in one change, the room selected', () => {
+    const { helpers, commitTabs } = harness();
+    helpers.addBoxedAt(600, 400, (x, y) => createShape('room', x, y));
+    expect(commitTabs).toHaveBeenCalledTimes(1);
+    const updater = commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
+    const els = updater([{ id: 't1', name: 'Tab 1', elements: ROW }])[0]!.elements;
+    const room = els[0] as ShapeElement;
+    const door = els[els.length - 1] as ShapeElement;
+    expect(room).toMatchObject({ shape: 'room', roomDoor: 'none' });
+    expect(door.shape).toBe('door');
+    expect(doorOnRoom(door, room)).toBe(true);
+    expect(els).toHaveLength(ROW.length + 2);
   });
 
   it('refuses to touch the board when edits are blocked', () => {

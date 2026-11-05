@@ -34,17 +34,9 @@ export type PaletteProps = {
       variant?: string;
     },
   ) => void;
-  // Drops a curated icon glyph (shape kind 'icon') carrying the chosen
-  // catalogue id at the viewport centre. Picked from the Icons
-  // accordion's searchable grid.
-  onAddIcon: (iconId: string) => void;
-  // Sticker (docs/specs/010-palette/stickers.md) — its own element kind, so its own handler: unlike an
-  // icon it never folds into the selected shape.
+  // Sticker (docs/specs/010-palette/stickers.md): its own element kind, so its own handler; it never folds into the
+  // selected shape. No icon handlers: livehuddle adds no icon (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
   onAddSticker: (stickerId: string) => void;
-  // Drops a Technology (brand) icon (docs/specs/010-palette/technology-icons.md) as a STANDALONE 'icon'
-  // element carrying the chosen tech-catalogue id. Picked from the
-  // Technology tab's searchable grid; never dropped inside a shape.
-  onAddTechIcon: (iconId: string) => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.

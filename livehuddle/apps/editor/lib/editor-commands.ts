@@ -263,7 +263,8 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'open-canvas',
     name: 'Open Canvas Options',
-    keywords: 'canvas background pattern grid options style backdrop',
+    keywords:
+      'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
     run: h.openCanvasOptions,
   });
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {

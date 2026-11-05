@@ -41,7 +41,7 @@ export function flyoutColumns(categoryId: string): number {
 // dividers would split twelve tiles into groups of one and three.
 const UNGROUPED: ReadonlySet<string> = new Set(['popular']);
 
-/** A card category's columns: one for a short list (Media's two), so its flyout is narrow; two otherwise. */
+/** A card category's columns: one for a short list (three or fewer), so its flyout is narrow; two otherwise. */
 export const SHORT_CARD_LIST = 3;
 export function flyoutCardColumns(tileCount: number): 1 | 2 {
   return tileCount <= SHORT_CARD_LIST ? 1 : 2;
@@ -58,9 +58,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
   diagrams: 'Structures that grow as you type.',
   layout: 'Lanes, frames and the parts that label a diagram.',
   concepts: 'Ideas laid out as one element that arranges itself.',
-  icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
-  media: 'A picture, uploaded or found, and a link card.',
   stickers: 'Colour emoji to react, mark status and celebrate.',
   data: 'Charts and meters that read at a glance.',
   ...Object.fromEntries(SPACE_CATEGORIES.map((c) => [c.id, c.tagline])),
@@ -112,6 +110,10 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:avatar': 'People',
   'data:pie': 'Charts',
   'data:progress-bar': 'Meters',
+  // Rooms (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): what a room is made with,
+  // then the rest of the floor.
+  'tools:room': 'Build',
+  'tools:fence': 'Floor',
 };
 
 export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };

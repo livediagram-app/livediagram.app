@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livehuddle/document';
+import {
+  createShape,
+  snapDoorToWall,
+  withDoorPiece,
+  type Element,
+  type ShapeElement,
+} from '@livehuddle/document';
 import { fenceSegments, fenceStalled, fenceStep } from '@liveworkspace/avatar/collision';
 import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
+import { buildNavGrid, findWalkPath } from '@liveworkspace/avatar/pathing';
 import {
   elevatorExitPoint,
   peopleKey,
@@ -68,6 +75,20 @@ describe('placePoints', () => {
       typeof placePoints
     >[0];
     expect(placePoints(room, []).approach).toBeNull();
+  });
+
+  it("uses a new Room's Door piece, wherever it was slid to", () => {
+    const [room, door] = withDoorPiece(createShape('room', 0, 0)) as [ShapeElement, ShapeElement];
+    const front = placePoints(room, [room, door]);
+    expect(front.approach!.y).toBeGreaterThan(room.y + room.height);
+    expect(front.arrival.y).toBeLessThan(room.y + room.height);
+    // Slid onto the left wall: the walk comes in from the left.
+    const left = snapDoorToWall({ ...door, x: -40, y: 140 }, [room]);
+    const side = placePoints(room, [room, left]);
+    expect(side.approach!.x).toBeLessThan(room.x);
+    expect(side.arrival.x).toBeGreaterThan(room.x);
+    // Deleted: no way in, so the walk goes to its middle.
+    expect(placePoints(room, [room]).approach).toBeNull();
   });
 
   it('uses the door on a Room Builder room, arriving inside its outline', () => {
@@ -221,24 +242,42 @@ function walk(elements: readonly Element[], from: WayPoint, route: readonly WayP
   return at;
 }
 
+// Each leg walked as walkTo walks it (avatar-mode.md "Finding the way"): routed round the walls, then stepped.
+function routedWalk(elements: readonly Element[], from: WayPoint, route: readonly WayPoint[]) {
+  const grid = buildNavGrid(fenceSegments(elements), 12);
+  let at = from;
+  for (const target of route) at = walk(elements, at, findWalkPath(grid, at, target));
+  return at;
+}
+
+describe('spaceFloors on lazy tabs', () => {
+  // elevator.md "Floors not opened yet": a tab not fetched yet says so, rather than "no Elevator".
+  it('marks a floor whose tab is not loaded as loading, and a loaded one not', () => {
+    const lift = at('elevator', 0, 0);
+    const floors = spaceFloors([
+      { id: 'a', name: 'Lobby', elements: [lift] },
+      { id: 'b', name: 'Suites', elements: [], loaded: false },
+    ]);
+    expect(floors.map((f) => f.loading)).toEqual([false, true]);
+    expect(floors[0]!.elevators).toHaveLength(1);
+  });
+});
+
 describe('walkThereRoute', () => {
   const near = (a: WayPoint, b: WayPoint) => Math.hypot(a.x - b.x, a.y - b.y) < 1;
   const below = { x: 260, y: 600 };
 
-  it('walks round a room to a doorway in its top wall, where the straight walk stopped at the near wall', () => {
+  it("reaches a doorway in a room's top wall from below, each leg routed round the walls", () => {
     const room = at('room', 0, 0, { width: 400, height: 300, roomDoor: 'n' });
     const [place] = tabPlaces('t', [room]);
-    // The straight walk to the approach meets the bottom wall head-on.
-    expect(near(walk([room], below, [place!.approach!, place!.arrival]), place!.arrival)).toBe(
-      false,
-    );
     const route = walkThereRoute(below, place!);
-    expect(route.length).toBe(4);
-    expect(route.slice(-2)).toEqual([place!.approach, place!.arrival]);
-    expect(near(walk([room], below, route), place!.arrival)).toBe(true);
+    expect(route).toEqual([place!.approach, place!.arrival]);
+    // Walked straight, the leg meets the bottom wall head-on; routed, it goes round and in.
+    expect(near(walk([room], below, route), place!.arrival)).toBe(false);
+    expect(near(routedWalk([room], below, route), place!.arrival)).toBe(true);
   });
 
-  it('walks round a Room Builder room to a Door on its top wall', () => {
+  it("reaches a Door on a Room Builder room's top wall from below", () => {
     const outline = [
       { x: 0, y: 0 },
       { x: 1, y: 0 },
@@ -250,25 +289,14 @@ describe('walkThereRoute', () => {
     const [place] = tabPlaces('t', [room, door]);
     expect(place!.approach!.y).toBeLessThan(0);
     const route = walkThereRoute(below, place!);
-    expect(near(walk([room, door], below, route), place!.arrival)).toBe(true);
+    expect(near(routedWalk([room, door], below, route), place!.arrival)).toBe(true);
   });
 
-  it('takes the nearer way round', () => {
-    const room = at('room', 0, 0, { width: 400, height: 300, roomDoor: 'n' });
-    const [place] = tabPlaces('t', [room]);
-    // From the lower right, round the right-hand side.
-    const route = walkThereRoute({ x: 380, y: 360 }, place!);
-    expect(route[0]!.x).toBeGreaterThan(400);
-    expect(route[1]!.x).toBeGreaterThan(400);
-  });
-
-  it('goes straight when nothing of the place is in the way, or from inside it', () => {
+  it('walks straight to the arrival from inside the place', () => {
     const room = at('room', 0, 0, { width: 400, height: 300, roomDoor: 'n' });
     const [place] = tabPlaces('t', [room]);
     expect(walkThereRoute({ x: 200, y: -200 }, place!)).toEqual([place!.approach, place!.arrival]);
     expect(walkThereRoute({ x: 200, y: 200 }, place!)).toEqual([place!.arrival]);
-    const southern = tabPlaces('t', [at('room', 0, 0, { width: 400, height: 300 })])[0]!;
-    expect(walkThereRoute(below, southern)).toEqual([southern.approach, southern.arrival]);
   });
 
   it('walks to a place without a doorway, and onto a stage, as before', () => {
@@ -286,14 +314,5 @@ describe('walkThereRoute', () => {
       bounds: { x: 0, y: 0, width: 100, height: 100 },
     };
     expect(walkThereRoute({ x: 50, y: 300 }, place)).toEqual([place.approach, place.arrival]);
-  });
-
-  it('falls back to the straight walk round a box with no inside', () => {
-    const place = {
-      approach: { x: 50, y: -10 },
-      arrival: { x: 50, y: 10 },
-      bounds: { x: 0, y: 0, width: 100, height: 0 },
-    };
-    expect(walkThereRoute({ x: 50, y: 100 }, place)).toEqual([place.approach, place.arrival]);
   });
 });

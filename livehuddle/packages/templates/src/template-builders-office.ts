@@ -45,15 +45,17 @@ const ROOMS: RoomSpec[] = [
     w: 620,
     door: 's',
     pieces: [
-      { kind: 'desk', x: 30, y: 48, facing: 's' },
-      { kind: 'desk', x: 180, y: 48, facing: 's' },
-      { kind: 'desk', x: 330, y: 48, facing: 's' },
+      // One bench of desks, the near row facing the back row across it, so the floor round it is open aisle
+      // (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
+      { kind: 'desk', x: 20, y: 48, facing: 's' },
+      { kind: 'desk', x: 140, y: 48, facing: 's' },
+      { kind: 'desk', x: 260, y: 48, facing: 's' },
       { kind: 'bookshelf', x: 480, y: 40 },
       // The near row leaves the doorway's column (262..358) clear, so walking in never lands at a desk: two desks
-      // side by side as a bench on the left, one on the right.
-      { kind: 'desk', x: 20, y: 190, facing: 's' },
-      { kind: 'desk', x: 140, y: 190, facing: 's' },
-      { kind: 'desk', x: 400, y: 190, facing: 's' },
+      // on the left, and one on the right an aisle away.
+      { kind: 'desk', x: 20, y: 160, facing: 'n' },
+      { kind: 'desk', x: 140, y: 160, facing: 'n' },
+      { kind: 'desk', x: 400, y: 190, facing: 'n' },
       { kind: 'plant', x: 540, y: 230 },
     ],
   },
@@ -79,8 +81,9 @@ const ROOMS: RoomSpec[] = [
       { kind: 'water-cooler', x: 30, y: 52 },
       { kind: 'coffee-machine', x: 110, y: 68 },
       { kind: 'plant', x: 440, y: 52 },
-      { kind: 'chair', x: 170, y: 200, facing: 'w' },
-      { kind: 'chair', x: 290, y: 200, facing: 'e' },
+      // Two chairs facing each other an aisle apart.
+      { kind: 'chair', x: 150, y: 200, facing: 'w' },
+      { kind: 'chair', x: 346, y: 200, facing: 'e' },
     ],
   },
   {
@@ -95,8 +98,9 @@ const ROOMS: RoomSpec[] = [
       { kind: 'rug', x: 150, y: 180 },
       { kind: 'bookshelf', x: 22, y: 40 },
       { kind: 'sofa', x: 174, y: 200, facing: 'n' },
-      { kind: 'chair', x: 70, y: 196, facing: 'w' },
-      { kind: 'chair', x: 354, y: 196, facing: 'e' },
+      // The chairs either side of the sofa, one seating group.
+      { kind: 'chair', x: 86, y: 196, facing: 'w' },
+      { kind: 'chair', x: 338, y: 196, facing: 'e' },
       { kind: 'plant', x: 420, y: 52 },
     ],
   },

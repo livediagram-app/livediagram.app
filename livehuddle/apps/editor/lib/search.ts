@@ -112,8 +112,6 @@ export type PaletteAdd =
       plan?: string;
       variant?: string;
     }
-  | { type: 'icon'; iconId: string }
-  | { type: 'tech'; iconId: string }
   // A sticker (docs/specs/010-palette/stickers.md) is its own element kind, so it adds through its own
   // handler rather than the icon one.
   | { type: 'sticker'; stickerId: string }

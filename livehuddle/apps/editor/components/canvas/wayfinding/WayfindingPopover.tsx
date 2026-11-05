@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Portal, Tooltip } from '@livehuddle/ui';
+import { lucideGlyph, Portal, Tooltip } from '@livehuddle/ui';
+import { lucideX } from '@liveworkspace/icons/lucide';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { initialsOf } from '@liveworkspace/model-core/names';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
@@ -11,20 +12,26 @@ import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp
 // "Pressing it", elevator.md "The floor panel"): portalled to the body so it sits over every element, anchored to
 // the piece's live rect (which carries the canvas's pan and zoom), beside it on the side with room. It follows the
 // piece while open (a walking character's camera moves the board under it), one rect read a frame and only while
-// open. Escape or a press outside it (not on its piece, whose own press toggles it) closes it.
+// open. Escape closes it (and only it: never Avatar mode too). A press outside it (not on its piece, whose own
+// press toggles it) closes it too, unless it is `pinned`: the Directory stays open until its stand is pressed
+// again, so you can walk round the canvas while reading it (docs/specs/009-elements/directory.md "Pressing it").
 
 const GAP = 10;
+const CloseIcon = lucideGlyph(lucideX, 15);
 
 export function WayfindingPopover({
   elementId,
   label,
   width,
+  pinned = false,
   onClose,
   children,
 }: {
   elementId: string;
   label: string;
   width: number;
+  // Stays open through presses outside it, the canvas's walking clicks among them.
+  pinned?: boolean;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -58,22 +65,27 @@ export function WayfindingPopover({
     close.current = onClose;
   });
   useEffect(() => {
+    // Taken in the capture phase and stopped there, so the editor's own Escape (which leaves Avatar mode) never
+    // sees the one that closed this.
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close.current();
+      if (e.key !== 'Escape') return;
+      e.stopImmediatePropagation();
+      close.current();
     };
     const onDown = (e: PointerEvent) => {
+      if (pinned) return;
       const target = e.target as Node | null;
       if (!target || cardRef.current?.contains(target)) return;
       if (document.querySelector(elementSelector(elementId))?.contains(target)) return;
       close.current();
     };
-    window.addEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
     window.addEventListener('pointerdown', onDown, true);
     return () => {
-      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keydown', onKey, true);
       window.removeEventListener('pointerdown', onDown, true);
     };
-  }, [elementId]);
+  }, [elementId, pinned]);
   return (
     <Portal>
       <div
@@ -102,11 +114,34 @@ export function WayfindingPopover({
 }
 
 /** The card's header: the piece's name and one line under it. */
-export function WayfindingHeader({ title, line }: { title: string; line: string }) {
+export function WayfindingHeader({
+  title,
+  line,
+  onClose,
+}: {
+  title: string;
+  line: string;
+  // A pinned card's way out besides its piece and Escape.
+  onClose?: () => void;
+}) {
   return (
-    <div className="sticky top-0 z-[1] border-b border-slate-100 bg-white/95 px-3.5 pb-2 pt-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-      <h2 className="text-[13px] font-semibold leading-tight">{title}</h2>
-      <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{line}</p>
+    <div className="sticky top-0 z-[1] flex items-start gap-2 border-b border-slate-100 bg-white/95 px-3.5 pb-2 pt-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="min-w-0 flex-1">
+        <h2 className="text-[13px] font-semibold leading-tight">{title}</h2>
+        <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{line}</p>
+      </div>
+      {onClose ? (
+        <Tooltip label="Close">
+          <button
+            type="button"
+            aria-label={`Close ${title}`}
+            onClick={onClose}
+            className="-mr-1.5 -mt-1 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+          >
+            <CloseIcon />
+          </button>
+        </Tooltip>
+      ) : null}
     </div>
   );
 }

@@ -9,20 +9,13 @@ import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/P
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
-// the active editor-mode banner. (The session timer lives in the Session strip's popover,
-// docs/specs/012-collaboration/session-tools.md.) (The multi-selection toolbar now floats over the selection
+// the active editor-mode banner. (The multi-selection toolbar now floats over the selection
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
   CanvasProps,
-  | 'readOnly'
-  | 'participantPalette'
-  | 'pendingDraw'
-  | 'onCancelDraw'
-  | 'onExitFormatTool'
-  | 'canvasTool'
-  | 'formatSourceId'
+  'readOnly' | 'pendingDraw' | 'onCancelDraw' | 'onExitFormatTool' | 'canvasTool' | 'formatSourceId'
 > & {
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
@@ -33,7 +26,6 @@ type TopCenterChromeProps = Pick<
 
 export function TopCenterChrome({
   readOnly,
-  participantPalette = false,
   pendingDraw,
   onCancelDraw,
   onExitFormatTool,
@@ -47,9 +39,9 @@ export function TopCenterChrome({
   const drawBanner = !!pendingDraw && !isHeldToolIntent(pendingDraw);
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
-  // The strip is on screen for an Editor and for a Participant's own palette (docs/specs/013-workspace/share-roles.md):
-  // either way the stack starts beneath it, or the timer and banners sit on the palette.
-  const stripShown = !readOnly || participantPalette;
+  // The strip is on screen for an Editor alone: the stack starts beneath it, or the timer and banners sit on the
+  // palette.
+  const stripShown = !readOnly;
   const tray = stripShown ? strip : null;
   return (
     <TopCenterStack below={stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}>

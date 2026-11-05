@@ -72,7 +72,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       'Walk into a Space as your own character: offices, halls, bars and gardens to meet in, with status, speech bubbles and reactions for the whole room.',
     highlights: [
       'Walk in as yourself',
-      'Ten Spaces to start from',
+      'Eighteen Spaces to start from',
       'Status at a glance',
       'Say it in a bubble',
     ],
@@ -97,7 +97,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/palette/virtual-office/',
         group: 'Rooms to meet in',
-        title: 'Ten Spaces to start from',
+        title: 'Eighteen Spaces to start from',
         description:
           'Open a Virtual Office of rooms either side of a corridor, a Team Pod with a board for the week, an All-Hands Hall of chairs facing a stage, a Rooftop Bar with stools at the counter or a Garden Retreat of paths and trees. Each is ready to walk into, with no floor plan to draw first.',
       },
@@ -186,11 +186,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <SessionToolsArt />,
-        href: '/help/collaboration/session-tools/',
+        href: '/help/collaboration/session-tools/timer/',
         group: 'Run the room',
         title: 'Timer and Stopwatch',
         description:
-          'The Timer sits in the Session strip at the foot of every board. Start a countdown the whole room sees, or run a stopwatch, and pause or restart it for everyone at once.',
+          'Place a Timer or a Stopwatch in any room. Start a countdown the whole room sees, or run a stopwatch, and pause or restart it for everyone at once, with a gentle chime at zero.',
       },
       {
         art: <FacilitatorArt />,

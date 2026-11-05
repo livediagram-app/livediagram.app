@@ -28,7 +28,7 @@ export const HELP_ARTICLES = {
   // The diagram tools left livehuddle (Work Tracker #423 part 3, docs/specs/002-project-scope/not-in-livehuddle.md):
   // their articles went, but a stored element of a leaving kind still draws and its surfaces still link, so these keys
   // land on the nearest article that stays (the router redirects the old addresses the same way).
-  embedElements: 'palette/tools/images',
+  embedElements: 'canvas/links',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   // One key per tool panel, so every mode's panel can point at the article
@@ -56,7 +56,6 @@ export const HELP_ARTICLES = {
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
   // The call strip's `?` (CallClusterButton); the article links on to Cameras and Screen Sharing.
-  proximityAudio: 'collaboration/proximity-audio',
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   // Standing panels.
@@ -64,7 +63,6 @@ export const HELP_ARTICLES = {
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
@@ -132,8 +130,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Sharing a space publicly, and how people find and copy it.',
   },
   embedElements: {
-    title: 'Learn about images',
-    description: 'Uploading, searching for and reusing pictures.',
+    title: 'Learn about links',
+    description: 'Links to tabs, spaces and the web.',
   },
   alignmentGuides: {
     title: 'Learn about alignment guides',
@@ -219,10 +217,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionTimer: {
-    title: 'Learn about the timer',
-    description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
@@ -323,10 +317,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   livePresence: {
     title: 'Learn about live presence',
     description: 'Who is in the canvas, where they are, and following them.',
-  },
-  proximityAudio: {
-    title: 'Learn about calls',
-    description: 'Talking with the people near you, your microphone, cameras and screen sharing.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',

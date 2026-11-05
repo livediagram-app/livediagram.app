@@ -1,54 +1,47 @@
 import { templateKindOf, type TemplateKind } from '@livehuddle/templates';
 
-// The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
-// a blank document, `?template=<kind>` (built by the templates package's
-// templateCreateHref) commits that template, both with the
-// Default theme and the template's default name, and land on the editor.
-// One reader for both so the page, its bfcache-restore cleanup and the
-// pre-hydration guard agree on what counts.
+// What a /new link asks for (docs/specs/007-editor/new-document-route.md "What a /new link can ask for"). Every /new
+// creates at once; the query only says what and where. One reader so the page and its bfcache cleanup agree.
 
-// The params the bypass reads; the bfcache restore strips exactly these so
-// Back from the editor lands on the plain wizard with placement intact.
-export const WIZARD_BYPASS_PARAMS = ['blank', 'template'] as const;
-
-// Which template the query asks to commit without the wizard, or null for
-// the wizard itself. `blank` wins when both are present (it is the older,
-// documented shortcut); an unknown template kind is ignored rather than
-// guessed, so a stale marketing link falls back to the wizard, not a 404.
-export function wizardBypassKind(search: string): TemplateKind | null {
+// The template a URL names: `?blank` as the Blank Space, `?template=<kind>` for a catalogue kind, else null. `blank`
+// wins over `template`; an unknown or retired kind is ignored rather than guessed.
+export function linkedTemplateKind(search: string): TemplateKind | null {
   const params = new URLSearchParams(search);
   if (params.has('blank')) return 'blank-session';
   return templateKindOf(params.get('template'));
+}
+
+// The template a /new URL creates: the one it names, else the Blank Space, so a stale link still makes a Space.
+export const newSpaceKind = (search: string): TemplateKind =>
+  linkedTemplateKind(search) ?? 'blank-session';
+
+// Start Blank (`?blank=1`, `?start=blank`): the new Space opens with its start closed, since whoever asked for a
+// blank has already said they want no templates.
+const START_BLANK_VALUE = 'blank';
+
+export function startsBlank(search: string): boolean {
+  const params = new URLSearchParams(search);
+  return params.has('blank') || params.get('start') === START_BLANK_VALUE;
 }
 
 // The start's search preset (`?q=`; docs/specs/007-editor/new-document-route.md): words to open the new document's
 // start with. Not a bypass: the author still picks. Empty words are ignored, and so is a `?mode=`: there is one mode.
 export const SEARCH_PRESET_MAX = 60;
 
-export function wizardPresetQuery(search: string): string | null {
+export function startPresetQuery(search: string): string | null {
   const q = new URLSearchParams(search).get('q')?.trim().slice(0, SEARCH_PRESET_MAX);
   return q ? q : null;
 }
 
-// `?start=blank` (docs/specs/007-editor/new-document-route.md "Start Blank after a mode"): the public sites' Start
-// Blank links. Not a bypass: the wizard still asks for a mode, but the chosen mode's blank opens with its start
-// closed, as Skip's does, since whoever asked for a blank has already said they want no templates.
-const START_BLANK_VALUE = 'blank';
-
-export function wizardStartsBlank(search: string): boolean {
-  return new URLSearchParams(search).get('start') === START_BLANK_VALUE;
-}
-
-// The placement context params (/new?folder=<id>, /new?team=<id>), pre-seeding the Settings
-// step's picker.
+// The placement context params (/new?folder=<id>, /new?team=<id>).
 const PLACEMENT_PARAMS = ['folder', 'team'] as const;
 
-// Where "Choose another place" leads after a refused placement (docs/specs/007-editor/
-// new-document-route.md "Placement rides the create"): /new without the refused placement and
-// without the bypass, so the wizard opens with its picker on the root of My Work. Every other param is kept.
+// Where "Use Default Place" leads after a refused placement (docs/specs/007-editor/new-document-route.md
+// "Placement rides the create"): /new without the refused placement and the template, so the next create goes where
+// new documents go by default. Every other param is kept.
 export function choosePlacementAgainUrl(search: string): string {
   const params = new URLSearchParams(search);
-  for (const key of [...WIZARD_BYPASS_PARAMS, ...PLACEMENT_PARAMS]) params.delete(key);
+  for (const key of ['template', ...PLACEMENT_PARAMS]) params.delete(key);
   const qs = params.toString();
   return qs ? `/new?${qs}` : '/new';
 }

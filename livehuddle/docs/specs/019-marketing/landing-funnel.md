@@ -44,8 +44,7 @@ The editor's `/new` page reads it once on arrival and then:
 - Sends `Cta·Opened·<source>` straight away.
 - Holds the source for the life of the page and sends `Cta·Created·<source>`
   beside the usual `Document·Created` when the document is committed, whichever
-  path committed it (the wizard's Create, its Skip, or a Start Blank / template
-  bypass).
+  link made it (plain `/new`, Start Blank or a template link).
 
 So the marketing site still sends **only page views** ([Page view telemetry](../017-telemetry/page-view-telemetry.md)): no click
 handlers, no new emitter. Everything new is sent by the editor, which already

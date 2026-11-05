@@ -3,6 +3,7 @@ import {
   applyElementDelta,
   applyElementOp,
   applyRoomElementOp,
+  dropRetiredTimer,
   dropRetiredVote,
   mergeIncomingElement,
   type ElementDelta,
@@ -10,6 +11,9 @@ import {
   type Tab,
 } from '@livehuddle/document';
 import type { RoomOp } from '@livehuddle/api-schema';
+
+// The retired tab fields an old client may still send: the dot vote and the Session strip's timer.
+const dropRetired = <T extends object>(tab: T): T => dropRetiredTimer(dropRetiredVote(tab));
 import { META_SKIP, mergeRemoteTab } from './tab-broadcast-ops';
 
 // The document-changing room ops, as a pure function over a tab list.
@@ -28,14 +32,14 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
   switch (op.kind) {
     case 'tab': {
       // A peer's whole tab. A tab we don't have yet (they just added it) is
-      // appended; otherwise merged, keeping our folder. An old client's retired `vote` is dropped
-      // (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
+      // appended; otherwise merged, keeping our folder. An old client's retired `vote` and Session strip `timer`
+      // are dropped (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote", "The Session strip's Timer").
       // The tab keeps the id the op names: a payload naming another would renumber it here, and the next save
       // would write it over that other tab (the room drops such an op too, room-op-gate.ts).
       if (!tabs.some((t) => t.id === op.tabId))
-        return [...tabs, dropRetiredVote({ ...op.tab, id: op.tabId })];
+        return [...tabs, dropRetired({ ...op.tab, id: op.tabId })];
       return updateTab(tabs, op.tabId, (tab) => ({
-        ...mergeRemoteTab(tab, dropRetiredVote(op.tab)),
+        ...mergeRemoteTab(tab, dropRetired(op.tab)),
         id: tab.id,
       }));
     }
@@ -91,7 +95,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];
         }
         // A peer's patch is untrusted like any incoming tab: its raw-read fields are settled.
-        return settleTabFields(dropRetiredVote(merged));
+        return settleTabFields(dropRetired(merged));
       });
     case 'document-meta': {
       // Rename / reorder / add / delete. Reorder to match; a new id lands as a

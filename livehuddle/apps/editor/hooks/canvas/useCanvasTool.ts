@@ -31,7 +31,20 @@ export function useCanvasTool({
   const [defaultTool] = useState<CanvasTool>(() =>
     defaultPan || isMobileViewportSync() ? 'pan' : 'select',
   );
-  const [canvasTool, setCanvasTool] = useState<CanvasTool>(defaultTool);
+  const [chosenTool, setChosenTool] = useState<CanvasTool>(defaultTool);
+  // A Participant is always walking (docs/specs/013-workspace/share-roles.md "A Participant walks"): held by
+  // `holdWalking`, called as the editor renders with the session's level. While held the tool reads 'avatar' and
+  // every way out (a pick, a key, a button, the palette reach, a change of tab) is refused; the tool chosen before
+  // stays underneath, so a preview that ends hands it back.
+  const [alwaysWalking, setAlwaysWalking] = useState(false);
+  const canvasTool: CanvasTool = alwaysWalking ? 'avatar' : chosenTool;
+  const setCanvasTool = (tool: CanvasTool) => {
+    if (alwaysWalking && tool !== 'avatar') return;
+    setChosenTool(tool);
+  };
+  const holdWalking = (hold: boolean) => {
+    if (hold !== alwaysWalking) setAlwaysWalking(hold);
+  };
   // User-facing tool picker (palette buttons + keyboard). Wraps the raw
   // setter to emit telemetry when the user enters a distinct mode (Eraser,
   // Avatar, Format). Pan / select switches stay untracked (high frequency),
@@ -46,6 +59,7 @@ export function useCanvasTool({
   // one-way door.
   const priorToolRef = useRef<CanvasTool>(defaultTool);
   const selectCanvasTool = (tool: CanvasTool) => {
+    if (alwaysWalking) return;
     if (tool !== canvasTool) priorToolRef.current = canvasTool;
     if (tool === 'avatar' && canvasTool !== 'avatar') setPreAvatarTool(canvasTool);
     if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
@@ -87,9 +101,9 @@ export function useCanvasTool({
     setLastTabId(tabId);
     const travelling = travelTabId !== null && travelTabId === tabId;
     if (travelTabId !== null) setTravelTabId(null);
-    if (canvasTool === 'avatar' && !travelling) {
+    if (chosenTool === 'avatar' && !travelling && !alwaysWalking) {
       const back = preAvatarTool;
-      setCanvasTool(back === 'avatar' ? defaultTool : back);
+      setChosenTool(back === 'avatar' ? defaultTool : back);
     }
   }
   // Where "go back" leads: the tool before the current one, never the current
@@ -104,6 +118,7 @@ export function useCanvasTool({
     canvasTool,
     setCanvasTool,
     keepWalkingTo,
+    holdWalking,
     selectCanvasTool,
     openWalking,
     exitAvatarTool,

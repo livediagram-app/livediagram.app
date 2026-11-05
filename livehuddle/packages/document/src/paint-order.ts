@@ -35,19 +35,39 @@ function paintTier(el: Element): number {
   return 1;
 }
 
+// Within the backdrops: grass first, then the garden paths in array order, then the other floors larger first
+// (docs/specs/006-document/layers.md "Stacking"), so a path laid later lies on one laid earlier whatever their sizes.
+function backdropRank(el: Element): number {
+  if (el.type !== 'shape') return 2;
+  if (el.shape === 'grass') return 0;
+  return el.shape === 'garden-path' ? 1 : 2;
+}
+
 // A stable sort by tier. Returns the SAME array when it is already in tier
 // order, which is every tab without backdrops or attached chips out of place.
+// Runs on every render: one pass fills three typed arrays, and the sort runs only when something is out of place.
 export function paintOrder(elements: Element[]): Element[] {
-  const tiers = elements.map(paintTier);
-  // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it.
-  const area = (el: Element) => ('width' in el && 'height' in el ? el.width * el.height : 0);
-  const backdropsInOrder = elements.every(
-    (el, i) =>
-      i === 0 || tiers[i] !== 0 || tiers[i - 1] !== 0 || area(elements[i - 1]!) >= area(el),
-  );
-  if (backdropsInOrder && tiers.every((t, i) => i === 0 || tiers[i - 1]! <= t)) return elements;
-  return elements
-    .map((el, i) => ({ el, i, tier: tiers[i]!, area: tiers[i] === 0 ? area(el) : 0 }))
-    .sort((a, b) => a.tier - b.tier || b.area - a.area || a.i - b.i)
-    .map((x) => x.el);
+  const n = elements.length;
+  const tiers = new Uint8Array(n);
+  const ranks = new Uint8Array(n);
+  // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it; the garden
+  // paths keep their array order among themselves (backdropRank), so their area is left at 0.
+  const areas = new Float64Array(n);
+  for (let i = 0; i < n; i += 1) {
+    const el = elements[i]!;
+    const tier = paintTier(el);
+    tiers[i] = tier;
+    if (tier !== 0) continue;
+    const rank = backdropRank(el);
+    ranks[i] = rank;
+    if (rank !== 1 && 'width' in el && 'height' in el) areas[i] = el.width * el.height;
+  }
+  const before = (a: number, b: number) =>
+    tiers[a]! - tiers[b]! || ranks[a]! - ranks[b]! || areas[b]! - areas[a]! || a - b;
+  let inOrder = true;
+  for (let i = 1; i < n && inOrder; i += 1) inOrder = before(i - 1, i) <= 0;
+  if (inOrder) return elements;
+  return Array.from({ length: n }, (_, i) => i)
+    .sort(before)
+    .map((i) => elements[i]!);
 }

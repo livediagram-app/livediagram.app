@@ -36,7 +36,14 @@ export type SpaceCategory = {
   // The line under the flyout's name, short enough for one line.
   tagline: string;
   icon: React.ReactNode;
+  // The palette band it sits in, when not the Meet band (MEET_BAND): the bar draws a divider between bands.
+  band?: number;
 };
+
+// The bands the Space categories sit in (palette-category-bands): Meet for the pieces a Space is furnished with,
+// Travel's own for Travel.
+export const MEET_BAND = 6;
+export const TRAVEL_BAND = 7;
 
 const lucide = (prims: Parameters<typeof Prims>[0]['prims']) => (
   <Glyph size={18} units={24}>
@@ -44,25 +51,9 @@ const lucide = (prims: Parameters<typeof Prims>[0]['prims']) => (
   </Glyph>
 );
 
-/** The Space categories, in palette order. */
+/** The Space categories, in palette order (docs/specs/010-palette/palette-top-level-categories.md "The strip's
+ *  order"): building the floor first, then Travel apart. */
 export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
-  {
-    id: 'collab-travel',
-    tileGroup: 'travel',
-    label: 'Travel',
-    description:
-      'What takes people somewhere: a portal, a bring-focus button, an avatar pad, a directory, an elevator and a link card.',
-    tagline: 'What takes people somewhere.',
-    icon: <MoveGroupIcon />,
-  },
-  {
-    id: 'collab-seating',
-    tileGroup: 'seating',
-    label: 'Seating',
-    description: 'What people sit at: a chair, a desk, a sofa and a meeting table.',
-    tagline: 'Somewhere to sit, alone or together.',
-    icon: lucide(lucideArmchair),
-  },
   {
     id: 'collab-rooms',
     tileGroup: 'rooms',
@@ -71,6 +62,14 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
       'What a floor is laid out with: a fence, rooms, the Room Builder, doors, a stage, rugs and an office pod.',
     tagline: 'Lay out the floor: rooms, walls and a stage.',
     icon: lucide(lucidePanelsTopLeft),
+  },
+  {
+    id: 'collab-seating',
+    tileGroup: 'seating',
+    label: 'Seating',
+    description: 'What people sit at: a chair, a desk, a sofa and a meeting table.',
+    tagline: 'Somewhere to sit, alone or together.',
+    icon: lucide(lucideArmchair),
   },
   {
     id: 'collab-amenities',
@@ -109,13 +108,25 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     icon: lucide(lucideTreePine),
   },
   {
-    // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
+    // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md, timer-and-stopwatch.md).
     id: 'collab-meeting',
     tileGroup: 'meeting',
     label: 'Meeting',
     description:
-      'What a meeting room needs: a screen on the wall, a sign by its door, a notice board and a world clock.',
+      'What a meeting room needs: a screen on the wall, a sign by its door, a notice board, a world clock, a timer and a stopwatch.',
     tagline: 'Share on the wall, knock at the door.',
     icon: <ScreenIcon size={18} />,
+  },
+  {
+    // Travel's pieces take people somewhere rather than furnish a place: last, apart.
+    id: 'collab-travel',
+    tileGroup: 'travel',
+    label: 'Travel',
+    description:
+      'What takes people somewhere: a portal, a bring-focus button, an avatar pad, a directory and an elevator.',
+    tagline: 'What takes people somewhere.',
+    icon: <MoveGroupIcon />,
+    // Its own band, so the category bar sets it apart between two dividers.
+    band: TRAVEL_BAND,
   },
 ];

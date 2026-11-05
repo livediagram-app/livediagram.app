@@ -68,14 +68,3 @@ export function isLegacyModeButtonSkin(el: {
 
 // Today's default skin, for the elements above.
 export const MODE_BUTTON_SKIN = { fill: '#ffffff', stroke: '#cbd5e1', text: '#0f172a' } as const;
-
-// --- The Session strip's tools (docs/specs/012-collaboration/session-tools.md) ------------------------------------
-
-// The tools the Session strip starts for the room: the Timer (a countdown, or a stopwatch when it counts up). The dot
-// Vote, the live poll and the Session button that once started these from the canvas are gone from livehuddle
-// (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote", "Retired elements").
-export const SESSION_TOOLS = ['timer', 'stopwatch'] as const;
-export type SessionTool = (typeof SESSION_TOOLS)[number];
-
-// Bounds, applied wherever a value is read rather than only where it is typed.
-export const TIMER_MINUTES_RANGE = { min: 1, max: 120 } as const;

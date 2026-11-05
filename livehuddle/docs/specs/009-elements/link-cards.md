@@ -1,5 +1,9 @@
 # Link cards
 
+> **Gone from livehuddle** ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): nothing in livehuddle adds one now (no palette tile,
+> no `9` key, no picture pasted or dropped on the canvas). A stored one still loads, draws, moves, edits and deletes as
+> below. livediagram keeps the feature, and [its spec](../../../../livediagram/docs/specs/009-elements/link-cards.md) is the one to change.
+
 A **link tool**: a rectangular bookmark element that turns a URL into a rich
 preview card: favicon, page title, site name, and (when available) the page's
 OG image. The URL is edited the same way every other element's link is.

@@ -14,7 +14,8 @@
 //     resolve, and each person's latest reaction per comment and emoji
 //     (docs/specs/012-collaboration/comment-reactions.md);
 //   - notes: each note pinned on a notice board and each one unpinned, by id
-//     (docs/specs/009-elements/social-pieces.md "Notice Board").
+//     (docs/specs/009-elements/social-pieces.md "Notice Board");
+//   - timer: a Timer's or Stopwatch's latest clock (docs/specs/009-elements/timer-and-stopwatch.md), last press wins.
 //
 // Each tick carries the room seq that last set them, and a
 // merge only applies what the SAVING client had not yet seen (seq past the
@@ -36,6 +37,7 @@ import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { isPieceTimer, type PieceTimer } from './timer-pieces';
 import {
   isReactionChange,
   type CommentReactionId,
@@ -59,6 +61,8 @@ export type ElementLedger = {
     pins: Record<string, { note: NoticeNote; seq: number }>;
     unpins: Record<string, { by: string; seq: number }>;
   };
+  // A Timer's or Stopwatch's clock: the latest press, whole.
+  timer?: { state: PieceTimer; seq: number };
 };
 
 export type TabLedger = { elements: Record<string, ElementLedger> };
@@ -177,6 +181,11 @@ function recordElement(
     case 'notice-pin':
     case 'notice-unpin':
       return recordNote(prev, d, seq);
+    case 'piece-timer': {
+      // Which piece it is for is the element's business; either kind's clock is a valid entry.
+      if (!isPieceTimer(d.state, 'timer') && !isPieceTimer(d.state, 'stopwatch')) return null;
+      return { ...(prev ?? {}), timer: { state: d.state, seq } };
+    }
     default:
       return null;
   }
@@ -251,6 +260,12 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
       }) as typeof el;
     }
     next = applyNoteEvents(next, entry, since);
+    if (entry.timer && entry.timer.seq > since) {
+      next = applyElementDelta(next, {
+        kind: 'piece-timer',
+        state: entry.timer.state,
+      }) as typeof el;
+    }
     if (next !== el) changed = true;
     return next;
   });
@@ -259,8 +274,8 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's comment reactions and notice board notes itself, since a Participant never saves a whole
-// tab. Only those are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest
+// writes a Participant's comment reactions, notice board notes and Timer presses itself, since a Participant never
+// saves a whole tab (a clock is the latest press, so re-applying it is a no-op). Only those are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest
 // per person, a pin whose id the board holds is a no-op, and an unpin follows its pin in the room's order, checked
 // against the stored note's signer); ticks and the rest of a thread stay with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
@@ -268,10 +283,12 @@ export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   for (const [id, entry] of Object.entries(ledger.elements)) {
     const reacts = entry.comments?.reacts;
     const notes = entry.notes;
-    if (!reacts && !notes) continue;
+    const timer = entry.timer;
+    if (!reacts && !notes && !timer) continue;
     elements[id] = {
       ...(reacts ? { comments: { adds: {}, removes: {}, reacts } } : {}),
       ...(notes ? { notes } : {}),
+      ...(timer ? { timer } : {}),
     };
   }
   return mergeLedgerIntoTab(tab, { elements }, 0);

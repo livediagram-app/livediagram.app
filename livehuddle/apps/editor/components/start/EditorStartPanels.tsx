@@ -83,7 +83,6 @@ export function EditorStartPanels() {
             tabId={activeTab.id}
             tabName={activeTab.name}
             readOnly={isReadOnly}
-            participant={ctx.can.addContent && isReadOnly}
           />
         ) : null}
       </StartViewTransition>

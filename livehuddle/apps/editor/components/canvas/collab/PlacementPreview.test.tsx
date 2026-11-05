@@ -4,7 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createOutlinedRoom } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
-import { PlacementPreview, placementLanding, placingKind } from './PlacementPreview';
+import {
+  PlacementPreview,
+  placementLanding,
+  placingKind,
+  previewsItself,
+} from './PlacementPreview';
+import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
+import { SHAPE_DEFAULT_SIZE } from '@livehuddle/document';
 
 // docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview themselves": while a placed piece is being
 // added, the piece follows the pointer; a Door already sits on the wall it would snap to (room-builder.md "Door").
@@ -46,13 +53,33 @@ describe('placementLanding', () => {
 });
 
 describe('placingKind', () => {
-  it('names the armed or dragged placed piece, and nothing for a sized one', () => {
+  it('names the armed or dragged piece that previews itself, placed or sized with art', () => {
     expect(placingKind(DOOR, null)).toBe('door');
     expect(placingKind(null, 'door')).toBe('door');
     expect(placingKind({ type: 'shape', kind: 'chair' }, null)).toBe('chair');
     expect(placingKind(null, 'avatar-pad')).toBe('avatar-pad');
-    expect(placingKind({ type: 'shape', kind: 'room' }, 'grass')).toBeNull();
+    // A Room, a Stage, Grass: sized, but a tap or a drop lands one at its default size, so it previews too.
+    expect(placingKind({ type: 'shape', kind: 'room' }, null)).toBe('room');
+    expect(placingKind(null, 'room')).toBe('room');
+    expect(placingKind(null, 'grass')).toBe('grass');
+    expect(placingKind({ type: 'shape', kind: 'stage' }, null)).toBe('stage');
     expect(placingKind(null, null)).toBeNull();
+  });
+
+  it("steps a sized piece's armed preview aside while a press-and-drag draws its box", () => {
+    expect(placingKind({ type: 'shape', kind: 'stage' }, null, true)).toBeNull();
+    // A Room draws no box (dropped, then sized): it keeps previewing.
+    expect(placingKind({ type: 'shape', kind: 'room' }, null, true)).toBe('room');
+    // A placed piece has no box to draw: it keeps previewing.
+    expect(placingKind({ type: 'shape', kind: 'chair' }, null, true)).toBe('chair');
+    // A drag from the palette is no draw.
+    expect(placingKind(null, 'room', true)).toBe('room');
+  });
+
+  it('leaves text, stickies and the generic shapes to the dashed footprint and the draw box', () => {
+    expect(placingKind({ type: 'shape', kind: 'circle' }, null)).toBeNull();
+    expect(placingKind(null, 'square')).toBeNull();
+    expect(placingKind({ type: 'text' }, null)).toBeNull();
   });
 });
 
@@ -155,6 +182,38 @@ describe('DoorPlacementPreview', () => {
     expect((preview() as HTMLElement).style.left).not.toBe(left);
   });
 
+  it('draws an armed Room itself at its default size under the pointer', () => {
+    render(
+      <PlacementPreview
+        pendingDraw={{ type: 'shape', kind: 'room' }}
+        elements={[]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 400, 300);
+    const el = preview() as HTMLElement | null;
+    expect(el?.dataset.kind).toBe('room');
+    expect(el!.style.width).toBe(`${SHAPE_DEFAULT_SIZE.room.width}px`);
+    expect(el!.style.height).toBe(`${SHAPE_DEFAULT_SIZE.room.height}px`);
+  });
+
+  it('hides an armed Stage while its box is being drawn', () => {
+    render(
+      <PlacementPreview
+        pendingDraw={{ type: 'shape', kind: 'stage' }}
+        elements={[]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+        drawing
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 400, 300);
+    expect(preview()).toBeNull();
+  });
+
   it('listens to nothing and shows nothing while no placed piece is being added', () => {
     render(
       <PlacementPreview
@@ -167,5 +226,22 @@ describe('DoorPlacementPreview', () => {
     );
     move('pointermove', 200, 120);
     expect(preview()).toBeNull();
+  });
+});
+
+// The owner's report: a Room tile dragged or armed showed no preview of the room. Every Space piece tile previews the
+// piece itself, so none is left with a bare footprint or nothing.
+describe('every Space piece tile', () => {
+  it('previews the piece itself', () => {
+    const missing = PALETTE_TILES.filter(
+      (t) =>
+        t.action.type === 'shape' &&
+        t.section === 'tools' &&
+        t.tileGroup !== undefined &&
+        t.tileGroup !== 'embed' &&
+        t.tileGroup !== 'web' &&
+        !previewsItself(t.action.kind),
+    ).map((t) => t.id);
+    expect(missing).toEqual([]);
   });
 });

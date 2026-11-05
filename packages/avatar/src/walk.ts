@@ -367,6 +367,24 @@ export function elementUnderFeet(
   return hit;
 }
 
+/**
+ * Whether stepping onto a seat piece sits the character down (livehuddle's docs/specs/009-elements/chair.md "Only the
+ * chair you are going to"): always when steered there (no click-walk target), and on a click-walk only when the walk's
+ * destination is inside that piece, so a walk that crosses a chair on its way somewhere else goes straight through.
+ */
+export function sitsOnEntry(
+  seat: { x: number; y: number; width: number; height: number },
+  target: AvatarPoint | null,
+): boolean {
+  if (!target) return true;
+  return (
+    target.x >= seat.x &&
+    target.x <= seat.x + seat.width &&
+    target.y >= seat.y &&
+    target.y <= seat.y + seat.height
+  );
+}
+
 // The viewport offset that centres a box (a portal, an Avatar Pad) in a viewport of `size` at `zoom`.
 // The canvas transform is `scale(zoom) translate(offset)`, so the offset is in
 // canvas px and the centring maths divides the viewport by the zoom.

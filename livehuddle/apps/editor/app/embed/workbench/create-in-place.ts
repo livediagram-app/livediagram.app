@@ -9,8 +9,8 @@ import {
   type TemplateKind,
 } from '@livehuddle/templates';
 import { apiCreateDocument } from '@/lib/api-client';
-import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';
-import { wizardBypassKind } from '@/lib/new-document-params';
+import { NEW_DOCUMENT_THEME_ID, newDocumentTabs } from '@/lib/new-document-content';
+import { linkedTemplateKind } from '@/lib/new-document-params';
 import type { WorkspacePlace } from '@/lib/workbench/workspace-place';
 
 export type CreateInPlace = {
@@ -27,7 +27,7 @@ export function createInPlaceOf(
   place: WorkspacePlace,
 ): CreateInPlace {
   const search = new URL(href, origin).searchParams;
-  const templateKind = wizardBypassKind(search.toString());
+  const templateKind = linkedTemplateKind(search.toString());
   const folder = search.get('folder');
   const team = search.get('team');
   if (folder || team) return { folderId: folder ?? undefined, teamId: team, templateKind };
@@ -46,7 +46,8 @@ export async function createDocumentInPlace(
   const { templateKind } = request;
   const documentId = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const tab = newDocumentTab({
+  // A building's every floor, one tab each (docs/specs/007-editor/templates-by-mode.md "A template with floors").
+  const tabs = newDocumentTabs({
     templateKind,
     themeId: NEW_DOCUMENT_THEME_ID,
     tabId,
@@ -56,10 +57,10 @@ export async function createDocumentInPlace(
   await apiCreateDocument(ownerId, {
     id: documentId,
     name: untitledNameForTemplate(templateKind),
-    tabs: [tab],
+    tabs,
     teamId: request.teamId,
     folderId: request.folderId,
-    intent: creationIntentOf(tab, templateFamilyOf(templateKind)),
+    intent: creationIntentOf(tabs[0], templateFamilyOf(templateKind)),
   });
   return documentId;
 }

@@ -1,5 +1,9 @@
 # Image element + per-owner gallery
 
+> **Gone from livehuddle** ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): nothing in livehuddle adds one now (no palette tile,
+> no `9` key, no picture pasted or dropped on the canvas). A stored one still loads, draws, moves, edits and deletes as
+> below. livediagram keeps the feature, and [its spec](../../../../livediagram/docs/specs/009-elements/images.md) is the one to change.
+
 Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in liveworkspace's media service ([liveworkspace/docs/specs/006-media/media.md](../../../../liveworkspace/docs/specs/006-media/media.md)), which keeps every app's uploads, so a person's gallery follows them across the suite; this api keeps who may see what and serves the bytes. See [Document structure](../006-document/document-structure.md) for the broader element model and [API app](../015-api/api.md) for the API conventions this spec extends.
 
 ## Element model

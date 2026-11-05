@@ -2,7 +2,7 @@
 
 // A popover opening up from a bottom dock button stops 8 px under a toolbar across the canvas's top that its column
 // meets (docs/specs/007-editor/toolbar-layout.md "Layout details"): on a phone the strip spans the width, and the
-// Session strip's popover ran up under it, its header hidden.
+// retired Session strip's popover ran up under it, its header hidden.
 
 import { cleanup, render } from '@testing-library/react';
 import { useRef } from 'react';

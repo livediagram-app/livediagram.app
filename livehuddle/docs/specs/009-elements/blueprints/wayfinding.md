@@ -56,9 +56,10 @@ arrivalSeq }`. `set` notifies only when a field changes by reference; the hook p
   selectors (`useWayfindingSelect`), an Elevator only its own open / arrival flags.
 - **Walk There.** Not walking: `enter()` (the Avatar pick), the target kept in a ref and started by an effect once
   the walk has a position. Then the route `walkThereRoute(feet, place)` is walked leg by leg, each `walkTo`'s
-  arrival starting the next: from outside, the corners of the place's walls box (`SpacePlace.bounds`, rooms and pods
-  only) grown by 28px when the straight line to the approach crosses that box (the nearer way round, at most two
-  corners), then the approach, then the arrival; from inside the box, the arrival alone.
+  arrival starting the next: from outside the place's walls box (`SpacePlace.bounds`, rooms and pods only), the
+  approach then the arrival; from inside it, the arrival alone. Each leg is routed by `walkTo` itself
+  (`findWalkPath` in `@liveworkspace/avatar`, avatar-mode.md "Finding the way"), so the walk goes round the place's
+  walls and anything else in the way.
 - **Go / Ride.** `go({ tabId, point, ignoreId })`: while walking, arm the ignored Elevator and `teleportTo(point)`
   first. Same tab: centre the camera (`viewportOffsetCentredOn` on a zero box at the point). Another tab: remember
   `{ tabId, point, ignoreId }` and call `onTravelToTab(tabId)` (EditorCanvasHost: `keepWalkingTo(tabId)` then the

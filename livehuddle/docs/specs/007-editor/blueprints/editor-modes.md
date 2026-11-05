@@ -42,7 +42,7 @@ one editor mode, Workshop, and no switch; this records where that rule lives in 
   it brought (`apps/editor/lib/import-merge.ts`), which reads as Workshop.
 - `isEditorMode(v)` is true for `'workshop'` alone; a capitalised `'Workshop'` is not a mode id.
 - `EDITOR_MODES` stays an array so its readers (the `/new` wizard's early-click script in
-  `apps/editor/app/new/early-mode-choice.ts`, `packages/api-schema/src/placement-defaults.ts`, the marketing template
+  `packages/api-schema/src/placement-defaults.ts`, the marketing template
   gallery) keep one shape; it has one member.
 
 ## Data and persistence

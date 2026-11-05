@@ -236,7 +236,8 @@ export const TELEMETRY_ACTIONS = [
   'SignedIn',
   'SignedUp',
   'SignedOut',
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): a timer started or ended. (The retired
+  // Something run started or ended: a tour, the facilitator baton, a Timer or Stopwatch piece
+  // (docs/specs/009-elements/timer-and-stopwatch.md). (The retired Session strip timer sent these too; the retired
   // Vote's `Revealed` and `Voted` are gone, so an old client's are filtered out at ingest.)
   'Started',
   'Ended',
@@ -451,6 +452,9 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Garden-umbrella',
     'Fountain',
     'Pond',
+    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md), beside the meeting pieces.
+    'Timer',
+    'Stopwatch',
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
     // token is what elementTelemetryType actually emits for the kind, which
     // for a hyphenated one is the hyphen kept (see Pie-chart above).

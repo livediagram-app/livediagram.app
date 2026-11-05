@@ -174,7 +174,7 @@ export function nextArrivals(input: { arrivals; seen; present; pads; now }): rea
 The spawn is decided on each owner's machine, like every position in Avatar mode; a peer can already publish any
 position, so the pad adds no new trust. Arrivals read only presence that is already parsed (`buildRemoteAvatarRows`),
 draw the colour only when it is a plain hex, and are capped (I3). Placing a pad is an element edit, gated like any
-(an Editor's; the Participant palette does not offer it).
+(an Editor's; a Participant has no palette).
 
 ## Performance and limits
 

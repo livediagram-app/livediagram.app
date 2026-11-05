@@ -1143,10 +1143,20 @@
 .lh-stage-spot {
   transition: opacity 500ms ease;
 }
+/* A Door swinging open or shut (docs/specs/009-elements/room-builder.md "Opening and closing"): the leaf turns about
+ * its hinge and the swing arc fades with it. */
+.lh-door-leaf {
+  transition: transform 180ms ease-in-out;
+}
+.lh-door-swing {
+  transition: opacity 180ms ease-in-out;
+}
 @media (prefers-reduced-motion: reduce) {
   .lh-pod-door,
   .lh-sign-stripe,
-  .lh-stage-spot {
+  .lh-stage-spot,
+  .lh-door-leaf,
+  .lh-door-swing {
     transition: none;
   }
 }

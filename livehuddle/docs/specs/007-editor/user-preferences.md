@@ -356,7 +356,7 @@ Missing key === undefined === default behaviour. Concretely:
   read, so the next write stores the blob without them: `activityPanelEnabled` and `activityRevertHoverPreview` (there
   is no Activity panel; Undo and Redo always show in the bottom-right cluster), `illustrateModeEnabled`,
   `infographicModeEnabled` and `planModeEnabled` (there is one editor mode, [Editor modes](editor-modes.md)), `skipLocationStep` (the New Document wizard never asks
-  where a document goes, [New document route](new-document-route.md#one-step-wizard)), and `aiAssistanceEnabled` and
+  where a document goes, [New document route](new-document-route.md#no-welcome-screen)), and `aiAssistanceEnabled` and
   `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
   [MCP server](../015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
   `powerUserOfferShown` ([Power user mode](power-user-mode.md) is retired). Dropping them reverts nothing: whatever

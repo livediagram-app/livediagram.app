@@ -93,7 +93,7 @@ only when a level changed. The room already stamps `role` from the grant in `hel
 `{ type: 'shape', kind: 'stage' }`, glyph `StageIcon` (`palette-icons.tsx`: the platform's top and front face, a
 microphone on a stand). Its `tileGroup: 'rooms'` puts it in the Rooms category, after `tools:room` in catalogue order, so
 Rooms reads Fence, Room, Stage, Rug. Placing goes through `placeBoxed`, which prepends a floor piece (`isFloorShape` holds
-`stage`), so a new stage is behind everything. The participant palette (`PARTICIPANT_TILES`) is unchanged. The
+`stage`), so a new stage is behind everything. A Participant has no palette ([A Participant walks](../../013-workspace/share-roles.md#a-participant-walks)). The
 palette search finds it by `SHAPE_KEYWORDS.stage` (`apps/editor/lib/palette-tile-keywords.ts`: platform, podium,
 all-hands, town hall, keynote, presenter, speaker); Rooms holds four tiles, and its description names "a stage".
 

@@ -9,7 +9,7 @@ import { SOLID_BRAND_DARK } from '@livehuddle/ui';
 // Shared top-centre overlay region (docs/specs/008-canvas/canvas-and-palette.md). Every floating status pill
 // that belongs at the top middle of the canvas — the owner / role badge,
 // the editor mode banners (format painter, group, draw), the
-// multi-selection toolbar and the session timer, used
+// multi-selection toolbar, used
 // to pin itself independently to `left-1/2 top-X -translate-x-1/2`, so
 // they overlapped whenever two were visible at once (and each reinvented
 // the same pill chrome with minute differences). They now render as

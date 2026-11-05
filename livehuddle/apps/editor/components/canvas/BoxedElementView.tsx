@@ -63,13 +63,13 @@ import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGest
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
 import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
-import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { clearingInset } from '@/components/canvas/InsetContent';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
+import { elementClickKind } from '@/lib/avatar-click-intent';
 
 // Wrapped in React.memo at the export below: with id-bearing
 // callbacks the parent passes a single stable function per kind
@@ -121,7 +121,6 @@ function BoxedElementViewImpl({
   onOpenNote,
   onEditLink,
   onOpenEditDialog,
-  onDropIcon,
   onLinkCell,
   imageContext,
   onContextSelect,
@@ -364,16 +363,13 @@ function BoxedElementViewImpl({
     textAnim,
   );
 
-  // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
-  // useIconDropTarget; the wrapper mounts its handlers below and the
-  // IconDropPreview band renders while dragging over.
-  const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
-    useIconDropTarget(element, onDropIcon);
-
   return (
     <div
       ref={wrapperRef}
       data-element-id={element.id}
+      // What a click on it means in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Clicking a piece";
+      // lib/avatar-click-intent ELEMENT_KIND_ATTR).
+      data-element-kind={elementClickKind(element)}
       // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
       data-ride-id={element.id}
       data-stack-glide={stackGlide ? '' : undefined}
@@ -397,9 +393,6 @@ function BoxedElementViewImpl({
       onPointerUp={handlePointerUp}
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
-      onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
-      onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
-      onDrop={acceptsIconDrop ? handleIconDrop : undefined}
       className={`group group/el absolute origin-center touch-none select-none ${
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
@@ -514,7 +507,11 @@ function BoxedElementViewImpl({
               fill={own.fill ?? defaultFillColor(element, surface)}
               sitters={chairSitters?.(element.id)}
               animClass={artAnimClass}
-              onPressAvatarPad={onPressAvatarPad}
+              // While walking a pad is walked onto, not pressed, and a reading piece opens large
+              // (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+              walking={activeMode === 'avatar'}
+              onPressAvatarPad={activeMode === 'avatar' ? undefined : onPressAvatarPad}
+              live
             />
           ) : null}
           {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
@@ -614,7 +611,6 @@ function BoxedElementViewImpl({
       {/* Live drop preview while dragging a palette icon over this shape:
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
-      {dropSide ? <IconDropPreview side={dropSide} /> : null}
 
       {isLocked ? <LockBadge /> : null}
 

@@ -5,6 +5,7 @@
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { RoomDoor, StageSpeakers } from './office';
 import type { ClockZone, NoticeNote } from './office-social';
+import type { PieceTimer } from './timer-pieces';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -250,12 +251,18 @@ export type ShapeElement = {
   // screens reach the whole tab. Absent = DEFAULT_STAGE_SPEAKERS ('edit') and off.
   stageSpeakers?: StageSpeakers;
   stageCameras?: boolean;
+  // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): true is shut; absent or false
+  // is open, so every door starts open.
+  doorClosed?: boolean;
   // Notice Board (docs/specs/009-elements/social-pieces.md "Notice Board"): its pinned notes, oldest first.
   noticeNotes?: NoticeNote[];
   // World Clock (social-pieces.md "World Clock"): up to six zones; absent = the viewer's own zone.
   clockZones?: ClockZone[];
   // Jukebox (social-pieces.md "Jukebox"): the https audio address it plays; absent = no music set.
   jukeboxSource?: string;
+  // Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md "The state"): its live clock, changed only by
+  // `piece-timer` deltas; absent = idle at the default (a Timer at 5 minutes, a Stopwatch at 0).
+  pieceTimer?: PieceTimer;
   // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
   // shows when nobody in its room is sharing. Absent = none.
   screenUrl?: string;
@@ -1319,6 +1326,9 @@ const UNTYPED_SHAPES = new Set<string>([
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) carry no label.
   'screen',
   'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {

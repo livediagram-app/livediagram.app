@@ -166,7 +166,7 @@ controls); a Space holds tabs, and each tab has a canvas. A sentence that would 
 instead. The tab menu's item for putting a tab into another space is **Add to Another Space**, apart from the
 palette's **Add to canvas**, which puts an element on the drawing surface. The **Document** shape is a shape, not an
 item, and keeps its name. The Spaces templates (Virtual Office, Rooftop Bar, Garden Retreat and the rest) are
-templates a Space is made from, in the Office, Events, Outdoor and Recreation categories. "Space" the key (hold Space to
+templates a Space is made from, in the Campus, Office, Events, Outdoor and Recreation categories. "Space" the key (hold Space to
 pan) is a key, never the item.
 
 ## This Browser

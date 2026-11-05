@@ -236,7 +236,10 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'directory' ||
     // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): a sign's name is its room's.
     kind === 'screen' ||
-    kind === 'room-sign'
+    kind === 'room-sign' ||
+    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md) draw their own time.
+    kind === 'timer' ||
+    kind === 'stopwatch'
   );
 }
 

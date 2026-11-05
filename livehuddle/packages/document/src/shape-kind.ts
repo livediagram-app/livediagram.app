@@ -121,6 +121,9 @@ export type ShapeKind =
   // its room, and a sign by a room's door saying whether it is free.
   | 'screen'
   | 'room-sign'
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md): a meeting room's clock, counting down or up.
+  | 'timer'
+  | 'stopwatch'
   | 'stadium'
   | 'actor'
   // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the

@@ -72,6 +72,9 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
   'notice-board': 'notice board cork board pin pinned notes announcements wall bulletin message',
   'world-clock':
     'world clock time zone timezone wall clock hours london new york tokyo remote team',
+  timer:
+    'timer countdown count down timebox time box minutes clock alarm chime meeting stand-up standup pomodoro',
+  stopwatch: 'stopwatch stop watch count up elapsed time clock lap meeting how long',
   jukebox: 'jukebox music radio stream song background audio play lounge',
   'ping-pong-table': 'ping pong table tennis game play recreation two players',
   'arcade-machine': 'arcade machine game cabinet retro video game play recreation insert coin',

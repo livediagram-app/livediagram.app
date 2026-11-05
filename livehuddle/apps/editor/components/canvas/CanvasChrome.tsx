@@ -19,11 +19,6 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
-import {
-  SessionClusterStrip,
-  sessionStripTools,
-  stripCanStart,
-} from '@/components/canvas/SessionClusterStrip';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
@@ -45,7 +40,6 @@ import { CollaborateClusterButton } from '@liveworkspace/workbench/components/ca
 import { AvatarClusterButton } from '@liveworkspace/avatar/components/AvatarClusterButton';
 import { WalkClusterButton } from '@liveworkspace/avatar/components/WalkClusterButton';
 import { AvatarModeIcon } from '@/components/palette/palette-icons';
-import { walkButtonShown } from '@/lib/walk-button';
 import { CallClusterButton } from '@/components/calls/CallClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -232,8 +226,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     whiteboard: false,
   });
 
-  // The palette strip: an editor's (not read-only), or a Participant's (docs/specs/013-workspace/share-roles.md).
-  const paletteShown = !readOnly || !!props.participantPalette;
+  // The palette strip: an Editor's alone; a Viewer and a Participant have none
+  // (docs/specs/013-workspace/share-roles.md "A Participant walks").
+  const paletteShown = !readOnly;
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
@@ -257,24 +252,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
     />
   );
 
-  const stripTools = sessionStripTools(props.editorMode);
   // Panel elements + their wiring live in useCanvasChromePanels.
-  const {
-    panelEls,
-    explorerEl,
-    collaborateEl,
-    sessionPopoverEl,
-    tidyUpPopoverEl,
-    avatarPopoverEl,
-    paletteTint,
-  } = useCanvasChromePanels({
-    props,
-    stripTools,
-    chromeHidden,
-    isMobile,
-    panelWiringFor,
-    panelsOn,
-  });
+  const { panelEls, explorerEl, collaborateEl, tidyUpPopoverEl, avatarPopoverEl, paletteTint } =
+    useCanvasChromePanels({
+      props,
+      chromeHidden,
+      isMobile,
+      panelWiringFor,
+      panelsOn,
+    });
 
   // Measured against the real top-corner stacks (useStripCrowdsCorners). A
   // stack only renders while it holds a panel, so which top corners are
@@ -387,7 +373,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       />
 
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
-          active editor-mode banner, multi-selection toolbar and session timer, laid out as one
+          active editor-mode banner and multi-selection toolbar, laid out as one
           non-overlapping stack. */}
       <TopCenterChrome {...props} />
 
@@ -399,12 +385,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {chromeAway ? null : collaborateEl}
       {tidyUpPopoverEl}
       {avatarPopoverEl}
-      {/* The Session strip's popover, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
-      {sessionPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
-          key={readOnly ? 'participant' : 'standard'}
-          participant={readOnly}
           // Hidden, not unmounted, while the chrome is away (an embed, welcome),
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
@@ -436,7 +418,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Session strip (the Timer), the
+          strip, the
           Collaborate button (only while the tab has a thread or an action), the Layers and
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
@@ -453,9 +435,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        // On a phone the cluster stays one row (docs/specs/012-collaboration/session-tools.md "The Session
-        // strip"): its buttons share the width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
-        // usual 44px (always 44px tall to tap), so Undo, the Session strip, Layers and Theme and Fit fill the
+        // On a phone the cluster stays one row (docs/specs/007-editor/editor-app.md): its buttons share the
+        // width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
+        // usual 44px (always 44px tall to tap), so Undo, Layers and Theme and Fit fill the
         // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
         // pushed off the screen.
         className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
@@ -463,9 +445,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
-                (docs/specs/013-workspace/share-roles.md). */}
-            {!chromeAway && (!readOnly || !!props.participantPalette) ? (
+            {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone. */}
+            {!chromeAway && !readOnly ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}
@@ -473,13 +454,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canRedo={canRedo}
               />
             ) : null}
-            {/* Walk (docs/specs/008-canvas/avatar-mode.md "The Walk button"): a Viewer has no picker, so this is its
-                way in to Avatar mode and back out, first in the cluster where its Avatar button follows. */}
-            {walkButtonShown({
-              offered: !!props.walkButton,
-              readOnly: !!readOnly,
-              participantPalette: !!props.participantPalette,
-            }) ? (
+            {/* Walk (docs/specs/008-canvas/avatar-mode.md "The Walk button"): every role's one-press way in to Avatar
+                mode and back out, where the surface walks (not in an embed). */}
+            {props.walkButton ? (
               <WalkClusterButton
                 walking={props.canvasTool === 'avatar'}
                 onToggle={() =>
@@ -506,20 +483,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   canSpeak={!!props.onSendAvatarMessage}
                 />
               </>
-            ) : null}
-            {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
-                Layers. A running session is the one piece of chrome a facilitator still
-                needs there. */}
-            {props.sessionTools && stripTools ? (
-              <div className="contents">
-                <SessionClusterStrip
-                  timer={props.sessionTools.timer}
-                  canStart={stripCanStart(!!readOnly)}
-                  offersTimer={stripTools.timer}
-                  open={activeDockPanel === 'session-timer' ? activeDockPanel : null}
-                  onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
-                />
-              </div>
             ) : null}
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
                 the tab has a comment thread or an action. A view-role visitor

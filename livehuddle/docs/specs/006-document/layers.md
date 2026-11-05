@@ -17,6 +17,10 @@ a room, a fence or a portal to vanish from view without anyone meaning it to.
 
 - Z-order is the tab's `elements` array: later paints on top, backdrops (rooms, rugs, boundaries, a stored frame) first, attached badges, step numbers and
   pointer notes last, as before.
+- Among the backdrops the larger paints first, so a rug lies on its room's floor, with one exception for a garden:
+  **Grass** paints first, then every **Garden Path** in array order, then the other floors (rooms, rugs, stages,
+  ponds, doors), larger first. A path laid later lies on one laid earlier whatever their sizes, so a path that ends on
+  another, or a round plaza where paths meet, covers what it should ([Garden Path](../009-elements/office.md#garden-path)).
 - **Bring to Front / Send to Back** move the selection to the end / start of the array (`bringManyToFront` /
   `sendManyToBack`), in the element menu and the selection popover alike.
 

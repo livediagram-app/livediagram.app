@@ -143,6 +143,23 @@ describe('buildDrawnComponent', () => {
 });
 
 describe('buildDrawnBoxed', () => {
+  // docs/specs/009-elements/office.md "Dropped, then sized": a press-and-drag with Room armed drops it at its default
+  // size where the press began, never a drawn box; a Stage still draws to the box.
+  it('drops a dragged Room at its default size, centred where the press began', () => {
+    const room = buildDrawnBoxed({ type: 'shape', kind: 'room' }, 500, 300, 900, 700, null, tab());
+    expect(room).toMatchObject({ x: 500 - 240, y: 300 - 160, width: 480, height: 320 });
+    const stage = buildDrawnBoxed(
+      { type: 'shape', kind: 'stage' },
+      500,
+      300,
+      900,
+      700,
+      null,
+      tab(),
+    );
+    expect(stage).toMatchObject({ x: 500, y: 300, width: 400, height: 400 });
+  });
+
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
   // docs/specs/023-draw-mode/draw-mode.md "Text boxes": in Draw mode a text box hugs its text.

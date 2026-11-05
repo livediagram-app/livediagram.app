@@ -10,7 +10,7 @@
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import type { ShapeKind } from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
+import { PALETTE_DND_MIME, STICKER_DND_MIME } from '@/lib/icons';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 
@@ -28,8 +28,8 @@ type PaletteDropDeps = {
   // double-click add path: its rect already bakes in zoom, pan AND the
   // origin-center pivot, so dividing by zoom yields world coords directly.
   wrapperRef: RefObject<HTMLElement | null>;
-  // Any other file dropped on the canvas, with the canvas point it was released at: a picture lands there as an
-  // image (useClipboard dropBoardFile). Absent where the canvas takes no files.
+  // Any other file dropped on the canvas, with the canvas point it was released at: told why it does not land
+  // (useClipboard dropBoardFile). Absent where the canvas takes no files.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
 };
 
@@ -52,18 +52,16 @@ export function usePaletteDrop({
       e.dataTransfer.dropEffect = 'none';
       return;
     }
-    // A file (a picture) is accepted the same way a tile is,
-    // so the cursor says it will land rather than showing the no-drop sign.
+    // A file is accepted the same way a tile is, so its drop reaches
+    // dropBoardFile and the person is told why it does not land.
     if (onDropFile && e.dataTransfer.types.includes('Files')) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
       return;
     }
-    // Allow dropping palette tiles (shapes / devices / icons).
+    // Allow dropping palette tiles (shapes and stickers).
     if (
       e.dataTransfer.types.includes(PALETTE_DND_MIME) ||
-      e.dataTransfer.types.includes(ICON_DND_MIME) ||
-      e.dataTransfer.types.includes(TECH_ICON_DND_MIME) ||
       e.dataTransfer.types.includes(STICKER_DND_MIME)
     ) {
       e.preventDefault();
@@ -90,15 +88,9 @@ export function usePaletteDrop({
     }
     const payload = e.dataTransfer.getData(PALETTE_DND_MIME);
     const [shapeKind, dragChoice] = payload.split('|');
-    // A line-art icon and a tech (brand) icon both drop as an 'icon' shape
-    // carrying the id; dropPaletteItem picks the telemetry type.
-    const iconId =
-      e.dataTransfer.getData(ICON_DND_MIME) || e.dataTransfer.getData(TECH_ICON_DND_MIME);
-    // A sticker carries its OWN mime (docs/specs/010-palette/stickers.md) precisely so it can't be
-    // mistaken for an icon: an icon dropped on a shape folds into that
-    // shape's label, and a sticker must never do that.
+    // A sticker carries its OWN mime (docs/specs/010-palette/stickers.md).
     const stickerId = e.dataTransfer.getData(STICKER_DND_MIME);
-    if (!shapeKind && !iconId && !stickerId) return;
+    if (!shapeKind && !stickerId) return;
     e.preventDefault();
     // Invert via the transformed wrapper rect (like the double-click add):
     // measuring the untransformed <main> instead misses the origin-center
@@ -114,7 +106,6 @@ export function usePaletteDrop({
     const cx = raw.x + (snap?.dx ?? 0);
     const cy = raw.y + (snap?.dy ?? 0);
     if (stickerId) onDropPalette?.('sticker', cx, cy, { stickerId });
-    else if (iconId) onDropPalette?.('icon', cx, cy, { iconId });
     else
       onDropPalette?.(
         shapeKind as ShapeKind,

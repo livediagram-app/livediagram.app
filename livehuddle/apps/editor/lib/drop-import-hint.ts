@@ -1,5 +1,6 @@
-// What a file dropped on the canvas is told when it is not a picture. A livehuddle JSON file replaces the tab's
-// content, so it goes through Import, and its refusal says so; any other file is not something the canvas takes.
+// What a file dropped or pasted on the canvas is told. A livehuddle JSON file replaces the tab's content, so it goes
+// through Import, and its refusal says so; any other file, a picture too, is not something the canvas takes
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card").
 // (Imports from other tools are gone, docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools":
 // a dropped .excalidraw file is refused as any other file.)
 
@@ -14,5 +15,5 @@ export function dropImportHint(file: Pick<File, 'name'>): string | null {
   return format ? `To bring in ${format.label}, use Import in the tab menu.` : null;
 }
 
-/** Said when a file dropped on the canvas is neither a picture nor a file Import reads. */
-export const DROP_NOT_TAKEN = 'Drop a picture to add it to the canvas.';
+/** Said when a file dropped or pasted on the canvas is not one Import reads. */
+export const DROP_NOT_TAKEN = 'The canvas does not take files.';

@@ -18,4 +18,5 @@ export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitle
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
 export * from './template-tab';
+export { templateFloors, templateFirstFloorName, type TemplateFloor } from './template-floors';
 export { templateCatalogue } from './template-catalogue';

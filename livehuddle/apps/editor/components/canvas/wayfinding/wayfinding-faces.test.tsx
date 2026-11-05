@@ -5,7 +5,8 @@ import { createShape, type BoxedElement, type Element } from '@livehuddle/docume
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { createWayfindingStore, type Wayfinding } from './wayfinding-store';
 import { DirectoryList } from './DirectoryFace';
-import { ElevatorPanel } from './ElevatorFace';
+import { ElevatorPanel, FLOOR_WAIT_MS } from './ElevatorFace';
+import { WayfindingPopover } from './WayfindingPopover';
 import { elevatorExitPoint } from '@/lib/wayfinding';
 
 // docs/specs/009-elements/directory.md and elevator.md: the list and the floor panel, and that every role may
@@ -21,7 +22,12 @@ function makeWayfinding(): Wayfinding & {
   const store = createWayfindingStore();
   const walkThere = vi.fn();
   const go = vi.fn();
-  return { store, actions: { walkThere, go, closeElevator: vi.fn() }, walkThere, go };
+  return {
+    store,
+    actions: { walkThere, go, loadFloors: vi.fn(), closeElevator: vi.fn() },
+    walkThere,
+    go,
+  };
 }
 
 const room = at('room', 0, 0, { label: 'Design' });
@@ -132,6 +138,70 @@ describe('the Elevator panel', () => {
     ).toBeTruthy();
   });
 
+  // elevator.md "The panel" "Floors not opened yet": a lazy tab's Elevators are fetched on opening, not guessed.
+  it('fetches floors nobody has opened, shows them loading, then rides to their named Elevator', () => {
+    const w = makeWayfinding();
+    const unopened = { ...tabs[1]!, elements: [], loaded: false };
+    w.store.set({ tabs: [tabs[0]!, unopened, tabs[2]!], activeTabId: 'a' });
+    render(
+      <ElevatorPanel
+        elementId="elevator-800-0"
+        name="Elevator 1"
+        wayfinding={w}
+        onDone={vi.fn()}
+      />,
+    );
+    expect(w.actions.loadFloors).toHaveBeenCalledOnce();
+    const roof = () => screen.getByRole('region', { name: 'Roof' });
+    expect(within(roof()).getByText('Loading this floor')).toBeTruthy();
+    expect(within(roof()).queryByText('No Elevator on this floor')).toBeNull();
+    // The fetch lands: the floor's Elevators, by name, and Go steps out of the one chosen.
+    act(() => w.store.set({ tabs: [tabs[0]!, tabs[1]!, tabs[2]!] }));
+    expect(within(roof()).queryByText('Loading this floor')).toBeNull();
+    fireEvent.click(within(roof()).getByRole('button', { name: 'Go to Elevator 2 on Roof' }));
+    expect(w.go).toHaveBeenLastCalledWith({
+      tabId: 'b',
+      point: elevatorExitPoint({ x: 400, y: 400, width: 112, height: 140 }),
+      ignoreId: 'elevator-400-400',
+    });
+  });
+
+  it('fetches nothing when every floor is loaded, and gives up waiting on a floor that never lands', () => {
+    vi.useFakeTimers();
+    try {
+      const loaded = makeWayfinding();
+      loaded.store.set({ tabs, activeTabId: 'a' });
+      const first = render(
+        <ElevatorPanel
+          elementId="elevator-800-0"
+          name="Elevator 1"
+          wayfinding={loaded}
+          onDone={vi.fn()}
+        />,
+      );
+      expect(loaded.actions.loadFloors).not.toHaveBeenCalled();
+      first.unmount();
+      const w = makeWayfinding();
+      w.store.set({ tabs: [tabs[0]!, { ...tabs[2]!, loaded: false }], activeTabId: 'a' });
+      render(
+        <ElevatorPanel
+          elementId="elevator-800-0"
+          name="Elevator 1"
+          wayfinding={w}
+          onDone={vi.fn()}
+        />,
+      );
+      const garden = () => screen.getByRole('region', { name: 'Garden' });
+      expect(within(garden()).getByText('Loading this floor')).toBeTruthy();
+      act(() => {
+        vi.advanceTimersByTime(FLOOR_WAIT_MS);
+      });
+      expect(within(garden()).getByText('No Elevator on this floor')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('travels to an Elevator on the same floor without changing tab, and to one on another floor', () => {
     const w = makeWayfinding();
     const done = vi.fn();
@@ -213,5 +283,55 @@ describe('every role may press them', () => {
     expect(screen.queryByRole('dialog', { name: 'Elevator' })).toBeNull();
     act(() => w.store.set({ openElevatorId: 'elevator-1' }));
     expect(screen.getByRole('dialog', { name: 'Elevator' })).toBeTruthy();
+  });
+});
+
+// docs/specs/009-elements/directory.md "Pressing it": the Directory stays open until it is closed on purpose.
+describe('a pinned popover', () => {
+  const open = (pinned: boolean) => {
+    const onClose = vi.fn();
+    render(
+      <WayfindingPopover
+        elementId="dir"
+        label="Directory"
+        width={320}
+        pinned={pinned}
+        onClose={onClose}
+      >
+        <p>Rooms</p>
+      </WayfindingPopover>,
+    );
+    return onClose;
+  };
+
+  it('stays open through a press on the canvas, where an unpinned one closes', () => {
+    const pinned = open(true);
+    fireEvent.pointerDown(document.body);
+    expect(pinned).not.toHaveBeenCalled();
+  });
+
+  it('closes on a press outside when not pinned', () => {
+    const unpinned = open(false);
+    fireEvent.pointerDown(document.body);
+    expect(unpinned).toHaveBeenCalledTimes(1);
+  });
+
+  it('takes Escape for itself, so the editor never leaves Avatar mode on it', () => {
+    const onClose = open(true);
+    const editor = vi.fn();
+    window.addEventListener('keydown', editor);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    window.removeEventListener('keydown', editor);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(editor).not.toHaveBeenCalled();
+  });
+
+  it('shows a Close button in the Directory header', () => {
+    const done = vi.fn();
+    const w = makeWayfinding();
+    w.store.set({ tabs, activeTabId: 'a' });
+    render(<DirectoryList wayfinding={w} onDone={done} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Close Directory' }));
+    expect(done).toHaveBeenCalledTimes(1);
   });
 });

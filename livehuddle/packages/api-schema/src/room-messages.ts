@@ -182,10 +182,16 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
 // A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a comment reaction
 // (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, and the room writes a
 // Participant's reactions as it writes its answers; and a notice board pin or unpin
-// (docs/specs/009-elements/social-pieces.md "Notice Board"), which the room writes the same way. A Participant's
+// (docs/specs/009-elements/social-pieces.md "Notice Board"), which the room writes the same way, and a Timer's or
+// Stopwatch's press (docs/specs/009-elements/timer-and-stopwatch.md "Share roles"). A Participant's
 // socket may send these beside presence; every other mutation from it is dropped, except an `el` op, which the room
 // applies through the participant content rule instead of relaying.
-const PARTICIPATION_DELTA_KINDS = ['comment-react', 'notice-pin', 'notice-unpin'] as const;
+const PARTICIPATION_DELTA_KINDS = [
+  'comment-react',
+  'notice-pin',
+  'notice-unpin',
+  'piece-timer',
+] as const;
 
 export function isParticipationOp(op: unknown): boolean {
   if (typeof op !== 'object' || op === null) return false;

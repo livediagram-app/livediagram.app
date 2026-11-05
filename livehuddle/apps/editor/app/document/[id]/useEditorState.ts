@@ -38,6 +38,7 @@ import {
 
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { useSnapColours } from '@/hooks/canvas/useSnapColours';
+import { useDoorToggle } from '@/hooks/canvas/useDoorToggle';
 import { isPathEditing } from '@/lib/path-edit';
 import { dropsOnTap } from '@/lib/draw-mode';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
@@ -103,7 +104,6 @@ import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useTabActions } from '@/hooks/persistence/useTabActions';
 import { useTabFolders } from '@/hooks/persistence/useTabFolders';
 import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
-import { useTabSession } from '@/hooks/persistence/useTabSession';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
@@ -307,6 +307,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     exitAvatarTool,
     toolBeforeCurrent,
     keepWalkingTo,
+    holdWalking,
   } = useCanvasTool({
     defaultPan: embedMode,
     tabId: activeId,
@@ -619,6 +620,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toast.info,
     previewLevel === 'participate' && canToggleRole ? previewAdderKey() : null,
   );
+  // A Participant is always walking, on every tab, with no way out (docs/specs/013-workspace/share-roles.md "A
+  // Participant walks"). Set while rendering, like the tab change useCanvasTool handles, so no frame draws it otherwise.
+  holdWalking(participant.can.alwaysWalks && !embedMode);
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
@@ -1010,7 +1014,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabId: activeTab.id,
     elements: activeTab.elements,
     loaded: loadedTabIds.has(activeTab.id),
-    walking: canvasTool === 'avatar',
+    // Held walking (a Participant) still judges a tab, so a Walk In button starts its character below it.
+    walking: canvasTool === 'avatar' && !participant.can.alwaysWalks,
     openWalking: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -1411,9 +1416,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // below stays blocked with a single check, and the interaction
   // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
   // checks so a viewer can still select and inspect.
-  // Running a session (start, end, reveal, clear, pace) is an Editor's, whoever holds the baton
-  // (docs/specs/013-workspace/share-roles.md): a Participant's editsBlocked is false, so it is shut here.
-  const runsBlocked = facilitator.sessionToolsBlocked || isReadOnly;
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
     activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
@@ -1466,6 +1468,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // never written back over.
     commitTabs(activeElementsCommit(activeId, mapElements));
   };
+
+  // A Door swung open or shut from Avatar mode (docs/specs/009-elements/room-builder.md "Opening and closing").
+  const { toggleDoor } = useDoorToggle({
+    elements: activeTab.elements,
+    canSwing: participant.can.swingDoor,
+    blocked: editsBlocked,
+    commit,
+  });
 
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): what the panel or the context menu last
   // chose per element kind, applied to the next element the user draws. The
@@ -1651,6 +1661,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     requestFit,
     putToolDown: () => putToolDownRef.current(),
     onLanded: openWalking.rejudge,
+    markTabLoaded,
   });
 
   // One undo step per burst of a continuous control: the background
@@ -1673,7 +1684,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBackgroundOpacity,
     setPatternColor,
     setBackgroundPatternScale,
-    setBackgroundAnimationSpeed,
   } = useTabCanvas({
     notify: (message) => toast.info(message),
     editsBlocked: structureBlocked,
@@ -1699,28 +1709,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       onApplied: () => track('Tab', 'Changed', 'AllTabs'),
     });
 
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): the facilitator timer's handlers.
-  // State lives on the tab (`activeTab.timer`), so the
-  // UI reads it straight off the tab; these are just the mutators.
-  const {
-    startTimer,
-    pauseTimer,
-    resumeTimer,
-    resetTimer,
-    setTimerDuration,
-    extendTimer,
-    clearTimer,
-  } = useTabSession({
-    editsBlocked,
-    sessionToolsBlocked: runsBlocked,
-    activeId,
-    activeTab,
-    // The non-history mutator, per docs/specs/012-collaboration/session-tools.md: starting a timer
-    // isn't undoable (and mustn't evict real edits
-    // from the bounded undo stack).
-    commitTabs: tickTabs,
-  });
-
   // A checklist tick is a room press (docs/specs/012-collaboration/collab-race-hardening.md): a delta, not an undoable commit.
   const { toggleChecklistItem } = useChecklistTicks({
     applyElementDelta,
@@ -1734,13 +1722,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     imagePickerOpenFor,
     imageContext,
-    addImageFromGallery,
     applyImageToElement,
     removeImageFromElement,
     refreshRecentImages,
     closeImagePicker,
   } = useEditorImages({
-    // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
+    // A Participant swaps a stored image's picture (docs/specs/013-workspace/share-roles.md).
     editsBlocked: contentAddBlocked({
       participating: participant.participating,
       canAddContent: participant.can.addContent,
@@ -1751,9 +1738,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
-    getViewportCenter,
     commit,
-    setSelectedId,
     documentId,
     ownerId: selfParticipant.id,
     sessionShareCode,
@@ -1817,9 +1802,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Palette element-creation handlers. See useElementCreation.
   const {
     addShape,
-    addIcon,
     addSticker,
-    addTechIcon,
     addTable,
     addAnnotation,
     addLinkCard,
@@ -1857,8 +1840,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
-  const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
-    useInlineIconMutators({ editsBlocked, commit, tick, elements: activeTab.elements });
+  const { removeIconFromElement, dropIconElementOnShape } = useInlineIconMutators({
+    editsBlocked,
+    commit,
+    tick,
+  });
 
   // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See
@@ -2020,6 +2006,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRoomDoorSelected,
     setStageSelected,
     setScreenUrlSelected,
+    setScreenUrlOf,
     setClockZonesSelected,
     setJukeboxSourceSelected,
     setRatingSelected,
@@ -2337,7 +2324,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
     createBlocked: editsBlocked,
-    embedMode,
     readSelection,
     editingId,
     setEditingId,
@@ -2345,9 +2331,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     setSelectedId,
     setMultiSelectedIds,
-    addImageFromGallery,
-    ownerId: selfParticipant.id,
-    documentId,
     toast,
     getViewportCanvasRect,
   });
@@ -2363,7 +2346,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readSelection,
     editingId,
     isReadOnly,
-    participant: participant.participating,
     deleteSelected,
     deleteMultiSelected,
     undo,
@@ -2374,7 +2356,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addShape,
     addText,
     addSticky,
-    onAddImage: addImage ?? null,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
@@ -2509,16 +2490,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addArrow,
     addComment,
     replaceCommentId,
-    addIcon,
     addSticker,
-    addTechIcon,
     connectSourceId,
     connectArrowTo,
     cancelConnect,
-    dropIconOnElement,
     removeIconFromElement,
     addImage,
-    addImageFromGallery,
     addShape,
     addSticky,
     addTable,
@@ -2533,6 +2510,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addProcess,
     addAvatar,
     dropPaletteItem,
+    toggleDoor,
     getViewportCenter,
     addTab,
     addText,
@@ -2549,14 +2527,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyStyleToAllTabs,
     applyingStyleToAllTabs,
     canApplyStyleToAllTabs: !isStructureReadOnly,
-    // Live session tools (docs/specs/012-collaboration/session-tools.md)
-    startTimer,
-    pauseTimer,
-    resumeTimer,
-    resetTimer,
-    setTimerDuration,
-    extendTimer,
-    clearTimer,
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
@@ -2796,7 +2766,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBackgroundColor,
     setBackgroundOpacity,
     setBackgroundPatternScale,
-    setBackgroundAnimationSpeed,
     setBackgroundPattern,
     setTabFont,
     setTabDefaultTextSize,
@@ -2822,6 +2791,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRoomDoorSelected,
     setStageSelected,
     setScreenUrlSelected,
+    setScreenUrlOf,
     setClockZonesSelected,
     setJukeboxSourceSelected,
     setPortalTargetSelected,

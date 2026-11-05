@@ -7,7 +7,8 @@ document, a mint racing the identity round trip).
 
 ## Goals
 
-- `/new` owns the welcome and create flow end-to-end.
+- `/new` makes a new Space end-to-end, with no screen of its own: it creates the Space at once and opens it on
+  Start a Space, where the templates are.
 - The editor route only hydrates a document id or a share code and never has to consider minting an id.
 - "New Space" buttons (the Explorer, the not-found card) navigate to `/new`. Share and open flows stay on the editor
   route.
@@ -27,7 +28,7 @@ document, a mint racing the identity round trip).
 | ----------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `/document/<id>`        | Editor for an existing owned document | Static placeholder file fronts every id (see "Path scheme" below). Client reads the id from `window.location.pathname`. |
 | `/document/shared?s=<>` | Visitor view of a shared document     | Same placeholder file. Client reads the share code from the `s` query param.                                            |
-| `/new`                  | Welcome / create-new flow             | Identity, template, theme picker. POSTs the document + navigates to `/document/<id>`.                                   |
+| `/new`                  | Create a new Space                    | Identity, then POSTs a Blank Space (or a linked template) and opens the editor in place on `/document/<id>`.            |
 
 ## Path scheme
 
@@ -90,8 +91,8 @@ no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
 `/explorer`, New Space to `/new`). An embed shows the card with New Space
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
 `/document/placeholder`) hands off to `/new`. Before, every address without a
-document id went to `/new`, so a mistyped or retired page opened the New
-Document wizard with no word of what went wrong.
+document id went to `/new`, so a mistyped or retired page made a new
+Space with no word of what went wrong.
 
 ### A failed load is not a missing document
 
@@ -107,7 +108,7 @@ same card serves the failed-create path on `/new`, with one exception: a
 create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
 [Folders → Placement on create](../013-workspace/folders.md)) will not clear on
-a retry, so the card says why and offers **Choose another place** instead.
+a retry, so the card says why and offers **Use Default Place** instead.
 On `/new`, **Retry** re-runs the same create under the same document and tab
 ids it first tried: a create that reached the server but whose answer was lost
 is then taken as the re-commit of an id the caller already owns, never a second
@@ -129,17 +130,12 @@ knowing about when adding another.
 
 1. User clicks **New Space** in the Explorer.
 2. Browser navigates to `/new`.
-3. `/new` renders the welcome card immediately, no spinner.
-4. User presses **Create**, which creates the document at once, where new documents go by default
-   ([One-step wizard](#one-step-wizard)). The header **X** backs out to the page that opened
-   `/new`, creating nothing, as Escape does; see [Escape backs out](#escape-backs-out).
-5. Page mints a UUID, POSTs `/api/documents` with the seeded tab(s),
-   then `window.location.assign('/document/<id>')` to land on
-   the editor with the new document already on the server.
-6. On the editor route, hydration extracts the id from the pathname
-   and fetches the document + tab content. No mint, no welcome gate. The empty tab
-   opens on Start a Space, where its templates are
-   ([Template starts](start-diagramming.md)).
+3. `/new` shows the opening screen ([The opening screen](#the-opening-screen)) on first paint and creates a Blank
+   Space at once, where new documents go by default ([No welcome screen](#no-welcome-screen)).
+4. Page mints a UUID, POSTs `/api/documents` with the blank tab, then hands off to the editor in place
+   ([In-place handoff](#in-place-handoff-to-the-editor)).
+5. The editor reads the id from the pathname and fetches the document. No mint, no welcome gate. The empty tab
+   opens on Start a Space, where its templates are ([Template starts](start-diagramming.md)), on Recommended.
 
 ### Owner opens an existing document
 
@@ -181,140 +177,42 @@ The route owns:
 
 - The participant-identity bootstrap (the `livehuddle:v2:self-id` localStorage key, `apiLoadSelf` / `apiSaveSelf`).
 - The "name confirmed" persistence (the `livehuddle:v2:name-confirmed` localStorage key).
-- On commit: mint a UUID, POST `/api/documents` with the templated tab(s) inline, navigate to `/document/<id>`.
-- On Skip: mint a UUID, POST an empty-tab document, navigate to `/document/<id>` so the user lands on the editor
-  with a fresh document already persisted.
+- On mount: mint a UUID, POST `/api/documents` with the blank tab (or a linked template's), and open the editor on
+  `/document/<id>`.
 
-## Escape backs out
+## No welcome screen
 
-**Escape backs you out of whatever you just clicked**, one screen at a time, and never
-creates anything:
+`/new` has **no screen of its own**: no wizard, no Create button. Opening it makes a **Blank Space**
+(`blank-session`) straight away and opens it on **Start a Space** ([Template starts](start-diagramming.md)), where
+the person picks a template, searches, or closes the start for a blank canvas.
 
-- **On `/new`:** back to the screen that opened it, at once (the step has
-  no search; a `?q=` preset waits for the new document's start). When the
-  browser came from another page of this site (the home page,
-  the header's Choose Template, the Explorer's New Space), it goes back there,
-  as the browser's Back would (`history.back()`), so that page returns as it was.
-  With nothing of ours to go back to (the URL typed, or opened from another site),
-  it goes to the home page (`/`). Nothing is created: Escape is not Skip, which
-  still commits a blank document.
-- **The header X backs out the same way:** it closes the wizard
-  and goes back to the page that opened `/new` (or home), creating nothing. A
-  close button and Escape mean the same thing ("Escape: Closes the dialog", and
-  a close button "that closes the dialog", in the WAI-ARIA dialog pattern), so
-  they never do different things.
+Why: the welcome card asked no question. livehuddle has one mode, there is no theme or location step, and its body
+only described what Create would make before sending the person to Start a Space anyway. A screen whose only action
+is "continue" is a step between the person and what they came for; Start a Space already holds the templates, the
+search and the Sync Space to Server switch ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)).
 
-Why. Escape is the one key every desktop user already knows as "get me out of this"
-(literally: escape), and a way out that costs nothing is what makes people feel safe
-clicking around. Opening the template picker from the home page was a question, not a
-commitment: backing out of it must not leave a new document behind.
+- **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
+  says: This Browser for a guest (with sign-in enabled), livehuddle for everyone else. Decided at commit by
+  `resolveSaveLocation`: a guest never waits, a browser that looks signed in waits for identity, so a signed-in
+  person is never handed a document in This Browser. Start a Space's footer switch moves it while it is empty.
+- **Filed** (livehuddle) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
+  otherwise the create carries no placement and the server files it in the person's
+  [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
+- **Once, on a first visit too.** A guest's first visit leaves `/new` for the guest token's handoff and comes back
+  to it, so a create bound for This Browser first waits for the token (`ensureGuestToken`): with none, the page leaves
+  before anything is made and creates on its return. A guest who holds a token waits for nothing.
+- **Named** after its template ("Untitled Space", `untitledNameForTemplate`); it is renamed in the editor.
+- **Themed** Default; the Tab Style dialog changes it later.
+- **No way back without a Space.** Opening `/new` is the commitment, as "New document" is in any editor: Back from
+  the editor returns to the page before `/new`, since the handoff replaces `/new`'s history entry. A Space left
+  empty is an ordinary empty Space, deleted from the Explorer like any other.
+- **Recent Spaces** are on Explorer Home and in the Explorer; `/new` no longer shows a Jump Back In card.
+- The page renders the opening screen in its prerendered HTML, so nothing else ever paints first, and no inline
+  pre-hydration script is needed.
 
-- Nielsen Norman Group's heuristic #3, **User control and freedom**: "Users often choose
-  system functions by mistake and will need a clearly marked 'emergency exit' to leave
-  the unwanted state without having to go through an extended dialogue", and "allow
-  them to exit a flow or undo their last action and go back to the system's previous
-  state"; "when it's easy for people to back out of a process or undo an action, it
-  fosters a sense of freedom and confidence"
-  ([User control and freedom](https://www.nngroup.com/articles/user-control-and-freedom/),
-  [10 usability heuristics](https://www.nngroup.com/articles/ten-usability-heuristics/)).
-- The W3C WAI-ARIA Authoring Practices, **Dialog (Modal) pattern**, keyboard
-  interaction: "Escape: Closes the dialog"
-  ([Dialog (Modal) Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)).
-- The HTML `<dialog>` element closes on Escape as a **cancel** (`cancel` event, return
-  value unset): the platform treats Escape as "back out without choosing"
-  ([MDN: `<dialog>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog)).
-
-Every back-out logs `[new] back out <target>` (`back` or `home`) and
-reports `UI` · `Closed` · `NewDocument` ([Telemetry](../017-telemetry/telemetry.md)).
-
-## Responsive layout
-
-The New Space wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 36rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
-
-The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's account menu opens in front of the card rather than behind it.
-
-This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer, see [07-live-app](editor-app.md)). Those are addressed separately.
-
-## Jump Back In (recent documents card)
-
-Returning users get a **"Jump Back In" card** pinned to the right of the
-centred wizard (desktop `xl+` only; below that the wizard owns the width):
-the 5 most recently-saved documents they own or that sit in a team they have
-joined, as the index lists them, each row opening that
-document directly, with a relative "saved N ago" line. A team document's name
-follows the team mark (the Explorer's team icon), read out as "<team> team:". It is a side affordance,
-deliberately separate from the create flow, and hidden entirely for someone
-with no documents yet, of their own or their teams' (best-effort fetch: a failure just means no shortcut).
-A footer link **"Open Explorer"** goes to `/explorer/recent`, the same list
-uncapped, so users with more history than the card shows have a way into the
-full library. Component: `apps/editor/app/new/RecentDocumentsCard.tsx`.
-
-## One-step wizard
-
-The welcome screen asks **no question**: livehuddle has one editor mode ([Editor modes](editor-modes.md)), so there
-is no mode to choose, and the templates wait on the new document's start. Under the heading **New Space** and the line
-"A place for your team to meet, plan and run sessions.", its body shows what Create makes and where it will be saved,
-and it creates the document when Create is pressed:
-
-- **What it makes** (`NewSpaceSummary`): a quiet panel, not a choice, with Workshop's flipchart mark, **Blank Space**,
-  one line on what it opens on ("Opens on its start, with templates and the session tools ready."), and, under
-  "Templates on its start", the first three Office Spaces (the category the start opens on: Virtual Office,
-  Coworking Space, Team Pod) as small chips, then "and sessions to run". It is static markup in the prerendered page, so the body is never empty, not even before
-  hydration or where the Sync switch is not drawn (issue #330: after the mode cards went, the card was a heading over
-  a footer, and on a phone the footer floated in the middle of an empty screen). It names templates by their titles
-  only: no preview art, so `/new`'s first load carries none of the template previews.
-- **Where it will be saved**: the Sync Space to Server switch below it ([Where it will be saved](#where-it-will-be-saved)).
-
-- **Create** makes a Blank Space document (`blank-session`) that opens on Start a Space
-  ([Template starts](start-diagramming.md)). Footer: **Open Existing Space** on the left, then **Skip**.
-- **No Location step.** The document goes where new documents go by default, so the person is never asked:
-  - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-    says: This Browser for a guest (with sign-in enabled), livehuddle for everyone else. Decided at commit by
-    `resolveSaveLocation`, the same as the bypass links: a guest never waits, a browser that looks signed in waits
-    for identity, so a signed-in person is never handed a document in This Browser.
-  - **Filed** (livehuddle) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
-    otherwise the create carries no placement and the server files it in the person's
-    [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
-  - **Named** after its template ("Untitled Space", `untitledNameForTemplate`); it is renamed in the editor.
-  - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
-    livehuddle and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
-  - Why: the step asked three questions (name, store, folder) most people answer with the default, before they
-    have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Space
-    or Take Offline), so asking up front only slowed the first document down.
-- **No step rail.** One step needs no progress indicator.
-- **There is no theme step.** A new document starts on the **Default** theme,
-  and the Theme and canvas controls change it later; asking for a theme before
-  anything is on the canvas was a decision most people could not yet make.
-- **Skip** commits the documented defaults straight away: Blank Space and the **Default** theme, with its start
-  closed. The header **X** backs out without creating anything ([Escape backs out](#escape-backs-out)).
-- A bottom-left **Open Existing Space** button navigates to `/explorer`. The
-  `/new` route therefore does **not** render an Explorer panel of its own; the
-  button is the single, unambiguous way out.
-- The **Create** button shows an inline spinner and disables while the
-  create is in flight (`busy` prop, fed from the page's `submitting`
-  state), so a slow network gives feedback and can't double-submit.
-
-The wizard renders **immediately** with no identity spinner: the step is static, so
-there's nothing to wait for. Identity resolves in the
-background, and the create waits for it (`resolveSelf`) only when it has to.
-
-There is **no template picker over the editor**. An empty tab's templates are on its start
-([Template starts](start-diagramming.md)); the visitor name prompt (`IdentityPrompt`) is the only card the editor
-shows over the canvas.
-
-### Where it will be saved
-
-In the body, under what it makes, the wizard shows the **Sync Space to Server** switch, which chooses
-where the create goes rather than asking: it starts at the default for who is creating and moves nothing, as nothing
-exists yet ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)). It is not
-drawn when a `/new?folder=` / `?team=` context names a server place.
-
-### A press before hydration
-
-`/new` is a static export, so **Create** is on screen before React attaches its handler. A press in that gap is
-**kept, not lost**: an inline script in the page (`app/new/early-mode-choice.ts`), running as the HTML parses, takes
-it until the wizard mounts and shows the progress cursor; the wizard's first layout effect turns the script off and
-creates the document, exactly as if the press had landed after hydration, and only one document is made (issue #238).
+The visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) is the only card the editor shows over
+the canvas. On `sm:` and up it is a centred floating card (max 26rem); below `sm` it fills the viewport, its body
+scrolling between a pinned header and footer. It stacks on the `canvas-modal` rung, beneath the header.
 
 ### The empty-canvas hint
 
@@ -337,107 +235,43 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 `pointer-events-none` / `aria-hidden`, and stands down under
 `prefers-reduced-motion`.
 
-## Start Blank (skip the wizard)
+## What a /new link can ask for
 
-**Start Blank** is the name of the `?blank=1` bypass (and of Explorer Home's first-run blanks), and of the public sites' link to the wizard, `/new?start=blank` ([Start Blank on the wizard](#start-blank-on-the-wizard)); it was
-"Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
-`JustDraw`, so the funnel's history reads on unbroken.
+Every `/new` creates; the query only says what and where. All params are read by one module,
+`apps/editor/lib/new-document-params.ts`, so the page and its bfcache cleanup agree on what counts.
 
-Some users want an empty canvas right now, without the wizard. Two affordances serve them, both committing the
-documented Skip defaults (Blank template, Default theme, the template's
-default document name) without walking the wizard:
+- **Plain `/new`**: a Blank Space that opens on Start a Space. The header's New Space, the Explorer's New Space, the
+  not-found card and the marketing site's template links without a kind all land here.
+- **`/new?template=<kind>`**: that template instead of the blank (Default theme, the template's default name; a
+  template with floors makes one tab per floor, [Templates by mode](templates-by-mode.md#a-template-with-floors)),
+  opening on the canvas with the template on it. This is the URL the marketing site's template gallery links every
+  card to ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`. An unknown or
+  retired kind (`kanban`, livediagram's `blank` and `whiteboard`) is ignored: the plain Blank Space is made, so a
+  stale link never strands anyone.
+- **`/new?blank=1`** and **`/new?start=blank`**: **Start Blank**, a Blank Space that opens **with its start closed**
+  (`closeStartForBlank`), so whoever asked for a blank is not shown templates. `?blank=1` is Explorer Home's
+  first-run Start Blank; `?start=blank` the public sites' ([Marketing site](../019-marketing/marketing-site.md#start-blank)).
+  Only the exact `start` value `blank` counts. Either fires `UI / Used / JustDraw` (the token kept from the old "Just
+  Draw" name, so the funnel's history reads on unbroken). `blank` wins over `template`.
+- **`/new?q=<words>`**: `q` (trimmed, at most 60 characters) is handed to the new Space's start as its search, so the
+  templates it meant are the ones shown ([Template starts](start-diagramming.md) "Search handed over"). An empty `q`
+  is ignored. The marketing hero's **Build yours** buttons link here. A `mode` param (`/new?mode=draw`) is ignored:
+  there is one mode. `?welcome=1` is not read.
+- **`?folder=<id>`** / **`?team=<id>`**: the placement context, composing with every param above; it names a server
+  place, so the create is a cloud one whoever is creating ([Placement rides the create](#placement-rides-the-create)).
+- **`/new?via=<Surface>.<Slot>`**: the landing funnel's source ([Landing funnel](../019-marketing/landing-funnel.md)),
+  added by a public page's CTA. `useCtaAttribution` reads it once, sends `Cta / Opened / <source>`, and strips it from
+  the address bar with `history.replaceState` (keeping the other params). The create then sends
+  `Cta / Created / <source>`, once. An unknown source is stripped and ignored.
 
-- **`/new?blank=1`**: the query param bypasses the wizard entirely. The
-  page renders the opening screen (below) at its "Creating your canvas"
-  stage instead of the wizard, commits the blank document as soon as
-  identity resolves, and hands off to the editor in place (below). Any
-  truthy presence of `blank` counts.
-  The placement context params compose with it
-  (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a caller can
-  Start Blank straight into a folder or team library. A failed create shows
-  the same retryable error card as the wizard path. This is the URL a
-  start that wants no choice links to (Explorer Home's first-run Start Blank; the public sites'
-  Start Blank shows the wizard first, see [Start Blank on the wizard](#start-blank-on-the-wizard)).
-  - The handoff replaces the `/new?blank=1` history entry with
-    `/document/<id>`, so Back from the editor returns to the page before
-    `/new` (usually the marketing site), never to a page that would mint
-    another blank document. Should the browser still restore a bypass
-    `/new` from the back/forward cache before the handoff happened, it
-    redirects to the plain `/new` wizard rather than silently minting
-    another blank document or trapping the user behind a page that always
-    navigates forward again.
-  - No tour is queued on this path, nor on any other: tours start only from
-    the footer's Start Tour button ([Tours](editor-tour.md)),
-    so no create waits for the document count.
-  - **The wizard must never paint on this path, not even for a frame.**
-    `/new` is a static export, so its prerendered HTML is the wizard and
-    the query param is only knowable in the browser. A React-side check
-    alone runs after hydration: the static wizard HTML would flash first
-    (and a window-reading state initializer would additionally make the
-    hydration render disagree with the server HTML). So the page ships a
-    tiny inline script ahead of the wizard markup that reads
-    `location.search` **before first paint** and flags
-    `<html data-just-draw>`; a matching style rule hides the wizard-only
-    content under that flag, and React then swaps in the opening screen at
-    hydration (detected pre-paint in a layout effect, so the trees always
-    match).
-- **Where these links store the document**: the default for who is creating
-  ([Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating),
-  `resolveSaveLocation` in `app/new/useNewDocumentLocation.ts`). A guest gets a
-  document in This Browser, created without waiting for identity at all
-  ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
-  a signed-in person's create still waits for auth to settle. A placement param
-  (`folder` / `team`) names a server place, so it makes the create a cloud one
-  whoever is creating.
-- **`/new?template=<kind>`**: the same bypass for a named template: the
-  page commits that template (Default theme, the template's default name)
-  the moment identity resolves and lands on the editor, with the same
-  opening screen, in-place handoff, bfcache-restore redirect, placement params and error card
-  as `?blank=1`. `blank` wins when both are present. `blank` and `whiteboard`
-  (livediagram's Blank Diagram and Blank Whiteboard) left the catalogue with build plan step 5.4, so they are
-  unknown kinds now. An unknown kind is
-  ignored and the plain wizard shows (the pre-hydration guard can't
-  validate a kind, so the layout effect lifts it), so a stale link never
-  strands anyone. Both params are read by one helper,
-  `wizardBypassKind` in `apps/editor/lib/new-document-params.ts`, so the
-  page, its restore cleanup and the guard agree on what counts. This is
-  the URL the marketing site's template gallery links every card to
-  ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
-- **`/new?q=<words>`**: `q` (trimmed, at most 60 characters) is handed to the new document's start as its search, so
-  the templates it meant are the ones shown ([Template starts](start-diagramming.md) "Search handed over"). It
-  composes with the placement params and is not a bypass: nothing is committed until the author presses Create. An
-  empty `q` is ignored. Read by `wizardPresetQuery` in `apps/editor/lib/new-document-params.ts`. The marketing hero's
-  **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)). A `mode` param
-  (`/new?mode=draw`) is ignored: there is one mode.
-- **`?welcome=1`** is not read: a `/new?blank=1&welcome=1` link opens as `?blank=1` does.
-- **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
-  ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
-  combinable with every param above. `useCtaAttribution` reads it once,
-  sends `Cta / Opened / <source>`, and strips it from the address bar with
-  `history.replaceState` (keeping the other params), so a reload or Back
-  can't count the arrival twice. Whichever path commits the document (Create,
-  Skip or a bypass) then sends `Cta / Created / <source>`, once. An unknown
-  source is stripped and ignored.
-- **No "Start Blank" button inside the wizard.** The footer's **Skip** already commits the same blank defaults, and
-  Start Blank now lives only on the surfaces that link to
-  `/new?blank=1`.
-
-### Start Blank on the wizard
-
-**`/new?start=blank`** is the public sites' **Start Blank** ([Marketing site](../019-marketing/marketing-site.md#start-blank)),
-and the Start Blank in Explorer Home's first-run field ([Explorer Home](../013-workspace/explorer-home.md)).
-It is **not a bypass**: the wizard shows as usual. **Create** (pressed, or before hydration) makes the Blank Space
-exactly as without the flag, but opens it **with its start closed** (`closeStartForBlank`), as Skip does, so whoever
-asked for a blank is not shown templates again.
-
-- Read by `wizardStartsBlank` (`lib/new-document-params.ts`) at the moment of the create: only the exact value
-  `blank` counts; any other `start` value, or none, keeps the start.
-- Composes with the placement context (`?folder=`, `?team=`) and `?via=`.
-- `?blank=1` and `?template=` still win: with either, the wizard is bypassed and the flag has nothing to change.
+**A restore from the back/forward cache** that finds `/new` before its handoff (the person left mid-create) does not
+create again, which would trap Back behind a page that always moves forward: it backs out to the page that opened
+`/new` (`history.back()`), or home when there is none (`backOutTarget`). No tour is queued on any path: tours start
+only from the footer's Start Tour button ([Tours](editor-tour.md)).
 
 ### In-place handoff to the editor
 
-Every commit from `/new` (Create, Skip, and both bypass URLs)
+Every create from `/new`
 opens the editor **without a page load**. Once the document is persisted and
 placed, the page rewrites the address bar to `/document/<id>` with
 `history.replaceState` and renders the editor component (`EditorPage`, the
@@ -451,8 +285,7 @@ it cannot tell the difference from a direct visit.
   swap keeps the one signed-in session, the one document, and one continuous
   opening screen.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's
-  chunk as soon as it mounts (a bypass needs it within a second; a wizard
-  visitor almost always goes on to create), so the chunk downloads in
+  chunk as soon as it mounts (it is needed within a second), so the chunk downloads in
   parallel with identity and the create request. If it is not ready at
   handoff, the opening screen holds at the "Opening your canvas" stage
   until it is.
@@ -515,13 +348,13 @@ by a request that failed quietly.
 
 The create also carries the new document's creation `intent` (its first tab's editor mode, always Workshop,
 its first tab's kind and its template family), so a create with no place chosen lands in the person's
-[default folder](../013-workspace/default-folders.md) for it, resolved by the server. The blank made by the
-wizard is filed as a Workshop; the template picked later on its start screen may then move it to that template's
+[default folder](../013-workspace/default-folders.md) for it, resolved by the server. The blank made by
+`/new` is filed as a Workshop; the template picked later on its start screen may then move it to that template's
 default ([Default folders](../013-workspace/default-folders.md) "A template picked after creation").
 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
   "Placement refused", title "Couldn't file the canvas there", and one action,
-  **Choose another place**, which reopens `/new` without the bypass and placement params, so the
+  **Use Default Place**, which reopens `/new` without the template and placement params, so the
   next create goes where new documents go by default:
   - `team_forbidden`: "You're not a member of that team, so the canvas can't be filed in its library."
   - `folder_not_found`: "That folder no longer exists, or isn't yours."
@@ -531,8 +364,8 @@ default ([Default folders](../013-workspace/default-folders.md) "A template pick
 - **Telemetry:** `Team / Added / Document` fires once a create into a team has succeeded,
   never on a refused one.
 
-Telemetry: the Start Blank bypass (`/new?blank=1`) fires `UI / Used / JustDraw` alongside
-the usual `Document / Created` event, so wizard-bypass adoption is
+Telemetry: Start Blank (`?blank=1`, `?start=blank`) fires `UI / Used / JustDraw` alongside
+the usual `Document / Created` event, so its adoption is
 measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## Themes
@@ -551,29 +384,19 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 ## Tests / sanity-check checklist
 
 - `/document/placeholder` with no `?s=` → redirects to `/new`, no flash.
-- `/new` → welcome card on first paint.
-- Create → editor loads on `/document/<id>`, on Start a Space.
-- Close the welcome via the header X → back to the page that opened `/new`
-  (or home), no document created.
+- `/new` → the opening screen on first paint, then the editor on `/document/<id>`, on Start a Space, on Recommended.
+- `/new` → the document is created at once, This Browser for a guest, filed in the signed-in person's default folder
+  for it.
+- Back from the editor after `/new` → the page before `/new`.
 - `/document/<id>` (existing) → editor hydrates as before.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
-- NotFound CTA → goes to `/new`.
-- "New Space" from Explorer → goes to `/new`.
-- `/new` from the home page, Escape → back on the home page, no document created.
-- `/new` typed in, Escape → the home page.
-- `/new`, Create → the document is created at once, This Browser for a guest, filed in the
-  signed-in person's default folder for it.
-- `/new?blank=1` → no wizard; blank document created and editor loads on
-  `/document/<id>`.
+- NotFound CTA → goes to `/new`. "New Space" from the Explorer → goes to `/new`.
+- `/new?blank=1`, `/new?start=blank` → a blank document, its start closed.
 - `/new?blank=1&folder=<id>` → the blank document files into that folder.
-- `/new?template=retrospective` → no wizard; a Retrospective created and the
-  editor loads on `/document/<id>`.
-- `/new?template=not-a-kind` (a retired one, such as `kanban`, too) → the plain wizard.
-- `/new?template=whiteboard` (or `blank`) → no wizard; an empty Workshop tab created.
-- `/new?q=retro` → the wizard; on the new document Start a Space opens with its search reading "retro".
-- `/new?mode=draw` → the plain wizard: the mode is ignored.
-- `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
-  removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.
+- `/new?template=team-pod` → a Team Pod created and the editor loads on it.
+- `/new?template=not-a-kind` (a retired one, such as `kanban`, too) → a Blank Space on Start a Space.
+- `/new?q=bar` → on the new document Start a Space opens with its search reading "bar".
+- `/new?mode=draw` → a Blank Space: the mode is ignored.
 
 ## Out of scope for V1
 

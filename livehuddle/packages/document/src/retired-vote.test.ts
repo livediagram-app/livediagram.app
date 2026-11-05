@@ -19,10 +19,10 @@ describe('dropRetiredVote', () => {
   });
 
   it('drops a stored vote, whatever it holds, and keeps the rest', () => {
-    const timer = { mode: 'stopwatch', running: false, frozenMs: 0 };
+    const folder = 'Stand-ups';
     for (const vote of [oldVote, 'x', null, undefined]) {
-      const out = dropRetiredVote({ id: 't', name: 'T', elements: [], timer, vote });
-      expect(out).toEqual({ id: 't', name: 'T', elements: [], timer });
+      const out = dropRetiredVote({ id: 't', name: 'T', elements: [], folder, vote });
+      expect(out).toEqual({ id: 't', name: 'T', elements: [], folder });
     }
   });
 

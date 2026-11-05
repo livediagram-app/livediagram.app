@@ -15,18 +15,19 @@ import { templateMatchesQuery } from './template-search';
 import { TEMPLATES } from './templates';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/templates-by-mode.md "The
-// catalogue": the ten Spaces in four categories by the kind of place they are, the blank in none.
+// catalogue": the eighteen Spaces in five categories by the kind of place they are, the blank in none.
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('is Events, Office, Outdoor and Recreation, alphabetical, Title Case, with even descriptions', () => {
+  it('is Campus, Events, Office, Outdoor and Recreation, alphabetical, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
+      'Campus',
       'Events',
       'Office',
       'Outdoor',
       'Recreation',
     ]);
-    expect(ids).toEqual(['events', 'office', 'outdoor', 'recreation']);
+    expect(ids).toEqual(['campus', 'events', 'office', 'outdoor', 'recreation']);
     for (const c of TEMPLATE_CATEGORIES) {
       expect(c.description.length, c.id).toBeGreaterThanOrEqual(40);
       expect(c.description.length, c.id).toBeLessThanOrEqual(50);
@@ -49,7 +50,7 @@ describe('template categories', () => {
     }
   });
 
-  it('files two to four Spaces in each category, cross-listed nowhere', () => {
+  it('files two to seven Spaces in each category, the Beach Offsite cross-listed in Campus', () => {
     const inCategory = (id: (typeof ids)[number]) =>
       TEMPLATES.filter((t) => templateCategory(t.kind) === id).map((t) => t.kind);
     expect(inCategory('office')).toEqual([
@@ -58,14 +59,22 @@ describe('template categories', () => {
       'team-pod',
       'focus-library',
     ]);
-    expect(inCategory('events')).toEqual(['all-hands-hall', 'training-room']);
+    expect(inCategory('events')).toEqual(['all-hands-hall', 'training-room', 'expo-hall']);
     expect(inCategory('recreation')).toEqual(['rooftop-bar', 'cafe']);
-    expect(inCategory('outdoor')).toEqual(['garden-retreat', 'city-park']);
+    expect(inCategory('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
+    expect(inCategory('campus')).toEqual([
+      'company-campus',
+      'conference-venue',
+      'startup-hq',
+      'school-quad',
+      'hotel-and-suites',
+      'coworking-tower',
+    ]);
     for (const id of ids) {
       expect(inCategory(id).length, id).toBeGreaterThanOrEqual(2);
-      expect(inCategory(id).length, id).toBeLessThanOrEqual(4);
+      expect(inCategory(id).length, id).toBeLessThanOrEqual(7);
     }
-    expect(TEMPLATE_ALSO_IN).toEqual({});
+    expect(TEMPLATE_ALSO_IN).toEqual({ 'beach-offsite': ['campus'] });
     expect(isInTemplateCategory('team-pod', 'office')).toBe(true);
     expect(isInTemplateCategory('blank-session', 'office')).toBe(false);
   });

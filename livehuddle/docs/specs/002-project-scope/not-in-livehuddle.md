@@ -30,13 +30,14 @@ to change.
 
 - **Spaces, avatars, rooms and calls**: Avatar mode, the Space elements (Travel, Seating, Rooms, Amenities), the Selection Mode
   buttons, the four Spaces templates, proximity audio and calls.
-- **Light meeting tools**: the Session strip's **Timer** (countdown and stopwatch; the Vote went later, [Vote](#the-vote)),
-  [Bring Focus](../012-collaboration/bring-focus.md), and the [facilitator baton](../012-collaboration/facilitator.md)
-  they answer to, and Follow-me. The laser, the spotlight and the Reaction Pads went later
+- **Light meeting tools**: [Bring Focus](../012-collaboration/bring-focus.md), the
+  [facilitator baton](../012-collaboration/facilitator.md) it answers to, and Follow-me. The Session strip's Timer went
+  later, for the [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md) pieces ([The Session strip's
+  Timer](#the-session-strips-timer)), and so did the Vote ([Vote](#the-vote)). The laser, the spotlight and the Reaction Pads went later
   ([The presenting tools](#the-presenting-tools-isometric-and-zen)); the Avatar panel's Reactions (a burst around your
   own character, keys `1` to `5`) stay.
-- **Light content**: sticky notes, text, images (with image search and the gallery), stickers, icons and link cards.
-  The Frame went later ([The Frame](#the-frame)).
+- **Light content**: sticky notes, text and stickers. The Frame went later ([The Frame](#the-frame)), and so did
+  the Icons category ([Icons](#icons)) and adding images and link cards ([Media](#media-image-and-link-card)).
 - **Talking without a call**: speech bubbles, comments with mentions, comment reactions, and assigned actions from
   any element's menu with the Collaborate Panel.
 - **Every platform feature** ([v1 scope](v1-scope.md) section 7).
@@ -71,7 +72,8 @@ with the code, not kept with a banner.
   room drops one at its op gate before anything else reads it, so a tab on an older build that sends one costs
   nothing (never sequenced, relayed, logged or replayed). The editor no longer sends either.
 - **Stored view choices.** A browser that stored Zen as on, or a laser or spotlight pen, keeps the key; nothing reads
-  it. The Isometric dot-grid **background** is not Isometric mode and stays.
+  it. The Isometric **background** is not Isometric mode; it went later with the other diagram patterns
+  ([The diagram canvas patterns](#the-diagram-canvas-patterns)).
 
 ## The Frame
 
@@ -101,7 +103,7 @@ call or a sticky of its own. livediagram keeps it, and its specs are the ones to
 [Session tools](../../../../livediagram/docs/specs/012-collaboration/session-tools.md) (voting, the Vote panel, vote
 privacy) and [Vote layer scope](../../../../livediagram/docs/specs/012-collaboration/vote-layer-scope.md). The vote's
 own specs in this tree (the vote keys blueprint, the vote layer scope record) are deleted with the code, not kept with
-a banner; the [Timer and Stopwatch](../012-collaboration/session-tools.md) stay.
+a banner; the Session strip's Timer stayed then, and left later ([The Session strip's Timer](#the-session-strips-timer)).
 
 - **Gone from every surface**: the Vote button in the bottom-right Session cluster beside the Timer, the Vote panel
   and the session studio's Vote pane, the dot-vote session itself (casting dots on stickies, images and shapes, one
@@ -121,8 +123,31 @@ a banner; the [Timer and Stopwatch](../012-collaboration/session-tools.md) stay.
   save is merged.
 - **A stored Session Button** that started a vote is a [retired element](#retired-elements) like any other Session
   Button, and keeps its name "Dot Vote" (retired element naming is unchanged).
-- **Share roles**: a Participant comments, adds stickies and writes (and reacts); casting dots is no longer one of its
+- **Share roles**: a Participant comments and reacts (it no longer adds stickies or writes either,
+  [A Participant walks](../013-workspace/share-roles.md#a-participant-walks)); casting dots is no longer one of its
   acts ([Share roles](../013-workspace/share-roles.md)).
+
+## The Session strip's Timer
+
+The owner (2026-11-05): "The Timer button should be removed, and instead have elements we can place in rooms that are
+Timer or Stopwatches". A tab-wide timer button is a workshop's: one facilitator, one timebox. A Space holds several
+rooms, each with its own meeting, so a meeting's clock is now a piece on a room's wall: the
+[Timer and Stopwatch](../009-elements/timer-and-stopwatch.md), in the Meeting category. livediagram keeps its Session
+strip and Timer, and its [Session tools](../../../../livediagram/docs/specs/012-collaboration/session-tools.md) spec is
+the one to read for them; livehuddle's [Session tools](../012-collaboration/session-tools.md) is kept as the record.
+
+- **Gone from every surface**: the Session strip in the bottom-right cluster and its Timer button (the live clock on
+  the button, the dial, the extensions), its popover and the session studio's Timer pane, the timer's hover card, the
+  `session-timer` dock popover, and the help copy that sent people to the bottom bar. There was no keyboard shortcut
+  or command for it. The Session Tools article and its Timer sub-article now teach the pieces, at the same addresses.
+- **Its telemetry**: `Tab Started` / `Ended` `CountdownTimer` / `StopwatchTimer`, `Tab Toggled TimerPaused` /
+  `TimerResumed`, `Tab Changed TimerReset` / `TimerExtended` and `UI Opened SessionTimer` are no longer sent. The
+  `Started` and `Ended` actions stay: tours, the baton and the new pieces send them.
+- **A tab saved with a `timer` field** loads: `dropRetiredTimer` (`packages/document/src/retired-timer.ts`) drops it
+  on read, beside `dropRetiredVote`, in the stored-tab migration and on a peer's `tab` op and `tab-meta` patch. An old
+  running timer simply stops showing; no data migration.
+- **The facilitator baton** no longer governs a clock: the pieces belong to their rooms and anyone who takes part runs
+  them ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)).
 
 ## Imports from other tools
 
@@ -225,6 +250,122 @@ carry a **Gone from livehuddle** banner and record what livehuddle had.
   (`useQuickStyle`), which works out what Clear Styles resets, and publishes it to the quick bar. The panel's
   placement hook and the Clear Styles store are `@liveworkspace/workbench`'s, shared with livediagram, and stay.
 
+## Icons
+
+The owner (2026-11-05): "Remove Icons from livehuddle, keep Stickers". The Icons category is a searchable catalogue
+of single-colour line glyphs (server, database, user, lock...) for labelling a diagram's boxes. A Space is decorated
+with Stickers, the colour emoji and word badges people react and mark status with, and two decoration catalogues side
+by side is one more place to look. livediagram keeps the Icons category, and its specs are the ones to read:
+[Canvas and palette](../../../../livediagram/docs/specs/008-canvas/canvas-and-palette.md) (the Icons tab, icons
+inside shapes, swapping an icon) and
+[Browsing the palette by category](../../../../livediagram/docs/specs/010-palette/palette-category-browse.md).
+
+- **Gone from every surface**: the Icons button on the category bar (between Meeting and Stickers) and its two-pane
+  browse of icon groups; the Toolbar strip Search's icon matches; the search panel's Add to Canvas icon results;
+  dragging a palette icon onto a shape (an inline icon) or onto an icon (a swap), and clicking a palette icon while a
+  shape is selected (no palette icon is left to drag or click); the Technology marks (AWS, React...) in the Toolbar
+  strip's Search and the search panel; the help article and the marketing copy that named it. An old help address for it redirects to
+  the Stickers article. The Icons category had no keyboard shortcut or command palette entry, so none goes.
+- **A stored icon stays.** The `icon` shape kind, a shape's inline icon (`iconId`, `iconPosition`) and the renderer,
+  the export and the icon catalogue are untouched, so a Space that already holds one draws it, and it moves, copies,
+  restyles and deletes as before. Its element menu keeps the Icon section (position, size, weight, Remove Icon) and
+  the icon animations; dragging a stored icon element onto a shape still folds it in, and onto another icon still
+  swaps the glyph. Nothing migrates.
+- **What stays for decoration**: Stickers, with its own browse and search, as it was. A sticker is its own shape kind
+  (`sticker`), not an icon, so nothing it needs goes.
+- **Agents are not this part.** The api's `GET /icons` catalogue, the MCP's `search_icons` and an agent's `iconId` on
+  an element are the agent tools' (the diagram engine, Work Tracker #459) and stay until that part decides them.
+- **Telemetry**: `Element Added Icon` and `Element Added TechIcon` from the palette (a tap, a drag, a drop onto a
+  shape) and `Element Changed IconSwapped` from a palette drop are no longer sent. The types stay in the allowlist:
+  livediagram's palette and an agent still add icons.
+- **The code.** The Icons category's entry and body (`IconPickerTab`), its strip groups and strip tiles, its
+  catalogue Search entries, the search panel's `icon` results, the dynamic icon tile (`iconTileDef`) and the browse's groupings
+  (`ICON_CATEGORIES`, `iconsInCategory`, `getLineArtIconCatalog` in `lib/icons.ts`, with their tests) are deleted.
+  The plumbing under them goes too: the `icon` and `tech-icon` tile actions, `addIcon` and `addTechIcon` (and their
+  `onAddIcon` / `onAddTechIcon` handlers), the `ICON_DND_MIME` and `TECH_ICON_DND_MIME` drag payloads and the drop's
+  icon branch, the Technology dynamic tile (`techTileDef`) and its strip Search catalogue, the search panel's `tech:`
+  entries, and the shape's palette-icon drop target (`useIconDropTarget`, `IconDropPreview`, `onDropIcon`,
+  `dropIconOnElement`). What a stored icon still needs stays: `dropIconElementOnShape` (a stored icon dragged onto a
+  shape or an icon) and `removeIconFromElement`. The icon catalogue and its loader are `@liveworkspace/icons` and
+  `@liveworkspace/workbench`'s, shared with livediagram, and stay.
+
+## The Participant's palette and content
+
+The owner (2026-11-05): "dont let participants add notes or text elements, they shouldn't have a palette and always
+be in avatar mode". livediagram's Participant adds stickies and text, writes on others' elements, moves stickies and
+removes what it added, from a one-category palette ([its Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md#what-a-participant-changes)).
+In livehuddle that all goes: a Participant has no palette, adds, writes, moves and removes nothing, and is always in
+Avatar mode. It keeps the piece actions (a Notice Board's pin and unpin of its own notes, a Door's swing, a Timer's
+controls, the Jukebox, knocking), speech, reactions, comments and session answers. The detail is
+[A Participant walks](../013-workspace/share-roles.md#a-participant-walks).
+
+- **Stored content stays.** Stickies and text a Participant added earlier load and draw as they are, still signed
+  with its adder key; only an Editor changes them now. Nothing migrates.
+- **The code.** The `participate` palette category (`participantPaletteCategories`, `participantTiles`,
+  `PARTICIPANT_TILES`), the `participantPalette` strip variant, `PARTICIPANT_KEYS`, the keyboard's `participant` flag
+  and the participant content rule's add, remove and content-field branches (`PARTICIPANT_ADDABLE_TYPES`,
+  `PARTICIPANT_TEXT_FIELDS`, `PARTICIPANT_STICKY_FIELDS`, `PARTICIPANT_PLACE_TYPES`, `PARTICIPANT_IMAGE_FIELDS`,
+  `participantWritesOn`, `isParticipantPlaceable`) are deleted.
+
+## Media: Image and Link card
+
+The owner (2026-11-05): "remove the Media category, Image and Link from livehuddle". A Space is furnished from its
+rooms and pieces and written on with stickies, text and stickers; pinning pictures and bookmark cards to the floor is
+a board's habit, not a meeting place's. livediagram keeps both, and its specs are the ones to read:
+[Images](../../../../livediagram/docs/specs/009-elements/images.md),
+[Image search](../../../../livediagram/docs/specs/009-elements/image-search.md) and
+[Link cards](../../../../livediagram/docs/specs/009-elements/link-cards.md). Those pages in this tree carry a
+**Gone from livehuddle** banner.
+
+- **Gone from every surface**:
+  - the palette: the **Media** category (its Image and Link card tiles), the Image and Link card in **Popular**, the
+    Link card in **Travel**, and the Image in a Participant's **Participate** category (a Participant has no palette
+    now, [A Participant walks](../013-workspace/share-roles.md#a-participant-walks));
+  - the strip's Search and the search panel's Add to Canvas (they list only what the palette offers, so neither names
+    an Image or a Link card);
+  - the `9` key (Image) and its row in the keyboard reference;
+  - **pasting or dropping a picture file onto the canvas**: it used to upload the file and land an image element.
+    Now a file pasted or dropped on the canvas is refused like any other file the canvas does not take, with one
+    notice ("The canvas does not take files."); a livehuddle tab's JSON dropped there still points at Import;
+  - the help articles (Images, Link Cards; their old addresses redirect to the nearest article that stays) and the
+    marketing copy.
+- **Not this part, so they stay**: the **Screen** piece and the video links it plays, a **Notice Board**'s notes, an
+  element's **link** (Add Link: a URL or a tab an element opens), the account's **Image Gallery** in the Explorer
+  (uploads and where each is used; it now lists only what older Spaces hold) and a profile picture. Tab and Export pictures (PNG, the live image) are pictures of a tab, not image
+  elements.
+- **A stored image or link card stays.** Both are ordinary elements: a Space that already holds one draws it (an
+  image shows its picture, a link card its unfurled preview), and it selects, moves, resizes, copies, restyles and
+  deletes as before. Double-clicking a stored image still opens its picker to swap the picture, and a link card's URL
+  can still be changed, so a stored one is never stuck half set up. Nothing migrates.
+- **Agents are not this part.** The api's and MCP's image tools (`list_images`, an element's `imageId`) and a
+  `link-card` element in a changeset are the agent tools' (Work Tracker #459) and stay until that part decides them.
+- **Telemetry**: `Element Added Image` and `Element Added LinkCard` are no longer sent from the editor. Both types stay
+  in the allowlist: livediagram and agents still add them.
+- **The code.** The Media entry leaves the meeting layout, the Image and Link card tiles leave Popular and Participate,
+  and the Link card tile leaves Travel (its `tileGroup` goes; it files under `media` with the Image). The tile
+  definitions stay in the catalogue, like the diagram tools' ([What stays](#the-diagram-tools-still-in-livehuddles-ui)),
+  so a stored element still finds its name and glyph; nothing offers them. The paste and drop image upload
+  (`pasteImageFile`, `addImageFromGallery`) and the `9` key are deleted.
+
+## The diagram canvas patterns
+
+The owner (2026-11-05): the canvas options "are all great for other apps", but a Space wants floors (concrete, grass,
+mud, carpet). livehuddle's canvas wears a floor ([Floors](../011-theme/floors.md)) and the diagram backdrops leave:
+the static patterns **Grid** (dots), **Lines**, **Graph**, **Crosshatch**, **Confetti**, **Stripes**, **Diagonal**,
+**Waves**, **Bricks**, **Isometric**, **Checkerboard**, **Hexagonal** and **Engineering**, and the animated **Flow**,
+**Drift**, **Aurora**, **Ripple** and **Ribbons** with their Speed slider. livediagram keeps every one, and its
+[Canvas and palette](../../../../livediagram/docs/specs/008-canvas/canvas-and-palette.md) spec is the one to read.
+**Blank** stays as None, and the seasonal looks keep their motifs.
+
+- **Gone from every surface**: the Canvas panel's Static and Animated carousels (one Floor carousel now), the Pattern
+  colour swatch (it shows only for a seasonal motif), the Speed slider, every look that wore one (each now wears a
+  floor), and the help articles' pattern lists.
+- **A tab saved with one** loads on the floor nearest it, from one table, or on None for the animated ones
+  ([Floors](../011-theme/floors.md#stored-data)); nothing else on the tab changes. The ids stay in livehuddle's
+  `BackgroundPattern` type so such a tab still validates.
+- **Code**: the animated backdrop's overlay, its Looks-card still and the tab's speed setter are removed. A stored
+  `backgroundAnimationSpeed` stays in the `Tab` type so an old tab still validates, and is ignored.
+
 ## A Space that already holds a leaving element
 
 A stored Space may already hold a retro board, a poll card or a Page.
@@ -234,7 +375,7 @@ A stored Space may already hold a retro board, a poll card or a Page.
   save leaves it as it was, and livediagram still presents it. A stored Page is a shape kind like any other: it still
   draws, moves, copies, edits and deletes.
 - **Part 3 is done**: no palette entry, Search result, template, shortcut or help article adds a leaving element,
-  and the Session strip offers the Timer. A stored one still draws, moves, copies and deletes as it did, and a
+  and the Session strip offered the Timer (until it left too, [The Session strip's Timer](#the-session-strips-timer)). A stored one still draws, moves, copies and deletes as it did, and a
   running poll ends as it did: the strip's Poll button shows while a stored Poll card's poll runs, so the
   person who started it can end it, and never offers a new one. The retired templates' builders and previews were
   deleted with them (the catalogue, the union and the builders move together); a document named after one still
@@ -265,7 +406,7 @@ presenting tools, the `frame` ([The Frame](#the-frame)), and any other shape kin
   names a retired kind gets a square (the shape coercion every unknown kind gets).
 
 The session state that only these elements used goes the same way: a stored running poll is never shown, and the
-Session strip offers the Timer only. A document's stored deck (`presentation`) stays as part 2 left it: carried
+Session strip offered the Timer only (it has since left, [The Session strip's Timer](#the-session-strips-timer)). A document's stored deck (`presentation`) stays as part 2 left it: carried
 and redacted by the api, never read or written by the editor.
 
 ### The diagram tools still in livehuddle's UI
@@ -281,7 +422,7 @@ pens, the layout containers) is Work Tracker #459's, not this part's: a stored o
 
 Nothing changes in who may do what with what stays ([Share roles](../013-workspace/share-roles.md)). A leaving
 element's role rules no longer apply: its placeholder follows the Editor, Participant and Viewer rules of any element
-(an Editor moves, copies and deletes it; a Participant moves and deletes only what they added, as with any element, and
+(an Editor moves, copies and deletes it; a Participant changes nothing, as with any element, and
 comments on it; a Viewer sees it).
 
 ## Testing
@@ -291,8 +432,10 @@ comments on it; a Viewer sees it).
   settings), `palette-search.test.ts` (no Page result) and `view-transitions.test.ts` (no slide moves); the router's
   `legacy-editor-route.test.ts` pins the help redirects.
 - Part 3: the catalogue test pins the five templates; a link, an agent or a seed naming a leaving template is answered
-  with Blank Space (`retired-templates.test.ts`); a palette test pins the meeting palette; the strip test pins the
-  Timer.
+  with Blank Space (`retired-templates.test.ts`); a palette test pins the meeting palette.
+- The Session strip's Timer: a stored tab with a `timer` field loads and saves without it (`retired-timer.test.ts`);
+  the cluster has no Session strip (`CanvasChrome` has no `session-tools` strip); the palette offers Timer and
+  Stopwatch in Meeting (`palette-layouts.test.ts`).
 - Part 4: a stored tab holding each deleted kind loads, saves unchanged and shows its placeholder
   (`retired-kinds.test.ts` in `packages/document`, `RetiredElementFace.test.tsx` and the e2e
   `retired-elements.spec.ts` in the editor); the export draws the placeholder (`svg-render-retired.test.ts`); no
@@ -317,4 +460,13 @@ comments on it; a Viewer sees it).
 - Quick Style: Settings has no Quick Style page (`settings-catalogue.test.ts`, `SettingsDialog.test.tsx`), the editor
   loads no panel chunk (`document-lazy-load.test.ts`), the quick bar's Clear Styles still resets a selection
   (`ElementMenuQuickBar.test.tsx`, `useQuickStyle.test.tsx`), and the router pins the old help address.
+- Icons: the palette and the category bar offer no Icons category (`palette-layouts.test.ts`,
+  `bar-categories.test.tsx`), the strip Search and the search panel list no icon (`palette-catalogue-search.test.ts`,
+  `palette-search.test.ts`), a stored icon still draws and its menu still edits it, and the router pins the old help
+  address.
+- Media: the palette and the bar offer no Media category and no Image or Link card tile anywhere, Popular and
+  Participate included (`palette-layouts.test.ts`, `bar-categories.test.tsx`, `share-roles.test.ts`), the search
+  panel lists neither (`palette-search.test.ts`), `9` adds nothing (`useEditorKeyboardShortcuts.test.ts`), a pasted
+  or dropped picture is refused with the notice (`useClipboard.drop.test.tsx`), and the router pins the old help
+  addresses.
 - Every part: the help path tests (`repo-paths-in-docs`, `article-links`, the heading anchors) pass.

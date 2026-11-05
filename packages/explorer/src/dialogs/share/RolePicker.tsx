@@ -9,17 +9,21 @@
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { Level } from '@liveworkspace/index-client';
 import { CheckIcon, ChevronDownIcon } from '@liveworkspace/ui';
-import { LEVEL_ORDER, LEVEL_PASS } from './parts';
+import type { App } from '@liveworkspace/index-client';
+import { LEVEL_ORDER, LEVEL_PASS, levelBlurb } from './parts';
 
 export function RolePicker({
   level,
   onChange,
   levels = LEVEL_ORDER,
+  app,
 }: {
   level: Level;
   onChange: (level: Level) => void;
   // The levels offered, most capable first.
   levels?: readonly Level[];
+  // The item's app, for its own blurbs (APP_LEVEL_BLURBS).
+  app?: App;
 }) {
   const [open, setOpen] = useState(false);
   const listId = useId();
@@ -102,7 +106,7 @@ export function RolePicker({
             {pass.title}
           </span>
           <span className="truncate text-[11px] leading-snug text-slate-600 dark:text-slate-400">
-            {pass.blurb}
+            {levelBlurb(level, app)}
           </span>
         </span>
         <ChevronDownIcon
@@ -152,7 +156,7 @@ export function RolePicker({
                       {option.title}
                     </span>
                     <span className="text-[11px] leading-snug text-slate-600 dark:text-slate-400">
-                      {option.blurb}
+                      {levelBlurb(l, app)}
                     </span>
                   </span>
                   {active ? (

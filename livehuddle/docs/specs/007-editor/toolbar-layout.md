@@ -29,8 +29,10 @@ flyout of its tiles:
 ## The category bar
 
 > **In livehuddle** (Work Tracker #423, part 3): the bar is the meeting palette's
-> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write · Travel, Seating, Rooms, Amenities,
-> Modes · Icons, Stickers, Media** ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)). There is no Shapes, Draw, Layout, Ask, Session or Data button and no Session browse; the
+> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write | Rooms, Seating, Amenities, Bar,
+> Recreation, Garden, Meeting | Travel | Stickers** ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)).
+> There is no Icons button ([Icons](../002-project-scope/not-in-livehuddle.md#icons)), so the two-pane browse below
+> serves Stickers alone. There is no Shapes, Draw, Layout, Ask, Session or Data button and no Session browse; the
 > bar's mechanics below (hover intent, the keyboard, the flyouts, names fit or go) are livehuddle's as written, and
 > the categories they name are livediagram's.
 

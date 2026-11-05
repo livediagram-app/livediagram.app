@@ -93,7 +93,7 @@ A small plaque by a room's door: the room's name over a status line with a colou
 | Open a Screen large                                 | Yes    | Yes         | Yes    |
 | Knock from a Room Sign                              | Yes    | Yes         | Yes    |
 
-- Placing and the Video Link are editing (`can.edit`); the participant palette does not offer the tiles.
+- Placing and the Video Link are editing (`can.edit`); a Participant has no palette.
 - Seeing and opening are your own view. Knocking is presence: anyone who may walk may knock (a Viewer walks).
 - Sharing the screen the Screen shows stays an Editor's act ([Share
   roles](../012-collaboration/video-and-screen-bubbles.md#share-roles)).

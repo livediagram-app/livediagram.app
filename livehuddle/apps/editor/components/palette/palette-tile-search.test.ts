@@ -59,10 +59,7 @@ describe('tile and element signatures', () => {
   });
 
   it('gives the catalogue tiles none', () => {
-    const catalogue = PALETTE_TILES.filter(
-      (t) =>
-        t.action.type === 'icon' || t.action.type === 'tech-icon' || t.action.type === 'sticker',
-    );
+    const catalogue = PALETTE_TILES.filter((t) => t.action.type === 'sticker');
     for (const t of catalogue) expect(tileSignature(t), t.id).toBeNull();
   });
 });

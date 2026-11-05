@@ -72,6 +72,8 @@ export type WayfindingActions = {
   walkThere: (place: WalkTarget) => void;
   /** Jump to a point on a tab, like a Portal; `ignoreId` is an Elevator to step out of without calling it. */
   go: (to: { tabId: string; point: WayPoint; ignoreId?: string }) => void;
+  /** Fetch the floors (tabs) not loaded yet, so the Elevator panel knows their Elevators (elevator.md "The panel"). */
+  loadFloors: () => void;
   /** Close a panel a walk-in opened. */
   closeElevator: () => void;
 };

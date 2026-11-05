@@ -80,8 +80,8 @@ export function historyMarkCheckpoint(h: History): History {
 
 // Undo / redo re-graft the LIVE non-undoable state onto the restored
 // snapshot: comment threads (docs/specs/008-canvas/canvas-and-palette.md — typing a comment then Ctrl+Z
-// mustn't wipe it) AND the session timer's `timer` tab field
-// (docs/specs/012-collaboration/session-tools.md — not undoable, mutated via tick so no snapshot ever holds
+// mustn't wipe it) AND each Timer and Stopwatch's live clock, `pieceTimer`
+// (docs/specs/009-elements/timer-and-stopwatch.md: not undoable, changed by a delta so no snapshot is current on
 // it). Restoring a snapshot verbatim silently dropped both (then
 // autosave persisted + broadcast the stripped tab to every peer).
 

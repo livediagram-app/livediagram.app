@@ -54,25 +54,25 @@ Every tile of the four Space categories (Travel, Seating, Rooms, Amenities; [The
 ([Bring Focus](../012-collaboration/bring-focus.md)), Chair, Desk and Sofa
 ([Chair](../009-elements/chair.md)), Fence
 ([Fence](../009-elements/fence.md)), Avatar Pad
-([Avatar Pad](../009-elements/avatar-pad.md)), Link card
-([Link cards](../009-elements/link-cards.md)), and Room, Meeting Table, Plant,
+([Avatar Pad](../009-elements/avatar-pad.md)), and Room, Meeting Table, Plant,
 Bookshelf, Water Cooler, Coffee Machine and Rug ([Office](../009-elements/office.md)).
 With them comes the Avatar [Selection Mode button](../009-elements/mode-button.md), in Travel.
 
 ### 3. The Spaces templates
 
-[Ten Spaces in four categories](../012-collaboration/virtual-office-template.md) (Office, Events, Outdoor and
-Recreation), with Blank Space, are the whole catalogue (Work Tracker #423; [Templates by mode](../007-editor/templates-by-mode.md)).
+[Eighteen Spaces in five categories](../012-collaboration/virtual-office-template.md) (Campus, Office, Events,
+Outdoor and Recreation), with Blank Space, are the whole catalogue (Work Tracker #423; [Templates by mode](../007-editor/templates-by-mode.md)).
 
 ### 4. The meeting board: light content and light meeting tools
 
 Every tab is a meeting board, livehuddle's one editor mode, stored as `'workshop'`
 ([Workshop mode](../012-collaboration/workshop-mode.md)); the interface never names a mode.
 
-- **The palette** is the meeting palette: Popular; Write (Text, Sticky note); Travel, Seating, Rooms,
-  Amenities; Icons, Stickers, Media (Image, Link card) ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
-- **The Session strip**, with the Timer ([Session tools](../012-collaboration/session-tools.md)); the quick vote left
-  later ([Not in livehuddle](not-in-livehuddle.md#the-vote)).
+- **The palette** is the meeting palette: Popular; Write (Text, Sticky note); Rooms, Seating, Amenities, Bar,
+  Recreation, Garden, Meeting; Travel; Stickers ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
+- **The Timer and Stopwatch** pieces in the Meeting category ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md)).
+  The Session strip left: its Timer for these pieces ([Not in livehuddle](not-in-livehuddle.md#the-session-strips-timer)),
+  its quick vote before it ([Not in livehuddle](not-in-livehuddle.md#the-vote)).
 - **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md), Bring Focus and follow-me.
 
 Why only these (owner, 2026-11-04, Work Tracker #423): livehuddle is about meeting in Spaces, not workshops. A Team
@@ -131,7 +131,7 @@ another product.
 | Event Storming boards, the wall-photo import                    | A diagram kind with its own rules; livediagram's                                                                                                                           | Not here    |
 | Pages, slides, presenting as a deck                             | livedocuments' (decks and presenting stay in livediagram's Workshop mode)                                                                                                  | Not here    |
 | Retros, workshops, quizzes and games, the Collaborate elements  | Running a workshop is livediagram's Workshop mode (Work Tracker #423, [Not in livehuddle](not-in-livehuddle.md))                                                           | Not here    |
-| Shapes, arrows, drawing, layout containers, tables, charts      | Diagram tools; livediagram's. A Space keeps sticky notes, text, images and link cards                                                                                      | Not here    |
+| Shapes, arrows, drawing, layout containers, tables, charts      | Diagram tools; livediagram's. A Space keeps sticky notes, text and stickers                                                                                                | Not here    |
 | Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                                                                              | Later       |
 | Audio calls, video calls, screen sharing                        | Built for staging on Cloudflare Realtime ([Future work](../005-project-roadmap/future-work.md)); off in production until the calls kill switch (Work Tracker #316) is live | Staging     |
 | Calendar invites, recordings, transcripts                       | Each is a product of its own; none is asked for                                                                                                                            | Not planned |

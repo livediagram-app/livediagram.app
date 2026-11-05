@@ -431,7 +431,7 @@ export function SharePassesDialog() {
     },
     {
       title: 'Participant',
-      blurb: "Adds stickies, writes and comments. Can't reshape the board.",
+      blurb: 'Walks, talks and comments. Adds nothing to the space.',
       tile: 'fill-teal-600',
       text: 'fill-teal-800 dark:fill-teal-300',
       on: false,

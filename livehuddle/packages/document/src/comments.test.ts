@@ -38,36 +38,38 @@ describe('activeCommentCount', () => {
   });
 });
 
-describe('graftLiveTabState session fields (docs/specs/012-collaboration/session-tools.md)', () => {
-  const timer = { mode: 'stopwatch', running: true, anchorAt: 123 } as const;
-
-  it('carries a live timer onto a snapshot that predates it (undo keeps it)', () => {
-    const live = [{ ...tab('t1', [shape('a')]), timer }];
-    const snapshot = [tab('t1', [shape('a')])];
-    const restored = graftLiveTabState(live, snapshot);
-    expect(restored[0]!.timer).toEqual(timer);
+describe('graftLiveTabState live clocks (docs/specs/009-elements/timer-and-stopwatch.md)', () => {
+  const clock = { running: true, startedAt: 123, accumulatedMs: 0, durationMs: 300_000 };
+  const timer = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
+    ...shape('a'),
+    shape: 'timer',
+    ...extra,
   });
 
-  it('drops a snapshot timer the live state no longer has (cleared timer stays cleared)', () => {
-    const live = [tab('t1', [shape('a')])];
-    const snapshot = [{ ...tab('t1', [shape('a')]), timer }];
-    const restored = graftLiveTabState(live, snapshot);
-    expect('timer' in restored[0]!).toBe(false);
+  it('carries a live clock onto a snapshot that predates it (undo never stops a timer)', () => {
+    const restored = graftLiveTabState(
+      [tab('t1', [timer({ pieceTimer: clock })])],
+      [tab('t1', [timer()])],
+    );
+    expect((restored[0]!.elements[0] as ShapeElement).pieceTimer).toEqual(clock);
   });
 
-  it('grafts comments and session fields together', () => {
-    const live = [{ ...tab('t1', [shape('a', thread('hello'))]), timer }];
-    const snapshot = [tab('t1', [shape('a')])];
-    const restored = graftLiveTabState(live, snapshot);
-    expect((restored[0]!.elements[0] as ShapeElement).commentThread).toEqual(thread('hello'));
-    expect(restored[0]!.timer).toEqual(timer);
+  it('drops a snapshot clock the live piece no longer has (a reset stays reset)', () => {
+    const restored = graftLiveTabState(
+      [tab('t1', [timer()])],
+      [tab('t1', [timer({ pieceTimer: clock })])],
+    );
+    expect('pieceTimer' in restored[0]!.elements[0]!).toBe(false);
   });
 
-  it('grafting with sessionFields off leaves session fields to the snapshot', () => {
-    const live = [{ ...tab('t1', [shape('a')]), timer }];
-    const snapshot = [tab('t1', [shape('a')])];
-    const restored = graftLiveTabState(live, snapshot, { sessionFields: false });
-    expect('timer' in restored[0]!).toBe(false);
+  it('grafts comments and clocks together', () => {
+    const restored = graftLiveTabState(
+      [tab('t1', [timer({ pieceTimer: clock, commentThread: thread('hello') })])],
+      [tab('t1', [timer()])],
+    );
+    const el = restored[0]!.elements[0] as ShapeElement;
+    expect(el.commentThread).toEqual(thread('hello'));
+    expect(el.pieceTimer).toEqual(clock);
   });
 });
 

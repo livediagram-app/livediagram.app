@@ -14,7 +14,7 @@ const LIST: Alternative[] = [
     highlights: ['Free, no tiers', 'No sign-up', 'Meet on the board'],
     title: 'Miro alternative for meetings and workshops · livehuddle',
     description:
-      'A free, open-source Miro alternative for meetings and workshops: timers and polls on the board, avatars in a shared Space, no account needed.',
+      'A free, open-source Miro alternative for meetings and workshops: timers in every room, avatars in a shared Space, no account needed.',
     h1: 'The open-source Miro alternative for meetings and workshops',
     lede: 'Miro is a powerful, sprawling online workspace, and much of what teams do on it is meet: retros, stand-ups, planning, workshops. livehuddle is built for exactly that part. Open a Space from a link, walk in as your own character, and run the session on the board with a timer and polls built in, free, open source and with no sign-up.',
     rows: [
@@ -57,13 +57,13 @@ const LIST: Alternative[] = [
       'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
       'Participant links let a workshop add stickies, write and comment without being able to reshape the board.',
       'Assign action items to teammates on the board itself, so the follow-ups leave the meeting with an owner.',
-      '11 templates: a blank Space, and offices, halls, bars and gardens to walk round.',
+      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round.',
     ],
     sections: [
       {
         heading: 'Built for the meeting, not the whole workspace',
         paragraphs: [
-          'Miro grew into a broad workspace: boards, docs, tables, diagrams, video walkthroughs and a marketplace of apps. livehuddle does one part of that and goes deep on it: the time a team spends together. Every board is a workshop board, with the Session strip at its foot holding a timer and polls, and a palette of the things a facilitator reaches for, from a Q&A board and an idea box to a quiz with a countdown.',
+          'Miro grew into a broad workspace: boards, docs, tables, diagrams, video walkthroughs and a marketplace of apps. livehuddle does one part of that and goes deep on it: the time a team spends together. Every board is a workshop board, with a timer and a stopwatch to place in any room, and a palette of the things a facilitator reaches for, from a Q&A board and an idea box to a quiz with a countdown.',
           'Workshops are built in rather than bolted on. A facilitator runs the room with a shared timer, live polls, planning-poker estimate cards, quizzes and responses kept hidden until the reveal, and templates cover retrospectives in five formats, Lean Coffee and town hall Q&A. When the session ends, the actions it produced are assigned on the board.',
         ],
       },
@@ -158,7 +158,7 @@ const LIST: Alternative[] = [
       'Workshop tools built in: a facilitator role, a shared timer, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Participant links: the room adds stickies, writes and comments, and nobody can reshape the board by accident.',
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
-      '11 templates: a blank Space, and offices, halls, bars and gardens to walk round.',
+      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round.',
       'A free REST API, a command line and an MCP server, so scripts and AI assistants can read and change your Spaces.',
       'MIT-licensed, with portable exports, so your sessions never depend on one vendor.',
     ],
@@ -172,7 +172,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Workshops built in',
         paragraphs: [
-          'Running a session needs more than sticky notes. Every livehuddle board carries a Session strip with a shared timer and live polls, and one person can hold the facilitator baton so the room has a single host. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee and town hall Q&A, and comments and assigned actions keep the follow-ups with the board.',
+          'Running a session needs more than sticky notes. Every livehuddle room can hold a shared Timer or Stopwatch, and one person can hold the facilitator baton so the room has a single host. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee and town hall Q&A, and comments and assigned actions keep the follow-ups with the board.',
         ],
       },
       {
@@ -195,7 +195,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new sessions, start from one of the 11 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new sessions, start from one of the 19 templates.',
       },
       {
         q: 'Does livehuddle work with Figma?',

@@ -50,6 +50,7 @@ export function ElevatorFace({
           aria-expanded={pressed}
           aria-haspopup="dialog"
           {...press}
+          data-piece-main=""
           className="pointer-events-auto relative h-full w-full cursor-pointer rounded-md transition duration-100 active:scale-[0.98] sm:hover:brightness-[1.06]"
         >
           {wayfinding ? <ElevatorDoors elementId={elementId} wayfinding={wayfinding} /> : null}
@@ -104,6 +105,9 @@ function ElevatorPanelHost({
   );
 }
 
+// How long the panel shows a floor as loading before giving up on it (a failed fetch): its arrival row then.
+export const FLOOR_WAIT_MS = 8000;
+
 /**
  * Every Elevator in the space (elevator.md "The panel"): the others on this floor first (travel without changing
  * tab), then each other floor in tab order with its Elevators, a floor without one offering its arrival.
@@ -122,6 +126,17 @@ export function ElevatorPanel({
   const tabs = useWayfindingSelect(wayfinding.store, (s) => s.tabs);
   const activeTabId = useWayfindingSelect(wayfinding.store, (s) => s.activeTabId);
   const floors = useMemo(() => spaceFloors(tabs), [tabs]);
+  // Floors nobody has opened yet are fetched on opening the panel, once (elevator.md "Floors not opened yet"); a
+  // floor still not here after FLOOR_WAIT_MS (a failed fetch) shows its arrival row instead of loading forever.
+  // Read once, at opening: the fetch skips loaded tabs and dedupes one in flight, so one ask per opening is enough.
+  const loadingAtOpen = useRef(floors.some((f) => f.loading));
+  const [waited, setWaited] = useState(false);
+  useEffect(() => {
+    if (!loadingAtOpen.current) return;
+    wayfinding.actions.loadFloors();
+    const t = setTimeout(() => setWaited(true), FLOOR_WAIT_MS);
+    return () => clearTimeout(t);
+  }, [wayfinding]);
   const ride = (tabId: string, point: WayPoint, ignoreId?: string) => {
     onDone();
     wayfinding.actions.go({ tabId, point, ignoreId });
@@ -155,24 +170,33 @@ export function ElevatorPanel({
       {others.map((floor) => (
         <section key={floor.tabId} aria-label={floor.name} className="px-2 pt-2">
           <FloorHeading number={floors.indexOf(floor) + 1} name={floor.name} />
-          <ul>
-            {floor.elevators.map((lift) => (
-              <LiftRow
-                key={lift.id}
-                name={lift.name}
-                floor={floor.name}
-                onGo={() => ride(floor.tabId, lift.exit, lift.id)}
-              />
-            ))}
-            {floor.elevators.length === 0 ? (
-              <LiftRow
-                name={floor.arrivesAt === 'pad' ? 'Its Avatar Pad' : 'The Middle'}
-                floor={floor.name}
-                note="No Elevator on this floor"
-                onGo={() => ride(floor.tabId, floor.arrival)}
-              />
-            ) : null}
-          </ul>
+          {floor.loading && !waited ? (
+            <p
+              role="status"
+              className="px-1.5 pb-1 pl-10 text-[11px] text-slate-500 dark:text-slate-400"
+            >
+              Loading this floor
+            </p>
+          ) : (
+            <ul>
+              {floor.elevators.map((lift) => (
+                <LiftRow
+                  key={lift.id}
+                  name={lift.name}
+                  floor={floor.name}
+                  onGo={() => ride(floor.tabId, lift.exit, lift.id)}
+                />
+              ))}
+              {floor.elevators.length === 0 ? (
+                <LiftRow
+                  name={floor.arrivesAt === 'pad' ? 'Its Avatar Pad' : 'The Middle'}
+                  floor={floor.name}
+                  note="No Elevator on this floor"
+                  onGo={() => ride(floor.tabId, floor.arrival)}
+                />
+              ) : null}
+            </ul>
+          )}
         </section>
       ))}
       <div className="h-2" />

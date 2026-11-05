@@ -38,7 +38,7 @@ place. The specs themselves are unnumbered and named by subject.
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, per-mode layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in and multi-colour themes
-- ./012-collaboration/README.md - when working on realtime, the meeting board, the Timer, Bring Focus, facilitation, comments, actions, proximity audio, or a Collaborate spec marked Leaving livehuddle
+- ./012-collaboration/README.md - when working on realtime, the meeting board, Bring Focus, facilitation, comments, actions, proximity audio, or a Collaborate spec marked Leaving livehuddle
 - ./013-workspace/README.md - when gating any feature by share role (Editor, Participant and Viewer in livehuddle), or working on the Explorer, its filters, folders, default folders, teams, favourites, tags, shape libraries, share links, the Trash or the empty document clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI

@@ -59,6 +59,7 @@ import {
 import { POND_FILL, pondParts } from './office-social';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { roomSignSvg, screenSvg } from './svg-render-meeting';
+import { timerPieceSvg } from './svg-render-timers';
 import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';
 import { borderOf } from './svg-render-border';
 import { text, type Face } from './svg-render-face-kit';
@@ -137,6 +138,9 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
   'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
   'focus-button',
 ]);
 
@@ -274,6 +278,10 @@ export function svgBehaviourFace(
       return screenSvg(el);
     case 'room-sign':
       return roomSignSvg(el, surface);
+    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md "Export"): the time at the export.
+    case 'timer':
+    case 'stopwatch':
+      return timerPieceSvg(el, Date.now());
     case 'fence':
       return fenceArt(el, stroke);
     case 'avatar-pad':
@@ -459,7 +467,8 @@ function roomSvg(el: Face, floor: string, stroke: string): string {
 // A Door (docs/specs/009-elements/room-builder.md "Door"): the gap it paints over its wall, its jambs, the leaf
 // standing open and its swing, as the canvas draws it.
 function doorSvg(el: Face, floor: string, stroke: string): string {
-  const { gap, jambs, leaf, swing } = doorParts(el.width, el.height);
+  const { gap, jambs, leaf, shut, swing } = doorParts(el.width, el.height);
+  const closed = (el as { doorClosed?: boolean }).doorClosed === true;
   const f = xmlEscape(floor);
   const l = xmlEscape(stroke);
   const box = (b: { x: number; y: number; w: number; h: number }) =>
@@ -473,8 +482,11 @@ function doorSvg(el: Face, floor: string, stroke: string): string {
           `<rect ${box(j)} fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>`,
       )
       .join('') +
-    `<path d="${swing}" fill="none" stroke="${l}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-dasharray="4 4"/>` +
-    `<rect ${box(leaf)} rx="1" fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>` +
+    // Closed (room-builder.md "Opening and closing"): the leaf across the opening, no swing.
+    (closed
+      ? ''
+      : `<path d="${swing}" fill="none" stroke="${l}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-dasharray="4 4"/>`) +
+    `<rect ${box(closed ? shut : leaf)} rx="1" fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>` +
     `</g>`
   );
 }

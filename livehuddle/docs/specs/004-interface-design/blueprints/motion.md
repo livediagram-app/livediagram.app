@@ -146,7 +146,7 @@ keeps its own `lw-tl-*` motion, the date pulse included (`@liveworkspace/explore
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
 - **`apps/editor`**
-  - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
+  - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the

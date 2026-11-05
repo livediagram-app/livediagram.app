@@ -86,7 +86,7 @@ it materialises, so the character seems to beam in rather than pop.
 ## Share roles
 
 - **Editor**: places, moves, resizes, turns and deletes pads, like any element.
-- **Participant**: the Participant palette does not offer the pad, and a Participant cannot move or delete one.
+- **Participant**: has no palette, so it places no pad, and cannot move or delete one.
   A Participant starts on it and sees arrivals like everyone.
 - **Viewer**: cannot change a pad; starts on it and sees arrivals like everyone (Avatar mode is a Viewer's too).
 

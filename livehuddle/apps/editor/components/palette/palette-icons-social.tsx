@@ -25,6 +25,27 @@ export function WorldClockIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md): a wall timer with its display, and a
+// round stopwatch with its crown.
+export function TimerPieceIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="2" y="6" width="20" height="14" rx="3.5" />
+      <rect x="5" y="9" width="14" height="6" rx="1.5" />
+      <path d="M10 3h4v3" />
+    </Glyph>
+  );
+}
+
+export function StopwatchIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <circle cx="12" cy="14" r="7.5" />
+      <path d="M10 2.5h4M12 2.5v4M12 14l3-3M18.5 6.5l1.5-1.5" />
+    </Glyph>
+  );
+}
+
 export function JukeboxIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>

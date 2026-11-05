@@ -55,7 +55,14 @@ export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSeg
   const out: FenceSegment[] = [];
   // Doors (livehuddle's docs/specs/009-elements/room-builder.md "Door") cut the room walls they stand on.
   const doors: FenceSegment[] = [];
-  for (const el of elements) if (isSceneShape(el) && el.shape === 'door') doors.push(doorLine(el));
+  // A closed one does not (room-builder.md "Opening and closing"): its wall stays whole.
+  for (const el of elements)
+    if (
+      isSceneShape(el) &&
+      el.shape === 'door' &&
+      (el as { doorClosed?: boolean }).doorClosed !== true
+    )
+      doors.push(doorLine(el));
   for (const el of elements) {
     if (!isSceneShape(el)) continue;
     // A garden fence (livehuddle's docs/specs/009-elements/office.md "Garden Fence") blocks as a fence does.
@@ -69,6 +76,19 @@ export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSeg
         for (const edge of boxEdges(footprint)) out.push({ ...edge, solid: footprint });
     }
   }
+  return out;
+}
+
+/** The lines of the tab's shut Doors (room-builder.md "Opening and closing"), for routing a walk to one's outside. */
+export function shutDoorLines(elements: readonly AvatarSceneElement[]): FenceSegment[] {
+  const out: FenceSegment[] = [];
+  for (const el of elements)
+    if (
+      isSceneShape(el) &&
+      el.shape === 'door' &&
+      (el as { doorClosed?: boolean }).doorClosed === true
+    )
+      out.push(doorLine(el));
   return out;
 }
 

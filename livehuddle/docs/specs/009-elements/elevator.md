@@ -55,6 +55,13 @@ Elevator, titled with its name. It lists **every Elevator in the space**. Every 
   each with a Go. Riding to one stays on the tab. With no other, it says "No other Elevator on this floor".
 - **Then each other floor**, in tab order, numbered: one row per Elevator by name, each with a Go, so you pick which
   one you step out of. A floor with none offers one row, its Avatar Pad or its middle, saying it has no Elevator.
+- **Floors not opened yet.** Tabs load lazily ([Per-tab storage](../006-document/per-tab-storage.md)): a tab
+  nobody has visited this session holds no elements until it is opened, so its Elevators are not known. Opening the
+  panel fetches **only those floors** (the same one-shot tab fetch a visit makes, `loadAllTabs`, which skips loaded
+  tabs and a tab-scoped share's other tabs), and each lands in the document's tabs as a visit would, so the panel
+  never asks again. Until a floor lands its section reads **Loading this floor** with no Go, never "No Elevator on
+  this floor"; a floor still not here after eight seconds (a failed fetch) shows its arrival row instead. Nothing is fetched on page load, and a
+  space whose floors are all loaded fetches nothing.
 - A space with **one tab** adds a line saying to add a tab (a floor) with an Elevator on it.
 - Escape, a click outside or pressing the Elevator again closes it; walking off the Elevator closes a panel the
   walk-in opened.
@@ -88,6 +95,10 @@ Adding one emits `Element·Added·Elevator`. Riding is navigation and is not tra
 - **`apps/editor/lib/wayfinding.ts`**: `floorElevators` / `elevatorName` (names), `spaceFloors` (each tab's
   Elevators and its arrival point), `elevatorExitPoint`. Unit-tested.
 - **`hooks/canvas/useCanvasTool.ts`**: `keepWalkingTo(tabId)` marks the next change of tab as travel.
+- **Floors not opened yet**: `WayTab.loaded` (from the editor's `loadedTabIds`, through Canvas's
+  `portalTabsLoaded`) marks a floor whose elements are real; `ElevatorPanel` calls `wayfinding.actions.loadFloors`
+  (Canvas's `onLoadPortalTabs`, the editor's `loadAllTabs`) on opening when any floor is not, and `spaceFloors`
+  reports such a floor `loading`.
 - **`apps/editor/components/canvas/wayfinding/`**: `ElevatorFace.tsx` (the press, the panel, the doors) and the
   shared `useWayfinding.ts`, which detects the walk-in from the walk's `standingOnId` (once on arrival, ignoring the
   Elevator just stepped out of) and opens that Elevator's panel through the store.

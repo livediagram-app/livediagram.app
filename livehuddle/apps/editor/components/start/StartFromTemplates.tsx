@@ -1,13 +1,14 @@
 'use client';
 
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start a Space, a start panel
-// (StartPanel). The Spaces, Recommended (the blank first) and the other groups beside a grid of the templates, each its
+// (StartPanel). Recommended (the blank first) and the catalogue's groups beside a grid of the templates, each its
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livehuddle/ui';
 import {
   lucideBuilding2,
+  lucideMap,
   lucidePresentation,
   lucideStar,
   lucideTreePine,
@@ -32,6 +33,7 @@ const RAIL_ICONS: Readonly<
   Record<'recommended' | TemplateCategory, ReturnType<typeof lucideGlyph>>
 > = {
   recommended: glyph(lucideStar),
+  campus: glyph(lucideMap),
   office: glyph(lucideBuilding2),
   events: glyph(lucidePresentation),
   outdoor: glyph(lucideTreePine),
@@ -97,7 +99,7 @@ export function StartFromTemplates({
       helpArticle={copy.help}
       palette={palette}
       categories={categories}
-      // The Spaces lead (start-diagramming.md "The Spaces lead"): the first thing a new person sees is a place to walk.
+      // Recommended leads (start-diagramming.md "Recommended leads").
       initialCategory={start.initial}
       cardsIn={(id) => (start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard)}
       search={(query) =>

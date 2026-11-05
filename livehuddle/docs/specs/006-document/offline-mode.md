@@ -20,14 +20,14 @@ Offline Mode is **on by default for a guest and off by default for a signed-in p
 ([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
 Nobody is asked when creating a document; the default decides:
 
-- The **New Space** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+- A **new Space** ([Dedicated route for new-document creation](../007-editor/new-document-route.md#no-welcome-screen))
   asks only for a mode and creates the document in the default location for who is creating
   ([Save Locations](save-locations.md)): **This Browser** for a guest, **livehuddle** for a signed-in person.
   Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Space** puts one in This Browser on
   livehuddle.
-- The links that create without the wizard (`/new?template=`, `/new?blank=1`,
-  [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank-skip-the-wizard))
-  take the same default, so a guest following a template from the landing page
+- Every `/new` link (`/new?template=`, `/new?blank=1`,
+  [Dedicated route for new-document creation → What a /new link can ask for](../007-editor/new-document-route.md#what-a-new-link-can-ask-for))
+  takes the same default, so a guest following a template from the landing page
   gets a document in This Browser.
 - The location only changes _where the document is stored_; the mode, templates and theme work identically.
 

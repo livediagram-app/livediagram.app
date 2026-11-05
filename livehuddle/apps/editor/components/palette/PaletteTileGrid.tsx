@@ -34,10 +34,6 @@ export type PaletteTileActions = {
   addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
-  // Dynamic icon tiles (palette-dynamic-tiles, the Toolbar strip): drop a single line-art /
-  // Technology catalogue icon, same handlers the Icons / Technology tabs use.
-  addIcon: (iconId: string) => void;
-  addTechIcon: (iconId: string) => void;
   // Picks up one of livediagram's Draw mode markers (palette-marker-tiles); no livehuddle tile offers one today.
   beginMarker: (penId: WhiteboardPenId) => void;
   // Puts the armed tool down (its tile pressed again).
@@ -100,10 +96,6 @@ export function tileHandler(
       return () => actions.addSticker(a.stickerId);
     case 'component':
       return () => actions.addComponent(a.kind);
-    case 'icon':
-      return () => actions.addIcon(a.iconId);
-    case 'tech-icon':
-      return () => actions.addTechIcon(a.iconId);
     case 'marker':
       return () => actions.beginMarker(a.penId);
     case 'open':
@@ -150,14 +142,12 @@ export function tileActive(
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
     case 'sticky':
       return pendingDraw.type === 'sticky';
-    // Icon / sticker tiles DO arm (they ride the shape intent carrying their
-    // glyph id), but their catalogues are open-ended and the picker tabs
-    // render thousands of tiles, so pressed-state matching per glyph buys
+    // Sticker tiles DO arm (they ride the shape intent carrying their
+    // sticker id), but the catalogue is open-ended and the picker renders
+    // hundreds of tiles, so pressed-state matching per sticker buys
     // nothing the mode banner and cursor don't already say.
     case 'annotation':
     case 'sticker':
-    case 'icon':
-    case 'tech-icon':
       return false;
     // A marker in hand: the whiteboard pen intent in this pen's colour and width.
     case 'marker':

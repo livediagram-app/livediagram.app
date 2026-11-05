@@ -74,18 +74,19 @@ export const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
 const BG_PATTERN_ID = 'lvd-export-bg';
 
 // The tab's backdrop pattern as an SVG <defs> + a fill ref, or null when the
-// pattern is off / blank / unset. Shared by the SVG export (inline) and the
-// PNG/PDF rasteriser. Animated patterns + Blank return null (no static image).
+// pattern is off or None. Shared by the SVG export (inline) and the
+// PNG/PDF rasteriser. An unset pattern draws the theme's floor, as the canvas does.
 function backgroundPatternDefs(
   tab: Tab,
   opts: ImageExportOpts,
 ): { defs: string; fill: string; width: number; height: number; content: string } | null {
-  if (opts.pattern === false || !tab.backgroundPattern) return null;
+  if (opts.pattern === false) return null;
   const tile = backgroundPatternTile(
-    tab.backgroundPattern,
+    tab.backgroundPattern ?? 'grid',
     tab.patternColor ?? EXPORT_PATTERN_COLOR,
     tab.backgroundOpacity ?? 1,
     tab.backgroundPatternScale ?? 1,
+    tab.backgroundColor ?? EXPORT_BG,
   );
   if (!tile) return null;
   const defs =

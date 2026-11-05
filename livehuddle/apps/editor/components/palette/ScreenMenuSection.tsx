@@ -5,16 +5,11 @@
 // or Enter, like the portal's name; a link that is not a video says so and is not saved. Only an Editor's menu
 // renders it.
 import { useState } from 'react';
-import { screenVideoTarget, SCREEN_URL_MAX, type ShapeElement } from '@livehuddle/document';
+import type { ShapeElement } from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-
-// A bare youtu.be/... is judged as the https:// address that would be stored, as the video element's picker does.
-function normalised(raw: string): string {
-  const v = raw.trim();
-  return v && !/^https?:\/\//i.test(v) ? `https://${v}` : v;
-}
+import { isScreenLink, normalisedScreenLink } from '@/lib/screen-link';
 
 export function ScreenMenuSection({
   target,
@@ -28,10 +23,10 @@ export function ScreenMenuSection({
   const saved = target.screenUrl ?? '';
   const [draft, setDraft] = useFollowingDraft(`${target.id}\u0000${saved}`, () => saved);
   const [error, setError] = useState(false);
-  const url = normalised(draft);
+  const url = normalisedScreenLink(draft);
   const commit = () => {
     if (!url) return;
-    if (url.length > SCREEN_URL_MAX || !screenVideoTarget(url)) {
+    if (!isScreenLink(url)) {
       setError(true);
       return;
     }

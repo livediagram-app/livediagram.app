@@ -10,6 +10,7 @@
 // come from './index', and those are erased at build.
 import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
 import { isMeetingPieceShape, MEETING_PIECE_SIZE } from './meeting-pieces';
+import { isTimerPieceShape, TIMER_PIECE_SIZE } from './timer-pieces';
 import { DEFAULT_BUTTON_MODE } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
@@ -165,6 +166,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a wall screen and a door plaque.
   screen: MEETING_PIECE_SIZE.screen,
   'room-sign': MEETING_PIECE_SIZE['room-sign'],
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  timer: TIMER_PIECE_SIZE.timer,
+  stopwatch: TIMER_PIECE_SIZE.stopwatch,
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
@@ -310,6 +314,9 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): placed at their size, aspect locked,
   // no words of their own (a sign's name is its room's).
   if (isMeetingPieceShape(kind)) return { ...base, label: '', aspectLocked: true };
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md): placed at their size, aspect locked, no
+  // words; idle until first pressed, so nothing is stored.
+  if (isTimerPieceShape(kind)) return { ...base, label: '', aspectLocked: true };
   // An Elevator (docs/specs/009-elements/elevator.md "Names") arrives unnamed: it reads "Elevator 1", "Elevator 2" by
   // position on its floor until someone names it, the name under the piece.
   if (kind === 'elevator') {

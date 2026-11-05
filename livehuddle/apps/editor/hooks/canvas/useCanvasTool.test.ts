@@ -105,3 +105,40 @@ describe('useCanvasTool: openWalking', () => {
     expect(result.current.toolBeforeCurrent()).toBe('eraser');
   });
 });
+
+// A Participant is always walking (docs/specs/013-workspace/share-roles.md "A Participant walks"): the editor holds
+// the mode as it renders, and no pick, key, palette reach or change of tab takes it out.
+describe('useCanvasTool: held walking', () => {
+  const setup = () =>
+    renderHook(
+      ({ tabId, hold }) => {
+        const tool = useCanvasTool({ tabId });
+        tool.holdWalking(hold);
+        return tool;
+      },
+      { initialProps: { tabId: 'tab-1', hold: true } },
+    );
+
+  it('walks from the first frame', () => {
+    const { result } = setup();
+    expect(result.current.canvasTool).toBe('avatar');
+  });
+
+  it('refuses every way out while held', () => {
+    const { result, rerender } = setup();
+    act(() => result.current.selectCanvasTool('pan'));
+    act(() => result.current.setCanvasTool('select'));
+    act(() => result.current.exitAvatarTool());
+    expect(result.current.canvasTool).toBe('avatar');
+    rerender({ tabId: 'tab-2', hold: true });
+    expect(result.current.canvasTool).toBe('avatar');
+  });
+
+  it('hands back the tool underneath once let go (a preview ending)', () => {
+    const { result, rerender } = setup();
+    rerender({ tabId: 'tab-1', hold: false });
+    expect(result.current.canvasTool).not.toBe('avatar');
+    act(() => result.current.selectCanvasTool('pan'));
+    expect(result.current.canvasTool).toBe('pan');
+  });
+});

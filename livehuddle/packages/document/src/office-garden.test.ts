@@ -5,6 +5,8 @@ import {
   gardenFenceParts,
   gardenPathParts,
   grassEdgePath,
+  isPlazaPath,
+  PATH_STONE_INSET,
   GARDEN_PATH_FILL,
   GRASS_FILL,
   GRASS_TILES,
@@ -44,6 +46,44 @@ describe('the pod, the bar and the garden', () => {
     expect(down).toHaveLength(long.length);
     if (down[0]!.tag === 'ellipse') expect(down[0]!.ry).toBeGreaterThan(down[0]!.rx);
     expect(gardenPathParts(0, 10)).toEqual([]);
+  });
+
+  it('keeps every stone whole and back from both ends, however long the path', () => {
+    for (const thickness of [40, 64, 96]) {
+      for (let length = Math.ceil(thickness * 1.3); length <= 2000; length += 7) {
+        const stones = gardenPathParts(length, thickness).flatMap((p) =>
+          p.tag === 'ellipse' ? [p] : [],
+        );
+        expect(stones.length).toBeGreaterThanOrEqual(1);
+        const inset = stones.length > 1 ? thickness * PATH_STONE_INSET : 0;
+        for (const [i, s] of stones.entries()) {
+          expect(s.cx - s.rx).toBeGreaterThanOrEqual(inset - 1e-6);
+          expect(s.cx + s.rx).toBeLessThanOrEqual(length - inset + 1e-6);
+          expect(s.cy - s.ry).toBeGreaterThan(0);
+          expect(s.cy + s.ry).toBeLessThan(thickness);
+          // Stones never touch.
+          const next = stones[i + 1];
+          if (next) expect(next.cx - next.rx).toBeGreaterThan(s.cx + s.rx);
+        }
+      }
+    }
+  });
+
+  it('draws an about-square path as a round plaza with whole setts inside its kerb', () => {
+    expect(isPlazaPath(240, 200)).toBe(true);
+    expect(isPlazaPath(240, 64)).toBe(false);
+    for (const size of [64, 160, 280, 520]) {
+      const parts = gardenPathParts(size, size);
+      expect(parts[0]).toMatchObject({ tag: 'ellipse', role: 'floor', rx: size / 2 });
+      const setts = parts.filter((p) => p.tag === 'ellipse' && p.role === 'panel');
+      expect(setts.length).toBeGreaterThanOrEqual(6);
+      for (const s of setts) {
+        if (s.tag !== 'ellipse') continue;
+        const r = Math.hypot(s.cx - size / 2, s.cy - size / 2);
+        expect(r + s.rx).toBeLessThan(size / 2);
+        expect(r - s.rx).toBeGreaterThan(size * 0.31);
+      }
+    }
   });
 
   it('spaces a fence’s pickets end to end, across or down', () => {

@@ -103,6 +103,12 @@ export type CallSelf = {
   canShare: boolean;
   camera: CameraState;
   screen: ScreenState;
+  // A local preview (video-and-screen-bubbles.md "Local preview"): whether the browser can capture each kind here (in
+  // Avatar mode, for someone who may take part), and the preview's own camera and screen, beside the call's above.
+  canPreviewCamera: boolean;
+  canPreviewScreen: boolean;
+  previewCamera: CameraState;
+  previewScreen: ScreenState;
   // Raise hand (meeting-rooms-and-stage.md "Raise hand"): where you stand towards a live stage, the Who Can Speak of
   // a stage you stand on that bars you (for the stage line), your hand, and the hands up on the tab.
   stage: StagePlace;
@@ -136,6 +142,10 @@ const OFF: CallSelf = {
   canShare: false,
   camera: 'off',
   screen: 'off',
+  canPreviewCamera: false,
+  canPreviewScreen: false,
+  previewCamera: 'off',
+  previewScreen: 'off',
   stage: 'none',
   barredBy: null,
   hand: 'down',
@@ -291,6 +301,11 @@ export function onCallTalkStart(listener: () => void): () => void {
 
 export function callSelf(): CallSelf {
   return self;
+}
+
+/** Subscribe to this browser's call changing (a hook that selects one small part of it). */
+export function onCallSelf(listener: () => void): () => void {
+  return selfListeners.subscribe(listener);
 }
 
 export function useCallSelf(): CallSelf {

@@ -196,13 +196,26 @@
   }
 }
 
+/* A Timer that ran out (docs/specs/009-elements/timer-and-stopwatch.md "The time"): its display flashes three times,
+   then holds a steady red. */
+.lh-timer-flash {
+  animation: lh-timer-flash 1s ease-in-out 3;
+}
+@keyframes lh-timer-flash {
+  50% {
+    opacity: 0.35;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lh-social-anim,
-  .lh-coin-bubble {
+  .lh-coin-bubble,
+  .lh-timer-flash {
     animation: none !important;
   }
 }
 :root.reduce-motion .lh-social-anim,
-:root.reduce-motion .lh-coin-bubble {
+:root.reduce-motion .lh-coin-bubble,
+:root.reduce-motion .lh-timer-flash {
   animation: none !important;
 }

@@ -24,6 +24,7 @@ import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
 import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
   commentWithReactions,
@@ -64,7 +65,10 @@ export type ElementDelta =
   // An unpin names the note's signer too, and removes the note only while that is still its `by`: the room lets a
   // Participant send only its own key there, so it can unpin only what it pinned.
   | { kind: 'notice-pin'; note: NoticeNote }
-  | { kind: 'notice-unpin'; noteId: string; by: string };
+  | { kind: 'notice-unpin'; noteId: string; by: string }
+  // A Timer's or Stopwatch's clock (docs/specs/009-elements/timer-and-stopwatch.md "How a change travels"): the whole
+  // new state, so the last press in the room's order wins on every screen. Names nobody: anyone who takes part runs it.
+  | { kind: 'piece-timer'; state: PieceTimer };
 
 export function isComment(value: unknown): value is Comment {
   if (!value || typeof value !== 'object') return false;
@@ -205,6 +209,14 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
         notes.filter((_, i) => i !== at),
       );
     }
+    case 'piece-timer': {
+      if (el.type !== 'shape' || !isTimerPieceShape(el.shape)) return el;
+      // Locked or not: a lock fixes the piece in place, it does not freeze its clock.
+      if (!isPieceTimer(delta.state, el.shape)) return el;
+      if (el.pieceTimer && samePieceTimer(el.pieceTimer, delta.state)) return el;
+      const { running, startedAt, accumulatedMs, durationMs } = delta.state;
+      return { ...el, pieceTimer: { running, startedAt, accumulatedMs, durationMs } };
+    }
     default:
       return el;
   }
@@ -247,8 +259,17 @@ export function mergeIncomingElement(local: Element, incoming: Element): Element
     if (local.noticeNotes !== shape.noticeNotes) {
       next = local.noticeNotes ? { ...next, noticeNotes: local.noticeNotes } : withoutNotes(next);
     }
+    // A Timer's clock likewise: every press reached us as a delta, so a peer moving the piece never stops it.
+    if (local.pieceTimer !== next.pieceTimer) {
+      next = local.pieceTimer ? { ...next, pieceTimer: local.pieceTimer } : withoutPieceTimer(next);
+    }
   }
   return next;
+}
+
+function withoutPieceTimer(el: ShapeElement): ShapeElement {
+  const { pieceTimer: _drop, ...rest } = el;
+  return rest;
 }
 
 function withoutNotes(el: ShapeElement): ShapeElement {
@@ -260,7 +281,7 @@ function withoutNotes(el: ShapeElement): ShapeElement {
 function withoutDeltaFields(el: Element): unknown {
   const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
   if (rest.type !== 'shape') return rest;
-  const { checklistItems, noticeNotes: _n, ...shape } = rest as ShapeElement;
+  const { checklistItems, noticeNotes: _n, pieceTimer: _p, ...shape } = rest as ShapeElement;
   return checklistItems
     ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
     : shape;

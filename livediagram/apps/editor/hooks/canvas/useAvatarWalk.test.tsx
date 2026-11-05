@@ -57,7 +57,8 @@ describe('useAvatarWalk leaving the mode', () => {
 
 // docs/specs/009-elements/fence.md "Blocking": the walk loop runs every step through the fences.
 describe('useAvatarWalk with a fence', () => {
-  it('stops a click-walk at a fence', () => {
+  // avatar-mode.md "Finding the way": a click routes round the fence; a step that is not routed still stops at it.
+  it('walks a click round a fence to the far side, and stops a push at it', () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
     try {
       // A fence across y = 112, from x = 0 to 240.
@@ -65,6 +66,14 @@ describe('useAvatarWalk with a fence', () => {
       const { result } = setup(vi.fn(), [fence]);
       act(() => result.current.teleportTo({ x: 120, y: 200 }));
       act(() => result.current.walkTo({ x: 120, y: 0 }));
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(result.current.pos!.x).toBeCloseTo(120, 0);
+      expect(result.current.pos!.y).toBeCloseTo(0, 0);
+      // A push is direct (never routed): from just below the fence, straight at it, it stops at the reach.
+      act(() => result.current.teleportTo({ x: 120, y: 150 }));
+      act(() => result.current.shove(0, -1));
       act(() => {
         vi.advanceTimersByTime(3000);
       });

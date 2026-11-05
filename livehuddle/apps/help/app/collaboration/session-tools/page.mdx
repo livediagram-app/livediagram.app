@@ -1,50 +1,36 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TimerControl } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Session Tools',
-  description:
-    'A per-tab timer for running a meeting in a Space to time, synced to everyone in the room.',
+  description: 'Keep a meeting to time with a Timer or a Stopwatch placed in the room.',
   path: '/help/collaboration/session-tools/',
 });
 
-<ArticleLayout title="Session Tools" description="A shared timer that turns a Space into a meeting that runs to time." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
+<ArticleLayout title="Session Tools" description="Keep a meeting to time with a Timer or a Stopwatch placed in the room." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
 
-Session tools are the light tools a meeting needs, and the one it needs most is a **timer** for time-boxing an item. Anyone who can edit the Space can run it (or only the [facilitator](/help/collaboration/facilitator/), once someone takes that role), and it syncs to everyone in real time, so it pairs naturally with a stand-up, a brainstorm or an all-hands.
+Session tools are the light tools a meeting needs, and the one it needs most is a clock. In livehuddle the clock lives in the room itself: place a **Timer** or a **Stopwatch** from the palette's **Meeting** category, and everyone in the Space sees it tick in sync.
 
-<Figure caption="The Timer set-up, opened from the Timer button in the bottom bar.">
-  <TimerControl />
-</Figure>
+## Time in every room
 
-## Built for running a meeting live
+Because they're pieces rather than a button in the toolbar, every room can keep its own time: a stand-up corner with a 15 minute Timer, a workshop room with a Stopwatch, a focus booth with a 25 minute Timer. Each runs on its own.
 
-The **Timer** lives in the bottom bar, right after Undo and Redo. Every tab has one.
-
-The button opens the timer in a popover above it. While the timer is idle its button is just an icon, and pressing it opens the set-up. Once it is going the button shows its clock. Visitors on a Participant or Viewer pass see the **Timer** button only while the timer is running.
-
-The timer's popover closes as soon as you click elsewhere: the clock stays on the **Timer** button.
-
-While someone else is facilitating, the set-up, and a running timer's controls, say who at the top and are greyed out.
-
-The timer is scoped to a single tab, so different tabs can run different activities, and it rides the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, with nothing to set up again.
-
-- **Timer** time-boxes an item, as a countdown or a stopwatch counting up from zero (one runs at a time), shown on its button in the bottom bar. See [The Timer](/help/collaboration/session-tools/timer/).
+- **Timer and Stopwatch**: place one, then start, pause, reset or set it with the buttons under it. See [Timer and Stopwatch](/help/collaboration/session-tools/timer/).
 
 To point everyone at the same spot before you start, press [Bring Focus](/help/palette/behaviour/bring-focus/).
 
 ## Who can do what
 
-Session tools follow the Space's roles automatically. Anyone with an **Editor** pass (and the owner, and team members) can run the controls: starting, pausing and resetting the timer. Visitors on a **Participant** or **Viewer** pass never run anything: they see the timer ticking, and they only get its button in the bottom bar while it is running. Typically the facilitator holds an Editor pass, the team shares a Participant pass, and observers follow a Viewer pass.
+Anyone with an **Editor** or **Participant** pass can run a Timer or Stopwatch, so whoever is talking can keep time. A **Viewer** watches it tick. Placing and moving the pieces is an Editor's.
 
 ## What does and does not get recorded
 
-The timer does not add to [Undo](/help/canvas/undo/): starting a timer is not the kind of thing you would want to Ctrl+Z. A [space in This Browser](/help/privacy-and-security/offline-mode/) has no live room to share it with.
+Starting, pausing and resetting don't go on [Undo](/help/canvas/undo/): they're not the kind of thing you'd want to Ctrl+Z. A [space in This Browser](/help/privacy-and-security/offline-mode/) has no live room to share them with, but its pieces still run for you.
 
 <Tip>
-  Share a Participant pass with everyone who should add stickies and comment, and a Viewer pass with
-  anyone who only needs to watch. The roles do the gating for you, with no extra setup.
+  Share a Participant pass with everyone who should take part, and keep an Editor pass for whoever
+  arranges the space. The roles do the gating for you.
 </Tip>
 
 </ArticleLayout>

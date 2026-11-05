@@ -13,14 +13,12 @@ import {
   DataTabIcon,
   DrawTabIcon,
   PopularTabIcon,
-  IconsTabIcon,
   MediaTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   WriteTabIcon,
-  ParticipateTabIcon,
 } from '@livehuddle/ui';
-import { SPACE_CATEGORIES } from './space-categories';
+import { MEET_BAND, SPACE_CATEGORIES } from './space-categories';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -33,7 +31,7 @@ import { SPACE_CATEGORIES } from './space-categories';
  *
  * Order IS layout: the category picker renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic, 6 Collaborate).
+ * 1 Structure, 2 Decorate, 3 Dynamic, 6 Meet, 7 Travel).
  */
 export const PALETTE_CATEGORIES: {
   id: string;
@@ -53,15 +51,6 @@ export const PALETTE_CATEGORIES: {
     fullWidth: true,
     description: 'The tiles most reached for in this mode, from across its categories.',
     icon: <PopularTabIcon />,
-  },
-  {
-    // Participate (docs/specs/013-workspace/share-roles.md): a Participant's whole palette, what it may add. In no
-    // mode's layout: participantPaletteCategories offers it, and only to a Participant.
-    id: 'participate',
-    label: 'Participate',
-    fullWidth: true,
-    description: 'Add stickies and text to the board.',
-    icon: <ParticipateTabIcon />,
   },
   {
     id: 'shapes',
@@ -109,13 +98,6 @@ export const PALETTE_CATEGORIES: {
     icon: <ComponentsTabIcon />,
   },
   {
-    id: 'icons',
-    label: 'Icons',
-    group: 2,
-    description: 'Searchable catalogue of single-colour glyphs.',
-    icon: <IconsTabIcon />,
-  },
-  {
     id: 'stickers',
     label: 'Stickers',
     group: 2,
@@ -142,10 +124,11 @@ export const PALETTE_CATEGORIES: {
   // categories, from their one list. Their own band, one category per group, with no parent category. Their tiles:
   // COLLABORATE_CATEGORY_GROUPS. The Selection Mode category is gone: the Avatar button is in Travel
   // (docs/specs/009-elements/mode-button.md "Only Avatar").
-  ...SPACE_CATEGORIES.map(({ id, label, description, icon }) => ({
+  // Travel takes a band of its own, set apart on the bar (palette-top-level-categories.md "The strip's order").
+  ...SPACE_CATEGORIES.map(({ id, label, description, icon, band }) => ({
     id,
     label,
-    group: 6,
+    group: band ?? MEET_BAND,
     description,
     icon,
   })),

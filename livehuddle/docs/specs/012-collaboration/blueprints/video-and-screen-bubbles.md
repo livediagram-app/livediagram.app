@@ -12,6 +12,8 @@ Derived from [Video and screen share bubbles](../video-and-screen-bubbles.md). B
 | layer        | `CallLayer` (`'h' \| 'f'`)                                           | The camera's small and large simulcast encodings                       |
 | camera state | `CallSelf.camera`: `off`, `starting`, `on`, `blocked`                | This browser's camera                                                  |
 | screen state | `CallSelf.screen`: `off`, `starting`, `on`                           | This browser's share                                                   |
+| preview      | `CallSelf.previewCamera`, `CallSelf.previewScreen`                   | A local preview's camera and screen state, beside the call's           |
+| can preview  | `CallSelf.canPreviewCamera`, `CallSelf.canPreviewScreen`             | Avatar mode, `can.takePart`, and the browser can capture that kind     |
 | maximised    | `CallMaximised` `{ id, media }` or null                              | The one bubble this viewer has opened large (`id` `self` for your own) |
 | seen         | `pickSeen(…)`                                                        | The bubbles received: earshot, on screen, nearest, capped              |
 
@@ -35,6 +37,21 @@ the track (`replaceTrack`, `null` while off), so turning a camera off and on nev
 `getDisplayMedia` at `SCREEN_CONSTRAINTS`, sets `contentHint = 'detail'`, publishes with one encoding
 (`SCREEN_MAX_BITRATE`, `SCREEN_MAX_FPS`) and stops on the track's `ended` (the browser's own Stop) as on the button.
 A mode that no longer allows `video` or `screen` stops both and drops every bubble. A `visibilitychange` re-picks.
+
+**Local preview** (`lib/calls/local-preview.ts`, in the canvas chunk, never the call's): `LocalPreview` captures the
+camera (`getUserMedia` at `CAMERA_CONSTRAINTS`) or a screen (`getDisplayMedia` at `SCREEN_CONSTRAINTS`, `contentHint`
+`detail`, stopped on `ended`) with no call, shows it as your own media and keeps `previewCamera` / `previewScreen`.
+A stop while capture is pending cancels it (a generation count). `take(kind)` hands a stream over without stopping it.
+The constraints live in `lib/calls/media-constraints.ts` (re-exported by `call-config.ts`), so the preview pulls no
+call code into first load. `canCapture(kind)`: a secure context and `navigator.mediaDevices` with that API.
+`useProximityCall` makes one per canvas and routes the buttons: a preview that is on turns off; else a live call that
+may send that kind (camera: a speaker, screen: an Editor) toggles as before; else the preview starts. It stops the
+preview on leaving the mode, a tab change and unmount. The call gets the preview in its input (`preview`) and, while
+live and on every preview change, `adoptPreview()`: it takes each kind it may send under the mode
+(`CallVideo.adoptCamera` / `adoptScreen`, the same publish path as a toggle, no capture) and stops a preview of a kind
+the mode forbids. On teardown it clears only the own media it held and keeps the rest of `self`
+(`resetCallMedia(SELF_MEDIA_ID)`), so a preview it never took survives. `localOnly(self, media)` tells the bubble,
+the strip and the sharing bar a stream is a preview (the call's state off, the preview's on).
 
 **State** (`lib/calls/calls-store.ts`): `CallPeer` gains `video` and `screen` locators. A separate media store (`calls-media-store.ts`) holds
 the streams the bubbles draw (`callMedia()`: presence id → `{ video?, screen? }`, `self` for your own), and the
@@ -87,7 +104,8 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 - A `<video>` per received bubble, at most 6 + 2 + your own two. Bubbles re-render on a walker's step only for their
   own position (one style change), never the video element.
 - Off-screen and hidden-tab rules close subscriptions, so the SFU stops sending; the bubble code adds nothing to the
-  canvas chunk until a call starts except the bubble layer and the media store.
+  canvas chunk until a call starts except the bubble layer, the media store and the local preview (about a hundred
+  lines, constraints included). A preview captures only on a press and adds no per-frame work beyond its own bubble.
 
 ## Presentation and UX
 
@@ -144,6 +162,10 @@ restores, focus moves to Restore on open and back to the bubble on close. The sh
 | Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`               |
 | Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`            |
 | Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallClusterButton.test.tsx` |
+| Preview: captures, sends nothing, stops, cancels, releases | `apps/editor/lib/calls/local-preview.test.ts`             |
+| Join adopts a preview without a second prompt; roles; mode | `apps/editor/lib/calls/proximity-call.test.ts`            |
+| Buttons offered without a room; routing; mode and tab stop | `apps/editor/lib/calls/useProximityCall.test.tsx`         |
+| Preview role per level                                     | `apps/editor/lib/share-roles.test.ts`                     |
 | Bubble, maximise, restore, Escape, sharing bar             | `apps/editor/components/calls/*.test.tsx`                 |
 
 ## Constants and configuration

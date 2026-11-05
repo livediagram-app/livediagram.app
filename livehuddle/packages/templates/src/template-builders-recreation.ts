@@ -20,14 +20,16 @@ function stools(xs: readonly number[], y: number): OfficePiece[] {
   return xs.map((x) => ({ kind: 'bar-stool', x, y }));
 }
 
-// A sofa on its rug with a chair turned to it, the rug's top left at (x, y); the chair on the `side` given.
+// A sofa on its rug with a chair turned to it, the rug's top left at (x, y); the chair on the `side` given, close
+// beside the sofa as one seating group, so no gap between them is a squeeze to walk through
+// (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
 function lounge(x: number, y: number, side: 'left' | 'right'): OfficePiece[] {
   return [
     { kind: 'rug', x, y },
     { kind: 'sofa', x: x + 24, y: y + 20, facing: 'n' },
     side === 'right'
-      ? { kind: 'chair', x: x + 230, y: y + 20, facing: 'e' }
-      : { kind: 'chair', x: x - 106, y: y + 20, facing: 'w' },
+      ? { kind: 'chair', x: x + 188, y: y + 20, facing: 'e' }
+      : { kind: 'chair', x: x - 64, y: y + 20, facing: 'w' },
   ];
 }
 
@@ -115,10 +117,11 @@ export function buildCafe(cx: number, cy: number): Element[] {
         { kind: 'coffee-machine', x: 310, y: 48 },
         { kind: 'drinks-fridge', x: 400, y: 36 },
         // Two tables to share on the right, and a table for two (a pair of chairs facing each other).
+        // An aisle between the two tables (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
         { kind: 'meeting-table', x: 640, y: 60 },
-        { kind: 'meeting-table', x: 640, y: 300 },
+        { kind: 'meeting-table', x: 640, y: 348 },
         { kind: 'chair', x: 330, y: 300, facing: 'w' },
-        { kind: 'chair', x: 430, y: 300, facing: 'e' },
+        { kind: 'chair', x: 418, y: 300, facing: 'e' },
         // The sofa nook.
         { kind: 'rug', x: 60, y: 420 },
         { kind: 'sofa', x: 84, y: 440, facing: 'n' },

@@ -14,7 +14,7 @@ import {
 } from './template-office-parts';
 
 const LIBRARY_W = 1100;
-const LIBRARY_H = 600;
+const LIBRARY_H = 660;
 
 export function buildFocusLibrary(cx: number, cy: number): Element[] {
   const width = LIBRARY_W;
@@ -30,9 +30,10 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
       h: LIBRARY_H,
       door: 's',
       pieces: [
-        // The shelves along the back wall, the study desks in front of them.
+        // The shelves along the back wall, the study desks in front of them as one row, an aisle round it
+        // (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
         ...[40, 180, 320, 460].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
-        ...[40, 180, 320, 460].map((x) => ({
+        ...[40, 170, 300, 430].map((x) => ({
           kind: 'desk' as const,
           x,
           y: 230,
@@ -40,16 +41,16 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
         })),
         // Two Office Pods at the back right, their doors onto the floor, for a call without leaving the quiet.
         { kind: 'office-pod', x: 680, y: 40 },
-        { kind: 'office-pod', x: 890, y: 40 },
-        { kind: 'desk', x: 700, y: 300, facing: 's' },
-        { kind: 'desk', x: 840, y: 300, facing: 's' },
+        { kind: 'office-pod', x: 870, y: 40 },
+        { kind: 'desk', x: 700, y: 304, facing: 's' },
+        { kind: 'desk', x: 830, y: 304, facing: 's' },
         { kind: 'water-cooler', x: 1010, y: 300 },
         // The reading corner: a sofa on its rug and a chair facing it, away from the doorway.
-        { kind: 'rug', x: 60, y: 420 },
-        { kind: 'sofa', x: 84, y: 440, facing: 'n' },
-        { kind: 'chair', x: 290, y: 440, facing: 'e' },
-        { kind: 'plant', x: 420, y: 470 },
-        { kind: 'plant', x: 1010, y: 470 },
+        { kind: 'rug', x: 60, y: 462 },
+        { kind: 'sofa', x: 84, y: 482, facing: 'n' },
+        { kind: 'chair', x: 356, y: 482, facing: 'e' },
+        { kind: 'plant', x: 444, y: 512 },
+        { kind: 'plant', x: 1010, y: 512 },
       ],
     },
   ];

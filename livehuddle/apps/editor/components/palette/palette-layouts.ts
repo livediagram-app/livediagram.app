@@ -4,7 +4,7 @@
 // layout only arranges them.
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so the layout spells out only where it
-// differs. The catalogue categories (Icons, Stickers) are bodies with their own content and take no tile list. The
+// differs. The catalogue category (Stickers) is a body with their own content and take no tile list. The
 // palette lands on Popular, a fixed pick of tiles from across its categories.
 import type { EditorMode } from '@livehuddle/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
@@ -33,7 +33,7 @@ type PaletteLayout = {
 };
 
 // The categories whose body is its own content rather than a list of tiles.
-export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['icons', 'stickers']);
+export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['stickers']);
 
 // The tiles no strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every element
 // type"). The meeting palette has none: the Search finds only what the palette offers
@@ -44,19 +44,29 @@ export const SEARCH_ONLY_TILE_IDS: readonly string[] = [];
 // meeting in a Space. Light content to write with, the Space categories a Space is built from (one per question,
 // from their one list in space-categories.tsx; the Avatar button is in Travel), then the decorations. No diagram tools,
 // no frame and no Collaborate elements: those are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
+// Rooms opens on its Build group (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): the
+// Room, the Room Builder and the Door, then behind a divider the rest of the rooms pieces in catalogue order (Floor),
+// so a new rooms piece still joins by its tileGroup alone.
+export const ROOMS_BUILD = ['tools:room', 'tools:room-builder', 'tools:wall-door'] as const;
+function roomsTiles(): string[] {
+  const build: readonly string[] = ROOMS_BUILD;
+  const rest = tilesForCategory('collab-rooms')
+    .map((t) => t.id)
+    .filter((id) => !build.includes(id));
+  return [...ROOMS_BUILD, DIVIDE, ...rest];
+}
+
 const MEETING: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // What a Space is most often furnished with: a note, words, a picture and a link, then, behind a divider, the
-      // pieces a meeting place is built from.
+      // What a Space is most often furnished with: a note and words, then, behind a divider, the pieces a meeting
+      // place is built from. No Image or Link card (docs/specs/002-project-scope/not-in-livehuddle.md "Media").
       id: 'popular',
       description: 'What a Space is most often furnished with, from across the palette.',
       tiles: [
         'tools:sticky',
         'tools:text',
-        'tools:image',
-        'tools:link-card',
         DIVIDE,
         'tools:room',
         'tools:meeting-table',
@@ -67,16 +77,15 @@ const MEETING: PaletteLayout = {
     },
     // Words and notes. No Pointer note, Table, Checklist, Page or Annotation.
     { id: 'write', description: 'Text and sticky notes.', tiles: ['tools:text', 'tools:sticky'] },
-    // Each Space category holds its group's tiles, in catalogue order; one with none yet is left off.
-    ...SPACE_CATEGORIES.map((c) => ({ id: c.id })),
-    { id: 'icons' },
+    // Each Space category holds its group's tiles, in catalogue order; one with none yet is left off. Rooms leads
+    // with its Build group. Their order, and Travel's band of its own, are SPACE_CATEGORIES'
+    // (docs/specs/010-palette/palette-top-level-categories.md "The strip's order").
+    ...SPACE_CATEGORIES.map((c) =>
+      c.id === 'collab-rooms' ? { id: c.id, tiles: roomsTiles() } : { id: c.id },
+    ),
+    // Decoration: Stickers, last. No Icons and no Media (docs/specs/002-project-scope/not-in-livehuddle.md "Icons",
+    // "Media: Image and Link card").
     { id: 'stickers' },
-    // A picture (upload, the gallery, image search) and a link card. No avatar, no video or website embeds.
-    {
-      id: 'media',
-      description: 'A picture, uploaded or found, and a link card.',
-      tiles: ['tools:image', 'tools:link-card'],
-    },
   ],
 };
 
@@ -145,25 +154,10 @@ export function paletteLandingCategory(mode: EditorMode): string {
   return paletteLayoutFor(mode).landing;
 }
 
-// A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
-// Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles (whatever a
-// mode's Popular holds), then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
-const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
-const PARTICIPANT_IMAGE_TILE = 'tools:image';
+// A Participant has no palette (docs/specs/013-workspace/share-roles.md "A Participant walks").
 
-export function participantTiles(): PaletteTileDef[] {
-  const base = PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
-  const image = tileById(PARTICIPANT_IMAGE_TILE);
-  return image ? [...base, image] : base;
-}
-
-export function participantPaletteCategories(): ResolvedPaletteCategory[] {
-  const identity = IDENTITY.get('participate')!;
-  return [{ ...identity, tiles: participantTiles() }];
-}
-
-// The selection modes a Participant has: look and walk around (Build's Select and Hand, Interact's Avatar), never
-// Edit's Eraser or Format Painter.
+// The selection modes a read-only session (a Viewer) presses on a Selection Mode button: look and walk around
+// (Build's Select and Hand, Interact's Avatar), never Edit's Eraser or Format Painter.
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',
   'pan',

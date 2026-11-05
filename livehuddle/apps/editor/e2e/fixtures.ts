@@ -151,18 +151,14 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
-// creates the document there and then, and lands on the editor with the mode's start screen over the canvas
-// (docs/specs/007-editor/start-diagramming.md).
+// /new makes a Blank Space at once (docs/specs/007-editor/new-document-route.md "No welcome screen") and lands on the
+// editor with Start a Space over the canvas (docs/specs/007-editor/start-diagramming.md). `mode` is kept for the specs
+// that pass it: there is one mode.
 // Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context. Without one the document is
 // made on livehuddle (serverNewUrl), so a spec can seed it, share it or watch its saves; pass `'/new'` for a guest's
 // own create, which keeps it in This Browser.
-export async function createInMode(page: Page, mode: string, url?: string): Promise<string> {
+export async function createInMode(page: Page, _mode: string, url?: string): Promise<string> {
   await page.goto(url ?? (await serverNewUrl(page)));
-  await page.getByText('New Space', { exact: false }).waitFor();
-  const card = page.locator(`[data-new-mode="${mode}"]`);
-  await untilHydrated(card);
-  await card.click();
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   return new URL(page.url()).pathname.split('/').pop()!;
 }
@@ -175,25 +171,24 @@ const startScreen = (page: Page, title: RegExp = /^Start /) =>
 // Start Tour button is the one way in), so there is nothing to dismiss: kept so the specs that call it need not change.
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
-// A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-document-route.md), made on livehuddle (serverNewUrl) so seedTab can write it.
+// A blank canvas straight away: /new?blank=1, the Start Blank link, its start closed (docs/specs/007-editor/new-document-route.md), made on livehuddle (serverNewUrl) so seedTab can write it.
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
 
-// A blank tab in Workshop mode straight away: /new?template=blank-session creates it with no wizard
+// A blank tab in Workshop mode straight away: /new?template=blank-session creates it
 // (docs/specs/012-collaboration/workshop-mode.md "Templates"). Where the session kit lives: the
-// Collaborate and Stickers categories and the Session strip.
+// Collaborate and Stickers categories.
 export async function openBlankSession(page: Page): Promise<void> {
   await page.goto(await serverNewUrl(page, '/new?template=blank-session'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
 
-// A blank Diagram document through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
-// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
+// A blank Space through /new, then the start screen's × (a blank canvas, docs/specs/007-editor/start-diagramming.md
+// "Bringing it back").
 export async function startBlankDocument(page: Page): Promise<void> {
   await createInMode(page, 'workshop');
   const start = startScreen(page, /^Start a Space$/);

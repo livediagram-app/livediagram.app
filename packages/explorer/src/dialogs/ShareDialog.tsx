@@ -263,6 +263,7 @@ export function ShareDialog({
             helpHref={helpHref}
             levels={levels}
             defaultLevel={APP_DEFAULT_LINK_LEVEL[item.app]}
+            app={item.app}
             onIssue={(level, expiry, tabId) => void issue(level, expiry, tabId)}
           />
 

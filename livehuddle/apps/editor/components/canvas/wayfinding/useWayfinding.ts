@@ -25,6 +25,10 @@ export type WayfindingInput = {
   walking: boolean;
   activeTabId: string | undefined;
   tabs: readonly Tab[] | undefined;
+  /** Which tabs have their content (lazy tabs); unset reads every tab as loaded. */
+  loadedTabIds?: ReadonlySet<string>;
+  /** Fetches the tabs not loaded yet (the editor's loadAllTabs), for the Elevator panel's floors. */
+  loadFloors?: () => void;
   /** The current tab's visible elements. */
   elements: readonly Element[];
   self: Person;
@@ -52,7 +56,7 @@ type PendingGo = { tabId: string; point: WayPoint; ignoreId?: string };
 const NO_PRESENCE: ReadonlyMap<string, readonly Person[]> = new Map();
 
 export function useWayfinding(input: WayfindingInput): Wayfinding {
-  const { walking, activeTabId, tabs, elements, self, remoteAvatars, avatar } = input;
+  const { walking, activeTabId, tabs, elements, self, remoteAvatars, avatar, loadedTabIds } = input;
   const tabPresence = input.tabPresence ?? NO_PRESENCE;
   const [store] = useState(createWayfindingStore);
 
@@ -64,9 +68,12 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
             id: t.id,
             name: t.name,
             elements: t.id === activeTabId ? elements : t.elements,
+            ...(loadedTabIds && t.id !== activeTabId && !loadedTabIds.has(t.id)
+              ? { loaded: false }
+              : null),
           }))
         : [{ id: activeTabId ?? '', name: 'This Floor', elements }],
-    [tabs, activeTabId, elements],
+    [tabs, activeTabId, elements, loadedTabIds],
   );
   useEffect(() => {
     store.set({ tabs: wayTabs, activeTabId: activeTabId ?? wayTabs[0]?.id ?? '' });
@@ -215,6 +222,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
         if (onTravelToTab) onTravelToTab(tabId);
         else onFollowLink({ kind: 'tab', tabId });
       },
+      loadFloors: () => latest.current.loadFloors?.(),
       closeElevator: () => {
         walkOpenedRef.current = false;
         store.set({ openElevatorId: null });

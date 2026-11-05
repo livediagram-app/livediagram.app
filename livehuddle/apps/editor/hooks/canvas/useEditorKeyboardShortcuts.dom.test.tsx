@@ -19,6 +19,7 @@ function deps(overrides: Overrides = {}) {
     deleteSelected: vi.fn(),
     deleteMultiSelected: vi.fn(),
     setCanvasTool: vi.fn(),
+    undo: vi.fn(),
   };
   const target: Record<string, unknown> = {
     formatSourceId: null,
@@ -27,7 +28,6 @@ function deps(overrides: Overrides = {}) {
     multiSelectedIds: new Set<string>(),
     editingId: null,
     isReadOnly: false,
-    participant: false,
     canvasTool: 'select',
     enabled: true,
     canGrowMindNode: () => false,
@@ -90,93 +90,38 @@ describe('Delete and Backspace', () => {
     press('Delete');
     expect(editing.spies.deleteSelected).not.toHaveBeenCalled();
   });
-
-  // docs/specs/013-workspace/share-roles.md: a Participant deletes; the commit guard decides what goes.
-  it("reach a Participant's delete", () => {
-    const participant = deps({ isReadOnly: true, participant: true });
-    renderHook(() => useEditorKeyboardShortcuts(participant.bag));
-    press('Delete');
-    expect(participant.spies.deleteSelected).toHaveBeenCalled();
-  });
 });
 
 // A Viewer's or Participant's canvas chord is the canvas's even when it may not run it (share-roles.md): the browser's
-// select-all highlighted the whole page and Cmd+D opened the bookmark dialog.
+// select-all highlighted the whole page and Cmd+D opened the bookmark dialog. Both are read-only to the keyboard.
 describe('a canvas chord a role may not run', () => {
-  it.each([{ participant: true }, { participant: false }])(
-    'is swallowed, not left to the browser (%o)',
-    ({ participant }) => {
-      const { bag } = deps({ isReadOnly: true, participant });
-      renderHook(() => useEditorKeyboardShortcuts(bag));
-      expect(press('a', { metaKey: true }).defaultPrevented).toBe(true);
-      expect(press('d', { metaKey: true }).defaultPrevented).toBe(true);
-      // Copy stays the browser's: a Viewer copies text off the page.
-      expect(press('c', { metaKey: true }).defaultPrevented).toBe(false);
-    },
-  );
+  it('is swallowed, not left to the browser', () => {
+    const { bag, spies } = deps({ isReadOnly: true });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('a', { metaKey: true }).defaultPrevented).toBe(true);
+    expect(press('d', { metaKey: true }).defaultPrevented).toBe(true);
+    // Copy stays the browser's: a Viewer copies text off the page.
+    expect(press('c', { metaKey: true }).defaultPrevented).toBe(false);
+    // Undo and redo are an Editor's (docs/specs/013-workspace/share-roles.md "A Participant walks").
+    press('z', { metaKey: true });
+    expect(spies.undo).not.toHaveBeenCalled();
+  });
 });
 
-// docs/specs/013-workspace/share-roles.md "The Participant palette": each tile works as an Editor's does, its key too.
-describe("a Participant's palette keys", () => {
-  it('add what its tiles add, and nothing an Editor alone adds', () => {
+// docs/specs/013-workspace/share-roles.md "A Participant walks": a read-only session (a Viewer, a Participant) has no
+// add keys at all.
+describe('add keys', () => {
+  it("are not a read-only session's, a Participant's included", () => {
     const addSticky = vi.fn();
     const addText = vi.fn();
-    const addShape = vi.fn();
-    const { bag } = deps({
-      selectedId: null,
-      isReadOnly: true,
-      participant: true,
-      addSticky,
-      addText,
-      addShape,
-    });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('n').defaultPrevented).toBe(true);
-    press('t');
-    press('r');
-    expect(addSticky).toHaveBeenCalledTimes(1);
-    expect(addText).toHaveBeenCalledTimes(1);
-    expect(addShape).not.toHaveBeenCalled();
-  });
-
-  it("work on a Draw tab too, where the dock keys are an Editor's", () => {
-    const addSticky = vi.fn();
-    const addText = vi.fn();
-    const wb = {
-      pickSelect: vi.fn(),
-      pickPen: vi.fn(),
-      pickEraser: vi.fn(),
-      pickSticky: vi.fn(),
-      pickText: vi.fn(),
-      pickShape: vi.fn(),
-      pickPath: vi.fn(),
-      pickFill: vi.fn(),
-      openShapes: vi.fn(),
-    };
-    const { bag } = deps({
-      selectedId: null,
-      isReadOnly: true,
-      participant: true,
-      whiteboard: wb,
-      addSticky,
-      addText,
-    });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('n').defaultPrevented).toBe(true);
-    press('t');
-    press('1');
-    expect(addSticky).toHaveBeenCalledTimes(1);
-    expect(addText).toHaveBeenCalledTimes(1);
-    expect(wb.pickPen).not.toHaveBeenCalled();
-    expect(wb.pickSticky).not.toHaveBeenCalled();
-  });
-
-  it("are not a Viewer's", () => {
-    const addSticky = vi.fn();
-    const { bag } = deps({ selectedId: null, isReadOnly: true, addSticky });
+    const { bag } = deps({ selectedId: null, isReadOnly: true, addSticky, addText });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     expect(press('n').defaultPrevented).toBe(false);
+    press('t');
+    press('8');
+    press('Delete');
     expect(addSticky).not.toHaveBeenCalled();
+    expect(addText).not.toHaveBeenCalled();
   });
 });
 

@@ -8,7 +8,6 @@ import {
   paletteCategoriesFor,
   paletteCategoryOffered,
   paletteLandingCategory,
-  participantTiles,
 } from './palette-layouts';
 import { tileById, tilesForCategory } from './palette-tile-defs';
 import { SPACE_CATEGORIES } from './space-categories';
@@ -38,21 +37,19 @@ describe('palette layouts', () => {
     }
   });
 
-  it('is Popular; Write; the Space categories; Icons, Stickers, Media', () => {
+  it('is Popular; Write; the Space categories, Travel last; Stickers, Media (no Icons)', () => {
     expect(ids()).toEqual([
       'popular',
       'write',
-      'collab-travel',
-      'collab-seating',
       'collab-rooms',
+      'collab-seating',
       'collab-amenities',
       'collab-bar',
       'collab-recreation',
       'collab-garden',
       'collab-meeting',
-      'icons',
+      'collab-travel',
       'stickers',
-      'media',
     ]);
     expect(paletteLandingCategory('workshop')).toBe('popular');
     // No opener anywhere: every category is one level deep.
@@ -64,8 +61,6 @@ describe('palette layouts', () => {
     expect(tileIds('popular')).toEqual([
       'tools:sticky',
       'tools:text',
-      'tools:image',
-      'tools:link-card',
       'tools:room',
       'tools:meeting-table',
       'tools:chair',
@@ -73,14 +68,15 @@ describe('palette layouts', () => {
       'tools:avatar-pad',
     ]);
     const popular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!;
-    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
-      'tools:link-card',
-    ]);
+    expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual(['tools:text']);
   });
 
-  it('holds only light content in Write and Media', () => {
+  it('holds only light content in Write, and offers no Image or Link card anywhere (not-in-livehuddle.md "Media")', () => {
     expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky']);
-    expect(tileIds('media')).toEqual(['tools:image', 'tools:link-card']);
+    expect(paletteCategoryOffered('workshop', 'media')).toBe(false);
+    for (const c of paletteCategoriesFor('workshop'))
+      for (const t of c.tiles ?? [])
+        expect(['tools:image', 'tools:link-card'], c.id).not.toContain(t.id);
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "The Space categories".
@@ -92,7 +88,6 @@ describe('palette layouts', () => {
       'tools:directory',
       'tools:elevator',
       'tools:mode-avatar',
-      'tools:link-card',
     ]);
     expect(tileIds('collab-seating')).toEqual([
       'tools:chair',
@@ -100,14 +95,20 @@ describe('palette layouts', () => {
       'tools:sofa',
       'tools:meeting-table',
     ]);
+    // Rooms opens on Build (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): Room,
+    // Room Builder and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
     expect(tileIds('collab-rooms')).toEqual([
-      'tools:fence',
       'tools:room',
       'tools:room-builder',
       'tools:wall-door',
+      'tools:fence',
       'tools:stage',
       'tools:office-pod',
       'tools:rug',
+    ]);
+    const rooms = paletteCategoriesFor('workshop').find((c) => c.id === 'collab-rooms')!;
+    expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
+      'tools:wall-door',
     ]);
     expect(tileIds('collab-amenities')).toEqual([
       'tools:plant',
@@ -126,6 +127,9 @@ describe('palette layouts', () => {
       'tools:room-sign',
       'tools:notice-board',
       'tools:world-clock',
+      // docs/specs/009-elements/timer-and-stopwatch.md: placed in a room, not a cluster button.
+      'tools:timer',
+      'tools:stopwatch',
     ]);
   });
 
@@ -134,6 +138,11 @@ describe('palette layouts', () => {
       for (const t of tilesForCategory(c.id)) expect(t.tileGroup, t.id).toBe(c.tileGroup);
     const pieces = SPACE_CATEGORIES.flatMap((c) => tilesForCategory(c.id).map((t) => t.id));
     expect(new Set(pieces).size).toBe(pieces.length);
+    // The meeting layout's Space categories hold every piece once too, Rooms' Build group included.
+    const offered = paletteCategoriesFor('workshop')
+      .filter((c) => c.id.startsWith('collab-'))
+      .flatMap((c) => (c.tiles ?? []).map((t) => t.id));
+    expect([...offered].sort()).toEqual([...pieces].sort());
   });
 
   it('leaves a Space category off until it holds a tile', () => {
@@ -197,17 +206,8 @@ describe('palette layouts', () => {
     expect(SEARCH_ONLY_TILE_IDS).toEqual([]);
   });
 
-  it('gives a Participant Sticky and Text, and an image', () => {
-    expect(participantTiles().map((t) => t.id)).toEqual([
-      'tools:sticky',
-      'tools:text',
-      'tools:image',
-    ]);
-  });
-
-  it('keeps the Room Builder and the Door to Editors (docs/specs/009-elements/room-builder.md "Share roles")', () => {
-    const ids = participantTiles().map((t) => t.id);
-    expect(ids).not.toContain('tools:room-builder');
-    expect(ids).not.toContain('tools:wall-door');
+  it('offers no Participate category: a Participant has no palette (share-roles.md "A Participant walks")', () => {
+    expect(paletteCategoryOffered('workshop', 'participate')).toBe(false);
+    expect(PALETTE_CATEGORIES.some((c) => c.id === 'participate')).toBe(false);
   });
 });

@@ -6,7 +6,12 @@
 // copies the new link. It owns the draft pass; the dialog issues it.
 
 import { useState, type KeyboardEvent } from 'react';
-import { SHARE_LINK_EXPIRIES, type Level, type ShareLinkExpiry } from '@liveworkspace/index-client';
+import {
+  SHARE_LINK_EXPIRIES,
+  type App,
+  type Level,
+  type ShareLinkExpiry,
+} from '@liveworkspace/index-client';
 import { Button, Select } from '@liveworkspace/ui';
 import { HelpLink } from './HelpLink';
 import {
@@ -28,6 +33,7 @@ export function ShareComposer({
   onIssue,
   levels = LEVEL_ORDER,
   defaultLevel = DEFAULT_LEVEL,
+  app,
 }: {
   tabs: ShareTab[];
   busy: boolean;
@@ -35,6 +41,8 @@ export function ShareComposer({
   // The levels the item's app offers a new pass, and the one it starts at (APP_LINK_LEVELS, APP_DEFAULT_LINK_LEVEL).
   levels?: readonly Level[];
   defaultLevel?: Level;
+  // The item's app, for its own level blurbs (APP_LEVEL_BLURBS).
+  app?: App;
   onIssue: (level: Level, expiry: ShareLinkExpiry, tabId: string | null) => void;
 }) {
   const [level, setLevel] = useState<Level>(defaultLevel);
@@ -66,7 +74,7 @@ export function ShareComposer({
       {/* The level and the fine print share one tinted panel, so the pass being made reads as one thing. */}
       <div className="flex flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
         <div data-tour-id="share-role">
-          <RolePicker level={level} onChange={setLevel} levels={levels} />
+          <RolePicker level={level} onChange={setLevel} levels={levels} app={app} />
         </div>
         {/* The fine print: one labelled row per term, labels in one column, Create Pass ending the Valid row. */}
         <div className="grid grid-cols-1 items-center gap-x-3 gap-y-1.5 px-0.5 sm:grid-cols-[3.5rem_1fr_auto] sm:gap-y-2">

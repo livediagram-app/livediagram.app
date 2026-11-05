@@ -11,9 +11,7 @@ import type { PaletteTileActions } from './PaletteTileGrid';
 export function useEditorTileActions(): PaletteTileActions {
   const {
     addShape,
-    addIcon,
     addSticker,
-    addTechIcon,
     addText,
     addArrow,
     beginFreehand,
@@ -63,8 +61,6 @@ export function useEditorTileActions(): PaletteTileActions {
     addVideo,
     addSticker,
     addComponent: (kind) => byComponent[kind](),
-    addIcon,
-    addTechIcon,
     hasImage: !!addImage,
   };
 }

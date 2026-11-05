@@ -13,15 +13,16 @@ describe('templateCatalogue', () => {
     expect(templates.find((t) => t.kind === 'blank-session')!.category).toBe('blanks');
     expect(templates.find((t) => t.kind === 'team-pod')!.category).toBe('office');
     expect(templates.find((t) => t.kind === 'rooftop-bar')!.category).toBe('recreation');
-    // The catalogue: the blank and the ten Spaces (docs/specs/007-editor/templates-by-mode.md "The catalogue").
+    // The catalogue: the blank and the eighteen Spaces (docs/specs/007-editor/templates-by-mode.md "The catalogue").
     expect(categories.map((c) => c.id)).toEqual([
+      'campus',
       'events',
       'office',
       'outdoor',
       'recreation',
       'blanks',
     ]);
-    expect(templates).toHaveLength(11);
+    expect(templates).toHaveLength(19);
     expect(templates.map((t) => t.kind)).toEqual(
       TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind),
     );

@@ -56,12 +56,23 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('shows each Space category as one block, unheaded', () => {
-    for (const id of ['collab-travel', 'collab-seating', 'collab-rooms', 'collab-amenities']) {
+  it('shows each Space category but Rooms as one block, unheaded', () => {
+    for (const id of ['collab-travel', 'collab-seating', 'collab-amenities']) {
       const groups = flyoutGroups(id, tiles('workshop', id));
       expect(groups, id).toHaveLength(1);
       expect(groups[0]!.title, id).toBeNull();
     }
+  });
+
+  // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
+  it('opens Rooms on its Build group (Room, Room Builder, Door), then Floor', () => {
+    const groups = flyoutGroups('collab-rooms', tiles('workshop', 'collab-rooms'));
+    expect(groups.map((g) => g.title)).toEqual(['Build', 'Floor']);
+    expect(groups[0]!.tiles.map((t) => t.id)).toEqual([
+      'tools:room',
+      'tools:room-builder',
+      'tools:wall-door',
+    ]);
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {

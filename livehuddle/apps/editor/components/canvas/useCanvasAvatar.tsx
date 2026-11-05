@@ -318,6 +318,8 @@ export function useCanvasAvatar({
     walking,
     activeTabId: props.activeTabId,
     tabs: props.portalTabs,
+    loadedTabIds: props.portalTabsLoaded,
+    loadFloors: props.onLoadPortalTabs,
     elements,
     self: props.selfParticipant,
     remoteAvatars: props.remoteAvatars,

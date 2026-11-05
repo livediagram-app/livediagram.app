@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 11;
+export const TEMPLATE_COUNT = 19;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 4;
+export const TEMPLATE_CATEGORY_COUNT = 5;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -150,23 +150,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need to switch modes?',
-        a: 'No. Every board in livehuddle is a workshop board: stickies, writing, pens, shapes, icons, media, charts and every session tool sit on one palette, and the Session strip at the foot holds the timer and polls. Pick Avatar on the toolbar to walk, and any other tool to work on the board.',
+        a: 'No. Every board in livehuddle is a meeting board: stickies, writing, the rooms and furniture of a Space, a timer and stickers sit on one palette. Pick Avatar on the toolbar to walk, and any other tool to work on the board.',
       },
       {
         q: 'Can I organise a big space?',
         a: 'Yes. A space holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Your spaces live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a space onto a folder to file it.',
-      },
-      {
-        q: 'Can I add pictures?',
-        a: (
-          <>
-            Yes. Upload an image once and reuse it from your gallery, or search Openverse for an
-            openly licensed photo or illustration without leaving the editor. See{' '}
-            <a href="/help/palette/tools/images/">images</a>.
-          </>
-        ),
-        aText:
-          'Yes. Upload an image once and reuse it from your gallery, or search Openverse for an openly licensed photo or illustration without leaving the editor. See images.',
       },
       {
         q: 'Can I use the same tab in two spaces?',

@@ -96,9 +96,6 @@ type Props = Pick<
     leading?: ReactNode;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
-    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
-    // modes, and no Search (it would offer every element type).
-    participant?: boolean;
   };
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
@@ -151,7 +148,6 @@ export function ToolbarPalette(props: Props) {
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
   const hidden = props.hidden;
-  const participant = !!props.participant;
   // The strip's two popovers (ToolbarStripPopover): only the popover and its own button count as
   // inside, so pressing anything else on the strip closes it.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -159,7 +155,7 @@ export function ToolbarPalette(props: Props) {
   const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
   // The category bar and its flyout (CategoryBar).
   const bar = useCategoryBar(rootRef);
-  // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
+  // Stickers reopens on the group it was left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   const moreOpen = more.open;
   // The template start steps aside while a popover hangs from the strip (palette-popover-open).
@@ -179,14 +175,14 @@ export function ToolbarPalette(props: Props) {
         bar.popover.setOpen(false);
       },
     });
-  // The landing rule (palette-layouts): the mode's Popular. A Participant lands on Participate.
+  // The landing rule (palette-layouts): the mode's Popular. A Participant has no palette
+  // (docs/specs/013-workspace/share-roles.md "A Participant walks").
   // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
-  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not for a Participant, whose palette is one
-  // category.
-  const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !participant;
+  // (docs/specs/007-editor/toolbar-layout.md "The category bar").
+  const categoryBar = CATEGORY_BAR_MODES.has(editorMode);
   // A change of mode cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(editorMode, rootRef);
-  const defaultId = participant ? 'participate' : paletteLandingCategory(editorMode);
+  const defaultId = paletteLandingCategory(editorMode);
   const [categoryId, setCategoryId] = useState(defaultId);
   // Another surface asking for a category (a board's + asks for Widgets).
   useEffect(
@@ -251,7 +247,7 @@ export function ToolbarPalette(props: Props) {
       })
     : fitted;
   const { hasMore } = fitted;
-  // Icons, Stickers and Technology show their groups instead of tiles, each opening a popover of its entries
+  // Stickers shows its groups instead of tiles, each opening a popover of its entries
   // (docs/specs/007-editor/toolbar-layout.md "More"); a desktop strip shows as many as fit, More the rest.
   const allGroups = category ? catalogueStripGroups(category.id) : null;
   const groups = allGroups && !swipe ? allGroups.slice(0, Math.floor(stripLimit)) : allGroups;
@@ -327,9 +323,9 @@ export function ToolbarPalette(props: Props) {
     search.openFrom(button);
   });
   useEffect(() => {
-    if (participant || hidden) return;
+    if (hidden) return;
     return onToolbarSearchRequest(() => openSearchFromKey());
-  }, [participant, hidden]);
+  }, [hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     beforeSearch();
@@ -533,15 +529,11 @@ export function ToolbarPalette(props: Props) {
                     </>
                   )}
                   {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
-                    "Search: every element type"). Not for a Participant. */}
-                  {participant ? null : (
-                    <>
-                      <Divider />
-                      <div ref={searchButtonRef} className="flex">
-                        <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
-                      </div>
-                    </>
-                  )}
+                    "Search: every element type"). */}
+                  <Divider />
+                  <div ref={searchButtonRef} className="flex">
+                    <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                  </div>
                 </div>
               </CardWidth>
             </StripRow>
@@ -582,7 +574,7 @@ export function ToolbarPalette(props: Props) {
                 )}
               </StripPopover>
             ) : null}
-            {search.open && !participant ? (
+            {search.open ? (
               <StripPopover
                 right={search.right}
                 isMobile={isMobile}

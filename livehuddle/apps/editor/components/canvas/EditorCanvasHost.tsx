@@ -2,7 +2,6 @@
 
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
-import { sessionToolsForSurface } from '@/components/canvas/SessionClusterStrip';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { roleGates } from '@/lib/editor-capabilities';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -14,6 +13,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_BUTTON_MODE,
   PEN_INK,
+  spacePattern,
 } from '@livehuddle/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
@@ -38,7 +38,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useSessionTools } from '@/components/chrome/useSessionTools';
+import { useTimerPieceControls } from '@/lib/timer-piece-controls';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
@@ -74,7 +74,6 @@ export function EditorCanvasHost() {
     beginArrowScale,
     addHeader,
     addHero,
-    addIcon,
     addSticker,
     addImage,
     addLinkCard,
@@ -85,7 +84,6 @@ export function EditorCanvasHost() {
     addSticky,
     dropBoardFile,
     addTable,
-    addTechIcon,
     addText,
     anyWelcomeOpen,
     beginArrowCurveDrag,
@@ -107,6 +105,7 @@ export function EditorCanvasHost() {
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
+    toggleDoor,
     broadcastCallSignal,
     callsRoom,
     avatarShove,
@@ -150,7 +149,6 @@ export function EditorCanvasHost() {
     documentId,
     documentName,
     nameDocument,
-    dropIconOnElement,
     dropPaletteItem,
     duplicateMultiSelected,
     contextMenu,
@@ -180,7 +178,6 @@ export function EditorCanvasHost() {
     isPinchingRef,
     isReadOnly,
     can,
-    participating,
     livePresence,
     lockedByOther,
     mapPosition,
@@ -242,6 +239,7 @@ export function EditorCanvasHost() {
     drag,
     editorMode,
     loadedTabIds,
+    applyElementDelta,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
@@ -263,8 +261,9 @@ export function EditorCanvasHost() {
   const runBlocked = facilitator.sessionToolsBlocked;
   // The canvas's role gates, read from `can` (docs/specs/013-workspace/share-roles.md "Tests").
   const gates = roleGates(can, runBlocked);
-  // The Session strip's tools (docs/specs/012-collaboration/session-tools.md "The Session strip").
-  const sessionTools = useSessionTools();
+  // The Timer and Stopwatch faces run on `can.takePart`, never in an embed (docs/specs/009-elements/timer-and-stopwatch.md
+  // "Share roles").
+  useTimerPieceControls(can.takePart && !embedMode, applyElementDelta);
   // The facilitator's menu on an element somebody else is holding (docs/specs/007-editor/editor-app.md).
   // Null when closed. Holders are captured at open time rather than re-read on
   // render: if the holder lets go while the menu is up it closes on the next
@@ -345,22 +344,25 @@ export function EditorCanvasHost() {
           tabSummaries={tabSummaries}
           // Portals (docs/specs/009-elements/portal-element.md) can lead to another tab; see Canvas.enterPortal.
           portalTabs={tabs}
+          // The Elevator panel's floors not opened yet (docs/specs/009-elements/elevator.md "The panel").
+          portalTabsLoaded={loadedTabIds}
+          onLoadPortalTabs={() => void loadAllTabs()}
           activeTabId={activeTab.id}
           activeTabLoaded={loadedTabIds.has(activeTab.id)}
           tabLocked={activeTabLocked}
           readOnly={isReadOnly}
-          participantPalette={participating && can.addContent}
           takePart={can.takePart}
           canShareScreen={gates.shape}
           canMove={can.move}
           canWriteText={can.writeText}
           canResize={can.resize}
           documentName={documentName}
-          tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
+          // The floor it draws (docs/specs/011-theme/floors.md): a retired diagram pattern a peer on an older build
+          // just set reads as its floor, so the canvas never starts an animated backdrop livehuddle no longer offers.
+          tabBackgroundPattern={spacePattern(backdrop.backgroundPattern)}
           tabBackgroundColor={backdrop.backgroundColor}
           tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
           tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
-          tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
           tabPatternColor={backdrop.patternColor}
           tabFont={activeTab.font}
           tabFinish={activeTab.finish}
@@ -396,13 +398,16 @@ export function EditorCanvasHost() {
           // Avatar mode (docs/specs/008-canvas/avatar-mode.md): clicking a peer's character walks over and
           // shoves it; their own client decides what to do with the request.
           onAvatarPush={broadcastAvatarPush}
+          // A walking click on a Door next to you swings it (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+          onToggleDoor={toggleDoor}
           onAvatarSay={broadcastAvatarSay}
           // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): only with a room to talk in.
           onCallSignal={callsRoom ? broadcastCallSignal : undefined}
           avatarShove={avatarShove}
           walkIn={walkIn}
           avatarAtRef={avatarAtRef}
-          walkButton={!embedMode}
+          // Not for a Participant: it is always walking (docs/specs/013-workspace/share-roles.md "A Participant walks").
+          walkButton={!embedMode && !can.alwaysWalks}
           // Bring Focus (docs/specs/012-collaboration/bring-focus.md) moves everyone's view, so it is running the
           // session: an Editor's (docs/specs/013-workspace/share-roles.md), and the facilitator's while somebody holds the
           // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
@@ -438,11 +443,16 @@ export function EditorCanvasHost() {
             keepWalkingTo(tabId);
             followLink({ kind: 'tab', tabId });
           }}
-          onPressModeButton={(element) => {
-            const mode = element.mode ?? DEFAULT_BUTTON_MODE;
-            if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
-            pressModeButton(mode);
-          }}
+          // A Participant's buttons are inert faces: it is always walking, so none can switch it.
+          onPressModeButton={
+            can.alwaysWalks
+              ? undefined
+              : (element) => {
+                  const mode = element.mode ?? DEFAULT_BUTTON_MODE;
+                  if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
+                  pressModeButton(mode);
+                }
+          }
           // The `…` on a Behaviours element's face (docs/specs/008-canvas/canvas-and-palette.md). Anchored from the
           // ELEMENT's rect, not the trigger's, so it lands exactly where a
           // right-click on the same element would — one menu, one position,
@@ -480,10 +490,7 @@ export function EditorCanvasHost() {
           canUndo={canUndo && !activeTabLocked}
           canRedo={canRedo && !activeTabLocked}
           onAddShape={addShape}
-          onAddIcon={addIcon}
           onAddSticker={addSticker}
-          onAddTechIcon={addTechIcon}
-          onDropIcon={isReadOnly ? undefined : dropIconOnElement}
           onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
           onAddTable={addTable}
           onAddAnnotation={addAnnotation}
@@ -528,7 +535,6 @@ export function EditorCanvasHost() {
             setMapPosition((p) => (p && p.x === x && p.y === y ? p : { x, y }))
           }
           onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
-          sessionTools={sessionToolsForSurface(sessionTools, embedMode)}
           userPreferences={userPreferences}
           eraserPanelPosition={eraserPanelPosition}
           eraserConfig={eraserConfig}

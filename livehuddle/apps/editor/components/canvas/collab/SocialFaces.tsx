@@ -16,6 +16,7 @@ import {
   type ShapeElement,
 } from '@livehuddle/document';
 import { useMinuteNow } from '@/lib/minute-clock';
+import { zoneTime } from '@/lib/zone-time';
 import { pieceControlProps } from '@/lib/piece-control';
 import {
   toggleJukeboxListening,
@@ -23,7 +24,8 @@ import {
   useJukeboxListening,
 } from '@/lib/jukebox-listening';
 import { useNearArcade } from './useSocialPieces';
-import { NoticeBoardPopover } from './NoticeBoardPopover';
+import { NoticeBoardPopover, NoticeBoardReader } from './NoticeBoardPopover';
+import { WorldClockReader } from './WorldClockReader';
 
 // The live faces of the social pieces (docs/specs/009-elements/social-pieces.md) laid over their art: the Notice
 // Board's cards and Notes button, the World Clock's dials, the Jukebox's Play / Mute button and the Arcade Machine's
@@ -40,12 +42,20 @@ export function hasSocialFace(kind: string): boolean {
   );
 }
 
-export function SocialFace({ element }: { element: ShapeElement }) {
+export function SocialFace({
+  element,
+  walking = false,
+}: {
+  element: ShapeElement;
+  // In Avatar mode a reading piece's whole face opens it in the reader (docs/specs/008-canvas/avatar-mode.md
+  // "The reader").
+  walking?: boolean;
+}) {
   switch (element.shape) {
     case 'notice-board':
-      return <NoticeBoardFace element={element} />;
+      return <NoticeBoardFace element={element} walking={walking} />;
     case 'world-clock':
-      return <WorldClockFace element={element} />;
+      return <WorldClockFace element={element} walking={walking} />;
     case 'jukebox':
       return <JukeboxFace element={element} />;
     case 'arcade-machine':
@@ -82,6 +92,26 @@ function Overlay({ element, children }: { element: ShapeElement; children: React
 const PILL =
   'pointer-events-auto absolute left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-2 py-[2px] text-[9px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-sky-500 dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700';
 
+// While walking, a press anywhere on a reading piece opens it large. Not a piece control: the click policy
+// (lib/avatar-click-intent) keeps it from walking, and outside Avatar mode it is not drawn, so the piece selects
+// and drags as any other.
+function ReaderHit({ label, onOpen }: { label: string; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-haspopup="dialog"
+      data-reader-hit=""
+      data-piece-main=""
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpen();
+      }}
+      className="pointer-events-auto absolute inset-0 cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-sky-500"
+    />
+  );
+}
+
 // --- Notice Board -------------------------------------------------------------------------------------------
 
 // Up to `max` characters of a line, an ellipsis when cut.
@@ -90,9 +120,11 @@ function clip(text: string, max: number): string {
   return one.length > max ? `${one.slice(0, max - 1).trimEnd()}…` : one;
 }
 
-function NoticeBoardFace({ element }: { element: ShapeElement }) {
+function NoticeBoardFace({ element, walking }: { element: ShapeElement; walking: boolean }) {
   // The Notes button while its popover is open: the popover's anchor.
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  // The notes opened large, while walking.
+  const [reading, setReading] = useState(false);
   const notes = notesNewestFirst(element.noticeNotes);
   const shown = notes.slice(0, NOTES_ON_FACE);
   const more = notes.length - shown.length;
@@ -195,6 +227,7 @@ function NoticeBoardFace({ element }: { element: ShapeElement }) {
           </g>
         ) : null}
       </svg>
+      {walking ? <ReaderHit label="Read the Notice Board" onOpen={() => setReading(true)} /> : null}
       <Tooltip label="Open Notes">
         <button
           type="button"
@@ -204,6 +237,10 @@ function NoticeBoardFace({ element }: { element: ShapeElement }) {
           {...pieceControlProps}
           onClick={(e) => {
             e.stopPropagation();
+            if (walking) {
+              setReading(true);
+              return;
+            }
             const at = e.currentTarget;
             setAnchor((v) => (v ? null : at));
           }}
@@ -216,6 +253,7 @@ function NoticeBoardFace({ element }: { element: ShapeElement }) {
       {anchor ? (
         <NoticeBoardPopover element={element} anchor={anchor} onClose={() => setAnchor(null)} />
       ) : null}
+      {reading ? <NoticeBoardReader element={element} onClose={() => setReading(false)} /> : null}
     </Overlay>
   );
 }
@@ -230,70 +268,11 @@ function PinGlyph() {
 
 // --- World Clock ---------------------------------------------------------------------------------------------
 
-const timeFormats = new Map<string, Intl.DateTimeFormat | null>();
-const partFormats = new Map<string, Intl.DateTimeFormat | null>();
-
-// A zone's formatter, or null for a zone this browser does not know. Kept per zone: a clock re-renders once a minute.
-function formatFor(
-  cache: Map<string, Intl.DateTimeFormat | null>,
-  zone: string | undefined,
-  opts: Intl.DateTimeFormatOptions,
-) {
-  const key = zone ?? '';
-  if (!cache.has(key)) {
-    try {
-      cache.set(
-        key,
-        new Intl.DateTimeFormat(undefined, { ...opts, ...(zone ? { timeZone: zone } : {}) }),
-      );
-    } catch {
-      cache.set(key, null);
-    }
-  }
-  return cache.get(key) ?? null;
-}
-
-/** A zone's wall time at `at`: hours and minutes for the hands, the time as the viewer's locale writes it, and the
- *  day against the viewer's own. Null for a zone the browser does not know. */
-export function zoneTime(
-  zone: string | undefined,
-  at: number,
-): { hour: number; minute: number; text: string; dayShift: number } | null {
-  const parts = formatFor(partFormats, zone, {
-    hour: 'numeric',
-    minute: 'numeric',
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hourCycle: 'h23',
-  });
-  const text = formatFor(timeFormats, zone, { hour: 'numeric', minute: '2-digit' });
-  if (!parts || !text) return null;
-  const get = (p: Intl.DateTimeFormatPart[], type: string) =>
-    Number(p.find((x) => x.type === type)?.value ?? 0);
-  const there = parts.formatToParts(at);
-  const here = formatFor(partFormats, undefined, {
-    hour: 'numeric',
-    minute: 'numeric',
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hourCycle: 'h23',
-  })!.formatToParts(at);
-  const dayOf = (p: Intl.DateTimeFormatPart[]) =>
-    Date.UTC(get(p, 'year'), get(p, 'month') - 1, get(p, 'day'));
-  return {
-    hour: get(there, 'hour') % 24,
-    minute: get(there, 'minute'),
-    text: text.format(at),
-    dayShift: Math.round((dayOf(there) - dayOf(here)) / 86_400_000),
-  };
-}
-
 const LOCAL_ZONE: ClockZone[] = [{ zone: '', label: 'Local' }];
 
-function WorldClockFace({ element }: { element: ShapeElement }) {
+function WorldClockFace({ element, walking }: { element: ShapeElement; walking: boolean }) {
   const now = useMinuteNow();
+  const [reading, setReading] = useState(false);
   const zones = (element.clockZones?.length ? element.clockZones : LOCAL_ZONE).slice(
     0,
     CLOCK_DIALS_ON_FACE,
@@ -388,6 +367,14 @@ function WorldClockFace({ element }: { element: ShapeElement }) {
           );
         })}
       </svg>
+      {walking ? <ReaderHit label="Read the World Clock" onOpen={() => setReading(true)} /> : null}
+      {reading ? (
+        <WorldClockReader
+          title={element.label?.trim() || 'World Clock'}
+          zones={element.clockZones?.length ? element.clockZones : LOCAL_ZONE}
+          onClose={() => setReading(false)}
+        />
+      ) : null}
     </Overlay>
   );
 }
@@ -420,6 +407,7 @@ function JukeboxFace({ element }: { element: ShapeElement }) {
           type="button"
           className={`${PILL} top-[calc(100%+3px)]`}
           aria-pressed={listening === 'on'}
+          data-piece-main=""
           {...pieceControlProps}
           onClick={(e) => {
             e.stopPropagation();

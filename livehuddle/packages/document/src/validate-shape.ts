@@ -17,6 +17,7 @@ import {
   NOTES_MAX,
 } from './office-social';
 import { isScreenUrl, SCREEN_URL_MAX } from './meeting-pieces';
+import { isPieceTimer, TIMER_MINUTES_MAX } from './timer-pieces';
 import { isRoomOutline, ROOM_OUTLINE_MAX, ROOM_OUTLINE_MIN } from './room-outline-field';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
@@ -266,6 +267,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: 'who may speak from a stage (edit or take-part)',
   },
   flag('stageCameras'),
+  flag('doorClosed'),
   // The social pieces (docs/specs/009-elements/social-pieces.md).
   {
     field: 'noticeNotes',
@@ -278,6 +280,12 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: `at most ${CLOCK_ZONES_MAX} { zone (an IANA time zone), label (${CLOCK_LABEL_MAX} characters) } rows`,
   },
   { field: 'jukeboxSource', valid: isJukeboxSource, rule: 'an https audio address' },
+  // A Timer's or Stopwatch's clock (docs/specs/009-elements/timer-and-stopwatch.md "The state").
+  {
+    field: 'pieceTimer',
+    valid: (v: unknown) => isPieceTimer(v, 'timer') || isPieceTimer(v, 'stopwatch'),
+    rule: `a clock { running, startedAt, accumulatedMs, durationMs (0, or 1 to ${TIMER_MINUTES_MAX} minutes) }`,
+  },
   // A Screen's Video Link (docs/specs/009-elements/screen-and-room-sign.md "Screen").
   {
     field: 'screenUrl',

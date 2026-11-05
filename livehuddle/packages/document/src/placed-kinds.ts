@@ -19,6 +19,9 @@ const PLACED_KINDS: ReadonlySet<string> = new Set([
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
   'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
 ]);
 export function isPlacedShape(kind: string): boolean {
   // The Rug is grid-drawn but laid out to the room it dresses, so it keeps its box to draw.
@@ -41,4 +44,12 @@ export function isFixedSizeElement(el: {
 }): boolean {
   if (el.fixedSize === true) return true;
   return el.type === 'shape' && el.shape != null && isPlacedShape(el.shape);
+}
+
+// Whether adding a kind drops it at its own default size, a tap and a press-and-drag alike, with no draw-to-size box
+// (docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview themselves"): every placed piece, and the Room
+// (docs/specs/009-elements/office.md "Room": dropped, then resized), which unlike a placed piece keeps its resize
+// handles once on the canvas.
+export function dropsAtOwnSize(kind: string): boolean {
+  return isPlacedShape(kind) || kind === 'room';
 }

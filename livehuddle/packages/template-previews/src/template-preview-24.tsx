@@ -9,20 +9,20 @@ import { FURNITURE, LEAF, Plant, Room, SHIRT, WALL } from './template-preview-23
 // drawn as group 23 draws its floor plans. Each hover story: a character walks in through the doorway or the gate.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
-const RUG = 'rgb(253 230 138)';
-const WOOD = 'rgb(194 137 75)';
+export const RUG = 'rgb(253 230 138)';
+export const WOOD = 'rgb(194 137 75)';
 const COUNTER = 'rgb(87 83 78)';
-const POD = 'rgb(165 180 252)';
-const GRASS = 'rgb(155 210 122)';
-const PATH = 'rgb(231 220 196)';
+export const POD = 'rgb(165 180 252)';
+export const GRASS = 'rgb(155 210 122)';
+export const PATH = 'rgb(231 220 196)';
 const TREE = 'rgb(34 197 94)';
-const PICKET = 'rgb(255 255 255)';
-const STAGE_TOP = 'rgb(253 230 138)';
-const STAGE_FRONT = 'rgb(217 119 6)';
+export const PICKET = 'rgb(255 255 255)';
+export const STAGE_TOP = 'rgb(253 230 138)';
+export const STAGE_FRONT = 'rgb(217 119 6)';
 const CAN = 'rgb(239 68 68)';
 
 // Someone walking in from below, ending at (x, y).
-function Arrival({ x, y }: { x: number; y: number }) {
+export function Arrival({ x, y }: { x: number; y: number }) {
   return (
     <g
       className="pv-arrive"
@@ -36,7 +36,7 @@ function Arrival({ x, y }: { x: number; y: number }) {
 }
 
 // A tree seen from above: a round canopy with a lighter crown.
-const Tree = ({ x, y, r = 4 }: { x: number; y: number; r?: number }) => (
+export const Tree = ({ x, y, r = 4 }: { x: number; y: number; r?: number }) => (
   <>
     <circle cx={x} cy={y} r={r} fill={TREE} />
     <circle cx={x - r * 0.25} cy={y - r * 0.25} r={r * 0.55} fill={LEAF} />
@@ -52,7 +52,7 @@ const Lounge = ({ x, y }: { x: number; y: number }) => (
 );
 
 // A row of bar stools, small round seats.
-const Stools = ({ xs, y }: { xs: readonly number[]; y: number }) => (
+export const Stools = ({ xs, y }: { xs: readonly number[]; y: number }) => (
   <>
     {xs.map((x) => (
       <circle key={x} cx={x} cy={y} r="1.3" fill={FURNITURE} stroke={WALL} strokeWidth="0.3" />
@@ -61,7 +61,7 @@ const Stools = ({ xs, y }: { xs: readonly number[]; y: number }) => (
 );
 
 // A bar counter: its wooden front under a dark top.
-const Bar = ({ x, y, w }: { x: number; y: number; w: number }) => (
+export const Bar = ({ x, y, w }: { x: number; y: number; w: number }) => (
   <>
     <rect x={x} y={y} width={w} height="5" rx="0.8" fill={WOOD} />
     <rect x={x} y={y + 4} width={w} height="2" rx="0.6" fill={COUNTER} />

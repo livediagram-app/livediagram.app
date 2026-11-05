@@ -184,6 +184,7 @@ export function ScreenView({ element, animClass }: { element: ShapeElement; anim
             type="button"
             aria-label={share ? `Open ${title}` : `Play ${title}`}
             {...press}
+            data-piece-main=""
             className="group/screen pointer-events-auto absolute inset-0 cursor-pointer rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
           >
             {panel}

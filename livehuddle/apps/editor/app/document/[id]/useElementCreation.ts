@@ -1,13 +1,10 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
-  acceptsInlineIcon,
   createAnnotation,
   type EmbedProvider,
   applyShapeVariant,
-  withInlineIcon,
   createShape,
-  defaultIconAnimation,
   createText,
   type BoxedElement,
   type Element,
@@ -17,7 +14,6 @@ import {
   withVariantColours,
   snapDoorToWall,
 } from '@livehuddle/document';
-import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
@@ -40,9 +36,7 @@ export function useElementCreation(opts: {
   imagesBlocked: boolean;
   activeId: string;
   activeTab: Tab;
-  // The single-selected element id, so "add an icon" can drop it INSIDE
-  // a selected shape instead of creating a standalone icon element.
-  // Read where an add acts on the selection (docs/specs/008-canvas/blueprints/selection-store.md).
+  // The selection, read where an add acts on the selection (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
@@ -95,70 +89,12 @@ export function useElementCreation(opts: {
     });
   };
 
-  // Curated icon glyph. Unlike addShape it drops straight at the
-  // viewport centre (no draw-to-size: an icon is a fixed-aspect glyph,
-  // not a box you size by dragging) and carries the chosen iconId.
-  const addIcon = (iconId: string) => {
-    if (editsBlocked) return;
-    // If a regular shape is selected, drop the icon INSIDE it (beside the
-    // label) rather than spawning a standalone icon element — the same
-    // "operate on the current selection" intent the size-inheritance in
-    // addBoxed already follows. `acceptsInlineIcon` excludes the dedicated
-    // 'icon' shape (an icon-on-an-icon is meaningless) AND frames (a frame
-    // is a container — an icon dropped with a frame selected becomes a
-    // standalone element you place inside it, see docs/specs/009-elements/annotations.md).
-    const { selectedId } = readSelection();
-    const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
-    if (sel && acceptsInlineIcon(sel)) {
-      commitTabs((ts) =>
-        ts.map((t) =>
-          t.id !== activeId
-            ? t
-            : {
-                ...t,
-                // Spread the LIVE element, not the render-time `sel`
-                // closure — writing `sel` back would clobber any change
-                // that landed on this element since the render.
-                elements: t.elements.map((e) =>
-                  e.id === sel.id ? withInlineIcon(e, iconId, sel.iconPosition ?? 'left') : e,
-                ),
-              },
-        ),
-      );
-      // Reuse Added/Icon — an icon was placed; `type` stays the kind,
-      // never the specific iconId, to keep telemetry free of content.
-      track('Element', 'Added', titleCaseType('icon'));
-      return;
-    }
-    // Standalone icon: arm a draw-to-size gesture (tap to drop, drag to
-    // size) just like a shape, carrying the glyph id. Telemetry fires on
-    // commit (see useShapeDrawing.commitDraw).
-    beginDraw({ type: 'shape', kind: 'icon', iconId });
-  };
-
-  // Sticker (docs/specs/010-palette/stickers.md). Its own shape kind, so unlike addIcon there is no
-  // "fold into the selected shape" branch: a sticker never becomes another
+  // Sticker (docs/specs/010-palette/stickers.md). Its own shape kind: a sticker never becomes another
   // element's inline glyph, it lands as a sticker wherever it is dropped.
   // Telemetry fires on commit (see useShapeDrawing.commitDraw).
   const addSticker = (stickerId: string) => {
     if (editsBlocked) return;
     beginDraw({ type: 'shape', kind: 'sticker', stickerId });
-  };
-
-  // Technology (brand) icon (docs/specs/010-palette/technology-icons.md). Reuses the 'icon' shape kind but is
-  // ALWAYS a standalone element — never dropped inside a selected shape as
-  // an inline icon (a coloured brand tile beside a shape's text is not
-  // meaningful, and the inline-icon renderer only knows line-art prims). The
-  // distinct 'TechIcon' telemetry type separates architecture-icon usage
-  // from line-art icons while reusing the closed Element/Added pair.
-  const addTechIcon = (iconId: string) => {
-    if (editsBlocked) return;
-    // Seed the label with the catalogue name (e.g. "S3", "EKS") so the icon
-    // lands self-describing; the user can clear / rename it like any label.
-    // Arm a draw-to-size gesture (tap to drop, drag to size) like a shape;
-    // telemetry fires on commit (see useShapeDrawing.commitDraw).
-    const label = getTechIcon(iconId)?.label ?? '';
-    beginDraw({ type: 'shape', kind: 'icon', iconId, label });
   };
 
   // A 3x3 table, drawn to size like a shape. It used to drop at the viewport
@@ -269,8 +205,8 @@ export function useElementCreation(opts: {
   });
 
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
-  // drop point. Shapes / devices use createShape; an icon carries `iconId`,
-  // a sticker `stickerId` (docs/specs/010-palette/stickers.md).
+  // drop point. Shapes / devices use createShape; a sticker carries `stickerId`
+  // (docs/specs/010-palette/stickers.md). No icon arrives: livehuddle offers none to drag.
   const dropPaletteItem = (
     kind: ShapeKind | 'sticky',
     canvasX: number,
@@ -278,7 +214,6 @@ export function useElementCreation(opts: {
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => {
     if (editsBlocked) return;
-    const iconId = art?.iconId;
     const stickerId = art?.stickerId;
     if (kind === 'sticky') {
       // A dragged sticky lands exactly like a tapped one (the drop point is
@@ -313,34 +248,14 @@ export function useElementCreation(opts: {
     addBoxedAt(
       canvasX,
       canvasY,
-      (x, y) =>
-        iconId
-          ? {
-              ...createShape('icon', x, y),
-              iconId,
-              // The four animated glyphs arrive already moving (docs/specs/008-canvas/canvas-and-palette.md),
-              // same as the draw path.
-              ...(defaultIconAnimation(iconId)
-                ? { iconAnimation: defaultIconAnimation(iconId) }
-                : {}),
-              // Tech icons land self-describing (S3, EKS, ...) on drag too,
-              // matching the click-to-add addTechIcon path — and unlocked:
-              // the mark renders at a fixed size (docs/specs/010-palette/technology-icons.md), so the aspect
-              // lock would only fight resizing the caption room.
-              ...(isTechIconId(iconId)
-                ? { label: getTechIcon(iconId)?.label ?? '', aspectLocked: false }
-                : {}),
-            }
-          : {
-              // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
-              ...applyShapeVariant(createShape(kind, x, y), art?.choice),
-              // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
-              // /135). Applied by the kind that owns the field, so one payload
-              // serves all four without the drop path knowing which is which.
-              ...(art?.choice && kind === 'mode-button'
-                ? { mode: art.choice as SelectionMode }
-                : {}),
-            },
+      (x, y) => ({
+        // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
+        ...applyShapeVariant(createShape(kind, x, y), art?.choice),
+        // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
+        // /135). Applied by the kind that owns the field, so one payload
+        // serves all four without the drop path knowing which is which.
+        ...(art?.choice && kind === 'mode-button' ? { mode: art.choice as SelectionMode } : {}),
+      }),
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, reaction pads, ...). A preset's own colour (the Warning badge's
       // rose) is put back after the theme and the remembered style.
@@ -359,17 +274,11 @@ export function useElementCreation(opts: {
         },
       },
     );
-    // A tech-icon id maps to its own telemetry type (see addTechIcon);
-    // line-art icons + shapes use the kind.
-    track(
-      'Element',
-      'Added',
-      iconId && isTechIconId(iconId) ? 'TechIcon' : titleCaseType(iconId ? 'icon' : kind),
-    );
+    track('Element', 'Added', titleCaseType(kind));
   };
 
   const handleCanvasDoubleClick = (x: number, y: number) => {
-    // Same creation gate as every other add path (addShape, addIcon, ...):
+    // Same creation gate as every other add path (addShape, addSticker, ...):
     // a locked/loading tab or a view-only session silently no-ops.
     if (editsBlocked) return;
     const TEXT_W = 160;
@@ -390,9 +299,7 @@ export function useElementCreation(opts: {
 
   return {
     addShape,
-    addIcon,
     addSticker,
-    addTechIcon,
     addTable,
     addAnnotation,
     addLinkCard,

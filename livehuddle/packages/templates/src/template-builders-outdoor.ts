@@ -67,9 +67,10 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
     { kind: 'pond', x: 40, y: 312, w: 200, h: 100 },
     // A bench at the end of the left path; two chairs round a campfire at the end of the right one.
     { kind: 'bench', x: 134, y: 500 },
-    { kind: 'chair', x: 800, y: 500, facing: 'w' },
+    // The chairs an aisle apart round the fire (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
+    { kind: 'chair', x: 776, y: 500, facing: 'w' },
     { kind: 'campfire', x: 884, y: 500 },
-    { kind: 'chair', x: 972, y: 500, facing: 'e' },
+    { kind: 'chair', x: 996, y: 500, facing: 'e' },
     // A planter either side of the gate.
     { kind: 'outdoor-plant', x: 440, y: 530 },
     { kind: 'outdoor-plant', x: 688, y: 530 },
@@ -114,6 +115,12 @@ const PARK_H = 700;
 const PARK_PATH = 64;
 const CROSS_X = PARK_W / 2 - PARK_PATH / 2;
 const CROSS_Y = 318;
+// The plaza where the paths meet: big enough for the fountain inside its ring of setts.
+const PARK_MID_X = PARK_W / 2;
+const PARK_MID_Y = CROSS_Y + PARK_PATH / 2;
+const PARK_PLAZA = 300;
+// How far from the plaza's middle each arm ends: where its straight sides meet the rim.
+const PLAZA_IN = Math.sqrt((PARK_PLAZA / 2) ** 2 - (PARK_PATH / 2) ** 2) - PARK_PATH / 2;
 
 export function buildCityPark(cx: number, cy: number): Element[] {
   const width = PARK_W;
@@ -122,25 +129,35 @@ export function buildCityPark(cx: number, cy: number): Element[] {
   const y0 = cy - height / 2;
   const open: OfficePiece[] = [
     { kind: 'grass', x: 0, y: 0, w: PARK_W, h: PARK_H },
-    // Two paths crossing in the middle.
-    run('garden-path', 0, CROSS_Y, PARK_W, PARK_PATH),
-    run('garden-path', CROSS_X, 0, PARK_PATH, PARK_H),
+    // Two paths meeting at a round plaza in the middle (docs/specs/009-elements/office.md "Garden Path": paths never
+    // cross), each arm ending at its rim, the plaza over their ends and a fountain in its middle.
+    run('garden-path', 0, CROSS_Y, PARK_MID_X - PLAZA_IN, PARK_PATH),
+    run('garden-path', PARK_MID_X + PLAZA_IN, CROSS_Y, PARK_W - PARK_MID_X - PLAZA_IN, PARK_PATH),
+    run('garden-path', CROSS_X, 0, PARK_PATH, PARK_MID_Y - PLAZA_IN),
+    run('garden-path', CROSS_X, PARK_MID_Y + PLAZA_IN, PARK_PATH, PARK_H - PARK_MID_Y - PLAZA_IN),
+    run(
+      'garden-path',
+      PARK_MID_X - PARK_PLAZA / 2,
+      PARK_MID_Y - PARK_PLAZA / 2,
+      PARK_PLAZA,
+      PARK_PLAZA,
+    ),
+    { kind: 'fountain', x: PARK_MID_X - 68, y: PARK_MID_Y - 60 },
     // The bandstand, a Stage in the open: whoever stands on it is heard across the park.
     { kind: 'stage', x: 780, y: 420, stageCameras: true },
-    // Top left and top right: trees, and a bench by the path (docs/specs/009-elements/social-pieces.md).
+    // Top left and top right: trees, and a bench facing the plaza (docs/specs/009-elements/social-pieces.md).
     { kind: 'tree', x: 40, y: 40 },
-    { kind: 'tree', x: 220, y: 100 },
-    { kind: 'bench', x: 380, y: 220 },
+    { kind: 'tree', x: 200, y: 100 },
+    { kind: 'bench', x: 330, y: 200 },
     { kind: 'tree', x: 1040, y: 40 },
-    { kind: 'tree', x: 880, y: 90 },
-    { kind: 'bench', x: 668, y: 220 },
+    { kind: 'tree', x: 900, y: 90 },
+    { kind: 'bench', x: 734, y: 200 },
     // Bottom left: a picnic table under a tree.
     { kind: 'picnic-table', x: 140, y: 460 },
     { kind: 'tree', x: 420, y: 480 },
     { kind: 'outdoor-plant', x: 40, y: 420 },
     { kind: 'outdoor-plant', x: 40, y: 600 },
-    // Bottom right: a fountain by the crossing, and four seats facing the bandstand.
-    { kind: 'fountain', x: 640, y: 400 },
+    // Bottom right: four seats facing the bandstand.
     ...[790, 870, 950, 1030].map((x) => ({
       kind: 'chair' as const,
       x,

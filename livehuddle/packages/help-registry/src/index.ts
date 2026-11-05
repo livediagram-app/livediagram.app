@@ -127,7 +127,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 16,
+    articleCount: 15,
     kind: 'feature',
     groups: ['Everyday Elements', 'Meeting Kits', 'Palette Settings'],
   },
@@ -826,7 +826,7 @@ export const articles: Article[] = [
     title: 'Where each tool lives',
     description: 'A map of the palette categories and which elements are in each.',
     keywords:
-      'tools tab category categories where find text sticky note image link card portal chair room meeting table walk in icon sticker media write travel seating rooms amenities navigate selection mode moved',
+      'tools tab category categories where find text sticky note portal chair room meeting table walk in sticker write travel seating rooms amenities navigate selection mode moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -933,16 +933,6 @@ export const articles: Article[] = [
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
-  },
-  {
-    slug: 'icons',
-    title: 'Icons',
-    description: 'A searchable catalogue of single-colour glyphs.',
-    keywords:
-      'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Everyday Elements',
   },
   {
     slug: 'stickers',
@@ -1122,7 +1112,7 @@ export const articles: Article[] = [
   {
     slug: 'facilitator',
     title: 'Facilitator',
-    description: 'Give one person the timer and Bring Focus for a live meeting.',
+    description: 'Give one person Bring Focus and the room for a live meeting.',
     keywords:
       'facilitator workshop host run the room session lead moderator driver baton timer poll control handover take over step down chair meeting workshop',
     category: 'Collaboration',
@@ -1165,8 +1155,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'links',
-    title: 'Links and Link Cards',
-    description: 'Link elements across tabs or to URLs, and bookmark cards.',
+    title: 'Links',
+    description: 'Link elements across tabs, spaces or URLs, and follow them.',
     keywords:
       'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
     category: 'Canvas',
@@ -1349,8 +1339,8 @@ export const articles: Article[] = [
   {
     slug: 'session-tools',
     title: 'Session Tools',
-    description: 'A shared countdown or stopwatch for running a meeting to time.',
-    keywords: 'timer meeting facilitation countdown stopwatch timebox clock',
+    description: 'A shared Timer or Stopwatch in the room, for running a meeting to time.',
+    keywords: 'timer meeting facilitation countdown stopwatch timebox clock room piece',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1509,24 +1499,15 @@ export const articles: Article[] = [
   {
     slug: 'changing-the-background',
     title: 'Changing the Canvas Background',
-    description: 'Pick a canvas pattern and colours in the Tab Style dialog.',
-    keywords: 'backdrop color colour pattern grid dots lines paper dark',
+    description: 'Lay the Space on a floor and pick its colour in the Tab Style dialog.',
+    keywords:
+      'backdrop floor floors carpet carpet tiles wood parquet tiles marble terrazzo concrete decking paving cobbles grass sand mud colour color strength dark',
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
     parentSlug: 'the-canvas',
   },
 
   // ---- Sub-articles: Tools ----
-  {
-    slug: 'images',
-    title: 'Images',
-    description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
-    keywords:
-      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
   {
     slug: 'sticky-notes',
     title: 'Sticky Notes',
@@ -1634,17 +1615,6 @@ export const articles: Article[] = [
     parentSlug: 'themes',
   },
 
-  // ---- Sub-articles: Links ----
-  {
-    slug: 'link-cards',
-    title: 'Link Cards',
-    description: 'Bookmark a URL as a card with title, favicon, and preview.',
-    keywords: 'bookmark website url card preview embed reference',
-    category: 'Canvas',
-    categorySlug: 'canvas/links',
-    parentSlug: 'links',
-  },
-
   // ---- Sub-articles: Teams ----
   {
     slug: 'roles-and-invites',
@@ -1720,8 +1690,7 @@ export const articles: Article[] = [
     slug: 'embeds',
     title: 'Embeds',
     description: 'Drop a live canvas into another page, read-only or editable by link role.',
-    keywords:
-      'iframe embed website notion confluence wiki blog integrate document session strip timer poll',
+    keywords: 'iframe embed website notion confluence wiki blog integrate document',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -1739,9 +1708,10 @@ export const articles: Article[] = [
   // ---- Sub-articles: Session Tools ----
   {
     slug: 'timer',
-    title: 'The Timer',
-    description: 'Run a shared countdown or stopwatch on a tab.',
-    keywords: 'countdown stopwatch timebox clock minutes workshop',
+    title: 'Timer and Stopwatch',
+    description: 'A countdown or a stopwatch you place in a room, run by everyone together.',
+    keywords:
+      'timer countdown stopwatch timebox clock minutes workshop chime alarm meeting palette piece place room start pause reset',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',

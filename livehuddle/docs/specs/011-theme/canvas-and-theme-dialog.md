@@ -25,7 +25,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 ### Looks
 
 A **look** is a shortcut that sets four of the tab's existing settings at once: its **theme**, **finish**
-([Finish](../008-canvas/finish.md)), **tab font** and **canvas pattern**. It is not a stored concept: nothing
+([Finish](../008-canvas/finish.md)), **tab font** and **floor** ([Floors](floors.md)). It is not a stored concept: nothing
 records which look was picked, and the tab carries only those four ordinary settings, exactly as if they had been
 picked one by one.
 
@@ -37,45 +37,49 @@ changing it is tracked as `UI / Changed / LooksFinishFilter`.
 
 The table is in the order the carousel shows them after the Mashup card, six to a page:
 
-| Look            | Theme    | Finish       | Tab font      | Pattern      | Pattern strength |
-| --------------- | -------- | ------------ | ------------- | ------------ | ---------------- |
-| Everyday        | Default  | Flexible     | (none)        | Grid         | (kept)           |
-| Textbook        | UML      | Professional | Oswald        | Graph        | 50%              |
-| Whiteboard      | Mono     | Marker       | (none)        | Blank        | (kept)           |
-| Spectrum        | Rainbow  | Flexible     | Inter         | Grid         | 50%              |
-| Boardroom       | Steel    | Professional | Inter         | Blank        | (kept)           |
-| Notebook        | Mocha    | Sketch       | (none)        | Lines        | (kept)           |
-| Seaside         | Ocean    | Flexible     | Nunito        | Waves        | (kept)           |
-| Doodle          | Rainbow  | Sketch       | Caveat        | Blank        | (kept)           |
-| Editorial       | Cream    | Professional | Lora          | Blank        | (kept)           |
-| Midnight        | Midnight | Flexible     | (none)        | Grid         | (kept)           |
-| Poster          | Tropical | Professional | Abril Fatface | Diagonal     | 40%              |
-| Workshop        | Sand     | Marker       | (none)        | Grid         | 60%              |
-| Graph Paper     | Indigo   | Professional | Roboto Mono   | Graph        | (kept)           |
-| Daydream        | Pastel   | Flexible     | Nunito        | Grid         | 60%              |
-| Engineer        | Sky      | Professional | Space Grotesk | Engineering  | (kept)           |
-| Lagoon          | Tropical | Flexible     | Space Grotesk | Ripple       | 50%              |
-| Studio          | Lavender | Professional | Roboto Slab   | Isometric    | (kept)           |
-| Garden          | Forest   | Flexible     | Poppins       | Hexagonal    | 40%              |
-| Billboard       | Sunset   | Professional | Oswald        | Stripes      | 40%              |
-| Patchwork       | Pastel   | Sketch       | Lora          | Checkerboard | 30%              |
-| Northern Lights | Abyss    | Flexible     | Poppins       | Aurora       | 60%              |
-| Coffeehouse     | Espresso | Sketch       | Caveat        | Bricks       | 40%              |
-| Schematic       | UML      | Professional | Roboto Mono   | Crosshatch   | 40%              |
-| Flipchart       | Rainbow  | Marker       | (none)        | Lines        | 50%              |
-| Sketchbook      | Rose     | Sketch       | (none)        | Blank        | (kept)           |
-| Greenboard      | Pine     | Marker       | (none)        | Blank        | (kept)           |
-| Picnic          | Pastel   | Flexible     | Poppins       | Checkerboard | 25%              |
-| Mural           | Plum     | Marker       | (none)        | Grid         | 50%              |
-| Field Notes     | Olive    | Sketch       | (none)        | Lines        | 60%              |
+| Look            | Theme    | Finish       | Tab font      | Floor        | Floor strength |
+| --------------- | -------- | ------------ | ------------- | ------------ | -------------- |
+| Everyday        | Default  | Flexible     | (none)        | Carpet Tiles | (kept)         |
+| Textbook        | UML      | Professional | Oswald        | Tiles        | (kept)         |
+| Whiteboard      | Mono     | Marker       | (none)        | None         | (kept)         |
+| Spectrum        | Rainbow  | Flexible     | Inter         | Terrazzo     | (kept)         |
+| Boardroom       | Steel    | Professional | Inter         | Carpet       | (kept)         |
+| Notebook        | Mocha    | Sketch       | (none)        | Wood Floor   | (kept)         |
+| Seaside         | Ocean    | Flexible     | Nunito        | Sand         | (kept)         |
+| Doodle          | Rainbow  | Sketch       | Caveat        | None         | (kept)         |
+| Editorial       | Cream    | Professional | Lora          | Parquet      | (kept)         |
+| Midnight        | Midnight | Flexible     | (none)        | Marble       | (kept)         |
+| Poster          | Tropical | Professional | Abril Fatface | Decking      | (kept)         |
+| Workshop        | Sand     | Marker       | (none)        | Concrete     | (kept)         |
+| Graph Paper     | Indigo   | Professional | Roboto Mono   | Tiles        | (kept)         |
+| Daydream        | Pastel   | Flexible     | Nunito        | Carpet       | 70%            |
+| Engineer        | Sky      | Professional | Space Grotesk | Concrete     | (kept)         |
+| Lagoon          | Tropical | Flexible     | Space Grotesk | Sand         | (kept)         |
+| Studio          | Lavender | Professional | Roboto Slab   | Wood Floor   | (kept)         |
+| Garden          | Forest   | Flexible     | Poppins       | Grass        | (kept)         |
+| Billboard       | Sunset   | Professional | Oswald        | Stone Paving | (kept)         |
+| Patchwork       | Pastel   | Sketch       | Lora          | Carpet       | 70%            |
+| Northern Lights | Abyss    | Flexible     | Poppins       | Decking      | (kept)         |
+| Coffeehouse     | Espresso | Sketch       | Caveat        | Terrazzo     | (kept)         |
+| Schematic       | UML      | Professional | Roboto Mono   | Carpet Tiles | (kept)         |
+| Flipchart       | Rainbow  | Marker       | (none)        | Carpet       | (kept)         |
+| Sketchbook      | Rose     | Sketch       | (none)        | None         | (kept)         |
+| Greenboard      | Pine     | Marker       | (none)        | None         | (kept)         |
+| Picnic          | Pastel   | Flexible     | Poppins       | Grass        | (kept)         |
+| Mural           | Plum     | Marker       | (none)        | Cobbles      | (kept)         |
+| Field Notes     | Olive    | Sketch       | (none)        | Mud          | (kept)         |
 
+- **Floors.** Each look stands its Space on a floor that suits its mood ([Floors](floors.md)): Seaside and Lagoon on
+  sand, Garden and Picnic on a lawn, Midnight on dark marble, Coffeehouse on a cafe's terrazzo, Field Notes out on bare
+  earth; the pen-and-paper looks (Whiteboard, Doodle, Sketchbook, Greenboard) keep None. Every floor is worn by at
+  least one look, so the Mashup draws from the whole set. Daydream and Patchwork soften their carpet into the pastel
+  canvas at 70%.
 - **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
   Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
-  different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on a
-  quiet dot grid), Doodle a bold hand-drawn rainbow, Daydream soft
-  pastels on dotted paper, Lagoon a fresh tropical spread on ripples, Poster a bold tropical display face on
-  diagonals, Textbook a crisp colour-coded notation on graph paper, Patchwork pastel branches sketched on soft
-  checks, and Schematic the UML colours in a monospace on a crosshatch. A dark-mode viewer sees each in its theme's
+  different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on terrazzo),
+  Doodle a bold hand-drawn rainbow, Daydream soft pastels on a soft carpet, Lagoon a fresh tropical spread on sand,
+  Poster a bold tropical display face on decking, Textbook a crisp colour-coded notation on tiles, Patchwork pastel
+  branches sketched on carpet, and Schematic the UML colours in a monospace on carpet tiles. A dark-mode viewer sees each in its theme's
   dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
 - **Order.** The **Mashup** card leads the carousel (below), then the looks; Everyday is always the first look (it
   is what an untouched tab reads as). The rest follow a fixed, interleaved
@@ -84,26 +88,33 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   rather than the colourful looks clumping on one page. `apps/editor/lib/tab-looks.test.ts` locks both rules.
 - **Retired looks.** A look is not stored, so a tab whose four settings match no current look (a retired one,
   Carnival say) keeps them and reads as its own mix (no card selected); nothing migrates.
-- A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
+- A look that sets a floor strength sets it (a floor softened into its canvas colour); the rest leave the tab's own
+  strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
   Mashup card and the twenty-nine looks fill five pages. Looks are added six at a time, so every page stays full.
-- **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each bring a theme or a
-  pattern no other look uses (Sunset, Abyss and Espresso; stripes, checks, aurora, bricks and crosshatch), so page
-  four is new ground rather than a reshuffle.
+- **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each brought a theme no other
+  look uses (Sunset, Abyss and Espresso), so page four is new ground rather than a reshuffle.
 - **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): Whiteboard (a whiteboard is drawn in marker),
   Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
   marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
   with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
   (Flipchart and Picnic) keep two to every page.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
-- Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
-  preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
-  The sample is coloured with its two boxes as separate branches, taking the palette's first and fourth colours
-  (across the wheel: Rainbow's red and green, Tropical's teal and orange), and its arrow is put back on its pins
-  after; so a multi-colour look's card shows two contrasting palette colours rather than the trunk neutral and one
-  hue. Single-colour and per-shape (UML) looks draw exactly as they would without it (`apps/editor/lib/look-preview.ts`).
+- Each look is a card: a **tiny Space** drawn in the look, its name, and a line on what it is made of. The scene is a
+  slice of the look's floor ([Floors](floors.md)) with a small room on it (walls, a door, a desk with its chair, a
+  plant) and a sticky note beside it, on the look's own canvas colour, in the viewer's half of its theme, drawn by the
+  same renderer as the image export (`apps/editor/lib/look-preview.ts`). The room and the furniture take the theme's
+  colours exactly as picking the theme gives them (the sticky keeps its own yellow, as a sticky does), the room's name
+  and the sticky's words carry the look's font, and the finish draws the lot (sketched, marker or crisp), so a card
+  still shows all four ingredients. A multi-colour look colours each piece as its own branch, the room in the
+  palette's first colour and the desk in its third, so its card shows the palette's run rather than the trunk neutral
+  and one hue. The canvas colour and the floor run past the scene on every side, so a card wider or narrower than the
+  scene still shows floor to its edges.
+- The cards are cheap: each card is built once per look and half and cached (`look-preview.ts`), so reopening the
+  dialog draws nothing again; its floor's pattern id is scoped to the look, so the cards on one page never share a
+  definition.
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
-  (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
+  (preserve-customs, arrows track the theme, see Theme below), then the finish, font and floor are set; an
   element's own finish or font still wins over the tab's.
 - A look's card shows as **selected** while the tab's four settings match it. Change any one of them and no look is
   selected; the tab simply has its own mix.
@@ -136,7 +147,7 @@ tab matches) but they never appear among the everyday looks.
 | Halloween | Haunted           | Pumpkin   | Marker       | (none)        | Cobwebs       | 70%              |
 | Christmas | Christmas Morning | Yuletide  | Flexible     | Lora          | Candy Stripes | 30%              |
 | Christmas | Winter Wonderland | Frost     | Sketch       | Caveat        | Snowflakes    | 80%              |
-| Christmas | Fireside          | Evergreen | Professional | Roboto Slab   | Drift         | 60%              |
+| Christmas | Fireside          | Evergreen | Professional | Roboto Slab   | Wood Floor    | (kept)           |
 
 - **Seasonal themes.** Sparkle (gold on midnight navy), Spring (painted-egg pastels, a hue per branch), Pumpkin
   (orange, purple and green per branch on a night canvas), Yuletide (red, green and gold per branch), Frost (icy
@@ -149,7 +160,7 @@ tab matches) but they never appear among the everyday looks.
   each tile's corner), Snowflakes (six-armed flakes) and Candy Stripes (thick 45° bands). Each is a static SVG tile
   in the tab's pattern colour, so it themes, fades and scales like the other static patterns, and the image export
   draws the same tile (`apps/editor/lib/seasonal-patterns.ts`). No pattern picker lists them; the Canvas row still
-  names the one a tab wears. Fireside reuses the animated Drift for falling embers.
+  names the one a tab wears. Fireside stands on floorboards by the fire (Wood Floor, [Floors](floors.md)).
 - **Telemetry:** picking a seasonal look fires `track('Tab', 'Changed', 'SeasonalLook')` in place of the `Look`
   event.
 - **Share roles:** as for looks, an Editor picks seasonal looks; a Participant or Viewer never reaches the dialog.
@@ -160,8 +171,9 @@ The carousel's first card is **Mashup**, a random look generator: each press dre
 and the user can keep pressing it to regenerate.
 
 - **Ingredients.** A mashup draws each of a look's four settings at random, independently: a **theme** from the
-  whole built-in catalogue less the seasonal themes, a **finish**, a **tab font** from the fonts the looks use (or none), and a **pattern**
-  with its strength from the patterns the everyday looks use, so a busy pattern keeps the soft strength its look gave it.
+  whole built-in catalogue less the seasonal themes, a **finish**, a **tab font** from the fonts the looks use (or none), and a **floor**
+  with its strength from the floors the everyday looks use (every floor, and None), so a softened floor keeps the
+  strength its look gave it.
   Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over fifteen
   thousand combinations).
 - **Light and dark.** Any theme reads in both appearances ([Light and dark halves](light-and-dark.md)), so every
@@ -169,8 +181,8 @@ and the user can keep pressing it to regenerate.
   (`apps/editor/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).
 - **Always new.** A roll that equals one of the named looks, or the mashup the card already shows, is rolled
   again (up to `MASHUP_REROLLS` times), so a press always changes the tab and never lands on a named look.
-- **The card.** Like a look's card (the sample diagram drawn in the mashup, in the viewer's half), named **Mashup**
-  with a dice badge, and a line naming its four ingredients the way a look's does ("Ocean, Sketch, Caveat, waves").
+- **The card.** Like a look's card (the tiny Space drawn in the mashup, in the viewer's half), named **Mashup**
+  with a dice badge, and a line naming its four ingredients the way a look's does ("Ocean, Sketch, Caveat, sand").
   The dialog opens with a fresh roll on the card that is not applied yet, so the first press applies exactly what the
   card shows. While the tab wears the card's mashup the card is selected, and the next press rolls a new one and
   applies it. Its accessible name is "Mashup: a random look, press for another".
@@ -185,7 +197,7 @@ and the user can keep pressing it to regenerate.
 ### Fine-tune
 
 Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
-**Finish**, **Text** (the tab font and the default size) and **Canvas** (the pattern). Two columns, one on a phone.
+**Finish**, **Text** (the tab font and the default size) and **Canvas** (the floor). Two columns, one on a phone.
 Pressing a row opens that setting's panel **in place**, sliding in from the right (back slides from the left; a fade
 with reduced motion), under the shared [back bar](../004-interface-design/back-bar.md) (the one Import and Export use: **Tab Style** then the panel's name), which stays pinned to the top as the panel scrolls.
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
@@ -238,15 +250,21 @@ cleared).
 
 ### Canvas panel
 
-The canvas-style controls, shared with the palette's **Canvas** accordion (`CanvasStyleControls`, so the two can never drift):
+The floor controls (`CanvasStyleControls`):
 
-- **Pattern**: in the dialog, two carousels of real pattern previews: **static** patterns and **animated** ones,
-  nine to a page on a desktop and six on a phone (`PatternCarousel`). The narrow palette accordion keeps its 4-wide
-  grid with "Show more". ([Canvas and palette](../008-canvas/canvas-and-palette.md) lists the patterns.)
-- **Colours**: Canvas colour + Pattern colour, each opening the [colour picker](../004-interface-design/colour-picker.md) in a popover (soft and strong standard colours for the canvas, strong only for the pattern).
-- **Opacity**: the pattern-opacity slider with its percentage readout.
-- **Size**: the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
-- **Speed**: a motion-rate slider (25%–300%, default 100%) with its percentage readout, directly under Size, shown **only while an animated pattern is active** (a static pattern has nothing to pace). Writes `backgroundAnimationSpeed` on the tab; the animated backdrop divides each motif's tuned duration by it via the `--lvd-bg-speed` var, so every pattern keeps its character and the slider just scales the pace.
+- **Floor**: one carousel of real floor previews, None then the fourteen floors ([Floors](floors.md)), nine to a page
+  on a desktop and six on a phone (`PatternCarousel`). Each tile draws the floor a little smaller than the canvas does
+  (60%), so it shows enough to read (a few planks, a run of cobbles), in the half the tab's canvas colour is in; its
+  hover card says what the floor is for.
+- **Colours**: the **Canvas** colour, opening the [colour picker](../004-interface-design/colour-picker.md) in a popover
+  (soft and strong standard colours): the colour under the floor, all of the canvas with None. A **Pattern** colour
+  shows only while the tab wears a seasonal look's motif, the one thing still drawn in it (strong colours only).
+- **Strength**: the slider (0% to 100%) with its percentage readout, writing `backgroundOpacity`: it fades the floor
+  into the canvas colour.
+- **Size**: the slider (50%–200%, default 100%) with its percentage readout, directly under Strength. Writes
+  `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies the tile's `background-size` by it (never the
+  pan phase, so the floor still tracks panning at any size). None has no tile, so the slider is a no-op there.
+- There are no animated backdrops (a floor does not move), so there is no Speed slider.
 
 ### Colours panel
 
@@ -325,9 +343,16 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 
 ## Reuse notes
 
-- `CanvasStyleControls`: pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
+- `CanvasStyleControls`: the floors carousel, the canvas colour and the Strength and Size sliders: the dialog's Canvas panel.
 - `ThemeBrowser`: the flat, paged theme list. Rendered by the palette accordion, the New-document picker and the dialog's Colours panel.
-- `PagedCarousel`: the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
+- `PagedCarousel`: the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and floors share. Shared from `@liveworkspace/workbench`
+  (`packages/workbench/src/components/primitives/PagedCarousel.tsx`). Every page keeps its slot in the strip (so
+  swiping, snapping and the dots work as before), but only the page on show and its two neighbours **mount their
+  tiles**, so a slide always has the next page drawn and the dialog never builds the far pages' tiles. A move by the
+  dots keeps every page it slides past mounted until it arrives, and a page holding keyboard focus stays mounted, so
+  focus is never dropped. A page whose tiles are not mounted is an empty slot hidden from screen readers; each mounted
+  page is a group named "<Label> page N of M", and the dots still say which page is current. The strip keeps the
+  tallest mounted page's height, so mounting a page never moves the layout.
 - On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
   bottom-right corner sits 8 px above the button, its right edge on the bottom-right cluster's (the right of the zoom
   controls, so it sits as far right as the cluster and covers as little of the work as it can), and it grows from that corner (the long motion

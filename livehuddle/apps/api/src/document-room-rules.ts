@@ -171,5 +171,8 @@ export function answersAsSelf(
     return signer !== null && typeof note === 'object' && note !== null && note.by === signer;
   }
   if (d.kind === 'notice-unpin') return signer !== null && d.by === signer;
+  // A Timer's or Stopwatch's press names nobody (docs/specs/009-elements/timer-and-stopwatch.md "Share roles"):
+  // anyone who takes part runs it, so there is no one to impersonate.
+  if (d.kind === 'piece-timer') return true;
   return false;
 }

@@ -67,6 +67,7 @@ export function DoorView({
 }) {
   const { width, height } = element;
   const { gap, jambs, leaf, swing } = doorParts(width, height);
+  const closed = element.doorClosed === true;
   const box = (b: { x: number; y: number; w: number; h: number }) => ({
     x: b.x,
     y: b.y,
@@ -97,15 +98,25 @@ export function DoorView({
           fill="none"
           stroke={stroke}
           strokeWidth={FURNITURE_RAIL_STROKE}
-          opacity={FURNITURE_RAIL_OPACITY}
+          opacity={closed ? 0 : FURNITURE_RAIL_OPACITY}
           strokeDasharray="4 4"
+          className="lh-door-swing"
         />
+        {/* Open, the leaf stands across the swing; closed, it turns about its hinge to lie across the opening
+            (docs/specs/009-elements/room-builder.md "Opening and closing"), eased in canvas-motion.css. */}
         <rect
           {...box(leaf)}
           rx={1}
           fill={floor}
           stroke={stroke}
           strokeWidth={FURNITURE_PANEL_STROKE}
+          data-door-closed={closed ? '' : undefined}
+          className="lh-door-leaf"
+          style={{
+            transformBox: 'view-box',
+            transformOrigin: `${leaf.x + leaf.w / 2}px ${leaf.y}px`,
+            transform: closed ? 'rotate(-90deg)' : 'none',
+          }}
         />
       </svg>
     </div>

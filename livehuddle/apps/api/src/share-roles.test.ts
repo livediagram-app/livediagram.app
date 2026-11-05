@@ -54,6 +54,8 @@ const BOARD = {
     shape('col', 'square', { label: 'Column' }),
     sticky('theirs'),
     sticky('mine', { addedBy: ADDER }),
+    shape('door', 'door', { doorClosed: true }),
+    shape('locked-door', 'door', { doorClosed: true, locked: true }),
   ],
 } as unknown as Tab;
 const stored = (id: string) => BOARD.elements.find((e) => e.id === id)! as Record<string, unknown>;
@@ -218,7 +220,7 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   row(
     'Start, end, reveal or configure a session tool',
     {
-      'start the timer': { kind: 'tab-meta', tabId: 't', patch: { timer: { running: true } } },
+      'change a tab setting': { kind: 'tab-meta', tabId: 't', patch: { folder: 'Stand-ups' } },
       'tick the done check': delta({ kind: 'check', index: 0, text: 'a', done: true }),
       'show a drag preview': { kind: 'drag-preview', tabId: 't', ids: ['col'] },
     },
@@ -272,9 +274,10 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     });
   });
 
-  // An Editor's op relays; a Participant adds stickies and text, writes on anyone's, moves stickies and removes its
-  // own through the rule; a Viewer's is dropped.
-  describe('Add, write and arrange stickies and text', () => {
+  // An Editor's op relays; a Participant's goes through the rule, which refuses every add and remove (its own earlier
+  // sticky's included) and keeps every content field as stored (share-roles.md "A Participant walks"); a Viewer's is
+  // dropped.
+  describe('Add, write, arrange or delete stickies and text', () => {
     const ops = {
       'add a sticky': add(sticky('n1')),
       'add text': add({ id: 'n2', type: 'text', ...box, label: 'Note' }),
@@ -282,23 +285,40 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
       'write on the board': update('col', { label: 'Doing' }),
       'move a sticky': update('theirs', { x: 300, y: 40 }),
       'recolour a sticky': update('theirs', { fillColor: '#fde68a' }),
+      'write on its own sticky': update('mine', { label: 'Mine, better' }),
+      'move its own sticky': update('mine', { x: 300 }),
       'remove its own sticky': remove('mine'),
     };
+    const adds = ['add a sticky', 'add text', 'remove its own sticky'];
     it('edit: relayed', () => {
       for (const [label, op] of Object.entries(ops))
         expect(roomDoes(op, 'edit'), label).toBe('relayed');
     });
-    it('participate: written', () => {
+    it('participate: an add or a remove refused, a change held as stored', () => {
       for (const [label, op] of Object.entries(ops))
-        expect(roomDoes(op, 'participate'), label).toBe('written');
-    });
-    it("participate: never another's sticky removed, nor the board's shape moved", () => {
+        expect(roomDoes(op, 'participate'), label).toBe(adds.includes(label) ? 'refused' : 'held');
       expect(roomDoes(remove('theirs'), 'participate')).toBe('refused');
       expect(roomDoes(update('col', { x: 300 }), 'participate')).toBe('held');
     });
     it('view: dropped', () => {
       for (const [label, op] of Object.entries(ops))
         expect(roomDoes(op, 'view'), label).toBe('dropped');
+    });
+  });
+
+  // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): the one field a Participant
+  // writes on a door, and only an unlocked one.
+  describe('Swing a door', () => {
+    it('edit: relayed', () => {
+      expect(roomDoes(update('door', { doorClosed: false }), 'edit')).toBe('relayed');
+    });
+    it('participate: an unlocked door written, a locked one refused, nothing else of it changed', () => {
+      expect(roomDoes(update('door', { doorClosed: false }), 'participate')).toBe('written');
+      expect(roomDoes(update('locked-door', { doorClosed: false }), 'participate')).toBe('refused');
+      expect(roomDoes(update('door', { x: 400 }), 'participate')).toBe('held');
+    });
+    it('view: dropped', () => {
+      expect(roomDoes(update('door', { doorClosed: false }), 'view')).toBe('dropped');
     });
   });
 
@@ -373,6 +393,24 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
       for (const d of [pinMine, unpinMine]) expect(doesDelta(d, 'view')).toBe('dropped');
     });
   });
+
+  // docs/specs/009-elements/timer-and-stopwatch.md "Share roles": a press on a Timer or Stopwatch is taking part. It
+  // names nobody, so any Participant's is relayed (and written by the room); a Viewer's is dropped. Its effect on the
+  // piece is element-deltas' (timer-piece-deltas.test.ts in packages/document).
+  row(
+    'Start, pause, reset or set a Timer or Stopwatch',
+    {
+      start: delta({
+        kind: 'piece-timer',
+        state: { running: true, startedAt: 1_000, accumulatedMs: 0, durationMs: 300_000 },
+      }),
+      reset: delta({
+        kind: 'piece-timer',
+        state: { running: false, startedAt: 0, accumulatedMs: 0, durationMs: 600_000 },
+      }),
+    },
+    TAKING_PART,
+  );
 
   // A Participant comments through the comment routes (gateParticipate, routes/comment-routes.test.ts: a
   // Participant link comments, a view link is refused), which write the tab and tell the room; in the room the

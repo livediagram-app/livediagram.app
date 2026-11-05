@@ -16,6 +16,7 @@ import { callStages, mayLetSpeakSelf } from '@/lib/calls/stage';
 import { callMaximised, noteLetSpeak, setCallMaximised } from '@/lib/calls/calls-store';
 import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
+import { useTimerEarshot } from '@/lib/office/timer-earshot';
 import { useMeetingPieces } from '@/lib/office/useMeetingPieces';
 import type { TalkingBarsPeer } from './TalkingBars';
 
@@ -83,6 +84,8 @@ export function useCanvasCall(deps: {
     send: props.onCallSignal,
     standUp: avatar.standUp,
   });
+  // Who hears each Timer's chime: the people in its room (docs/specs/009-elements/timer-and-stopwatch.md "The chime").
+  useTimerEarshot({ elements: props.elements, zones, inMode, self });
   const view = useViewRect(deps.viewport);
   useProximityCall({
     inMode,

@@ -111,7 +111,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenNote,
     onEditLink,
     onOpenEditDialog,
-    onDropIcon,
     onLinkCell,
     onShiftSelect,
     readOnly,
@@ -187,7 +186,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenNote,
     onEditLink,
     onOpenEditDialog,
-    onDropIcon,
     onLinkCell,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
     onOpenElementSettings,
@@ -267,7 +265,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
       onOpenEditDialog: h.onOpenEditDialog,
-      onDropIcon: h.onDropIcon,
       onLinkCell: h.onLinkCell,
       imageContext,
       onContextSelect: h.handleElementContextSelect,

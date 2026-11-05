@@ -26,6 +26,7 @@ import {
   SCREEN_CONSTRAINTS,
   type CallSignal,
 } from './proximity-call';
+import { LocalPreview } from './local-preview';
 import { callStages } from './stage';
 import { roomZones } from './zones';
 
@@ -134,6 +135,7 @@ function makeCall(
     getUserMedia?: (c: MediaStreamConstraints) => Promise<MediaStream>;
     getDisplayMedia?: () => Promise<MediaStream>;
     visible?: () => boolean;
+    preview?: LocalPreview;
   } = {},
 ) {
   const sent: CallSignal[] = [];
@@ -156,6 +158,7 @@ function makeCall(
     getUserMedia,
     getDisplayMedia,
     ...(opts.visible ? { pageVisible: opts.visible } : {}),
+    ...(opts.preview ? { preview: opts.preview } : {}),
   });
   return { call, sent, proved, mic, camera, display, getUserMedia, getDisplayMedia };
 }
@@ -385,6 +388,102 @@ describe('ProximityCall', () => {
 describe('ProximityCall video and screens', () => {
   const me = (trackName: string) => ({ sessionId: 'me', trackName, token: 'tt' });
   const at = (id: string, trackName: string) => ({ sessionId: `${id}s`, trackName, token: 'a' });
+
+  // video-and-screen-bubbles.md "Local preview": a call that goes live sends the preview, never asking again.
+  describe('a local preview', () => {
+    function previewed() {
+      const cam = videoStream();
+      const screen = videoStream();
+      const capture = {
+        getUserMedia: vi.fn(async () => cam.stream),
+        getDisplayMedia: vi.fn(async () => screen.stream),
+      };
+      return { cam, screen, capture, preview: new LocalPreview(capture) };
+    }
+
+    it('is sent the moment the call goes live, the same tracks, with no second prompt', async () => {
+      const { cam, screen, capture, preview } = previewed();
+      await preview.start('camera');
+      await preview.start('screen');
+      const { call, sent, getUserMedia, getDisplayMedia } = makeCall({ canShare: true, preview });
+      await call.start();
+      const s = sfu.instances[0]!;
+      expect(s.publish).toHaveBeenCalledWith(cam.track, 'cam', CAMERA_ENCODINGS);
+      expect(s.publish).toHaveBeenCalledWith(screen.track, 'screen', expect.any(Array));
+      // The call asked the browser for the microphone alone; the preview asked once for each.
+      expect(getUserMedia).toHaveBeenCalledTimes(1);
+      expect(getUserMedia).toHaveBeenCalledWith(expect.objectContaining({ video: false }));
+      expect(getDisplayMedia).not.toHaveBeenCalled();
+      expect(capture.getUserMedia).toHaveBeenCalledTimes(1);
+      expect(callSelf()).toMatchObject({
+        camera: 'on',
+        screen: 'on',
+        previewCamera: 'off',
+        previewScreen: 'off',
+      });
+      expect(preview.stream('camera')).toBeNull();
+      expect(callMedia().get('self')).toEqual({ video: cam.stream, screen: screen.stream });
+      expect(sent.at(-1)).toMatchObject({ video: me('cam'), screen: me('screen') });
+      // Now the call's: leaving stops it, as a camera turned on in the call.
+      call.stop();
+      expect(cam.track.stop).toHaveBeenCalled();
+      expect(screen.track.stop).toHaveBeenCalled();
+      expect(callMedia().size).toBe(0);
+    });
+
+    it('sends a preview turned on while the call runs or joins', async () => {
+      const { cam, preview } = previewed();
+      const { call } = makeCall({ preview });
+      await call.start();
+      await preview.start('camera');
+      expect(sfu.instances[0]!.publish).toHaveBeenCalledWith(cam.track, 'cam', CAMERA_ENCODINGS);
+      expect(callSelf()).toMatchObject({ camera: 'on', previewCamera: 'off' });
+      call.stop();
+      // An ended call takes nothing more.
+      await preview.start('camera');
+      expect(callSelf().previewCamera).toBe('on');
+      preview.stopAll();
+    });
+
+    it('keeps a Participant’s screen a preview in a call, and through its end', async () => {
+      const { screen, preview } = previewed();
+      await preview.start('screen');
+      const { call, sent } = makeCall({ canShare: false, preview });
+      await call.start();
+      const s = sfu.instances[0]!;
+      expect(s.publish).not.toHaveBeenCalledWith(screen.track, 'screen', expect.anything());
+      expect(sent.some((op) => 'screen' in op)).toBe(false);
+      expect(callSelf()).toMatchObject({ screen: 'off', previewScreen: 'on' });
+      call.stop();
+      expect(screen.track.stop).not.toHaveBeenCalled();
+      expect(callMedia().get('self')?.screen).toBe(screen.stream);
+      preview.stopAll();
+      expect(screen.track.stop).toHaveBeenCalled();
+      expect(callMedia().size).toBe(0);
+    });
+
+    it('stops a preview the mode forbids once live, as a sent one would be', async () => {
+      const { cam, preview } = previewed();
+      await preview.start('camera');
+      api.apiCallSession.mockResolvedValue({ ...session, mode: 'audio-only' });
+      const { call } = makeCall({ preview });
+      await call.start();
+      expect(cam.track.stop).toHaveBeenCalled();
+      expect(callSelf()).toMatchObject({ camera: 'off', previewCamera: 'off' });
+      expect(callMedia().size).toBe(0);
+      call.stop();
+    });
+
+    it('a Viewer’s call takes nothing', async () => {
+      const { preview } = previewed();
+      await preview.start('camera');
+      const { call } = makeCall({ canSpeak: false, preview });
+      await call.start();
+      expect(callSelf().previewCamera).toBe('on');
+      call.stop();
+      preview.stopAll();
+    });
+  });
 
   it('turns the camera on in two layers, shows it to you, tells the room, and off again', async () => {
     const { call, sent, camera, getUserMedia } = makeCall();

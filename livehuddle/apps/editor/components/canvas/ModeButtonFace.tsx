@@ -56,7 +56,8 @@ export function ModeButtonFace({
   // Undefined on a read-only surface that can't switch tools (an embed).
   onPress?: () => void;
 }) {
-  const isCurrent = activeMode === mode;
+  // An inert face (a Participant's, always walking) cannot take you out, so it never says it would.
+  const isCurrent = activeMode === mode && onPress !== undefined;
   const press = usePressWithoutDrag(onPress);
   const kicker = isCurrent ? 'Leave' : 'Switch to';
   // In its mode the button takes you out, so it says so whatever its own label: a "Walk In" that walked you out
@@ -148,6 +149,7 @@ export function ModeButtonFace({
         // dragging it must move it without also switching everyone's mode.
         // See usePressWithoutDrag.
         {...press}
+        data-piece-main=""
         // Sits exactly over the chip `inner` draws. `pointer-events-auto`
         // survives the inert canvas layer of Avatar / Spotlight / Isometric
         // mode; see the file header. The hover / active treatment is what

@@ -522,7 +522,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aurora",
       "ripple",
       "ribbons",
-      "isometric"
+      "isometric",
+      "carpet",
+      "carpet-tiles",
+      "wood",
+      "parquet",
+      "tiles",
+      "marble",
+      "terrazzo",
+      "concrete",
+      "deck",
+      "paving",
+      "cobbles",
+      "grass",
+      "sand",
+      "mud"
     ],
     "type": "string"
   },
@@ -4319,6 +4333,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PieceTimer": {
+    "additionalProperties": false,
+    "description": "What a Timer or Stopwatch stores (`ShapeElement.pieceTimer`): one shape for both.",
+    "properties": {
+      "accumulatedMs": {
+        "description": "Time counted before the current run.",
+        "type": "number"
+      },
+      "durationMs": {
+        "description": "A Timer's length; 0 on a Stopwatch.",
+        "type": "number"
+      },
+      "running": {
+        "description": "Counting now.",
+        "type": "boolean"
+      },
+      "startedAt": {
+        "description": "Epoch ms the current run started; 0 while not running.",
+        "type": "number"
+      }
+    },
+    "required": [
+      "running",
+      "startedAt",
+      "accumulatedMs",
+      "durationMs"
+    ],
+    "type": "object"
+  },
   "ProgressAnim": {
     "enum": [
       "fill",
@@ -4912,6 +4955,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "doorClosed": {
+        "type": "boolean"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -5064,6 +5110,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/PieSlice"
         },
         "type": "array"
+      },
+      "pieceTimer": {
+        "$ref": "#/components/schemas/PieceTimer"
       },
       "pointerTip": {
         "additionalProperties": false,
@@ -5348,6 +5397,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elevator",
       "screen",
       "room-sign",
+      "timer",
+      "stopwatch",
       "stadium",
       "actor",
       "final-state",
@@ -5972,9 +6023,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "theme": {
         "type": "string"
-      },
-      "timer": {
-        "$ref": "#/components/schemas/TabTimer"
       }
     },
     "required": [
@@ -6072,9 +6120,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "theme": {
         "type": "string"
       },
-      "timer": {
-        "$ref": "#/components/schemas/TabTimer"
-      },
       "updatedAt": {
         "type": "number"
       }
@@ -6122,34 +6167,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name",
       "orderIndex",
       "updatedAt"
-    ],
-    "type": "object"
-  },
-  "TabTimer": {
-    "additionalProperties": false,
-    "properties": {
-      "anchorAt": {
-        "type": "number"
-      },
-      "durationMs": {
-        "type": "number"
-      },
-      "frozenMs": {
-        "type": "number"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/TimerMode"
-      },
-      "running": {
-        "type": "boolean"
-      },
-      "startedAt": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "mode",
-      "running"
     ],
     "type": "object"
   },
@@ -7033,13 +7050,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "fit",
       "wrap"
-    ],
-    "type": "string"
-  },
-  "TimerMode": {
-    "enum": [
-      "countdown",
-      "stopwatch"
     ],
     "type": "string"
   },

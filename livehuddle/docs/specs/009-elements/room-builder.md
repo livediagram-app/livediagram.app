@@ -79,16 +79,46 @@ A doorway with a door in it, placed on any wall.
 - **It cuts the wall.** A character walks through a door on a wall: the wall's collision is broken across the
   door's width (the door's ends keep the wall's reach, as a Room's doorway does). A door that is not on a wall
   blocks nothing.
-- **It rides its room.** Moving a room carries the doors standing on its walls with it.
-- Any number of doors per room, on any wall. A Room's own doorway (`roomDoor`) keeps working; a Door on a
-  rectangular Room's wall is a second way in.
+- **It rides its room.** Moving a room carries the doors standing on its walls with it, and resizing one carries
+  them too: each door keeps its place along its wall as a fraction of the wall's length (a door in the middle of a
+  wall stays in the middle), clamped clear of the wall's ends when the wall shrinks, turning with the wall. Which
+  doors ride is derived at the time, not stored: a door rides the room whose wall it stands on, so doors from before
+  this rule follow too. The resize and the doors it carries are one change, one undo (`doorsFollowRooms`).
+- Any number of doors per room, on any wall. A new Room comes with one, in the middle of its front wall
+  ([Office](office.md) "Room"); it is an ordinary Door, so it is selected, slid along the walls and deleted like
+  any other. An older Room's own doorway (`roomDoor`) keeps working, and a Door on its wall is a second way in.
+- A Walk There to a rectangular Room with no built-in doorway heads for its first Door, as a custom room's does.
 - Not a destination: standing in a doorway never rings it.
+
+### Opening and closing
+
+A Door is open or closed, and anyone taking part can swing it.
+
+- **The state** is `ShapeElement.doorClosed?: boolean` on the door: absent (or false) is open, so every door placed
+  before this, and every new one, starts open and nobody is shut in. It is stored on the tab like any field, so
+  everyone in the room sees the same door, live, and it travels with copies, templates and exports.
+- **A closed door blocks walking** exactly like the wall it stands in: it no longer cuts its wall, so a character
+  slides along it. An open door lets characters through, as before. A closed door not on a wall blocks nothing (it
+  blocked nothing open either).
+- **In Avatar mode, click a door you are next to** to open or close it. Next to it means your feet within
+  `DOOR_REACH` (48 canvas px) of the door's opening, on either side (`isNextToDoor`). Clicking a door you are not
+  next to walks you to its near side; click again there to swing it. Nothing swings on its own when you arrive.
+- **It swings, drawn.** Open, the leaf stands at a right angle to the wall with its swing arc; closed, the leaf lies
+  across the opening, flush with the wall, and the arc is gone. The leaf turns between the two over 180 ms with the
+  canvas motion stylesheet's easing, and jumps straight there under reduced motion.
+- **Undo**: a swing is one change on the swinger's history, like any edit. Telemetry: `Canvas · Used · Door`.
+- **Share roles**: an Editor and a Participant open and close any door that is not locked (a Participant changes
+  `doorClosed` and nothing else about a door, by the participant content rule); a Viewer walks through open doors
+  but cannot swing one. A locked door stays as it is for a Participant.
+- For the click policy: `toggleDoor(doorId)` (the editor's, from `useDoorToggle`) swings a door and returns whether
+  it did; `isNextToDoor(feet, door)` (in `@livehuddle/document`) says whether a character can reach it.
 
 ## Share roles
 
-- **Editor**: arms the Room Builder, draws rooms, places, moves and deletes doors.
-- **Participant**: the participant palette does not offer either; walks through doors like everyone.
-- **Viewer**: walks through doors like everyone (walking is presence).
+- **Editor**: arms the Room Builder, draws rooms, places, moves and deletes doors; opens and closes them.
+- **Participant**: has no palette, so places neither; always walking, it walks through open doors like everyone, and
+  opens and closes doors that are not locked.
+- **Viewer**: walks through open doors like everyone (walking is presence); cannot open or close one.
 
 ## Telemetry
 
@@ -96,6 +126,6 @@ A doorway with a door in it, placed on any wall.
 
 ## Not in scope
 
-- Doors that open and close, or lock (the door is always open).
+- Doors that lock, or open only for some people.
 - Editing a custom room's corners after it is drawn (redraw it; corner editing is a follow-up).
 - Walls that are not part of a closed room (the Fence draws those).

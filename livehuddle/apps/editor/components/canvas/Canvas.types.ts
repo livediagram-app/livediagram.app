@@ -13,7 +13,6 @@ import type {
   BackgroundPattern,
   EditorMode,
   Element,
-  IconPosition,
   ShapeKind,
   TextAlignX,
   TextAlignY,
@@ -36,9 +35,6 @@ export type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
-  // A Participant (docs/specs/013-workspace/share-roles.md): read-only for every structural control, with a
-  // palette of its own holding only what it may add.
-  participantPalette?: boolean;
   // A read-only session that still takes part (a Participant): it comments, reacts and speaks
   // (docs/specs/013-workspace/share-roles.md).
   takePart?: boolean;
@@ -56,8 +52,6 @@ export type CanvasProps = {
   tabBackgroundOpacity: number;
   // Pattern tile scale (the canvas pattern-size slider); defaults to 1.
   tabBackgroundPatternScale: number;
-  // Motion rate for an animated background pattern (docs/specs/008-canvas/canvas-and-palette.md); 1 = normal.
-  tabBackgroundAnimationSpeed: number;
   tabPatternColor: string;
   // The active tab's default font id (docs/specs/004-interface-design/fonts.md). Elements without their
   // own `font` render in this; undefined = the editor default. Used by
@@ -185,6 +179,9 @@ export type CanvasProps = {
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
   onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
+  // Swing a Door open or shut (docs/specs/009-elements/room-builder.md "Opening and closing"): a walking click on one
+  // next to the character. True when it swung; false when the viewer may not (a Viewer), and the click walks instead.
+  onToggleDoor?: (doorId: string) => boolean;
   // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
   // Optional: with no room the bubble is still drawn for you.
   onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
@@ -200,8 +197,8 @@ export type CanvasProps = {
   // Avatar mode's camera (docs/specs/008-canvas/avatar-mode.md "The camera"): the canvas hands the editor a reader
   // of the character's live feet, for Fit, entering the mode and the zoom anchor.
   avatarAtRef?: import('@/hooks/canvas/useAvatarCamera').AvatarAtRef;
-  // A Viewer's Walk button (docs/specs/008-canvas/avatar-mode.md "The Walk button"): on where the surface walks, off
-  // in an embed. Shown only to a session with no palette strip (lib/walk-button.ts).
+  // The Walk button, every role's (docs/specs/008-canvas/avatar-mode.md "The Walk button"): on where the surface walks, off
+  // in an embed.
   walkButton?: boolean;
   // `target` is what the pointer is over, so a paste can tell the canvas from
   // a floating panel lying on top of it (@liveworkspace/workbench/lib/canvas-pointer.ts).
@@ -226,11 +223,8 @@ export type CanvasProps = {
   canUndo: boolean;
   canRedo: boolean;
   onAddShape: (kind: ShapeKind) => void;
-  onAddIcon: (iconId: string) => void;
   // Sticker (docs/specs/010-palette/stickers.md): its own kind, its own handler.
   onAddSticker: (stickerId: string) => void;
-  // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
-  onAddTechIcon: (iconId: string) => void;
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
@@ -246,8 +240,8 @@ export type CanvasProps = {
   onAddAvatar: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
-  // Any other file dropped on the canvas, at its canvas point (a picture lands as an image, useClipboard
-  // dropBoardFile). Absent where files are refused.
+  // Any other file dropped on the canvas, at its canvas point: told why it does not land (useClipboard
+  // dropBoardFile). Absent in a read-only session.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
@@ -343,6 +337,10 @@ export type CanvasProps = {
   // elements to resolve where one leads, plus which tab is showing. Optional so
   // read-only / embed mounts that never travel can omit them.
   portalTabs?: import('@livehuddle/document').Tab[];
+  // Which of portalTabs have their content (lazy tabs, docs/specs/006-document/per-tab-storage.md), and the fetch of
+  // the rest, which the Elevator panel asks for on opening (docs/specs/009-elements/elevator.md "The panel").
+  portalTabsLoaded?: ReadonlySet<string>;
+  onLoadPortalTabs?: () => void;
   activeTabId?: string;
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
@@ -351,9 +349,6 @@ export type CanvasProps = {
   mapPosition: { x: number; y: number } | null;
   onMoveMap: (x: number, y: number) => void;
   onResetMap: () => void;
-  // The session tools for the Session strip (docs/specs/012-collaboration/session-tools.md "The Session
-  // strip"): the same bundle the tab menu's Session Studio drives. Absent on a surface without one.
-  sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
   // Per-user preferences (docs/specs/007-editor/user-preferences.md): where Contents sits, among others.
   userPreferences: UserPreferences;
 
@@ -486,10 +481,6 @@ export type CanvasProps = {
   // gates its mutations itself.
   onOpenAction: (elementId: string) => void;
   onOpenNote?: (elementId: string) => void;
-  // Drop a palette icon onto a shape: set its inline iconId and the
-  // position (which side of the text) derived from where it was dropped.
-  // Optional so read-only / pre-identity Canvas mounts can omit it.
-  onDropIcon?: (elementId: string, iconId: string, position: IconPosition) => void;
   // Open the link picker for a specific table cell. Optional so read-
   // only / pre-identity Canvas mounts can omit it.
   onLinkCell?: (tableId: string, r: number, c: number) => void;

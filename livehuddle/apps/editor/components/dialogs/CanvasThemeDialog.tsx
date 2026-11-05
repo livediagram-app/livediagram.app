@@ -74,13 +74,11 @@ type CanvasThemeDialogProps = {
   patternColor: string;
   backgroundOpacity: number;
   backgroundPatternScale: number;
-  backgroundAnimationSpeed: number;
   onSetBackgroundPattern: (pattern: BackgroundPattern) => void;
   onSetBackgroundColor: (color: string) => void;
   onSetPatternColor: (color: string) => void;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
-  onSetBackgroundAnimationSpeed: (speed: number) => void;
   // Theme: a built-in theme id.
   themeId: string;
   onSetTheme: (id: string) => void;
@@ -112,13 +110,11 @@ export function CanvasThemeDialog({
   patternColor,
   backgroundOpacity,
   backgroundPatternScale,
-  backgroundAnimationSpeed,
   onSetBackgroundPattern,
   onSetBackgroundColor,
   onSetPatternColor,
   onSetBackgroundOpacity,
   onSetBackgroundPatternScale,
-  onSetBackgroundAnimationSpeed,
   themeId,
   onSetTheme,
   font,
@@ -310,15 +306,11 @@ export function CanvasThemeDialog({
                   patternColor={patternColor}
                   backgroundOpacity={backgroundOpacity}
                   backgroundPatternScale={backgroundPatternScale}
-                  backgroundAnimationSpeed={backgroundAnimationSpeed}
                   onSetBackgroundPattern={eased(onSetBackgroundPattern)}
                   onSetBackgroundColor={onSetBackgroundColor}
                   onSetPatternColor={onSetPatternColor}
                   onSetBackgroundOpacity={onSetBackgroundOpacity}
                   onSetBackgroundPatternScale={onSetBackgroundPatternScale}
-                  onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
-                  showAllPatterns
-                  previewTiles
                 />
               ) : (
                 <ThemeBrowser

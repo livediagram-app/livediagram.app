@@ -82,7 +82,7 @@ There is one palette layout, the meeting palette (`apps/editor/components/palett
   in the category catalogue (`PALETTE_CATEGORIES`); a tile's identity in the tile catalogue (`PALETTE_TILES`).
 - **A layout entry** names a category and may override its `label`, `description` and `band`, and list its `tiles` by
   id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
-- **Catalogue categories** (My shapes, Icons, Stickers) are bodies with their own content and take no tile list.
+- **Catalogue categories** (My shapes, Icons, Stickers; in livehuddle, Stickers alone) are bodies with their own content and take no tile list.
 - **Popular** is the landing category: Sticky note, Text, Image, Link card, then behind a divider (`DIVIDE`)
   Room, Meeting Table, Chair, Bring Focus and Avatar Pad. No category holds an opener (the openers module went with
   the Collaborate code in part 4).

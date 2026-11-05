@@ -54,7 +54,7 @@ describe('PALETTE_TILES catalogue', () => {
 // description and decide whether it still describes what is in the tab.
 //
 // Categories filled from a catalogue or a layout rather than from tiles (Popular,
-// Icons, Stickers, Technology) hold none, and are pinned at 0 so that stays
+// Stickers) hold none, and are pinned at 0 so that stays
 // true by intent rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
@@ -63,15 +63,14 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   build: 6,
   write: 4,
   draw: 6,
-  icons: 0,
   stickers: 0,
-  media: 8,
+  media: 9,
   components: 11,
   data: 7,
   // The meeting elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md
   // "The Space categories"): 33 tiles between them.
   // Travel holds the Avatar Selection Mode button too (docs/specs/009-elements/mode-button.md "Only Avatar").
-  'collab-travel': 7,
+  'collab-travel': 6,
   'collab-seating': 4,
   'collab-rooms': 7,
   'collab-amenities': 4,
@@ -79,11 +78,9 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Recreation and the outdoor pieces (docs/specs/009-elements/social-pieces.md).
   'collab-recreation': 4,
   'collab-garden': 12,
-  'collab-meeting': 4,
+  'collab-meeting': 6,
   // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).
   layout: 0,
-  // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
-  participate: 0,
 };
 
 describe('PALETTE_CATEGORIES', () => {

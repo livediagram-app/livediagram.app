@@ -16,6 +16,7 @@ import { RoomView } from '@/components/canvas/collab/RoomView';
 import { RoomSignView } from '@/components/canvas/collab/RoomSignView';
 import { ScreenView } from '@/components/canvas/collab/ScreenView';
 import { StageView } from '@/components/canvas/collab/StageView';
+import { TimerView } from '@/components/canvas/collab/TimerView';
 
 const NO_SITTERS: ChairSitter[] = [];
 
@@ -39,7 +40,11 @@ export function hasPieceArt(kind: string): boolean {
     // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): live faces drawn from the
     // call and presence; a preview (no snapshot yet) draws the idle Screen and a Free sign.
     kind === 'screen' ||
-    kind === 'room-sign'
+    kind === 'room-sign' ||
+    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md): their live clock and controls; a
+    // preview draws the idle face with no buttons.
+    kind === 'timer' ||
+    kind === 'stopwatch'
   );
 }
 
@@ -49,7 +54,9 @@ export function PieceArt({
   fill,
   animClass,
   sitters = NO_SITTERS,
+  walking = false,
   onPressAvatarPad,
+  live = false,
 }: {
   element: ShapeElement;
   stroke: string;
@@ -58,8 +65,13 @@ export function PieceArt({
   // Whoever presence says sits in a chair, desk or sofa (docs/specs/009-elements/chair.md), or stands on a stage
   // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage shows who is on it").
   sitters?: ChairSitter[];
+  // The viewer is in Avatar mode: a reading piece's whole face opens it in the reader
+  // (docs/specs/008-canvas/avatar-mode.md "The reader").
+  walking?: boolean;
   // An Avatar Pad is pressable (docs/specs/009-elements/avatar-pad.md "Pressing it"); absent in a preview.
   onPressAvatarPad?: (element: ShapeElement) => void;
+  // On the canvas, not a placement preview: a Timer or Stopwatch ticks, chimes and shows its controls.
+  live?: boolean;
 }) {
   const kind = element.shape;
   // A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself, drawn for its
@@ -79,7 +91,7 @@ export function PieceArt({
     return hasSocialFace(kind) ? (
       <>
         {art}
-        <SocialFace element={element} />
+        <SocialFace element={element} walking={walking} />
       </>
     ) : (
       art
@@ -122,6 +134,9 @@ export function PieceArt({
       return <ScreenView element={element} animClass={animClass} />;
     case 'room-sign':
       return <RoomSignView element={element} animClass={animClass} />;
+    case 'timer':
+    case 'stopwatch':
+      return <TimerView element={element} live={live} />;
     case 'avatar-pad':
       return (
         <AvatarPadView

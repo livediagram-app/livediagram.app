@@ -88,6 +88,9 @@ export const SHAPE_KINDS = new Set<string>([
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
   'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
   'stadium',
   'actor',
   'final-state',

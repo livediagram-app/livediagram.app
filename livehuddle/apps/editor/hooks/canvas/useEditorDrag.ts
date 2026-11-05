@@ -26,6 +26,7 @@ import {
   nearestElementTowards,
   opposingAnchor,
   rebindArrowAnchorsAfterMove,
+  doorsFollowRooms,
   snapMovedDoors,
   type ArrowElement,
   type Element,
@@ -369,12 +370,17 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
                   measure: measureDrawnText(activeTab.font, activeTab.finish),
                 }
               : null;
+          // A resized room's Doors keep their place along its walls (docs/specs/009-elements/room-builder.md "It
+          // rides its room"), in the same tick, so one undo takes back both.
           tick((els) =>
-            els.map((el) => {
-              if (!isBoxed(el)) return el;
-              const next = resize.boundsById.get(el.id);
-              return next ? resizedElement(el, next, textHug) : el;
-            }),
+            doorsFollowRooms(
+              els,
+              els.map((el) => {
+                if (!isBoxed(el)) return el;
+                const next = resize.boundsById.get(el.id);
+                return next ? resizedElement(el, next, textHug) : el;
+              }),
+            ),
           );
         }
         return;

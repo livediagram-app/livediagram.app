@@ -25,4 +25,14 @@ describe('ModeButtonFace', () => {
     expect(screen.queryByText('Walk In')).toBeNull();
     expect(screen.getByText('Leave')).toBeTruthy();
   });
+
+  // A Participant's button is inert (it is always walking, docs/specs/013-workspace/share-roles.md "A Participant
+  // walks"): it offers no way out, so it never reads Leave.
+  it('keeps its own label when it is inert in its own mode', () => {
+    render(
+      <ModeButtonFace mode="avatar" label="Walk In" activeMode="avatar" textColor="#0f172a" />,
+    );
+    expect(screen.getByText('Walk In')).toBeTruthy();
+    expect(screen.queryByText('Leave')).toBeNull();
+  });
 });

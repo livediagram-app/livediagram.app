@@ -54,6 +54,8 @@ import {
   PicnicTableIcon,
   PingPongTableIcon,
   PondIcon,
+  StopwatchIcon,
+  TimerPieceIcon,
   WorldClockIcon,
 } from './palette-icons-social';
 import {
@@ -100,9 +102,6 @@ const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 // Pure data: a flat catalogue, exempt from the file-size target (see
 // AGENTS.md) — extend it in place rather than splitting it.
 
-// 'icons' and 'technology' exist only on DYNAMIC tiles (individual catalogue
-// icons on the Toolbar strip, palette-dynamic-tiles.tsx) — no PALETTE_TILES entry carries
-// them, so tilesInSection never returns them.
 export type PaletteTileSection =
   | 'shapes'
   // Structure (docs/specs/010-palette/build-category.md): the elements you lay a diagram OUT with rather than
@@ -116,9 +115,7 @@ export type PaletteTileSection =
   // with it (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
   | 'media'
   | 'components'
-  | 'stickers'
-  | 'icons'
-  | 'technology';
+  | 'stickers';
 
 // What clicking (or drag-dropping) the tile does. 'shape' descriptors also
 // drive the tile's drag-to-place payload + pending-draw highlight; the
@@ -155,10 +152,6 @@ type PaletteTileAction =
   | { type: 'annotation' }
   | { type: 'link-card' }
   | { type: 'component'; kind: ComponentKind }
-  // Dynamic icon tiles (palette-dynamic-tiles.tsx): a single line-art /
-  // Technology catalogue entry as a tile.
-  | { type: 'icon'; iconId: string }
-  | { type: 'tech-icon'; iconId: string }
   // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
   // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
   // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
@@ -1274,6 +1267,36 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <WorldClockIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Timer (docs/specs/009-elements/timer-and-stopwatch.md).
+    id: 'tools:timer',
+    tileGroup: 'meeting',
+    blurb: 'A countdown for the room',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Timer',
+    caption: 'Timer',
+    description:
+      'A countdown on the wall. Set its length, then start, pause and reset it from its face; everyone sees the same time, and the room hears a chime at zero.',
+    filled: true,
+    action: { type: 'shape', kind: 'timer' },
+    icon: <TimerPieceIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+    id: 'tools:stopwatch',
+    tileGroup: 'meeting',
+    blurb: 'Count up how long it takes',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Stopwatch',
+    caption: 'Stopwatch',
+    description:
+      'A stopwatch on the wall that counts up. Start, pause and reset it from its face; everyone sees the same time.',
+    filled: true,
+    action: { type: 'shape', kind: 'stopwatch' },
+    icon: <StopwatchIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Rug (docs/specs/009-elements/office.md).
     id: 'tools:rug',
     tileGroup: 'rooms',
@@ -1312,8 +1335,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Place an uploaded picture',
     section: 'media',
     label: 'Add Image',
+    // Offered by no category (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card"), and no
+    // `9` key: kept so a stored image still finds its name and glyph.
     description: 'Drop an image placeholder + pick / upload a file.',
-    shortcut: '9',
     noTint: true,
     needsImage: true,
     action: { type: 'image' },
@@ -1621,15 +1645,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
-    // Navigate (docs/specs/010-palette/palette-top-level-categories.md), beside Portal and Chair: the group is what an
-    // element DOES, and all three take you somewhere. A portal moves you to
-    // another tab, a chair seats your character, a link card sends you out to
-    // the page. It sat under Components, which groups by what a thing looks
-    // like — a ready-made composite you recolour — and a link card is neither
-    // composite nor decoration.
-    section: 'tools',
-    toolGroup: 'behaviour',
-    tileGroup: 'travel',
+    // Offered by no category (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card"): kept
+    // so a stored link card still finds its name and glyph. It left Travel with the Media category.
+    section: 'media',
     label: 'Add Link Card',
     description: "Link card. A bookmark preview with the page's title, favicon, and image.",
     noTint: true,

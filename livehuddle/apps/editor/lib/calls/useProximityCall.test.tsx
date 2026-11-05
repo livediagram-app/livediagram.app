@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { callActions, callSelf, resetCallSelf, setCallSelf } from './calls-store';
+import {
+  callActions,
+  callMedia,
+  callSelf,
+  resetCallMedia,
+  resetCallSelf,
+  SELF_MEDIA_ID,
+  setCallSelf,
+} from './calls-store';
+import type { LocalPreview } from './local-preview';
 import { useProximityCall, type ProximityCallDeps } from './useProximityCall';
 
 const caps = vi.hoisted(() => ({ apiGetCapabilities: vi.fn() }));
@@ -20,6 +29,7 @@ const calls = vi.hoisted(() => ({
     lowerHand: ReturnType<typeof vi.fn>;
     setDoNotDisturb: ReturnType<typeof vi.fn>;
     ended: boolean;
+    input: { preview?: LocalPreview };
   }[],
   fail: false,
 }));
@@ -35,8 +45,10 @@ vi.mock('./proximity-call', () => ({
     lowerHand = vi.fn();
     setDoNotDisturb = vi.fn();
     ended = false;
-    constructor() {
+    input: { preview?: LocalPreview };
+    constructor(input: { preview?: LocalPreview }) {
       if (calls.fail) throw new Error('chunk');
+      this.input = input;
       calls.made.push(this);
     }
   },
@@ -64,7 +76,10 @@ beforeEach(() => {
   );
 });
 afterEach(() => {
-  act(() => resetCallSelf());
+  act(() => {
+    resetCallSelf();
+    resetCallMedia();
+  });
   vi.unstubAllGlobals();
   vi.clearAllMocks();
 });
@@ -177,6 +192,7 @@ describe('useProximityCall', () => {
     expect(call.update).toHaveBeenCalledWith(
       expect.objectContaining({ view: { x: 0, y: 0, width: 100, height: 100 } }),
     );
+    act(() => setCallSelf({ phase: 'live' }));
     act(() => callActions()!.toggleCamera());
     act(() => callActions()!.toggleScreen());
     expect(call.toggleCamera).toHaveBeenCalledTimes(1);
@@ -189,6 +205,133 @@ describe('useProximityCall', () => {
     act(() => callActions()!.toggleCamera());
     act(() => callActions()!.toggleScreen());
     expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Local preview".
+  describe('a local preview', () => {
+    function fakeCapture() {
+      const tracks: { stop: ReturnType<typeof vi.fn> }[] = [];
+      const stream = () => {
+        const track = { stop: vi.fn(), contentHint: '', addEventListener: vi.fn() };
+        tracks.push(track);
+        return {
+          getVideoTracks: () => [track],
+          getTracks: () => [track],
+        } as unknown as MediaStream;
+      };
+      return {
+        tracks,
+        capture: {
+          getUserMedia: vi.fn(async () => stream()),
+          getDisplayMedia: vi.fn(async () => stream()),
+        },
+      };
+    }
+
+    it('offers the camera and screen with no room, captures on a press and sends nothing', async () => {
+      const send = vi.fn();
+      const { capture, tracks } = fakeCapture();
+      mount({ caller: null, send, capture });
+      await act(async () => {});
+      expect(callSelf()).toMatchObject({
+        available: false,
+        canPreviewCamera: true,
+        canPreviewScreen: true,
+      });
+      await act(async () => callActions()!.toggleCamera());
+      await act(async () => callActions()!.toggleScreen());
+      expect(capture.getUserMedia).toHaveBeenCalledTimes(1);
+      expect(callSelf()).toMatchObject({ previewCamera: 'on', previewScreen: 'on' });
+      expect(callMedia().get(SELF_MEDIA_ID)?.video).toBeTruthy();
+      expect(calls.made).toHaveLength(0);
+      expect(send).not.toHaveBeenCalled();
+      expect(caps.apiGetCapabilities).not.toHaveBeenCalled();
+      // Counted as any camera or share is.
+      expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'CameraOn');
+      expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'ScreenShare');
+      telemetry.track.mockClear();
+      act(() => callActions()!.toggleCamera());
+      act(() => callActions()!.toggleScreen());
+      expect(tracks.every((t) => t.stop.mock.calls.length > 0)).toBe(true);
+      expect(callMedia().size).toBe(0);
+      expect(telemetry.track).not.toHaveBeenCalled();
+    });
+
+    it('offers a Viewer none, and none where the browser cannot capture', async () => {
+      const { capture } = fakeCapture();
+      const viewer = mount({ canSpeak: false, send: undefined, capture });
+      await act(async () => {});
+      expect(callSelf()).toMatchObject({ canPreviewCamera: false, canPreviewScreen: false });
+      await act(async () => callActions()!.toggleCamera());
+      expect(capture.getUserMedia).not.toHaveBeenCalled();
+      viewer.unmount();
+      // jsdom has no camera API: nothing offered, a press does nothing.
+      mount({ send: undefined });
+      await act(async () => {});
+      expect(callSelf()).toMatchObject({ canPreviewCamera: false, canPreviewScreen: false });
+      await act(async () => callActions()!.toggleCamera());
+      expect(callSelf().previewCamera).toBe('off');
+    });
+
+    it('stops on leaving the mode, on a tab change and when the canvas goes', async () => {
+      const { capture, tracks } = fakeCapture();
+      const hook = mount({ send: undefined, capture });
+      const on = async () => {
+        await act(async () => callActions()!.toggleCamera());
+        expect(callSelf().previewCamera).toBe('on');
+      };
+      await on();
+      hook.rerender({ ...base, send: undefined, capture, inMode: false });
+      expect(tracks[0]!.stop).toHaveBeenCalled();
+      expect(callMedia().size).toBe(0);
+      hook.rerender({ ...base, send: undefined, capture });
+      await on();
+      hook.rerender({ ...base, send: undefined, capture, tabId: 't2' });
+      expect(tracks[1]!.stop).toHaveBeenCalled();
+      await on();
+      hook.unmount();
+      expect(tracks[2]!.stop).toHaveBeenCalled();
+      expect(callMedia().size).toBe(0);
+    });
+
+    it('hands the preview to the call on join, and routes the buttons by who may send', async () => {
+      const { capture } = fakeCapture();
+      mount({ capture });
+      await waitFor(() => expect(callSelf().available).toBe(true));
+      // Before joining: the preview's.
+      await act(async () => callActions()!.toggleCamera());
+      expect(callSelf().previewCamera).toBe('on');
+      act(() => callActions()!.join());
+      await waitFor(() => expect(calls.made).toHaveLength(1));
+      const call = calls.made[0]!;
+      expect(call.input.preview?.stream('camera')).toBe(callMedia().get(SELF_MEDIA_ID)?.video);
+      act(() => setCallSelf({ phase: 'live' }));
+      // A preview that is on turns off, whatever the call.
+      act(() => callActions()!.toggleCamera());
+      expect(callSelf().previewCamera).toBe('off');
+      expect(call.toggleCamera).not.toHaveBeenCalled();
+      // Off, a live call drives the camera; a Participant's screen is a preview even in a call.
+      act(() => callActions()!.toggleCamera());
+      expect(call.toggleCamera).toHaveBeenCalledTimes(1);
+      await act(async () => callActions()!.toggleScreen());
+      expect(call.toggleScreen).not.toHaveBeenCalled();
+      expect(callSelf().previewScreen).toBe('on');
+    });
+
+    it('a refusal from before the join is the live call’s to retry', async () => {
+      const { capture } = fakeCapture();
+      capture.getUserMedia.mockRejectedValueOnce(new Error('NotAllowed'));
+      mount({ capture });
+      await waitFor(() => expect(callSelf().available).toBe(true));
+      await act(async () => callActions()!.toggleCamera());
+      expect(callSelf().previewCamera).toBe('blocked');
+      act(() => callActions()!.join());
+      await waitFor(() => expect(calls.made).toHaveLength(1));
+      act(() => setCallSelf({ phase: 'live' }));
+      act(() => callActions()!.toggleCamera());
+      expect(calls.made[0]!.toggleCamera).toHaveBeenCalledTimes(1);
+      expect(callSelf().previewCamera).toBe('off');
+    });
   });
 
   // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand" and "Do Not Disturb".

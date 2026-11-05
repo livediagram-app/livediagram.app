@@ -15,3 +15,19 @@ describe('the pod door motion', () => {
     expect(Number(rule?.[1])).toBe(POD_DOOR_MS);
   });
 });
+
+// A Door swinging (docs/specs/009-elements/room-builder.md "Opening and closing"): eased, and still under reduced motion.
+describe('the door swing motion', () => {
+  const css = readFileSync(fileURLToPath(new URL('./canvas-motion.css', import.meta.url)), 'utf8');
+
+  it('turns the leaf and fades the arc over 180ms', () => {
+    expect(css).toMatch(/\.lh-door-leaf\s*\{\s*transition:\s*transform\s+180ms/);
+    expect(css).toMatch(/\.lh-door-swing\s*\{\s*transition:\s*opacity\s+180ms/);
+  });
+
+  it('drops both under reduced motion', () => {
+    const reduced = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'));
+    expect(reduced).toContain('.lh-door-leaf');
+    expect(reduced).toContain('.lh-door-swing');
+  });
+});

@@ -1,3 +1,4 @@
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { describe, expect, it } from 'vitest';
 
 import { SHAPE_KINDS } from '@livehuddle/document';
@@ -40,9 +41,7 @@ describe('buildPaletteSearchItems', () => {
 
   it('offers every non-shape palette tile too (text, sticky, frame, ...)', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    const missing = OFFERED.filter(
-      (t) => !['shape', 'icon', 'tech-icon', 'sticker'].includes(t.action.type),
-    )
+    const missing = OFFERED.filter((t) => !['shape', 'sticker'].includes(t.action.type))
       .map((t) => `tile:${t.id}`)
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
@@ -63,11 +62,13 @@ describe('buildPaletteSearchItems', () => {
       expect(ids).not.toContain(id);
   });
 
-  it('hides the image-upload tiles when the editor has no image support', () => {
-    const ids = new Set(buildPaletteSearchItems({ hasImage: false }).map((i) => i.id));
-    const imageTiles = OFFERED.filter((t) => t.needsImage && t.action.type !== 'shape');
-    expect(imageTiles.length).toBeGreaterThan(0);
-    for (const t of imageTiles) expect(ids).not.toContain(`tile:${t.id}`);
+  it('offers no Image or Link card, image support or not (not-in-livehuddle.md "Media")', () => {
+    for (const hasImage of [true, false]) {
+      const ids = buildPaletteSearchItems({ hasImage }).map((i) => i.id);
+      expect(ids).not.toContain('tile:tools:image');
+      expect(ids).not.toContain('tile:tools:link-card');
+    }
+    expect(OFFERED.filter((t) => t.needsImage)).toEqual([]);
   });
 
   it('covers the element types the palette added most recently', () => {
@@ -136,5 +137,14 @@ describe('buildPaletteSearchItems', () => {
     expect(before.some((i) => /^(icon|sticker|tech):/.test(i.id))).toBe(false);
     const after = buildPaletteSearchItems();
     expect(after.filter((i) => /^(shape|tile):/.test(i.id))).toEqual(before);
+  });
+
+  // No Icons category in livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Icons"): the panel adds no
+  // line-art icon; Stickers stay.
+  it('offers no line-art icon, and still offers the stickers', async () => {
+    await ensureIconCatalogs();
+    const items = buildPaletteSearchItems();
+    expect(items.some((i) => i.id.startsWith('icon:'))).toBe(false);
+    expect(items.some((i) => i.id.startsWith('sticker:'))).toBe(true);
   });
 });

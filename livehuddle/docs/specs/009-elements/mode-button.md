@@ -28,6 +28,7 @@ It is how people get into a Space, which is why its tile sits in the palette's *
 - **A button that hands out Avatar mode spawns the character at the button**, just below it (the whole figure clear of the button, so its label stays readable), rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. An [Avatar Pad](avatar-pad.md) on the tab wins over the button: everyone starts on the pad.
 - **It stays pressable inside a pointer-inert mode.** Avatar makes the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, the button would be unreachable from the very mode it is the way out of (it reads "Leave Avatar" while you walk). Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed), so it can be reconfigured mid-walk.
 - **Read-only surfaces**: the embed ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)) has no tool picker to drive, so it renders the face inert rather than pretending.
+- **A Participant's button is inert too.** A Participant is always walking ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks)), so no button can switch it: the face draws with its own label (never "Leave") and pressing it does nothing.
 
 ## Configuring it
 

@@ -68,15 +68,33 @@ describe('applyRoomOpToTabs', () => {
     expect('vote' in added[1]!).toBe(false);
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Session strip's Timer": an old client's tab timer is dropped.
+  it('drops the Session strip timer a tab or a patch still carries', () => {
+    const oldTimer = { mode: 'stopwatch', running: true, anchorAt: 1 };
+    const patched = applyRoomOpToTabs([tab()], {
+      kind: 'tab-meta',
+      tabId: 't1',
+      patch: { name: 'Renamed', timer: oldTimer } as never,
+    });
+    expect(patched[0]!.name).toBe('Renamed');
+    expect('timer' in patched[0]!).toBe(false);
+    const whole = applyRoomOpToTabs([tab()], {
+      kind: 'tab',
+      tabId: 't1',
+      tab: { ...tab(), timer: oldTimer } as never,
+    });
+    expect('timer' in whole[0]!).toBe(false);
+  });
+
   it("a clear removes the field and keeps everybody's elements (docs/specs/012-collaboration/collab-race-hardening.md)", () => {
-    const mine = tab({ timer: { mode: 'stopwatch', running: true, anchorAt: 1 } });
+    const mine = tab({ backgroundOpacity: 0.5 });
     const next = applyRoomOpToTabs([mine], {
       kind: 'tab-meta',
       tabId: 't1',
       patch: {},
-      clear: ['timer', 'elements', 'id'],
+      clear: ['backgroundOpacity', 'elements', 'id'],
     });
-    expect('timer' in next[0]!).toBe(false);
+    expect('backgroundOpacity' in next[0]!).toBe(false);
     expect(next[0]!.elements).toBe(mine.elements);
     expect(next[0]!.id).toBe('t1');
   });

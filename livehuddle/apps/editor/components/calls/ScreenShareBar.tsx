@@ -2,17 +2,20 @@
 
 // "You are sharing your screen" (docs/specs/012-collaboration/video-and-screen-bubbles.md "The screen share"): a clear
 // bar at the top of the canvas while this browser shares, with Stop Sharing. Dark in both themes, as an operating
-// system's own sharing bar is, so it never reads as part of the board.
+// system's own sharing bar is, so it never reads as part of the board. A local preview of a screen (the same spec's
+// "Local preview") shows the same bar, saying only you see it.
 import { lucideScreenShareOff } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Portal } from '@livehuddle/ui';
 import { useCallActions, useCallSelf } from '@/lib/calls/calls-store';
+import { localOnly, selfScreen } from '@/lib/calls/local-preview';
 
 const StopIcon = lucideGlyph(lucideScreenShareOff, 14);
 
 export function ScreenShareBar() {
   const self = useCallSelf();
   const actions = useCallActions();
-  if (self.screen !== 'on' || !actions) return null;
+  if (selfScreen(self) !== 'on' || !actions) return null;
+  const preview = localOnly(self, 'screen');
   return (
     <Portal>
       <div
@@ -25,8 +28,12 @@ export function ScreenShareBar() {
             <span className="relative size-2.5 rounded-full bg-rose-500" />
           </span>
           {/* A phone has room for the short form beside Stop Sharing; the long one would cut off. */}
-          <span className="truncate font-medium phone:hidden">You are sharing your screen</span>
-          <span className="hidden truncate font-medium phone:inline">Sharing your screen</span>
+          <span className="truncate font-medium phone:hidden">
+            {preview ? 'Only you see your screen' : 'You are sharing your screen'}
+          </span>
+          <span className="hidden truncate font-medium phone:inline">
+            {preview ? 'Only you see it' : 'Sharing your screen'}
+          </span>
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}

@@ -35,6 +35,14 @@ const ALL_KINDS = [
   'cafe',
   'garden-retreat',
   'city-park',
+  'company-campus',
+  'conference-venue',
+  'startup-hq',
+  'school-quad',
+  'hotel-and-suites',
+  'coworking-tower',
+  'expo-hall',
+  'beach-offsite',
   'blank-session',
 ] as const satisfies readonly TemplateKind[];
 

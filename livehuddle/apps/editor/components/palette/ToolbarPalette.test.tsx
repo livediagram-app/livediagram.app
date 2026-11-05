@@ -87,17 +87,15 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
     expect(barNames()).toEqual([
       'Write',
-      'Travel',
-      'Seating',
       'Rooms',
+      'Seating',
       'Amenities',
       'Bar',
       'Recreation',
       'Garden',
       'Meeting',
-      'Icons',
+      'Travel',
       'Stickers',
-      'Media',
     ]);
     // No tiles of their own on the strip: they are in the flyouts.
     expect(within(strip()).queryByRole('button', { name: 'Add Chair' })).toBeNull();
@@ -110,38 +108,49 @@ describe('ToolbarPalette', () => {
     expect(flyout()).toBeNull();
   });
 
-  it('opens Rooms one level deep, with no group headings', () => {
+  // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
+  it('opens Rooms one level deep, on its Build group: Room, Room Builder, Door', () => {
     show();
     const rooms = openFlyout('Rooms');
-    expect(within(rooms).queryByRole('heading', { level: 4 })).toBeNull();
+    expect(
+      within(rooms)
+        .getAllByRole('heading', { level: 4 })
+        .map((h) => h.textContent),
+    ).toEqual(['Build', 'Floor']);
+    const items = [...rooms.querySelectorAll('[data-flyout-item]')].map((b) =>
+      b.getAttribute('aria-label'),
+    );
+    expect(items.slice(0, 3)).toEqual(['Add Room', 'Room Builder', 'Add Door']);
     fireEvent.click(within(rooms).getByRole('button', { name: 'Add Room' }));
     expect(flyout()).toBeNull();
   });
 
   it("focuses a catalogue's search field when its flyout opens (docs/specs/007-editor/toolbar-layout.md)", () => {
     show();
-    const popover = openFlyout('Icons');
-    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search icons'));
+    const popover = openFlyout('Stickers');
+    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search stickers'));
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
     show();
-    const popover = openFlyout('Icons');
-    expect(document.activeElement).not.toBe(within(popover).getByPlaceholderText('Search icons'));
+    const popover = openFlyout('Stickers');
+    expect(document.activeElement).not.toBe(
+      within(popover).getByPlaceholderText('Search stickers'),
+    );
   });
 
   it('switches the flyout to the category pressed next', () => {
     show();
-    openFlyout('Icons');
+    openFlyout('Stickers');
     fireEvent.click(screen.getByRole('button', { name: 'Seating' }));
     expect(within(flyout()!).getByRole('button', { name: 'Add Chair' })).toBeTruthy();
-    expect(within(flyout()!).queryByPlaceholderText('Search icons')).toBeNull();
+    expect(within(flyout()!).queryByPlaceholderText('Search stickers')).toBeNull();
   });
 
   it('closes the flyout on Escape', () => {
     show();
-    openFlyout('Icons');
+    openFlyout('Stickers');
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
@@ -206,6 +215,9 @@ describe('ToolbarPalette', () => {
         ['frame', /^Add Frame$/],
         ['confetti', /^Add Confetti Pad$/],
         ['laser', /^Add Laser/],
+        // No Icons (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
+        ['database', /^Add Database$/],
+        ['server', /^Add Server$/],
       ] as const) {
         type(popover, q);
         expect(within(popover).queryAllByRole('button', { name: gone }), q).toEqual([]);
@@ -246,7 +258,7 @@ describe('ToolbarPalette', () => {
 
     it("is one strip menu at a time with a category's flyout, and closes on Escape", () => {
       show();
-      openFlyout('Icons');
+      openFlyout('Stickers');
       const searchButton = screen.getByRole('button', { name: 'Search elements' });
       fireEvent.pointerDown(searchButton);
       fireEvent.click(searchButton);

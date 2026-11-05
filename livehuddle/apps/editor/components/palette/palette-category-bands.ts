@@ -12,4 +12,6 @@ export const CATEGORY_BANDS: Record<number, string> = {
   // The meeting palette's Space categories and Selection Mode (docs/specs/012-collaboration/workshop-mode.md "The
   // palette"): what a Space is built from and walked round.
   6: 'Meet',
+  // Travel, apart from the furnishing (docs/specs/010-palette/palette-top-level-categories.md "The strip's order").
+  7: 'Travel',
 };

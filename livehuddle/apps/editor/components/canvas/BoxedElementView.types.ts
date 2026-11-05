@@ -1,13 +1,7 @@
 import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type {
-  BoxedElement,
-  HeroCaption,
-  IconPosition,
-  TextRun,
-  WebRows,
-} from '@livehuddle/document';
+import type { BoxedElement, HeroCaption, TextRun, WebRows } from '@livehuddle/document';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -157,10 +151,6 @@ export type BoxedElementViewProps = {
   // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md).
   onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
-  // Drop a dragged palette icon onto this shape. The view computes which
-  // side of the text the icon landed on and reports it. Omitted in
-  // read-only mode so visitors can't drop icons.
-  onDropIcon?: (id: string, iconId: string, position: IconPosition) => void;
   // Open the link picker for one of this table's cells. Only used by
   // table elements; omitted for read-only viewers.
   onLinkCell?: (tableId: string, r: number, c: number) => void;

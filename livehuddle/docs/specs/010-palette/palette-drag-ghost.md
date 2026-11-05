@@ -76,9 +76,20 @@ Avatar Pad, the Portal, the Door and the Focus Button), adding one previews **th
 - **Placed pieces are not resized.** Once on the canvas a placed piece shows no resize handles (rotation and moving
   stay), keeps its size through a multi-selection's resize, and its element menu offers no size controls
   (`isFixedSizeElement`). One resized before this rule keeps the size it was given.
-- Sized pieces (a Room, a Stage, Grass, a Garden Path, a Rug, a Lane, text, stickies) keep the draw-to-size box.
+- **Sized pieces with art preview themselves too.** A Room, a Stage, Grass, a Garden Path, a Rug, a Fence, a Garden
+  Fence and a Pond (every kind `hasPieceArt` draws) are drawn to a size, but a tap or a drop still lands one at its
+  default size (`SHAPE_DEFAULT_SIZE`, a Room 480 x 320), centred on the pointer. So while one is armed, and while its
+  tile is dragged, the same translucent piece follows the pointer at that default size, exactly as a placed piece's
+  does, instead of a dashed footprint (or nothing at all, before the first press). The moment a press-and-drag starts
+  drawing a box, the preview steps aside and the draw-to-size box takes over, so the piece is never shown twice.
+  The Room is the exception: it draws no box at all (a press-and-drag drops it at its default size, like a placed
+  piece, and it is resized after: [Office](../009-elements/office.md) "Dropped, then sized"), so its preview stays.
+  (A Room's preview shows the doorway in its front wall where its Door lands: [Office](../009-elements/office.md) "Room".)
+- Sized kinds the art layer does not draw (text, stickies, a Lane, the generic shapes) keep the dashed footprint
+  while dragged and the draw-to-size box while armed.
 
 Implementation: `isPlacedShape` and `isFixedSizeElement` in `packages/document/src/placed-kinds.ts`;
 `components/canvas/collab/PlacementPreview.tsx` (generalised from the Door's preview),
-`components/canvas/PieceArt.tsx` (the piece art, shared with `BoxedElementView`); `PaletteDragGhost` stands aside
-for placed kinds; `buildDrawnBoxed` places them as a tap.
+`components/canvas/PieceArt.tsx` (the piece art, shared with `BoxedElementView`); `previewsItself` in
+`PlacementPreview.tsx` says which kinds preview themselves (placed kinds and every kind with piece art), and
+`PaletteDragGhost` stands aside for them; `buildDrawnBoxed` places placed kinds as a tap.

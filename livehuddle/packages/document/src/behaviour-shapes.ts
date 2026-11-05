@@ -69,6 +69,9 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   // Sign knocked on.
   'screen',
   'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): what it does only happens when somebody presses
   // it, which is the whole of what makes a kind a Behaviour.
   'focus-button',

@@ -16,7 +16,7 @@ export const LEAF = 'rgb(74 222 128)';
 const POT = 'rgb(234 88 12)';
 export const SHIRT = 'rgb(20 184 166)';
 
-// A room's walls, broken by a doorway on the corridor side (top or bottom).
+// A room's walls, broken by a doorway in the middle of one side.
 export function Room({
   x,
   y,
@@ -28,7 +28,7 @@ export function Room({
   y: number;
   w: number;
   h: number;
-  door: 'top' | 'bottom' | 'left';
+  door: 'top' | 'bottom' | 'left' | 'right';
 }) {
   const mid = x + w / 2;
   const doorY = door === 'top' ? y : y + h;
@@ -38,7 +38,9 @@ export function Room({
   const walls =
     door === 'left'
       ? `M${x} ${midY - 3}L${x} ${y}L${x + w} ${y}L${x + w} ${y + h}L${x} ${y + h}L${x} ${midY + 3}`
-      : `M${mid - 3} ${doorY}L${x} ${doorY}L${x} ${otherY}L${x + w} ${otherY}L${x + w} ${doorY}L${mid + 3} ${doorY}`;
+      : door === 'right'
+        ? `M${x + w} ${midY - 3}L${x + w} ${y}L${x} ${y}L${x} ${y + h}L${x + w} ${y + h}L${x + w} ${midY + 3}`
+        : `M${mid - 3} ${doorY}L${x} ${doorY}L${x} ${otherY}L${x + w} ${otherY}L${x + w} ${doorY}L${mid + 3} ${doorY}`;
   return (
     <>
       <rect x={x} y={y} width={w} height={h} fill={FLOOR} />

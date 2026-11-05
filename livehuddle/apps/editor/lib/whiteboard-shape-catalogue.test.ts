@@ -50,14 +50,14 @@ describe('the whiteboard shape catalogue', () => {
       'draw',
       'build',
       'data',
-      'collab-travel',
-      'collab-seating',
       'collab-rooms',
+      'collab-seating',
       'collab-amenities',
       'collab-bar',
       'collab-recreation',
       'collab-garden',
       'collab-meeting',
+      'collab-travel',
     ]);
   });
 

@@ -1,7 +1,6 @@
 import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livehuddle/document';
 import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
-import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
@@ -9,11 +8,7 @@ import { buildCanvasToolOptions } from './canvas-tool-options';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import {
-  paletteCategoriesFor,
-  participantPaletteCategories,
-  PARTICIPANT_CANVAS_TOOLS,
-} from './palette-layouts';
+import { paletteCategoriesFor } from './palette-layouts';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 
@@ -35,11 +30,7 @@ type Deps = Pick<
   | 'pendingDraw'
   | 'onTileUsed'
 > &
-  PaletteAddHandlers & {
-    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
-    // modes only.
-    participant?: boolean;
-  };
+  PaletteAddHandlers;
 
 export function usePaletteCatalogue({
   canvasTool,
@@ -47,9 +38,7 @@ export function usePaletteCatalogue({
   onExitAvatarMode,
   canvasEmpty,
   onAddShape,
-  onAddIcon,
   onAddSticker,
-  onAddTechIcon,
   onAddText,
   onAddSticky,
   onAddTable,
@@ -74,7 +63,6 @@ export function usePaletteCatalogue({
   onBeginRoomWalls,
   pendingDraw,
   onTileUsed,
-  participant = false,
 }: Deps) {
   // The editor mode picks the palette layout (palette-layouts): Workshop, the one mode.
   const editorMode = DEFAULT_EDITOR_MODE;
@@ -89,11 +77,8 @@ export function usePaletteCatalogue({
   };
   const addShape = (kind: import('@livehuddle/document').ShapeKind, opts?: AddShapeOptions) =>
     armed(() => onAddShape(kind, opts))();
-  // Icons, stickers and tech icons arm the draw gesture too (they ride the
-  // shape intent carrying the glyph id).
-  const addIcon = (iconId: string) => armed(() => onAddIcon(iconId))();
+  // Stickers arm the draw gesture too (they ride the shape intent carrying the sticker id).
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
-  const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
   const addText = armed(onAddText);
   const addSticky = armed(onAddSticky);
   const addTable = armed(onAddTable);
@@ -153,8 +138,6 @@ export function usePaletteCatalogue({
       addVideo,
       addSticker,
       addComponent,
-      addIcon,
-      addTechIcon,
       cancelDraw: onCancelDraw,
       hasImage: !!onAddImage,
     },
@@ -162,28 +145,14 @@ export function usePaletteCatalogue({
       if (canvasTool === 'avatar') onExitAvatarMode?.();
     },
   );
-  // Icon-picker search query (Icons tab). Filters the catalogue
-  // by label / keyword as the user types.
-  const [iconQuery, setIconQuery] = useState('');
-  // Both icon catalogues load as one async chunk (@liveworkspace/workbench/lib/icon-registry.ts).
-  // Subscribing here re-renders the palette when the data lands, so the two
-  // result lists below re-derive from the populated catalogue; until then
-  // they're empty and the picker tabs show a brief "Loading icons" note
-  // (via `iconCatalogsLoaded`) instead of a false "no matches".
+  // The catalogues (stickers among them) load as one async chunk (@liveworkspace/workbench/lib/icon-registry.ts).
+  // Subscribing here re-renders the palette when the data lands, so the sticker results below re-derive from the
+  // populated catalogue; until then they're empty and the Stickers browse shows a brief loading note (via
+  // `iconCatalogsLoaded`) instead of a false "no matches". No Icons category
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
   const iconCatalogsLoaded = useIconCatalogs();
-  // Search hits across the WHOLE line-art catalogue — the tab browses by
-  // category (docs/specs/010-palette/palette-category-browse.md) rather than filtering by one, so narrowing here would
-  // make a search silently miss the categories you weren't looking at. It is
-  // the line-art half specifically: stickers share the catalogue but have
-  // their own category (docs/specs/010-palette/stickers.md), and showing them in both would be the
-  // duplication that move removed.
-  const iconResults = getLineArtIconCatalog().filter((i) => {
-    const q = iconQuery.trim().toLowerCase();
-    if (!q) return true;
-    return i.label.toLowerCase().includes(q) || i.keywords.includes(q) || i.id.includes(q);
-  });
-  // Stickers tab (docs/specs/010-palette/stickers.md): colour emoji, browsed in ten groups. Same shape
-  // as the Icons tab — a search box over a drill-in browse.
+  // Stickers tab (docs/specs/010-palette/stickers.md): colour emoji, browsed in groups: a search box over a
+  // drill-in browse.
   const [stickerQuery, setStickerQuery] = useState('');
   const stickerResults = searchStickers(stickerQuery);
 
@@ -192,17 +161,11 @@ export function usePaletteCatalogue({
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
-  const categories = participant
-    ? participantPaletteCategories()
-    : paletteCategoriesFor(editorMode);
+  const categories = paletteCategoriesFor(editorMode);
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
     tileActions,
-    addIcon,
-    iconQuery,
-    setIconQuery,
-    iconResults,
     loading: !iconCatalogsLoaded,
     addSticker,
     stickerQuery,
@@ -211,10 +174,7 @@ export function usePaletteCatalogue({
   });
 
   // The canvas-tool picker's options (canvas-tool-options), and its change handler.
-  const allCanvasToolOptions = buildCanvasToolOptions({ canvasEmpty });
-  const canvasToolOptions = participant
-    ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))
-    : allCanvasToolOptions;
+  const canvasToolOptions = buildCanvasToolOptions({ canvasEmpty });
   const onCanvasToolChange = (id: string) => onSetCanvasTool(id as CanvasTool);
 
   return {

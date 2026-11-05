@@ -32,6 +32,7 @@
     "./hooks/useAvatarWalk": "./src/hooks/useAvatarWalk.ts",
     "./hooks/useSeatYield": "./src/hooks/useSeatYield.ts",
     "./office-geometry": "./src/office-geometry.ts",
+    "./pathing": "./src/pathing.ts",
     "./pad": "./src/pad.ts",
     "./room-outline": "./src/room-outline.ts",
     "./pad-art": "./src/pad-art.ts",

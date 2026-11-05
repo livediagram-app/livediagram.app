@@ -12,7 +12,7 @@ const { useDockPopovers } = await import('./useDockPopovers');
 
 const button = () => document.createElement('button');
 
-// docs/specs/017-telemetry/telemetry.md: the popover layouts open Collaborate and the Session strip here rather
+// docs/specs/017-telemetry/telemetry.md: the popover layouts open Collaborate and Tidy Up here rather
 // than through the desktop un-minimise toggle, so they count here.
 describe('useDockPopovers panel-open telemetry', () => {
   beforeEach(() => trackMock.mockReset());

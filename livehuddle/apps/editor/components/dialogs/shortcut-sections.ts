@@ -54,7 +54,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
     rows: [
       { keys: ['T'], label: 'Text  (or 8)' },
       { keys: ['N'], label: 'Note (sticky)' },
-      { keys: ['9'], label: 'Image' },
     ],
   },
   {

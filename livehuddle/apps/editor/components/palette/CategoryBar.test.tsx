@@ -168,7 +168,7 @@ describe('hover intent', () => {
 
   it('stays open while its search holds a query', () => {
     show();
-    fireEvent.pointerEnter(button('Icons'), mouse);
+    fireEvent.pointerEnter(button('Stickers'), mouse);
     wait(HOVER_OPEN_MS);
     const field = within(flyout()!).getByRole('textbox') as HTMLInputElement;
     field.focus();
@@ -184,13 +184,14 @@ describe('the keyboard', () => {
     show();
     button('Write').focus();
     fireEvent.keyDown(button('Write'), { key: 'ArrowRight' });
-    expect(document.activeElement).toBe(button('Travel'));
-    fireEvent.keyDown(button('Travel'), { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(button('Rooms'));
+    fireEvent.keyDown(button('Rooms'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
     // Wraps round to the last.
-    expect(document.activeElement).toBe(button('Media'));
-    fireEvent.keyDown(button('Media'), { key: 'ArrowDown' });
-    expect(heading()).toBe('Media');
+    expect(document.activeElement).toBe(button('Stickers'));
+    fireEvent.keyDown(button('Stickers'), { key: 'ArrowLeft' });
+    fireEvent.keyDown(button('Travel'), { key: 'ArrowDown' });
+    expect(heading()).toBe('Travel');
     expect(document.activeElement?.hasAttribute('data-flyout-item')).toBe(true);
   });
 
@@ -199,8 +200,8 @@ describe('the keyboard', () => {
     fireEvent.click(button('Seating'), { detail: 0 });
     expect(heading()).toBe('Seating');
     fireEvent.keyDown(button('Seating'), { key: 'ArrowRight' });
-    expect(heading()).toBe('Rooms');
-    fireEvent.click(button('Rooms'), { detail: 0 });
+    expect(heading()).toBe('Amenities');
+    fireEvent.click(button('Amenities'), { detail: 0 });
     expect(flyout()).toBeNull();
   });
 
@@ -214,7 +215,7 @@ describe('the keyboard', () => {
       within(flyout()!).getByRole('button', { name: 'Add Bring Focus' }),
     );
     fireEvent.keyDown(document.activeElement!, { key: 'End' });
-    expect(document.activeElement?.getAttribute('aria-label')).toBe('Add Link Card');
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Add Avatar Mode Button');
   });
 
   it('hands the focus back to the category on Escape', () => {

@@ -84,7 +84,7 @@ simply never see a character on the far side of a fence because its owner's walk
 ## Share roles
 
 - **Editor**: places, moves, resizes, turns, recolours and deletes fences, like any element.
-- **Participant**: the participant palette does not offer the fence; a Participant's character is
+- **Participant**: has no palette, so it places no fence; a Participant's character is
   blocked like everyone's.
 - **Viewer**: cannot change a fence; a Viewer's character is blocked like everyone's.
 

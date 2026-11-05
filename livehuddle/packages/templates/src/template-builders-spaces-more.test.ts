@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { isFloorShape, roomDoorSpan, roomWalls, type Element } from '@livehuddle/document';
+import {
+  doorOnRoom,
+  isFloorShape,
+  roomDoorSpan,
+  roomWalls,
+  seatsACharacter,
+  type Element,
+} from '@livehuddle/document';
+import { AVATAR_WIDTH } from '@liveworkspace/avatar/walk';
+import { avatarScale } from '@liveworkspace/avatar/config';
 import { buildTemplate } from './build-template';
+import { templateFloors } from './template-floors';
 import { templateCategory } from './template-categories';
 import { TEMPLATES, type TemplateKind } from './templates';
 
@@ -10,9 +20,54 @@ import { TEMPLATES, type TemplateKind } from './templates';
 // of furniture stand on each other.
 
 type Box = { x: number; y: number; width: number; height: number };
+
+// An aisle: two Regular characters side by side, and no catch distance (a seat catches only feet inside it).
+const TEMPLATE_AISLE = 2 * AVATAR_WIDTH * avatarScale('regular');
+// The Spaces laid out to the aisle rule (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
+const ROOMY: readonly string[] = [
+  'all-hands-hall',
+  'training-room',
+  'virtual-office',
+  'coworking-space',
+  'team-pod',
+  'focus-library',
+  'rooftop-bar',
+  'cafe',
+  'garden-retreat',
+  'city-park',
+  'company-campus',
+  'conference-venue',
+  'startup-hq',
+  'school-quad',
+  'hotel-and-suites',
+  'coworking-tower',
+  'expo-hall',
+  'beach-offsite',
+];
+// Seats this close side by side are one row.
+const ROW_GAP = 16;
 type Shape = Extract<Element, { type: 'shape' }>;
 
 const SPACES = TEMPLATES.map((t) => t.kind).filter((k) => templateCategory(k) !== null);
+// Every Space's tabs: its first, then a building's other floors (docs/specs/007-editor/templates-by-mode.md "A
+// template with floors"), each held to the same rules; only the first has the Walk In.
+const TABS: [string, TemplateKind, () => Element[], boolean][] = SPACES.flatMap((kind) => [
+  [kind, kind, () => buildTemplate(kind, 0, 0), true] as [
+    string,
+    TemplateKind,
+    () => Element[],
+    boolean,
+  ],
+  ...templateFloors(kind).map(
+    (f) =>
+      [`${kind} ${f.name}`, kind, () => f.build(0, 0), false] as [
+        string,
+        TemplateKind,
+        () => Element[],
+        boolean,
+      ],
+  ),
+]);
 const SEATS = [
   'desk',
   'sofa',
@@ -25,8 +80,8 @@ const SEATS = [
   'hammock',
   'ping-pong-table',
 ];
-// Shapes that are no furniture to bump into: the walls, the floors, the way in and the heading's sticker.
-const NOT_FURNITURE = ['room', 'mode-button', 'sticker', 'focus-button'];
+// Shapes that are no furniture to bump into: the walls, their doors, the floors, the way in and the heading's sticker.
+const NOT_FURNITURE = ['room', 'door', 'mode-button', 'sticker', 'focus-button'];
 
 const meets = (a: Box, b: Box) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
@@ -34,19 +89,46 @@ const inside = (a: Box, b: Box) =>
   a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
 const shapes = (els: Element[]) => els.filter((e): e is Shape => e.type === 'shape');
 
-describe.each(SPACES)('the %s Space', (kind: TemplateKind) => {
-  const els = buildTemplate(kind, 0, 0);
+// The wall a room's Door piece stands on (docs/specs/009-elements/office.md "The doorway is a Door"), or 'none'.
+function doorSide(
+  room: Extract<Element, { type: 'shape' }>,
+  els: readonly Element[],
+): 'n' | 's' | 'e' | 'w' | 'none' {
+  const door = els.find(
+    (e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape' && doorOnRoom(e, room),
+  );
+  if (!door) return 'none';
+  const cx = door.x + door.width / 2;
+  const cy = door.y + door.height / 2;
+  const gaps = {
+    n: Math.abs(cy - room.y),
+    s: Math.abs(cy - (room.y + room.height)),
+    w: Math.abs(cx - room.x),
+    e: Math.abs(cx - (room.x + room.width)),
+  };
+  return (Object.keys(gaps) as (keyof typeof gaps)[]).reduce((a, b) => (gaps[b] < gaps[a] ? b : a));
+}
+
+describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
+  const els = build();
   const all = shapes(els);
   const rooms = all.filter((e) => e.shape === 'room');
   const furniture = all.filter((e) => !NOT_FURNITURE.includes(e.shape) && !isFloorShape(e.shape));
+
+  it('gives every room a Door piece instead of a doorway of its own', () => {
+    for (const room of rooms) {
+      expect(room.roomDoor, room.label).toBe('none');
+      expect(doorSide(room, els), room.label).not.toBe('none');
+    }
+  });
 
   it('lays every floor before anything else, and has one Walk In', () => {
     const isFloor = (e: Element) => e.type === 'shape' && isFloorShape(e.shape);
     const firstOther = els.findIndex((e) => !isFloor(e));
     expect(els.slice(firstOther).some(isFloor)).toBe(false);
-    expect(all.filter((e) => e.shape === 'mode-button')).toEqual([
-      expect.objectContaining({ label: 'Walk In' }),
-    ]);
+    expect(all.filter((e) => e.shape === 'mode-button')).toEqual(
+      first ? [expect.objectContaining({ label: 'Walk In' })] : [],
+    );
   });
 
   it('keeps every piece in a room inside its walls, and every other piece clear of them', () => {
@@ -79,7 +161,7 @@ describe.each(SPACES)('the %s Space', (kind: TemplateKind) => {
 
   it('keeps every seat out of the first 80 px inside each doorway', () => {
     for (const room of rooms) {
-      const door = room.roomDoor ?? 's';
+      const door = doorSide(room, els);
       if (door === 'none') continue;
       const along = door === 'n' || door === 's' ? room.width : room.height;
       const span = roomDoorSpan(along, door)!;
@@ -102,6 +184,32 @@ describe.each(SPACES)('the %s Space', (kind: TemplateKind) => {
           false,
         );
     }
+  });
+
+  // docs/specs/007-editor/templates-by-mode.md "Every Space is roomy".
+  it('keeps every aisle between seats wide enough to walk', () => {
+    // The ten Spaces respaced for it; a Space added since adopts the rule when it is laid out.
+    if (!ROOMY.includes(kind)) return;
+    const seats = all.filter((e) => seatsACharacter(e.shape));
+    for (const [i, a] of seats.entries())
+      for (const b of seats.slice(i + 1)) {
+        const gx = Math.max(b.x - (a.x + a.width), a.x - (b.x + b.width));
+        const gy = Math.max(b.y - (a.y + a.height), a.y - (b.y + b.height));
+        const at = `${a.shape} at ${a.x},${a.y} / ${b.shape} at ${b.x},${b.y}`;
+        // Only neighbours: a seat standing in the gap between the two makes it no aisle.
+        const span = (lo: number, hi: number, d: number) =>
+          d >= 0 ? [hi, Math.max(d, 1)] : [lo, Math.max(-d, 1)];
+        const [x, width] = span(Math.max(a.x, b.x), Math.min(a.x + a.width, b.x + b.width), gx);
+        const [y, height] = span(Math.max(a.y, b.y), Math.min(a.y + a.height, b.y + b.height), gy);
+        const gap = { x: x!, y: y!, width: width!, height: height! };
+        const between = seats.some((c) => c !== a && c !== b && meets(c, gap));
+        if (between) continue;
+        // Side by side: one row, or an aisle apart.
+        if (gy < 0 && gx >= 0)
+          expect(gx <= ROW_GAP || gx >= TEMPLATE_AISLE, `${at}: ${gx}`).toBe(true);
+        // One behind the other: sharing an edge, or an aisle apart.
+        if (gx < 0 && gy >= 0) expect(gy === 0 || gy >= TEMPLATE_AISLE, `${at}: ${gy}`).toBe(true);
+      }
   });
 
   it('never stands one piece of furniture on another', () => {
@@ -207,8 +315,9 @@ describe('the new Spaces furnish what they promise', () => {
     expect(walk.x + walk.width / 2).toBe(path.x + path.width / 2);
   });
 
-  it('crosses the City Park with two paths, a bandstand, benches, a picnic table and a fountain', () => {
-    expect(count('city-park', 'garden-path')).toBe(2);
+  it('crosses the City Park with two paths meeting at a fountain plaza, a bandstand, benches and a picnic table', () => {
+    // Four arms and the round plaza they meet at (docs/specs/009-elements/office.md "Garden Path": paths never cross).
+    expect(count('city-park', 'garden-path')).toBe(5);
     expect(count('city-park', 'stage')).toBe(1);
     expect(count('city-park', 'bench')).toBe(2);
     expect(count('city-park', 'picnic-table')).toBe(1);

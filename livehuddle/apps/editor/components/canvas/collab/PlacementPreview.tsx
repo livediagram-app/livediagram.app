@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import {
   createShape,
+  dropsAtOwnSize,
   defaultFillColor,
   defaultStrokeColor,
   isPlacedShape,
@@ -13,6 +14,7 @@ import {
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { pointerToCanvas } from '@/lib/canvas';
 import { usePaletteDragPreview, usePaletteDragSnap } from '@/lib/palette-drag-preview';
+import { armedRoomSnap } from '@/lib/palette-drag-snap';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { PieceArt, hasPieceArt } from '@/components/canvas/PieceArt';
@@ -33,29 +35,51 @@ export function placementLanding(
   return { piece: door, onWall: door !== free };
 }
 
-// The placed kind being added, or null: its tile armed for a click, or dragged from the palette.
-export function placingKind(pendingDraw: PendingDraw | null, draggedKind: string | null) {
-  if (pendingDraw?.type === 'shape' && isPlacedShape(pendingDraw.kind)) return pendingDraw.kind;
-  return draggedKind && isPlacedShape(draggedKind) ? draggedKind : null;
+// Whether adding a kind previews the piece itself (docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview
+// themselves"): every placed kind, and every sized kind the art layer draws (a Room, a Stage, Grass), which a tap or a
+// drop lands at its default size. Text, stickies and the generic shapes keep the dashed footprint and the draw box.
+export function previewsItself(kind: string): boolean {
+  return isPlacedShape(kind) || hasPieceArt(kind);
+}
+
+// The kind being added that previews itself, or null: its tile armed for a click, or dragged from the palette. A sized
+// kind's armed preview steps aside while a press-and-drag draws its box (`drawing`), so the piece never shows twice; a
+// kind that drops at its own size (a placed piece, a Room) draws no box, so it keeps previewing.
+export function placingKind(
+  pendingDraw: PendingDraw | null,
+  draggedKind: string | null,
+  drawing = false,
+) {
+  if (
+    pendingDraw?.type === 'shape' &&
+    previewsItself(pendingDraw.kind) &&
+    !(drawing && !dropsAtOwnSize(pendingDraw.kind))
+  )
+    return pendingDraw.kind;
+  return draggedKind && previewsItself(draggedKind) ? draggedKind : null;
 }
 
 // The placement preview (docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview themselves"): the piece
-// itself, translucent, under the pointer, where a click or a drop would put it. Drawn inside the canvas's
-// transformed layer, so it pans, zooms and turns with the content; it listens to the pointer only while a placed
+// itself (a placed one, or a sized one with art at its default size), translucent, under the pointer, where a click
+// or a drop would put it. Drawn inside the canvas's
+// transformed layer, so it pans, zooms and turns with the content; it listens to the pointer only while such a
 // piece is being added, and moves at most once a frame.
 export function PlacementPreview({
   pendingDraw,
   elements,
   wrapperRef,
   zoom,
+  drawing = false,
 }: {
   pendingDraw: PendingDraw | null;
   elements: readonly Element[];
   wrapperRef: RefObject<HTMLDivElement | null>;
   zoom: number;
+  // A press-and-drag is drawing a box (a sized kind's armed preview steps aside for it).
+  drawing?: boolean;
 }) {
   const dragged = usePaletteDragPreview();
-  const kind = placingKind(pendingDraw, dragged?.kind ?? null);
+  const kind = placingKind(pendingDraw, dragged?.kind ?? null, drawing);
   // A drag lands where the alignment snap says, as the ghost and the drop do.
   const snap = usePaletteDragSnap();
   const dragging = !!dragged && dragged.kind === kind;
@@ -103,7 +127,14 @@ export function PlacementPreview({
   }, [kind, surface]);
 
   if (!kind || !at) return null;
-  const point = dragging && snap ? { x: at.x + snap.dx, y: at.y + snap.dy } : at;
+  // An armed Room snaps to its neighbours as a dragged one does, wall to wall included (docs/specs/009-elements/
+  // office.md "Rooms line up"); the tap commits through the same function, so it lands where it shows.
+  const roomSnap = kind === 'room' && !dragging ? armedRoomSnap(at, elements) : null;
+  const point = roomSnap
+    ? { x: at.x + roomSnap.dx, y: at.y + roomSnap.dy }
+    : dragging && snap
+      ? { x: at.x + snap.dx, y: at.y + snap.dy }
+      : at;
   const { piece, onWall } = placementLanding(kind, point, elements);
   const door = kind === 'door';
   const drawn = door ? (
@@ -115,7 +146,20 @@ export function PlacementPreview({
   ) : (
     art
   );
-  return (
+  const guides = roomSnap?.guides.map((g, i) => (
+    <div
+      key={i}
+      aria-hidden
+      data-testid="placement-guide"
+      className="pointer-events-none absolute bg-brand-500 dark:bg-brand-400"
+      style={
+        g.axis === 'x'
+          ? { left: g.position, top: g.start, width: 1 / zoom, height: g.end - g.start }
+          : { left: g.start, top: g.position, width: g.end - g.start, height: 1 / zoom }
+      }
+    />
+  ));
+  const previewBox = (
     <div
       aria-hidden
       data-testid="placement-preview"
@@ -145,5 +189,13 @@ export function PlacementPreview({
         />
       )}
     </div>
+  );
+  return guides?.length ? (
+    <>
+      {guides}
+      {previewBox}
+    </>
+  ) : (
+    previewBox
   );
 }

@@ -23,11 +23,13 @@ import {
   createFreehand,
   createOutlinedRoom,
   snapDoorToWall,
+  withDoorPiece,
   type Element,
   type Tab,
   withVariantColours,
 } from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
+import { armedRoomSnap } from '@/lib/palette-drag-snap';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
@@ -203,17 +205,16 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       track('Element', 'Added', componentTelemetryType(intent.kind));
       return;
     }
+    // An armed Room lands where its preview showed it, snapped to its neighbours (docs/specs/009-elements/office.md
+    // "Rooms line up").
+    const roomSnap =
+      intent.type === 'shape' && intent.kind === 'room'
+        ? armedRoomSnap({ x: startX, y: startY }, activeTab.elements)
+        : null;
+    const sx = startX + (roomSnap?.dx ?? 0);
+    const sy = startY + (roomSnap?.dy ?? 0);
     const dressed = dress(
-      buildDrawnBoxed(
-        intent,
-        startX,
-        startY,
-        endX,
-        endY,
-        inheritSizeRef.current,
-        activeTab,
-        drawMode,
-      ),
+      buildDrawnBoxed(intent, sx, sy, endX, endY, inheritSizeRef.current, activeTab, drawMode),
     );
     // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
     const sized =
@@ -225,9 +226,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // behind its contents regardless of array position.
     // A door tapped or drawn near a wall lands on it (docs/specs/009-elements/room-builder.md "Door"), against the
     // live walls.
+    // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"): one commit, one undo.
     commit((els) => [
       ...els,
-      sized.type === 'shape' && sized.shape === 'door' ? snapDoorToWall(sized, els) : sized,
+      ...(sized.type === 'shape' && sized.shape === 'door'
+        ? [snapDoorToWall(sized, els)]
+        : withDoorPiece(sized)),
     ]);
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode

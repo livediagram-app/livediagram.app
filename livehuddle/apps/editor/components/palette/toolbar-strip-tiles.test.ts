@@ -33,8 +33,8 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // The two searchable catalogues can only be fully reached through More.
-    for (const id of ['icons', 'stickers']) {
+    // The searchable catalogue can only be fully reached through More.
+    for (const id of ['stickers']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
@@ -88,12 +88,12 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // The meeting palette's Popular divides after the link card (the fifth tile). With room
+    // The meeting palette's Popular divides after Text (the second tile). With room
     // for 6.26 tiles, six tiles and that divider (6.2) fit.
     const popular = { ...NONE, tiles: workshopPopular };
     const roomy = stripTilesFor('popular', { ...popular, limit: 6.26 });
     expect(roomy.tiles).toHaveLength(6);
-    expect([...roomy.dividersAfter]).toEqual(['tools:link-card']);
+    expect([...roomy.dividersAfter]).toEqual(['tools:text']);
     // Without the slack the divider costs the sixth tile, as before.
     expect(stripTilesFor('popular', { ...popular, limit: 6 }).tiles).toHaveLength(5);
   });

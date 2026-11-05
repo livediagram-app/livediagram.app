@@ -18,12 +18,14 @@ livediagram grew three things that are about people being together rather than a
 
 - [Avatar mode](../008-canvas/avatar-mode.md): a pixel character for everyone in the room, who walks, sits, talks in
   speech bubbles, waves and shows a status.
-- The **Space** elements, in the palette's Travel, Seating, Rooms and Amenities categories: portals, chairs, desks, sofas, fences, Avatar Pads, link cards and the
+- The **Space** elements, in the palette's Travel, Seating, Rooms and Amenities categories: portals, chairs, desks, sofas, fences, Avatar Pads and the
   [office pieces](../009-elements/office.md) (rooms, meeting tables, plants, bookshelves, water coolers, coffee
   machines, rugs).
 - The **Spaces** templates ([Virtual Office and space templates](../012-collaboration/virtual-office-template.md)):
   offices (Virtual Office, Coworking Space, Team Pod, Focus Library), events (All-Hands Hall, Training Room),
-  recreation (Rooftop Bar, Cafe) and outdoor ones (Garden Retreat, City Park).
+  recreation (Rooftop Bar, Cafe), outdoor ones (Garden Retreat, City Park, Beach Offsite), an Expo Hall and whole
+  campuses (Company Campus, Conference Venue, Startup HQ, School Quad, and the Hotel and Suites and Co-working Tower
+  on floors joined by lifts).
 
 In livediagram these sit inside Workshop mode, one mode among three, and a person looking for a place to hold a
 meeting never thinks to open a diagram tool. livehuddle gives the meeting a product of its own: **Spaces, avatars,
@@ -44,10 +46,10 @@ talk, and a few light tools to keep a meeting moving:
 - **Somewhere to stand**: the Spaces templates, Avatar mode and the Space elements (Travel, Seating, Rooms, Amenities).
 - **A way to talk**: [proximity audio](../012-collaboration/proximity-audio.md) and calls between the people near
   each other, speech bubbles, comments with mentions and reactions.
-- **Light meeting tools**: a timer and [Bring Focus](../012-collaboration/bring-focus.md), both on
-  the Session strip or the board, nothing more ([Workshop mode](../012-collaboration/workshop-mode.md), the meeting
+- **Light meeting tools**: a [Timer or Stopwatch](../009-elements/timer-and-stopwatch.md) on a room's wall and
+  [Bring Focus](../012-collaboration/bring-focus.md), both on the board, nothing more ([Workshop mode](../012-collaboration/workshop-mode.md), the meeting
   board).
-- **Light content on the walls**: sticky notes, text, images, stickers and icons, and link cards, for notes
+- **Light content on the walls**: sticky notes, text and stickers, for notes
   and decoration in a room. No diagram tools.
 
 ## Target users
@@ -67,11 +69,11 @@ place they meet.
 The full list is in [v1 scope](../002-project-scope/v1-scope.md).
 
 - **Being together in a Space**: Avatar mode first-class, live cursors, presence, follow-me, Bring Focus.
-- **Spaces to meet in**: the ten Spaces templates, every Space element to build more.
+- **Spaces to meet in**: the eighteen Spaces templates, every Space element to build more.
 - **Talking**: proximity audio and calls ([Future work](../005-project-roadmap/future-work.md) and the calls specs in
   `012-collaboration/`), speech bubbles, comments with mentions and reactions.
-- **Keeping a meeting moving**: the Session strip's Timer, and Bring Focus.
-- **Light content**: sticky notes, text, images, stickers, icons and link cards.
+- **Keeping a meeting moving**: the Timer and Stopwatch pieces, and Bring Focus.
+- **Light content**: sticky notes, text and stickers.
 - **The liveworkspace platform**: one account, the One Explorer, teams, share links with the three roles, media,
   Offline Mode, Google Drive sync, the Community, the MCP server and the CLI, telemetry.
 
@@ -102,8 +104,8 @@ spec that moved it.
   templates, the quizzes and games, every Collaborate element (polls, quizzes, Q&A, agendas, reveals and the rest),
   slide decks, building a deck, presenting, the Page element, and the diagram tools left over from Workshop (shapes,
   arrows and lines, the Draw tools, the Layout containers, tables, charts, the components and the
-  embeds) leave livehuddle, and the Frame went later; livediagram keeps them all. What stays: Spaces, avatars, rooms, calls, the Timer
-  and Bring Focus, and light content (sticky notes, text, images, stickers, icons, link cards).
+  embeds) leave livehuddle, and the Frame went later; livediagram keeps them all. What stays: Spaces, avatars, rooms, calls, a timer
+  (now the Timer and Stopwatch pieces) and Bring Focus, and light content (sticky notes, text, stickers); the Icons category, images and link cards went later.
   The full list, and the build part that removes each, is [Not in livehuddle](../002-project-scope/not-in-livehuddle.md).
 - **The Reaction Pads, the laser, the spotlight, Isometric and Zen went too** (owner, 2026-11-05): in a Space your
   character points, walks up to things and celebrates with its own Reactions

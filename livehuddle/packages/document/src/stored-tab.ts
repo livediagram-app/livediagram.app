@@ -5,12 +5,14 @@
 import { upgradeLegacyLinks } from './legacy-links';
 import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
+import { migrateRetiredPattern } from './floors';
 import { migrateRetiredTheme } from './retired-themes';
 import { dropCustomTheme } from './retired-custom-themes';
 import { dropRetiredPages } from './retired-pages';
 import { dropRetiredPlan } from './retired-plan';
 import { dropRetiredLayers } from './retired-layers';
 import { dropRetiredVote } from './retired-vote';
+import { dropRetiredTimer } from './retired-timer';
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
@@ -25,9 +27,9 @@ export function migrateStoredTab<
   // A former Pages tab (./retired-pages) opens as an ordinary meeting board, its pages, articles and page-only elements
   // dropped, and a former Plan tab (./retired-plan) the same way, its dashboard, form and Plan-only elements dropped.
   // A tab saved with layers (./retired-layers) loses them, so every element is visible and free to pick, and one
-  // saved with a dot vote (./retired-vote) loses that.
+  // saved with a dot vote (./retired-vote) or a Session strip timer (./retired-timer) loses that.
   return upgradeStoredTab(
-    dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab)))),
+    dropRetiredTimer(dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab))))),
   );
 }
 
@@ -50,8 +52,11 @@ function upgradeStoredTab<
   // A former whiteboard (./legacy-whiteboard-tab) first: it inks the elements the rest then see.
   // Its own fields that renderers read raw (the background colours) are settled before anything reads them.
   // A tab on a custom theme, which are gone (./retired-custom-themes), opens on Default.
-  const schemed = dropCustomTheme(
-    migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
+  // A diagram pattern (dots, graph paper, ruled lines...) opens as the floor nearest it (./floors.ts).
+  const schemed = migrateRetiredPattern(
+    dropCustomTheme(
+      migrateRetiredTheme(migrateRetiredScheme(migrateWhiteboardKind(settleTabFields(tab)))),
+    ),
   );
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.

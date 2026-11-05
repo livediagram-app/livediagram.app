@@ -690,141 +690,99 @@ export function LookAndFeelTheme() {
   );
 }
 
-/** A pattern's look, drawn inside a tile's preview strip (`x`, `y`, 84 by 13). */
-function PatternArt({ kind, x, y }: { kind: string; x: number; y: number }) {
-  const line = { className: 'stroke-slate-300', strokeWidth: 1, fill: 'none' } as const;
-  const cols = Array.from({ length: 9 }, (_, i) => x + 4 + i * 9.5);
-  switch (kind) {
-    case 'Grid':
-      return (
-        <g className="fill-slate-400">
-          {cols.map((cx) =>
-            [y + 3.5, y + 9.5].map((cy) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={1.1} />),
-          )}
-        </g>
-      );
-    case 'Lines':
-      return <path d={`M${x} ${y + 4} H${x + 84} M${x} ${y + 9} H${x + 84}`} {...line} />;
-    case 'Graph':
-      return (
-        <path
-          d={`M${x} ${y + 4} H${x + 84} M${x} ${y + 9} H${x + 84} ${cols.map((cx) => `M${cx} ${y} V${y + 13}`).join(' ')}`}
-          {...line}
-        />
-      );
-    case 'Crosshatch':
-    case 'Diagonal': {
-      const starts = Array.from({ length: 7 }, (_, i) => x + i * 12);
-      const fwd = starts.map((sx) => `M${sx} ${y + 13} L${sx + 13} ${y}`).join(' ');
-      const back = starts.map((sx) => `M${sx} ${y} L${sx + 13} ${y + 13}`).join(' ');
-      return <path d={kind === 'Diagonal' ? fwd : `${fwd} ${back}`} {...line} />;
-    }
-    case 'Confetti': {
-      const bits: [number, number, string][] = [
-        [6, 3, 'fill-rose-400'],
-        [20, 8, 'fill-amber-400'],
-        [33, 2, 'fill-emerald-400'],
-        [47, 7, 'fill-brand-400'],
-        [60, 3, 'fill-violet-400'],
-        [73, 8, 'fill-rose-400'],
-      ];
-      return (
-        <g className="help-art-as-drawn">
-          {bits.map(([dx, dy, cls]) => (
-            <rect key={dx} x={x + dx} y={y + dy} width={4} height={2.5} rx={1} className={cls} />
-          ))}
-        </g>
-      );
-    }
-    case 'Stripes':
-      return (
-        <g className="fill-slate-200">
-          {Array.from({ length: 7 }, (_, i) => (
-            <rect key={i} x={x + 2 + i * 12} y={y} width={5} height={13} />
-          ))}
-        </g>
-      );
-    case 'Waves':
-    case 'Flow': {
-      const wave = (wy: number) => `M${x} ${wy} ${'q7 -3 14 0 '.repeat(6).trim()}`;
-      const d = `${wave(y + 4)} ${wave(y + 10)}`;
-      return kind === 'Flow' ? (
-        <path
-          d={d}
-          className="stroke-brand-300"
-          strokeWidth={1.2}
-          fill="none"
-          strokeDasharray="5 3"
-        />
-      ) : (
-        <path d={d} {...line} />
-      );
-    }
-    case 'Drift':
-      return (
-        <g className="fill-brand-300">
-          {(
-            [
-              [8, 4],
-              [22, 9],
-              [37, 3],
-              [50, 8],
-              [64, 5],
-              [77, 10],
-            ] as const
-          ).map(([dx, dy]) => (
-            <circle key={dx} cx={x + dx} cy={y + dy} r={1.8} />
-          ))}
-        </g>
-      );
-    case 'Aurora':
-      return (
-        <g className="help-art-as-drawn">
-          <ellipse
-            cx={x + 28}
-            cy={y + 6.5}
-            rx={26}
-            ry={5}
-            className="fill-emerald-200"
-            opacity={0.8}
-          />
-          <ellipse
-            cx={x + 58}
-            cy={y + 6.5}
-            rx={24}
-            ry={5}
-            className="fill-violet-200"
-            opacity={0.8}
-          />
-        </g>
-      );
-    case 'Ripple':
-      return (
-        <g className="stroke-brand-300" fill="none" strokeWidth={1}>
-          {[10, 22, 36].map((rx) => (
-            <ellipse key={rx} cx={x + 42} cy={y + 6.5} rx={rx} ry={rx / 8 + 1} />
-          ))}
-        </g>
-      );
-    case 'Ribbons':
-      return (
-        <g fill="none" strokeWidth={2.4} strokeLinecap="round" className="help-art-as-drawn">
-          <path
-            d={`M${x + 2} ${y + 9} C${x + 24} ${y - 2} ${x + 50} ${y + 14} ${x + 82} ${y + 3}`}
-            className="stroke-brand-200"
-          />
-          <path
-            d={`M${x + 2} ${y + 4} C${x + 30} ${y + 14} ${x + 56} ${y - 1} ${x + 82} ${y + 10}`}
-            className="stroke-violet-200"
-          />
-        </g>
-      );
-    default:
-      return null;
-  }
+// Each floor's two tones (light, dark) and a motif in its third, as the editor draws them
+// (docs/specs/011-theme/floors.md), reduced to fit a 84 by 13 preview strip.
+const FLOOR_ART: Record<string, { light: [string, string]; dark: [string, string]; d: string }> = {
+  None: { light: ['#ffffff', '#ffffff'], dark: ['#1e293b', '#1e293b'], d: '' },
+  Carpet: {
+    light: ['#e9e4dc', '#d6cec2'],
+    dark: ['#2b2926', '#3a3632'],
+    d: 'M8 4h1v1h-1zM20 9h1v1h-1zM31 3h1v1h-1zM44 8h1v1h-1zM57 5h1v1h-1zM69 10h1v1h-1zM78 4h1v1h-1z',
+  },
+  'Carpet Tiles': {
+    light: ['#e2e6ea', '#d1d6dc'],
+    dark: ['#262a2f', '#1c1f23'],
+    d: 'M21 0v13M42 0v13M63 0v13',
+  },
+  Wood: {
+    light: ['#e9d9c1', '#cfb894'],
+    dark: ['#3b3026', '#231b14'],
+    d: 'M0 6.5h84M30 0v6.5M70 0v6.5M12 6.5v6.5M52 6.5v6.5',
+  },
+  Parquet: {
+    light: ['#e7d7bd', '#ccb490'],
+    dark: ['#3d3127', '#241b14'],
+    d: 'M14 0v13M28 0v13M42 4.3h14M42 8.6h14M56 0v13M70 0v13M0 4.3h14M0 8.6h14M70 4.3h14M70 8.6h14',
+  },
+  Tiles: {
+    light: ['#eff1ee', '#dadddb'],
+    dark: ['#2a2e32', '#202326'],
+    d: 'M0 6.5h84M14 0v13M28 0v13M42 0v13M56 0v13M70 0v13',
+  },
+  Marble: {
+    light: ['#f2f1ee', '#d3d0c9'],
+    dark: ['#26282c', '#45494f'],
+    d: 'M0 3C20 9 34 1 52 7S74 12 84 10',
+  },
+  Terrazzo: {
+    light: ['#efece6', '#c9a996'],
+    dark: ['#2a2928', '#4f4d4a'],
+    d: 'M6 3h2v2h-2zM18 8h2v2h-2zM29 4h2v2h-2zM40 9h2v2h-2zM52 3h2v2h-2zM63 7h2v2h-2zM75 4h2v2h-2z',
+  },
+  Concrete: { light: ['#e3e2df', '#d0cecb'], dark: ['#2a2b2d', '#1c1d1f'], d: 'M42 0v13' },
+  Decking: {
+    light: ['#ddccb3', '#bfad90'],
+    dark: ['#3a3129', '#1e1915'],
+    d: 'M0 4.3h84M0 8.6h84M36 0v4.3M64 4.3v4.3M20 8.6v4.4',
+  },
+  Paving: {
+    light: ['#dfdcd5', '#cdc9c1'],
+    dark: ['#343539', '#242528'],
+    d: 'M0 6.5h84M24 0v6.5M54 0v6.5M10 6.5v6.5M40 6.5v6.5M70 6.5v6.5',
+  },
+  Cobbles: {
+    light: ['#dfdbd3', '#d0cbc2'],
+    dark: ['#343538', '#242527'],
+    d: 'M0 4.3h84M0 8.6h84M12 0v4.3M30 0v4.3M48 0v4.3M66 0v4.3M21 4.3v4.3M39 4.3v4.3M57 4.3v4.3M75 4.3v4.3M12 8.6v4.4M30 8.6v4.4M48 8.6v4.4M66 8.6v4.4',
+  },
+  Grass: {
+    light: ['#d8e6c6', '#bdd2a2'],
+    dark: ['#1f2b1f', '#2e3f2c'],
+    d: 'M6 11l1-4M15 10l-1-4M24 12l1-5M33 10l1-4M42 11l-1-4M51 12l1-5M60 10l1-4M69 11l-1-4M78 12l1-5',
+  },
+  Sand: {
+    light: ['#efe5d1', '#ddcfb4'],
+    dark: ['#2f2a21', '#3b3529'],
+    d: 'M0 5q10-3 21 0t21 0t21 0t21 0M0 10q10-3 21 0t21 0t21 0t21 0',
+  },
+  Mud: {
+    light: ['#ddd0bf', '#c8b7a0'],
+    dark: ['#2c251e', '#3e342a'],
+    d: 'M12 6h2v2h-2zM31 9h2v2h-2zM47 4h2v2h-2zM66 8h2v2h-2z',
+  },
+};
+
+/** A floor, drawn inside a tile's preview strip (`x`, `y`, 84 by 13), in light and dark. */
+function FloorArt({ kind, x, y }: { kind: string; x: number; y: number }) {
+  const art = FLOOR_ART[kind];
+  if (!art) return null;
+  const half = (tones: [string, string], className: string) => (
+    <g className={className} transform={`translate(${x} ${y})`}>
+      <rect width={84} height={13} rx={3} fill={tones[0]} />
+      {art.d ? (
+        <path d={art.d} stroke={tones[1]} fill={tones[1]} strokeWidth={0.8} strokeLinecap="round" />
+      ) : null}
+    </g>
+  );
+  return (
+    <>
+      {half(art.light, 'dark:hidden')}
+      {half(art.dark, 'hidden dark:inline')}
+    </>
+  );
 }
 
-/** A pattern tile in a Canvas panel carousel: the pattern drawn for real, then its name. */
+/** A floor tile in the Canvas panel's carousel: the floor drawn, then its name. */
 function PatternTile({
   x,
   y,
@@ -838,74 +796,54 @@ function PatternTile({
 }) {
   return (
     <OptionBox x={x} y={y} w={96} h={34} on={on} label={kind}>
-      <rect
-        x={x + 6}
-        y={y + 4}
-        width={84}
-        height={13}
-        rx={3}
-        className="fill-white stroke-slate-100"
-        strokeWidth={1}
-      />
-      <PatternArt kind={kind} x={x + 6} y={y + 4} />
+      <FloorArt kind={kind} x={x + 6} y={y + 4} />
     </OptionBox>
   );
 }
 
-/** The Canvas panel: the Static and Animated pattern carousels (a page of nine each on a wide
- *  screen), the Canvas and Pattern colours, and the Opacity and Size sliders. */
+/** The Canvas panel: the first page of floors (nine on a wide screen), the Canvas colour, and the
+ *  Strength and Size sliders. */
 export function LookAndFeelCanvas() {
-  const still = [
-    'Grid',
-    'Blank',
-    'Lines',
-    'Graph',
-    'Crosshatch',
-    'Confetti',
-    'Stripes',
-    'Diagonal',
-    'Waves',
+  const floors = [
+    'None',
+    'Carpet',
+    'Carpet Tiles',
+    'Wood',
+    'Parquet',
+    'Tiles',
+    'Marble',
+    'Terrazzo',
+    'Concrete',
   ];
-  const animated = ['Flow', 'Drift', 'Aurora', 'Ripple', 'Ribbons'];
   return (
-    <TabStylePanel panel="Canvas" h={384} sceneH={408}>
-      <CarouselHeading y={98} label="STATIC" />
-      {still.map((p, i) => (
+    <TabStylePanel panel="Canvas" h={300} sceneH={324}>
+      <CarouselHeading y={98} label="FLOOR" />
+      {floors.map((p, i) => (
         <PatternTile
           key={p}
           x={60 + (i % 3) * 102}
           y={106 + Math.floor(i / 3) * 38}
           kind={p}
-          on={i === 0}
+          on={p === 'Carpet Tiles'}
         />
       ))}
-      <Caption x={60} y={232}>
-        ANIMATED
-      </Caption>
-      {animated.map((p, i) => (
-        <PatternTile key={p} x={60 + (i % 3) * 102} y={240 + Math.floor(i / 3) * 38} kind={p} />
-      ))}
-      <Caption x={60} y={334}>
+      <Caption x={60} y={244}>
         COLOURS
       </Caption>
       <rect
         x={60}
-        y={346}
+        y={256}
         width={18}
         height={18}
         rx={4}
         className="fill-white stroke-slate-300"
         strokeWidth={1.3}
       />
-      <Label x={84} y={355} size={10} tone="body">
+      <Label x={84} y={265} size={10} tone="body">
         Canvas
       </Label>
-      <rect x={130} y={346} width={18} height={18} rx={4} className="fill-slate-300" />
-      <Label x={154} y={355} size={10} tone="body">
-        Pattern
-      </Label>
-      <Slider x={220} y={334} w={140} t={1} label="Opacity" readout="100%" />
-      <Slider x={220} y={364} w={140} t={1 / 3} label="Size" readout="100%" />
+      <Slider x={220} y={244} w={140} t={1} label="Strength" readout="100%" />
+      <Slider x={220} y={274} w={140} t={1 / 3} label="Size" readout="100%" />
     </TabStylePanel>
   );
 }

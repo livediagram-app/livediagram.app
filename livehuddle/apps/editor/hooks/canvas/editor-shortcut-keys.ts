@@ -44,9 +44,6 @@ export type EditorKeyboardShortcutsDeps = {
   // undo) stay intact and the visitor can't desync state via
   // shortcuts that would otherwise reach the canvas.
   isReadOnly: boolean;
-  // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it deletes, types into and
-  // Space-edits elements; what it may touch is decided where each lands (the commit guard, beginEdit).
-  participant?: boolean;
   // Action callbacks that perform the actual mutation. Each one is
   // a fresh closure every render: the hook reads them via a ref so
   // the keydown listener always sees the latest version.
@@ -64,16 +61,12 @@ export type EditorKeyboardShortcutsDeps = {
   // Active canvas tool. Read by the Escape handler so Escape exits the
   // persistent Format tool (back to Select) from either phase.
   canvasTool: CanvasTool;
-  // Element-add callbacks. T and N fire the dedicated handlers; 9 opens the image
-  // picker. Each mirrors its palette counterpart so the keyboard route reaches the same code path as the click
-  // route.
-  // onAddImage is nullable: pure-guest deploys without an api worker
-  // hide the palette button + null this prop, and the shortcut goes
-  // dormant to match.
+  // Element-add callbacks. T and N fire the dedicated handlers, each mirroring its palette counterpart so the
+  // keyboard route reaches the same code path as the click route. No `9`: livehuddle adds no image
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card").
   addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
-  onAddImage: (() => void) | null;
   // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
   // multi). On Shift+L rather than plain Cmd+L so it never fights the
   // browser's "focus the address bar" binding.
@@ -186,15 +179,6 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
   n: (l) => l.addSticky(),
 };
 
-// A Participant's plain keys (docs/specs/013-workspace/share-roles.md "The Participant palette"): what its tiles add, by
-// the keys the tiles show, and nothing else of EDIT_KEYS. The commit guard still decides what lands.
-export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
-  n: (l) => l.addSticky(),
-  t: (l) => l.addText(),
-  '8': (l) => l.addText(),
-  '9': (l) => l.onAddImage?.(),
-};
-
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
 //
 // Lifted out of useEditorKeyboardShortcuts' keydown, which was 477 lines with
@@ -250,11 +234,11 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     live.onOpenSearch();
     return true;
   }
-  // A Viewer gets the zoom + search chords above and nothing below. Nothing was dispatched, so this is `false`:
+  // A Viewer and a Participant (docs/specs/013-workspace/share-roles.md "A Participant walks") get the zoom + search
+  // chords above and nothing below. Nothing was dispatched, so this is `false`:
   // the caller swallows the key either way.
-  if (live.isReadOnly && !live.participant) return false;
-  // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z. A Participant undoes and redoes its own changes too
-  // (docs/specs/013-workspace/share-roles.md); the room puts back any part it may not make.
+  if (live.isReadOnly) return false;
+  // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z.
   if (lower === 'y' || (lower === 'z' && e.shiftKey)) {
     e.preventDefault();
     live.redo();

@@ -4,8 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   callMaximised,
   resetCallMedia,
+  resetCallSelf,
   setCallMaximised,
   setCallMedia,
+  setCallSelf,
 } from '@/lib/calls/calls-store';
 import { CallBubbles, useCallBubbleRects } from './CallBubbles';
 import { renderHook } from '@testing-library/react';
@@ -32,7 +34,10 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
-  act(() => resetCallMedia());
+  act(() => {
+    resetCallMedia();
+    resetCallSelf();
+  });
   vi.restoreAllMocks();
 });
 
@@ -65,6 +70,30 @@ describe('CallBubbles', () => {
     expect(video.className).toContain('opacity-0');
     fireEvent.loadedData(video);
     expect(video.className).toContain('opacity-100');
+  });
+
+  // video-and-screen-bubbles.md "Local preview".
+  it('tags your own preview Only You, here and maximised, and drops the tag once the call sends it', () => {
+    const { container } = render(<CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} />);
+    act(() => {
+      setCallMedia('self', 'video', stream('c'));
+      setCallMedia('self', 'screen', stream('d'));
+      setCallMedia('p1', 'video', stream('a'));
+      setCallSelf({ previewCamera: 'on', previewScreen: 'on' });
+    });
+    const tags = () =>
+      container.querySelectorAll('[data-call-bubbles="self"] [data-call-only-you]');
+    expect(tags()).toHaveLength(2);
+    expect(container.querySelector('[data-call-bubbles="p1"] [data-call-only-you]')).toBeNull();
+    const mine = screen.getByRole('button', { name: 'Maximise Your Camera, Only You' });
+    fireEvent.click(mine);
+    const dialog = screen.getByRole('dialog', { name: 'Your Camera' });
+    expect(dialog.querySelector('[data-call-only-you]')).not.toBeNull();
+    act(() => setCallMaximised(null));
+    // The call took the camera: its tag goes, the screen's stays.
+    act(() => setCallSelf({ previewCamera: 'off', camera: 'on' }));
+    expect(tags()).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Maximise Your Camera' })).toBeTruthy();
   });
 
   it('slides with a walking character, and lands at once on a jump', () => {

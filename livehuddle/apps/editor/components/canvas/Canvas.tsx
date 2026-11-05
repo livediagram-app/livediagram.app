@@ -9,10 +9,8 @@ import {
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { isAnimatedPattern } from '@livehuddle/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
-import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
@@ -86,6 +84,7 @@ import { RaisedHands } from '@/components/calls/RaisedHands';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 import { isPieceControlPress } from '@/lib/piece-control';
+import { useElementReader } from '@/components/canvas/collab/ElementReader';
 
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
@@ -109,7 +108,6 @@ function CanvasView(props: CanvasProps) {
     tabBackgroundColor,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
-    tabBackgroundAnimationSpeed,
     tabPatternColor,
     mainRef,
     isPinchingRef,
@@ -374,6 +372,8 @@ function CanvasView(props: CanvasProps) {
   const doubleTap = useDoubleTapZoom(mainRef, viewportStore, { id: props.activeTabId, elements });
   const smallElementTap = useSmallElementDoubleTap(doubleTap.onElement);
   const stickyPeel = useStickyPeelVars();
+  // A walking click on a reading piece opens it large (docs/specs/008-canvas/avatar-mode.md "The reader").
+  const elementReader = useElementReader(elements);
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
@@ -389,6 +389,9 @@ function CanvasView(props: CanvasProps) {
     avatar,
     peerAvatars: props.remoteAvatars,
     onPushPeer: props.onAvatarPush,
+    elements,
+    onToggleDoor: props.onToggleDoor,
+    onReadElement: elementReader.open,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     interceptPress: (e) => pathTool.beginEditPress(e),
     onEraseStart: props.onEraseStart,
@@ -507,19 +510,6 @@ function CanvasView(props: CanvasProps) {
           {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
           <CanvasLiveRegion />
-          {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
-          canvas content; the static patterns ride the <main> background
-          above. tabBackgroundStyle returns just the backdrop colour for
-          these, so this layer is the only thing that draws their motion. */}
-          {isAnimatedPattern(tabBackgroundPattern) ? (
-            <AnimatedCanvasBackground
-              variant={tabBackgroundPattern}
-              color={tabPatternColor}
-              scale={tabBackgroundPatternScale}
-              speed={tabBackgroundAnimationSpeed}
-              opacity={tabBackgroundOpacity}
-            />
-          ) : null}
           <div
             ref={wrapperRef}
             data-canvas-content=""
@@ -583,7 +573,8 @@ function CanvasView(props: CanvasProps) {
                       // the character at THAT button (see avatarSpawn), not the viewport
                       // centre: you pressed a thing on the canvas, so the character should
                       // appear where you pressed it.
-                      onPressModeButton={pressModeButton}
+                      // None for a Participant, who is always walking: its buttons draw inert.
+                      onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
                       onPressAvatarPad={pressAvatarPad}
                       onPressFocusButton={props.onPressFocusButton}
                       hasArrows={hasArrows}
@@ -620,6 +611,7 @@ function CanvasView(props: CanvasProps) {
               elements={elements}
               wrapperRef={wrapperRef}
               zoom={viewportZoom}
+              drawing={!!drawDrag}
             />
             {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
             {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
@@ -827,6 +819,7 @@ function CanvasView(props: CanvasProps) {
           {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
             press-and-hold affordance that opens the context menu on touch. */}
           <LongPressRing point={surface.canvasLongPress.pressPoint} />
+          {elementReader.reader}
         </main>
       </>
     </CanvasFinishProvider>

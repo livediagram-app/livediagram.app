@@ -38,21 +38,21 @@ beside the element as an Editor's opens (a bottom sheet on a phone). It is a lis
 naming the element ("Square"), each row running its action and closing the menu. It holds only what the role may do,
 gated on the session's `can`:
 
-| Row                                                   | Participant                                 | Viewer                           |
-| ----------------------------------------------------- | ------------------------------------------- | -------------------------------- |
-| **Add Comment** / **View Comments** (it has a thread) | Yes (`can.takePart`)                        | No                               |
-| **Show Comments**                                     | No                                          | Only on an element with comments |
-| **Edit Text** / **Add Text**                          | Where `can.writeText(el)` and it takes text | No                               |
-| **Open Link**                                         | When the element has a link                 | When the element has a link      |
-| **View Note**                                         | When the element has a note                 | When the element has a note      |
-| **Copy Text**                                         | When the element has words                  | When the element has words       |
+| Row                                                   | Participant                 | Viewer                           |
+| ----------------------------------------------------- | --------------------------- | -------------------------------- |
+| **Add Comment** / **View Comments** (it has a thread) | Yes (`can.takePart`)        | No                               |
+| **Show Comments**                                     | No                          | Only on an element with comments |
+| **Edit Text** / **Add Text**                          | No (it writes on nothing)   | No                               |
+| **Open Link**                                         | When the element has a link | When the element has a link      |
+| **View Note**                                         | When the element has a note | When the element has a note      |
+| **Copy Text**                                         | When the element has words  | When the element has words       |
 
 - Comments rows show only where comments are shown (never in an embed's viewer).
 - **Copy Text** writes the element's words to the clipboard, so a Viewer can quote what it reads without selecting it.
 - An element with nothing for the role opens no menu: a right-click selects it and does nothing more.
-- An arrow offers **Copy Text** (its label) and, to a Participant, **Edit Text**; nothing attaches to an arrow.
-- An element someone else holds selected still opens the menu, without **Edit Text** (its words are theirs until they
-  let go).
+- An arrow offers **Copy Text** (its label); nothing attaches to an arrow.
+- A Participant has no **Edit Text** row: it changes no content ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks)).
+  The row stays in the menu's code, gated on `can.writeText(el)`, which no read-only role holds.
 - A multi-selection has no menu for a Participant or a Viewer.
 
 Every editor (livehuddle, liveplanner, livedocuments, livedesign) opens the same menu (`ReadOnlyElementMenu` in

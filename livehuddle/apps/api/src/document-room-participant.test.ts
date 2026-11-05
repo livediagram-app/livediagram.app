@@ -123,8 +123,20 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('DocumentRoom: a Participant adds and writes', () => {
-  it('stores an added sticky stamped with its adder, and everyone takes the stored copy', async () => {
+// docs/specs/013-workspace/share-roles.md "A Participant walks": a Participant adds and writes nothing; it changes an
+// element only through a piece's own field, a Door's swing.
+const door = (extra: Record<string, unknown> = {}) => ({
+  ...shape('door'),
+  shape: 'door',
+  doorClosed: true,
+  ...extra,
+});
+const withDoor = () => {
+  store.data = JSON.stringify({ elements: [shape('col'), sticky('ed'), door()] });
+};
+
+describe('DocumentRoom: a Participant changes only a piece', () => {
+  it("refuses an added sticky: nothing written, the sender's copy taken back", async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const part = join('P', 'participate', ME);
@@ -133,31 +145,44 @@ describe('DocumentRoom: a Participant adds and writes', () => {
       tabId: 't1',
       op: { kind: 'add', element: sticky('n'), at: 2 },
     });
-    expect(storedElements()[2]).toMatchObject({ id: 'n', addedBy: ME });
-    for (const s of [editor, part]) {
-      expect(ops(s)).toEqual([
-        expect.objectContaining({
-          from: 'system',
-          op: { kind: 'el', tabId: 't1', op: expect.objectContaining({ kind: 'add', at: 2 }) },
-        }),
-      ]);
-    }
+    expect(store.writes).toBe(0);
+    expect(storedElements()).toHaveLength(2);
+    expect(ops(editor)).toEqual([]);
+    expect(ops(part)).toEqual([
+      {
+        kind: 'op',
+        from: 'system',
+        op: { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'n' } },
+      },
+    ]);
   });
 
-  it('relays only the fields it changed, from the Participant, and answers its cursor', async () => {
+  it('keeps a written label as stored: nothing written, nothing relayed', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const part = join('P', 'participate', ME);
     const op = { kind: 'update', element: shape('col', { label: 'Start doing' }) };
+    await send(room, part, { kind: 'el', tabId: 't1', op });
+    expect(store.writes).toBe(0);
+    expect(storedElements()[0]).not.toHaveProperty('label', 'Start doing');
+    expect(ops(editor)).toEqual([]);
+  });
+
+  it("relays a door's swing only, from the Participant, and answers its cursor", async () => {
+    withDoor();
+    const { room, join } = newRoom();
+    const editor = join('E', 'edit');
+    const part = join('P', 'participate', ME);
+    const op = { kind: 'update', element: door({ doorClosed: false }) };
     await send(room, part, { kind: 'el', tabId: 't1', op }, 7);
-    expect(storedElements()[0]).toMatchObject({ label: 'Start doing' });
+    expect(storedElements()[2]).toMatchObject({ doorClosed: false });
     expect(ops(editor)).toEqual([
       expect.objectContaining({
         from: 'P',
         op: {
           kind: 'el',
           tabId: 't1',
-          op: { kind: 'patch', id: 'col', set: { label: 'Start doing' } },
+          op: { kind: 'patch', id: 'door', set: { doorClosed: false } },
         },
       }),
     ]);
@@ -165,18 +190,20 @@ describe('DocumentRoom: a Participant adds and writes', () => {
     expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'cursor', ref: 7 }));
   });
 
-  // The review's case: an Editor resized the shape a moment ago and has not saved yet. The Participant's label
-  // must reach everyone without the stored (older) size coming back with it.
+  // The review's case: an Editor resized the door a moment ago and has not saved yet. The Participant's swing must
+  // reach everyone without the stored (older) size coming back with it.
   it('never sends the stored copy over live state: forbidden fields are simply not in the patch', async () => {
+    withDoor();
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
     const part = join('P', 'participate', ME);
-    const op = { kind: 'update', element: shape('col', { label: 'New', width: 999 }) };
+    const op = { kind: 'update', element: door({ doorClosed: false, label: 'New', width: 999 }) };
     await send(room, part, { kind: 'el', tabId: 't1', op });
-    expect(storedElements()[0]).toMatchObject({ label: 'New', width: 100 });
+    expect(storedElements()[2]).toMatchObject({ doorClosed: false, width: 100 });
+    expect(storedElements()[2]).not.toHaveProperty('label', 'New');
     expect(ops(editor)[0]).toMatchObject({
       from: 'P',
-      op: { op: { kind: 'patch', id: 'col', set: { label: 'New' } } },
+      op: { op: { kind: 'patch', id: 'door', set: { doorClosed: false } } },
     });
     expect(ops(part)).toEqual([]);
   });

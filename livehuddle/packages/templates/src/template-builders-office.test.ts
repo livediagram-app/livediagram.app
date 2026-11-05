@@ -1,9 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { roomDoorSpan, roomWalls, type Element } from '@livehuddle/document';
+import { doorOnRoom, roomDoorSpan, roomWalls, type Element } from '@livehuddle/document';
 import { avatarScale } from '@liveworkspace/avatar/config';
 import { AVATAR_SPAWN_GAP, AVATAR_WIDTH, avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import { buildTemplate } from './build-template';
 import { furnishRooms } from './template-office-parts';
+
+// The wall a room's Door piece stands on (docs/specs/009-elements/office.md "The doorway is a Door"), or 'none'.
+function doorSide(
+  room: Extract<Element, { type: 'shape' }>,
+  els: readonly Element[],
+): 'n' | 's' | 'e' | 'w' | 'none' {
+  const door = els.find(
+    (e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape' && doorOnRoom(e, room),
+  );
+  if (!door) return 'none';
+  const cx = door.x + door.width / 2;
+  const cy = door.y + door.height / 2;
+  const gaps = {
+    n: Math.abs(cy - room.y),
+    s: Math.abs(cy - (room.y + room.height)),
+    w: Math.abs(cx - room.x),
+    e: Math.abs(cx - (room.x + room.width)),
+  };
+  return (Object.keys(gaps) as (keyof typeof gaps)[]).reduce((a, b) => (gaps[b] < gaps[a] ? b : a));
+}
 
 // docs/specs/012-collaboration/virtual-office-template.md
 describe('the Virtual Office template', () => {
@@ -24,7 +44,7 @@ describe('the Virtual Office template', () => {
       'Focus Room',
     ]);
     const top = Math.min(...rooms.map((r) => r.y));
-    for (const r of rooms) expect(r.roomDoor).toBe(r.y === top ? 's' : 'n');
+    for (const r of rooms) expect(doorSide(r, els)).toBe(r.y === top ? 's' : 'n');
   });
 
   it('lays the rooms and rugs under everything else', () => {
@@ -51,7 +71,8 @@ describe('the Virtual Office template', () => {
   it('puts every piece inside a room, clear of its walls', () => {
     const rooms = shapes('room');
     for (const e of els) {
-      if (e.type !== 'shape' || ['room', 'mode-button', 'sticker'].includes(e.shape)) continue;
+      if (e.type !== 'shape' || ['room', 'door', 'mode-button', 'sticker'].includes(e.shape))
+        continue;
       const room = rooms.find(
         (r) =>
           e.x >= r.x &&
@@ -85,11 +106,12 @@ describe('the Virtual Office layout', () => {
 
   it('keeps every seat out of the first 80 px inside each doorway', () => {
     for (const room of of('room')) {
-      const span = roomDoorSpan(room.width, room.roomDoor ?? 's')!;
+      const side = doorSide(room as Extract<Element, { type: 'shape' }>, els) as 'n' | 's';
+      const span = roomDoorSpan(room.width, side)!;
       const approach = {
         x: room.x + span[0],
         width: span[1] - span[0],
-        y: room.roomDoor === 'n' ? room.y : room.y + room.height - 80,
+        y: side === 'n' ? room.y : room.y + room.height - 80,
         height: 80,
       };
       for (const seat of els.filter((e) => e.type === 'shape' && SEATS.includes(e.shape)) as Box[])
@@ -159,13 +181,15 @@ describe('the space templates', () => {
     };
     for (const booth of rooms.filter((r) => r.label.startsWith('Booth'))) {
       // A step of 60 px out through the doorway, from its middle: clear of every wall by a Tall character's reach.
-      const step = { n: [0, -60], s: [0, 60], e: [60, 0], w: [-60, 0] }[booth.roomDoor ?? 's'];
+      const side = doorSide(booth as Extract<Element, { type: 'shape' }>, els) as
+        'n' | 's' | 'e' | 'w';
+      const step = { n: [0, -60], s: [0, 60], e: [60, 0], w: [-60, 0] }[side];
       const mid = {
         n: { x: booth.x + booth.width / 2, y: booth.y },
         s: { x: booth.x + booth.width / 2, y: booth.y + booth.height },
         e: { x: booth.x + booth.width, y: booth.y + booth.height / 2 },
         w: { x: booth.x, y: booth.y + booth.height / 2 },
-      }[booth.roomDoor ?? 's'];
+      }[side];
       const outside = { x: mid.x + step[0]!, y: mid.y + step[1]! };
       expect(Math.min(...walls.map((w) => dist(outside, w))), booth.label).toBeGreaterThan(24);
     }
@@ -266,6 +290,9 @@ describe('the Walk In button in every Spaces template', () => {
     'cafe',
     'garden-retreat',
     'city-park',
+    'company-campus',
+    'conference-venue',
+    'startup-hq',
   ] as const;
   const hits = (a: Box, b: Box) =>
     a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;

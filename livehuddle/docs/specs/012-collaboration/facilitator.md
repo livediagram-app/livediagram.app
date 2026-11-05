@@ -1,7 +1,8 @@
 # Facilitator
 
-Status: shipped. In livehuddle (Work Tracker #423) the baton governs the light meeting tools that stay, the Timer and
-Bring Focus; the polls, reveals, picker and Q&A it names below leave with the Collaborate elements
+Status: shipped. In livehuddle (Work Tracker #423) the baton governs the light meeting tool that stays, Bring Focus (the Session strip's Timer left for the
+[Timer and Stopwatch](../009-elements/timer-and-stopwatch.md) pieces, which the baton does not gate,
+[Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)); the polls, reveals, picker and Q&A it names below leave with the Collaborate elements
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), and the dot vote left after them
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-vote)).
 
@@ -127,7 +128,6 @@ every one of them behaves exactly as it does today.
 
 | Gated                                                           | Where it lives today      |
 | --------------------------------------------------------------- | ------------------------- |
-| Timer: start, pause, resume, set duration, reset, clear         | `useTabSession.ts`        |
 | Poll: start, end                                                | `useLivePoll.ts`          |
 | Session button: pressing it **and configuring it**              | `useBehaviourElements.ts` |
 | Agenda item press (it starts that item's countdown)             | `useCollabElements.ts`    |

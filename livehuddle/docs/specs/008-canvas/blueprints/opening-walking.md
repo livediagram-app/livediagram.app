@@ -1,7 +1,7 @@
 # Opening walking blueprint
 
 Derived from [Avatar mode](../avatar-mode.md) "Where it lives" and "Opening walking", and from
-[Start a Space](../../007-editor/start-diagramming.md) "The Spaces lead".
+[Start a Space](../../007-editor/start-diagramming.md) "Recommended leads".
 
 ## Files
 
@@ -16,18 +16,17 @@ Derived from [Avatar mode](../avatar-mode.md) "Where it lives" and "Opening walk
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Calls `useWalkIn` before `useAvatarWalk`, so the enter effect finds the spot           |
 | `apps/editor/components/palette/canvas-tool-options.tsx` | Avatar listed after Hand, group 0, never disabled                                      |
 | `apps/editor/lib/editor-commands.ts`                     | `tool:avatar`, Avatar Mode, in the search panel                                        |
-| `apps/editor/components/start/start-template-items.ts`   | `LEADING_START_GROUP`, the rail order, `initial`                                       |
+| `apps/editor/components/start/start-template-items.ts`   | the rail order (Recommended first), `initial`                                          |
 
 ## Domain and naming
 
-| Term         | Identifier            | Meaning                                                                          |
-| ------------ | --------------------- | -------------------------------------------------------------------------------- |
-| Entrance     | `WalkEntrance`        | `{ kind: 'pad' }` or `{ kind: 'button', button }`: why and where a tab walks you |
-| Walk In      | `WalkIn`              | `{ button, seq }`: one request to start the character below `button`             |
-| Judged       | `judged` (a Set ref)  | The tab ids already looked at this visit                                         |
-| Opening walk | `openWalking`         | Entering Avatar mode because the tab offers it, not because someone picked it    |
-| Re-judge     | `rejudge(tabId)`      | Forget a tab was judged, for the template that has just landed on it             |
-| Spaces lead  | `LEADING_START_GROUP` | `'spaces'`: the group the start lists first and opens on                         |
+| Term         | Identifier           | Meaning                                                                          |
+| ------------ | -------------------- | -------------------------------------------------------------------------------- |
+| Entrance     | `WalkEntrance`       | `{ kind: 'pad' }` or `{ kind: 'button', button }`: why and where a tab walks you |
+| Walk In      | `WalkIn`             | `{ button, seq }`: one request to start the character below `button`             |
+| Judged       | `judged` (a Set ref) | The tab ids already looked at this visit                                         |
+| Opening walk | `openWalking`        | Entering Avatar mode because the tab offers it, not because someone picked it    |
+| Re-judge     | `rejudge(tabId)`     | Forget a tab was judged, for the template that has just landed on it             |
 
 Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different feature, `useModeDefaultTool`).
 
@@ -111,11 +110,9 @@ Opening walking fires no `Canvas·Used·AvatarMode`; a pick from the picker or s
 - `app/document/[id]/useTemplateFlow.tool.test.ts`: `onLanded` on a template, not the blank.
 - `components/palette/canvas-tool-options.test.ts`, `participant-palette.test.ts`, `lib/editor-commands*.test.ts`:
   the picker and search list Avatar for every role.
-- `components/start/start-template-items.test.ts`, `StartFromTemplates.test.tsx`: the Spaces lead.
+- `components/start/start-template-items.test.ts`, `StartFromTemplates.test.tsx`: Recommended leads.
 
 ## Constants and configuration
-
-- `LEADING_START_GROUP = 'spaces'`.
 
 ## Defaults ledger
 

@@ -65,10 +65,11 @@ A cork board in a wooden frame, hung on a wall, that holds pinned notes.
   **Purple**. A board holds up to 50 notes; once full, pinning says so and asks for a note to be unpinned first.
 - **The face** shows up to the four newest notes as small cards pinned to the cork, each with its colour, title (or
   the start of its body) and a pin. More than four shows a "+N More" tag. An empty board reads **No Notes Yet**.
-- **Opening it**: the face's **Notes** button (and, while walking, a click anywhere on the board) opens a popover
-  listing every note, newest first: its title, body, author and date ("5 Nov"). At the top an **add box** (title,
+- **Opening it**: the face's **Notes** button opens a popover listing every note, newest first: its title, body, author and date ("5 Nov"). At the top an **add box** (title,
   body with a live 280 counter, the five colour dots, **Pin Note**) for those who may pin. Escape or a click outside
   closes it.
+- **While walking** a press anywhere on the board (or on Notes) opens the same notes large in the
+  [reader](../008-canvas/avatar-mode.md#the-reader) instead, and never walks you to the wall.
 - **Who may do what**: an Editor or a Participant pins a note and unpins their own; an Editor unpins any note. A
   Viewer reads the notes and sees no add box or Unpin buttons. Unpin asks no confirmation (a note is small). A pin
   and an unpin are not undoable, like a comment: they are the room's, and one person's undo never takes them back.
@@ -108,6 +109,8 @@ A wooden plaque on the wall with small clock dials, one per time zone.
 - **It ticks once a minute**, all clocks on the canvas together from one shared timer that wakes at the top of each
   minute while any clock is on screen; nothing runs per frame. The hands jump; there is no second hand. Reduced
   motion changes nothing, since nothing moves between minutes.
+- **While walking** a press on the clock opens every zone large in the [reader](../008-canvas/avatar-mode.md#the-reader),
+  and never walks you to the wall.
 - **Editing**: an Editor's element menu has a **World Clock** section listing the zones, each with its label field
   and a remove button, and an **Add Zone** row: a zone field that suggests from the browser's list of zones as you
   type, with the label filled from the city part of the zone ("New_York" → "New York"). Participants and Viewers see

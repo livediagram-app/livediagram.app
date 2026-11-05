@@ -82,7 +82,7 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 
 ## Walking
 
-- **Click / tap anywhere** on the canvas: the avatar walks there in a straight line at a constant **260 canvas px/s**, facing its direction of travel. A click mid-walk retargets immediately. It arrives and stops; there is no easing, deliberately: a constant-speed walk reads as a character, an eased glide reads as a camera.
+- **Click / tap anywhere** on the canvas: the avatar walks there at a constant **260 canvas px/s**, in a straight line or round the walls in the way ([Finding the way](#finding-the-way)), facing its direction of travel. A click mid-walk retargets immediately. It arrives and stops; there is no easing, deliberately: a constant-speed walk reads as a character, an eased glide reads as a camera.
 - **Arrow keys**: while held, the avatar walks that way, mirroring the direction pressed. Two held keys compose a diagonal (normalised, so diagonal walking isn't faster). Any arrow press cancels a click-walk in progress; releasing every arrow stops the avatar where it stands.
 - **No collision with ordinary elements**: they are scenery, so the avatar walks over anything except a [Fence](../009-elements/fence.md), a [Room](../009-elements/office.md#room)'s walls (it enters by the doorway) and the footprint of a plant or bookshelf ([Office](../009-elements/office.md)), none of which it can cross (it stops, or slides along them). Walking onto a water cooler or coffee machine gives it a drink, carried in its presence as `holding`. The element it is standing on gets a soft brand-tinted "you are here" ring, which is what makes the mode useful for narration: the audience can see what the character has arrived at.
 - **Space hops**, and the character waves a small flag through the hop plus a short tail so it reads as a celebration rather than stopping dead on landing. The hop peaks around 70 canvas px and lands in a bit over half a second; the contact shadow shrinks as it rises, which is what sells leaving the floor. Autorepeat is ignored (one press, one hop) and a second press mid-flight does nothing. Space is the hold-to-pan modifier everywhere else, which this mode can afford to reclaim: it is read-only, so there is no selection to tap-edit, and panning stays on middle-mouse drag, the trackpad, and the zoom controls.
@@ -90,6 +90,37 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 - Right-click never walks, and the canvas / element context menus stay suppressed while the mode is active (a menu opening mid-walk would interrupt the tour).
 - Panning by hand still works: middle-mouse drag, held-Space drag, two-finger trackpad, and the zoom controls all behave as usual.
 - **On touch, a finger's drag pans and its tap walks.** A finger has no middle button and no Space to hold, so a one-finger drag pans the canvas, as the Hand tool does, and only a press that lifts without moving (a tap) walks the character there, or to a peer it lands on. Pinching zooms as usual and never walks. A mouse click still walks the moment it is pressed. (`useCanvasSurfaceGestures` starts a pan whose tap is the walk; `useCanvasPanAndMarquee` runs a pan's tap on a release that never moved and counts a pinch as moved.)
+
+### Finding the way
+
+A click-walk goes **round** walls rather than into them: clicking inside a room from outside walks you to its doorway,
+through it, and on to the point you clicked.
+
+- **What it routes round** is exactly what blocks a step: every Fence and Garden Fence, every room's walls (a box
+  room's and a Room Builder room's, broken at its doorway and at each **open** Door; a closed Door is wall), an Office
+  Pod's walls, and each piece of scenery's footprint. Seats, peers and ordinary elements are walked over, as before.
+- **The route** keeps the character's own reach clear of every wall (its Size's, the same reach a step keeps), so it
+  never asks for a gap the character cannot fit through. It is drawn as straight legs between corners, never a
+  staircase, and a walk with nothing in the way is the plain straight line it always was.
+- **A place it cannot reach.** A click inside a room whose Doors are all shut walks you to the **outside of the
+  nearest shut Door** of that room (nearest you), within a click's reach of it, so your next click opens it
+  ([Room Builder and Door](../../../../livehuddle/docs/specs/009-elements/room-builder.md) "Opening and closing"). Where
+  the place has no door to open (a doorless room, a pond, inside a piece of scenery), the walk goes to the nearest
+  point it can reach, just outside the walls nearest the click. Either way it stops there; it never freezes, jitters
+  or walks into the wall. Whatever was waiting on the arrival (a push) happens only when that point is within two
+  reaches of where you clicked. (`shutDoorLines` in collision.ts; `shutDoorCell` in pathing.ts.)
+- **Every walk to a point routes**: a click or a tap, Walk There's legs ([Directory](../../../../livehuddle/docs/specs/009-elements/directory.md)
+  "Walk There"), and a call's walk to someone. Arrow-key steering and a push stay direct (collision only, no route):
+  steering is you choosing the way.
+- **Sitting** still asks where the walk is going, not where its legs turn: walking through a chair on the way to
+  another never sits you in it ([Chair](../009-elements/chair.md) "Only the chair you are going to").
+- **Peers** see the walk as it happens: the packet carries the feet as they move, and every point on a route is clear
+  of the walls, so nobody is seen walking through one. Nothing new goes on the wire.
+- **Cost**: the route is found on a coarse grid (16 canvas px, coarser on a vast board so it stays under
+  `NAV_MAX_CELLS`) built once per change to the walls, in idle time while someone walks (or on the click, if it has
+  not been yet), never per frame; a query is A* on it with an expansion cap, then smoothed to straight legs, each
+  checked exactly against the walls beside it. Past the cap, or with no grid, the walk is the old straight
+  line. (`buildNavGrid`, `findWalkPath` in `@liveworkspace/avatar`.)
 
 ## Read-only while active
 
@@ -168,7 +199,10 @@ who is free to talk, who is heads-down, who has stepped away.
   a red dot with a white bar): this product has no calls, so its panel does not offer it, though one on the wire
   still parses and draws.
 - **Peers see it**: the status rides the avatar presence (`status`), parsed field by field; anything else is no
-  status. A peer's dot sits at the start of their name chip; yours sits above your head, where your chip would be.
+  status. Every dot is **labelled**: a dot alone left people guessing which colour meant what. A peer's chip reads
+  the dot, their name, then the status ("Sam · Focusing"); the name gives way to an ellipsis first, so the status is
+  always whole. Yours sits above your head, where your chip would be, as the dot and the status ("Focusing") on a
+  quiet chip. The visible words are the status's own label, so the chip and the panel never disagree.
 - **For the session only**: it is never stored, so an "In a Meeting" set yesterday does not greet anyone today.
   Leaving the mode clears it, like the character itself.
 - A screen reader hears a peer's status with their name ("Sam, Focusing"), and your own as yours ("Your status:
@@ -290,7 +324,7 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## Out of scope (v1)
 
-- Collision with ordinary elements, or pathfinding around them (walk-around-the-box, walkable frames). Only a [Fence](../009-elements/fence.md), a room's walls and the office's scenery block ([Office](../009-elements/office.md)).
+- Collision with ordinary elements, or routing round them (walk-around-the-box, walkable frames): a route goes round only what blocks ([Finding the way](#finding-the-way)). Only a [Fence](../009-elements/fence.md), a room's walls and the office's scenery block ([Office](../009-elements/office.md)).
 - Avatar customisation beyond the four choices and the presence-coloured shirt (hats, accessories, skin tones, a picked photo, a colour picker: the shirt colour is load-bearing).
 - Emotes beyond the five Behaviour performances, the flag wave and [speech bubbles](#speech-bubbles): a reaction someone else can trigger on your character. (Sitting is the [Chair](../009-elements/chair.md)'s.)
 - A message history, replies, mentions, private messages, or anything typed reaching the document or the server's storage: speech is ephemeral.

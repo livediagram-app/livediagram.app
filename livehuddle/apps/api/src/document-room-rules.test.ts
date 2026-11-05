@@ -230,6 +230,21 @@ describe('answersAsSelf', () => {
   });
 });
 
+// docs/specs/009-elements/timer-and-stopwatch.md "Share roles": a Timer's press names nobody, so any Participant runs it.
+describe('answersAsSelf, Timer and Stopwatch presses', () => {
+  it('admits a piece-timer press from anyone taking part', () => {
+    const press = {
+      kind: 'el-delta',
+      delta: {
+        kind: 'piece-timer',
+        state: { running: true, startedAt: 1, accumulatedMs: 0, durationMs: 300_000 },
+      },
+    };
+    expect(answersAsSelf(press, 'k')).toBe(true);
+    expect(answersAsSelf(press, undefined)).toBe(true);
+  });
+});
+
 // docs/specs/012-collaboration/comment-reactions.md "How it is stored and travels": a reaction names its reactor.
 describe('answersAsSelf, comment reactions', () => {
   const react = (by: unknown) => ({ kind: 'el-delta', delta: { kind: 'comment-react', by } });

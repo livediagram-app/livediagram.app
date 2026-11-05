@@ -58,10 +58,6 @@ function isElFrame(op: unknown): op is ElFrame {
   return typeof inner === 'object' && inner !== null && typeof inner.kind === 'string';
 }
 
-function sameOp(a: unknown, b: unknown): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
 export class RoomParticipantWrites {
   private flushes = new Map<string, { documentId: string; timer: ReturnType<typeof setTimeout> }>();
 
@@ -120,14 +116,8 @@ export class RoomParticipantWrites {
     }
     if (!outcome.changed) return;
     const wire = { kind: 'el', tabId, op: outcome.op };
-    if (outcome.op.kind === 'add' && !sameOp(outcome.op, op)) {
-      // An add whose adder the rule stamped (an editor bundle that did not): everyone, the sender included,
-      // takes the stamped element.
-      this.hooks.sequence('system', wire);
-      return;
-    }
-    // As sent (an add, a remove), or the fields it changed (a patch, which the sender already shows): from the
-    // sender to everyone else, and its cursor back to it.
+    // The fields it changed (a patch: a piece's own field, which the sender already shows; the rule applies no add or
+    // remove from a Participant): from the sender to everyone else, and its cursor back to it.
     const seq = this.hooks.sequence(sender.presenceId, wire, sender.ws);
     this.hooks.sendTo(sender.ws, {
       kind: 'cursor',

@@ -3,10 +3,6 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-// Live session-tool types used by the `Tab.timer` field
-// below. Type-only import (erased at build) so the index <-> session
-// circular reference is fine. The runtime helpers are re-exported lower
-// down via `export * from './session'`.
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
@@ -14,7 +10,6 @@ import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
-import type { TabTimer } from './session';
 
 // Per-range label formatting runs (docs/specs/008-canvas/canvas-and-palette.md). Type-only import so the
 // index <-> rich-text relationship stays erasable; the runtime helpers +
@@ -96,6 +91,14 @@ import type { BackgroundPattern } from './background-pattern';
 // The selection-mode glyphs (./mode-glyphs).
 export { MODE_GLYPHS, type ModeGlyph } from './mode-glyphs';
 export { isBackgroundPattern, type BackgroundPattern } from './background-pattern';
+export {
+  FLOOR_PATTERNS,
+  RETIRED_PATTERN_FLOORS,
+  isFloorPattern,
+  spacePattern,
+  type FloorPattern,
+  type SpacePattern,
+} from './floors';
 export {
   PADDING_PX,
   ARROW_FLOWS,
@@ -224,12 +227,8 @@ export type Tab = {
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
-  // Live session tools (docs/specs/012-collaboration/session-tools.md), facilitator-run + synced to every
-  // participant via the normal tab sync. `timer` is a countdown /
-  // stopwatch. Edit-role controlled (the room drops view-role mutations)
-  // and absent until a facilitator starts one. See session.ts for the pure
-  // helpers. (A stored `vote` is the retired Vote's, dropped on read: ./retired-vote.)
-  timer?: TabTimer;
+  // (A stored `vote` is the retired Vote's, dropped on read: ./retired-vote; a stored `timer` the retired Session
+  // strip's, dropped on read: ./retired-timer. A meeting's clock is a Timer piece now: ./timer-pieces.)
 };
 
 // --- Type guards -----------------------------------------------------------
@@ -389,6 +388,7 @@ export * from './avatar-pad-art';
 export * from './seating';
 export * from './office';
 export * from './room-builder';
+export * from './room-snap';
 export * from './room-outline-field';
 export * from './office-garden';
 export * from './office-social';
@@ -555,6 +555,9 @@ export { paintOrder } from './paint-order';
 export { dropRetiredLayers } from './retired-layers';
 // The retired Vote's stored dot vote, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
 export { dropRetiredVote } from './retired-vote';
+// The retired Session strip's tab timer, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "The Session
+// strip's Timer").
+export { dropRetiredTimer } from './retired-timer';
 
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
@@ -577,9 +580,8 @@ export * from './collab-ledger';
 // implementation.
 export * from './tab-folders';
 
-// Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer type used by the
-// Tab field above, plus the pure timer helpers.
-export * from './session';
+// The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): their clock and drawings.
+export * from './timer-pieces';
 
 // Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
 // subsection's recognise mode). Re-exported so callers import

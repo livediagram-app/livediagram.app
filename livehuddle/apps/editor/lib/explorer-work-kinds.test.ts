@@ -5,7 +5,7 @@
 import { WORK_KINDS, defaultTemplateHref } from '@liveworkspace/explorer';
 import { TEMPLATES, isTemplateKind, templateCategory } from '@livehuddle/templates';
 import { describe, expect, it } from 'vitest';
-import { wizardBypassKind } from './new-document-params';
+import { linkedTemplateKind } from './new-document-params';
 
 describe("livehuddle's kinds on Home's hero", () => {
   const kinds = WORK_KINDS.livehuddle;
@@ -28,7 +28,7 @@ describe("livehuddle's kinds on Home's hero", () => {
       const href = defaultTemplateHref('livehuddle')('livehuddle', template)!;
       const url = new URL(href, 'https://www.livehuddle.app');
       expect(url.pathname).toBe('/new');
-      expect(wizardBypassKind(url.search)).toBe(template);
+      expect(linkedTemplateKind(url.search)).toBe(template);
     },
   );
 });

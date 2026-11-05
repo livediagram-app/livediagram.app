@@ -254,8 +254,8 @@ A Space is a shared place a team meets in (an office, a team pod, a stand-up, an
 The calling model produces the elements AND decides their layout; this server validates, persists and renders them,
 and only auto-arranges a graph when asked to (or when nodes are left unplaced). The full element format is
 documented inline on each tool's element argument, so the tool definitions are the complete reference for it.
-list_templates has Blank Space and ten ready-furnished Spaces (virtual-office, team-pod, all-hands-hall,
-rooftop-bar, garden-retreat, ...) in four categories: its kind passed as "template" on create_document / add_tab
+list_templates has Blank Space and thirteen ready-furnished Spaces (virtual-office, team-pod, all-hands-hall,
+rooftop-bar, garden-retreat, company-campus, ...) in five categories: its kind passed as "template" on create_document / add_tab
 starts a tab from one, and
 update_document fills in real labels.
 The "graph" argument (nodes + edges by id) builds a boxes-and-arrows board

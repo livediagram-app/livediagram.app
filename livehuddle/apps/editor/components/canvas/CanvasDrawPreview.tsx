@@ -3,7 +3,7 @@ import type { RefObject } from 'react';
 import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STROKE,
-  isPlacedShape,
+  dropsAtOwnSize,
   isSelfDrawingShape,
   ROOM_WALL,
 } from '@livehuddle/document';
@@ -67,7 +67,7 @@ export function CanvasDrawPreview({
     !!drawDrag &&
     !!pendingDraw &&
     pendingDraw.type !== 'arrow' &&
-    !(pendingDraw.type === 'shape' && isPlacedShape(pendingDraw.kind));
+    !(pendingDraw.type === 'shape' && dropsAtOwnSize(pendingDraw.kind));
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPen || showsPolygon || showsBox, viewKey);
   // The drawings in progress (pencil, polygon, draw-to-size box).

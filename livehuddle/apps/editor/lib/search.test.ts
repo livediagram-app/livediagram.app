@@ -345,17 +345,17 @@ describe('buildSearchResults — team library (docs/specs/013-workspace/team-sha
         add: { type: 'shape' as const, shapeKind: 'cylinder' as const },
       },
       {
-        id: 'tech:aws-s3',
-        name: 'S3',
-        keywords: 'technology amazon storage bucket',
-        add: { type: 'tech' as const, iconId: 'aws-s3' },
+        id: 'sticker:box',
+        name: 'Box',
+        keywords: 'sticker storage parcel',
+        add: { type: 'sticker' as const, stickerId: 'box' },
       },
     ];
     const out = buildSearchResults({ query: 'storage', documents: [], folders: [], paletteItems });
     const palette = out.find((g) => g.key === 'palette')!;
     expect(palette.items.map((i) => (i.kind === 'palette' ? i.id : null))).toEqual([
       'shape:cylinder',
-      'tech:aws-s3',
+      'sticker:box',
     ]);
   });
 

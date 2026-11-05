@@ -12,16 +12,9 @@ import { avatarActionForKey } from '@liveworkspace/avatar/action-keys';
 // Both hold today. This is here so they keep holding: renaming a handler is a
 // one-line edit in a file that has no reason to mention the dialog.
 
-// `9` opens the image picker from useEditorKeyboardShortcuts rather than from
-// EDIT_KEYS, because its callback is nullable on guest deploys with no api
-// worker. That is a deliberate exception in the hook, not a missing binding.
-const HANDLED_OUTSIDE_THE_MAPS = ['9'];
-
-const handledKeys = new Set([
-  ...Object.keys(VIEW_TOOL_KEYS),
-  ...Object.keys(EDIT_KEYS),
-  ...HANDLED_OUTSIDE_THE_MAPS,
-]);
+// No key is handled outside the maps: `9` (the image picker) was the one, and it left with livehuddle's Image
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card").
+const handledKeys = new Set([...Object.keys(VIEW_TOOL_KEYS), ...Object.keys(EDIT_KEYS)]);
 
 // Avatar mode's keys are bound by the walk's own listeners (useAvatarKeys, useAvatarActionKeys), deliberately outside
 // the editor's maps, so its rows describe real bindings that `handledKeys` will never contain.

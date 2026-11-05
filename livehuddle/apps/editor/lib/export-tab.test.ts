@@ -297,13 +297,13 @@ describe('exportTabAsSvg', () => {
     expect(without).not.toContain('lvd-export-bg');
   });
 
-  it('omits the pattern for blank / unset backdrops', async () => {
+  it('omits the floor for None, and draws the theme’s floor for an unset one, as the canvas does', async () => {
     const blank = await text(
       exportTabAsSvg(tab({ elements: [shape('s')], backgroundPattern: 'blank' })),
     );
     expect(blank).not.toContain('lvd-export-bg');
     const unset = await text(exportTabAsSvg(tab({ elements: [shape('s')] })));
-    expect(unset).not.toContain('lvd-export-bg');
+    expect(unset).toContain('lvd-export-bg');
   });
 
   it('renders a colour-deferring shape with the canvas defaults, not flat white', async () => {

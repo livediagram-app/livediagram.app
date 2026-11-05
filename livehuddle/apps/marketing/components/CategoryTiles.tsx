@@ -7,7 +7,7 @@ import {
 import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
 
 // The template gallery's folded shelves (docs/specs/019-marketing/marketing-site.md): one card
-// per shelf not open (Blank Slate among them once another is), so they read as part of the gallery rather than a row of tags under
+// per shelf not open (Blank Slate last among them), so they read as part of the gallery rather than a row of tags under
 // it. Each shows a fanned stack of its first three templates' previews (DeferredPreviewFan: PreviewFan, shared with
 // the editor's template picker, with only the front card in the page's HTML and the other two added at idle), its
 // name and how many templates it holds. Hovering or

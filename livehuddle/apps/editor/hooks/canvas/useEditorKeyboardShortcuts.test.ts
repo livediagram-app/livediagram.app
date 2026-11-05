@@ -106,11 +106,10 @@ type ModEvent = {
   prevented?: boolean;
 };
 
-function modLive(isReadOnly = false, participant = false) {
+function modLive(isReadOnly = false) {
   const calls: string[] = [];
   const live = {
     isReadOnly,
-    participant,
     onZoomIn: () => calls.push('zoom-in'),
     onZoomOut: () => calls.push('zoom-out'),
     onZoomReset: () => calls.push('zoom-reset'),
@@ -128,12 +127,8 @@ function modLive(isReadOnly = false, participant = false) {
   return { live, calls };
 }
 
-function chord(
-  ev: ModEvent,
-  isReadOnly = false,
-  participant = false,
-): { hit: string | null; prevented: boolean } {
-  const { live, calls } = modLive(isReadOnly, participant);
+function chord(ev: ModEvent, isReadOnly = false): { hit: string | null; prevented: boolean } {
+  const { live, calls } = modLive(isReadOnly);
   let prevented = false;
   const e = {
     key: ev.key,
@@ -170,11 +165,12 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
 
   // docs/specs/013-workspace/share-roles.md: a Participant undoes and redoes its own changes; a Viewer does not, and
   // neither gets the Editor's chords.
-  it("gives a Participant undo and redo and nothing else of an Editor's", () => {
-    expect(chord({ key: 'z' }, true, true).hit).toBe('undo');
-    expect(chord({ key: 'z', shiftKey: true }, true, true).hit).toBe('redo');
-    expect(chord({ key: 'd' }, true, true).hit).toBeNull();
-    expect(chord({ key: 'z' }, true, false).hit).toBeNull();
+  // A Participant is read-only to the keyboard, as a Viewer (docs/specs/013-workspace/share-roles.md "A Participant
+  // walks"): no undo, redo or duplicate.
+  it('gives a read-only session, a Participant included, no undo, redo or duplicate', () => {
+    expect(chord({ key: 'z' }, true).hit).toBeNull();
+    expect(chord({ key: 'z', shiftKey: true }, true).hit).toBeNull();
+    expect(chord({ key: 'd' }, true).hit).toBeNull();
   });
 
   it('binds the clipboard and selection verbs', () => {

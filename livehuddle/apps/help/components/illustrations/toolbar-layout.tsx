@@ -91,7 +91,7 @@ function Pill({
 
 // The meeting palette's category bar, as many of its categories as the figure has room for, in order: category
 // names, and '|' for the divider between the bands.
-const BAR: readonly string[] = ['Write', '|', 'Travel', 'Seating', 'Rooms', '|', 'Icons', 'Media'];
+const BAR: readonly string[] = ['Write', '|', 'Rooms', 'Seating', '|', 'Travel', '|', 'Stickers'];
 // A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
 // strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in help-pages.md).
 const charW = 4.5;

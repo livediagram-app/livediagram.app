@@ -37,3 +37,4 @@ Follow the references below only as needed; never upfront.
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
 - ./timeline.md - when implementing or changing the Timeline, its rows, layout, export, Concept animations or how point fields become milestones
+- ./timer-and-stopwatch.md - when implementing or changing the Timer or Stopwatch piece, its delta, ticker, chime or export

@@ -209,6 +209,7 @@ export function RoomSignView({
             aria-label={knocked ? 'Knocked' : `Knock on ${live.name}`}
             aria-disabled={knocked}
             {...press}
+            data-piece-main=""
             style={{ fontSize: type(10) }}
             className={`flex h-full w-full items-center justify-center gap-1 rounded-full font-semibold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-400 motion-reduce:transition-none ${
               knocked

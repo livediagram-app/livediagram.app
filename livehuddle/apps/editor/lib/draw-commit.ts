@@ -1,4 +1,4 @@
-import { isFixedSizeShape, isPlacedShape } from '@livehuddle/document';
+import { dropsAtOwnSize, isFixedSizeShape } from '@livehuddle/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -203,7 +203,7 @@ export function buildDrawnBoxed(
 ) {
   // A placed piece (docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview themselves") has no box to
   // draw: a drag places it like a tap, at its own size, centred where the press began.
-  const placed = intent.type === 'shape' && isPlacedShape(intent.kind);
+  const placed = intent.type === 'shape' && dropsAtOwnSize(intent.kind);
   const isTap = placed || isDrawTap(startX, startY, endX, endY);
   const base =
     intent.type === 'shape'

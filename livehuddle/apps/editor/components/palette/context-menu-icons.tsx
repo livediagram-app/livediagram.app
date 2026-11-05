@@ -35,7 +35,6 @@ import {
   lucideStar,
   lucideStarOff,
   lucideTable,
-  lucideTimer,
   lucideType,
   lucideWandSparkles,
   lucideWrench,
@@ -72,8 +71,6 @@ export function LinkMenuIcon() {
 // The "Shape" section: the element's outline.
 export const SquareMenuIcon = lucideGlyph(lucideShapes, MENU_ICON_PX);
 export const PaletteMenuIcon = lucideGlyph(lucidePalette, MENU_ICON_PX);
-// The Timer session-tool category glyph.
-export const TimerMenuIcon = lucideGlyph(lucideTimer, MENU_ICON_PX);
 
 // A small arrow pointing in `dir` (one up-arrow path, rotated). Used by the
 // inline-icon placement picker's cross of direction cells.

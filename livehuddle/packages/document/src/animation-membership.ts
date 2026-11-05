@@ -150,6 +150,9 @@ const WORDLESS_SHAPES = new Set<string>([
   'elevator',
   'screen',
   'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
 ]);
 
 /** Whether the element carries words the Text set can animate. */
