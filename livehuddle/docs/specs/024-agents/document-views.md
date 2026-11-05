@@ -28,11 +28,11 @@ Views are what an agent reads by default; JSON is what it asks for. The measurem
 One line per element: its kind, ref, label, attributes, then its outgoing arrows. Indentation is containment.
 
 ```text
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
-frame 048c "Edge"
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · threads 1 open/2 · rev 41
+boundary 048c "Edge"
   actor b811 "Customer" → a3cf
   hexagon 649c "API gateway" note="Kong. Terminates TLS, rate-limits per API key,"… → 202b "JWT", 146b
-frame c991 "Services"
+boundary c991 "Services"
   square 146b "Orders service" icon=server → e4a8 "charge", d41e, 6406 "OrderPlaced"
   square e4a8 "Payments service" comments=1 resolved → e6d7 "HTTPS" ~dashed
 cylinder d41e "Orders DB"
@@ -43,14 +43,14 @@ sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 
 The example is abridged; a real outline prints every element.
 
-- **Header** names the tab, its counts (boxes, frames, lanes, arrows), its finish when set (`finish=sketch`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
-- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`), else the element type
+- **Header** names the tab, its counts (boxes, boundaries, lanes, arrows), its finish when set (`finish=sketch`), elements of unknown kinds, open threads and the revision.
+- **Kind** is the shape for shapes (`square`, `cylinder`, `boundary`, `lane`), else the element type
   (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
   with `…`.
-- **Containment** is derived: an element nests under the smallest frame or lane holding its centre, as
-  `mermaidFromTab` decides it. Edit operations report frame and lane
-  membership by the same rule; the editor's frame drag keeps its own.
+- **Containment** is derived: an element nests under the smallest boundary or lane holding its centre, as
+  `mermaidFromTab` decides it. Edit operations report boundary and lane
+  membership by the same rule; the editor's boundary drag keeps its own.
 - **Arrows** print on their source line as `→ target "label" ~style`; an arrow with a free end prints on its own
   line. The arrow's own id is in the `graph` view.
 - **Order** within a level is reading order: rows top to bottom, then left to right.
@@ -61,7 +61,7 @@ The example is abridged; a real outline prints every element.
 - **Bare strokes** (freehand with no label, note, comment, link or arrow) that sit next to each other fold into one
   line, `freehand ×12 (3 closed)`; `layout` lists each one with its ref.
 - **Left out**: coordinates, sizes, colours, fonts, anchors and routing (the `layout` view and `--style` have them),
-  comment bodies (the `comments` view), elements on hidden layers (counted in the header).
+  comment bodies (the `comments` view).
 
 ## The views
 
@@ -95,7 +95,7 @@ compares that copy with the current tab. The api serves no diff.
 - The api and the CLI apply no budget unless asked; the MCP's `read_document` applies 8,000 tokens unless its caller
   passes another.
 - A view never truncates silently: it ends with one line naming what it left out and the command that shows it,
-  in the syntax of the door it was read through (`… 12 elements in frame c991 hidden: view --only c991` in the CLI,
+  in the syntax of the door it was read through (`… 12 elements in boundary c991 hidden: view --only c991` in the CLI,
   `read_document {"only":"c991"}` in the MCP).
 
 ## Where views are made

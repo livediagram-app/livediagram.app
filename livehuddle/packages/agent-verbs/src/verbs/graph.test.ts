@@ -15,32 +15,21 @@ const arch = JSON.stringify({
 });
 
 describe('graphOfSource', () => {
-  it('reads graph JSON, a replace holding one, and Mermaid', () => {
+  it('reads graph JSON and a replace holding one', () => {
     expect(graphOfSource(arch, 'a.json').nodes).toHaveLength(3);
     expect(
       graphOfSource(JSON.stringify({ replace: { graph: JSON.parse(arch) as unknown } }), 'r.json')
         .edges,
     ).toHaveLength(2);
-    expect(graphOfSource('flowchart LR\n  a --> b', 'f.mmd').nodes.map((n) => n.id)).toEqual([
-      'a',
-      'b',
-    ]);
   });
 
-  it('refuses edit operations, a malformed graph and unsupported Mermaid, naming the file', () => {
-    expect(() => graphOfSource('rm n1', 'ops.txt')).toThrow('ops.txt holds no graph or Mermaid');
-    expect(() => graphOfSource('{"name":"x"}', 'x.json')).toThrow(
-      'x.json holds no graph or Mermaid',
-    );
+  it('refuses edit operations, a malformed graph and Mermaid, naming the file', () => {
+    expect(() => graphOfSource('rm n1', 'ops.txt')).toThrow('ops.txt holds no graph');
+    expect(() => graphOfSource('{"name":"x"}', 'x.json')).toThrow('x.json holds no graph');
     expect(() => graphOfSource('{"nodes":[{"id":"a"}]}', 'g.json')).toThrow(
       'g.json: graph.edges: expected',
     );
-    expect(() => graphOfSource('sequenceDiagram\nA->>B: hi', 's.mmd')).toThrow(
-      's.mmd holds no graph or Mermaid',
-    );
-    expect(() => graphOfSource('graph TD', 'e.mmd')).toThrow(
-      'e.mmd: No nodes found in the flowchart.',
-    );
+    expect(() => graphOfSource('flowchart LR\n  a --> b', 'f.mmd')).toThrow('f.mmd holds no graph');
   });
 });
 

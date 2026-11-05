@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createPresenceCoalescer,
   type CursorPos,
-  type LaserTrail,
   type PresenceCoalescer,
 } from './presence-coalescer';
 import type { AvatarPresence } from '@livehuddle/api-schema';
@@ -44,14 +43,12 @@ const runFrame = () => {
 type Harness = {
   presence: PresenceCoalescer;
   cursors: () => Map<string, CursorPos>;
-  lasers: () => Map<string, LaserTrail>;
   avatars: () => Map<string, { tabId: string; avatar: AvatarPresence }>;
   commits: () => number;
 };
 
 function setup(): Harness {
   let cursors = new Map<string, CursorPos>();
-  let lasers = new Map<string, LaserTrail>();
   let avatars = new Map<string, { tabId: string; avatar: AvatarPresence }>();
   let commits = 0;
   const apply =
@@ -65,10 +62,6 @@ function setup(): Harness {
       () => cursors,
       (v) => (cursors = v),
     ),
-    setRemoteLaserTrails: apply(
-      () => lasers,
-      (v) => (lasers = v),
-    ),
     setRemoteAvatars: apply(
       () => avatars,
       (v) => (avatars = v),
@@ -77,14 +70,12 @@ function setup(): Harness {
   return {
     presence,
     cursors: () => cursors,
-    lasers: () => lasers,
     avatars: () => avatars,
     commits: () => commits,
   };
 }
 
 const avatarOf = (x: number) => ({ x, y: 0 }) as unknown as AvatarPresence;
-const point = (x: number) => ({ x, y: 0, t: x });
 
 describe('createPresenceCoalescer', () => {
   it('commits once per frame however many packets arrive', () => {
@@ -103,7 +94,7 @@ describe('createPresenceCoalescer', () => {
     h.presence.cursor('peer', { tabId: 't1', x: 1, y: 0 });
     runFrame();
     // Only cursors moved, so only that setter is called — a frame must not
-    // churn the laser and avatar maps and re-render their consumers.
+    // churn the avatar map and re-render their consumers.
     expect(h.commits()).toBe(1);
   });
 
@@ -111,13 +102,11 @@ describe('createPresenceCoalescer', () => {
     // The peer's last move and the roster that drops them land in the same frame.
     const h = setup();
     h.presence.cursor('gone', { tabId: 't1', x: 5, y: 0 });
-    h.presence.laser('gone', { tabId: 't1', point: point(1) });
     h.presence.avatar('gone', { tabId: 't1', avatar: avatarOf(1) });
     h.presence.cursor('here', { tabId: 't1', x: 1, y: 0 });
     h.presence.prune(new Set(['here']));
     runFrame();
     expect(h.cursors().has('gone')).toBe(false);
-    expect(h.lasers().has('gone')).toBe(false);
     expect(h.avatars().has('gone')).toBe(false);
     expect(h.cursors().get('here')).toEqual({ tabId: 't1', x: 1, y: 0 });
   });
@@ -140,77 +129,6 @@ describe('createPresenceCoalescer', () => {
     h.presence.avatar('peer', null);
     runFrame();
     expect(h.avatars().has('peer')).toBe(false);
-  });
-
-  it('accumulates laser points within one frame', () => {
-    const h = setup();
-    h.presence.laser('peer', { tabId: 't1', point: point(1) });
-    h.presence.laser('peer', { tabId: 't1', point: point(2) });
-    h.presence.laser('peer', { tabId: 't1', point: point(3) });
-    runFrame();
-    expect(
-      h
-        .lasers()
-        .get('peer')
-        ?.points.map((p) => p.x),
-    ).toEqual([1, 2, 3]);
-  });
-
-  it('drops the trail on a tab switch, so no line is drawn across the gap', () => {
-    const h = setup();
-    h.presence.laser('peer', { tabId: 't1', point: point(1) });
-    h.presence.laser('peer', { tabId: 't2', point: point(9) });
-    runFrame();
-    const trail = h.lasers().get('peer');
-    expect(trail?.tabId).toBe('t2');
-    expect(trail?.points.map((p) => p.x)).toEqual([9]);
-  });
-
-  it('carries the sender\u2019s pen through to the committed trail (docs/specs/008-canvas/laser-panel.md)', () => {
-    // "Everyone sees your pen": the look travels with the samples. This is
-    // the whole feature — without it every peer renders DEFAULT_LASER_CONFIG
-    // and a presenter's bold amber comet is a thin default line elsewhere.
-    const config = { width: 'bold', colour: 'amber' } as unknown as LaserTrail['config'];
-    const h = setup();
-    h.presence.laser('peer', { tabId: 't1', point: point(1), config });
-    runFrame();
-    expect(h.lasers().get('peer')?.config).toBe(config);
-  });
-
-  it('keeps the last pen when a later packet carries none', () => {
-    // Receivers keep the LATEST look per participant, across frames, not just
-    // within one: the sender only re-sends a look when it changes.
-    const config = { width: 'bold' } as unknown as LaserTrail['config'];
-    const h = setup();
-    h.presence.laser('peer', { tabId: 't1', point: point(1), config });
-    runFrame();
-    h.presence.laser('peer', { tabId: 't1', point: point(2) });
-    runFrame();
-    expect(h.lasers().get('peer')?.config).toBe(config);
-  });
-
-  it('takes a newer pen over the one it was holding', () => {
-    const first = { width: 'fine' } as unknown as LaserTrail['config'];
-    const second = { width: 'bold' } as unknown as LaserTrail['config'];
-    const h = setup();
-    h.presence.laser('peer', { tabId: 't1', point: point(1), config: first });
-    runFrame();
-    h.presence.laser('peer', { tabId: 't1', point: point(2), config: second });
-    runFrame();
-    expect(h.lasers().get('peer')?.config).toBe(second);
-  });
-
-  it('keeps the pen across a tab switch, because it belongs to the person', () => {
-    const config = { width: 'bold' } as unknown as LaserTrail['config'];
-    const h = setup();
-    h.presence.laser('peer', { tabId: 't1', point: point(1), config });
-    runFrame();
-    h.presence.laser('peer', { tabId: 't2', point: point(9) });
-    runFrame();
-    const trail = h.lasers().get('peer');
-    // Points reset (no line across the gap), pen does not.
-    expect(trail?.points.map((p) => p.x)).toEqual([9]);
-    expect(trail?.config).toBe(config);
   });
 
   it('cancels a pending frame so a flush cannot land after teardown', () => {

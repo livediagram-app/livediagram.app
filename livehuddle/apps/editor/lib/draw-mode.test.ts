@@ -46,6 +46,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   ],
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
+  'room-walls': [{ type: 'room-walls' }],
   path: [{ type: 'path' }],
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
@@ -183,6 +184,13 @@ describe('drawBannerMessage', () => {
       'Click to place points, click the start to close, double-click to finish',
     );
     expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
+  });
+
+  it('describes the Room Builder, shortened on mobile', () => {
+    expect(drawBannerMessage({ type: 'room-walls' }, false)).toBe(
+      'Click to place corners, click the start to close',
+    );
+    expect(drawBannerMessage({ type: 'room-walls' }, true)).toBe('Tap to place corners');
   });
 
   it('uses the friendly component name, not the raw kind', () => {
@@ -347,6 +355,7 @@ describe('dropsOnTap', () => {
       { type: 'freehand', variant: 'shape-pen' },
       { type: 'freehand', variant: 'highlighter' },
       { type: 'polygon' },
+      { type: 'room-walls' },
       { type: 'path' },
       { type: 'fill', fill: '#000' },
     ];

@@ -163,7 +163,7 @@ a timer somewhere else. It renders the timer.
 It is the **same timer as the pill in the top chrome**, in every sense worth
 having: the same `TabTimer` on the same tab field, the same pure
 `timerDisplayMs`, and, since the look was extracted into
-`components/chrome/timer-pill.tsx`, literally the same clock, drain and
+the chrome's timer pill (since deleted), literally the same clock, drain and
 controls. Pausing on the canvas pauses in the chrome. Every client computes the
 value locally off an absolute anchor, so there is no per-second network traffic
 and no drift between machines.

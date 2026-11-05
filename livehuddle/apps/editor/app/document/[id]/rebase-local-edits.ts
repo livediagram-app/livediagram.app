@@ -23,7 +23,7 @@ export function rebaseLocalEdits(fetched: Tab, screen: Tab, baseline: Tab | unde
   const deleted = new Set(baseline.elements.filter((e) => !screenIds.has(e.id)).map((e) => e.id));
   const fields: Partial<Tab> = {};
   // A field cleared here is a field the screen no longer has (a tab look reset deletes its font, an
-  // ended vote or timer is dropped), so the keys come from both sides: one only the baseline holds
+  // ended timer is dropped), so the keys come from both sides: one only the baseline holds
   // is an edit too, and the fetched copy must lose it.
   const cleared: (keyof Tab)[] = [];
   const keys = new Set([...Object.keys(screen), ...Object.keys(baseline)] as (keyof Tab)[]);

@@ -80,7 +80,7 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
   reduced motion is read once per flight; each bubble is its own component (`FlyingBubble`), so its ref callbacks
   stay the same across the canvas's re-renders and its nodes are never detached and reattached.
 - Bubbles draw only for the active tab (`bubble.tabId === activeTabId`). A peer's bubble draws only while its
-  speaker's character has been found on this tab (`peers`, empty under a hide-cursors vote): name and colour are
+  speaker's character has been found on this tab (`peers`): name and colour are
   captured the first time it is, in state adjusted during render, and kept if the speaker walks off. Until then the
   bubble is looked for again each render while it flies (their presence lands a frame after their words, or you open
   their tab a moment later); state changes only when a speaker is newly found, a bubble is new or one has gone.
@@ -156,7 +156,6 @@ the one new stored value, a synced user preference.
 | E9  | Viewer sends by a modified client          | Room drops it                                                                                           |
 | E10 | Markup in the text                         | Rendered as text                                                                                        |
 | E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                                                           |
-| E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                                                             |
 | E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin                                           |
 | E14 | Bubble rising to the view's top edge       | It stops 120px below the top (`topShift`, `SPEECH_TOP_CLEAR`), under the palette strip, and fades there |
 

@@ -288,6 +288,8 @@ export * from './room-messages';
 export * from './call-voice';
 export * from './call-hand';
 export * from './call-control';
+// Knock (docs/specs/012-collaboration/knock.md).
+export * from './knock';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';

@@ -11,9 +11,19 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  spaces: ['virtual-office', 'team-pod', 'coworking-space', 'all-hands-hall'],
+  spaces: [
+    'virtual-office',
+    'team-pod',
+    'coworking-space',
+    'all-hands-hall',
+    'rooftop-bar',
+    'garden-retreat',
+    'focus-library',
+    'cafe',
+    'city-park',
+  ],
   // The Spaces a meeting is held in, and the blank to furnish your own (Work Tracker #423).
-  meetings: ['all-hands-hall', 'team-pod', 'virtual-office', 'blank-session'],
+  meetings: ['all-hands-hall', 'training-room', 'team-pod', 'virtual-office', 'blank-session'],
   collaboration: ['team-pod', 'coworking-space', 'virtual-office', 'all-hands-hall'],
 };
 

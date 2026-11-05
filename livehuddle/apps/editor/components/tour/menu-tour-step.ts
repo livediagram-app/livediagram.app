@@ -8,7 +8,7 @@ export type MenuTourEnv = { elementId: string; hasMore: boolean; touch: boolean 
 
 // The step on an element's own menu section. These elements are edited mostly from there, so the step is kept for
 // everyone: it opens the menu to the part `path` names and rings it (inTheMenu). `body` follows the words that say how
-// to get there: `More, then ${body}` while More shows, else `Right-click it, then ${body}` (a power user on a desktop).
+// to get there: `More, then ${body}` while More shows, else `Right-click it, then ${body}`.
 export function menuStep(
   env: MenuTourEnv,
   id: string,

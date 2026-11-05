@@ -1,0 +1,47 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Directory',
+  description:
+    'A stand that lists every room in a space, on every tab, with who is in each right now. Walk There or Go from it.',
+  path: '/help/palette/directory/',
+});
+
+<ArticleLayout
+  title="Directory"
+  description="Put a Directory in a space and anyone can see every room, who is in it, and get there in one click."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("directory")}
+>
+
+A **Directory** is the board in the lobby. Click it and it lists every room in the space, on every tab, with who is in each right now, and takes you to any of them.
+
+It lives in the palette's **Travel** category, one of the [meeting elements](/help/palette/behaviour/), beside the [Avatar Pad](/help/palette/avatar-pads/) and the [Elevator](/help/palette/elevator/), and search adds one too.
+
+## What it lists
+
+- **Every place in the space**: each Room (including rooms drawn with the Room Builder), Office Pod and Stage from the [Virtual Office](/help/palette/virtual-office/), grouped by tab. Your tab comes first, marked **This Floor**.
+- **Names**: a room or stage you have named shows its name. Unnamed ones are numbered by where they sit on the tab, top to bottom and left to right: Room 1, Room 2, Office Pod 1, Stage 1.
+- **Who is in each, right now**: on your tab, everyone whose character stands in a room shows on that room's row. Everyone else on the tab is under **Around**.
+- **Other tabs**: you can see who is on another tab, under **On This Floor**, but not which room they are in until you go there.
+
+A space without rooms shows **No rooms yet**.
+
+## Getting there
+
+- **Walk There** (on your tab): walks your character to the room's doorway and in. If you are not walking yet, you go into [Avatar mode](/help/selection-modes/avatar-mode/) first. Walls and fences still stop you, and any key or click takes over.
+- **Go**: jumps you straight there, like a [Portal](/help/palette/tools/portals/), switching tab if the room is on another one. If you were walking, you keep walking from the doorway when you arrive.
+
+## Who can do what
+
+- **Editors** place, move and delete a Directory.
+- **Everyone**, Editors, Participants and Viewers, can open it, Walk There and Go.
+
+## The look
+
+A freestanding stand with a blue sign across the top and a board of rooms. It has no label and no **…** on its face, and characters walk past it freely. Otherwise it is an ordinary element: move, resize (it keeps its shape), rotate, lock, copy and export.
+
+</ArticleLayout>

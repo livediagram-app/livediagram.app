@@ -24,6 +24,7 @@ import {
 import type { ExplorerView } from '../views';
 import { Explorer } from './Explorer';
 import type { ThisBrowserHost } from './ThisBrowser';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const local = (n: number, extra: Partial<ThisBrowserItem> = {}): ThisBrowserItem => ({
   id: `local-${n}`,
@@ -130,9 +131,10 @@ describe('the list an app keeps', () => {
       'liveplanner',
       Array.from({ length: THIS_BROWSER_MAX }, (_, i) => local(i)),
     );
-    const started = performance.now();
-    for (let k = 0; k < 20; k++) readThisBrowser('liveplanner');
-    expect((performance.now() - started) / 20).toBeLessThan(8);
+    const ms = cpuMsOf(() => {
+      for (let k = 0; k < 20; k++) readThisBrowser('liveplanner');
+    });
+    expect(ms / 20).toBeLessThan(cpuBudgetMs(8));
   });
 });
 

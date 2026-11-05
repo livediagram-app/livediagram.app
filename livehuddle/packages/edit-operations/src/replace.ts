@@ -1,5 +1,5 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
-// body, a whole tab from a graph, Mermaid, a template or raw elements, built exactly as the MCP's
+// body, a whole tab from a graph, a template or raw elements, built exactly as the MCP's
 // `update_document` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
@@ -17,7 +17,6 @@ import {
   invertElementOps,
   isValidTab,
   normaliseElements,
-  resolveGraphInput,
   type Element,
   type GraphInput,
   type Tab,
@@ -34,8 +33,9 @@ import { invalidResult, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 
-type Source = 'graph' | 'mermaid' | 'template' | 'elements';
-const SOURCES: readonly Source[] = ['graph', 'mermaid', 'template', 'elements'];
+// No `mermaid`: imports from other tools are gone (docs/specs/002-project-scope/not-in-livehuddle.md).
+type Source = 'graph' | 'template' | 'elements';
+const SOURCES: readonly Source[] = ['graph', 'template', 'elements'];
 
 // What one source builds: the new elements, and for a tab that does not exist yet, the whole tab.
 type Built = { elements: Element[]; tab: (tabId: string, name: string) => Tab } | EditRejection;
@@ -94,14 +94,6 @@ function build(
       const { graph } = body as { graph: unknown };
       const issue = graphBodyIssue(graph);
       return issue ? invalidBody(issue) : fromGraph(graph as GraphInput, themeId);
-    }
-    case 'mermaid': {
-      const { mermaid } = body as { mermaid: unknown };
-      if (typeof mermaid !== 'string') return invalidBody('mermaid: expected a string');
-      const resolved = resolveGraphInput({ mermaid });
-      return resolved.graph
-        ? fromGraph(resolved.graph, themeId)
-        : { code: 'parse_error', details: [resolved.error!] };
     }
     case 'template': {
       const { template } = body as { template: unknown };

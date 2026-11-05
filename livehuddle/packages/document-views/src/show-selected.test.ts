@@ -55,28 +55,6 @@ describe('show selected (R27)', () => {
     expect((rendered.json as { selected: unknown[] }).selected).toHaveLength(1);
   });
 
-  it('leaves out an element on a hidden layer', () => {
-    const tab = {
-      id: 't',
-      name: 'T',
-      elements: [
-        shapeAt('square', 'seen', 0, 0),
-        { ...shapeAt('square', 'gone', 200, 0), layerId: 'h' },
-      ],
-      layers: [
-        { id: 'default', name: 'Default' },
-        { id: 'h', name: 'Hidden', visible: false },
-      ],
-    };
-    const rendered = renderView({ view: 'show', ref: SELECTED_REF }, tab, {
-      selected: ['gone', 'seen'],
-    });
-    if (!rendered.ok) throw new Error(rendered.refusal.message);
-    expect((rendered.json as { selected: { ref: string }[] }).selected.map((s) => s.ref)).toEqual([
-      'seen',
-    ]);
-  });
-
   it('refuses nothing selected, and a selection it could not read, as edit operations do', () => {
     const nothing = { error: 'target_not_found', message: 'nothing is selected' };
     const unread = { error: 'target_not_found', message: 'the selection could not be read' };

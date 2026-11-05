@@ -230,6 +230,8 @@ export function rowSave(
     const fields = resolveFields(set, typeDef, naming);
     if (!fields.ok) return { kind: 'refused', message: fields.message };
     if (Object.keys(fields.fields).length) patch.set = fields.fields as Item['fields'];
+    // A field that holds several, given only commas, clears as a blank cell does.
+    clear.push(...(fields.clear ?? []));
     if (clear.length) patch.clear = clear;
     return patch.set || patch.clear || patch.type
       ? { kind: 'patch', id: item.id, patch }

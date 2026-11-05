@@ -2,7 +2,7 @@
 // docs/specs/018-help/contextual-help-links.md): the FULL article registry from @livehuddle/help-registry, so
 // every help article is findable from the canvas. Each item matches on its
 // title plus the registry's description + keyword synonyms ("transparency"
-// finds Layer Order and Opacity), resolved to an absolute /help href.
+// finds Colours, Borders and Opacity), resolved to an absolute /help href.
 //
 // Deep links from editor surfaces (HelpArticleLink etc.) still go through the
 // symbolic-key map in help-articles.ts; this module only feeds search.

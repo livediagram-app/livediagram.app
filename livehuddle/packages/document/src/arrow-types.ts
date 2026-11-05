@@ -76,8 +76,6 @@ export type ArrowEnds = 'from' | 'to' | 'both' | 'none';
 export type ArrowElement = {
   id: ElementId;
   type: 'arrow';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   from: Endpoint;
   to: Endpoint;
   locked?: boolean;

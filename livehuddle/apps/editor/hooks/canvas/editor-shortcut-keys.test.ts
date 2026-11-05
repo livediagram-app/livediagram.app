@@ -1,18 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { EDIT_KEYS, PARTICIPANT_KEYS } from './editor-shortcut-keys';
+import * as keys from './editor-shortcut-keys';
 
-// docs/specs/013-workspace/share-roles.md "The Participant palette": a Participant's add keys are its tiles' (N, T, 9)
-// and 8, the number Text has for everyone; no other add key runs.
-describe('PARTICIPANT_KEYS', () => {
-  it('holds exactly the keys the spec names', () => {
-    expect(Object.keys(PARTICIPANT_KEYS).sort()).toEqual(['8', '9', 'n', 't']);
+// docs/specs/013-workspace/share-roles.md "A Participant walks": a Participant has no add keys of its own any more.
+describe('the key maps', () => {
+  it('hold no Participant map', () => {
+    expect(Object.keys(keys)).not.toContain('PARTICIPANT_KEYS');
   });
 
-  it('gives 8 the same tool it is for an Editor (Text)', () => {
+  it('keep 8 as Text for an Editor', () => {
     const calls: string[] = [];
-    const live = { addText: () => calls.push('text') } as never;
-    PARTICIPANT_KEYS['8']!(live);
-    EDIT_KEYS['8']!(live);
-    expect(calls).toEqual(['text', 'text']);
+    keys.EDIT_KEYS['8']!({ addText: () => calls.push('text') } as never);
+    expect(calls).toEqual(['text']);
   });
 });

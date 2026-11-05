@@ -82,6 +82,7 @@ export function usePaletteDragGuides({
         width: preview.width,
         height: preview.height,
         elements: board.current,
+        room: preview.kind === 'room',
       });
       setPaletteDragSnap({ dx: snap.dx, dy: snap.dy });
       setGuides(snap.guides);

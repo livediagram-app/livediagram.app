@@ -96,11 +96,11 @@ describe('eraseStrokePart', () => {
     expect(Math.max(...xs(right!))).toBe(200);
   });
 
-  it('keeps the colour, width and layer, with fresh ids', () => {
-    const src = line({ strokeColor: '#e11d48', layerId: 'L1', opacity: 0.8 });
+  it('keeps the colour and width, with fresh ids', () => {
+    const src = line({ strokeColor: '#e11d48', opacity: 0.8 });
     const pieces = eraseStrokePart(src, { x: 100, y: 100 }, { x: 100, y: 100 }, 10, mint)!;
     for (const p of pieces) {
-      expect(p).toMatchObject({ strokeColor: '#e11d48', penWidth: 4, layerId: 'L1', opacity: 0.8 });
+      expect(p).toMatchObject({ strokeColor: '#e11d48', penWidth: 4, opacity: 0.8 });
       expect(p.closed).toBe(false);
       expect(p.id).not.toBe('line');
     }

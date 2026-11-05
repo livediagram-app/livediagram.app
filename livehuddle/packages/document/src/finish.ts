@@ -133,7 +133,6 @@ export const FACTORY_CORNERS: Readonly<Record<string, string>> = {
   'stat-row': 'md',
   'site-header': 'md',
   'mode-button': 'lg',
-  'reaction-pad': 'lg',
 };
 
 /** An element's own corner as its finish reads it: a corner picked on it wins, but under Professional the corner
@@ -232,7 +231,6 @@ const SKETCHED_BY_BODY = new Set<string>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'frame',
   'icon',
   'sticker',
 ]);
@@ -266,8 +264,8 @@ export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined {
 }
 
 /** Whether a shape's kind takes Sketch's hatching and Marker's colouring at all, whatever its fill and whatever sits
- *  on it: every box with a body of its own (plain boxes, drawn silhouettes, cards, panels, records, pages, lanes and
- *  frames, docs/specs/008-canvas/finish.md), not a self-painting face, whose own parts are its drawing. The shading is
+ *  on it: every box with a body of its own (plain boxes, drawn silhouettes, cards, panels, records, pages and lanes,
+ *  docs/specs/008-canvas/finish.md), not a self-painting face, whose own parts are its drawing. The shading is
  *  light enough to read words over; what sits on a shape (a backdrop) still keeps it solid. */
 export function finishHatchesKind(element: Element): boolean {
   if (element.type !== 'shape') return false;

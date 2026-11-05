@@ -16,9 +16,9 @@ each be sized on their own (see "The setting"):
 **Panels** (`panels`):
 
 - **Every panel**: each `MovablePanel`, docked into a corner,
-  dragged, or open as a popover (the Explorer, the Layers /
-  Collaborate cluster popovers).
-  That covers the Explorer, AI, Layers, Map, Collaborate
+  dragged, or open as a popover (the Explorer, the
+  Collaborate cluster popover).
+  That covers the Explorer, AI, Map, Collaborate
   and the session and tool panels.
 - **The Quick Style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)).
 - **The Tab Style panel** ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md)), flown out of the Theme &
@@ -33,7 +33,7 @@ each be sized on their own (see "The setting"):
 **Corner buttons** (`cornerButtons`):
 
 - **The bottom-right cluster**: Undo / Redo, the
-  Layers and Collaborate buttons, the Theme & Canvas button, the Zoom
+  Collaborate button, the Theme & Canvas button, the Zoom
   controls and the off-screen content hint.
 
 Nothing else scales: not the canvas or its elements (the canvas has its
@@ -84,16 +84,16 @@ value as a percentage ("110%"):
 | Row                  | Footnote                                                                                                                                                                                   | Event                  |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
 | UI Scale             | "Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below." | `UiScale`              |
-| Panel Scale          | "Every panel, docked or opened from a button, and the Quick Style panel."                                                                                                                  | `UiScalePanels`        |
+| Panel Scale          | "Every panel, docked or opened from a button."                                                                                                                                             | `UiScalePanels`        |
 | Toolbar Scale        | "The toolbar strip and its menu button."                                                                                                                                                   | `UiScaleToolbar`       |
-| Corner Buttons Scale | "The buttons in the bottom-right corner: Undo and Redo, Layers, theme and zoom."                                                                                                           | `UiScaleCornerButtons` |
+| Corner Buttons Scale | "The buttons in the bottom-right corner: Undo and Redo, theme and zoom."                                                                                                                   | `UiScaleCornerButtons` |
 
 - A part's slider shows its own value, or the master's while it has none.
 - Desktop only (each row's `desktopOnly` note, shown on a phone): "UI Scale
   is desktop only, so a phone always uses 100%. Your choice still applies on a
   larger screen." On a phone the sliders are greyed and take no input.
 - Search keywords cover "zoom size bigger smaller scale" plus each part's
-  own words (undo, zoom controls, layers for corner buttons; strip, button
+  own words (undo, zoom controls for corner buttons; strip, button
   bar for the toolbar).
 - **Live while dragged**: the chrome resizes as the thumb moves, so you can
   see the size you are choosing. The value is only a preview until release,

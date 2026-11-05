@@ -32,7 +32,9 @@ describe('useViewPreview', () => {
     expect(onEnter).toHaveBeenCalledTimes(2);
   });
 
-  it('gives the Participant preview a key of its own, shaped so the Participant rule takes its adds', async () => {
+  // The key pins its notes on a Notice Board; an add is refused it as the room refuses a real Participant's
+  // (docs/specs/013-workspace/share-roles.md "A Participant walks").
+  it("gives the Participant preview a key of its own, of the room's shape, that adds nothing", async () => {
     const { previewAdderKey } = await import('./useViewPreview');
     const { applyParticipantOp, createSticky } = await import('@livehuddle/document');
     const key = previewAdderKey();
@@ -45,7 +47,7 @@ describe('useViewPreview', () => {
       { kind: 'add', element: sticky, at: 0 },
       key,
     );
-    expect(added.result).toBe('applied');
+    expect(added.result).toBe('refused');
   });
 
   it('gives a view-link visitor no toggle', () => {

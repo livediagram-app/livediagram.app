@@ -40,7 +40,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'On the floor',
-        us: 'Stickies, images, a shared timer, a quick vote and Reaction Pads',
+        us: 'Stickies, stickers, and a Timer and a Stopwatch for any room',
         them: 'Interactive objects, private areas and meeting rooms',
       },
       {
@@ -59,10 +59,10 @@ const LIST: Alternative[] = [
     usBest: [
       'Free for everyone and MIT-licensed, with no per-seat pricing, no team-size limit on a plan, and nothing to upgrade to.',
       'Open a link and you are in, with no sign-up, even to create a Space, and nothing to install.',
-      '5 templates: a blank Space, a Virtual Office, a Team Pod, a Coworking Space and an All-Hands Hall, each ready to walk into.',
+      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round, each ready to walk into.',
       'Your own character with outfits, a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves, and Follow to go wherever a teammate goes.',
-      'A Space is also a board: sticky notes, text, images, stickers, icons and link cards on the walls, a shared timer and a quick dot vote on the notes.',
-      'Share links at three levels: an Editor reshapes the office, a Participant walks, writes and votes, and a Viewer walks and watches. Add a password or an expiry, or revoke a link at any time.',
+      'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
+      'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks, comments and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
       'A free REST API, a command line and an MCP server, so scripts and AI assistants can set up and change your Spaces.',
       'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
     ],
@@ -83,7 +83,7 @@ const LIST: Alternative[] = [
       {
         heading: 'More than a floor plan',
         paragraphs: [
-          'Every livehuddle Space is also a board, so the walls of a room hold the meeting: sticky notes, text, images, stickers, icons and link cards, grouped in frames. The Session strip runs a shared timer and a quick vote, dots on the notes, and one person can hold the facilitator baton so the timer and the vote answer to them. Bring Focus offers everyone a jump to what you mean, the laser and spotlight point at it, and comments with mentions, reactions and assigned actions keep the follow-ups with the Space.',
+          'Every livehuddle Space is also a board, so the walls of a room hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch on the wall, and one person can hold the facilitator baton so the timer answers to them. Bring Focus offers everyone a jump to what you mean, and comments with mentions, reactions and assigned actions keep the follow-ups with the Space.',
         ],
       },
       {
@@ -96,11 +96,11 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can we talk by voice or video in livehuddle like we do in Gather?',
-        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Everything else, the characters, rooms, statuses, speech bubbles, timer and vote, works live for everyone in the Space.',
+        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Everything else, the characters, rooms, statuses, speech bubbles and timer, works live for everyone in the Space.',
       },
       {
         q: 'Can I bring my Gather office across?',
-        a: 'There is no Gather importer. Start from the Virtual Office template and rearrange its rooms, or build your own from the office pieces. You can add a picture of your old map to a tab as an image to work from.',
+        a: 'There is no Gather importer. Start from the Virtual Office template and rearrange its rooms, or build your own from the office pieces.',
       },
       {
         q: 'Do my teammates need an account or an app?',
@@ -141,7 +141,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'In a room',
-        us: 'Stickies, images, a shared timer, a quick vote and Reaction Pads',
+        us: 'Stickies, stickers, and a Timer and a Stopwatch for any room',
         them: 'Screen shares and shared apps beside the call',
       },
       {
@@ -160,9 +160,9 @@ const LIST: Alternative[] = [
       'Free for everyone and MIT-licensed, with no per-seat pricing and nothing to upgrade to.',
       'Open a link and walk in from any modern browser, with nothing to install and no sign-up, even to create a Space.',
       'A place you can see: everyone is a character in their own colour and outfit, with a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves.',
-      '5 templates: a blank Space, a Virtual Office, a Team Pod, a Coworking Space and an All-Hands Hall, and office pieces to build more rooms.',
-      'The walls hold the meeting: sticky notes, text, images, stickers and link cards, a shared timer and a quick dot vote on the notes.',
-      'Bring Focus, follow-me, the laser and spotlight to walk the room through something, and Reaction Pads for confetti, sparkles, hearts, applause or fireworks when it goes well.',
+      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round, and office pieces to build more rooms.',
+      'The walls hold the meeting: sticky notes, text and stickers, and a Timer or a Stopwatch in any room.',
+      'Bring Focus and follow-me to walk the room through something, and a burst of confetti, sparkles, hearts, applause or fireworks round your character when it goes well.',
       'Comments with mentions and reactions, and actions assigned to a teammate, so the follow-ups leave with an owner.',
       'A free REST API, a command line and an MCP server, so scripts and AI assistants can set up and change your Spaces.',
     ],
@@ -177,13 +177,13 @@ const LIST: Alternative[] = [
       {
         heading: 'A board in every room',
         paragraphs: [
-          'A livehuddle Space is a board as well as a place. A stand-up in the Team Pod can start with a sticky note per person and a shared timer at the foot of the screen; a decision gets a quick vote, dots on the notes; a link card points at the doc everyone needs. One person can hold the facilitator baton so the timer and the vote answer to them, and Bring Focus offers everyone a jump to the thing you mean.',
+          'A livehuddle Space is a board as well as a place. A stand-up in the Team Pod can start with a sticky note per person and a Timer on the wall. One person can hold the facilitator baton so the timer answers to them, and Bring Focus offers everyone a jump to the thing you mean.',
         ],
       },
       {
         heading: 'Open from a link, for free',
         paragraphs: [
-          'There is no paid tier, no seat to buy and no app to install. Anyone can open a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. A share link is an Editor, Participant or view-only link, and can carry a password or an expiry, or be revoked at any time.',
+          'There is no paid tier, no seat to buy and no app to install. Anyone can open a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. A share link is an Editor or a Participant link, and can carry a password or an expiry, or be revoked at any time.',
           'The whole codebase is MIT-licensed and public. Signed in, your Spaces can sync to your own Google Drive, and a Space in This Browser never reaches our servers at all.',
         ],
       },
@@ -191,7 +191,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Does livehuddle have video like Teamflow?',
-        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now keep your usual call open beside the Space. Characters, rooms, statuses, speech bubbles, the timer and the vote all work live.',
+        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now keep your usual call open beside the Space. Characters, rooms, statuses, speech bubbles and the timer all work live.',
       },
       {
         q: 'Do I need to install anything?',
@@ -236,7 +236,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Who can do what',
-        us: 'Editor, Participant and Viewer links, with passwords and expiry',
+        us: 'Editor and Participant links, with passwords and expiry',
         them: 'Roles and permissions for members and guests',
       },
       {
@@ -254,10 +254,10 @@ const LIST: Alternative[] = [
     usBest: [
       'Free for everyone and MIT-licensed: no plan limits on people or rooms, and nothing to upgrade to.',
       'Open a link and walk in, with no sign-up, even to create a Space, and nothing to install.',
-      '5 templates: a blank Space, a Virtual Office, a Team Pod, a Coworking Space and an All-Hands Hall.',
+      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round.',
       'Everyone is a character with outfits, a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves, and Follow takes you wherever a teammate goes.',
-      'The walls hold the meeting: sticky notes, text, images, stickers and link cards, with a shared timer and a quick dot vote at the foot of the screen.',
-      'Participant links let people walk, add notes and vote without moving the furniture, and view-only links let them walk and watch.',
+      'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
+      'Participant links let people walk, talk, comment and react without moving the furniture.',
       'A free REST API, a command line and an MCP server, so an AI assistant can set up a Space and share it for you.',
       'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
     ],
@@ -266,7 +266,7 @@ const LIST: Alternative[] = [
         heading: 'A place for the team to be',
         paragraphs: [
           'Kumospace and livehuddle both turn a remote team’s day into a place: an office with rooms, desks and a corner to chat in, where you can see who is around. In livehuddle that place is a Space. Walk in as your own character, sit at your desk, set your status to Focusing when you need quiet, and walk over to the meeting table when it is time to talk.',
-          'For the whole company there is the All-Hands Hall, with a stage at the front, and Reaction Pads for a burst of confetti, sparkles, hearts, applause or fireworks when the news lands.',
+          'For the whole company there is the All-Hands Hall, with a stage at the front, or a Conference Venue and an Expo Hall for the bigger day, and everyone can throw a burst of confetti, sparkles, hearts, applause or fireworks when the news lands.',
         ],
       },
       {
@@ -278,7 +278,7 @@ const LIST: Alternative[] = [
       {
         heading: 'A meeting you can write on',
         paragraphs: [
-          'Every Space is also a board. Put a sticky note per person on the wall for the stand-up, start the shared timer, and finish with a quick vote, dots on the notes. Bring Focus offers everyone a jump to what you mean, and comments with mentions and assigned actions carry the follow-ups out of the meeting.',
+          'Every Space is also a board. Put a sticky note per person on the wall for the stand-up, and start the Timer on the wall. Bring Focus offers everyone a jump to what you mean, and comments with mentions and assigned actions carry the follow-ups out of the meeting.',
         ],
       },
       {
@@ -291,11 +291,11 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can we talk in livehuddle the way we do in Kumospace?',
-        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Characters, rooms, statuses, speech bubbles, the timer and the vote all work live.',
+        a: 'Not yet. Proximity audio and calls are built but switched off in production, so for now run your usual call beside the Space. Characters, rooms, statuses, speech bubbles and the timer all work live.',
       },
       {
         q: 'Can I hold an all-hands in livehuddle?',
-        a: 'Yes, as a place to gather: the All-Hands Hall has a stage at the front and room for the whole team to walk in, with Reaction Pads for applause and confetti. The talking happens on your usual call for now, and Kumospace is the better pick for broadcasting to a large audience.',
+        a: 'Yes, as a place to gather: the All-Hands Hall has a stage at the front and room for the whole team to walk in, where everyone can throw applause and confetti. The talking happens on your usual call for now, and Kumospace is the better pick for broadcasting to a large audience.',
       },
       {
         q: 'Can I import my Kumospace office?',

@@ -22,7 +22,6 @@ import {
   stillId,
   type BoardActivity,
   type CastMember,
-  type SceneBurst,
   type SpaceSceneSpec,
   type StillKey,
 } from './hero-space-cast';
@@ -249,10 +248,9 @@ function RemoteCursor({ board }: { board: BoardActivity }) {
   );
 }
 
-/** The notes coming alive: the remote teammate's note, then the room's dot votes. */
+/** The notes coming alive: the remote teammate's note. */
 function NotesActivity({ board }: { board: BoardActivity }) {
   const target = board.stickies[board.note.sticky]!;
-  const r = board.voteRadius;
   return (
     <g>
       <text
@@ -266,40 +264,8 @@ function NotesActivity({ board }: { board: BoardActivity }) {
       >
         {board.note.text}
       </text>
-      {board.votes.map((vote) => {
-        const sticky = board.stickies[vote.sticky]!;
-        return (
-          <circle
-            key={`${vote.sticky}-${vote.dx}`}
-            cx={sticky.x + r * 2.4 + vote.dx * r * 2.9}
-            cy={sticky.y + board.size - r * 2.4}
-            r={r}
-            fill={vote.colour}
-            stroke="#ffffff"
-            strokeWidth={r / 4.5}
-            className="hs-vote"
-            style={vars({ '--d': s(vote.at) })}
-          />
-        );
-      })}
       <RemoteCursor board={board} />
     </g>
-  );
-}
-
-/** A Reaction Pad's burst over the room: each emoji rises and fades on the loop. */
-function Burst({ burst }: { burst: SceneBurst }) {
-  return (
-    <text
-      x={burst.x}
-      y={burst.y}
-      fontSize={34}
-      textAnchor="middle"
-      className="hs-burst"
-      style={vars({ '--d': s(burst.at) })}
-    >
-      {burst.emoji}
-    </text>
   );
 }
 
@@ -330,9 +296,6 @@ export function SpaceScene({ spec }: { spec: SpaceSceneSpec }) {
       {spec.board ? <NotesActivity board={spec.board} /> : null}
       {cast.map((member) => (
         <Walker key={member.name} member={member} sheet={sheet} />
-      ))}
-      {spec.bursts?.map((burst) => (
-        <Burst key={`${burst.at}`} burst={burst} />
       ))}
       {spec.speech.map((line, i) => (
         <Bubble

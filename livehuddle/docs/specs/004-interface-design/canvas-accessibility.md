@@ -26,13 +26,13 @@ delete, undo, label edit via Space) that already work on a selection.
   chrome after it in the tab order (the palette strip, the bottom controls, the tab bar) sat behind dozens of
   presses. F6 moves focus to the next region and Shift+F6 to the previous, wrapping round, in screen order:
   **Header** (the document's title row), **Palette** (the strip or the Draw dock), **Canvas**, **Controls** (the
-  bottom-right cluster: Undo, Tidy Up, Layers, Style, zoom) and **Tabs** (the tab bar). A region lands on its first
-  control (the Canvas on the canvas itself); a region not on screen (a viewer has no Palette, Zen hides the chrome)
+  bottom-right cluster: Undo, Tidy Up, Style, zoom) and **Tabs** (the tab bar). A region lands on its first
+  control (the Canvas on the canvas itself); a region not on screen (a viewer has no Palette)
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a
   text field, where F6 still moves on: typing never uses it. Each region is marked `data-region` with its name, and
   the tab order inside a region is unchanged. (`../packages/workbench/src/hooks/ui/useRegionCycle.ts`.)
-- **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Timer, Vote,
-  Poll, Layers, the Explorer, the Map) is a `region` named by its title, so a screen reader moving into one hears
+- **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Timer,
+  Poll, the Explorer, the Map) is a `region` named by its title, so a screen reader moving into one hears
   which panel it is in rather than a nameless group of controls.
 - Traversal is **selection**: the existing selection ring is the focus
   indicator (one concept, not two). Works in read-only views (it's
@@ -52,13 +52,13 @@ delete, undo, label edit via Space) that already work on a selection.
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
 - An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): the session
-  buttons (timer, vote, poll), checklists, temperature checks, agendas, Q&A boards, quizzes, reaction pads, pickers,
+  buttons (timer, poll), checklists, temperature checks, agendas, Q&A boards, quizzes, reaction pads, pickers,
   reveals, decision records, mode buttons, Bring Focus buttons, portals, roll calls, estimate cards, idea boxes, done checks, comment pins, action cards and
   pages, a table (its cells edit in place, and selected it shows its column and row options), an embed, a link card, an image still waiting for its picture, and any element showing indicator buttons
   (its link, note, action or comments, [Element indicators](../008-canvas/element-indicators.md)). An
   img's children are presentational, so as pictures their Start, tick and Ask buttons and the Q&A note field could
   not be reached with a screen reader.
-- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Dot vote`, `Poll`), never the generic
+- A session button is named by the tool it starts (`Timer`, `Stopwatch`, `Poll`), never the generic
   "Session button".
 
 ## Live announcements
@@ -71,23 +71,10 @@ Arrow from 'Travel' to 'Hotel'`, so walking a map's connectors says where each r
   a short summary such as `Selected 3 elements`; cleared: `Selection cleared`), keyboard
   delete (`Deleted …`), and undo / redo. A selection change is spoken a frame later, and not at all
   when a verb has said what happened since: a clear that comes with a delete is not also spoken as
-  `Selection cleared`, and a vote key pressed straight after Tab is answered by its own words (which name the
-  element), not `Selected …`, either of which would land over the verb's word. A dot cast or taken back
-  from the keyboard says what happened and the dots left (see below).
+  `Selection cleared`, which would land over the verb's word.
 - Implementation: `hooks/canvas/useCanvasA11y.ts` (traversal + announcement
   state, composed in `useEditorState`) + a small
   `../packages/workbench/src/components/canvas/CanvasLiveRegion.tsx`.
-
-## Voting from the keyboard
-
-A dot vote ([Session tools](../012-collaboration/session-tools.md), "Casting from the keyboard") is cast by
-pressing an element or its stepper's plus, and both sit inside the canvas, where Tab walks elements. So the
-keyboard's way in is the walk itself: **Tab to a votable element, then `+` (or `=`) adds one of your dots and
-`-` takes one back.** Every press is answered in the live region with the outcome and your dots left
-(`Dot added to 'Idea'. 2 of 3 dots left.`), or why nothing changed (`No dots left.`). The keys only belong to the
-vote while it is open, you can cast (an Editor or a Participant), and the one selected element is votable in it;
-otherwise `+`, `=` and `-` do what they always did. The rules are the pointer's, read from the same checks.
-(`apps/editor/lib/vote-by-key.ts`, wired from `useEditorKeyboardShortcuts`.)
 
 ## Telemetry
 

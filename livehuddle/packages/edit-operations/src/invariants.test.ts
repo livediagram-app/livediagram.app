@@ -22,7 +22,7 @@ const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> =
   connect: 'connect n2 -> n8 label=skip',
   rewire: 'rewire a6 to=n8',
   insert: 'insert square id=verify label="Verify email" between n3 n4',
-  wrap: 'wrap n7 n8 in frame label=Payment',
+  wrap: 'wrap n7 n8 in boundary label=Payment',
   unwrap: 'unwrap f2',
   order: 'order f2 front',
   layout: 'layout n5 n6 n7 n8 direction=right',

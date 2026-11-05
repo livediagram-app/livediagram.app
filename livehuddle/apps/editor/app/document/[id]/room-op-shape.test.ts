@@ -30,12 +30,14 @@ const WELL_FORMED: Record<string, unknown>[] = [
     elementOps: [{ kind: 'update', element: el }],
   },
   { kind: 'changeset', tabId: 't1', id: 'c', rev: 2, refetch: true, touched: [el.id] },
-  { kind: 'vote', tabId: 't1', elementId: el.id, voter: 'v', delta: 1 },
   { kind: 'tab-meta', tabId: 't1', patch: { name: 'x' }, clear: ['timer'] },
   { kind: 'document-meta', name: 'Doc', tabs: [{ id: 't1', name: 'T', orderIndex: 0 }] },
   // Presence, and a kind this build does not know, pass as they always have.
   { kind: 'cursor', x: 1, y: 2 },
   { kind: 'from-a-newer-build', anything: true },
+  // The retired Vote's dot from an older build (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote"):
+  // the room drops it, and it changes nothing here either.
+  { kind: 'vote', tabId: 't1', elementId: el.id, voter: 'v', delta: 1 },
 ];
 
 describe('roomOpIsWellFormed', () => {

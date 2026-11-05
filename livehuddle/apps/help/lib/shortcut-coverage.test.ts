@@ -77,8 +77,8 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
   it('parses real tables (guard against this test going blind)', () => {
     // Twenty-eight bindings when this landed, fewer once the diagram tools' keys left (Work Tracker #423). A
     // collapse toward zero means the table shape changed and every assertion below passes vacuously.
-    expect(boundKeys().size).toBeGreaterThan(10);
-    expect(documentedKeys().size).toBeGreaterThan(10);
+    expect(boundKeys().size).toBeGreaterThan(6);
+    expect(documentedKeys().size).toBeGreaterThan(6);
   });
 
   it('documents every plain key in the lookup tables', () => {
@@ -97,13 +97,8 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
     expect(missing).toEqual([]);
   });
 
-  it('documents the image key, which is bound outside the tables', () => {
-    // `9` gets its own branch in the listener because its callback is nullable
-    // (a guest deploy with no api worker has nowhere to put the file), so it
-    // never reaches the tables above and the parse cannot see it. Asserted
-    // here explicitly, together with the reason it is an exception, so this
-    // guard's coverage matches what its name claims.
-    expect(readFileSync(LISTENER_SRC, 'utf8')).toContain("lower === '9'");
-    expect(documentedKeys().has('9')).toBe(true);
+  it('documents no image key: `9` left with livehuddle\'s Image (not-in-livehuddle.md "Media")', () => {
+    expect(readFileSync(LISTENER_SRC, 'utf8')).not.toContain("lower === '9'");
+    expect(documentedKeys().has('9')).toBe(false);
   });
 });

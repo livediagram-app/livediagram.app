@@ -28,7 +28,7 @@ A shape already carries what a document needs:
   export and the JSON round-trip all work unchanged.
 - **`textAlignX` / `textAlignY`**, so the body sits top-left instead of
   centred like every other shape.
-- Border, fill, shadow, opacity, layers, links, notes, comments, actions.
+- Border, fill, shadow, opacity, links, notes, comments, actions.
 
 So the whole feature is a kind, a size, two alignment defaults, a renderer and
 a palette tile. Nothing downstream learns a new element.

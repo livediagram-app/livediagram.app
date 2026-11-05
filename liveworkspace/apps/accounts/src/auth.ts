@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { authOptions } from './auth-options.ts';
+import { watchedD1 } from './d1-outage.ts';
 import { cookieDomain } from './cookie-scope.ts';
 import { clientApp } from './clients.ts';
 import { sendCodeEmail } from './email.ts';
@@ -20,6 +21,9 @@ import { readProfileLook, storeAccountPicture } from './profiles.ts';
 import { teamsClaim } from './teams.ts';
 
 function build(env: Env, googleRedirectURI?: string) {
+  // Better Auth answers a database failure itself; this handle lets the request still answer an outage as 503
+  // (d1-outage.ts).
+  const db = watchedD1(env.AUTH_DB);
   return betterAuth(
     authOptions(
       {
@@ -40,7 +44,7 @@ function build(env: Env, googleRedirectURI?: string) {
         cookieDomain: cookieDomain(env.ENVIRONMENT),
         handoff: {
           environment: env.ENVIRONMENT,
-          db: env.AUTH_DB,
+          db,
           mergeGuest: (request, userId) =>
             mergeGuestOfRequest(
               { ...guestMergeConfig(env), secret: env.BETTER_AUTH_SECRET },
@@ -58,18 +62,18 @@ function build(env: Env, googleRedirectURI?: string) {
             origin ? appOfOrigin(origin, env.ENVIRONMENT) : null,
           );
         },
-        teamsFor: (userId) => teamsClaim(env.AUTH_DB, userId),
-        lookFor: (userId) => readProfileLook(env.AUTH_DB, userId),
-        storePicture: (userId, picture) => storeAccountPicture(env.AUTH_DB, userId, picture),
+        teamsFor: (userId) => teamsClaim(db, userId),
+        lookFor: (userId) => readProfileLook(db, userId),
+        storePicture: (userId, picture) => storeAccountPicture(db, userId, picture),
         guestMerge: guestMergeConfig(env),
         // The welcome goes once the sign-up's response has (index.ts takeWelcomes), speaking for the app
         // the sign-up came through: its OAuth client's, or liveworkspace.app's for the site's own.
         onUserCreated: async (user, { clientId }) => {
-          const app = clientId ? await clientApp(env.AUTH_DB, clientId) : 'liveworkspace.app';
-          if (await startLifecycle(env.AUTH_DB, user, Date.now(), app)) queueWelcome(user.id);
+          const app = clientId ? await clientApp(db, clientId) : 'liveworkspace.app';
+          if (await startLifecycle(db, user, Date.now(), app)) queueWelcome(user.id);
         },
       },
-      env.AUTH_DB,
+      db,
     ),
   );
 }

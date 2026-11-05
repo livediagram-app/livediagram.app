@@ -81,8 +81,7 @@ Agenda, Roll call) lay out at the element's own size rather than scaling.
 
 **Every export draws an arrow the same way.** The SVG and the PNG / PDF both
 hand `svgArrow` the elements the export draws as its occluders, so a line
-breaks only behind a box that is in the picture (never one on a hidden layer
-or off the page), and the export's paper (the tab's background) as the fill of a hollow head, as the canvas fills it.
+breaks only behind a box that is in the picture (never one off the page), and the export's paper (the tab's background) as the fill of a hollow head, as the canvas fills it.
 
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a

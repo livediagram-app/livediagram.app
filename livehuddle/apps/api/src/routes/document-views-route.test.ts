@@ -38,7 +38,7 @@ const ELEMENTS: Element[] = [
   {
     id: 'frame-1',
     type: 'shape',
-    shape: 'frame',
+    shape: 'boundary',
     x: -20,
     y: -20,
     width: 600,
@@ -128,8 +128,8 @@ describe('tab views over REST (R23)', () => {
     expect(res.headers.get('ETag')).toBe('W/"1"');
     const text = await res.text();
     expect(text.split('\n').slice(0, 4)).toEqual([
-      'tab t1 "Architecture" · 6 elements: 4 boxes, 1 frame, 1 arrow · threads 1 open/1 · rev 1',
-      'frame frame-1 "Services"',
+      'tab t1 "Architecture" · 6 elements: 4 boxes, 1 boundary, 1 arrow · threads 1 open/1 · rev 1',
+      'boundary frame-1 "Services"',
       '  square orders "Orders service" comments=1 open → payments "charge"',
       '  square payments "Payments"',
     ]);
@@ -439,7 +439,7 @@ describe('the overview over REST', () => {
     const lines = (await res.text()).split('\n');
     expect(lines[0]).toMatch(/^doc D "Checkout" · 10 tabs · edited just now$/);
     expect(lines[1]).toBe(
-      '  tab t1 "Architecture" · 6 elements: 4 boxes, 1 frame, 1 arrow · threads 1 open/1 · rev 1',
+      '  tab t1 "Architecture" · 6 elements: 4 boxes, 1 boundary, 1 arrow · threads 1 open/1 · rev 1',
     );
     expect(lines).toHaveLength(11);
     expect(logged('[views] overview')).toMatchObject({ doc: 'D', tabs: 10, batches: 2 });

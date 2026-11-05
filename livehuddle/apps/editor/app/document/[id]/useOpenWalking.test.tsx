@@ -26,7 +26,6 @@ function setup(initial: Props = {}) {
         enabled: p.enabled ?? true,
         tabId: p.tabId ?? 't1',
         elements: p.elements ?? [walkIn()],
-        layers: undefined,
         loaded: p.loaded ?? true,
         walking: p.walking ?? false,
         openWalking,

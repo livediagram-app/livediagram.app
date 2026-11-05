@@ -296,26 +296,26 @@ randomColor() }`; the participant record is never written (I9).
 
 The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface === 'app'`):
 
-| Gate                                                                         | File                                  | In a workbench                                            |
-| ---------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------- |
-| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill) | `EditorView.tsx`                      | Not rendered                                              |
-| `CommunityBar`, Community badge request                                      | `EditorView.tsx`                      | Not rendered, not requested                               |
-| TabBar, palette, toolbars, Quick style, panels, search                       | `EditorView.tsx`                      | Rendered as in the app                                    |
-| `EmbedChrome`                                                                | `EditorView.tsx`                      | Not rendered; `WorkbenchChrome` instead                   |
-| Explorer (popover)                                                           | `useCanvasChromePanels.tsx`           | Not rendered; status screens use `EmbedShell`             |
-| Sign-in banner, theme-mode banner, power-user offer                          | `EditorView.tsx`, `usePowerUserOffer` | Off                                                       |
-| Settings categories `documents`, `account`, `tokens`; the Appearance choice  | `settings-catalogue.ts`               | Hidden                                                    |
-| Share, delete, move, take offline, copy commands                             | `editor-commands.ts`                  | Absent                                                    |
-| TabBar "copy to another document"                                            | `EditorView.tsx` `otherDocuments`     | `[]`                                                      |
-| Image picker gallery                                                         | `ImagePicker.tsx`, `useEditorImages`  | Upload only; `apiListImages` never called                 |
-| Shape library writes (save to My shapes)                                     | their hosts                           | Absent; reads stay                                        |
-| `useTokenTeams`, `useDocumentList`                                           | `useEditorState.ts`                   | Off: no teams, no document list                           |
-| `useCommentMentions`, `useAssigneeOptions`                                   | `hooks/collab`                        | Candidates from presence only; no team read, no notify    |
-| Identity screen                                                              | `useEditorState.ts` `joinScreenOpen`  | Never                                                     |
-| `defaultPan`, `useModeDefaultTool` embed arguments                           | `useEditorState.ts`                   | As the app (`false`)                                      |
-| Element indicators, comment badges                                           | `EditorView.tsx`                      | As the app                                                |
-| `DocumentTrashedCard`                                                        | `editor-page.tsx`                     | `restorable={false}`                                      |
-| `LoadErrorCard`, `NotFound`                                                  | `editor-page.tsx`                     | `embed` forms (no recovery card; create-new in a new tab) |
+| Gate                                                                         | File                                 | In a workbench                                            |
+| ---------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------------- |
+| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill) | `EditorView.tsx`                     | Not rendered                                              |
+| `CommunityBar`, Community badge request                                      | `EditorView.tsx`                     | Not rendered, not requested                               |
+| TabBar, palette, toolbars, Quick style, panels, search                       | `EditorView.tsx`                     | Rendered as in the app                                    |
+| `EmbedChrome`                                                                | `EditorView.tsx`                     | Not rendered; `WorkbenchChrome` instead                   |
+| Explorer (popover)                                                           | `useCanvasChromePanels.tsx`          | Not rendered; status screens use `EmbedShell`             |
+| Sign-in banner, theme-mode banner                                            | `EditorView.tsx`                     | Off                                                       |
+| Settings categories `documents`, `account`, `tokens`; the Appearance choice  | `settings-catalogue.ts`              | Hidden                                                    |
+| Share, delete, move, take offline, copy commands                             | `editor-commands.ts`                 | Absent                                                    |
+| TabBar "copy to another document"                                            | `EditorView.tsx` `otherDocuments`    | `[]`                                                      |
+| Image picker gallery                                                         | `ImagePicker.tsx`, `useEditorImages` | Upload only; `apiListImages` never called                 |
+| Shape library writes (save to My shapes)                                     | their hosts                          | Absent; reads stay                                        |
+| `useTokenTeams`, `useDocumentList`                                           | `useEditorState.ts`                  | Off: no teams, no document list                           |
+| `useCommentMentions`, `useAssigneeOptions`                                   | `hooks/collab`                       | Candidates from presence only; no team read, no notify    |
+| Identity screen                                                              | `useEditorState.ts` `joinScreenOpen` | Never                                                     |
+| `defaultPan`, `useModeDefaultTool` embed arguments                           | `useEditorState.ts`                  | As the app (`false`)                                      |
+| Element indicators, comment badges                                           | `EditorView.tsx`                     | As the app                                                |
+| `DocumentTrashedCard`                                                        | `editor-page.tsx`                    | `restorable={false}`                                      |
+| `LoadErrorCard`, `NotFound`                                                  | `editor-page.tsx`                    | `embed` forms (no recovery card; create-new in a new tab) |
 
 Preferences: `fetchUserPreferences` runs; `writeUserPreferences` keeps the local write and the event and skips
 `apiPutPreferences` under confinement. Appearance: `livehuddle:theme` calls `setAppearanceOverride(scheme)`; before
@@ -502,7 +502,7 @@ does of the menu button (`useStripCrowded`, `useBarLabels`, `useStripTileLimit`)
 strip's row (`inline`, the glyph alone). `EditorCanvasHost` passes the frame's hooks to `Canvas` as
 `workbenchBack`, and `CanvasChrome` renders the card first of its controls, so Back is the first stop after the
 canvas itself; the card is the editor's Header region for F6 (`data-region="header"`). It shows when a phone is held
-sideways, where the Explorer's button does not, and zen hides it with the rest of the chrome. The tab bar holds no
+sideways, where the Explorer's button does not. The tab bar holds no
 Back. The status screens put the same card at `EmbedShell`'s top left. The document entry's `history.state` carries
 `workbenchFrom` (the frame path it was pushed from); Back calls `history.back()` when the entry before is that path
 (`workbenchFrom` set by `navigate`), else pushes Home. Browser back and forward walk the same entries.

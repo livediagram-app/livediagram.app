@@ -55,8 +55,6 @@ type Drag = {
   alt: boolean;
 };
 
-const EMPTY: ReadonlySet<string> = new Set();
-
 // The Path tool's drawing gesture (docs/specs/023-draw-mode/path-tool.md "Drawing"; blueprint
 // path-tool "Drawing"). Canvas composes `beginPathPress` in front of the other draw gestures, so
 // every press it claims places, shapes, closes or finishes a path; the steps themselves are the
@@ -64,7 +62,6 @@ const EMPTY: ReadonlySet<string> = new Set();
 export function usePathDrawGesture({
   pendingDraw,
   elements,
-  inertIds = EMPTY,
   wrapperRef,
   viewportZoom,
   activeTabId,
@@ -73,7 +70,6 @@ export function usePathDrawGesture({
 }: {
   pendingDraw: PendingDraw | null;
   elements: readonly Element[];
-  inertIds?: ReadonlySet<string>;
   wrapperRef: RefObject<HTMLDivElement | null>;
   viewportZoom: number;
   activeTabId?: string;
@@ -202,10 +198,7 @@ export function usePathDrawGesture({
   useEffect(() => () => endListenersRef.current?.(), []);
 
   // The ends a press can pick up again: only while nothing is being drawn.
-  const ends = useMemo(
-    () => (armed ? openPathEnds(elements, inertIds) : []),
-    [armed, elements, inertIds],
-  );
+  const ends = useMemo(() => (armed ? openPathEnds(elements) : []), [armed, elements]);
 
   /** A primary press with the Path tool in hand. True when it claimed the press. */
   const beginPathPress = (e: React.PointerEvent): boolean => {

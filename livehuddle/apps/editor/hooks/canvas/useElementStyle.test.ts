@@ -33,9 +33,6 @@ function harness(elements: Element[], selection: Set<string>) {
       commit: (map) => {
         committed = { ...committed, elements: map(committed.elements) };
       },
-      commitActiveTab: (map) => {
-        committed = map(committed);
-      },
       tickTabs: (map) => {
         committed = map([committed])[0]!;
       },
@@ -329,31 +326,20 @@ describe('useElementStyle arrow style presets (docs/specs/010-palette/style-pres
   });
 });
 
-describe('useElementStyle bring to front / send to back as layer moves (docs/specs/006-document/layers.md)', () => {
-  it('bring to front mints a top layer holding the selection', () => {
+describe('useElementStyle bring to front / send to back (docs/specs/006-document/layers.md "Stacking")', () => {
+  it('moves the selection to the end of the array', () => {
     const a = createShape('square', 0, 0);
     const b = createShape('square', 200, 0);
     const { style, tab } = harness([a, b], new Set([a.id]));
-
     style.bringSelectedToFront();
-
-    const t = tab();
-    expect(t.layers).toHaveLength(2);
-    const topId = t.layers![1]!.id;
-    expect(t.elements.find((e) => e.id === a.id)?.layerId).toBe(topId);
-    // The other shape stays on the (default) bottom layer.
-    expect(t.elements.find((e) => e.id === b.id)?.layerId).toBeUndefined();
+    expect(tab().elements.map((e) => e.id)).toEqual([b.id, a.id]);
   });
 
-  it('send to back mints a bottom layer holding the selection', () => {
+  it('moves the selection to the start of the array', () => {
     const a = createShape('square', 0, 0);
     const b = createShape('square', 200, 0);
     const { style, tab } = harness([a, b], new Set([b.id]));
-
     style.sendSelectedToBack();
-
-    const t = tab();
-    expect(t.layers).toHaveLength(2);
-    expect(t.elements.find((e) => e.id === b.id)?.layerId).toBe(t.layers![0]!.id);
+    expect(tab().elements.map((e) => e.id)).toEqual([b.id, a.id]);
   });
 });

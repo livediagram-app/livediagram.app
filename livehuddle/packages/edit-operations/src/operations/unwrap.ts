@@ -1,4 +1,4 @@
-// `unwrap <frame>` (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO36): the frame or
+// `unwrap <container>` (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO36): the boundary or
 // lane goes; what it held stays where it is; arrows pinned to it go with it, as `rm` removes them.
 
 import type { EditRejection } from '@livehuddle/api-schema';
@@ -20,8 +20,8 @@ export function applyUnwrap(
     return {
       code: 'invalid_value',
       operation,
-      details: [`${target}: ${refsOf(state).refOf(el.id)} is not a frame or a lane`],
-      hint: 'unwrap a frame or lane; rm removes anything else',
+      details: [`${target}: ${refsOf(state).refOf(el.id)} is not a boundary or a lane`],
+      hint: 'unwrap a boundary or lane; rm removes anything else',
     };
   return removeOne(state, el, false, operation, { unwrapped: true });
 }

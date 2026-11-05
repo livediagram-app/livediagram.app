@@ -13,7 +13,7 @@ The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index
 The Inbox is a list and a reading pane, drawn by one shared component (`packages/explorer/src/explorer/InboxPane.tsx`; the whole design is in [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Inbox"):
 
 - **The list**: every row newest first under Today, Earlier This Week and Older, three lines each: who (semibold when it asks something of you) and its age; what it is; why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your document**, **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism and the item, and the teal **This Browser** pill for a document only this browser holds.
-- **The filter dropdown** in the header's row, beside the app filter: All, My Actions, Assigned by Me, Comments and Form Responses, each with its count, kept per viewer on this device.
+- **The filter dropdown** in the header's row, beside the app filter: All, My Actions, Assigned by Me, Comments and Form Responses, each with its count, kept per viewer on this device. On a phone (where a select reads at 16px) it is wide enough for the longest choice with a count of two numerals, so no count is ever cut off.
 - **The reading pane**: where it is, the title, who and why, the verbs with their keys, the document's thumbnail, then the thread, the action's note or the form's responses, and a reply field where Reply is offered.
 - **On a phone and in the editor's panel** the pane takes the list's place, under the [back bar](../004-interface-design/back-bar.md) to **Inbox**; the browser's Back and Esc return to the list.
 

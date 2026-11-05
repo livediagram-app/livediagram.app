@@ -79,7 +79,7 @@ never rewritten. Named colours are a map read built once, since the parse runs f
   Bold of white on a mid-tone fill is drawn with the darker fill).
 - Writing follows the writer: a new element takes the writer's half of the theme, and everyone else sees it in theirs.
   Picking a theme or a look applies it in the picker's half.
-- Everything that draws a tab for a person follows their half: the canvas, the Map, layer and slide thumbnails,
+- Everything that draws a tab for a person follows their half: the canvas, the Map, slide thumbnails,
   exports made from the editor, the palette's tile tint, the theme and look previews in Tab Style, and the quick
   style swatches, and the Explorer's previews, which the export door draws in the half the viewer asks for
   ([Document snapshots](../006-document/document-snapshots.md#in-the-viewers-half)). Server-made images with no

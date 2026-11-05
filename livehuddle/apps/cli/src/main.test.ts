@@ -531,7 +531,7 @@ describe('graph lint', () => {
       ],
       edges: [{ from: 'a', to: 'b' }],
     });
-    const io = fakeIo({ files: { '/work/g.json': graph }, stdin: 'flowchart LR\n  a --> b' });
+    const io = fakeIo({ files: { '/work/g.json': graph }, stdin: graph });
     expect(await run(['graph', 'lint', 'g.json'], io)).toBe(0);
     expect(io.out()).toMatch(/^0 crossings · 0 behind · 0 overlaps/);
     expect(await run(['graph', 'lint', '-', '--compare', 'direction'], io)).toBe(0);
@@ -543,6 +543,10 @@ describe('graph lint', () => {
     expect(debug.err()).toMatch(/\[cli\] \[lint\] run \{/);
     const bad = fakeIo({ stdin: 'rm n1' });
     expect(await run(['graph', 'lint', '-'], bad)).toBe(1);
-    expect(bad.err()).toContain('stdin holds no graph or Mermaid');
+    expect(bad.err()).toContain('stdin holds no graph');
+    // Mermaid is gone from livehuddle (not-in-livehuddle.md "Imports from other tools").
+    const mermaid = fakeIo({ stdin: 'flowchart LR\n  a --> b' });
+    expect(await run(['graph', 'lint', '-'], mermaid)).toBe(1);
+    expect(mermaid.err()).toContain('stdin holds no graph');
   });
 });

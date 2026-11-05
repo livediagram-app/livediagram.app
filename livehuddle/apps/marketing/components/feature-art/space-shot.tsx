@@ -1,7 +1,7 @@
 // The Spaces card art's one drawing (docs/specs/019-marketing/marketing-site.md "Feature category pages"): a crop of
 // a real Space in use, the same room drawings and Avatar mode stills the landing beats' scenes play
 // (public/hero/<id>-light.svg, -dark.svg and -cast.svg, written by lib/hero-space-room.test.tsx), with the few marks a
-// card adds over it (a bubble, a status, a spotlight). Every card that shows a Space draws through this, so a card
+// card adds over it (a bubble, a status, a note). Every card that shows a Space draws through this, so a card
 // never shows a diagram and every room, chair and character is the product's own.
 
 import type { CSSProperties, ReactNode } from 'react';

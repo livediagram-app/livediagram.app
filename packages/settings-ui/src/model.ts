@@ -83,27 +83,6 @@ export type SettingsLinkRow = SettingsRowBase & { kind: 'link'; target: string; 
 // with the kit's Sign In link.
 export type SettingsNoteRow = SettingsRowBase & { kind: 'note'; note: string; signIn?: boolean };
 
-// One line of the "Set By Power User Mode" readout.
-export type SettingsPresetSummaryLine = {
-  setting: string;
-  rowKey: string;
-  categoryId: string;
-  categoryLabel: string;
-  label: string;
-  value: string;
-  // Switching on recorded a baseline for it, so switching off can restore it.
-  restorable: boolean;
-  // Changed since the mode switched on, so switching off keeps it.
-  changed: boolean;
-  // Its row is offered in this dialog right now, so "Change" can go to it.
-  reachable: boolean;
-};
-
-export type SettingsPresetSummaryRow = SettingsRowBase & {
-  kind: 'presetSummary';
-  lines: readonly SettingsPresetSummaryLine[];
-};
-
 export type SettingsShortcutSection = {
   heading: string;
   rows: readonly { label: string; keys: readonly string[] }[];
@@ -127,7 +106,6 @@ export type SettingsRow =
   | SettingsToggleGroupRow
   | SettingsLinkRow
   | SettingsNoteRow
-  | SettingsPresetSummaryRow
   | SettingsShortcutListRow
   | SettingsCustomRow;
 

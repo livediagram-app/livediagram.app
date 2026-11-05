@@ -53,3 +53,43 @@ The ghost follows the cursor, offset by whatever the drag's **snap channel**
 and the drop all read, so the three can't disagree. The **alignment /
 distribution snap** publishes into it, latching the footprint onto its
 neighbours' edges and even spacing.
+
+## Placed pieces preview themselves
+
+Most of a Space's pieces are **placed, not sized**: a chair, a desk, a bar stool, a plant, an Avatar Pad, a
+Portal, a Door. They have a size of their own, so drawing a box for them asks a question nobody needs to answer.
+For these (`isPlacedShape` in `@livehuddle/document`: every fixed-size kind, the seating, every grid-drawn office piece but the Rug, the
+Avatar Pad, the Portal, the Door and the Focus Button), adding one previews **the piece itself**:
+
+- **While its tile is armed** (tapped, waiting for a click on the canvas) **or dragged from the palette**, the real
+  piece, drawn by the same art the canvas draws it with (`PieceArt`), follows the pointer over the canvas at its
+  default size and the current zoom, translucent, centred on the pointer, exactly where a click or a drop puts it.
+  A drag applies the drag's alignment snap, as the ghost does. A kind the art layer does not draw (a Portal, a mode
+  button) shows the dashed footprint and glyph instead.
+- **No box to draw.** A press-and-drag with a placed tile armed places the piece at its own size, centred where
+  the press began, and the draw-to-size outline never shows. A tap places it centred on the tap, as before. The
+  selection's size is not inherited (a placed piece has one size).
+- Over a panel or the strip, or off the canvas, the preview hides. It is `pointer-events-none`, listens to the
+  pointer only while a placed piece is being added, and moves at most once a frame.
+- The Door keeps its wall snap: its preview sits on the wall it would land on
+  ([Room Builder and Door](../009-elements/room-builder.md) "Door").
+- **Placed pieces are not resized.** Once on the canvas a placed piece shows no resize handles (rotation and moving
+  stay), keeps its size through a multi-selection's resize, and its element menu offers no size controls
+  (`isFixedSizeElement`). One resized before this rule keeps the size it was given.
+- **Sized pieces with art preview themselves too.** A Room, a Stage, Grass, a Garden Path, a Rug, a Fence, a Garden
+  Fence and a Pond (every kind `hasPieceArt` draws) are drawn to a size, but a tap or a drop still lands one at its
+  default size (`SHAPE_DEFAULT_SIZE`, a Room 480 x 320), centred on the pointer. So while one is armed, and while its
+  tile is dragged, the same translucent piece follows the pointer at that default size, exactly as a placed piece's
+  does, instead of a dashed footprint (or nothing at all, before the first press). The moment a press-and-drag starts
+  drawing a box, the preview steps aside and the draw-to-size box takes over, so the piece is never shown twice.
+  The Room is the exception: it draws no box at all (a press-and-drag drops it at its default size, like a placed
+  piece, and it is resized after: [Office](../009-elements/office.md) "Dropped, then sized"), so its preview stays.
+  (A Room's preview shows the doorway in its front wall where its Door lands: [Office](../009-elements/office.md) "Room".)
+- Sized kinds the art layer does not draw (text, stickies, a Lane, the generic shapes) keep the dashed footprint
+  while dragged and the draw-to-size box while armed.
+
+Implementation: `isPlacedShape` and `isFixedSizeElement` in `packages/document/src/placed-kinds.ts`;
+`components/canvas/collab/PlacementPreview.tsx` (generalised from the Door's preview),
+`components/canvas/PieceArt.tsx` (the piece art, shared with `BoxedElementView`); `previewsItself` in
+`PlacementPreview.tsx` says which kinds preview themselves (placed kinds and every kind with piece art), and
+`PaletteDragGhost` stands aside for them; `buildDrawnBoxed` places placed kinds as a tap.

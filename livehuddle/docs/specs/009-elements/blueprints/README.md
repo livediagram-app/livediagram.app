@@ -5,6 +5,8 @@ Follow the references below only as needed; never upfront.
 - ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note
 - ./chair.md - when implementing or changing the chair, desk or sofa, their facing, seating or the Stand press
 - ./office.md - when implementing or changing the office pieces: their drawings, a room's walls and doorway, footprints, the meeting table's seats, drinks and the held cup
+- ./screen-and-room-sign.md - when implementing or changing the Screen or the Room Sign: their rooms, the live store, the faces, the Video Link and the Meeting category
+- ./wayfinding.md - when implementing or changing the Directory or the Elevator: places, names, approach points, who is where, Walk There, Go, rides and re-entry
 - ./avatar-pad.md - when implementing or changing the Avatar Pad, its pixels, where Avatar mode starts or the arrival beam
 - ./fence.md - when implementing or changing the fence, its drawing or how it blocks Avatar-mode walking
 - ./checklist.md - when implementing or changing the checklist, its ticks, row editor or render
@@ -21,7 +23,6 @@ Follow the references below only as needed; never upfront.
 - ./portal-element.md - when implementing or changing portals, their links, names or travel
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu
 - ./rating.md - when implementing or changing the star rating, its animations or its picker
-- ./reaction-pad.md - when implementing or changing the reaction pad, its face, bursts or their broadcast
 - ./reveal-zone.md - when implementing or changing the reveal zone, its cover, private lift or room-wide reveal
 - ./rich-text-notes.md - when implementing or changing rich-text notes, the note popover or the block-type picker
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render
@@ -36,3 +37,4 @@ Follow the references below only as needed; never upfront.
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
 - ./timeline.md - when implementing or changing the Timeline, its rows, layout, export, Concept animations or how point fields become milestones
+- ./timer-and-stopwatch.md - when implementing or changing the Timer or Stopwatch piece, its delta, ticker, chime or export

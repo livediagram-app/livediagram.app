@@ -195,7 +195,7 @@ same wherever it is opened and to every collaborator ([Editor modes](../../007-e
   end pinned to it into `{ kind: 'free' }` at `endpointPosition(end, original)`, so the arrow does
   not move and never resolves a missing id to the origin. The arrow pass runs only when a stroke
   changed: O(elements) per changed sample.
-- Both: one `markCheckpoint` on the first change, locked elements and inert layers skipped.
+- Both: one `markCheckpoint` on the first change, locked elements skipped.
 - The Eraser panel's `config` is ignored on a whiteboard: `tapOnly` is false whenever `whiteboard`
   is set, so a Tap setting chosen on a diagram tab never stops a whiteboard sweep.
 
@@ -222,7 +222,7 @@ same wherever it is opened and to every collaborator ([Editor modes](../../007-e
      first and last runs join.
   5. Drop runs with fewer than 2 points or a length under 1 canvas px.
   6. Each run → `createFreehand(points, false, pressures?)` (a fresh packed block) with a fresh id, carrying `strokeColor`,
-     `strokeWidth`, `strokeStyle`, `penWidth`, `pen`, `streamline`, `layerId`, `opacity`,
+     `strokeWidth`, `strokeStyle`, `penWidth`, `pen`, `streamline`, `opacity`,
      `fillColor`, `locked` false, and its own interpolated pressures when the stroke had them. The longest run also carries `label`, `link`, `note`, `commentThread` and `action` (D3).
 
 ### Pen versus touch
@@ -253,7 +253,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
   (`apps/editor/lib/quick-style-whiteboard.ts`): slot 0 of stroke and text shows the board ink, slot 0
   of background shows `transparent`, and an unfilled shape reads as background slot 0. Edits and
   Clear Styles skip `memory.recordEdit` / `memory.forget`.
-- Marker rows (`apps/editor/lib/quick-style-pen.ts`, `QuickPenRows.tsx`), titled **Marker colour** and
+- Marker rows (`apps/editor/lib/quick-style-pen.ts`, QuickPenRows.tsx), titled **Marker colour** and
   **Marker width**, quick choices first, then More colours (`QuickMoreColours`, the full colour
   picker, `docs/specs/004-interface-design/colour-picker.md`): `view.pen` is
   `strokesPenStyle(selected, palette)` (pen strokes: `freehand` with `penWidth`, not a highlight,
@@ -275,7 +275,7 @@ Gated on `drawMode` (the `editorMode` prop on `Canvas`, `useWhiteboard().whitebo
     `penColour`). For the held pen Ink is `colour: null`.
     `setPenColour` / `setPenWidth` commit `applyPenStyle` over the strokes (`Element·Changed·QuickStroke`
     / `QuickStrokeWidth`), or call `updatePen` for the held pen (its own `Draw·Changed` tokens). Clear Styles shows only when `targetIds` is non-empty. `QuickPenRows`
-    shows `subject.name` as a caption unless `QuickStylePanel` has `powerUser` (from `isPowerUserMode`).
+    shows `subject.name` as a caption.
     Choosing the held pen's current value is a no-op.
 
 ### Marker colours
@@ -355,7 +355,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   `useQuickStyle({ toolIntent: pendingDraw })`: on a whiteboard with nothing selected, the view is
   `quickStyleView([styleNewElement(phantom)])` through `onWhiteboard`, with `caption`; a choice runs
   `memory.recordEdit([phantom], [applied])` and bumps a version; Clear Styles forgets `board:<kind>`.
-- The panel shows `view.caption ?? view.pen.subject.name` above the rows unless `powerUser`.
+- The panel shows `view.caption ?? view.pen.subject.name` above the rows.
 - `useStyleMemory` returns `scope` (`<documentId>:board` or `<documentId>:diagram`); `useQuickStyle`'s
   phantom memo keys on it, so a document or editor mode switch with a tool still in hand re-dresses the
   phantom from the memory in front of the user.
@@ -405,7 +405,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
     line lies within `r + halfWidth` of the segment, or `a` or `b` lies in a fill region. Skipped
     early beyond `OUTLINE_REACH_FACTOR` half diagonals of the centre.
 - `useCanvasSurfaceGestures.onPointerDownCapture` returns first for a press inside
-  `[data-floating-panel]` or `[data-zoom-cluster]` (the bottom-right cluster: Undo / Redo, Layers,
+  `[data-floating-panel]` or `[data-zoom-cluster]` (the bottom-right cluster: Undo / Redo,
   Theme & Canvas, Zoom), before the pen-seen pan, the path, spotlight, avatar, eraser and draw
   intercepts (`inCornerCluster`). The cluster's buttons stop propagation only in the bubble phase,
   after this capture handler; without the guard a held pen inked a dot under Undo and the click
@@ -428,8 +428,8 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
   `useWhiteboardPenCursor(pendingDraw, variant, zoom)` (strokePx = pen width x zoom) feeding the Canvas cursor style.
 - A double-click on the bare board (`useCanvasSurfaceGestures.onWrapperDoubleClick`, the target the
   wrapper itself) goes through `routeBoardDoubleClick` (`lib/whiteboard-edit-target.ts`): with
-  `editorMode === 'draw'`, `shapeToEditAt(paint order, point, layerInertIds)` walks the elements
-  of `layerBands(elements, tabLayers)` (hidden layers out) from the top and returns the first
+  `editorMode === 'draw'`, `shapeToEditAt(elements, point)` walks the elements
+  in paint order from the top and returns the first
   `pickedByOutline` shape that is not `locked`, not inert, `opensInlineLabelEditor(kind)`, and
   `pointInsideOutline(el, point, 0)` (its anchor outline, rotation undone); found, it logs
   `[whiteboard] double-click inside <kind> edits it` and calls `onBeginEdit(id)` (which selects
@@ -542,7 +542,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
 - `CanvasElementsLayer` renders `DrawnArrowPreview` while `drawDrag` is set and the intent is an
   arrow: after every element and before the remote cursors (where the commit appends it), in canvas
   coordinates. It is `ArrowView` with `isSelected` (the arrow lands selected, so its stroke is the
-  width plus 0.5 over the brand halo), `readOnly` (no grips), no label, the layer's `elementIndex`
+  width plus 0.5 over the brand halo), `readOnly` (no grips), no label, the canvas's `elementIndex`
   (an empty map on a board with no arrow), `drawnElements` as occluders, and the shared
   `ArrowDefs` of its own when `hasArrows` is false. `[&_*]:!pointer-events-none` keeps its hit band
   from taking the pointer or its cursor.
@@ -972,8 +972,8 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Commit records a name or a hex                                                                | `apps/editor/hooks/canvas/commit-freehand.test.ts`                                                                     |
 | Picker: standard row by name, Ink as null, custom in force, reserved warning                  | `components/canvas/whiteboard/ColourPicker.test.tsx`, `../packages/workbench/src/lib/hsv.test.ts`                      |
 | Marker glyph and cursor in the resolved colour, ink included                                  | `WhiteboardDock.test.tsx`, `useWhiteboardPenCursor.test.tsx`                                                           |
-| Marker rows: nine stock colours, More colours, the tab's customs, Marker 1                    | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, `QuickStylePanel.test.tsx`                                        |
-| Swatch rows one line, never clipped, both engines                                             | `e2e/quick-style-swatch-rows.spec.ts`                                                                                  |
+| Marker rows: nine stock colours, More colours, the tab's customs, Marker 1                    | `quick-style-pen.test.ts`, `useQuickStyle.test.tsx`, QuickStylePanel.test.tsx                                          |
+| Swatch rows one line, never clipped, both engines                                             | e2e/quick-style-swatch-rows.spec.ts                                                                                    |
 | Settled ink unchanged as samples arrive (no trim)                                             | `packages/document/src/pen-stroke.test.ts`                                                                             |
 | Freehand box on whole canvas px, points round-trip                                            | `packages/document/src/freehand.test.ts`                                                                               |
 | Pen stroke svg in canvas coordinates                                                          | `apps/editor/components/canvas/freehand-svg.test.tsx`                                                                  |
@@ -1012,7 +1012,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pen versus touch on the canvas                                                                | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                                                |
 | A pinch discards a whiteboard stroke                                                          | `apps/editor/components/canvas/useCanvasDrawGesture.whiteboard.test.tsx`                                               |
 | Line / arrow heads, no colour                                                                 | `apps/editor/lib/draw-commit.test.ts`                                                                                  |
-| No theme step for a whiteboard                                                                | `apps/editor/components/palette/NewDocumentWizard.test.tsx`                                                            |
+| No theme step for a whiteboard                                                                | (removed with the `/new` welcome screen)                                                                               |
 | Sticky and text open for typing                                                               | `apps/editor/lib/draw-mode.test.ts`                                                                                    |
 | Telemetry vocabulary and dashboard                                                            | `apps/editor/lib/telemetry-coverage.test.ts`, liveworkspace/apps/site/app/telemetry/livehuddle/metric-emitters.test.ts |
 | End to end                                                                                    | playwright-cli walkthrough, light / dark, desktop / narrow                                                             |

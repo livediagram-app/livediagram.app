@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { shareDocumentShape } from '../mcp/schema';
 import { MCP_TOOL_VERBS, mcpShareDocument } from './mcp-tools';
 
 // The MCP's tools as verbs (docs/specs/015-api/cli.md "One catalogue for the CLI and the MCP"). The MCP's own
@@ -57,5 +58,15 @@ describe('share_document', () => {
   it('names the default level the api applies', () => {
     expect(mcpShareDocument.description).toContain('"participate" (the default');
     expect(mcpShareDocument.description).not.toMatch(/"view" \([^)]*default/);
+  });
+
+  // docs/specs/013-workspace/share-roles.md "What a new share offers": no new Viewer link.
+  it('offers Participant and Editor only', () => {
+    expect(mcpShareDocument.description).not.toContain('"view"');
+    const role = shareDocumentShape.role;
+    expect(role.safeParse('participate').success).toBe(true);
+    expect(role.safeParse('edit').success).toBe(true);
+    expect(role.safeParse(undefined).success).toBe(true);
+    expect(role.safeParse('view').success).toBe(false);
   });
 });

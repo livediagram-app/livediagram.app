@@ -1,6 +1,6 @@
 // Meeting-element illustrations (docs/specs/018-help/help-app.md, drawing docs/specs/009-elements/mode-button.md and
-// docs/specs/009-elements/reaction-pad.md): the meeting palette's Navigate, React and Selection Mode categories, plus
-// one scene per element that does something when somebody presses it: Selection Mode buttons and Reaction Pads.
+// docs/specs/002-project-scope/not-in-livehuddle.md): the meeting palette's Space categories, plus one scene per
+// element that does something when somebody presses it: the Avatar Selection Mode button.
 //
 // One scene per sub-article, so each small article can show the surface it
 // describes with the real labels the editor prints on it. Composed from the
@@ -43,10 +43,6 @@ function Chip({
 
 const glyph = { className: 'stroke-brand-600', strokeWidth: 1.8, fill: 'none' } as const;
 
-/** A pointer arrow, the Select mode glyph. */
-function SelectGlyph() {
-  return <path d="M-5 -7 L5 2 L0 2.6 L3 8 L0.6 9 L-2 3.6 L-5.4 6.6 Z" className="fill-brand-600" />;
-}
 /** A 24-unit editor glyph, scaled down onto a chip. */
 function Lucide({ children }: { children: ReactNode }) {
   return (
@@ -62,37 +58,41 @@ function Lucide({ children }: { children: ReactNode }) {
     </g>
   );
 }
-/** A smile, the React group glyph. */
-function SmileGlyph() {
+/** An armchair, the Seating glyph. */
+function ArmchairGlyph() {
   return (
     <Lucide>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />
+      <path d="M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3" />
+      <path d="M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z" />
+      <path d="M5 18v2M19 18v2" />
     </Lucide>
   );
 }
-/** An arrow through a doorway, the Navigate group glyph. */
+/** A floor plan of panels, the Rooms glyph. */
+function PanelsGlyph() {
+  return (
+    <Lucide>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M9 21V9" />
+    </Lucide>
+  );
+}
+/** A coffee cup, the Amenities glyph. */
+function CoffeeGlyph() {
+  return (
+    <Lucide>
+      <path d="M10 2v2M14 2v2M6 2v2" />
+      <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1" />
+    </Lucide>
+  );
+}
+/** An arrow through a doorway, the Travel glyph. */
 function DoorGlyph() {
   return (
     <Lucide>
       <path d="M4 20V6.5a1 1 0 0 1 .8-1l7-1.4a1 1 0 0 1 1.2 1V20" />
       <path d="M2.6 20h12.8M17 9.5h4.4M19.2 7.3l2.2 2.2-2.2 2.2" />
     </Lucide>
-  );
-}
-/** A laser dot with a trail. */
-function LaserGlyph() {
-  return (
-    <g>
-      <path
-        d="M-7 6 Q-1 1 4 -4"
-        className="stroke-brand-400"
-        strokeWidth={2}
-        fill="none"
-        strokeLinecap="round"
-      />
-      <circle cx={5} cy={-5} r={3} className="fill-rose-500" />
-    </g>
   );
 }
 /** A little walking character, the Avatar mode glyph. */
@@ -107,22 +107,23 @@ function AvatarGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The meeting palette's Meet band on the strip: **Navigate**, **React** and **Selection Mode**, one of them open
- *  (the first named in `lit`, else Navigate) with its elements in the flyout under it. */
+/** The meeting palette's Meet band on the strip: **Travel**, **Seating**, **Rooms** and **Amenities**,
+ *  one of them open (the first named in `lit`, else Travel) with its elements in the flyout under it. */
 export function MeetingCategories({ lit = [] }: { lit?: readonly string[] }) {
   const categories: { label: string; icon: ReactNode; x: number; w: number }[] = [
-    { label: 'Navigate', icon: <DoorGlyph />, x: 92, w: 82 },
-    { label: 'React', icon: <SmileGlyph />, x: 178, w: 66 },
-    { label: 'Selection Mode', icon: <SelectGlyph />, x: 248, w: 112 },
+    { label: 'Travel', icon: <DoorGlyph />, x: 22, w: 66 },
+    { label: 'Seating', icon: <ArmchairGlyph />, x: 92, w: 72 },
+    { label: 'Rooms', icon: <PanelsGlyph />, x: 168, w: 66 },
+    { label: 'Amenities', icon: <CoffeeGlyph />, x: 238, w: 84 },
   ];
   const open = categories.find((c) => lit.includes(c.label)) ?? categories[0]!;
   return (
     <Scene w={420} h={236} bg="plain">
       {/* The Meet band of the strip, the open category pressed. */}
       <rect
-        x={86}
+        x={16}
         y={10}
-        width={280}
+        width={312}
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
@@ -188,14 +189,13 @@ export function MeetingCategories({ lit = [] }: { lit?: readonly string[] }) {
   );
 }
 
-/** A control bar of Selection Mode buttons across the top of a canvas: two
- *  offering a mode, one offering the way back out. */
+/** An Avatar button before and after it is pressed: it offers Avatar mode, then the way back out of it
+ *  (docs/specs/009-elements/mode-button.md "Only Avatar"). */
 export function ModeButtonBar() {
   // The face: the icon chip that is the button, a small capitalised kicker,
   // then the mode in bold. A button for the mode you are in says LEAVE.
   const buttons: { kicker: string; mode: string; icon: ReactNode }[] = [
-    { kicker: 'SWITCH TO', mode: 'Select', icon: <SelectGlyph /> },
-    { kicker: 'SWITCH TO', mode: 'Laser', icon: <LaserGlyph /> },
+    { kicker: 'SWITCH TO', mode: 'Avatar', icon: <AvatarGlyph /> },
     { kicker: 'LEAVE', mode: 'Avatar', icon: <AvatarGlyph /> },
   ];
   return (
@@ -203,7 +203,7 @@ export function ModeButtonBar() {
       {buttons.map((b, i) => {
         const bx = 26 + i * 126;
         return (
-          <g key={b.mode}>
+          <g key={b.kicker}>
             <rect
               x={bx}
               y={20}
@@ -235,167 +235,6 @@ export function ModeButtonBar() {
         everyone else stays where they were
       </Label>
       <Cursor x={216} y={44} name="You" />
-    </Scene>
-  );
-}
-
-/** The five Reaction pads, with a burst going off over one of them. */
-const PAD_LEFT = 9;
-const PAD_GAP = 10;
-const pillWidth = (label: string) => label.length * 6 + 16;
-
-export function ReactionPads() {
-  const pads: { label: string; icon: ReactNode }[] = [
-    {
-      label: 'Celebrate',
-      icon: (
-        <g>
-          <rect
-            x={-9}
-            y={-8}
-            width={5}
-            height={7}
-            rx={1}
-            className="fill-rose-400"
-            transform="rotate(-18)"
-          />
-          <rect
-            x={-1}
-            y={-9}
-            width={5}
-            height={7}
-            rx={1}
-            className="fill-amber-400"
-            transform="rotate(12)"
-          />
-          <rect
-            x={5}
-            y={-2}
-            width={5}
-            height={7}
-            rx={1}
-            className="fill-emerald-400"
-            transform="rotate(28)"
-          />
-          <rect
-            x={-6}
-            y={2}
-            width={5}
-            height={7}
-            rx={1}
-            className="fill-violet-400"
-            transform="rotate(-6)"
-          />
-        </g>
-      ),
-    },
-    {
-      label: 'Nice one',
-      icon: (
-        <g className="fill-amber-400">
-          <path d="M-3 -9 L-1 -3 L5 -1 L-1 1 L-3 7 L-5 1 L-11 -1 L-5 -3 Z" />
-          <path d="M7 -8 L8 -5 L11 -4 L8 -3 L7 0 L6 -3 L3 -4 L6 -5 Z" />
-        </g>
-      ),
-    },
-    {
-      label: 'Show some love',
-      icon: (
-        <path
-          d="M0 8 C-9 1 -11 -3 -8.5 -6 C-6 -9 -1.5 -7.5 0 -4 C1.5 -7.5 6 -9 8.5 -6 C11 -3 9 1 0 8 Z"
-          className="fill-violet-500"
-        />
-      ),
-    },
-    {
-      label: 'Thanks',
-      icon: (
-        <g>
-          <path
-            d="M-6 8 L-9 -1 a2.4 2.4 0 0 1 3.6 -2.4 L-4 0 L-4.6 -7 a2.4 2.4 0 0 1 4.6 -0.8 L1 0 L2.4 -5.6 a2.4 2.4 0 0 1 4.4 1.4 L6 6 Z"
-            className="fill-amber-400 stroke-amber-500"
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-          />
-          <path
-            d="M-11 -8 L-9 -6 M9 -8 L7 -6"
-            className="stroke-amber-500"
-            strokeWidth={1.6}
-            strokeLinecap="round"
-          />
-        </g>
-      ),
-    },
-    {
-      label: 'It shipped',
-      icon: (
-        <g className="stroke-violet-500" strokeWidth={1.8} strokeLinecap="round">
-          <path d="M0 -9 V-4 M0 4 V9 M-9 0 H-4 M4 0 H9 M-6.4 -6.4 L-3.2 -3.2 M6.4 -6.4 L3.2 -3.2 M-6.4 6.4 L-3.2 3.2 M6.4 6.4 L3.2 3.2" />
-          <circle r={2} className="fill-violet-500 stroke-none" />
-        </g>
-      ),
-    },
-  ];
-  // Each pill sized to its own label, so the longest never runs into its neighbours.
-  const centres = pads.map(
-    (_, i) =>
-      pads.slice(0, i).reduce((x, q) => x + pillWidth(q.label) + PAD_GAP, PAD_LEFT) +
-      pillWidth(pads[i]!.label) / 2,
-  );
-  const lit = 2;
-  return (
-    <Scene w={420} h={200}>
-      {/* The burst: the lit pad's own emoji thrown up over it, saved nowhere. */}
-      {(
-        [
-          [-34, 66, 0.7, -18],
-          [-14, 44, 0.9, -8],
-          [10, 36, 1, 10],
-          [30, 58, 0.75, 20],
-          [-2, 70, 0.6, 4],
-        ] as const
-      ).map(([dx, y, k, turn]) => (
-        <path
-          key={`${dx}-${y}`}
-          d="M0 8 C-9 1 -11 -3 -8.5 -6 C-6 -9 -1.5 -7.5 0 -4 C1.5 -7.5 6 -9 8.5 -6 C11 -3 9 1 0 8 Z"
-          transform={`translate(${centres[lit]! + dx} ${y}) rotate(${turn}) scale(${k})`}
-          className="fill-violet-400"
-          fillOpacity={0.85}
-        />
-      ))}
-      {pads.map((p, i) => {
-        // Each pad: the emoji over a glowing spot to stand on, its caption in a pill below.
-        const w = pillWidth(p.label);
-        const cx = centres[i]!;
-        const on = i === lit;
-        return (
-          <g key={p.label}>
-            <ellipse
-              cx={cx}
-              cy={122}
-              rx={28}
-              ry={9}
-              className={on ? 'fill-brand-200' : 'fill-brand-100'}
-            />
-            <g transform={`translate(${cx} 100)`}>{p.icon}</g>
-            <rect
-              x={cx - w / 2}
-              y={134}
-              width={w}
-              height={16}
-              rx={8}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1}
-            />
-            <Label x={cx} y={143} anchor="middle" size={10} weight={600} tone="body">
-              {p.label}
-            </Label>
-          </g>
-        );
-      })}
-      <Label x={210} y={176} anchor="middle" size={11} tone="muted">
-        Press a pad, or walk a character onto it in Avatar mode.
-      </Label>
     </Scene>
   );
 }

@@ -13,15 +13,15 @@ flyout of its tiles:
  ☰       ┌───────────────────────────────────────────────────────────────┐
  │        │ [↖ ▾] │ Shapes Write Draw │ Layout │ Ask Session │ Icons … │ [🔍] │
  ▼        └───────────────────────────────────────────────────────────────┘
- Explorer            (Undo/Redo, Layers, zoom: the bottom-right cluster)
+ Explorer            (Undo/Redo, zoom: the bottom-right cluster)
 ```
 
 - **Top left, before the strip: the menu button**, then the tab's name, in one card. There is no mode switch
   ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
   workbench frame, which has no Explorer button, the card holds **Back** instead
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
-- **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+- **Left: the selection mode.** The canvas-tool picker, in three named bands: **Build** (Select, Hand), **Edit** (Eraser, Format)
+  and **Interact** (Avatar) ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then the category bar** ("The category bar").
 - **Far right: Search** (a magnifier), on every strip (see "Search: every element type").
@@ -29,8 +29,10 @@ flyout of its tiles:
 ## The category bar
 
 > **In livehuddle** (Work Tracker #423, part 3): the bar is the meeting palette's
-> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write, Frame · Navigate, React, Modes ·
-> Icons, Stickers, Media**. There is no Shapes, Draw, Layout, Ask, Session or Data button and no Session browse; the
+> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write | Rooms, Seating, Amenities, Bar,
+> Recreation, Garden, Meeting | Travel | Stickers** ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)).
+> There is no Icons button ([Icons](../002-project-scope/not-in-livehuddle.md#icons)), so the two-pane browse below
+> serves Stickers alone. There is no Shapes, Draw, Layout, Ask, Session or Data button and no Session browse; the
 > bar's mechanics below (hover intent, the keyboard, the flyouts, names fit or go) are livehuddle's as written, and
 > the categories they name are livediagram's.
 
@@ -119,8 +121,6 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Layout and Parts`; `Charts`, `Meters
   fixed height** whatever it says, room for the name and two lines of description (`FLYOUT_FOOTER_HEIGHT`, 69 px),
   a longer description clamped to two lines: a footer that grew and shrank with each tile moved the flyout's edge
   under the pointer as it travelled.
-- Under Minimal Chrome ([Power user mode](power-user-mode.md)) a picture tile shows its icon alone, named by a
-  Tooltip; a card keeps its name, which is its content.
 - Every tile places, arms, drags onto the canvas (with the canvas ghost), shows its armed and refused states and
   draws in the tab theme's tint and finish, as the strip's own tile does (`useTileGlyph`, shared with `IconButton`).
 - **Widths:** 26rem for a picture grid, 36rem for two columns of cards, 19rem for one, 37.5rem for a catalogue's
@@ -290,7 +290,7 @@ dividers between them, so a divider costs a tile only when the strip's spare par
 it (a 430px phone shows four of Popular and the divider after the diamond, not three).
 
 The chosen category lasts the page load: the strip is hidden rather than
-unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
+unmounted while the welcome flow hides the chrome. Nothing is stored,
 so a new page load starts on the palette's landing.
 
 ## The tab's name
@@ -314,12 +314,12 @@ couldn't load, not found) have no menu button and no Explorer. The popover hangs
 button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover card: it
 got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
-Layers and Collaborate open as **popovers over their bottom-row
-buttons** ([Editor app](editor-app.md)): they are not corner panels. Every
-other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corner
-([Panel docking](panel-docking.md)). Layers and Collaborate render outside
+Collaborate opens as a **popover over its bottom-row
+button** ([Editor app](editor-app.md)): it is not a corner panel. Every
+other panel (AI, the minimap, Poll and the tool panels) docks in its corner
+([Panel docking](panel-docking.md)). Collaborate renders outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
-A popover opening up from a bottom-row button (Layers, the Vote, the Poll) grows no higher than 8 px under a
+A popover opening up from a bottom-row button (the Timer, the Poll) grows no higher than 8 px under a
 toolbar across the canvas's top whose span meets its column, the strip (`usePopoverTopClearance`), and
 12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
 header hidden.
@@ -330,8 +330,8 @@ The strip's menus (selection mode, category, More, Search) and the Explorer popo
 are menus: opening one closes whichever other is open, and a press anywhere
 outside closes it. The strip stops `pointerdown` from reaching the canvas, so
 their outside-press listeners run in the capture phase, before that. The
-Explorer popover gets the same (`dismissOnOutside`), and so do the Layers and
-Collaborate popovers ([Editor app](editor-app.md)). The strip's dropdown menus are kept
+Explorer popover gets the same (`dismissOnOutside`), and so does the
+Collaborate popover ([Editor app](editor-app.md)). The strip's dropdown menus are kept
 on screen sideways as well as vertically, whatever the trigger's position.
 
 ## One layout
@@ -341,7 +341,7 @@ There is no layout choice: one layout, the strip, so every feature is built and 
 - There is no `panelLayout` preference ([User preferences](user-preferences.md)). A stored value
   (`'floating'`, `'toolbar'`, `'minimal'`) is ignored and left as it is.
 - Settings has no Panel Layout row, and no tour a layout picker.
-- The Palette, the Explorer and Layers are not corner panels, so a stored panel placement that names them is ignored
+- The Palette and the Explorer are not corner panels, so a stored panel placement that names them is ignored
   ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
   types, so the history still reads ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
@@ -354,8 +354,8 @@ A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one he
 that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
 popover hanging below its button is capped to the canvas below it and scrolls, as one above its
 button always was. It gets the same chrome as a desktop ([Editor app](editor-app.md)):
-panels in their corners, Layers and Collaborate as popovers over
-their bottom-row buttons. What changes to fit the width:
+panels in their corners, Collaborate as a popover over
+its bottom-row button. What changes to fit the width:
 
 - **The menu button gets its own card, left of the strip,** with no tab name.
   The card sits at the left gutter and the strip follows it 8px to the right,
@@ -377,7 +377,7 @@ their bottom-row buttons. What changes to fit the width:
 - **The top corner stacks start below the strip** (68px down rather than
   the 16px inset), since the strip spans the width. A panel docked top-right,
   such as the Collaborate banner, otherwise rendered underneath the strip
-  where it could not be reached. Without a strip (read-only, zen, the welcome
+  where it could not be reached. Without a strip (read-only, the welcome
   flow) the corners keep their inset.
 - Read-only visitors have no strip, so their menu button stays top-left.
 - **Held sideways there is no menu button and no Explorer**, in the strip's row or the corner,
@@ -390,7 +390,7 @@ their bottom-row buttons. What changes to fit the width:
 ## Layout details
 
 - The strip sits at `top-3`, centred, at `z-toolbar`. The top-centre stack
-  (follow-me pill, timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
+  (follow-me pill, timer, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
 - **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
   mode banners: a tile in hand, "Select the board column you want this card to appear in"; the Format tool and
@@ -413,11 +413,10 @@ their bottom-row buttons. What changes to fit the width:
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
   - While one of the strip's popovers is open (a category's flyout, More, a catalogue group, Search) the tray steps aside, as it does
     for the Explorer: it would cover the popover's top.
-  - Without a strip (zen, read-only, the welcome flow) the messages stay the
+  - Without a strip (read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
-- Zen hides the strip and the menu button along with the rest of the chrome.
 
 ## Motion
 
@@ -448,9 +447,8 @@ their bottom-row buttons. What changes to fit the width:
   - Thirteen-pixel glyphs (the Behaviour and mode icons) centred on a half
     pixel in an even tile. They are 14px.
     Separately, the corner panels were permanently promoted to their own
-    compositing layer (a fix for isometric flicker), which costs sub-pixel text
-    anti-aliasing on a 1x display. The promotion is now gated on an isometric
-    scene being on the page. Tile captions went from 9px to 10px.
+    compositing layer, which costs sub-pixel text anti-aliasing on a 1x display.
+    The promotion is gone. Tile captions went from 9px to 10px.
 
 - The dropdown-style controls (selection mode, category, More) sit on a
   faint tint so
@@ -475,7 +473,7 @@ their bottom-row buttons. What changes to fit the width:
   (`useStripCrowdsCorners`, re-checked as panels dock and the window
   resizes), the top corner stacks start below the strip, 68px down, exactly
   as they always do on a phone. Otherwise they keep their inset. Without it
-  a docked panel (the Laser panel, say) sat under the strip's right end and
+  a docked panel (the Eraser panel, say) sat under the strip's right end and
   could not be reached.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right
@@ -488,9 +486,9 @@ their bottom-row buttons. What changes to fit the width:
   switch.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
-- **The other panels dock in their corners** ([Panel docking](panel-docking.md)). Layers
-  and Collaborate are the exception, popovers over their bottom-row
-  buttons.
+- **The other panels dock in their corners** ([Panel docking](panel-docking.md)). Collaborate
+  is the exception, a popover over its bottom-row
+  button.
 
 ## Help
 

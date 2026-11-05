@@ -1,9 +1,9 @@
-// Side by side tabs (docs/specs/007-editor/split-view.md, docs/specs/018-help/help-app.md): a tab pill
+// Side by side tabs (docs/specs/007-editor/split-view.md, docs/specs/018-help/help-app.md): a tab
 // dragged to the right edge with the drop ghost showing, and the open split, one header and one tab
 // bar across both panes, the editor's chrome in the pane being edited and the seam's two buttons.
 // Composed only from the shared primitives so the house style holds.
 
-import { Arrow, Cursor, Label, Scene, Shape } from '../primitives';
+import { Arrow, BarTab, Cursor, Label, Scene, Shape } from '../primitives';
 
 const W = 440;
 const H = 230;
@@ -22,7 +22,7 @@ function Header({ title }: { title: string }) {
   );
 }
 
-/** The tab bar, across the whole window, with its pills. `beside` marks the tab in the other pane. */
+/** The tab bar, across the whole window, with its tabs. `beside` marks the tab in the other pane. */
 function Footer({
   tabs,
 }: {
@@ -33,34 +33,17 @@ function Footer({
     <g>
       <rect x={0} y={y} width={W} height={FOOTER} className="fill-slate-50 stroke-slate-200" />
       {tabs.map((t) => (
-        <g key={t.label}>
-          <rect
-            x={t.x}
-            y={y + 5}
-            width={t.w}
-            height={16}
-            rx={5}
-            className={
-              t.active
-                ? 'fill-white stroke-brand-400'
-                : t.beside
-                  ? 'fill-slate-100 stroke-brand-400'
-                  : 'fill-slate-100 stroke-transparent'
-            }
-            strokeWidth={1.2}
-            strokeDasharray={t.beside ? '3 2' : undefined}
-          />
-          <Label
-            x={t.x + t.w / 2}
-            y={y + 16}
-            size={8.5}
-            weight={600}
-            tone={t.active ? 'accent' : 'muted'}
-            anchor="middle"
-          >
-            {t.label}
-          </Label>
-        </g>
+        <BarTab
+          key={t.label}
+          x={t.x}
+          y={y + 4}
+          w={t.w}
+          h={FOOTER - 4}
+          label={t.label}
+          active={t.active}
+          beside={t.beside}
+          size={8.5}
+        />
       ))}
     </g>
   );
@@ -103,7 +86,7 @@ function ChromeTopRow({ x, y, right }: { x: number; y: number; right: number }) 
   );
 }
 
-/** Dragging a tab pill toward the right edge: the drop zone's ghost shows the pane it will open. */
+/** Dragging a tab toward the right edge: the drop zone's ghost shows the pane it will open. */
 export function SideBySideDrag() {
   const ghostX = W * 0.52;
   return (
@@ -151,7 +134,7 @@ export function SideBySideDrag() {
           { label: 'Timeline', x: 64, w: 60 },
         ]}
       />
-      {/* The pill on its way, under the pointer. */}
+      {/* The tab on its way, under the pointer. */}
       <Arrow
         from={[96, H - FOOTER - 8]}
         to={[ghostX + 96, 140]}

@@ -132,7 +132,7 @@ describe('searchArticles', () => {
     // "transparency" appears in no title or description; keywords carry it to
     // both opacity articles.
     const slugs = searchArticles('transparency').map((a) => a.slug);
-    expect(slugs).toContain('layer-order');
+    expect(slugs).toContain('colours-borders-opacity');
     expect(slugs).toContain('panel-opacity');
     // "hotkey" -> the keyboard-shortcuts article.
     expect(searchArticles('hotkey').map((a) => a.slug)).toContain('keyboard-shortcuts');

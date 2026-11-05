@@ -6,13 +6,13 @@ import { AutoAlignGrid } from '@/components/illustrations/tools';
 export const metadata = helpMetadata({
   title: 'Auto-Align',
   description:
-    "Snap every element's position and size onto a tidy grid so near-aligned notes, frames and pictures line up exactly and drift disappears.",
+    "Snap every element's position and size onto a tidy grid so near-aligned notes and pictures line up exactly and drift disappears.",
   path: '/help/tools/layout-cleanup/auto-align/',
 });
 
-<ArticleLayout title="Auto-Align" description="A quick grid snap for when notes and frames are nearly lined up but a few pixels off." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-align")}>
+<ArticleLayout title="Auto-Align" description="A quick grid snap for when notes and pictures are nearly lined up but a few pixels off." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-align")}>
 
-Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px grid and lines elements up on the grid by the edges and centres they already (nearly) share, so sticky notes, frames and pictures that were almost aligned become exactly aligned and tiny drift collapses, while what was already lined up stays lined up. The use case is "these things are a few pixels off", not "this board has no layout".
+Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px grid and lines elements up on the grid by the edges and centres they already (nearly) share, so sticky notes and pictures that were almost aligned become exactly aligned and tiny drift collapses, while what was already lined up stays lined up. The use case is "these things are a few pixels off", not "this board has no layout".
 
 <Figure caption="Elements that sit a few pixels off the grid snap onto the nearest grid lines.">
   <AutoAlignGrid />
@@ -23,10 +23,10 @@ Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px
 - It **keeps what is lined up, lined up.** Elements whose centres or edges sit within a few pixels of each other snap onto one shared grid line, so a column of notes of different widths stays centred.
 - It **keeps even spacing even.** Rows of notes that were an equal step apart stay an equal step apart.
 - It **never moves anything far**: an element moves at most the few pixels to the line it already nearly shares, so a note that was roughly in place stays roughly in place, only neater.
-- It **never makes things worse.** A snap that would make two elements overlap, or nudge one part-way out of the frame it sits in, is skipped for both.
+- It **never makes things worse.** A snap that would make two elements overlap is skipped for both.
 - It works on **every element on the active tab**, not just a selection.
-- **Locked elements stay put.** A [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), is not snapped.
-- **Elements keep their proportions.** A square note stays square and a wide frame stays wide. An element whose aspect ratio you locked keeps its ratio.
+- **Locked elements stay put.** A [locked element](/help/canvas/locking/) is not snapped.
+- **Elements keep their proportions.** A square note stays square and a wide picture stays wide. An element whose aspect ratio you locked keeps its ratio.
 - **Running it again changes nothing.** Once a tab is tidy, the **Tidy Up** panel shows Auto-align greyed out with "Already tidy".
 
 ## Running it
@@ -48,7 +48,7 @@ If the result isn't what you wanted, one undo (⌘Z / Ctrl+Z) restores the previ
 
 ## When to use it
 
-Reach for Auto-Align when the board already looks right and you just want it crisp: rows of notes that should share a baseline, frames that should share an edge, pictures that should be the same size. It tidies what is there; it never invents a layout, so a board that needs one is still yours to arrange.
+Reach for Auto-Align when the board already looks right and you just want it crisp: rows of notes that should share a baseline, rooms that should share an edge, pictures that should be the same size. It tidies what is there; it never invents a layout, so a board that needs one is still yours to arrange.
 
 <Tip>
   Auto-Align is safe to run often. Since running it again changes nothing and it never moves

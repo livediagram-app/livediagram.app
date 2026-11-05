@@ -383,8 +383,36 @@ describe('agents and CSV', () => {
     });
   });
 
-  it('refuses an empty list, too many, a value of the wrong shape and an unknown card', () => {
-    expect(resolveFields({ Reviewers: ' , ' }, story, naming)).toMatchObject({ ok: false });
+  // docs/specs/026-plan/plan-agents.md "Clearing a field": [], null and "" clear a field that holds several.
+  it('clears a Person, Card or Multiple Choice field given [], null or ""', () => {
+    const tagged: ItemTypeDef = {
+      ...story,
+      fields: [...story.fields, 'f-areas'],
+      custom: [
+        ...story.custom!,
+        { id: 'f-areas', label: 'Areas', kind: 'multichoice', options: ['Design', 'Copy'] },
+      ],
+    };
+    for (const blank of [[], null, undefined, '', ' , ', ['', null, ' ']])
+      expect(
+        resolveFields(
+          { Reviewers: blank, 'f-related': blank, Areas: blank, Owner: 'Sam' },
+          tagged,
+          naming,
+        ),
+      ).toEqual({
+        ok: true,
+        fields: { 'f-owner': SAM },
+        clear: ['f-reviewers', 'f-related', 'f-areas'],
+      });
+    // A field that holds one keeps what it did: null is given to the write as it is.
+    expect(resolveFields({ Epic: null }, tagged, naming)).toEqual({
+      ok: true,
+      fields: { 'f-epic': null },
+    });
+  });
+
+  it('refuses too many, a value of the wrong shape and an unknown card', () => {
     const crowd = Array.from({ length: FIELD_VALUES_MAX + 1 }, (_, i) => `P${i}`).join(',');
     expect(resolveFields({ Reviewers: crowd }, story, naming)).toMatchObject({ ok: false });
     expect(resolveFields({ Reviewers: [5] }, story, naming)).toMatchObject({ ok: false });

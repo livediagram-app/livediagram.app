@@ -1,7 +1,13 @@
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts that set four of a tab's existing
 // settings at once, its theme, finish, tab font and canvas pattern. Not a stored concept: picking one writes those
 // four ordinary fields, and a look reads as selected only while the tab still matches all four.
-import { resolveFinish, type BackgroundPattern, type Finish, type Tab } from '@livehuddle/document';
+import {
+  resolveFinish,
+  spacePattern,
+  type BackgroundPattern,
+  type Finish,
+  type Tab,
+} from '@livehuddle/document';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { SEASONAL_LOOKS, type Season } from '@/lib/seasonal-looks';
 
@@ -55,6 +61,7 @@ export type TabLook = {
   finish: Finish;
   /** A font id (../packages/model-core/src/fonts.ts), or undefined for no tab font. */
   font: string | undefined;
+  /** The floor (docs/specs/011-theme/floors.md), None, or a seasonal look's motif. */
   pattern: BackgroundPattern;
   /** The pattern's strength, the tab's existing backgroundOpacity (1 when omitted): a busy pattern drawn softly. */
   patternOpacity?: number;
@@ -70,21 +77,20 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'everyday',
     label: 'Everyday',
-    description: 'Default colours, Flexible, grid',
+    description: 'Default colours, Flexible, carpet tiles',
     theme: 'brand',
     finish: 'flexible',
     font: undefined,
-    pattern: 'grid',
+    pattern: 'carpet-tiles',
   },
   {
     id: 'textbook',
     label: 'Textbook',
-    description: 'UML, Professional, Oswald, graph',
+    description: 'UML, Professional, Oswald, tiles',
     theme: 'uml',
     finish: 'professional',
     font: 'oswald',
-    pattern: 'graph',
-    patternOpacity: 0.5,
+    pattern: 'tiles',
   },
   {
     id: 'whiteboard',
@@ -99,39 +105,38 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'spectrum',
     label: 'Spectrum',
-    description: 'Rainbow, Flexible, Inter, soft dots',
+    description: 'Rainbow, Flexible, Inter, terrazzo',
     theme: 'rainbow',
     finish: 'flexible',
     font: 'inter',
-    pattern: 'grid',
-    patternOpacity: 0.5,
+    pattern: 'terrazzo',
   },
   {
     id: 'boardroom',
     label: 'Boardroom',
-    description: 'Steel, Professional, Inter',
+    description: 'Steel, Professional, Inter, carpet',
     theme: 'steel',
     finish: 'professional',
     font: 'inter',
-    pattern: 'blank',
+    pattern: 'carpet',
   },
   {
     id: 'notebook',
     label: 'Notebook',
-    description: 'Mocha, Sketch, lined paper',
+    description: 'Mocha, Sketch, wood floor',
     theme: 'mocha',
     finish: 'sketch',
     font: undefined,
-    pattern: 'lines',
+    pattern: 'wood',
   },
   {
     id: 'seaside',
     label: 'Seaside',
-    description: 'Ocean, Flexible, Nunito, waves',
+    description: 'Ocean, Flexible, Nunito, sand',
     theme: 'ocean',
     finish: 'flexible',
     font: 'nunito',
-    pattern: 'waves',
+    pattern: 'sand',
   },
   {
     id: 'doodle',
@@ -145,160 +150,151 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'editorial',
     label: 'Editorial',
-    description: 'Cream, Professional, Lora serif',
+    description: 'Cream, Professional, Lora, parquet',
     theme: 'cream',
     finish: 'professional',
     font: 'lora',
-    pattern: 'blank',
+    pattern: 'parquet',
   },
   {
     id: 'midnight',
     label: 'Midnight',
-    description: 'Midnight, Flexible, grid',
+    description: 'Midnight, Flexible, marble',
     theme: 'midnight',
     finish: 'flexible',
     font: undefined,
-    pattern: 'grid',
+    pattern: 'marble',
   },
   {
     id: 'poster',
     label: 'Poster',
-    description: 'Tropical, Professional, Abril, diagonal',
+    description: 'Tropical, Professional, Abril, decking',
     theme: 'tropical',
     finish: 'professional',
     font: 'abril-fatface',
-    pattern: 'diagonal',
-    patternOpacity: 0.4,
+    pattern: 'deck',
   },
   {
     id: 'workshop',
     label: 'Sandstone',
-    description: 'Sand, Marker, soft grid',
+    description: 'Sand, Marker, concrete',
     theme: 'sand',
     finish: 'marker',
     // Marker letters in Permanent Marker itself.
     font: undefined,
-    pattern: 'grid',
-    patternOpacity: 0.6,
+    pattern: 'concrete',
   },
   {
     id: 'graph-paper',
     label: 'Graph Paper',
-    description: 'Indigo, Professional, mono type',
+    description: 'Indigo, Professional, Roboto Mono, tiles',
     theme: 'indigo',
     finish: 'professional',
     font: 'roboto-mono',
-    pattern: 'graph',
+    pattern: 'tiles',
   },
   {
     id: 'daydream',
     label: 'Daydream',
-    description: 'Pastel, Flexible, Nunito, dotted paper',
+    description: 'Pastel, Flexible, Nunito, soft carpet',
     theme: 'pastel',
     finish: 'flexible',
     font: 'nunito',
-    pattern: 'grid',
-    patternOpacity: 0.6,
+    pattern: 'carpet',
+    patternOpacity: 0.7,
   },
   {
     id: 'engineer',
     label: 'Engineer',
-    description: 'Sky, Professional, engineering grid',
+    description: 'Sky, Professional, Space Grotesk, concrete',
     theme: 'sky',
     finish: 'professional',
     font: 'space-grotesk',
-    pattern: 'engineering',
+    pattern: 'concrete',
   },
   {
     id: 'lagoon',
     label: 'Lagoon',
-    description: 'Tropical, Flexible, Space Grotesk, ripples',
+    description: 'Tropical, Flexible, Space Grotesk, sand',
     theme: 'tropical',
     finish: 'flexible',
     font: 'space-grotesk',
-    pattern: 'ripple',
-    patternOpacity: 0.5,
+    pattern: 'sand',
   },
   {
     id: 'studio',
     label: 'Studio',
-    description: 'Lavender, Professional, slab serif',
+    description: 'Lavender, Professional, Roboto Slab, wood floor',
     theme: 'lavender',
     finish: 'professional',
     font: 'roboto-slab',
-    pattern: 'isometric',
+    pattern: 'wood',
   },
   {
     id: 'garden',
     label: 'Garden',
-    description: 'Forest, Flexible, Poppins, hexagons',
+    description: 'Forest, Flexible, Poppins, grass',
     theme: 'forest',
     finish: 'flexible',
     font: 'poppins',
-    pattern: 'hexagonal',
-    patternOpacity: 0.4,
+    pattern: 'grass',
   },
   {
     id: 'billboard',
     label: 'Billboard',
-    description: 'Sunset, Professional, Oswald, stripes',
+    description: 'Sunset, Professional, Oswald, stone paving',
     theme: 'sunset',
     finish: 'professional',
     font: 'oswald',
-    pattern: 'stripes',
-    patternOpacity: 0.4,
+    pattern: 'paving',
   },
   {
     id: 'patchwork',
     label: 'Patchwork',
-    description: 'Pastel, Sketch, Lora, soft checks',
+    description: 'Pastel, Sketch, Lora, soft carpet',
     theme: 'pastel',
     finish: 'sketch',
     font: 'lora',
-    pattern: 'checkerboard',
-    patternOpacity: 0.3,
+    pattern: 'carpet',
+    patternOpacity: 0.7,
   },
   {
     id: 'northern-lights',
     label: 'Northern Lights',
-    description: 'Abyss, Flexible, Poppins, aurora',
+    description: 'Abyss, Flexible, Poppins, decking',
     theme: 'abyss',
     finish: 'flexible',
     font: 'poppins',
-    pattern: 'aurora',
-    patternOpacity: 0.6,
+    pattern: 'deck',
   },
   {
     id: 'coffeehouse',
     label: 'Coffeehouse',
-    description: 'Espresso, Sketch, Caveat, bricks',
+    description: 'Espresso, Sketch, Caveat, terrazzo',
     theme: 'espresso',
     finish: 'sketch',
     font: 'caveat',
-    pattern: 'bricks',
-    patternOpacity: 0.4,
+    pattern: 'terrazzo',
   },
   {
     id: 'schematic',
     label: 'Schematic',
-    description: 'UML, Professional, Roboto Mono, crosshatch',
+    description: 'UML, Professional, Roboto Mono, carpet tiles',
     theme: 'uml',
     finish: 'professional',
     font: 'roboto-mono',
-    pattern: 'crosshatch',
-    patternOpacity: 0.4,
+    pattern: 'carpet-tiles',
   },
   // The fifth page: Marker on a flip chart, a green board and a wall, between Sketch and Flexible looks.
   {
     id: 'flipchart',
     label: 'Flipchart',
-    description: 'Rainbow, Marker, ruled pad',
+    description: 'Rainbow, Marker, carpet',
     theme: 'rainbow',
     finish: 'marker',
     // Marker letters in Permanent Marker itself.
     font: undefined,
-    pattern: 'lines',
-    patternOpacity: 0.5,
+    pattern: 'carpet',
   },
   {
     id: 'sketchbook',
@@ -321,32 +317,29 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'picnic',
     label: 'Picnic',
-    description: 'Pastel, Flexible, Poppins, gingham',
+    description: 'Pastel, Flexible, Poppins, grass',
     theme: 'pastel',
     finish: 'flexible',
     font: 'poppins',
-    pattern: 'checkerboard',
-    patternOpacity: 0.25,
+    pattern: 'grass',
   },
   {
     id: 'mural',
     label: 'Mural',
-    description: 'Plum, Marker, soft dots',
+    description: 'Plum, Marker, cobbles',
     theme: 'plum',
     finish: 'marker',
     font: undefined,
-    pattern: 'grid',
-    patternOpacity: 0.5,
+    pattern: 'cobbles',
   },
   {
     id: 'field-notes',
     label: 'Field Notes',
-    description: 'Olive, Sketch, lined paper',
+    description: 'Olive, Sketch, mud',
     theme: 'olive',
     finish: 'sketch',
     font: undefined,
-    pattern: 'lines',
-    patternOpacity: 0.6,
+    pattern: 'mud',
   },
 ];
 
@@ -378,7 +371,7 @@ export type LookSettings = Pick<
 >;
 
 /** Whether the tab's settings are the look's. Unset settings read as what they draw: the Default theme, Flexible,
- *  no font, the grid. A pattern's strength counts only for a look that sets one (a template's softened grid is still
+ *  no font, the theme's floor (a retired diagram pattern reads as the floor it draws as). A pattern's strength counts only for a look that sets one (a template's softened grid is still
  *  Everyday). */
 export function lookMatches(tab: LookSettings, look: TabLook): boolean {
   const opacity = tab.backgroundOpacity ?? 1;
@@ -386,7 +379,7 @@ export function lookMatches(tab: LookSettings, look: TabLook): boolean {
     look.theme === (tab.theme ?? 'brand') &&
     look.finish === resolveFinish(tab.finish, undefined) &&
     look.font === (tab.font || undefined) &&
-    look.pattern === (tab.backgroundPattern ?? 'grid') &&
+    spacePattern(look.pattern) === spacePattern(tab.backgroundPattern) &&
     (look.patternOpacity === undefined || Math.abs(look.patternOpacity - opacity) < 0.001)
   );
 }

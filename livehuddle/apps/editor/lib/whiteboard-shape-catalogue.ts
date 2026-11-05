@@ -147,7 +147,7 @@ export function armedWhiteboardShape(intent: PendingDraw | null): WhiteboardShap
     (id) => DOCK_TILE_KIND[id] === intent.kind,
   );
   if (dock) return dock;
-  const choice = intent.reaction ?? intent.mode ?? intent.variant;
+  const choice = intent.mode ?? intent.variant;
   const key = choice ? `${intent.kind}:${choice}` : intent.kind;
   return isWhiteboardShapeKey(key) ? key : null;
 }

@@ -104,12 +104,6 @@ export const OFFICE: SpaceSceneSpec = {
     size: 70,
     note: { sticky: 'live', text: 'Live Fri!', at: 6.2 },
     fontSize: 12,
-    voteRadius: 6,
-    votes: [
-      { sticky: 'cake', dx: 0, colour: '#10b981', at: 9.4 },
-      { sticky: 'cake', dx: 1, colour: '#0ea5e9', at: 9.7 },
-      { sticky: 'live', dx: 0, colour: '#ec4899', at: 10.0 },
-    ],
     remote: { name: 'Kit', colour: '#14b8a6' },
   },
 };
@@ -172,13 +166,5 @@ export const HALL: SpaceSceneSpec = {
     { who: 'Ana', text: 'Three big wins this quarter', at: 5.2 },
     { who: 'Leo', text: 'Sorry, I’m late!', at: 8.4 },
     { who: 'Priya', text: 'Congrats, team! 🎉', at: 11.2 },
-  ],
-  // The Applause pad's burst over the room as the wins land.
-  bursts: [
-    { emoji: '👏', x: -250, y: -150, at: 6.0 },
-    { emoji: '👏', x: 160, y: -140, at: 6.3 },
-    { emoji: '🎉', x: 320, y: -120, at: 6.6 },
-    { emoji: '👏', x: -90, y: -110, at: 6.9 },
-    { emoji: '✨', x: 40, y: -150, at: 7.2 },
   ],
 };

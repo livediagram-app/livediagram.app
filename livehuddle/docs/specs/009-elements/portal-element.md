@@ -8,7 +8,7 @@ A big canvas is a place, and places have shortcuts. Two portals turn "scroll acr
 
 ## The element
 
-- A **shape kind**, `portal`, like the Selection Mode button ([Selection Mode button](mode-button.md)) and the Page ([The Page element](page-element.md)), so it inherits colours, shadow, layers, groups, comments, export.
+- A **shape kind**, `portal`, like the Selection Mode button ([Selection Mode button](mode-button.md)) and the Page ([The Page element](page-element.md)), so it inherits colours, shadow, groups, comments, export.
 - Portal-shaped: 72x112, taller than wide, drawn as a tall oval: an outer bloom, a bright rim lit from the crown, a dark mouth you see "through", and a few motes caught in the swirl. **Aspect-locked on creation**, because stretched wide it stops reading as a portal; unlockable from the menu like any element.
 - It **paints its own ring**, so the element box behind it is transparent and borderless (the same family as charts, rails, and code blocks). `strokeColor` is the colour of the energy, not of a border: electric blue by default, recolourable from the menu (an orange partner is the obvious second half).
 - The link lives in **`ShapeElement.portalTarget`**: the id of the portal this one leads to. Element ids are unique across the document, so no tab component is stored; the tab is looked up.

@@ -134,16 +134,18 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a checklist's ticks, a reaction pad's button, a mode button, a
+// The kinds whose face carries controls of its own: a checklist's ticks, a mode button, a
 // Bring Focus button, a portal's settings and a page's title and subtitle lines. A retired element's placeholder
 // holds none, so it is a picture.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'checklist',
-  'reaction-pad',
   'mode-button',
   'focus-button',
   'portal',
   'page',
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a button over the drawing.
+  'directory',
+  'elevator',
 ]);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture

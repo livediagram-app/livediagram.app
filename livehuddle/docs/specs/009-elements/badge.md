@@ -52,12 +52,12 @@ attachAt?: 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom
 - **Detaching.** Dragging an attached badge away from its point (further than 16px) detaches it; dropping it on
   another point re-attaches it there, possibly on another element.
 - **Hosts.** Any boxed element except a badge, a step number, an annotation, a comment pin, and the containers
-  (frame, lane, boundary, stack, diagram key), whose corners are too far from what they hold to read as a mark on them (and a stack reflows under them). Arrows are not
+  (lane, boundary, stack, diagram key, or a stored frame), whose corners are too far from what they hold to read as a mark on them (and a stack reflows under them). Arrows are not
   hosts.
 - **Following the host.** An attached badge moves with its host in a drag, a nudge and every layout (mind map,
   flowchart, tidy) and re-settles on its point when the host is resized or rotated. It is **deleted** with its host
   and **copied and duplicated** with it (the copy attaches to the host's copy). Undo restores both together.
-- **Above its host.** An attached badge draws above its host whatever the layer order, so a later shape never covers
+- **Above its host.** An attached badge draws above its host whatever the element order, so a later shape never covers
   it.
 - **On its own.** Copying, duplicating or deleting a badge on its own does just that; a pasted lone badge is
   detached. A badge whose host no longer exists (a peer deleted it, an import dropped it) is detached where it is.

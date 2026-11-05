@@ -45,7 +45,8 @@ describe('a tab on a custom theme (docs/specs/011-theme/retired-schemes.md "Cust
     expect(out.theme).toBe('brand');
     expect(out.backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
     expect(out.patternColor).toBe(DEFAULT_PATTERN_COLOR);
-    expect(out.backgroundPattern).toBe('grid');
+    // Default's dot grid, which opens as its floor (docs/specs/011-theme/floors.md).
+    expect(out.backgroundPattern).toBe('carpet-tiles');
     expect('backgroundOpacity' in out).toBe(false);
     expect(out.elements[0]).toMatchObject({ fillColor: '#123456', strokeColor: '#abcdef' });
     // The id it now carries resolves to the real Default scheme, not a fallback of a fallback.

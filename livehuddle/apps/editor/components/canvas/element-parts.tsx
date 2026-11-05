@@ -301,8 +301,8 @@ const ANCHOR_STYLE: Record<'n' | 'e' | 's' | 'w', CSSProperties> = {
   w: { top: '50%', left: 0 },
 };
 
-// Edge-midpoint handle: a single-axis resize grip (arrows are drawn from
-// the quick-connect menu now, so these no longer start a connector). N / S
+// Edge-midpoint handle: a single-axis resize grip (it starts no connector).
+// N / S
 // resize height, E / W resize width — a small bar oriented along the edge.
 export function EdgeResizeHandle({
   anchor,

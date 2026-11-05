@@ -22,7 +22,7 @@ export const AI_CLIENTS = aiClients(AI_PRODUCT);
 // Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document from a Space template
 // (team-pod, virtual-office, all-hands-hall, coworking-space) with sticky notes and text by update_document, add_tab
 // for another floor, share_document (a participant link by default), and find + read_document. The MCP has no timer
-// or vote of its own, so no prompt asks it to start one.
+// of its own, so no prompt asks it to start one.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Set up a stand-up',
@@ -47,7 +47,7 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Share a Space',
     prompt:
-      'Find my livehuddle Space for the design team and share it as a participant link, so the team can walk in, add notes and vote without moving the furniture.',
+      'Find my livehuddle Space for the design team and share it as a participant link, so the team can walk in, talk and comment without moving the furniture.',
   },
   {
     title: 'Find and improve',

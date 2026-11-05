@@ -23,11 +23,10 @@ livehuddle is multiplayer from the moment someone walks in. Sharing is just crea
 </Step>
 
 <Step n={2}>
-  Under **Issue a pass**, click the role card to choose a role: **Editor** (changes the Space with
-  you in real time, the default), **Participant** (walks in, talks in speech bubbles, adds stickies,
-  comments and votes, but can't reshape the Space) or **Viewer** (walks round and watches; can't
-  speak, comment, vote or change a thing). **Valid** sets how long it lasts: Forever, 1 week, 1
-  month or 6 months. In a space with several tabs, **Opens** can limit the link to one tab.
+  Under **Issue a pass**, the role card starts on **Participant** (always walking in, talks,
+  comments and sends reactions, but adds nothing to the Space), the pass most meetings want; press
+  it to pick **Editor** (changes the Space with you in real time) instead. **Valid** sets how long
+  it lasts: Forever, 1 week, 1 month or 6 months. In a space with several tabs, **Opens** can limit the link to one tab.
 </Step>
 
 <Step n={3}>
@@ -39,7 +38,7 @@ If you are a guest, check the name under **Sharing as** at the foot of the dialo
 shuffle button beside it for another): that is the name peers see on your cursor and comments. A space
 saved to **This Browser** has to be synced to your account before it can be shared.
 
-<Figure caption="The Share dialog: pick Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+<Figure caption="The Share dialog: choose Participant or Editor, set how long the pass is valid, then Create Pass. Live passes are listed below.">
   <SharePassesDialog />
 </Figure>
 
@@ -59,15 +58,15 @@ Someone opening your link for the first time enters the password if you set one,
 
 Back in the Share dialog you can manage links over time:
 
-- **Multiple passes.** Issue several, with different roles, for example a Viewer pass for stakeholders and an Editor pass for collaborators. They are listed under **Passes**.
+- **Multiple passes.** Issue several, with different roles, for example a Participant pass for the team and an Editor pass for whoever sets up the Space. They are listed under **Passes**.
 - **Revoke** a pass to cut off access through it. Expiring passes show a countdown, and expired ones move under **Expired**, where they can be extended or deleted. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
 - **Password Protection.** Protect every pass with one shared password; everyone opening a link must enter it first, embeds included. See [Share Passwords](/help/collaboration/sharing/share-passwords/).
 - **Community.** The dialog's **Community** tab, beside **Passes**, publishes the space, once you're signed in, to the public [Community](/help/collaboration/sharing/community/) gallery. A space in the Community can't have a password, and a password-protected one can't be published.
 
 <Tip>
   Want to put the space on a web page or in a doc? Each pass can also be copied as an embed (**Copy
-  iframe**) or, while no password is set, as a live image that stays up to date. A Viewer or
-  Participant pass embeds look-only; an Editor pass embeds an editable space. See
+  iframe**) or, while no password is set, as a live image that stays up to date. A Participant
+  pass (or a legacy Viewer pass) embeds look-only; an Editor pass embeds an editable space. See
   [Embeds](/help/collaboration/sharing/embeds/).
 </Tip>
 

@@ -12,6 +12,8 @@ import { coerceShapeKind, isValidElement, isValidTab, SHAPE_KINDS } from './vali
 import { elementKindLabel } from './element-kind-label';
 import { isKnownElement, kindWordOf } from './element-refs';
 import { createShape } from './factories';
+import { paintOrder } from './paint-order';
+import { containerContents, isContainer } from './containment';
 import type { Element, Tab } from './index';
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a stored element of a kind livehuddle no
@@ -131,6 +133,21 @@ const RETIRED: Record<string, unknown>[] = [
     responses: [answer('k1', '1')],
     aspectLocked: true,
   }),
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The presenting tools, Isometric and Zen".
+  box('cheer', 'reaction-pad', 5600, {
+    label: 'Celebrate',
+    reaction: 'fireworks',
+    textAlignY: 'bottom',
+    borderRadius: 'lg',
+  }),
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Frame".
+  box('section', 'frame', 6000, {
+    label: 'Checkout',
+    textAlignX: 'right',
+    textAlignY: 'top',
+    padding: 'lg',
+    fillColor: '#fef3c7',
+  }),
 ];
 
 const storedTab = (): Tab =>
@@ -203,6 +220,8 @@ describe('retiredElementName', () => {
     expect(retiredElementName({ shape: 'agenda' })).toBe('Agenda');
     expect(retiredElementName({ shape: 'comment-pin' })).toBe('Comment Panel');
     expect(retiredElementName({ shape: 'action-card' })).toBe('Action Panel');
+    expect(retiredElementName({ shape: 'reaction-pad' })).toBe('Reaction Pad');
+    expect(retiredElementName({ shape: 'frame' })).toBe('Frame');
     for (const [kind, name] of Object.entries(RETIRED_SHAPE_NAMES)) {
       expect(retiredElementName({ shape: kind }), kind).toBe(name);
     }
@@ -231,5 +250,21 @@ describe('retiredElementName', () => {
   it('is the name a selection caption gives it', () => {
     const quiz = { ...createShape('square', 0, 0), shape: 'quiz' } as unknown as Element;
     expect(elementKindLabel(quiz)).toBe('Quiz');
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The Frame": a stored Frame keeps its place at the back, and what
+// sat on it stays put.
+describe('a stored Frame', () => {
+  const frame = box('section', 'frame', 0, { label: 'Checkout' }) as unknown as Element;
+  const member = { ...createShape('square', 40, 80), id: 'member' } as Element;
+
+  it('still paints behind what sat on it, wherever it is in the array', () => {
+    expect(paintOrder([member, frame]).map((el) => el.id)).toEqual(['section', 'member']);
+  });
+
+  it('is no longer a container: moving it carries nothing', () => {
+    expect(isContainer(frame)).toBe(false);
+    expect([...containerContents([frame, member], new Set(['section']))]).toEqual(['section']);
   });
 });

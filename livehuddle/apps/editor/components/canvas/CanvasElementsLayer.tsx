@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/RemoteCursor';
 import { identityVars } from '@livehuddle/ui';
-import { participantKey } from '@/lib/identity';
+
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { buildArrowLinks } from './drag-affected-arrows';
@@ -15,16 +15,14 @@ import {
   isSelectionMode,
   alignmentCoordinates,
   buildElementIndex,
-  layerBands,
+  paintOrder,
   laneSeamCoordinates,
-  layerOpacityOf,
   snapSeamCoordinate,
   createElementGridTracker,
   type ElementIndex,
   stackedElementIds,
 } from '@livehuddle/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
@@ -37,7 +35,6 @@ import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverl
 import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import { ZoomedLaserOverlay } from '@/components/canvas/view-readers';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { type LaneGutterEdge, type LaneLike } from '@livehuddle/document';
 
@@ -58,18 +55,14 @@ type ElementsExtras = {
   handleArrowSelect: (id: string, e: ReactPointerEvent, paired?: boolean) => void;
   handleElementClick: (id: string) => void;
   handleElementContextSelect: (id: string, sx: number, sy: number) => void;
-  // Which quick-connect ring is open (lifted to Canvas so only one opens
-  // at a time and the toolbar can dodge the top ring). null = all closed.
-  quickRingOpen: QuickConnectDirection | null;
-  setQuickRingOpen: (placement: QuickConnectDirection | null) => void;
 };
 
 export type CanvasElementsLayerProps = CanvasProps & ElementsExtras;
 
 // The element-rendering layer of the canvas: the shared arrow defs, every
 // element (arrows + boxed views interleaved in z-order), remote cursors,
-// the laser overlay, and the grips layer on top of them all: the union resize
-// handles, the quick-connect plus buttons, and every element's own grips,
+// and the grips layer on top of them all: the union resize
+// handles and every element's own grips,
 // portalled in (SelectionGripsLayer). Rendered inside Canvas's
 // viewport-transformed wrapper.
 export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
@@ -77,8 +70,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     editCursorAtEnd,
     editingId,
     elements,
-    tabLayers,
-    layerPreviewId,
     handleArrowSelect,
     handleElementClick,
     handleElementContextSelect,
@@ -87,7 +78,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     drawDrag,
     imageContext,
     isPaintMode,
-    laserTrails,
     onBeginArrowCurveDrag,
     onBeginArrowCurvePointDrag,
     onBeginArrowBend,
@@ -105,18 +95,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextAlign,
     onCommitTable,
     onCommitHeaderSize,
-    onAddTableRow,
-    onAddTableColumn,
     onToggleChecklistItem,
     onSetPageHeading,
     onSetWebRows,
     onSetPointerTip,
-    onAppendWebRow,
     onSetHeroCaptionLine,
     chartPalette,
-    onSpawnConnect,
-    onStartArrow,
-    onStartPencil,
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
@@ -127,34 +111,22 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenNote,
     onEditLink,
     onOpenEditDialog,
-    onDropIcon,
     onLinkCell,
     onShiftSelect,
-    tabVote,
-    selfParticipant,
-    onCastVote,
-    onRetractVote,
     readOnly,
-    takePart = false,
     canMove,
     canWriteText,
     canResize,
     canvasTool,
     onEnterPortal,
-    onFireReaction,
-    reactionBursts,
-    onReactionBurstDone,
+    onPressAvatarPad,
     remoteCursors,
     remoteSelectionsByElement,
     shiftDupGhostIds,
-    voteReview,
     tabFont,
     tabFinish,
     tabLocked,
     tabSummaries,
-    quickRingOpen,
-    setQuickRingOpen,
-    settings,
   } = props;
   // Identity-stable wrappers for every function prop the memoized
   // element views receive. The editor's orchestration mints fresh
@@ -182,9 +154,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginDrag,
     onPressArmedAction,
     onShiftSelect,
-    // Voting is taking part: a Participant's as well as an Editor's (docs/specs/013-workspace/share-roles.md).
-    onCastVote: readOnly && !takePart ? undefined : onCastVote,
-    onRetractVote: readOnly && !takePart ? undefined : onRetractVote,
+
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
     onCommitTable,
     onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
@@ -216,13 +186,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenNote,
     onEditLink,
     onOpenEditDialog,
-    onDropIcon,
     onLinkCell,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
     onOpenElementSettings,
     onEnterPortal,
-    onFireReaction,
-    onReactionBurstDone,
+    onPressAvatarPad,
   });
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
@@ -233,11 +201,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):
   // the tab's, or the handwriting font on a Sketch tab (docs/specs/008-canvas/finish.md).
   const tabFontStack = resolveFontStack(elementFontId({}, tabFont, tabFinish));
-  // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
-  // vote pill can flag itself a winner once results are revealed.
-  const voteMax = tabVote
-    ? Object.values(tabVote.votes).reduce((m, ids) => Math.max(m, ids.length), 0)
-    : 0;
+
   // One id -> element index per ELEMENTS CHANGE (not per render),
   // shared by every ArrowView so each resolves its endpoints / label
   // collisions with O(1) lookups instead of scanning the whole element
@@ -249,34 +213,19 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
-  // Paint order (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
-  // array order within each band with frames hoisted to the front of
-  // THEIR band (a frame is a section backdrop that must sit behind its
-  // contents so they stay clickable). Hidden layers' elements drop out
-  // here entirely — no DOM, so no hit-testing either. Same banding the
-  // exporters use. Each element carries its band's opacity so per-layer
-  // opacity multiplies over the element's own. While a Layers-panel row
-  // is hovered (`layerPreviewId`, docs/specs/006-document/layers.md hover-solo) ONLY that band
-  // renders — hidden or not — at full band opacity so the preview is
-  // legible. Memoised for the same reason as the index (stable identity
-  // when inputs are).
-  const ordered = useMemo(() => {
-    if (layerPreviewId) {
-      return layerBands(elements, tabLayers, { includeHidden: true })
-        .filter((band) => band.layer.id === layerPreviewId)
-        .flatMap((band) => band.elements.map((element) => ({ element, layerOpacity: 1 })));
-    }
-    return layerBands(elements, tabLayers).flatMap((band) => {
-      const layerOpacity = layerOpacityOf(band.layer);
-      return band.elements.map((element) => ({ element, layerOpacity }));
-    });
-  }, [elements, tabLayers, layerPreviewId]);
+  // Paint order (docs/specs/006-document/layers.md "Stacking"): array order with frames hoisted to the front (a frame
+  // is a section backdrop that must sit behind its contents so they stay clickable). The same order the exporters
+  // use. Memoised for the same reason as the index (stable identity when inputs are).
+  const ordered = useMemo(
+    () => paintOrder(elements).map((element) => ({ element, layerOpacity: 1 })),
+    [elements],
+  );
   // The palette arrives as a fresh array each render (themeChartPalette): keyed by its colours, so the views
   // re-render only when the colours change.
   const paletteKey = chartPalette?.join('|') ?? '';
   // oxlint-disable-next-line react/exhaustive-deps
   const stablePalette = useMemo(() => chartPalette, [paletteKey]);
-  const selfId = participantKey(selfParticipant);
+
   // What every boxed element view takes from this layer, the same for each element.
   const boxedShared = useMemo<BoxedShared>(
     () => ({
@@ -288,12 +237,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onBeginDrag: h.onBeginDrag,
       onPressArmedAction: h.onPressArmedAction,
       onShiftSelect: h.onShiftSelect,
-      vote: tabVote,
-      selfId,
-      voteMax,
-      voteReviewActive: voteReview != null,
-      onCastVote: h.onCastVote,
-      onRetractVote: h.onRetractVote,
       onBeginEdit: h.onBeginEdit,
       onCommitLabel: h.onCommitLabel,
       onSetTextAlign: h.onSetTextAlign,
@@ -313,17 +256,15 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onOpenElementSettings: h.onOpenElementSettings,
       chairSitters,
       // Mode Buttons light up for the mode they hand out; the canvas-tool union is wider than the mode vocabulary
-      // (Isometric has no Mode Button), so narrow rather than widen.
+      // so narrow rather than widen.
       activeMode: isSelectionMode(canvasTool) ? canvasTool : undefined,
       onEnterPortal: h.onEnterPortal,
-      onFireReaction: h.onFireReaction,
-      onReactionBurstDone: h.onReactionBurstDone,
+      onPressAvatarPad: h.onPressAvatarPad,
       onOpenComments: h.onOpenComments,
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
       onOpenEditDialog: h.onOpenEditDialog,
-      onDropIcon: h.onDropIcon,
       onLinkCell: h.onLinkCell,
       imageContext,
       onContextSelect: h.handleElementContextSelect,
@@ -334,10 +275,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       tabLocked,
       tabSummaries,
       readOnly,
-      tabVote,
-      selfId,
-      voteMax,
-      voteReview,
       stablePalette,
       chairSitters,
       canvasTool,
@@ -428,14 +365,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           tabLocked={tabLocked}
           readOnly={readOnly}
           shiftDupGhostIds={shiftDupGhostIds}
-          tabVote={tabVote}
-          tabLayers={tabLayers}
           remoteSelectionsByElement={remoteSelectionsByElement}
           canMove={canMove}
           canWriteText={canWriteText}
           canResize={canResize}
-          voteReview={voteReview}
-          reactionBursts={reactionBursts}
           tabFont={tabFont}
           tabFinish={tabFinish}
           fontEpoch={fontEpoch}
@@ -467,34 +400,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
 
         <RemoteCursors cursors={remoteCursors} paint={identityVars} />
 
-        {/* Laser overlay sits inside the viewport-transformed wrapper
-            so trail coordinates (canvas-space) pan + zoom with
-            elements. The overlay component owns its own RAF loop
-            and only runs while there's at least one active trail. */}
-        <ZoomedLaserOverlay trails={laserTrails} />
-
         {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
         <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
 
         {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}
-        <SelectionGripsLayer onHosts={setGripHosts} isoDepth={ordered.length}>
+        <SelectionGripsLayer onHosts={setGripHosts}>
           <LayerSelectionChrome
             selectionInput={props.selectionInput}
             tabId={props.activeTabId ?? ''}
-            elements={elements}
-            pluses={{
-              quickRingOpen,
-              setQuickRingOpen,
-              openOnHover: settings.quickAddOnHover === true,
-              onSpawnConnect,
-              onStartArrow,
-              onStartPencil,
-              onAddTableRow,
-              onAddTableColumn,
-              onAppendWebRow,
-            }}
             onBeginDrag={onBeginDrag}
           />
         </SelectionGripsLayer>

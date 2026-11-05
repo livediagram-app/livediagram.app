@@ -3,13 +3,12 @@ import {
   capLabel,
   conciseGraph,
   GRAPH_LABEL_MAX,
-  graphFromMermaid,
   layoutGraph,
   resolveGraphInput,
 } from './graph-input';
 
 // docs/specs/015-api/mcp-server.md §4.7: labels are headings (capped, overflow into the note), the
-// layout is chosen, arrows are routed, Mermaid takes the same path.
+// layout is chosen, arrows are routed.
 
 const byId = (els: ReturnType<typeof layoutGraph>, id: string) =>
   els.find((e) => e.id === id) as Record<string, unknown> & { x: number; y: number; width: number };
@@ -93,12 +92,14 @@ describe('layoutGraph', () => {
     expect(byId(down, 'b').y).toBeGreaterThan(byId(down, 'a').y);
   });
 
-  it('draws groups as frames around their members', () => {
+  it('draws groups as boundaries around their members', () => {
     const els = layoutGraph({
       ...chain,
       groups: [{ id: 'g', label: 'Pipeline', members: ['b', 'c'] }],
     });
-    const frame = els.find((e) => e.type === 'shape' && (e as { shape: string }).shape === 'frame');
+    const frame = els.find(
+      (e) => e.type === 'shape' && (e as { shape: string }).shape === 'boundary',
+    );
     expect(frame).toBeTruthy();
     expect((frame as { label?: string }).label).toBe('Pipeline');
   });
@@ -131,30 +132,8 @@ describe('layoutGraph', () => {
   });
 });
 
-describe('Mermaid', () => {
-  it('reads a flowchart with a subgraph into the same graph', () => {
-    const r = graphFromMermaid(
-      'flowchart LR\n  A[Idea] --> B{Worth it?}\n  subgraph Build\n    C[Design] --> D[Ship]\n  end\n  B --> C',
-    );
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    expect(r.graph.direction).toBe('right');
-    expect(r.graph.groups?.[0]?.members).toEqual(['C', 'D']);
-    expect(r.graph.nodes.map((n) => n.label)).toContain('Worth it?');
-  });
-
-  it('names what it supports when it cannot read a dialect', () => {
-    const r = resolveGraphInput({ mermaid: 'pie\n  "A": 1' });
-    expect(r.error).toMatch(/flowcharts/);
-  });
-
-  it("heads the diagram with Mermaid front matter's title", () => {
-    const r = resolveGraphInput({ mermaid: '---\ntitle: Checkout\n---\nflowchart TD\n  A --> B' });
-    expect(r.graph?.title).toBe('Checkout');
-    expect(r.graph?.nodes.map((n) => n.id)).toEqual(['A', 'B']);
-  });
-
-  it('prefers graph over mermaid, and gives nothing for neither', () => {
+describe('resolveGraphInput', () => {
+  it('gives the graph, and nothing for none', () => {
     expect(resolveGraphInput({})).toEqual({});
     expect(
       resolveGraphInput({ graph: { nodes: [{ id: 'x' }], edges: [] } }).graph?.nodes[0]!.id,
@@ -183,7 +162,7 @@ describe('review fixes (docs/specs/015-api/mcp-server.md §4.7)', () => {
       ],
     });
     const frame = els.find((e) => e.id === 'core') as Record<string, unknown>;
-    expect(frame).toMatchObject({ shape: 'frame', label: 'core' });
+    expect(frame).toMatchObject({ shape: 'boundary', label: 'core' });
   });
 
   it('bends a tree line down, across, then down into the child', () => {

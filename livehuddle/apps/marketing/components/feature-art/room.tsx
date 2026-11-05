@@ -103,7 +103,7 @@ function SessionControls({ x, w, live }: { x: number; w: number; live: boolean }
             </text>
           </g>
         ) : null}
-        {/* Pause and restart, then the vote. */}
+        {/* Pause and restart. */}
         <circle cx={x + 11} cy={72} r="5" fill={live ? SKY : '#94a3b8'} />
         <path
           d={`M${x + 9.6} ${69.6}v4.8M${x + 12.4} ${69.6}v4.8`}
@@ -128,24 +128,6 @@ function SessionControls({ x, w, live }: { x: number; w: number; live: boolean }
           strokeWidth="0.8"
           strokeLinecap="round"
         />
-        <rect
-          x={x + 34}
-          y={67}
-          width={w - 40}
-          height="10"
-          rx="5"
-          fill={live ? VIOLET : '#94a3b8'}
-        />
-        <text
-          x={x + 34 + (w - 40) / 2}
-          y={73.4}
-          textAnchor="middle"
-          fontSize="4.4"
-          fontWeight="700"
-          fill="#ffffff"
-        >
-          Start vote
-        </text>
       </g>
       {live ? null : (
         <g>

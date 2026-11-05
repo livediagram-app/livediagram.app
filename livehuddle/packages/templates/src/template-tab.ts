@@ -8,6 +8,7 @@ import { buildTemplate } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 import { isBlankTemplate } from './template-modes';
+import { templateFirstFloorName } from './template-floors';
 
 // The templates an agent may build: the catalogue's (templateCatalogue), never a hidden one.
 const AGENT_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
@@ -70,5 +71,6 @@ export function buildTemplateTab(
 // the tab keeps (or takes) its own name.
 export function templateTabName(kind: TemplateKind): string | null {
   if (isBlankTemplate(kind)) return null;
-  return TEMPLATES.find((t) => t.kind === kind)?.title ?? null;
+  // A building's first tab is its first floor ("Lobby"), so the Elevator panel reads as its floors.
+  return templateFirstFloorName(kind) ?? TEMPLATES.find((t) => t.kind === kind)?.title ?? null;
 }

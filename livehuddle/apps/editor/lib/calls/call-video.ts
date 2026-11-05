@@ -1,6 +1,7 @@
 // A proximity call's camera and shared screen (docs/specs/012-collaboration/video-and-screen-bubbles.md "The camera",
 // "The screen share"): published on demand on the call's session, shown in your own bubble, and stopped by you, the
-// browser's own control, or the kill switch going audio only. The call owns one and tells it what happens.
+// browser's own control, or the kill switch going audio only. The call owns one and tells it what happens. A stream the
+// local preview already captured (local-preview.ts, "Local preview") is adopted onto the same path, never re-asked.
 import {
   CALL_SCREEN_TRACK_NAME,
   CALL_VIDEO_TRACK_NAME,
@@ -61,6 +62,22 @@ export class CallVideo {
       if (!this.host.stopped()) setCallSelf({ camera: 'off' });
       return;
     }
+    await this.sendCamera(sfu, stream);
+  }
+
+  /**
+   * Send a camera the local preview already captured (video-and-screen-bubbles.md "Local preview"): the same as
+   * turning it on, without asking the browser again. False (the stream untouched) when this call may not send one.
+   */
+  adoptCamera(stream: MediaStream): boolean {
+    const sfu = this.host.sfu();
+    if (this.camera || !sfu || !this.host.trackToken() || !this.host.input.canSpeak) return false;
+    if (this.host.stopped() || !callsModeAllows(callSelf().mode, 'video')) return false;
+    void this.sendCamera(sfu, stream);
+    return true;
+  }
+
+  private async sendCamera(sfu: SfuSession, stream: MediaStream): Promise<void> {
     this.camera = stream;
     setCallMedia(SELF_MEDIA_ID, 'video', stream);
     setCallSelf({ camera: 'on' });
@@ -109,6 +126,19 @@ export class CallVideo {
       if (!this.host.stopped()) setCallSelf({ screen: 'off' });
       return;
     }
+    await this.sendScreen(sfu, stream);
+  }
+
+  /** Send a screen the local preview already captured: an Editor's alone, no second picker. */
+  adoptScreen(stream: MediaStream): boolean {
+    const sfu = this.host.sfu();
+    if (this.screen || !sfu || !this.host.trackToken() || !this.host.input.canShare) return false;
+    if (this.host.stopped() || !callsModeAllows(callSelf().mode, 'screen')) return false;
+    void this.sendScreen(sfu, stream);
+    return true;
+  }
+
+  private async sendScreen(sfu: SfuSession, stream: MediaStream): Promise<void> {
     const track = stream.getVideoTracks()[0]!;
     // Text stays sharp: the encoder keeps detail and drops frames rather than resolution.
     track.contentHint = 'detail';
@@ -135,8 +165,8 @@ export class CallVideo {
   }
 
   /** The open streams, for the call's teardown; released with it. */
-  release(): (MediaStream | null)[] {
-    const streams = [this.camera, this.screen];
+  release(): [MediaStream | null, MediaStream | null] {
+    const streams: [MediaStream | null, MediaStream | null] = [this.camera, this.screen];
     this.camera = null;
     this.screen = null;
     return streams;

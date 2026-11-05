@@ -18,7 +18,7 @@ const ROOTS = [
 ].map((d) => join(LIVE, d));
 // The picker itself, and Quick Style's custom swatch popover, which holds the same editor by spec
 // (colour-picker.md "Picking a colour of your own").
-const EDITOR_ALLOWED = ['components/colour/', 'components/canvas/SwatchOverridePopover.tsx'];
+const EDITOR_ALLOWED = ['components/colour/'];
 
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

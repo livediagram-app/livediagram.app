@@ -129,7 +129,7 @@ function RowLabel({ y, hot, children }: { y: number; hot?: boolean; children: st
 type EditorRowKey = 'quick-add' | 'guides' | 'auto-attach';
 
 type EditorRow =
-  | { key: EditorRowKey | 'middle-pan' | 'power-user'; label: string; on: boolean }
+  | { key: EditorRowKey | 'middle-pan'; label: string; on: boolean }
   | { key: 'indicators'; label: string };
 
 // The Editor pane's sections in catalogue order, each one grouped card, every row at its default.
@@ -149,7 +149,6 @@ const EDITOR_SECTIONS: { heading: string; rows: EditorRow[] }[] = [
       { key: 'middle-pan', label: 'Middle-Mouse Pan', on: true },
     ],
   },
-  { heading: 'POWER USER', rows: [{ key: 'power-user', label: 'Power User Mode', on: false }] },
 ];
 
 const ROW_H = 20;

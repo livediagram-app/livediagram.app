@@ -21,13 +21,12 @@ const StartFromTemplates = dynamic(
 // (useTemplatePickMove) keeps watching the tab.
 export function EditorStartPanels() {
   const ctx = useEditorContext();
-  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly } = ctx;
+  const { hydrated, embedMode, pendingDraw, activeTab, isReadOnly } = ctx;
   // Empty-canvas hint (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a card in the middle of
   // the canvas while the active tab has no elements. Not dismissible: it goes once there's content. The sign-in nudge
   // sits at the bottom, clear of it, so the two show together.
   const showEmptyCanvasBanner = showsEmptyCanvasCard({
     hydrated,
-    zen: zenMode,
     embed: embedMode,
     drawToolArmed: !!pendingDraw,
     elementCount: activeTab.elements.length,
@@ -41,11 +40,10 @@ export function EditorStartPanels() {
     tabHasContent: activeTab.elements.length > 0,
   });
   // Its template start (docs/specs/007-editor/start-diagramming.md "When it shows"): to someone who can edit, while
-  // the tab is empty, outside zen and embed, with no draw tool armed. Making a board from a template is an Editor's
+  // the tab is empty, outside an embed, with no draw tool armed. Making a board from a template is an Editor's
   // (docs/specs/013-workspace/share-roles.md), read from `can`.
   const templateStart: TemplateStartMode | null =
     hydrated &&
-    !zenMode &&
     !embedMode &&
     roleGates(ctx.can, false).shape &&
     !pendingDraw &&
@@ -85,7 +83,6 @@ export function EditorStartPanels() {
             tabId={activeTab.id}
             tabName={activeTab.name}
             readOnly={isReadOnly}
-            participant={ctx.can.addContent && isReadOnly}
           />
         ) : null}
       </StartViewTransition>

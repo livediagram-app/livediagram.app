@@ -54,7 +54,7 @@ export const CHAIR_SITTER_FACING: Readonly<Record<ChairFacing, ChairSitterFacing
 const isRetiredKind = (kind: string): boolean => !SHAPE_KINDS.has(kind);
 
 // Kinds whose resting face draws its own layout and shows the label as a
-// plain title (the seating, the buttons, the reaction pad, the portal, and a
+// plain title (the seating, the buttons, the portal, and a
 // retired element's placeholder): the editor's ElementFaceRouter hands them
 // the label string, never the aligned label node, so text alignment has
 // nothing to move on them. Kept here, beside the kind predicates, so the
@@ -66,7 +66,6 @@ export function hasOwnFace(kind: ShapeKind): boolean {
     kind === 'sofa' ||
     kind === 'mode-button' ||
     kind === 'focus-button' ||
-    kind === 'reaction-pad' ||
     kind === 'portal' ||
     isRetiredKind(kind)
   );

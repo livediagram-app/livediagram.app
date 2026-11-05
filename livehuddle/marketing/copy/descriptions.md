@@ -42,8 +42,8 @@ For directory cards and "short pitch" fields.
 
 > livehuddle is where your team meets in a Space. Open a link and walk in as
 > your own pixel character, see who is around, and gather in a Team Pod, a
-> Virtual Office or an All-Hands Hall, with sticky notes, a timer and a quick
-> vote. No sign-up, MIT-licensed and free. [51 words]
+> Virtual Office or an All-Hands Hall, with sticky notes and a timer on the
+> wall. No sign-up, MIT-licensed and free. [51 words]
 
 ---
 
@@ -56,9 +56,9 @@ For Product Hunt, app store short descriptions, README intros.
 > to say hello. Find the team in a Team Pod for the stand-up, a Virtual Office
 > to work side by side, or an All-Hands Hall for the company meeting.
 >
-> Every Space is also a board: sticky notes, images and link cards on the
-> walls, a shared timer and a quick vote. Share a link as an Editor,
-> Participant or Viewer. It has no voice or video yet, so keep your usual call
+> Every Space is also a board: sticky notes and stickers on the walls, and a
+> Timer or a Stopwatch in the room. Share a link as an Editor or a
+> Participant. It has no voice or video yet, so keep your usual call
 > alongside. MIT-licensed and free, with no paid tier. [109 words]
 
 ---
@@ -74,19 +74,19 @@ For longer listing bodies and "about this project" sections.
 > hello in a speech bubble.
 >
 > It starts from a link. There is no sign-in wall: anyone can open a Space, and
-> a guest's new Space stays in their browser until they press Share. Five
+> a guest's new Space stays in their browser until they press Share. Nineteen
 > templates are ready to walk into (a blank Space, a Virtual Office, a Team
-> Pod, a Coworking Space and an All-Hands Hall), and office pieces build more:
-> rooms, desks, sofas, meeting tables, plants, a coffee machine and portals
-> between rooms.
+> Pod, an All-Hands Hall, whole campuses of buildings and floors, and more),
+> and pieces build more: rooms with doors, desks, sofas, meeting tables,
+> plants, a coffee machine and portals between rooms.
 >
-> Every Space is also a board. Sticky notes, text, images and link cards sit on
-> the walls, the Session strip runs a shared timer and a quick vote, and Bring
-> Focus, the laser and Follow bring everyone to the same place. Comments with
-> mentions and assigned actions keep the follow-ups. Reaction Pads throw
-> confetti when it goes well.
+> Every Space is also a board. Sticky notes, text and stickers sit on the
+> walls, a Timer or a Stopwatch keeps the meeting to time, and Bring Focus and
+> Follow bring everyone to the same place. Comments with mentions and assigned
+> actions keep the follow-ups, and everyone can throw confetti round their
+> character when it goes well.
 >
-> Share links come as Editor, Participant or Viewer, with a password or an
+> Share links come as Editor or Participant, with a password or an
 > expiry. livehuddle has no voice or video in production yet, so a team keeps
 > its usual call open alongside.
 >
@@ -119,28 +119,27 @@ detailed GitHub / Product Hunt write-up.
 >
 > #### Ready to walk into
 >
-> Five templates start you off: a blank Space, a Virtual Office, a Team Pod for
-> the stand-up, a Coworking Space for quiet work side by side and an All-Hands
-> Hall with a stage for the company meeting. Every piece can be moved, and the
-> office pieces build more rooms. Twenty-five themes recolour a whole Space in
+> Nineteen templates start you off: a blank Space, a Virtual Office, a Team Pod
+> for the stand-up, an All-Hands Hall with a stage for the company meeting, and
+> whole campuses, from a Company Campus to a Conference Venue, with buildings,
+> doors and floors. Every piece can be moved, and the pieces build more rooms. Twenty-five themes recolour a whole Space in
 > one click.
 >
 > #### Light tools for a meeting
 >
 > Every Space is also a board. Put a sticky note per person on the wall for the
-> stand-up, start the shared timer, and finish with a quick vote, dots on the
-> notes. Whoever holds the facilitator baton runs the timer and the vote. Bring
-> Focus offers everyone a jump to the thing you mean, Follow takes you wherever
-> a teammate goes, and the laser and spotlight point at it. Comments with
+> stand-up, and start the Timer on the wall, or a Stopwatch. Whoever holds the
+> facilitator baton runs the clock. Bring Focus offers everyone a jump to the
+> thing you mean, and Follow takes you wherever a teammate goes. Comments with
 > mentions and reactions, and actions assigned to a teammate, keep the
-> follow-ups with the Space. Reaction Pads throw confetti, hearts or fireworks
-> when the news is good.
+> follow-ups with the Space. Everyone can throw confetti, hearts or fireworks
+> round their character when the news is good.
 >
 > #### Open from a link
 >
 > There is no sign-in wall. Anyone can open a Space; a guest's new Space stays
 > in their browser until they press Share, which syncs it in one step. Share
-> links come as Editor, Participant (walk, add notes and vote) or Viewer, with
+> links come as Editor or Participant (walk, talk, comment and react), with
 > an optional password or expiry, and can be revoked at any time. Teams share a
 > library of Spaces. Spaces can sync to your own Google Drive, or stay in This
 > Browser and never reach our servers.

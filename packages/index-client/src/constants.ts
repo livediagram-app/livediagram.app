@@ -206,6 +206,28 @@ export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, num
 // A link made without a level grants this.
 export const DEFAULT_LINK_LEVEL: Level = 'edit';
 
+// The levels a new link to each app's items may grant, most capable first (the Share dialog's order), and what one
+// made without a level grants. livehuddle offers no new Viewer link: a space is shared to bring people into a
+// meeting. A link already holding a level no longer offered keeps working; a public link is always `view`.
+const EVERY_LINK_LEVEL: readonly Level[] = ['edit', 'participate', 'view'];
+export const APP_LINK_LEVELS: Record<App, readonly Level[]> = {
+  livediagram: EVERY_LINK_LEVEL,
+  liveplanner: EVERY_LINK_LEVEL,
+  livedocuments: EVERY_LINK_LEVEL,
+  livedesign: EVERY_LINK_LEVEL,
+  livehuddle: ['edit', 'participate'],
+};
+export const APP_DEFAULT_LINK_LEVEL: Record<App, Level> = {
+  livediagram: DEFAULT_LINK_LEVEL,
+  liveplanner: DEFAULT_LINK_LEVEL,
+  livedocuments: DEFAULT_LINK_LEVEL,
+  livedesign: DEFAULT_LINK_LEVEL,
+  livehuddle: 'participate',
+};
+// Whether a new link to one of `app`'s items may grant `level`.
+export const linkLevelOffered = (app: App, level: Level): boolean =>
+  APP_LINK_LEVELS[app].includes(level);
+
 export const ITEM_SOURCES = ['person', 'ai', 'import', 'template'] as const;
 export type ItemSource = (typeof ITEM_SOURCES)[number];
 
@@ -235,6 +257,8 @@ export const INDEX_ERRORS = [
   'invalid_folder',
   'invalid_team',
   'invalid_level',
+  // A new link's level, or a link changed to one, that the item's app does not offer (APP_LINK_LEVELS).
+  'level_not_offered',
   'invalid_tab',
   'invalid_expiry',
   'invalid_key',

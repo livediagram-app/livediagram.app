@@ -1,5 +1,5 @@
-// Assembles the palette catalogue (shapes + line-art icons + technology icons
-// + stickers) into the flat, keyword-tagged list the global search surfaces as
+// Assembles the palette catalogue (shapes + stickers; no icons or Technology
+// marks, docs/specs/002-project-scope/not-in-livehuddle.md "Icons") into the flat, keyword-tagged list the global search surfaces as
 // "Add to canvas" results (docs/specs/008-canvas/canvas-and-palette.md). Built here, not in lib/search.ts, so the
 // search matcher stays catalogue-agnostic and the Explorer (which never adds
 // elements) doesn't pull the icon data into its bundle.
@@ -14,12 +14,7 @@ import {
   type PaletteTileDef,
 } from '@/components/palette/palette-tile-defs';
 import { paletteCategoriesFor, SEARCH_ONLY_TILE_IDS } from '@/components/palette/palette-layouts';
-import {
-  getLoadedIconCatalog,
-  getLoadedStickerCatalog,
-  getLoadedTechIconCatalog,
-} from '@liveworkspace/workbench/lib/icon-registry';
-import { isLegacyEmojiIconId } from '@liveworkspace/icons';
+import { getLoadedStickerCatalog } from '@liveworkspace/workbench/lib/icon-registry';
 
 // The shape-placing tiles, in palette order. Derived from the shared
 // catalogue (palette-tile-defs) rather than restated, which is what keeps search from
@@ -72,11 +67,7 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
 // what keeps a search add identical to clicking the tile. Dynamic icon /
 // sticker / tech tiles are left to the catalogue enumeration below.
 const OTHER_TILES = PALETTE_TILES.filter(
-  (t) =>
-    t.action.type !== 'shape' &&
-    t.action.type !== 'icon' &&
-    t.action.type !== 'tech-icon' &&
-    t.action.type !== 'sticker',
+  (t) => t.action.type !== 'shape' && t.action.type !== 'sticker',
 );
 
 // Search adds only what the meeting palette offers (docs/specs/002-project-scope/not-in-livehuddle.md "The diagram
@@ -125,17 +116,6 @@ export function buildPaletteSearchItems({
   if (!catalogues) return tiles;
   return [
     ...tiles,
-    // Line art only. The catalogue still carries the legacy emoji entries so
-    // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
-    // a second way to place something that is a sticker now.
-    ...getLoadedIconCatalog()
-      .filter((i) => !isLegacyEmojiIconId(i.id))
-      .map((i) => ({
-        id: `icon:${i.id}`,
-        name: i.label,
-        keywords: `icon ${i.keywords}`,
-        add: { type: 'icon' as const, iconId: i.id },
-      })),
     // Stickers (docs/specs/010-palette/stickers.md), added through their own path. A badge also
     // matches on the word on its pill, so "blocked" finds BLOCKED.
     ...getLoadedStickerCatalog().map((s) => ({
@@ -143,12 +123,6 @@ export function buildPaletteSearchItems({
       name: s.label,
       keywords: `sticker ${s.kind === 'badge' ? `${s.text.toLowerCase()} badge ` : 'emoji '}${s.keywords}`,
       add: { type: 'sticker' as const, stickerId: s.id },
-    })),
-    ...getLoadedTechIconCatalog().map((t) => ({
-      id: `tech:${t.id}`,
-      name: t.label,
-      keywords: `technology ${t.keywords}`,
-      add: { type: 'tech' as const, iconId: t.id },
     })),
   ];
 }

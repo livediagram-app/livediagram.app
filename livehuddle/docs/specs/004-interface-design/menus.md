@@ -82,7 +82,7 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 ## Control menus
 
 - The menu is a non-modal `role="dialog"` with a name ("Element menu", "Selection menu", "Cell
-  menu", "Tab menu", "Canvas menu", "<layer> layer menu", the session tool's "<tool> options",
+  menu", "Tab menu", "Canvas menu", the session tool's "<tool> options",
   "Live image"). Its trigger says so: `aria-haspopup="dialog"` (the tab's ⋯, the selection
   toolbar's More actions, an element's settings ⋯).
 - Its controls keep their own roles: buttons, toggle buttons (`aria-pressed`), sliders, fields,
@@ -138,8 +138,6 @@ element or add one:
   Note"), the Toolbar strip's **Add Page**, and the Draw dock's shapes. A catalogue entry (an icon,
   a sticker, a technology) keeps its own sentence-case name and its tile Title Cases it on the way
   (`headlineCase` in `@livehuddle/api-schema`).
-- **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
-  Point", "Add Stat".
 - **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
   Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
   Box", "New Round", "Take Roll") and a Q&A note's row actions ("Discuss Now", "Mark Done"). An
@@ -151,7 +149,7 @@ element or add one:
   that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)") and the presentation rows, which pair with the presentation
   controls' tooltips, keep sentence case.
 
-Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
+Captions inside a section ("Picks from"), hints, a tooltip that is not the
 control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only
 for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
 case. An element's own name in prose ("a Done check") stays sentence case too. A help article
@@ -193,8 +191,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Selection menu        | The same on a multi-selection                                            | Accordions, tiles, sliders, colour rows, flyouts                        |
 | Cell menu             | Right-click on a table cell                                              | Text toggles, colour rows, tiles                                        |
 | Tab menu, Canvas menu | ⋯ on the active tab; right-click on the canvas; the footer canvas button | Tool buttons, accordions, canvas sections                               |
-| Layer menu            | ⋯ on a layer row                                                         | Tool buttons, an opacity slider, accordion tiles                        |
-| Session tool settings | ⋯ on a timer, stopwatch, vote or poll element                            | The session pane for that tool                                          |
+| Session tool settings | ⋯ on a timer, stopwatch or poll element                                  | The session pane for that tool                                          |
 | Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |
 
 Before this spec every one of them was `role="menu"`, so their sliders, fields and toggles sat inside

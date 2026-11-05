@@ -230,9 +230,12 @@ export async function applyItemChanges(
   const post = (path: string, body: unknown) =>
     api.json<ItemResponse>(path, { method: 'POST', body: JSON.stringify(body) });
   // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields"): refused
-  // before the write, by name.
+  // before the write, by name. A field that holds several given [], null or "" comes back in `clear`
+  // (docs/specs/026-plan/plan-agents.md "Clearing a field").
   const fieldsFor = (input: Readonly<Record<string, unknown>> | undefined, type: ItemTypeDef) => {
-    const fields = input ? must(resolveFields(input, type, naming())).fields : {};
+    const { fields, clear = [] } = input
+      ? must(resolveFields(input, type, naming()))
+      : { fields: {} };
     const calculated = calculatedWritten([type], { type: type.id, fields: fields as ItemFields });
     if (calculated) {
       // calculatedWritten names only a field the type has.
@@ -247,13 +250,14 @@ export async function applyItemChanges(
         `${field.label} is calculated: it can't be set. list_items lists its value, worked out ${from}.`,
       );
     }
-    return fields;
+    return { fields, clear };
   };
   try {
     for (const c of changes) {
       if (c.op === 'add') {
         const type = must(resolveType(c.type ?? 'task', types)).type;
-        const fields = withRichText(fieldsFor(c.fields, type), type).set;
+        // A new card has nothing to clear: an empty value leaves the field unset.
+        const fields = withRichText(fieldsFor(c.fields, type).fields, type).set;
         const status = c.status
           ? must(resolveStatus(c.status, state.plan.statuses)).status
           : undefined;
@@ -273,12 +277,18 @@ export async function applyItemChanges(
       } else if (c.op === 'set') {
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
-        const described = withRichText(fieldsFor(c.fields, type), type, target.fields);
+        const given = fieldsFor(c.fields, type);
+        const described = withRichText(given.fields, type, target.fields);
         const set = described.set;
         // A value a removed field left on the card is cleared by its key, though the type no longer has it.
-        const named = (c.clear ?? []).map((k) =>
-          k in target.fields && !fieldKeyOf(k, type).ok ? k : must(fieldKeyOf(k, type)).key,
-        );
+        const named = [
+          ...new Set([
+            ...(c.clear ?? []).map((k) =>
+              k in target.fields && !fieldKeyOf(k, type).ok ? k : must(fieldKeyOf(k, type)).key,
+            ),
+            ...given.clear,
+          ]),
+        ];
         // Clearing the description, or a Long Text field, clears its formatting with it.
         const clear = [
           ...named,

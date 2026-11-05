@@ -64,7 +64,7 @@ describe('withoutNotches', () => {
     ]);
     expect(bAt(packed)).toBe(0);
     // A frame hugs b on the right, a pixel past it: the 2 px step would push b over its border.
-    const frame = { ...box('f', -20, 180, 217, 100), shape: 'frame' } as Element;
+    const frame = { ...box('f', -20, 180, 217, 100), shape: 'boundary' } as Element;
     const framed = withoutNotches([
       box('a', 0, 0),
       frame,

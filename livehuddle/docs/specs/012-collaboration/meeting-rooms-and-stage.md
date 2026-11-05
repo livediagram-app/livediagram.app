@@ -29,8 +29,10 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
   are in, so the booth is private from the floor around it.
 - **A closed room** (doorway **None**, reached by a [Portal](../009-elements/portal-element.md)) is a call like any
   other.
-- **Only rooms you can see count.** A room on a hidden layer neither blocks walking nor makes a call. A room's
-  rotation is ignored, as the walls ignore it.
+- **An [Office Pod](../009-elements/office.md#office-pod) is a room for this**: the floor inside its walls is a call of
+  its own, door open or shut, and a pod in a room is the innermost call (`roomZones` takes `office-pod` with
+  `podInterior`).
+- A room's rotation is ignored, as the walls ignore it.
 - **Video and screens follow hearing**: a bubble is received only from someone you hear
   ([Who sees what](video-and-screen-bubbles.md#who-sees-what)), so a room's cameras and shared screens stay in it.
   Within a room, the caps still pick the nearest six cameras and two screens.
@@ -62,7 +64,7 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
   destination. Default 360 × 140.
 - **Standing on it** means your feet are on its top, strictly inside it: the front edge (the face you see) and the
   outline are off it, as a room's threshold is outside the room. Of two stages overlapping, the smaller holds you.
-  A stage on a hidden layer is no stage, as a hidden room is no room; its rotation is ignored.
+  A stage's rotation is ignored.
 - **Whoever stands on the stage is heard by everyone on the tab**: every walking character in the Space's tab, in any
   room or none, at full volume and centred (no pan). On the stage, speakers hear each other as one room does (full
   volume, by side). Several stages on one tab are one stage for hearing: every speaker on any of them reaches the tab
@@ -81,6 +83,22 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
 - Walking off the stage ends it at once: you are back to your room's call. Hearing re-decides on the next scene, as
   it does for a room.
 - **The mic indicator** reads **Live** on the stage while anyone else walks the tab (they all hear you).
+- **The stage shows who is on it, to everyone.** While anyone stands on a stage, the stage lights up for everyone on
+  the tab: a soft spotlight falls on its top, and an **On Stage** badge with a red dot hangs from its plate, with a dot in
+  each person's presence colour and their names ("Alex", "Alex and Sam", "Alex, Sam +2"). Your own name reads **You**,
+  so on your screen the badge says "You" (or "You and Sam"). It is presence, never the document (like a chair's
+  sitter, [Chair](../009-elements/chair.md) "Occupancy is presence"): it goes out the moment the last person steps
+  off, leaves Avatar mode, changes tab or drops off, and it works with calls off too. The spotlight fades in and out
+  (off under reduced motion). Someone on a stage they may not speak from still lights it: it says who stands there;
+  the mic indicator and the stage line say who is heard.
+- **You are told you are on it.** While you speak from a stage, a calm line sits above the call strip, where the stage
+  line goes: **"You're on stage. Everyone on this tab hears you."** (the may-not-speak line keeps its place for a stage
+  you may not speak from). It is an `aria-live="polite"` status, so it is announced once.
+- Implementation: `stageStanders` (`apps/editor/lib/calls/stage-presence.ts`) works out who stands on each stage from
+  your character and the peers' presence, on the same top-of-the-stage test the call uses (`stageAt`), and is merged
+  into the occupants the element views already receive (`sittersOf`), kept by value so a stage re-renders only when
+  who is on it changes, never on a step. `StageView` draws the light and the badge; the strip line is
+  `StageLine`'s on-stage state.
 
 ## Raise hand (part 3, built)
 
@@ -135,8 +153,8 @@ screen reader hears it once on stepping on.
 
 ## The stage's way in (part 4, built)
 
-- **The tile.** **Stage** sits in the palette's **Navigate** category, among its office pieces, straight after Room
-  (Room, Stage, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug): a platform with a microphone on
+- **The tile.** **Stage** sits in the palette's **Rooms** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), straight after Room
+  (Fence, Room, Stage, Rug): a platform with a microphone on
   a stand. Its line: "A raised platform: whoever stands on it is heard by the whole tab." A new stage goes in behind
   everything, like a room or a rug, so chairs already placed stand in front of it. Only an Editor's palette offers
   it ([Share roles](#share-roles)).

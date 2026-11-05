@@ -4,9 +4,8 @@
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import { ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
-import { layerLockOf } from '../locks';
 import { idTaken, unknownField } from '../rejections';
-import { type EditState, isTaken, putElement, refuseLocked } from '../state';
+import { type EditState, isTaken, putElement } from '../state';
 import type { AddElementOperation } from '../types';
 import { PROTOTYPE_KEYS } from '../vocabulary';
 
@@ -34,8 +33,6 @@ export function applyAdd(
     return idTaken(operation, holder, new Set([...state.before.keys(), ...state.byId.keys()]));
   }
   const el = { ...raw, id } as Element;
-  const layerLock = layerLockOf(state.tab.layers, el.layerId);
-  if (layerLock) return refuseLocked(state, 'add', operation, el, layerLock);
   putElement(state, el, operation);
   if (!state.created.includes(id)) state.created.push(id);
   return null;

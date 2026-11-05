@@ -23,6 +23,8 @@ export type PaletteTileActions = {
   beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
+  // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
+  beginRoomWalls?: () => void;
   addArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   addSticky: () => void;
   addTable: () => void;
@@ -32,10 +34,6 @@ export type PaletteTileActions = {
   addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
-  // Dynamic icon tiles (palette-dynamic-tiles, the Toolbar strip): drop a single line-art /
-  // Technology catalogue icon, same handlers the Icons / Technology tabs use.
-  addIcon: (iconId: string) => void;
-  addTechIcon: (iconId: string) => void;
   // Picks up one of livediagram's Draw mode markers (palette-marker-tiles); no livehuddle tile offers one today.
   beginMarker: (penId: WhiteboardPenId) => void;
   // Puts the armed tool down (its tile pressed again).
@@ -59,11 +57,10 @@ export function tileHandler(
   }
   switch (a.type) {
     case 'shape':
-      // The creation-time choice rides along, so a confetti tile places a confetti pad
-      // (docs/specs/009-elements/reaction-pad.md).
+      // The creation-time choice rides along, so an Eraser tile places an Eraser button
+      // (docs/specs/009-elements/mode-button.md).
       return () =>
         actions.addShape(a.kind, {
-          reaction: a.reaction,
           mode: a.mode,
           variant: a.variant,
           name: tileCaption(def.label, def.caption),
@@ -78,6 +75,8 @@ export function tileHandler(
       return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
+    case 'room-walls':
+      return actions.beginRoomWalls ?? (() => {});
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
@@ -97,10 +96,6 @@ export function tileHandler(
       return () => actions.addSticker(a.stickerId);
     case 'component':
       return () => actions.addComponent(a.kind);
-    case 'icon':
-      return () => actions.addIcon(a.iconId);
-    case 'tech-icon':
-      return () => actions.addTechIcon(a.iconId);
     case 'marker':
       return () => actions.beginMarker(a.penId);
     case 'open':
@@ -120,12 +115,11 @@ export function tileActive(
   const a = def.action;
   switch (a.type) {
     case 'shape':
-      // Matched on the CHOICE too, or all five reaction tiles would light up
+      // Matched on the CHOICE too, or all the mode tiles would light up
       // together while one of them was armed.
       return (
         pendingDraw.type === 'shape' &&
         pendingDraw.kind === a.kind &&
-        pendingDraw.reaction === a.reaction &&
         pendingDraw.mode === a.mode &&
         pendingDraw.variant === a.variant
       );
@@ -139,6 +133,8 @@ export function tileActive(
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
+    case 'room-walls':
+      return pendingDraw.type === 'room-walls';
     // The Media tab has a tile per service and they all arm one `video`
     // intent, so match on the provider too or picking Loom would light up
     // Vimeo alongside it (the same trap the shape branch above avoids).
@@ -146,14 +142,12 @@ export function tileActive(
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
     case 'sticky':
       return pendingDraw.type === 'sticky';
-    // Icon / sticker tiles DO arm (they ride the shape intent carrying their
-    // glyph id), but their catalogues are open-ended and the picker tabs
-    // render thousands of tiles, so pressed-state matching per glyph buys
+    // Sticker tiles DO arm (they ride the shape intent carrying their
+    // sticker id), but the catalogue is open-ended and the picker renders
+    // hundreds of tiles, so pressed-state matching per sticker buys
     // nothing the mode banner and cursor don't already say.
     case 'annotation':
     case 'sticker':
-    case 'icon':
-    case 'tech-icon':
       return false;
     // A marker in hand: the whiteboard pen intent in this pen's colour and width.
     case 'marker':
@@ -235,7 +229,7 @@ function TileButton({
       description={def.description}
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
-      dragChoice={a.type === 'shape' ? (a.reaction ?? a.mode ?? a.variant) : undefined}
+      dragChoice={a.type === 'shape' ? (a.mode ?? a.variant) : undefined}
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}
       filled={def.filled}

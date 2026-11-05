@@ -7,16 +7,26 @@
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
 import type { ReactNode } from 'react';
 import { isBoxed, type BoxedElement, type Element } from '@livehuddle/document';
-import { Tooltip } from '@livehuddle/ui';
+import { Glyph, Tooltip } from '@livehuddle/ui';
 import {
   ActionMenuIcon,
   CommentMenuIcon,
   LinkMenuIcon,
   NoteMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
+
+// Clear Styles' eraser.
+function ClearStylesGlyph() {
+  return (
+    <Glyph size={14} units={16}>
+      <path d="M9.5 2.5 13.5 6.5 7 13H3.5L2 11.5z" />
+      <path d="M6 6l4 4" />
+      <path d="M8 13h6" />
+    </Glyph>
+  );
+}
 
 type QuickBarItem = { key: string; label: string; icon: ReactNode; on: boolean; run: () => void };
 
@@ -120,7 +130,7 @@ export function ElementMenuQuickBar({
             aria-label="Clear Styles"
             data-quick-bar="clear-styles"
             onClick={() => {
-              // Tracked as the panel's Clear Styles is (QuickClearStyles): one action, two ways in.
+              // Tracked as QuickClearStyles, the token the old Quick Style panel's Clear Styles sent.
               clearStyles.clear();
               onClose();
             }}

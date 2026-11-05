@@ -35,7 +35,7 @@ livehuddle is free and MIT-licensed with no plan for a paid tier (see [Open sour
 
 The **`@livehuddle/help-registry` package** is the single source of truth for categories and articles; `apps/help/lib/articles.ts` re-exports it so the help app's `@/lib/articles` import path stays stable. It lives in `packages/` (not in the help app) because the live editor's search panel consumes the same catalogue (see "Help in global search" below). Two flat arrays (`categories`, `articles`) plus helpers (`getArticlesByCategory`, `getCategoryGroups`, `getSubArticles`, `searchArticles`). The arrays are this product's; their shapes (`Article`, `Category`) and the helpers are `@liveworkspace/help-registry`'s (the monorepo's `packages/help-registry`, shared by every product), which the package binds to its arrays with `createHelpRegistry`, as its `telemetry` module binds its id overrides with `createHelpTelemetryIds`. The link helpers (`articleHref`, `categoryHref`) also live apart in the data-free `@liveworkspace/help-registry/hrefs`, so a page that only builds links never bundles the catalogue: the article layout reads its own URL and its parent's off the route (`../packages/help-site/src/lib/article-route.ts`) and imports only the hrefs, and the search box loads the registry on the reader's first focus, hover or keystroke ([Web performance](../016-platform/web-performance.md)). An article's `categorySlug` is its full nested path (e.g. `canvas/the-canvas`); `parentSlug` links a sub-article to its feature landing page.
 
-**Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title: synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Layer Order and Opacity" and the in-editor catalogue didn't cover it.)
+**Search keywords.** Every article carries a required `keywords` field: space-separated, lowercase synonyms for the vocabulary users actually type when they don't know the article's title: synonyms ("transparency" for opacity, "hotkey" for keyboard shortcuts), adjacent spellings ("color" beside "colour"), and concept words the copy doesn't happen to use. `searchArticles` matches case-insensitively on **title + description + keywords**, and the editor's search panel matches the same fields, so an article is findable by the concept it discusses, not only by an exact title match. A test enforces that no article ships without keywords. (Born from a user report: searching "Opacity" found nothing because the element-opacity article is titled "Colours, Borders and Opacity" and the in-editor catalogue didn't cover it.)
 
 **Sub-category grouping.** A feature category's landing cards can be split into labelled sub-category sections on its index page via an optional `group` field on each landing (e.g. Palette's `Selection Modes` / `Elements` / `Palette Settings`). `getCategoryGroups` buckets the category's landings by `group` in first-appearance order, and `FeatureCategoryIndex` renders one card grid per group under a heading. Landings without a `group` render in a single ungrouped grid, so other feature categories are unchanged.
 
@@ -68,11 +68,11 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 The feature categories group the feature guides by area:
 
 - **Explorer**: the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
-- **Palette**: the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
+- **Palette**: the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Avatar, Eraser, Format Painter), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing/shape-recognition, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Toolbar Layout; Quick-add on Hover left with Quick Connect, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-connect)).
 - **Canvas**: the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs**: multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Canvas, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration**: comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools**: zen mode (26), appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
+- **Tools**: appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
 - **Search Panel**: the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
@@ -184,10 +184,10 @@ the bar only. Rating hit the same collision rule from the other side: stars, whe
 a star reads as a favourite, so it draws the SCALE, a row part-filled, rather
 than the symbol.
 
-Voting's five are the clearest case of the whole exercise, and needed no redraw
+Voting's five (since retired with the dot vote) were the clearest case of the whole exercise, and needed no redraw
 because the rule was applied first: five articles about ONE feature, where every
-single one could have been drawn as "some dots". They draw spending a dot,
-restricting to a layer, hiding the count, tracking the room, and what won.
+single one could have been drawn as "some dots". They drew spending a dot,
+hiding the count, tracking the room, and what won.
 `casting-dots` has no box around its dots for the same reason Rating has no star:
 dots in a box is the die that `pickers` already draws. The four Arrow guides are
 the same shape of problem: four articles about arrows, next to an `arrows` family
@@ -226,8 +226,8 @@ once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
   from these so the house style (white panels, slate borders, emerald `brand`
   accents) lands in one place. This is the no-duplication rule applied to art.
 - **`../packages/help-site/src/art/illustrations/<area>.tsx`**: a figure that is the
-  same in every product that shows it (the colour and border controls, the layers
-  panel, undo and redo, the presentation tools): drawn once, and imported by an
+  same in every product that shows it (the colour and border controls, undo
+  and redo, the presentation tools): drawn once, and imported by an
   article from `@liveworkspace/help-site/art/illustrations/<area>`. A figure stays in
   the app while it shows that product's own work, words or palette. A figure whose only product words are its name or what it calls its work takes them as props
   (`product`, `noun`), and the article passes them: `<StuckCanvas noun="canvas" />`,
@@ -271,8 +271,8 @@ Space holds, **Avatar mode** and the Spaces templates, the meeting palette and s
 live. The pitch it opens with is the product's: a team **meets in a shared Space** ([Purpose](../001-project-vision/purpose.md)).
 
 - **About and Getting Started** (Work Tracker #423 part 5) say what livehuddle is today: a Space a team walks into
-  as characters, with rooms, presence and status, speech bubbles and reactions, comments, the four Spaces and Blank
-  Space, the Timer and Vote, the facilitator, Bring Focus, Follow, the laser and the spotlight, and share links. They
+  as characters, with rooms, presence and status, speech bubbles and reactions, comments, the Spaces templates and Blank
+  Space, the Timer and Stopwatch, the facilitator, Bring Focus, Follow, and share links. They
   name no workshop, retro, poll, quiz, deck, diagram or drawing tool, and they never say calls are on: proximity
   audio is mentioned only as built and not switched on everywhere, linking to its article.
 
@@ -300,7 +300,7 @@ live. The pitch it opens with is the product's: a team **meets in a shared Space
   under Palette › Virtual Office (`/help/palette/virtual-office/stage/`: adding one, speaking from it, Who Can Speak
   and Show Cameras, who may do what), linked from the Virtual Office article's Stage section, its figures drawn the
   same way.
-- **The palette's groups** follow Workshop's palette: Everyday Elements, **Layout Kits** (lanes, frames, stacks,
+- **The palette's groups** follow Workshop's palette: Everyday Elements, **Layout Kits** (lanes, stacks,
   boundaries, keys, cards and callouts, pointer notes, the timeline), Workshop Kits and Palette Settings.
 
 ## Renamed articles

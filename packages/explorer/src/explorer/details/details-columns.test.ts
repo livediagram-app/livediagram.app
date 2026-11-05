@@ -10,6 +10,7 @@ import {
   sortDetailsEntries,
 } from './details-columns';
 import { formatDateTime, formatSize } from './details-format';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const folder = (id: string, name: string, over: Partial<Folder> = {}): Folder => ({
   id,
@@ -81,17 +82,18 @@ describe('the Details sort', () => {
     const items = Array.from({ length: 20_000 }, (_, i) =>
       item(i, { title: `Plan ${(i * 7919) % 20_000}`, summary: { bytes: (i * 31) % 997 } }),
     );
-    const t = performance.now();
-    for (const column of ['name', 'size', 'updated'] as const) {
-      sortDetailsEntries({
-        folders: [],
-        items,
-        sort: { column, direction: 'asc' },
-        itemCount: () => 0,
-        kindOne,
-      });
-    }
-    expect(performance.now() - t).toBeLessThan(1500);
+    const ms = cpuMsOf(() => {
+      for (const column of ['name', 'size', 'updated'] as const) {
+        sortDetailsEntries({
+          folders: [],
+          items,
+          sort: { column, direction: 'asc' },
+          itemCount: () => 0,
+          kindOne,
+        });
+      }
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 });
 

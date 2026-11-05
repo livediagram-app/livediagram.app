@@ -29,7 +29,7 @@ function tabOf(perFrame: number): Tab {
     elements.push({
       id: `f${frame}`,
       type: 'shape',
-      shape: 'frame',
+      shape: 'boundary',
       x: fx,
       y: 0,
       width: 400,
@@ -111,7 +111,7 @@ function frameOf(count: number): Tab {
     {
       id: 'f0',
       type: 'shape',
-      shape: 'frame',
+      shape: 'boundary',
       x: 0,
       y: 0,
       width: columns * 200 + 20,

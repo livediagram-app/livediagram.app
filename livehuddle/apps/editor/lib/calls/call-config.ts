@@ -11,6 +11,7 @@ import type { CallsCaller } from '@/lib/api/calls';
 import type { ViewRect } from './bubbles';
 import type { CallMedia } from './calls-store';
 import type { Point } from './hearing';
+import type { LocalPreview } from './local-preview';
 import type { HandSignal } from './raised-hand';
 import type { CallStage } from './stage';
 import { VOICE_REFRESH_MS, VOICE_SAMPLE_MS } from './voice-detector';
@@ -28,30 +29,16 @@ export const REPROVE_MS = 2000;
  */
 export const CALLS_CHECK_MS = VOICE_REFRESH_MS + 2 * VOICE_SAMPLE_MS;
 
-/** The camera's source: the large layer's size (video-and-screen-bubbles.md "Two layers"). */
-export const CAMERA_CONSTRAINTS: MediaStreamConstraints = {
-  audio: false,
-  video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } },
-};
-/** Two simulcast layers, large first (Realtime ranks RIDs a to z): `f` 720p at 1.5 Mbps, `h` half size at 300 kbps. */
-export const CAMERA_ENCODINGS: RTCRtpEncodingParameters[] = [
-  { rid: 'f', maxBitrate: 1_500_000, maxFramerate: 24 },
-  { rid: 'h', scaleResolutionDownBy: 2, maxBitrate: 300_000, maxFramerate: 24 },
-];
-/** A screen, capped for cost and clarity: up to 1080p at 5 to 15 fps (video-and-screen-bubbles.md "The screen share"). */
-export const SCREEN_MAX_FPS = 15;
-export const SCREEN_MAX_BITRATE = 1_000_000;
-export const SCREEN_CONSTRAINTS: DisplayMediaStreamOptions = {
-  audio: false,
-  video: {
-    width: { max: 1920 },
-    height: { max: 1080 },
-    frameRate: { ideal: SCREEN_MAX_FPS, max: SCREEN_MAX_FPS },
-  },
-};
-export const SCREEN_ENCODINGS: RTCRtpEncodingParameters[] = [
-  { maxBitrate: SCREEN_MAX_BITRATE, maxFramerate: SCREEN_MAX_FPS },
-];
+// The camera's and screen's capture and encodings live in a light module of their own, which the local preview
+// (local-preview.ts) shares without pulling in the call.
+export {
+  CAMERA_CONSTRAINTS,
+  CAMERA_ENCODINGS,
+  SCREEN_CONSTRAINTS,
+  SCREEN_ENCODINGS,
+  SCREEN_MAX_BITRATE,
+  SCREEN_MAX_FPS,
+} from './media-constraints';
 
 export const MIC_CONSTRAINTS: MediaStreamConstraints = {
   audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
@@ -79,7 +66,10 @@ export type CallSignal =
   // Proves this browser's Realtime session to the room, which then answers the mint route for it (#483).
   | { kind: 'call-session'; sessionId: string; sessionToken: string }
   // An Editor stopping someone else's screen share (#469).
-  | { kind: 'call-stop-share'; targetId: string };
+  | { kind: 'call-stop-share'; targetId: string }
+  // A knock on a room, and the answer to one (docs/specs/012-collaboration/knock.md "The wire").
+  | { kind: 'avatar-knock'; roomId: string }
+  | { kind: 'avatar-knock-answer'; targetId: string; roomId: string; answer: 'in' | 'later' };
 
 /**
  * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, the
@@ -107,6 +97,8 @@ export type ProximityCallInput = {
   getDisplayMedia?: (options: DisplayMediaStreamOptions) => Promise<MediaStream>;
   // Whether the page is visible; a hidden tab receives no bubbles. Defaults to the document's.
   pageVisible?: () => boolean;
+  // The canvas's local preview (video-and-screen-bubbles.md "Local preview"): a live call sends what it may of it.
+  preview?: Pick<LocalPreview, 'stream' | 'take' | 'stop' | 'subscribe'>;
 };
 
 /** The browser's getUserMedia, unless the input brings its own. */

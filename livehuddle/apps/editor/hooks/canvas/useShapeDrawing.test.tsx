@@ -189,7 +189,6 @@ describe('arming a draw over a press tool', () => {
   it.each([
     ['eraser', 'select'],
     ['format', 'select'],
-    ['laser', 'pan'],
   ] as const)('puts the %s down for %s', (tool, next) => {
     const setCanvasTool = vi.fn();
     const { result, rerender } = setup(vi.fn<Commit>(), setCanvasTool);
@@ -208,5 +207,80 @@ describe('arming a draw over a press tool', () => {
     rerender({ tool: 'pan' });
     act(() => result.current.drawing.beginPolygon());
     expect(setCanvasTool).not.toHaveBeenCalled();
+  });
+});
+
+// The Room Builder (docs/specs/009-elements/room-builder.md "Share roles"): an Editor arms it and draws a room; a
+// Viewer (edits blocked) can neither arm it nor commit one.
+describe('useShapeDrawing Room Builder', () => {
+  function roomSetup(editsBlocked: boolean) {
+    const commit = vi.fn<Commit>();
+    const selection = createSelectionStore();
+    const hook = renderHook(() =>
+      useShapeDrawing({
+        editsBlocked,
+        readSelection: selection.get,
+        canvasTool: 'select',
+        setCanvasTool: vi.fn(),
+        activeTab: { id: 't1', name: 'Tab', elements: [] },
+        drawMode: false,
+        commit,
+        setSelectedId: selection.setSelectedId,
+        setMultiSelectedIds: selection.setMultiSelectedIds,
+        setEditingId: vi.fn(),
+        zoomRef: { current: 1 },
+        styleNewElement: (el) => el,
+      }),
+    );
+    return { ...hook, commit, selection };
+  }
+  const L = [
+    { x: 0, y: 0 },
+    { x: 200, y: 0 },
+    { x: 200, y: 100 },
+    { x: 100, y: 200 },
+    { x: 0, y: 200 },
+  ];
+
+  it('lets an Editor arm it and commit a custom room, selected', () => {
+    const { result, commit, selection } = roomSetup(false);
+    act(() => result.current.beginRoomWalls());
+    expect(result.current.pendingDraw).toEqual({ type: 'room-walls' });
+    act(() => result.current.commitRoomWalls(L));
+    expect(result.current.pendingDraw).toBeNull();
+    expect(commit).toHaveBeenCalledTimes(1);
+    const added = commit.mock.calls[0]![0]([]);
+    expect(added).toHaveLength(1);
+    expect(added[0]).toMatchObject({ type: 'shape', shape: 'room', roomDoor: 'none' });
+    expect(selection.get().selectedId).toBe(added[0]!.id);
+  });
+
+  // docs/specs/009-elements/office.md "The doorway is a Door": a tapped or drawn Room comes with its Door, one commit.
+  it('adds a tapped Room with its Door on the front wall in one commit, the room selected', () => {
+    const { result, commit, selection } = roomSetup(false);
+    act(() => result.current.commitDraw({ type: 'shape', kind: 'room' }, 500, 400, 500, 400));
+    expect(commit).toHaveBeenCalledTimes(1);
+    const added = commit.mock.calls[0]![0]([]);
+    expect(added).toHaveLength(2);
+    expect(added[0]).toMatchObject({ shape: 'room', roomDoor: 'none', width: 480, height: 320 });
+    expect(added[1]).toMatchObject({ shape: 'door' });
+    expect((added[1] as { rotation?: number }).rotation ?? 0).toBe(0);
+    expect(selection.get().selectedId).toBe(added[0]!.id);
+  });
+
+  it('commits nothing for fewer than three corners', () => {
+    const { result, commit } = roomSetup(false);
+    act(() => result.current.beginRoomWalls());
+    act(() => result.current.commitRoomWalls(L.slice(0, 2)));
+    expect(commit).not.toHaveBeenCalled();
+    expect(result.current.pendingDraw).toBeNull();
+  });
+
+  it('gives a Viewer neither the tool nor a room', () => {
+    const { result, commit } = roomSetup(true);
+    act(() => result.current.beginRoomWalls());
+    expect(result.current.pendingDraw).toBeNull();
+    act(() => result.current.commitRoomWalls(L));
+    expect(commit).not.toHaveBeenCalled();
   });
 });

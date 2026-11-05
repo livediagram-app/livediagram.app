@@ -32,7 +32,7 @@ export function withoutNotches(elements: Element[]): Element[] {
   // The boxes a straightened line must miss: every box but the frames and lanes that hold them.
   const boxes = elements.filter(
     (el): el is BoxedElement =>
-      isBoxed(el) && !(el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane')),
+      isBoxed(el) && !(el.type === 'shape' && (el.shape === 'boundary' || el.shape === 'lane')),
   );
   const pinned = (end: Endpoint) => (end.kind === 'pinned' ? end.elementId : null);
   // How many arrows meet each box, and the boxes moved to true a line up.
@@ -47,7 +47,7 @@ export function withoutNotches(elements: Element[]): Element[] {
   // a gap from its neighbour, or hugged by its frame's padding, has no room for the step and is left where it is.
   const holders = elements.filter(
     (el): el is BoxedElement =>
-      isBoxed(el) && el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane'),
+      isBoxed(el) && el.type === 'shape' && (el.shape === 'boundary' || el.shape === 'lane'),
   );
   const within = (a: Rect, b: Rect) =>
     a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;

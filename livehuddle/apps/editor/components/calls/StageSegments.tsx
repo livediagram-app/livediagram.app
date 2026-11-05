@@ -118,7 +118,17 @@ export function DoNotDisturbSegment({ onClear }: { onClear?: () => void }) {
 }
 
 /** Above the strip while you stand on a stage that does not let you speak. */
-export function StageLine({ barredBy }: { barredBy: CallSelf['barredBy'] }) {
+/** Above the strip while you speak from a stage (meeting-rooms-and-stage.md "You are told you are on it"). */
+export const ON_STAGE_LINE = "You're on stage. Everyone on this tab hears you.";
+
+export function StageLine({
+  barredBy,
+  onStage = false,
+}: {
+  barredBy: CallSelf['barredBy'];
+  // You speak from a stage: say so, where the may-not-speak line goes.
+  onStage?: boolean;
+}) {
   return (
     <span
       data-stage-line=""
@@ -128,6 +138,14 @@ export function StageLine({ barredBy }: { barredBy: CallSelf['barredBy'] }) {
       {barredBy ? (
         <span className="block rounded-md bg-slate-900/90 px-2.5 py-1 text-xs font-medium text-white shadow-md motion-safe:animate-card-rise dark:bg-slate-100/95 dark:text-slate-900">
           {STAGE_LINE[barredBy]}
+        </span>
+      ) : onStage ? (
+        <span
+          data-on-stage-line=""
+          className="flex items-center gap-1.5 rounded-md bg-slate-900/90 px-2.5 py-1 text-xs font-medium text-white shadow-md motion-safe:animate-card-rise dark:bg-slate-100/95 dark:text-slate-900"
+        >
+          <span aria-hidden className="size-1.5 rounded-full bg-rose-500" />
+          {ON_STAGE_LINE}
         </span>
       ) : null}
     </span>

@@ -16,6 +16,7 @@ import {
   timeLabel,
   stackLabel,
 } from './model';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const DAY = 24 * 60 * 60_000;
 const noon = new Date(2026, 9, 21, 12).getTime();
@@ -155,14 +156,15 @@ describe('the Timeline’s rules', () => {
     const events = Array.from({ length: 10_000 }, (_, i) =>
       makeEvent(i, { type: types[i % types.length]!, occurredAt: noon - i * 600_000 }),
     );
-    const start = performance.now();
-    const groups = groupByDay(collapseSameDayCreate(events), noon);
+    let groups: ReturnType<typeof groupByDay> = [];
     let stacks = 0;
-    for (const g of groups) stacks += buildStacks(g.events).length;
-    const ms = performance.now() - start;
+    const ms = cpuMsOf(() => {
+      groups = groupByDay(collapseSameDayCreate(events), noon);
+      for (const g of groups) stacks += buildStacks(g.events).length;
+    });
     expect(groups.length).toBeGreaterThan(60);
     expect(stacks).toBeGreaterThan(groups.length);
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });
 

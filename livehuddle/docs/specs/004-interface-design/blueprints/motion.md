@@ -96,7 +96,6 @@ Each is set to the token of the exit animation it waits for.
 | `TabPresenceStack` `POP_OUT_MS`    | 240    | `MOTION_MS.micro` |
 | `ToolbarStripRail` `RAIL_LEAVE_MS` | 160    | `MOTION_MS.micro` |
 | `ToolbarStripRail` `REORDER_MS`    | 200    | `MOTION_MS.short` |
-| `QuickConnectRing` `EXIT_MS`       | 200    | `MOTION_MS.short` |
 
 Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY_MS`,
 `RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces and
@@ -147,14 +146,13 @@ keeps its own `lw-tl-*` motion, the date pulse included (`@liveworkspace/explore
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
 - **`apps/editor`**
-  - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
+  - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
-    `template-picker-wizard` progress bar, and the `PollPanel` and `VotePanel` bars.
+    `template-picker-wizard` progress bar, and the `PollPanel` bars.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
-  - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
-    for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
+  - Inline: the `CanvasSelectionToolbars` fades take `micro`. `explorer-icons` takes `micro`.
 - **`packages/ui`**: `SiteSwitcher` takes `micro` for the chevron and the sites card. `Brand` takes
   `micro` for the colour and the hover rotate.
 - **`apps/help`**: `.card-glow` (0.3s) takes `micro`, as do `CategoryCard`, `FeatureArticleCard`,

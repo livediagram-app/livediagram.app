@@ -15,10 +15,13 @@ export function PassTicket({
   fresh = false,
   highlight = false,
   leaving = false,
+  legacy = false,
   children,
 }: {
   level: Level;
   code: string;
+  // The level is one the item's app no longer offers a new pass (livehuddle's Viewer): the band says so.
+  legacy?: boolean;
   expired?: boolean;
   fresh?: boolean;
   highlight?: boolean;
@@ -49,7 +52,9 @@ export function PassTicket({
             }`}
           >
             <pass.Icon />
-            <span className="text-[10px] font-bold uppercase tracking-[0.12em]">{pass.title}</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.12em]">
+              {legacy ? `${pass.title} (Legacy)` : pass.title}
+            </span>
           </div>
           <div className="flex min-w-0 flex-col gap-2 px-3 py-2.5">{children}</div>
         </div>

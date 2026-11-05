@@ -76,11 +76,9 @@ describe('classifyRoomOp', () => {
     expect(delta({})).toEqual([]);
   });
 
-  it('reads a vote as its element changing, and whole-tab ops as the tab changing', () => {
-    expect(classifyRoomOp({ kind: 'vote', tabId: 't1', elementId: 'a', delta: 1 })).toEqual([
-      { kind: 'element', tabId: 't1', elementId: 'a', change: 'changed' },
-    ]);
-    expect(classifyRoomOp({ kind: 'vote', tabId: 't1' })).toEqual([]);
+  it('reads whole-tab ops as the tab changing, and the retired vote op as nothing', () => {
+    // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote".
+    expect(classifyRoomOp({ kind: 'vote', tabId: 't1', elementId: 'a', delta: 1 })).toEqual([]);
     for (const kind of ['tab', 'tab-meta'])
       expect(classifyRoomOp({ kind, tabId: 't1' })).toEqual([{ kind: 'tab', tabId: 't1' }]);
   });

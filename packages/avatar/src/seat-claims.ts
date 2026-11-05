@@ -4,7 +4,7 @@
 // agree on the sitter without a lock. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import { isSeatingShape } from './office-geometry';
+import { seatsACharacter } from './office-geometry';
 import { isSceneShape, type AvatarSceneElement } from './scene';
 import { SEAT_SITTER_FACING, seatingFacing, seatPoints, type Seat, type SeatedBox } from './seats';
 import type { AvatarFacing, AvatarPoint } from './walk';
@@ -150,6 +150,6 @@ export function yieldFrom<E extends AvatarSceneElement>(
 ): AvatarPoint | null {
   if (!seatedOn || !own) return null;
   const el = elements.find((e) => e.id === seatedOn);
-  if (!el || !isSceneShape(el) || !isSeatingShape(el.shape)) return null;
+  if (!el || !isSceneShape(el) || !seatsACharacter(el.shape)) return null;
   return seatToYield({ ...el, shape: el.shape }, own, peers);
 }

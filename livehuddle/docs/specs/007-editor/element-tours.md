@@ -50,8 +50,9 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
   follows the account ([User preferences](user-preferences.md)). Until 25 October 2026 it listed the kinds whose
   offer had been answered (Play or Cancel) and hid the offer for them; from then until 1 November 2026 it only fed
   the Settings rows. Now it hides that kind's tour from the Start Tour button again, until its switch is turned on.
-- `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as taken
-  while the mode is on, as `pagesTourSeen` does for its kinds.
+- `elementToursSeen` counts every kind as taken: **Show Me on Every Element** switched off writes it (with every kind
+  listed), and so did the retired [Power user mode](power-user-mode.md)'s preset, which listed none. Turning a kind's
+  switch back on lifts it, keeping every other kind answered.
 
 ## Settings
 
@@ -62,8 +63,8 @@ over them all (on while any is not yet taken; off marks every kind taken, on for
 toured kind nested beneath it, named for the element alone: **Timeline**, linking the Timeline article.
 On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Start Tour button
 whenever such an element is selected; off takes it off the button. The accordion opens on its own when Settings is
-opened on one of its rows (a search result) or on the section. Power user mode's readout lists the switch over them
-all as **Show Me on Every Element**.
+opened on one of its rows (a search result) or on the section. The switch over them all is **Show Me on Every
+Element**.
 
 ## Menu steps
 
@@ -99,16 +100,18 @@ On the selected Timeline, from `timeline-tour-steps.ts`.
    turns above and below.
 2. **What Happens**: rings the first milestone's name; click (tap) to type over it.
 3. **And When**: rings the first milestone's when; click (tap) to change it.
-4. **Add a Milestone**: the "+" ring open on **Add Milestone**; one at the end, up to eight.
-5. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
-6. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
-7. **That Is a Timeline**: the closing card.
+4. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
+5. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
+6. **That Is a Timeline**: the closing card.
+
+(The Add a Milestone step rang the "+" ring's **Add Milestone**; livehuddle has no "+" ring,
+[Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-connect).)
 
 ## Menu steps on the elements of round two
 
 The chart, stack, lane, boundary and portal are edited mostly from their own section of the
 element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
-otherwise the element itself, with "Right-click it" in place of "More" (a power user on a desktop has no More button).
+otherwise the element itself, with "Right-click it" in place of "More".
 The tour points at the section by name; it never opens the menu itself.
 
 ## The Chart tour
@@ -143,7 +146,7 @@ On a selected stack, from `stack-tour-steps.ts`.
 2. **Drag to Reorder** (a stack holding something; rings its first child): drag one past its neighbour and it takes
    that slot, the rest reflowing. An empty stack instead has **Drop Things In** on the stack: what is dropped inside
    takes the next slot, and an empty stack keeps its size as a target.
-3. **Carries What It Holds**: rings the stack; dragging it brings everything inside, as a frame does.
+3. **Carries What It Holds**: rings the stack; dragging it brings everything inside.
 4. **The Stack Menu**: the menu step. Row, Column or Grid (with Columns), Gap, Padding, Align.
 5. **That Is a Stack**: the closing card, with **Stacks Help**.
 
@@ -154,7 +157,7 @@ On a selected lane, from `lane-tour-steps.ts`. Its gutter carries `data-lane-gut
 1. **A Band for Each Role**: rings the lane; a role, a team or a system per lane, lanes butting edge to edge.
 2. **The Title Gutter**: rings the gutter; double-click (double-tap) to name it, its colour is Heading under Colours.
 3. **Drag the Seam** (rings the seam): more or less room for the title, snapping to the seams of the lanes around it.
-4. **Carries Its Steps**: rings the lane; dragging it brings everything inside, as a frame does.
+4. **Carries Its Steps**: rings the lane; dragging it brings everything inside.
 5. **Rows or Columns**: the menu step. Centring the title at the top turns the lane into a column; Upright Title
    (Text) turns a side title to read bottom to top.
 6. **That Is a Lane**: the closing card, with **Lanes Help**.

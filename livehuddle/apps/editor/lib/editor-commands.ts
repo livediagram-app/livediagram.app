@@ -19,14 +19,12 @@ export type EditorCommand = CommandSearchItem & { run: () => void };
 // What the builder needs to know about the current editor to decide which
 // commands apply. Kept primitive so the builder stays pure + cheap to test.
 export type CommandContext = {
-  // View-only session (docs/specs/007-editor/command-palette.md): only the view-safe subset (zen / fit /
+  // View-only session (docs/specs/007-editor/command-palette.md): only the view-safe subset (fit /
   // export) is offered; every mutating command is withheld.
   isReadOnly: boolean;
   // Gate Undo / Redo on whether there's anything to un/redo.
   canUndo: boolean;
   canRedo: boolean;
-  // Names the zen command honestly ("Enter" vs "Exit").
-  zenMode: boolean;
   // 0 = nothing selected, 1 = single selection, >1 = multi-selection.
   selectionCount: number;
   // True when the single selection is a boxed element (rotation / note /
@@ -61,9 +59,6 @@ export type CommandContext = {
   // content, so they disable on an empty canvas exactly as the palette's
   // tool dropdown disables them.
   canvasEmpty: boolean;
-  // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
-  // so it is withheld on a phone the same way the dropdown omits it.
-  isMobile: boolean;
   // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
   // search does not offer it either.
   whiteboard?: boolean;
@@ -95,7 +90,6 @@ export type CommandHandlers = {
   openCollaborators: () => void;
   undo: () => void;
   redo: () => void;
-  toggleZen: () => void;
   fitToScreen: () => void;
   autoAlign: () => void;
   // Number every step on the tab 1, 2, 3 in reading order (docs/specs/009-elements/step-number.md).
@@ -126,7 +120,6 @@ export const CANVAS_TOOLS: {
   mutates?: boolean;
   // Edits the tab's elements, so it goes on a locked tab, as in the dropdown.
   editsElements?: boolean;
-  desktopOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
@@ -153,26 +146,6 @@ export const CANVAS_TOOLS: {
     mutates: true,
     editsElements: true,
   },
-  {
-    id: 'laser',
-    name: 'Laser Pointer',
-    keywords: 'laser pointer present point highlight temporary trail k',
-    needsContent: true,
-  },
-  {
-    id: 'spotlight',
-    name: 'Spotlight',
-    keywords: 'spotlight focus dim darken present attention',
-    needsContent: true,
-    desktopOnly: true,
-  },
-
-  {
-    id: 'isometric',
-    name: 'Isometric View',
-    keywords: 'isometric 3d tilt perspective depth angle i',
-    needsContent: true,
-  },
 ];
 
 // The tool switches, minus whichever tool is already in force. Grouped with
@@ -186,7 +159,6 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
     (t) =>
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
-      !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
       !(t.editsElements && ctx.tabLocked) &&
       !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
@@ -203,12 +175,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // read-only visitors can run too. Everything below the read-only return
   // mutates the document (or opens an edit surface) and stays editor-only.
   const viewSafe: EditorCommand[] = [
-    {
-      id: 'zen',
-      name: ctx.zenMode ? 'Exit zen mode' : 'Enter zen mode',
-      keywords: 'zen focus distraction free full screen hide chrome presentation',
-      run: h.toggleZen,
-    },
     {
       id: 'fit-to-screen',
       name: 'Fit to Screen',
@@ -260,7 +226,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   }
 
   // --- Document / tab commands. Always available in-document (independent of
-  // the selection), so a power user can share / rename / theme without first
+  // the selection), so someone at the keyboard can share / rename / theme without first
   // clearing what's selected.
   out.push({
     id: 'create-tab',
@@ -297,7 +263,8 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'open-canvas',
     name: 'Open Canvas Options',
-    keywords: 'canvas background pattern grid options style backdrop',
+    keywords:
+      'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
     run: h.openCanvasOptions,
   });
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
@@ -333,7 +300,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'import',
     name: 'Import…',
-    keywords: 'import excalidraw json upload load open file',
+    keywords: 'import json upload load open file restore backup',
     run: h.openImport,
   });
   out.push({

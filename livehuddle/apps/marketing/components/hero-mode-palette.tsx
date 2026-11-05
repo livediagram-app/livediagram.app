@@ -7,17 +7,21 @@
 import type { EditorMode } from '@livehuddle/document';
 import {
   EDITOR_MODE_ICONS,
-  IconsTabIcon,
   lucideGlyph,
-  MediaTabIcon,
-  ModeGroupIcon,
   MoveGroupIcon,
-  ReactionGroupIcon,
   StickersTabIcon,
   WriteTabIcon,
   type IconProps,
 } from '@livehuddle/ui';
-import { lucidePanelTop } from '@liveworkspace/icons/lucide';
+import {
+  lucideArmchair,
+  lucideCoffee,
+  lucideGamepad2,
+  lucidePanelsTopLeft,
+  lucidePresentation,
+  lucideTreePine,
+  lucideWine,
+} from '@liveworkspace/icons/lucide';
 import type { ComponentType } from 'react';
 
 export type HeroMode = EditorMode;
@@ -30,26 +34,24 @@ export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<Ic
 // A category on the bar: its glyph (the editor's own, @livehuddle/ui) and its one-word name.
 export type BarCategory = { key: string; label: string; Icon: ComponentType };
 
-// The Frame category wears the Frame tile's own glyph, as the editor's bar does.
-const FrameIcon = lucideGlyph(lucidePanelTop, 18);
+// The building categories wear their lucide glyphs, as the editor's bar does (space-categories.tsx).
+const glyph = (prims: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(prims, 18);
 
-// Each bar mode's categories, band by band (a hairline between bands), as the editor lays them out: Write, Frame ·
-// Navigate, React, Modes · Icons, Stickers, Media.
+// Each bar mode's categories, band by band (a hairline between bands), as the editor lays them out: Write · Rooms,
+// Seating, Amenities, Bar, Recreation, Garden, Meeting · Travel · Stickers.
 export const MODE_BAR: Record<HeroMode, readonly (readonly BarCategory[])[]> = {
   workshop: [
+    [{ key: 'write', label: 'Write', Icon: WriteTabIcon }],
     [
-      { key: 'write', label: 'Write', Icon: WriteTabIcon },
-      { key: 'frame', label: 'Frame', Icon: FrameIcon },
+      { key: 'rooms', label: 'Rooms', Icon: glyph(lucidePanelsTopLeft) },
+      { key: 'seating', label: 'Seating', Icon: glyph(lucideArmchair) },
+      { key: 'amenities', label: 'Amenities', Icon: glyph(lucideCoffee) },
+      { key: 'bar', label: 'Bar', Icon: glyph(lucideWine) },
+      { key: 'recreation', label: 'Recreation', Icon: glyph(lucideGamepad2) },
+      { key: 'garden', label: 'Garden', Icon: glyph(lucideTreePine) },
+      { key: 'meeting', label: 'Meeting', Icon: glyph(lucidePresentation) },
     ],
-    [
-      { key: 'navigate', label: 'Navigate', Icon: MoveGroupIcon },
-      { key: 'react', label: 'React', Icon: ReactionGroupIcon },
-      { key: 'modes', label: 'Modes', Icon: ModeGroupIcon },
-    ],
-    [
-      { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
-      { key: 'stickers', label: 'Stickers', Icon: StickersTabIcon },
-      { key: 'media', label: 'Media', Icon: MediaTabIcon },
-    ],
+    [{ key: 'travel', label: 'Travel', Icon: MoveGroupIcon }],
+    [{ key: 'stickers', label: 'Stickers', Icon: StickersTabIcon }],
   ],
 };

@@ -49,7 +49,6 @@ const mixed: Element[] = [
   },
   { id: 'sticky', type: 'sticky', x: 0, y: 0, width: 9, height: 9 },
   { id: 'image', type: 'image', x: 0, y: 0, width: 9, height: 9, imageId: null },
-  { ...createShape('frame', 0, 0), id: 'frame' },
   { ...createShape('square', 0, 0), id: 'locked', locked: true },
 ];
 
@@ -57,17 +56,17 @@ describe('quickStyleApplicability', () => {
   it('splits a mixed selection into what the rows style and what they pass over', () => {
     const a = quickStyleApplicability(mixed);
     expect(a.strokes.map((e) => e.id)).toEqual(['stroke-1', 'stroke-2']);
-    expect(a.targets.map((e) => e.id)).toEqual(['shape', 'text', 'arrow', 'path', 'frame']);
+    expect(a.targets.map((e) => e.id)).toEqual(['shape', 'text', 'arrow', 'path']);
   });
 });
 
-const WIDE = ['shape', 'arrow', 'path', 'frame'];
+const WIDE = ['shape', 'arrow', 'path'];
 
 describe('a mixed selection', () => {
   it('shows every row some element takes, and the marker rows for the strokes', () => {
     const view = quickStyleView(mixed, theme)!;
     expect(Object.keys(view.sections).sort()).toEqual(
-      ['background', 'stroke', 'style', 'textAlign', 'textColour', 'width'].sort(),
+      ['background', 'stroke', 'style', 'textColour', 'width'].sort(),
     );
     expect(strokesPenStyle(mixed, { board: 'light', ink: '#000' })!.subject).toMatchObject({
       ids: ['stroke-1', 'stroke-2'],
@@ -77,14 +76,9 @@ describe('a mixed selection', () => {
   it('applies each row only to the elements it fits', () => {
     const stroked = mixed.map((el) => applyQuickStroke(el, theme, 2));
     const changed = mixed.filter((el, i) => stroked[i] !== el).map((el) => el.id);
-    // A frame draws its border, so the Stroke row takes it too.
-    expect(changed).toEqual(['shape', 'arrow', 'path', 'frame']);
+    expect(changed).toEqual(['shape', 'arrow', 'path']);
     const filled = mixed.map((el) => applyQuickFill(el, theme, 2));
-    expect(mixed.filter((el, i) => filled[i] !== el).map((el) => el.id)).toEqual([
-      'shape',
-      'path',
-      'frame',
-    ]);
+    expect(mixed.filter((el, i) => filled[i] !== el).map((el) => el.id)).toEqual(['shape', 'path']);
     const wide = mixed.map((el) => applyQuickWidth(el, 'thick'));
     expect(mixed.filter((el, i) => wide[i] !== el).map((el) => el.id)).toEqual(WIDE);
     const marked = mixed.map((el) => applyPenStyle(el, { colour: 'red' }));
@@ -112,7 +106,7 @@ describe('quickStyleCaption', () => {
     expect(quickStyleCaption(only)).toBe('3 marker strokes');
     expect(quickStyleCaption(quickStyleApplicability([pen('a')]))).toBe('Marker stroke');
     // Passed-over kinds (sticky, image, a locked shape) are not counted.
-    expect(quickStyleCaption(quickStyleApplicability(mixed))).toBe('7 elements');
+    expect(quickStyleCaption(quickStyleApplicability(mixed))).toBe('6 elements');
     expect(quickStyleCaption(quickStyleApplicability([mixed[2]!, mixed[3]!]))).toBeUndefined();
     expect(quickStyleCaption(quickStyleApplicability([mixed[6]!]))).toBeUndefined();
   });

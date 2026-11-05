@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   boxEdges,
+  DRINK_KINDS,
   drinkFrom,
+  isDrinkKind,
+  isFixedSeatShape,
   isFloorShape,
   isRoomDoor,
+  isSceneryShape,
   isSeatingShape,
+  seatsACharacter,
   officeFootprint,
   ROOM_BACK_FACE,
   ROOM_DOOR_WIDTH,
@@ -117,5 +122,51 @@ describe('scenery that blocks', () => {
     const edges = boxEdges({ x: 0, y: 0, width: 10, height: 20 });
     expect(edges).toHaveLength(4);
     expect(edges[0]).toEqual({ a: { x: 0, y: 0 }, b: { x: 10, y: 0 } });
+  });
+});
+
+// livehuddle's docs/specs/009-elements/office.md "Office Pod" to "Garden Fence".
+describe('the pod, the bar and the garden', () => {
+  it('lays a garden path and grass on the floor', () => {
+    expect(isFloorShape('garden-path')).toBe(true);
+    expect(isFloorShape('grass')).toBe(true);
+    expect(isFloorShape('garden-fence')).toBe(false);
+  });
+
+  it('seats a character in a pod and on a bar stool, which never turn', () => {
+    expect(isFixedSeatShape('office-pod')).toBe(true);
+    expect(isFixedSeatShape('bar-stool')).toBe(true);
+    expect(isFixedSeatShape('chair')).toBe(false);
+    expect(isSeatingShape('office-pod')).toBe(false);
+    expect(seatsACharacter('office-pod')).toBe(true);
+    expect(seatsACharacter('sofa')).toBe(true);
+    expect(seatsACharacter('bar')).toBe(false);
+  });
+
+  it('gives juice at the cabinet and soda at the fridge, and accepts only known drinks', () => {
+    expect(drinkFrom('drinks-cabinet')).toBe('juice');
+    expect(drinkFrom('drinks-fridge')).toBe('soda');
+    expect(DRINK_KINDS).toEqual(['water', 'coffee', 'juice', 'soda']);
+    expect(isDrinkKind('soda')).toBe(true);
+    expect(isDrinkKind('wine')).toBe(false);
+    expect(isDrinkKind(null)).toBe(false);
+  });
+
+  it('blocks with the bar’s counter, the planter and the trunk’s base, never the canopy', () => {
+    const tree = officeFootprint({ shape: 'tree', x: 0, y: 0, width: 120, height: 160 })!;
+    expect(tree.x).toBeCloseTo(48);
+    expect(tree.y).toBeCloseTo(136);
+    expect(tree.width).toBeCloseTo(24);
+    expect(tree.height).toBeCloseTo(16);
+    const bar = officeFootprint({ shape: 'bar', x: 0, y: 0, width: 240, height: 120 })!;
+    expect(bar.y).toBe(60);
+    const planter = officeFootprint({ shape: 'outdoor-plant', x: 0, y: 0, width: 72, height: 80 })!;
+    expect(planter.x).toBeCloseTo(14);
+    expect(planter.width).toBeCloseTo(44);
+    expect(planter.y).toBeCloseTo(56);
+    expect(planter.height).toBeCloseTo(20);
+    for (const kind of ['plant', 'bookshelf', 'bar', 'outdoor-plant', 'tree'])
+      expect(isSceneryShape(kind)).toBe(true);
+    expect(isSceneryShape('drinks-fridge')).toBe(false);
   });
 });

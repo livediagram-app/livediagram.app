@@ -1,7 +1,6 @@
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): every shape kind whose content arrives at
 // RUNTIME rather than being drawn by the author: the ones that do something
-// when pressed (docs/specs/009-elements/mode-button.md, docs/specs/009-elements/reaction-pad.md,
-// docs/specs/012-collaboration/bring-focus.md) and the ones a walking character uses (docs/specs/009-elements/chair.md,
+// when pressed (docs/specs/009-elements/mode-button.md, docs/specs/012-collaboration/bring-focus.md) and the ones a walking character uses (docs/specs/009-elements/chair.md,
 // docs/specs/009-elements/office.md).
 //
 // A LEAF module (a set and two predicates) for the same reason
@@ -12,6 +11,7 @@
 // once: does this element carry a `…` on its face?
 
 import { isOfficeShape } from './office';
+import { isMeetingPieceShape } from './meeting-pieces';
 import { isSeatingShape } from './seating';
 import type { ShapeKind } from './index';
 
@@ -19,7 +19,6 @@ import type { ShapeKind } from './index';
 export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'mode-button',
   'portal',
-  'reaction-pad',
   'chair',
   // Fence (docs/specs/009-elements/fence.md): it does nothing until a character walks into it.
   'fence',
@@ -37,6 +36,42 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'coffee-machine',
   'rug',
   'stage',
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  // The social pieces (docs/specs/009-elements/social-pieces.md). Walked to, round, sat at or used.
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
+  // The Door (docs/specs/009-elements/room-builder.md): walked through.
+  'door',
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.
+  'directory',
+  'elevator',
+  // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a Screen pressed to open large, a Room
+  // Sign knocked on.
+  'screen',
+  'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): what it does only happens when somebody presses
   // it, which is the whole of what makes a kind a Behaviour.
   'focus-button',
@@ -66,7 +101,8 @@ export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
     isSeatingShape(kind) ||
     kind === 'fence' ||
     kind === 'avatar-pad' ||
-    isOfficeShape(kind)
+    isOfficeShape(kind) ||
+    isMeetingPieceShape(kind)
   )
     return false;
   return isBehaviourShape(kind);

@@ -48,7 +48,7 @@ const WIDTH_CLASS: Readonly<Record<number, string>> = {
   [CARD_COLUMN_PX]: 'w-[19rem]',
 };
 const widthPx = (c: FlyoutCategory) => {
-  // A catalogue (Icons, Stickers, Technology, Session) browses as two panes, its groups down the side.
+  // A catalogue (Stickers) browses as two panes, its groups down the side.
   if (!c.tiles) return RAIL_PX;
   if (!c.tiles || flyoutLayout(c.id) !== 'cards') return GRID_PX;
   return flyoutCardColumns(c.tiles.length) === 1 ? CARD_COLUMN_PX : CARDS_PX;
@@ -151,7 +151,7 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
   };
 }
 
-// The flyout's search field (Icons, Technology) holds a query the person typed.
+// The flyout's search field (Stickers) holds a query the person typed.
 function typedSearch(): boolean {
   const field = document.activeElement;
   return (

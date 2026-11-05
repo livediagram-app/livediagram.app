@@ -93,7 +93,7 @@ holding identifiers and states only, never document content:
 - the identity, the same lines on every surface:
   - **Signed in:** yes or no. The editor adds the account id it resolved. The
     help page, which has no session loaded, reads the api's readable
-    `ld_signed_in` hint cookie (`0` signed out, `1` signed in), which says
+    `lh_signed_in` hint cookie (`0` signed out, `1` signed in), which says
     whether but not who; with no such cookie it reports "unknown".
   - **Guest in this browser:** the first 8 characters of the guest token's id
     and whether the token is current or expired, or "none". The token itself
@@ -125,7 +125,7 @@ cache, cached share passwords, and the stale-build reload guards.
 - the old site's guest, `self-id` and `self-sig` (under `livehuddle:v2:`), until this editor has claimed it
   ([Returning guests from the old site](../014-identity/auth-and-guest-access.md#returning-guests-from-the-old-site));
 - `collab-key`, its secret half `collab-secret`, and `community-key`, the
-  per-browser keys that past answers, votes and
+  per-browser keys that past answers and
   likes are matched against;
 - the offline store (IndexedDB `livehuddle-offline`): Offline Mode documents
   exist nowhere else;
@@ -225,7 +225,7 @@ the server, which the rest of this spec covers.
   spending its one reload; the same failure reported once back online still
   recovers. The load-error card ships in the editor's bundle for the same
   reason, lazy-loading only its recovery tools, which show online only.
-- **Code not loaded yet waits for the connection.** Some of the editor loads when first opened (the Timer, Vote
+- **Code not loaded yet waits for the connection.** Some of the editor loads when first opened (the Timer
   and Poll popovers, Tidy Up). Opened while offline, its code cannot come, and it never takes the canvas with it: the
   popover simply does not open (its button lets go). A layout area that cannot load says "You're offline, so the
   canvas couldn't load. It comes back when you reconnect." with no Try Again, and comes back on its own when the

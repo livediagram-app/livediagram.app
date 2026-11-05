@@ -1,5 +1,5 @@
 // Behaviour faces in the headless render (docs/specs/009-elements/mode-button.md to /137): the buttons,
-// the reaction pad, the portal, the seating and the office pieces. They draw with svg-render-face-kit.ts.
+// the portal, the seating and the office pieces. They draw with svg-render-face-kit.ts.
 //
 // These kinds all once exported as the SAME thing: a rounded box with the
 // kind's name centred in it. What they draw here is each face's structure and
@@ -12,7 +12,13 @@
 // box, so a big one has bigger type rather than more padding.
 
 import { fenceParts, FENCE_RAIL_OPACITY } from '@liveworkspace/avatar/fence';
-import { avatarPadArtRect, AVATAR_PAD_PARTS } from '@liveworkspace/avatar/pad-art';
+import {
+  AVATAR_PAD_ART,
+  AVATAR_PAD_GLOW,
+  AVATAR_PAD_VIEW,
+  avatarPadPaint,
+  type AvatarPadPaint,
+} from './avatar-pad-art';
 import {
   FURNITURE_ART,
   FURNITURE_FACE_SHADE,
@@ -29,6 +35,7 @@ import {
 } from './seating';
 import {
   DEFAULT_ROOM_DOOR,
+  ROOM_WALL,
   isGridOfficeShape,
   OFFICE_ART,
   ROOM_FLOOR,
@@ -38,14 +45,27 @@ import {
   stageParts,
 } from './office';
 import { chairSeatFill } from './shape-geometry';
-import type { ResolveEmojiArt } from './svg-render-describe';
-import { REACTION_EMOJI, REACTION_HUES, reactionOf } from './data-shapes';
+import { doorParts, outlinedRoomPaths } from './room-builder';
+import {
+  GARDEN_PATH_FILL,
+  GARDEN_TONES,
+  GRASS_BLADES,
+  GRASS_FILL,
+  GRASS_TILES,
+  gardenFenceParts,
+  gardenPathParts,
+  grassEdgePath,
+} from './office-garden';
+import { POND_FILL, pondParts } from './office-social';
 import { r2, xmlEscape } from './svg-render-primitives';
+import { roomSignSvg, screenSvg } from './svg-render-meeting';
+import { timerPieceSvg } from './svg-render-timers';
 import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';
 import { borderOf } from './svg-render-border';
 import { text, type Face } from './svg-render-face-kit';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@liveworkspace/icons';
 import { MODE_GLYPHS } from './mode-glyphs';
+import type { CanvasSurface } from './colors';
 
 // The canvas draws a mode glyph at the palette's 14px weight and scales the
 // SVG to 22px on the button face, with non-scaling strokes, so its lines stay
@@ -72,7 +92,6 @@ function modeGlyph(mode: string, cx: number, cy: number, color: string): string 
  *  to print the generic centred label over the top of one. */
 export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'mode-button',
-  'reaction-pad',
   'portal',
   'chair',
   'desk',
@@ -89,6 +108,39 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'coffee-machine',
   'rug',
   'stage',
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  // The social pieces (docs/specs/009-elements/social-pieces.md).
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
+  'door',
+  'directory',
+  'elevator',
+  // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
+  'screen',
+  'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
   'focus-button',
 ]);
 
@@ -101,8 +153,8 @@ export function svgBehaviourFace(
   stroke: string,
   // The element's resolved fill, for the floor pieces (a rug, a room, a stage) drawn in it.
   fill?: string,
-  // An emoji's art, for the reaction pad's glyph where no emoji font is.
-  resolveEmojiArt?: ResolveEmojiArt,
+  // The paper it lands on, for the pieces with a dark look of their own (the Room Sign's plaque).
+  surface?: CanvasSurface,
 ): string | null {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
@@ -156,8 +208,6 @@ export function svgBehaviourFace(
           : text(cx, cy + 27, title, { size: 12, weight: 600, color, anchor: 'middle' }))
       );
     }
-    case 'reaction-pad':
-      return reactionPad(el, cx, cy, title, color, resolveEmojiArt);
     case 'chair':
     case 'desk':
     case 'sofa':
@@ -166,13 +216,56 @@ export function svgBehaviourFace(
     case 'bookshelf':
     case 'water-cooler':
     case 'coffee-machine':
+    case 'office-pod':
+    case 'bar':
+    case 'bar-stool':
+    case 'drinks-cabinet':
+    case 'drinks-fridge':
+    case 'outdoor-plant':
+    case 'tree':
+    case 'directory':
+    case 'elevator':
+    case 'notice-board':
+    case 'world-clock':
+    case 'jukebox':
+    case 'ping-pong-table':
+    case 'arcade-machine':
+    case 'fireplace':
+    case 'campfire':
+    case 'bench':
+    case 'picnic-table':
+    case 'hammock':
+    case 'garden-umbrella':
+    case 'fountain':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
+    // A pond (docs/specs/009-elements/social-pieces.md "Pond"): its water in the fill, drawn to its size.
+    case 'pond':
+      return sizedSvg(
+        el,
+        pondParts(el.width, el.height),
+        fill ?? el.fillColor ?? POND_FILL,
+        stroke,
+      );
+    // A garden path and grass are floor like a rug, a garden fence its pickets (docs/specs/009-elements/office.md).
+    case 'garden-path':
+      return sizedSvg(
+        el,
+        gardenPathParts(el.width, el.height),
+        fill ?? el.fillColor ?? GARDEN_PATH_FILL,
+        stroke,
+      );
+    case 'grass':
+      return grassSvg(el, fill ?? el.fillColor ?? GRASS_FILL);
+    case 'garden-fence':
+      return sizedSvg(el, gardenFenceParts(el.width, el.height), GARDEN_TONES.picket, stroke);
     // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md), resolved
     // for the paper as the canvas resolves it (deep on a dark tab).
     case 'rug':
       return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
     case 'room':
       return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+    case 'door':
+      return doorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'stage':
       return sizedSvg(
         el,
@@ -180,10 +273,19 @@ export function svgBehaviourFace(
         fill ?? el.fillColor ?? STAGE_FLOOR,
         stroke,
       );
+    // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md "Export").
+    case 'screen':
+      return screenSvg(el);
+    case 'room-sign':
+      return roomSignSvg(el, surface);
+    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md "Export"): the time at the export.
+    case 'timer':
+    case 'stopwatch':
+      return timerPieceSvg(el, Date.now());
     case 'fence':
       return fenceArt(el, stroke);
     case 'avatar-pad':
-      return avatarPadArt(el);
+      return avatarPadArt(el, stroke);
     case 'portal':
       return portalArt(el, stroke);
     default:
@@ -228,45 +330,6 @@ function portalArt(el: Face, stroke: string): string {
     `<circle cx="15.4" cy="24.5" r="0.55" fill="#ffffff" opacity="0.55"/>` +
     `<circle cx="14.9" cy="14" r="0.4" fill="#ffffff" opacity="0.45"/>` +
     `</g></svg>`
-  );
-}
-
-// ReactionPadFace: a soft wash of the reaction's hues behind the emoji (the
-// canvas's radial-gradient, 70% by 70% at 50% 42%), the emoji at
-// min(34% of the width, 40% of the height) standing on its glowing spot, and
-// the label in a quiet chip. Whether the emoji paints in colour depends on the
-// renderer's emoji font, the bargain every emoji in an export makes.
-function reactionPad(
-  el: Face,
-  cx: number,
-  cy: number,
-  title: string,
-  color: string,
-  resolveEmojiArt?: ResolveEmojiArt,
-): string {
-  const reaction = reactionOf(el.reaction);
-  const [from, to] = REACTION_HUES[reaction];
-  const id = xmlEscape(el.id);
-  const size = Math.min(el.width * 0.34, el.height * 0.4);
-  const spotH = el.height * 0.09;
-  const chipH = title ? 17 : 0;
-  const stack = size + spotH - el.height * 0.05 + (title ? 4 + chipH : 0);
-  const top = cy - stack / 2;
-  const spotY = top + size - el.height * 0.05;
-  const chipW = Math.min(el.width - 16, title.length * 6.2 + 16);
-  const chipY = spotY + spotH + 4;
-  return (
-    `<defs>` +
-    `<radialGradient id="pad-wash-${id}" cx="0.5" cy="0.42" r="0.7"><stop offset="0" stop-color="${from}" stop-opacity="0.28"/><stop offset="0.55" stop-color="${to}" stop-opacity="0.1"/><stop offset="0.8" stop-color="${to}" stop-opacity="0"/></radialGradient>` +
-    `<radialGradient id="pad-spot-${id}"><stop offset="0" stop-color="${from}" stop-opacity="0.55"/><stop offset="0.7" stop-color="${to}" stop-opacity="0.18"/><stop offset="1" stop-color="${to}" stop-opacity="0"/></radialGradient>` +
-    `</defs>` +
-    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(borderOf(el).radius)}" fill="url(#pad-wash-${id})"/>` +
-    `<ellipse cx="${r2(cx)}" cy="${r2(spotY + spotH / 2)}" rx="${r2(el.width * 0.23)}" ry="${r2(spotH / 2)}" fill="url(#pad-spot-${id})"/>` +
-    emojiGlyph(REACTION_EMOJI[reaction], cx, top + size / 2, size, resolveEmojiArt) +
-    (title
-      ? `<rect x="${r2(cx - chipW / 2)}" y="${r2(chipY)}" width="${r2(chipW)}" height="${chipH}" rx="${chipH / 2}" fill="${xmlEscape(color)}" fill-opacity="0.07"/>` +
-        text(cx, chipY + 12, title, { size: 10.5, weight: 600, color, anchor: 'middle' })
-      : '')
   );
 }
 
@@ -326,21 +389,31 @@ function fenceArt(el: Face, stroke: string): string {
     .join('');
 }
 
-// An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel table AvatarPadView draws, scaled whole into the
-// box and centred, crisp-edged, its ring lit (the shimmer and the arrival are the canvas's).
-function avatarPadArt(el: Face): string {
-  const art = avatarPadArtRect(el);
-  const s = art.scale;
-  if (s <= 0) return '';
-  const ox = el.x + art.x;
-  const oy = el.y + art.y;
+// An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the vector table AvatarPadView draws, in the theme's stroke
+// and seat wash, fitted whole into the box and centred (`meet`), its ring lit (the shimmer and the arrival are the
+// canvas's).
+const padPaintAttrs = (p: AvatarPadPaint) =>
+  `fill="${xmlEscape(p.fill)}"` +
+  (p.stroke ? ` stroke="${xmlEscape(p.stroke)}" stroke-width="${p.strokeWidth}"` : '') +
+  (p.opacity !== undefined ? ` opacity="${p.opacity}"` : '') +
+  (p.strokeLinecap ? ` stroke-linecap="${p.strokeLinecap}"` : '');
+
+function avatarPadArt(el: Face, stroke: string): string {
+  if (el.width <= 0 || el.height <= 0) return '';
+  const glowId = `avatar-pad-glow-${xmlEscape(el.id)}`;
+  const body = chairSeatFill(undefined, stroke);
+  const g = xmlEscape(AVATAR_PAD_GLOW.color);
+  const parts = AVATAR_PAD_ART.map((p) => {
+    const paint = padPaintAttrs(avatarPadPaint(p.role, stroke, body, `url(#${glowId})`));
+    return p.tag === 'ellipse'
+      ? `<ellipse cx="${p.cx}" cy="${p.cy}" rx="${p.rx}" ry="${p.ry}" ${paint}/>`
+      : `<path d="${p.d}" ${paint}/>`;
+  }).join('');
   return (
-    `<g shape-rendering="crispEdges">` +
-    AVATAR_PAD_PARTS.map(
-      (p) =>
-        `<rect x="${r2(ox + p.x * s)}" y="${r2(oy + p.y * s)}" width="${r2(p.width * s)}" height="${r2(s)}" fill="${p.fill}"/>`,
-    ).join('') +
-    `</g>`
+    `<svg x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" viewBox="0 0 ${AVATAR_PAD_VIEW.width} ${AVATAR_PAD_VIEW.height}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
+    `<defs><radialGradient id="${glowId}"><stop offset="0%" stop-color="${g}" stop-opacity="${AVATAR_PAD_GLOW.innerOpacity}"/><stop offset="100%" stop-color="${g}" stop-opacity="0"/></radialGradient></defs>` +
+    parts +
+    `</svg>`
   );
 }
 
@@ -369,6 +442,20 @@ function furnitureArt(el: Face, seat: string, stroke: string): string {
 
 // A room (docs/specs/009-elements/office.md "Room"), drawn to its own size so its walls keep their thickness.
 function roomSvg(el: Face, floor: string, stroke: string): string {
+  // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md): its floor polygon and its walls,
+  // stroked along the outline as the canvas draws them.
+  if (el.roomOutline && el.roomOutline.length >= 3) {
+    const { floor: area, walls } = outlinedRoomPaths({ ...el, roomOutline: el.roomOutline });
+    const f = xmlEscape(floor);
+    const l = xmlEscape(stroke);
+    return (
+      `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
+      `<path d="${area}" fill="${f}"/>` +
+      `<path d="${walls}" fill="none" stroke="${l}" stroke-width="${ROOM_WALL + 2 * FURNITURE_PANEL_STROKE}" stroke-linejoin="miter"/>` +
+      `<path d="${walls}" fill="none" stroke="${f}" stroke-width="${ROOM_WALL}" stroke-linejoin="miter"/>` +
+      `</g>`
+    );
+  }
   return sizedSvg(
     el,
     roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR),
@@ -377,7 +464,57 @@ function roomSvg(el: Face, floor: string, stroke: string): string {
   );
 }
 
+// A Door (docs/specs/009-elements/room-builder.md "Door"): the gap it paints over its wall, its jambs, the leaf
+// standing open and its swing, as the canvas draws it.
+function doorSvg(el: Face, floor: string, stroke: string): string {
+  const { gap, jambs, leaf, shut, swing } = doorParts(el.width, el.height);
+  const closed = (el as { doorClosed?: boolean }).doorClosed === true;
+  const f = xmlEscape(floor);
+  const l = xmlEscape(stroke);
+  const box = (b: { x: number; y: number; w: number; h: number }) =>
+    `x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"`;
+  return (
+    `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
+    `<rect ${box(gap)} fill="${f}"/>` +
+    jambs
+      .map(
+        (j) =>
+          `<rect ${box(j)} fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>`,
+      )
+      .join('') +
+    // Closed (room-builder.md "Opening and closing"): the leaf across the opening, no swing.
+    (closed
+      ? ''
+      : `<path d="${swing}" fill="none" stroke="${l}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-dasharray="4 4"/>`) +
+    `<rect ${box(closed ? shut : leaf)} rx="1" fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>` +
+    `</g>`
+  );
+}
+
 // A piece drawn to its own size (a room, a stage), its parts in its own px from its top left.
+// Grass (docs/specs/009-elements/office.md "Grass"): its lawn in the fill, then the tuft tiles as SVG patterns over it.
+function grassSvg(el: Face, floor: string): string {
+  const d = grassEdgePath(el.width, el.height);
+  if (!d) return '';
+  const id = `grass-${xmlEscape(el.id)}`;
+  const B = GRASS_BLADES;
+  const blades = (path: string, color: string, opacity: number) =>
+    `<path d="${path}" fill="none" stroke="${color}" stroke-opacity="${opacity}" stroke-width="${B.width}" stroke-linecap="round"/>`;
+  const defs = GRASS_TILES.map(
+    (t, i) =>
+      `<pattern id="${id}-${i}" width="${t.size}" height="${t.size}" patternUnits="userSpaceOnUse">` +
+      blades(t.shade, B.shade, B.shadeOpacity) +
+      blades(t.light, B.light, B.lightOpacity) +
+      `</pattern>`,
+  ).join('');
+  const layers = GRASS_TILES.map((_, i) => `<path d="${d}" fill="url(#${id}-${i})"/>`).join('');
+  return (
+    `<g transform="translate(${r2(el.x)} ${r2(el.y)})"><defs>${defs}</defs>` +
+    `<path d="${d}" fill="${xmlEscape(floor)}" stroke="${B.shade}" stroke-opacity="${B.rimOpacity}" stroke-width="${B.rimWidth}"/>` +
+    `${layers}</g>`
+  );
+}
+
 function sizedSvg(
   el: Face,
   parts: readonly FurniturePart[],
@@ -398,6 +535,8 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="${p.fill ? xmlEscape(p.fill) : seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
       case 'floor':
         return `fill="${seat}"`;
+      case 'mark':
+        return `fill="${p.fill ? xmlEscape(p.fill) : line}"`;
       case 'line':
         return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
       case 'rail':
@@ -423,25 +562,4 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
     case 'path':
       return `<path d="${p.d}" ${paint}/>`;
   }
-}
-
-// An emoji centred on (cx, cy) at `size`: its art where the caller has it (a preview with no emoji font), else the
-// glyph as text for the viewer's emoji font.
-function emojiGlyph(
-  glyph: string,
-  cx: number,
-  cy: number,
-  size: number,
-  resolveEmojiArt?: ResolveEmojiArt,
-): string {
-  const art = resolveEmojiArt?.(glyph);
-  if (art)
-    return (
-      `<svg x="${r2(cx - size / 2)}" y="${r2(cy - size / 2)}" width="${r2(size)}" height="${r2(size)}"` +
-      ` viewBox="${xmlEscape(art.viewBox)}">${art.markup}</svg>`
-    );
-  return (
-    `<text x="${r2(cx)}" y="${r2(cy)}" text-anchor="middle" dominant-baseline="central"` +
-    ` font-size="${r2(size)}">${xmlEscape(glyph)}</text>`
-  );
 }

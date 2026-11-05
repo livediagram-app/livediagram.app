@@ -14,7 +14,6 @@ import { SettingsChoiceRowView } from './rows/ChoiceRow';
 import {
   SettingsLinkRowView,
   SettingsNoteRowView,
-  SettingsPresetSummaryRowView,
   SettingsShortcutListRowView,
 } from './rows/SimpleRows';
 import { SettingsSliderRowView } from './rows/SliderRow';
@@ -23,7 +22,6 @@ import { SettingsToggleRowView } from './rows/ToggleRow';
 import { SETTINGS_ROW_ATTRIBUTE } from './settings-scroll-anchor';
 import { SETTINGS_CARD_SLOT, SettingsGroup, SettingsGroupChildren } from './SettingsGroup';
 
-type GoToRow = (categoryId: string, rowKey: string) => void;
 type OpenCategory = (categoryId: string) => void;
 
 // One category's settings. The pane is deliberately thin: the model says which rows exist, what
@@ -32,7 +30,6 @@ export function SettingsCategoryPane({
   category,
   isMobile,
   focusRowKey = null,
-  onGoToRow,
   onOpenCategory,
   focusSectionId = null,
 }: {
@@ -41,10 +38,7 @@ export function SettingsCategoryPane({
   isMobile: boolean;
   // Row to scroll to and ring, when Settings was opened on it.
   focusRowKey?: string | null;
-  // Go to a row, possibly in another category (the power user preset readout). Stable, so the
-  // rows it reaches keep their memo.
-  onGoToRow?: GoToRow;
-  // Open another category in place, for a link row. Stable, likewise.
+  // Open another category in place, for a link row. Stable, so the rows it reaches keep their memo.
   onOpenCategory?: OpenCategory;
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
@@ -194,7 +188,6 @@ export function SettingsCategoryPane({
                 row={row}
                 focused={row.key === focusRowKey}
                 isMobile={isMobile}
-                onGoToRow={onGoToRow}
                 onOpenCategory={onOpenCategory}
               />
               {children.length > 0 ? (
@@ -205,7 +198,6 @@ export function SettingsCategoryPane({
                       row={child}
                       focused={child.key === focusRowKey}
                       isMobile={isMobile}
-                      onGoToRow={onGoToRow}
                       onOpenCategory={onOpenCategory}
                     />
                   ))}
@@ -237,23 +229,16 @@ const RowSlot = memo(function RowSlot({
   row,
   focused,
   isMobile,
-  onGoToRow,
   onOpenCategory,
 }: {
   row: SettingsRow;
   focused: boolean;
   isMobile: boolean;
-  onGoToRow?: GoToRow;
   onOpenCategory?: OpenCategory;
 }) {
   return (
     <FocusRing rowKey={row.key} focused={focused}>
-      <RowView
-        row={row}
-        isMobile={isMobile}
-        onGoToRow={onGoToRow}
-        onOpenCategory={onOpenCategory}
-      />
+      <RowView row={row} isMobile={isMobile} onOpenCategory={onOpenCategory} />
     </FocusRing>
   );
 });
@@ -261,12 +246,10 @@ const RowSlot = memo(function RowSlot({
 function RowView({
   row,
   isMobile,
-  onGoToRow,
   onOpenCategory,
 }: {
   row: SettingsRow;
   isMobile: boolean;
-  onGoToRow?: GoToRow;
   onOpenCategory?: OpenCategory;
 }) {
   // A desktop-only row stays visible on a phone but inert, with its note.
@@ -301,8 +284,6 @@ function RowView({
       return <SettingsLinkRowView row={row} onOpenCategory={onOpenCategory} />;
     case 'note':
       return <SettingsNoteRowView row={row} />;
-    case 'presetSummary':
-      return <SettingsPresetSummaryRowView row={row} onGoToRow={onGoToRow} />;
     case 'shortcutList':
       return <SettingsShortcutListRowView row={row} />;
     case 'custom':

@@ -78,17 +78,11 @@ function verdictOf(el: Element, p: Point): Verdict {
 }
 
 /**
- * What a press at `p` fills. `elements` is in paint order, bottom first; `inertIds` are on a hidden
- * or locked layer, which the bucket does not see.
+ * What a press at `p` fills. `elements` is in paint order, bottom first.
  */
-export function paintBucketTarget(
-  elements: readonly Element[],
-  p: Point,
-  inertIds: ReadonlySet<string> = new Set(),
-): BucketTarget {
+export function paintBucketTarget(elements: readonly Element[], p: Point): BucketTarget {
   for (let i = elements.length - 1; i >= 0; i--) {
     const el = elements[i]!;
-    if (inertIds.has(el.id)) continue;
     const verdict = verdictOf(el, p);
     if (verdict === 'through') continue;
     if ((el as { locked?: boolean }).locked) return { kind: 'locked' };

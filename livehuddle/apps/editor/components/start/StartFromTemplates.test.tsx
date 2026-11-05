@@ -21,11 +21,12 @@ describe('StartFromTemplates', () => {
     expect(screen.getByRole('heading', { name: 'Start a Space' })).toBeTruthy();
   });
 
-  // "The Spaces lead": the first thing a new person sees is a place to walk into.
-  it('opens on the Spaces', () => {
+  // "Recommended leads": the start opens on Recommended, the blank first.
+  it('opens on Recommended', () => {
     const onTemplate = vi.fn();
     mount('workshop', onTemplate);
-    expect(document.querySelector('[data-start-card="sailboat"]')).toBeNull();
+    expect(document.querySelector('[data-start-card="focus-library"]')).toBeNull();
+    expect(document.querySelector('[data-start-card="blank-session"]')).not.toBeNull();
     fireEvent.click(document.querySelector('[data-start-card="virtual-office"]')!);
     expect(onTemplate).toHaveBeenCalledWith('virtual-office');
   });

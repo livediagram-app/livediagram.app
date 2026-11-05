@@ -5,7 +5,18 @@
 // event storming board making room for a note dragged into a gap with Alt held.
 
 import type { ReactNode } from 'react';
-import { Scene, Label, Shape, Avatar, Cursor, TextBar, Dialog, Tabs, Button } from '../primitives';
+import {
+  Scene,
+  Label,
+  Shape,
+  Avatar,
+  Cursor,
+  TextBar,
+  Dialog,
+  Tabs,
+  Button,
+  BarTab,
+} from '../primitives';
 import { capital } from '../noun';
 import { Glyph } from './element-indicators';
 
@@ -19,18 +30,7 @@ export function FollowingScene() {
       {/* The tab bar, with the presence stack beside the tab name */}
       <rect x={0} y={0} width={420} height={34} className="fill-slate-50" />
       <line x1={0} y1={34} x2={420} y2={34} className="stroke-slate-200" strokeWidth={1.2} />
-      <rect
-        x={14}
-        y={6}
-        width={130}
-        height={24}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
-      />
-      <Label x={26} y={18.5} size={11} weight={600} tone="strong">
-        Checkout
-      </Label>
+      <BarTab x={14} y={2} w={130} h={32} label="Checkout" active anchor="start" size={11} />
       <circle cx={110} cy={18} r={9.5} fill="none" className="stroke-brand-500" strokeWidth={2} />
       <Avatar cx={110} cy={18} r={7.5} initial="S" colour="emerald" />
       <Avatar cx={124} cy={18} r={7.5} initial="A" colour="violet" />

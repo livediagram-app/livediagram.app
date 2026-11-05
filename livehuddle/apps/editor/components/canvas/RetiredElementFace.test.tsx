@@ -162,8 +162,6 @@ describe('a retired element and the share roles', () => {
       setMultiSelectedIds: () => {},
       setFormatSourceId: () => {},
       lockedByOther: () => false,
-      layerLockedIds: new Set<string>(),
-      layerInertIds: new Set<string>(),
     });
     actions.deleteSelected();
     expect(after).toEqual([]);

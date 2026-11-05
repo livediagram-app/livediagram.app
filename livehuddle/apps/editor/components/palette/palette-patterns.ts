@@ -1,184 +1,110 @@
-import type { ReactElement } from 'react';
-import { type BackgroundPattern, type SeasonalBackgroundPattern } from '@livehuddle/document';
 import {
-  BackgroundAuroraIcon,
-  BackgroundBlankIcon,
-  BackgroundBricksIcon,
-  BackgroundConfettiIcon,
-  BackgroundCheckerboardIcon,
-  BackgroundCrosshatchIcon,
-  BackgroundDiagonalIcon,
-  BackgroundDriftIcon,
-  BackgroundEngineeringIcon,
-  BackgroundFlowIcon,
-  BackgroundGraphIcon,
-  BackgroundGridIcon,
-  BackgroundHexagonalIcon,
-  BackgroundLinesIcon,
-  BackgroundRibbonsIcon,
-  BackgroundRippleIcon,
-  BackgroundStripesIcon,
-  BackgroundWavesIcon,
-} from '@liveworkspace/workbench/components/primitives/background-pattern-icons';
-import { BackgroundIsometricIcon } from './background-isometric-icon';
+  spacePattern,
+  type BackgroundPattern,
+  type FloorPattern,
+  type SeasonalBackgroundPattern,
+} from '@livehuddle/document';
 
-// The canvas background-pattern catalogue: one PatternEntry per pattern,
-// consumed by the pattern picker (CanvasStyleControls)
-// and useTabCanvas. Pure data — the picker UI has no hard-coded ids, so a
-// new pattern slots in by editing this list. Split out of palette-controls.
+// The Canvas panel's floors (docs/specs/011-theme/floors.md): None, then each floor, indoor first. Pure data: the
+// picker (CanvasStyleControls, PatternCarousel) has no hard-coded ids, so a floor slots in by editing this list and
+// the drawing in lib/floor-tiles.ts. Each tile in the picker is the floor itself, drawn on the tab's canvas colour.
 export type PatternEntry = {
-  id: BackgroundPattern;
+  id: FloorPattern | 'blank';
   label: string;
   shortLabel: string;
   description: string;
-  icon: () => ReactElement;
-  extra?: boolean;
 };
 
 export const PATTERNS: PatternEntry[] = [
   {
-    id: 'grid',
-    label: 'Grid',
-    shortLabel: 'Grid',
-    description: 'Subtle dot grid background.',
-    icon: BackgroundGridIcon,
-  },
-  {
     id: 'blank',
-    label: 'Blank',
-    shortLabel: 'Blank',
-    description: 'No background pattern.',
-    icon: BackgroundBlankIcon,
+    label: 'None',
+    shortLabel: 'None',
+    description: 'No floor: just the canvas colour.',
   },
   {
-    id: 'lines',
-    label: 'Lines',
-    shortLabel: 'Lines',
-    description: 'Horizontal ruled lines.',
-    icon: BackgroundLinesIcon,
+    id: 'carpet',
+    label: 'Carpet',
+    shortLabel: 'Carpet',
+    description: 'Soft flecked carpet, for lounges and quiet rooms.',
   },
   {
-    id: 'graph',
-    label: 'Graph',
-    shortLabel: 'Graph',
-    description: 'Square graph paper.',
-    icon: BackgroundGraphIcon,
+    id: 'carpet-tiles',
+    label: 'Carpet Tiles',
+    shortLabel: 'Carpet Tiles',
+    description: 'Office carpet tiles, the pile turned on every other one.',
   },
   {
-    id: 'crosshatch',
-    label: 'Crosshatch',
-    shortLabel: 'Cross',
-    description: 'Diagonal crosshatch pattern.',
-    icon: BackgroundCrosshatchIcon,
+    id: 'wood',
+    label: 'Wood Floor',
+    shortLabel: 'Wood',
+    description: 'Oak planks in staggered rows.',
   },
   {
-    id: 'confetti',
-    label: 'Confetti',
-    shortLabel: 'Confetti',
-    description: 'Multi-colour dots; pattern colour ignored.',
-    icon: BackgroundConfettiIcon,
+    id: 'parquet',
+    label: 'Parquet',
+    shortLabel: 'Parquet',
+    description: 'Wooden blocks laid in a basketweave.',
   },
   {
-    id: 'stripes',
-    label: 'Stripes',
-    shortLabel: 'Stripes',
-    description: 'Vertical ruled lines.',
-    icon: BackgroundStripesIcon,
+    id: 'tiles',
+    label: 'Tiles',
+    shortLabel: 'Tiles',
+    description: 'Square ceramic tiles on fine grout.',
   },
   {
-    id: 'diagonal',
-    label: 'Diagonal',
-    shortLabel: 'Diagonal',
-    description: 'Single-direction 45° lines.',
-    icon: BackgroundDiagonalIcon,
+    id: 'marble',
+    label: 'Marble',
+    shortLabel: 'Marble',
+    description: 'Veined marble slabs, for a lobby or a hall.',
   },
   {
-    id: 'waves',
-    label: 'Waves',
-    shortLabel: 'Waves',
-    description: 'Gentle sinusoidal lines, softest of the textures.',
-    extra: true,
-    icon: BackgroundWavesIcon,
+    id: 'terrazzo',
+    label: 'Terrazzo',
+    shortLabel: 'Terrazzo',
+    description: 'Chips of stone set in a pale floor.',
   },
   {
-    id: 'bricks',
-    label: 'Bricks',
-    shortLabel: 'Bricks',
-    description: 'Offset masonry brickwork.',
-    extra: true,
-    icon: BackgroundBricksIcon,
+    id: 'concrete',
+    label: 'Concrete',
+    shortLabel: 'Concrete',
+    description: 'Polished concrete slabs with saw-cut joints.',
   },
   {
-    id: 'isometric',
-    label: 'Isometric',
-    shortLabel: 'Iso',
-    description: 'Isometric rhombic grid for 3D / technical diagrams.',
-    extra: true,
-    icon: BackgroundIsometricIcon,
+    id: 'deck',
+    label: 'Decking',
+    shortLabel: 'Decking',
+    description: 'Outdoor boards with gaps between them.',
   },
   {
-    id: 'checkerboard',
-    label: 'Checkerboard',
-    shortLabel: 'Check',
-    description: 'Alternating filled squares.',
-    extra: true,
-    icon: BackgroundCheckerboardIcon,
+    id: 'paving',
+    label: 'Stone Paving',
+    shortLabel: 'Paving',
+    description: 'Flagstones of mixed sizes, for a terrace or a square.',
   },
   {
-    id: 'hexagonal',
-    label: 'Hexagonal',
-    shortLabel: 'Hex',
-    description: 'Honeycomb grid for hex maps and cell layouts.',
-    extra: true,
-    icon: BackgroundHexagonalIcon,
+    id: 'cobbles',
+    label: 'Cobbles',
+    shortLabel: 'Cobbles',
+    description: 'Rounded cobblestones in running rows.',
   },
   {
-    id: 'engineering',
-    label: 'Engineering',
-    shortLabel: 'Eng',
-    description: 'Graph paper with bold major gridlines every 5 cells.',
-    extra: true,
-    icon: BackgroundEngineeringIcon,
+    id: 'grass',
+    label: 'Grass',
+    shortLabel: 'Grass',
+    description: 'A lawn, for gardens and parks.',
   },
   {
-    id: 'flow',
-    label: 'Flow',
-    shortLabel: 'Flow',
-    description: 'Animated: streaming diagonal lines.',
-    extra: true,
-    icon: BackgroundFlowIcon,
+    id: 'sand',
+    label: 'Sand',
+    shortLabel: 'Sand',
+    description: 'Wind-rippled sand, for a beach.',
   },
   {
-    id: 'drift',
-    label: 'Drift',
-    shortLabel: 'Drift',
-    description: 'Animated: softly rising motes.',
-    extra: true,
-    icon: BackgroundDriftIcon,
-  },
-  {
-    id: 'aurora',
-    label: 'Aurora',
-    shortLabel: 'Aurora',
-    description: 'Animated: slowly drifting colour glows.',
-    extra: true,
-    icon: BackgroundAuroraIcon,
-  },
-  {
-    id: 'ripple',
-    label: 'Ripple',
-    shortLabel: 'Ripple',
-    description: 'Animated: gentle expanding rings.',
-    extra: true,
-    icon: BackgroundRippleIcon,
-  },
-  {
-    id: 'ribbons',
-    label: 'Ribbons',
-    shortLabel: 'Ribbons',
-    description: 'Animated: thick curved lines that flow (theme-coloured).',
-    extra: true,
-    icon: BackgroundRibbonsIcon,
+    id: 'mud',
+    label: 'Mud',
+    shortLabel: 'Mud',
+    description: 'Bare, trodden earth with a few pebbles.',
   },
 ];
 
@@ -193,11 +119,13 @@ const SEASONAL_PATTERN_LABELS: Record<SeasonalBackgroundPattern, string> = {
   'candy-stripes': 'Candy Stripes',
 };
 
-/** A pattern's display name, the seasonal ones included. */
+/** A pattern's display name: a floor's, None, or a seasonal motif's. A retired diagram pattern is named as the floor
+ *  it draws as. */
 export function patternLabel(id: BackgroundPattern): string {
+  const drawn = spacePattern(id);
   return (
-    PATTERNS.find((p) => p.id === id)?.label ??
-    (SEASONAL_PATTERN_LABELS as Record<string, string>)[id] ??
-    id
+    PATTERNS.find((p) => p.id === drawn)?.label ??
+    (SEASONAL_PATTERN_LABELS as Record<string, string>)[drawn] ??
+    drawn
   );
 }

@@ -80,7 +80,7 @@ The collapsible tile group is shared state across the palette
 (`palette-group-state.tsx`): opening one closes any other.
 
 Behaviour holds two groups ([Session button](../012-collaboration/session-button.md)'s session tools
-and [The Reaction Pad](reaction-pad.md)'s reactions) with eight tiles between them. With both open the
+and [The Reaction Pad](../../../../livediagram/docs/specs/009-elements/reaction-pad.md)'s reactions) with eight tiles between them. With both open the
 category would run well past the panel, so the reader would scroll a list they
 opened precisely to avoid scrolling.
 

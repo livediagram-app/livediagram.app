@@ -6,7 +6,7 @@ import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { usePreviewedElements } from './usePreviewedElements';
 
 // docs/specs/008-canvas/drag-preview.md: what depends on where the selection is (its bounds, the
-// union resize handles, the quick-connect pluses) follows the preview while a gesture lasts.
+// union resize handles) follows the preview while a gesture lasts.
 
 const a = createShape('square', 0, 0);
 const b = createShape('square', 400, 0);

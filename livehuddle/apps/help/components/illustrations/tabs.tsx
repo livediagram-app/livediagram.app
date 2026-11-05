@@ -856,9 +856,7 @@ export function ExportMenu() {
   const dy = 12;
   const cards: [string, string][] = [
     ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
     ['Markdown', 'md'],
-    ['Excalidraw', 'excali'],
     ['PNG', 'png'],
     ['SVG', 'svg'],
     ['PDF', 'pdf'],
@@ -881,17 +879,13 @@ export function ExportMenu() {
   );
 }
 
-/** The Import to Tab dialog: the amber warning naming the tab about to be replaced, over the
- *  format cards. */
+/** The Import to Tab dialog: the amber warning naming the tab about to be replaced, over the box
+ *  a tab's JSON is pasted into (the one format, so the dialog opens at its panel). */
 export function ImportWarning() {
   const W = 420;
   const H = 170;
   const dx = 20;
   const dy = 10;
-  const cards: [string, string][] = [
-    ['JSON', 'json'],
-    ['Excalidraw', 'excali'],
-  ];
   return (
     <Scene w={W} h={H}>
       <Dialog x={dx} y={dy} w={380} h={150} title="Import to Tab" sceneW={W} sceneH={H}>
@@ -928,16 +922,19 @@ export function ImportWarning() {
         <Label x={dx + 44} y={dy + 76} size={10} className="fill-slate-700">
           with the imported content. Undo brings it back.
         </Label>
-        {cards.map(([title, badge], i) => (
-          <FormatCard
-            key={title}
-            x={dx + 16 + i * 176}
-            y={dy + 100}
-            w={172}
-            title={title}
-            badge={badge}
-          />
-        ))}
+        {/* The paste box a tab's JSON goes into */}
+        <rect
+          x={dx + 16}
+          y={dy + 100}
+          width={348}
+          height={36}
+          rx={6}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1}
+        />
+        <Label x={dx + 28} y={dy + 122} size={10} tone="muted">
+          {'{ "kind": "livehuddle.tab", "tab": { … } }'}
+        </Label>
       </Dialog>
     </Scene>
   );

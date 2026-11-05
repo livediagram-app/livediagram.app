@@ -45,8 +45,7 @@ no theme; the colours are stock colours), "default colour" for Ink in code (it i
 
 ### `snapTabColours(elements, skip?) → { elements, colours, changed }`
 
-- Walks `elements` once. An element is **eligible** when it is not `locked`, its id is not in
-  `skip` (the hidden-or-locked-layer ids), and a `SNAP_COLOUR_FIELDS` row applies to it.
+- Walks `elements` once. An element is **eligible** when it is not `locked`, and a `SNAP_COLOUR_FIELDS` row applies to it.
 - For each applying row whose hex field holds a custom colour: the hex field and the row's
   `clear` fields (`strokeSwatch`, the quick-swatch binding that would re-derive a hex) are
   removed; the named field is set to the target, or removed for `'ink'`.
@@ -73,7 +72,7 @@ keeps its exact colour (the board scene's own rule, docs/specs/020-import-export
 
 ### Editor (`useSnapColours`)
 
-- Inputs: `elements` (the active tab's), `inertIds` (`layerInertIds`), `editsBlocked`, `commit`.
+- Inputs: `elements` (the active tab's), `editsBlocked`, `commit`.
 - Output: `SnapColoursApi`, `{ colours: string[], blocked: boolean, snap(): number }`; `colours` is
   `snappableCustomColours`, memoised on `elements` and `inertIds`.
 - `snap()`: no-op returning 0 when blocked or nothing to snap; else one `commit` running

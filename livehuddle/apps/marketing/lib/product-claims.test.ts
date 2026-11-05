@@ -29,12 +29,16 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'a tab is capped at 10,000 elements; only plan limits are absent',
   },
   {
-    pattern: /export any tab[^.]*mermaid/i,
-    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
+    pattern: /export any tab[^.]*(?:mermaid|excalidraw)/i,
+    why: 'a tab exports JSON, Markdown, PNG, SVG and PDF; Mermaid and Excalidraw left livehuddle (not-in-livehuddle.md "Imports from other tools")',
   },
   {
-    pattern: /any tab (?:out )?as[^.]*(?:markdown|excalidraw)/i,
-    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
+    pattern: /any tab (?:out )?as[^.]*(?:mermaid|excalidraw)/i,
+    why: 'a tab exports JSON, Markdown, PNG, SVG and PDF; Mermaid and Excalidraw left livehuddle',
+  },
+  {
+    pattern: /import[^.]*(?:excalidraw|mermaid|draw\.io|diagrams\.net)/i,
+    why: 'livehuddle imports only its own tab JSON (not-in-livehuddle.md "Imports from other tools")',
   },
   {
     pattern: /undo never reaches|only rewinds your own changes, never/i,

@@ -1,5 +1,7 @@
 # Document views: blueprint
 
+> **The Frame left livehuddle** ([The Frame](../../002-project-scope/not-in-livehuddle.md#the-frame)): a stored `frame` is a retired element and holds nothing, and the containers are the lane and the boundary (`wrap … in boundary|lane`, the graph's groups drawn as boundaries). Where this blueprint still names a frame, read a boundary; the identifiers are the code's until #459 removes it.
+
 Derived from [Document views](../document-views.md), with the selector vocabulary and rejection codes of
 [Edit operations](../edit-operations.md), the tab revision of [Agent changesets](../agent-changesets.md), the findings
 of [Diagram lint](../diagram-lint.md), the route row of [API](../../015-api/api.md) ("Agents"), `read_document` of
@@ -15,7 +17,7 @@ Scope, by file:
 | `packages/document/src/element-refs.ts`                                   | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`                                                                       |
 | `packages/document/src/containment.ts`                                    | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin`                                                               |
 | `../packages/model-core/src/style-keys.ts`                                | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                                                                                        |
-| `packages/document/src/mermaid-serialise.ts`                              | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                                                                                         |
+| `../livediagram/packages/document/src/mermaid-serialise.ts`               | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                                                                                         |
 | `packages/document/src/index.ts`                                          | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                                                                                           |
 | `packages/api-schema/src/document-views.ts`                               | `VIEW_NAMES`, `ViewName`, `VIEW_QUERY`, `ViewDoor`, every view's JSON wire type, `UNKNOWN_VIEW_ERROR`                                                                                     |
 | `../packages/api-schema/src/ref-errors.ts`                                | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                                                                                        |
@@ -28,7 +30,7 @@ Scope, by file:
 | `../packages/document-views/src/text.ts`                                  | `cutAtWord`, `jsonString`, `attrValue`, `cellText`, `plural` (shared, `@liveworkspace/document-views`)                                                                                    |
 | `../packages/document-views/src/fields.ts`                                | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element (shared, `@liveworkspace/document-views`)                                        |
 | `../packages/document-views/src/view-attribute.ts`                        | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf` (shared, `@liveworkspace/document-views`)                                                                               |
-| `packages/document-views/src/visibility.ts`                               | `partitionVisible`: printed elements, hidden-layer elements                                                                                                                               |
+| `packages/document-views/src/visibility.ts`                               | `pinnedIds`: the ids an arrow's pinned ends name                                                                                                                                          |
 | `packages/document-views/src/tree.ts`                                     | `buildViewTree`: `deriveContainers`, then reading order per container                                                                                                                     |
 | `../packages/document-views/src/reading-order.ts`                         | `readingOrder`, `rowsOf` over any element (shared); `packages/document-views/src/reading-order.ts` binds `Placed` to this product's `Element`                                             |
 | `../packages/document-views/src/freehand-runs.ts`                         | `freehandRuns`: consecutive bare strokes folded into one line (shared); `packages/document-views/src/freehand-runs.ts` binds `FreehandRun` to this product's `Placed`                     |
@@ -91,7 +93,6 @@ edited without it); the change names the gap.
 | Own-line arrow  | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
 | Header line     | `viewHeader`, `headerLine`, `ViewHeader`                                 | The first line of every tab view                                               |
 | Counts          | `ElementCounts { boxes, frames, lanes, arrows }`                         | The header's element buckets                                                   |
-| Hidden          | `ViewModel.hidden`                                                       | Elements left out because they sit on a hidden layer                           |
 | Budget          | `budget` (tokens), `estimateTokens`, `fitOutline`, `fitLines`            | The token ceiling a view is fitted to                                          |
 | Elision line    | `elisionLine`, `Elision`                                                 | The one closing line naming what was left out and how to see it                |
 | Subtree         | query `only`, `ViewOptions.only`                                         | One element and what nests under it                                            |
@@ -113,12 +114,8 @@ No view reads a clock, a random source or a locale; `overview` takes `now` as an
 
 `buildViewModel(tab, context)` runs once per render and holds, for the views to read:
 
-1. **Partition.** `partitionVisible(tab)`: an element is **hidden** when `visibleLayerElements` drops it, or when it
-   is an arrow with a pinned end on a hidden element or an end riding on a hidden arrow, however long the chain
-   (`VW10`), so no printed end names a hidden element's ref. Everything else is **printed**, unknown kinds
-   included.
-2. **Refs.** `computeRefs(allElementIds)` over every element of the tab, hidden ones and arrows included (`VW2`),
-   so a ref never changes with layer visibility.
+1. **Printed.** Every element of the tab is **printed**, unknown kinds included.
+2. **Refs.** `computeRefs(allElementIds)` over every element of the tab, arrows included (`VW2`).
 3. **Kinds.** `kindWordOf` and `isKnownElement` per printed element.
 4. **Tree.** `buildViewTree(printed)`: `deriveContainers` gives each printed non-arrow element one container or the
    root; siblings take reading order; `freehandRuns` folds bare strokes.
@@ -199,7 +196,7 @@ container; views, the edit-operations membership reports, the lint and the edito
    axis-aligned ones.
 2. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
-Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth. `mermaidFromTab`
+Containers nest to any depth. `mermaidFromTab`
 keeps its one-level, frames-only output by calling `smallestHolder` with frames only.
 
 `contentOrigin(elements)`: the rounded minimum `x` and `y` over boxed elements, `(0, 0)` when there are none. Views
@@ -265,7 +262,6 @@ Invariants:
   content can start a line, fake a header or break a line's grammar.
 - **I5** Every tab view's first line is its header line; `overview`'s is its document line.
 - **I6** A view that leaves anything out ends with exactly one elision line; a view that leaves nothing out has none.
-- **I7** Elements on hidden layers are never printed and always counted in the header.
 
 ## Interfaces and contracts
 
@@ -274,7 +270,7 @@ Invariants:
 ```text
 header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"] [": " buckets]
                [" · finish=" finish]
-               [" · " hidden " hidden"] [" · " unknown " unknown"]
+               [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
 buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
 bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "lane" | "lanes" | "arrow" | "arrows")
@@ -295,8 +291,8 @@ No tab kind prints: every tab is the one kind, worked in Workshop. `finish=` onl
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
 **Buckets** (`VW9`): `frames` and `lanes` are those shapes; `arrows` are arrows; `boxes` is every other printed
-element, unknown kinds included. `total` is the printed count; `hidden` and `unknown` are counted apart from it
-(`unknown` is also inside `total`).
+element, unknown kinds included. `total` is the printed count; `unknown` is counted apart from it
+(it is also inside `total`).
 
 **Threads** (`VW11`): a printed element whose `commentThread.comments` is non-empty is a thread; open when
 `resolved` is false.
@@ -371,8 +367,7 @@ with a fixed id). The keys are the edit-operations field keys, so a printed styl
 ### Every view
 
 All take a tab (`overview` a document) and `ViewOptions { budget?, json?, only?, coarse?, style?, ref?, q?, all?,
-door?, now? }`. `renderView(request, tab, context)` builds the model once, resolves `ref` and `only` (a hidden-layer
-element is `target_not_found` "on a hidden layer", I7, `VW62`; `find` without `q` is `invalid_value`, `VW64`) and
+door?, now? }`. `renderView(request, tab, context)` builds the model once, resolves `ref` and `only` (`find` without `q` is `invalid_value`, `VW64`) and
 dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elements }` or `{ ok: false, refusal }`.
 Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
 is the full view's estimate and the step it took (a ladder state, or `lines-dropped`), for the `[views] budget` log.
@@ -453,7 +448,7 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
 1. `undefined` or `null` (the room was not read, or a pulled file's tab offline, `VW68`): `target_not_found` with
    the message "the selection could not be read".
 2. Otherwise the ids that name a printed element of the tab, each once, in `tab.elements` order (`VW66`); ids of
-   another tab, a hidden layer or a deleted element are dropped. None left: `target_not_found`, "nothing is selected".
+   another tab or a deleted element are dropped. None left: `target_not_found`, "nothing is selected".
 3. Both refusals carry `input: 'selected'`, `candidates: []`, `stale: false`, as edit operations word them (EO16).
 4. `showSelectedView(model, elements, options)` prints one header, then each element's `show` lines in order, a blank
    line between two elements; `fitLines` fits them like any line view: whole lines in order, then the elision line
@@ -531,7 +526,6 @@ type ViewHeader = {
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
   counts: { boxes: number; frames: number; lanes: number; arrows: number };
-  hidden: number;
   unknown: number;
   threads: { open: number; total: number };
   rev: number | null;
@@ -742,7 +736,6 @@ the tab and its `rev`.
 | E4   | Overlapping containers                         | Smallest area holding the centre; equal areas, the earlier                                       |
 | E5   | Element larger than a frame it overlaps        | Not nested (strict area)                                                                         |
 | E6   | Rotated element                                | Centre of the stored box; `layout` prints `r=`                                                   |
-| E7   | Hidden layer                                   | Left out, counted `· n hidden`; arrows to hidden elements counted with them                      |
 | E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
 | E9   | Parallel arrows                                | Both on the source line                                                                          |
 | E10  | Self-loop                                      | `→ <own ref>`                                                                                    |
@@ -844,7 +837,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R13 Reading order                                                    | `../packages/document-views/src/reading-order.test.ts`                                                                                   |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |
 | R15 Bare strokes fold into one counted line                          | `../packages/document-views/src/freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                  |
-| R16 What the outline leaves out; hidden counted                      | `outline.test.ts`, `header.test.ts`                                                                                                      |
+| R16 What the outline leaves out                                      | `outline.test.ts`, `header.test.ts`                                                                                                      |
 | R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                              |
 | R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                          |
 | R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                           |

@@ -303,23 +303,6 @@
 - [ ] Constants and configuration
 - [x] Defaults ledger
 
-## reaction-pad
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
-- [x] Errors and edge cases
-- [x] Security and trust
-- [x] Performance and limits
-- [x] Presentation and UX
-- [x] Accessibility
-- [x] Web Experience
-- [ ] Observability
-- [ ] Testing
-- [x] Constants and configuration
-- [x] Defaults ledger
-
 ## reveal-zone
 
 - [x] Domain and naming
@@ -517,6 +500,38 @@
 - [x] Defaults ledger
 
 ## timeline
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Security and trust
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger
+
+## wayfinding
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [ ] Data and persistence
+- [x] Errors and edge cases
+- [ ] Security and trust
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [ ] Observability
+- [x] Testing
+- [ ] Constants and configuration
+- [ ] Defaults ledger
+
+## timer-and-stopwatch
 
 - [x] Domain and naming
 - [x] Behaviour and state

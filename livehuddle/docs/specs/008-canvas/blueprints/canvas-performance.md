@@ -92,8 +92,6 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 - `createStockColourProjector` keeps the last board it was given (`lastIn`) and its projection
   (`lastOut`): the same array on the same surface returns `lastOut` without walking it. A surface
   change clears both, with the per-element cache.
-- `visibleLayerElements` is memoised over `elements` and `tabLayers` where the Map reads it
-  (`useCanvasChromePanels`).
 
 ### Element views render only for their own changes
 
@@ -105,7 +103,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   - `chairSitters`: a `useCallback` over the sitters map in `Canvas`.
 - `zoom` leaves `BoxedElementView`'s props. `CanvasZoomProvider` (in `Canvas`, around the element
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
-  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `ElementVoteOverlay`, `SelectionChromeLayer`,
+  `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `SelectionChromeLayer`,
   `RichTextEditor` (mounted only
   while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A stroke's
   hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that
@@ -156,10 +154,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   and end, a diagram stroke landing) restyles no element view. It does not cover:
   - a whiteboard pen or a path in its edit mode, whose cursor passes through the plane on purpose (above), so a
     zoom (the pen's cursor follows its width on screen) or a path hover still restyles the board;
-  - the eraser and the spotlight, whose own rules match every `[data-element-id]`, so switching to or from them
+  - the eraser, whose own rules match every `[data-element-id]`, so switching to or from it
     restyles each element once;
-  - the world's other children (`IsometricDepthLayer`), which sit outside the plane and inherit the world's
-    cursor, so a pan restyles isometric depth blocks.
 
 ### The element grid
 
@@ -207,8 +203,8 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   drag's release) commits first and the Map's rebuild and image parse follow as their own render
   (measured on the reference board: the worst task after a release fell from 171-219 ms to at most
   128 ms). `Minimap` memoises its markup on the deferred elements. Its `elements` input is memoised in
-  `useCanvasChromePanels` on `(elements, tabLayers)`, so a hidden layer does not yield a new
-  array per render.
+  `useCanvasChromePanels` on `elements`, so a render that changes no element does not yield a new
+  array.
 - Pan and zoom never redraw the markup; they move only the viewport rectangle.
 - On mount the deferral has an initial value: `useDeferredValue(settled, NO_ELEMENTS)`. The first
   render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
@@ -449,7 +445,6 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | An element with `NaN` or infinite bounds          | Not bucketed; `[element-grid] skipped element` logged once per id                         |
 | A giant element (a frame over the whole board)    | Oversize list, returned by every query                                                    |
 | Arrow-to-arrow and group-anchored ends            | Resolved by `deriveArrowViewFrame` as today; the frame compares by value                  |
-| A hidden layer                                    | The Map's input is memoised; hidden elements stay out of the grid (`drawnElements`)       |
 | A remote edit during a local drag                 | The Map stays frozen until the drag ends, then shows the latest elements                  |
 | The selection is deleted mid-drag by a peer       | The drag ends through its existing path, ending the gesture                               |
 | Reduced motion                                    | The toolbar fade is the existing micro transition, which reduced motion already flattens  |
@@ -479,7 +474,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 ## Presentation and UX
 
 - The floating toolbar and selection popover fade out as a move, resize or reshape engages and
-  fade back in at the box's new place when it ends; the quick-connect pluses and grips are
+  fade back in at the box's new place when it ends; the grips are
   unchanged. A click that never engages a move never hides them.
 - The Map keeps its last drawing through an element gesture, with the viewport rectangle live;
   on release the drawing catches up in one step.

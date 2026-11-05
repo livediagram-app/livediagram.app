@@ -318,7 +318,7 @@ export function mergeAppCategories(
     });
   }
 
-  // 4. What pointed at an old id (a link, a readout line, a nested row's switch) points at the merged one.
+  // 4. What pointed at an old id (a link, a nested row's switch) points at the merged one.
   if (rowAlias.size === 0 && categoryAlias.size === 0) return out;
   const row = (key: string) => rowAlias.get(key) ?? key;
   const category = (id: string) => categoryAlias.get(id) ?? id;
@@ -340,15 +340,6 @@ function remapRow(
       const target = categoryId(withParent.target);
       return target === withParent.target ? withParent : { ...withParent, target };
     }
-    case 'presetSummary':
-      return {
-        ...withParent,
-        lines: withParent.lines.map((line) => ({
-          ...line,
-          rowKey: rowKey(line.rowKey),
-          categoryId: categoryId(line.categoryId),
-        })),
-      };
     default:
       return withParent;
   }

@@ -74,19 +74,15 @@ describe('renderView', () => {
 });
 
 describe('renderView refusals (R4, R5, E17, E18)', () => {
-  const hidden = { ...shapeAt('square', 'abcd1', 0, 0), layerId: 'off' };
+  const second = shapeAt('square', 'abcd1', 0, 0);
   const tab: Tab = {
     id: 'tab-1',
     name: 'T',
     elements: [
       shapeAt('square', 'abcd0', 0, 0, 100, 50, { label: 'Zero' }),
-      hidden,
+      second,
       arrowBetween('arr', 'abcd0', 'abcd0'),
     ] as Element[],
-    layers: [
-      { id: 'default', name: 'Default' },
-      { id: 'off', name: 'Off', visible: false },
-    ],
   };
 
   it('refuses an ambiguous prefix with every candidate, marking a printed-length one stale', () => {
@@ -120,13 +116,6 @@ describe('renderView refusals (R4, R5, E17, E18)', () => {
     expect(render({ view: 'show' }, tab)).toMatchObject({
       ok: false,
       refusal: { error: 'target_not_found' },
-    });
-  });
-
-  it('refuses an element on a hidden layer (I7)', () => {
-    expect(render({ view: 'show', ref: 'abcd1' }, tab)).toMatchObject({
-      ok: false,
-      refusal: { error: 'target_not_found', message: '"abcd1" is on a hidden layer' },
     });
   });
 

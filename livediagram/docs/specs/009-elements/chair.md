@@ -78,6 +78,13 @@ Walking a character onto a chair seats it, fired **once on arrival** by the
 same `useAvatarWalk` mechanism the portal uses (not every frame it stands
 there).
 
+- **Only the chair you are going to.** A click-walk sits you only in the piece its destination is in: clicking a
+  chair (a desk, a sofa, a meeting table) walks you there and sits you down, but a walk to somewhere else that
+  happens to cross a chair on the way walks straight through it, neither sitting you nor stopping you beside a
+  taken one. Steering with the arrow keys sits you in whatever you steer into, since steering into a chair is
+  choosing it; walking alongside one, feet outside it, never does. (`sitsOnEntry` in `@liveworkspace/avatar`'s
+  walk.)
+
 - The character **snaps to the chair's seat point** and switches to a seated
   pose: legs forward, body lowered, **facing the way the chair faces**
   (`n` down the canvas, `e` left, `s` up, `w` right: the same words the menu

@@ -117,8 +117,7 @@ export function applyInsert(
       : { x: Math.round((ca.x + cb.x) / 2 - size.width / 2), y: Math.round(along), ref: a.el };
   });
   if ('rejection' in made) return made.rejection;
-  const refused = commitNew(state, made, 'insert', index);
-  if (refused) return refused;
+  commitNew(state, made, index);
   const node = made.el;
   const extent = axis.horizontal ? node.width : node.height;
   makeRoom(state, { node, b: b.el.id, axis, shift: extent + gap, gap }, index);

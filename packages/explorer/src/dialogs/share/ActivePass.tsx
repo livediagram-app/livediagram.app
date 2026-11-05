@@ -39,6 +39,7 @@ export function ActivePass({
   onCopy,
   onRevoke,
   onRescope,
+  legacy = false,
 }: {
   link: ShareLink;
   url: string;
@@ -60,6 +61,8 @@ export function ActivePass({
   onRevoke: () => void;
   // Null where the item has one tab, so there is nothing to choose between.
   onRescope: ((tabId: string | null) => void) | null;
+  // A level the item's app no longer offers a new pass: it keeps working, and its band says Legacy.
+  legacy?: boolean;
 }) {
   // The bin the revoke confirmation points at while it is open.
   const [revokeAnchor, setRevokeAnchor] = useState<HTMLElement | null>(null);
@@ -73,6 +76,7 @@ export function ActivePass({
   return (
     <PassTicket
       level={link.level}
+      legacy={legacy}
       code={link.code}
       fresh={fresh}
       highlight={highlight}

@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 
-import { SHAPE_DEFAULT_SIZE, type Reaction } from '@livehuddle/document';
+import type { Reaction } from '@livehuddle/document';
 
 import { drawParticle, spawnBurst, stepParticles, type Particle } from '@/lib/reaction-particles';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
-// The burst a Reaction Pad throws (docs/specs/009-elements/reaction-pad.md), drawn on a canvas.
+// The burst an Avatar-mode character throws (docs/specs/008-canvas/avatar-mode.md "Reactions"), drawn on a canvas.
 //
 // It used to be a dozen emoji spans on one CSS keyframe. That could not be
 // made good: every particle followed the same interpolation between the same
@@ -19,6 +19,9 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 //
 // The physics live in lib/reaction-particles.ts as pure functions. This file
 // is the surface, the clock and the cleanup.
+
+/** The width a burst is drawn at scale 1 (the old Reaction Pad's default width, which the physics were tuned to). */
+const BURST_BASE_PX = 150;
 
 /** Hard stop, in ms. Every reaction's particles die well inside this. */
 const BURST_MS = 2600;
@@ -86,7 +89,7 @@ export function ReactionBurst({
       return s / 4294967296;
     };
 
-    const scale = Math.min(3, Math.max(0.55, width / SHAPE_DEFAULT_SIZE['reaction-pad'].width));
+    const scale = Math.min(3, Math.max(0.55, width / BURST_BASE_PX));
     let particles: Particle[] = spawnBurst(reaction, scale, rand);
 
     const paint = () => {

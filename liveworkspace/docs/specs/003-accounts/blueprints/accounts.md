@@ -414,6 +414,10 @@ Migrations, in order:
   addresses aren't kept
 - `0016_user_time_zone.sql`: `user.timeZone`, the account's IANA zone for the send window
 
+Better Auth's runtime schema check is off (`advanced.database.validateSchema: false`, `src/auth-options.ts`): it would
+read D1's schema before a Worker's first answer. `src/schema-check.test.ts` runs the same check against
+`src/test-d1.ts` (every migration applied), so the tables above must still cover what Better Auth writes.
+
 | Table                   | Columns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Created in                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | `account`               | `id`, `accountId`, `providerId`, `userId`, `accessToken`, `refreshToken`, `idToken`, `accessTokenExpiresAt`, `refreshTokenExpiresAt`, `scope`, `password`, `createdAt`, `updatedAt`                                                                                                                                                                                                                                                                                                                                                                                             | `0001_better_auth.sql`      |
@@ -586,6 +590,7 @@ Migrations, in order:
 | `DEVICE_PREFERENCES`                | `(object or list, see file)`                                             | `device.ts`          |
 | `COMMON_SETTING_KEYS`               | `(object or list, see file)`                                             | `index.ts`           |
 | `ALL_SETTING_KEYS`                  | `(object or list, see file)`                                             | `index.ts`           |
+| `RETIRED_ALL_SETTING_KEYS`          | `['powerUserMode', 'minimalChrome']`                                     | `index.ts`           |
 | `PRESENCE_COLOURS`                  | `(object or list, see file)`                                             | `presence.ts`        |
 | `PRESENCE_COLOUR_VALUES`            | `PRESENCE_COLOURS.map((c) => c.value)`                                   | `presence.ts`        |
 | `PROFILE_NAME_MAX`                  | `120`                                                                    | `presence.ts`        |

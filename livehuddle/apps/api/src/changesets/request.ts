@@ -45,7 +45,8 @@ export type Refusal = { status: number; body: Record<string, unknown> };
 
 export type ParseResult = { ok: true; value: ParsedChangeset } | { ok: false; refusal: Refusal };
 
-const REPLACE_SOURCES = ['graph', 'mermaid', 'template', 'elements'] as const;
+// No `mermaid`: imports from other tools are gone (docs/specs/002-project-scope/not-in-livehuddle.md).
+const REPLACE_SOURCES = ['graph', 'template', 'elements'] as const;
 const FINGERPRINT = new RegExp(`^[0-9a-f]{${ELEMENT_FINGERPRINT_LENGTH}}$`);
 
 const refuse = (status: number, body: Record<string, unknown>): ParseResult => ({
@@ -152,7 +153,7 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   if (!isRecord(raw)) return bad('"replace" must be an object');
   const sources = REPLACE_SOURCES.filter((s) => raw[s] !== undefined);
   if (sources.length !== 1)
-    return bad('"replace" takes exactly one of graph, mermaid, template or elements');
+    return bad('"replace" takes exactly one of graph, template or elements');
   if (raw.layout !== undefined && raw.layout !== 'auto' && raw.layout !== 'preserve') {
     return bad('"replace.layout" is "auto" or "preserve"');
   }
@@ -183,8 +184,6 @@ function replaceBodyOf(
   switch (source) {
     case 'graph':
       return isRecord(raw.graph) ? { graph: raw.graph as GraphInput } : null;
-    case 'mermaid':
-      return typeof raw.mermaid === 'string' ? { mermaid: raw.mermaid } : null;
     case 'template':
       return typeof raw.template === 'string' ? { template: raw.template } : null;
     case 'elements':

@@ -31,7 +31,7 @@ import { dropRetiredEvents } from './retired-events';
 // filled from the app's config: the key metrics first, then the Detail tabs (each gathering what
 // were separate tabs until October 2026 as sections): what people build with (Features), how they
 // find their way (Pages & Help), what they share with everyone (Community, for an app that has
-// one), and whether it all works and is fast (Health). Search is the power-user lens.
+// one), and whether it all works and is fast (Health). Search finds any one event.
 type View = { key: ViewKey; label: string; icon: ReactNode };
 const BEFORE_COMMUNITY: View[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },

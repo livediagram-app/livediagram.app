@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { capLabel } from './graph-input';
-import { parseMermaid } from './mermaid';
-import { decodeLabel } from './mermaid-shared';
-import { readFlowchartHeader, readInlineLabel } from './mermaid-scan';
 
-// Untrusted text reaches the label cap and the Mermaid parser from any API token: a changeset's
-// `replace` compiles graph and Mermaid input inside the api worker
+// Untrusted text reaches the label cap from any API token: a changeset's
+// `replace` compiles graph input inside the api worker
 // (docs/specs/024-agents/agent-changesets.md). Every pass over it must stay linear: a pattern that
 // backtracks over a long run of one character (spaces, brackets, dashes, quotes) turns one request
 // into seconds of CPU. Each sample is fed with such a run inserted at every token boundary, and
@@ -71,33 +68,6 @@ describe('untrusted graph text stays linear', () => {
     expectLinear(cases(samples), (t) => capLabel(t));
     expectLinear([{ build: (n) => `${'a'.repeat(n)} ${'() '.repeat(n)}` }], (t) => capLabel(t));
   });
-
-  it('parses a flowchart in linear time whatever a line repeats', { timeout: TIMEOUT_MS }, () => {
-    const lines = [
-      'graph TD',
-      'A["Start"] -- yes --> B(Done)',
-      'A -. maybe .-> C{Check}',
-      'A == strong ==> D[(Store)]',
-      'B -->|label| C',
-      'C & D --> E',
-      'subgraph s1 [Title]',
-      'click A href "https://example.com"',
-      'E@{ shape: stadium, label: "Hi" }',
-    ];
-    expectLinear(cases(lines, 'graph TD\n'), (t) => parseMermaid(t));
-    expectLinear([{ build: (n) => `graph${' '.repeat(n)}x\nA --> B` }], (t) => parseMermaid(t));
-  });
-
-  it(
-    'parses state and ER diagrams in linear time whatever a line repeats',
-    { timeout: TIMEOUT_MS },
-    () => {
-      const state = ['[*] --> Idle', 'Idle --> Busy : start work', 'state "Long name" as L'];
-      const er = ['CUSTOMER ||--o{ ORDER : places', 'ORDER { string id PK "the id" }'];
-      expectLinear(cases(state, 'stateDiagram-v2\n'), (t) => parseMermaid(t));
-      expectLinear(cases(er, 'erDiagram\n'), (t) => parseMermaid(t));
-    },
-  );
 });
 
 // The scans read exactly as the patterns they replaced, checked against those patterns on short
@@ -156,39 +126,5 @@ describe('the linear scans read exactly as the patterns they replaced', () => {
       const long = text.repeat(3);
       expect(capLabel(long), JSON.stringify(long)).toEqual(oracle(long));
     }
-  });
-
-  it('reads flowchart headers as before', () => {
-    const pattern = /^\s*(?:flowchart|graph)\b\s*([A-Za-z]{2})?\s*$/i;
-    const alphabet = ['graph', 'flowchart', 'Graph', ' ', '\t', 'TD', 'LR', 'x', 'abc', '-', 'g'];
-    for (const text of generated(alphabet, 3000)) {
-      const m = pattern.exec(text);
-      expect(readFlowchartHeader(text), JSON.stringify(text)).toBe(m ? (m[1] ?? '') : null);
-    }
-  });
-
-  it('reads inline edge labels as before', () => {
-    const forms = [
-      { re: /^\s*--\s+(.+?)\s+(-{2,})([>ox])?/, line: 'solid' },
-      { re: /^\s*-\.\s+(.+?)\s+\.+(-)([>ox])?/, line: 'dashed' },
-      { re: /^\s*==\s+(.+?)\s+(={2,})([>ox])?/, line: 'thick' },
-    ] as const;
-    const oracle = (s: string) => {
-      for (const { re, line } of forms) {
-        const m = re.exec(s);
-        if (m) return { label: m[1]!, ...(m[3] ? { trail: m[3] } : {}), line, length: m[0].length };
-      }
-      return null;
-    };
-    const alphabet = [' ', ' ', '--', '-.', '==', '-', '.', '=', '>', 'o', 'x', 'yes', 'a b', '\t'];
-    let matched = 0;
-    for (const text of generated(alphabet, 6000, 11)) {
-      const expected = oracle(text);
-      if (expected) matched += 1;
-      expect(readInlineLabel(text), JSON.stringify(text)).toEqual(expected);
-    }
-    // The generator reaches the matching cases, not only the refusals.
-    expect(matched).toBeGreaterThan(50);
-    expect(decodeLabel(readInlineLabel('-- yes -->')!.label)).toBe('yes');
   });
 });

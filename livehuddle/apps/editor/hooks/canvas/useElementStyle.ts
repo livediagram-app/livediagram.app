@@ -19,9 +19,9 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
-  bringElementsToFrontLayer,
+  bringManyToFront,
   isBoxed,
-  sendElementsToBackLayer,
+  sendManyToBack,
   type AnimationSetId,
   type AnimationSpeed,
   type IconAnimation,
@@ -65,10 +65,6 @@ type EditorElementStyleDeps = {
   editsBlocked: boolean;
   // History-aware element mutator (snapshots + emits the log).
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // History-aware ACTIVE-TAB mutator, for the layer-aware Bring to
-  // Front / Send to Back (docs/specs/006-document/layers.md): they restack `tab.layers` as well
-  // as the elements array, which element-level `commit` can't reach.
-  commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   // Non-history tab mutator + per-burst checkpoint for the high-
   // frequency colour / opacity setters: one undoable step per picker
   // gesture (a commit per onChange tick flooded the undo stack in a
@@ -86,7 +82,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     activeId,
     editsBlocked,
     commit,
-    commitActiveTab,
     tickTabs,
     checkpointBurst,
   } = deps;
@@ -160,14 +155,14 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const bringSelectedToFront = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commitActiveTab((t) => bringElementsToFrontLayer(t, ids));
+    commit((els) => bringManyToFront(els, new Set(ids)));
     track('Element', 'Reordered', 'Front');
   };
 
   const sendSelectedToBack = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commitActiveTab((t) => sendElementsToBackLayer(t, ids));
+    commit((els) => sendManyToBack(els, new Set(ids)));
     track('Element', 'Reordered', 'Back');
   };
 

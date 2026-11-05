@@ -90,7 +90,7 @@ const COMMUNITY_PATH = '/community';
 const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 
 // Help-centre category slugs, which are the first segment of every help
-// article path (`/canvas/shadows/`, `/palette/build/frames/`). The help app
+// article path (`/canvas/shadows/`, `/palette/virtual-office/`). The help app
 // serves them all under `/help`, so a bare one is an article URL that lost
 // its prefix — a hand-typed link, an old bookmark, a copy-paste that dropped
 // the first segment. Those 404'd into marketing; they redirect now.

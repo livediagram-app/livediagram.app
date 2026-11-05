@@ -9,6 +9,8 @@
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
 import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
+import { isMeetingPieceShape, MEETING_PIECE_SIZE } from './meeting-pieces';
+import { isTimerPieceShape, TIMER_PIECE_SIZE } from './timer-pieces';
 import { DEFAULT_BUTTON_MODE } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
@@ -17,7 +19,6 @@ import {
   LINE_DEFAULT_SERIES,
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
-  REACTION_DEFAULT,
 } from './data-shapes';
 import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { DEFAULT_SEATING_FACING } from './seating';
@@ -48,7 +49,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
   // Reaction pad: a press-me square, sized like the other Behaviour buttons.
-  'reaction-pad': { width: 150, height: 110 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
   // render path means the ends stay perfectly semicircular at any
@@ -70,9 +70,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   star: { width: 130, height: 130 },
   // Speech bubble: wider than tall, with room for the tail beneath the body.
   'speech-bubble': { width: 180, height: 130 },
-  // Frame / section: a large container drawn around content, so it starts
-  // big. Transparent by default (see defaultFillColor) with a top-left label.
-  frame: { width: 360, height: 260 },
   // Curated glyph. Square + aspect-locked on create (set in createShape) so
   // the line art never distorts; the label sits below. Sized generously so a
   // two-line caption (e.g. "Durable Objects") clears the glyph rather than
@@ -128,6 +125,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // The virtual office (docs/specs/009-elements/office.md): each at its drawing's grid, at the chair's scale; a
   // room is a floor big enough to furnish.
   room: { width: 480, height: 320 },
+  // A Door (docs/specs/009-elements/room-builder.md): a Room's doorway wide, a wall and its jambs deep.
+  door: { width: 96, height: 24 },
   'meeting-table': { width: 232, height: 168 },
   plant: { width: 56, height: 88 },
   bookshelf: { width: 120, height: 132 },
@@ -136,6 +135,40 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   rug: { width: 200, height: 120 },
   // A stage (docs/specs/009-elements/office.md "Stage"): room for a few speakers side by side, and its front edge.
   stage: { width: 360, height: 140 },
+  // The Office Pod, the bar and the garden (docs/specs/009-elements/office.md "Office Pod" to "Garden Fence").
+  'office-pod': { width: 176, height: 144 },
+  bar: { width: 240, height: 120 },
+  'bar-stool': { width: 44, height: 64 },
+  'drinks-cabinet': { width: 88, height: 120 },
+  'drinks-fridge': { width: 72, height: 128 },
+  'outdoor-plant': { width: 72, height: 80 },
+  tree: { width: 120, height: 160 },
+  'garden-path': { width: 240, height: 64 },
+  grass: { width: 240, height: 160 },
+  'garden-fence': { width: 200, height: 28 },
+  // The social pieces (docs/specs/009-elements/social-pieces.md): each at its drawing's grid; a pond any size.
+  'notice-board': { width: 176, height: 128 },
+  'world-clock': { width: 168, height: 72 },
+  jukebox: { width: 72, height: 112 },
+  'ping-pong-table': { width: 184, height: 112 },
+  'arcade-machine': { width: 64, height: 112 },
+  fireplace: { width: 128, height: 120 },
+  campfire: { width: 80, height: 72 },
+  bench: { width: 136, height: 64 },
+  'picnic-table': { width: 200, height: 152 },
+  hammock: { width: 152, height: 80 },
+  'garden-umbrella': { width: 120, height: 152 },
+  fountain: { width: 136, height: 120 },
+  pond: { width: 240, height: 152 },
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
+  directory: { width: 72, height: 124 },
+  elevator: { width: 112, height: 140 },
+  // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a wall screen and a door plaque.
+  screen: MEETING_PIECE_SIZE.screen,
+  'room-sign': MEETING_PIECE_SIZE['room-sign'],
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  timer: TIMER_PIECE_SIZE.timer,
+  stopwatch: TIMER_PIECE_SIZE.stopwatch,
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
@@ -271,24 +304,46 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'stage') {
     return { ...base, label: 'Stage', textSize: 'sm', textAlignY: 'bottom' };
   }
+  // A Door keeps any width along its wall: not aspect locked, no label.
+  if (kind === 'door') return base;
+  // A garden path, grass and a garden fence (docs/specs/009-elements/office.md) are any size, drawn to it, with no
+  // words on them.
+  if (kind === 'garden-path' || kind === 'grass' || kind === 'garden-fence' || kind === 'pond') {
+    return { ...base, label: '' };
+  }
+  // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): placed at their size, aspect locked,
+  // no words of their own (a sign's name is its room's).
+  if (isMeetingPieceShape(kind)) return { ...base, label: '', aspectLocked: true };
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md): placed at their size, aspect locked, no
+  // words; idle until first pressed, so nothing is stored.
+  if (isTimerPieceShape(kind)) return { ...base, label: '', aspectLocked: true };
+  // An Elevator (docs/specs/009-elements/elevator.md "Names") arrives unnamed: it reads "Elevator 1", "Elevator 2" by
+  // position on its floor until someone names it, the name under the piece.
+  if (kind === 'elevator') {
+    return { ...base, label: '', textSize: 'sm', textAlignY: 'bottom', aspectLocked: true };
+  }
   if (isOfficeShape(kind)) {
     return {
       ...base,
-      ...(kind === 'meeting-table'
+      // A piece people sit at keeps its label under it; the social pieces show none (social-pieces.md).
+      ...(kind === 'notice-board' ||
+      kind === 'world-clock' ||
+      kind === 'jukebox' ||
+      kind === 'ping-pong-table' ||
+      kind === 'arcade-machine' ||
+      kind === 'fireplace' ||
+      kind === 'campfire' ||
+      kind === 'bench' ||
+      kind === 'picnic-table' ||
+      kind === 'hammock' ||
+      kind === 'garden-umbrella' ||
+      kind === 'fountain'
+        ? { label: '' }
+        : {}),
+      ...(kind === 'meeting-table' || kind === 'office-pod'
         ? { textSize: 'sm' as const, textAlignY: 'bottom' as const }
         : {}),
       aspectLocked: true,
-    };
-  }
-  if (kind === 'reaction-pad') {
-    return {
-      ...base,
-      reaction: REACTION_DEFAULT,
-      // The glyph carries the meaning, so the label names the ACT rather than
-      // repeating it: "Celebrate" over a 🎉 says what pressing does.
-      label: 'Celebrate',
-      textAlignY: 'bottom',
-      borderRadius: 'lg',
     };
   }
   if (kind === 'lane') {
@@ -343,15 +398,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // an icon carries would undo the die-cut look.
   if (kind === 'sticker') {
     return { ...base, aspectLocked: true };
-  }
-  // Frame: a container drawn around other elements. Its label sits in the
-  // top-right (like a section title) rather than centred, and the body is
-  // transparent by default (defaultFillColor) so content shows through.
-  if (kind === 'frame') {
-    // Frames start with a "Frame" section title in the top-right, padded in
-    // off the border so it doesn't touch the outline, so they read as a
-    // labelled container the moment they're dropped.
-    return { ...base, label: 'Frame', textAlignY: 'top', textAlignX: 'right', padding: 'lg' };
   }
   // Progress ring is drawn as a donut, so lock the aspect ratio to keep it
   // circular. Both progress kinds start half-filled so the fill is visible the

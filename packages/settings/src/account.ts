@@ -149,8 +149,6 @@ export const EDITOR_ONLY_KEYS: readonly AllSettingKey[] = [
   'uiScaleCornerButtons',
   'middleMousePan',
   'dockButtonNames',
-  'powerUserMode',
-  'minimalChrome',
   'customSwatches',
 ];
 

@@ -1,6 +1,6 @@
 // livehuddle's own tips-and-tricks illustrations (docs/specs/018-help/help-app.md): keyboard shortcuts
-// and the palette strip as a quick-add launchpad. The shortcuts toggle, Zen mode and the laser pointer
-// are @liveworkspace/help-site/art/illustrations/tips; format-painter and theme scenes are reused from
+// and the palette strip as a quick-add launchpad. The shortcuts toggle is
+// @liveworkspace/help-site/art/illustrations/tips; format-painter and theme scenes are reused from
 // canvas.tsx, not redrawn. Composed only from the shared primitives.
 
 import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
@@ -34,9 +34,7 @@ export function KeyboardShortcuts() {
   const rows: [string, string][] = [
     ['V', 'Select Tool (or 1)'],
     ['H', 'Hand Tool'],
-    ['K', 'Laser Pointer'],
     ['E', 'Eraser (click / drag to delete)'],
-    ['Z', 'Zen Mode (focus)'],
   ];
   return (
     <Scene w={420} h={236} bg="plain">

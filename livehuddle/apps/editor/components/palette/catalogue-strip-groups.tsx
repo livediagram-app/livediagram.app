@@ -3,11 +3,10 @@
 import { useRef, type ReactNode } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livehuddle/ui';
 import { isIconCatalogsLoaded } from '@liveworkspace/workbench/lib/icon-registry';
-import { iconBrowseGroups } from './IconPickerTab';
 import { stickerBrowseGroups } from './StickerPickerTab';
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The Toolbar strip's tiles for Icons, Stickers and Technology (docs/specs/007-editor/toolbar-layout.md "More"): the
+// The Toolbar strip's tiles for Stickers (docs/specs/007-editor/toolbar-layout.md "More"; no Icons in livehuddle): the
 // catalogue's browse groups, each opening a popover of its entries. The groups are the browse's own
 // (PaletteCategoryBrowser), so the strip and the More body never disagree.
 
@@ -29,18 +28,12 @@ export type StripOpen = {
 export function catalogueStripGroups(categoryId: string): StripGroup[] | null {
   const cached = CACHE.get(categoryId);
   if (cached) return cached;
-  const groups =
-    categoryId === 'icons'
-      ? iconBrowseGroups()
-      : categoryId === 'stickers'
-        ? stickerBrowseGroups()
-        : null;
+  const groups = categoryId === 'stickers' ? stickerBrowseGroups() : null;
   if (!groups) return null;
   const strip = groups
     .filter((g) => g.items.length > 0)
     .map(({ id, label, icon }) => ({ id, label, icon }));
-  // Built once the catalogues have landed, after which they never change: about 1 ms a build (Icons, Technology)
-  // on every strip render otherwise, the AWS opener's glyph on Diagram's landing strip among them.
+  // Built once the catalogues have landed, after which they never change, so a strip render never rebuilds them.
   if (isIconCatalogsLoaded()) CACHE.set(categoryId, strip);
   return strip;
 }

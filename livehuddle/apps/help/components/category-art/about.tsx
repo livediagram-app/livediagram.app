@@ -3,11 +3,8 @@ import { Chip, Stage, Window } from '@liveworkspace/help-site/art/parts';
 import { Character } from './character';
 
 // About livehuddle: what it is in one picture. Three windows fanned out, one per part of a meeting in a Space (the
-// day's sticky notes on the wall, the team round its table, a quick vote), under the two promises: free, and open
-// source.
-
-// How many dots each of the Vote window's three options holds.
-const DOTS = [3, 1, 2];
+// day's sticky notes on the wall, the team round its table, a Timer on the wall), under the two promises: free, and
+// open source.
 
 export function AboutArt() {
   return (
@@ -28,30 +25,19 @@ export function AboutArt() {
           ))}
         </Window>
       </g>
-      {/* Vote: three options and the room's dots, tilted forward on the right. */}
+      {/* Timer: the meeting's countdown, tilted forward on the right. */}
       <g transform="rotate(7 308 120)">
-        <Window x={232} y={52} w={150} h={118} title="Vote">
-          {DOTS.map((count, row) => (
-            <g key={row}>
-              <rect
-                x={246}
-                y={84 + row * 26}
-                width={70}
-                height={18}
-                rx={3}
-                className="fill-slate-100"
-              />
-              {Array.from({ length: count }, (_, i) => (
-                <circle
-                  key={i}
-                  cx={330 + i * 12}
-                  cy={93 + row * 26}
-                  r={4.5}
-                  className="fill-brand-500"
-                />
-              ))}
-            </g>
-          ))}
+        <Window x={232} y={52} w={150} h={118} title="Timer">
+          <circle cx={307} cy={120} r={30} className="fill-none stroke-slate-200" strokeWidth={6} />
+          <path
+            d="M307 90a30 30 0 1 1 -30 30"
+            className="fill-none stroke-brand-500"
+            strokeWidth={6}
+            strokeLinecap="round"
+          />
+          <Label x={307} y={124} anchor="middle" size={11} weight={600} tone="strong">
+            5:00
+          </Label>
         </Window>
       </g>
       {/* The Space: in front, in the middle, the team gathered round the meeting table. */}
@@ -84,7 +70,7 @@ export function AboutArt() {
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Meet · Talk · Decide
+        Meet · Talk · Keep Time
       </Label>
     </Stage>
   );

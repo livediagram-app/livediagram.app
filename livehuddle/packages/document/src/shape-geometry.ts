@@ -73,14 +73,6 @@ const polygon = (points: string, role: ShapePartRole = 'main'): ShapePart => ({
   points,
 });
 const path = (d: string, role: ShapePartRole = 'main'): ShapePart => ({ tag: 'path', role, d });
-const rect = (
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  rx?: number,
-  role: ShapePartRole = 'main',
-): ShapePart => ({ tag: 'rect', role, x, y, width, height, ...(rx !== undefined ? { rx } : {}) });
 
 // The diamond's vertices, exported on their own because the headless render
 // draws it natively at element coordinates rather than as a nested <svg>.
@@ -141,10 +133,6 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
       'M 8 0 L 92 0 A 8 8 0 0 1 100 8 L 100 92 A 8 8 0 0 1 92 100 L 44 100 L 26 120 L 34 100 L 8 100 A 8 8 0 0 1 0 92 L 0 8 A 8 8 0 0 1 8 0 Z',
     ),
   ),
-  // Section container. Sharp corners (an rx would warp under the stretch),
-  // and it takes the element's fill like every other shape: a frame defaults
-  // to transparent, so the see-through look is the default, not a rule.
-  frame: stretch(rect(1, 1, 98, 98, undefined, 'outline')),
   // UML final state: a ring (the line colour, unfilled) round a solid dot (the fill), kept round in any box.
   'final-state': {
     viewBox: '0 0 100 100',

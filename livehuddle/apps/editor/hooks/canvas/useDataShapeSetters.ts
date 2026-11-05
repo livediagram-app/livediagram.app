@@ -12,7 +12,6 @@ import {
   isProgressShape,
   type AnimationSpeed,
   type ChecklistItem,
-  type SelectionMode,
   type CodeLanguage,
   type Element,
   type ProgressAnim,
@@ -21,6 +20,7 @@ import {
   turnedSeatingBox,
   type SeatingKind,
   type RoomDoor,
+  type ClockZone,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
@@ -219,6 +219,37 @@ export function useDataShapeSetters({
     matches: (kind) => kind === 'stage',
   });
   const setStageSelected = (patch: StagePatch) => patchStages(patch, 'Stage');
+  // A Screen's Video Link (docs/specs/009-elements/screen-and-room-sign.md "Screen"); undefined clears it.
+  const patchScreens = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'screen',
+  });
+  const setScreenUrlSelected = (url: string | undefined) =>
+    patchScreens({ screenUrl: url }, 'Screen');
+  // The same patch on one Screen by id: the walking reader's Set Link (docs/specs/008-canvas/avatar-mode.md "The
+  // reader"), which edits the Screen it opened, not the selection.
+  const setScreenUrlOf = (id: string, url: string | undefined) =>
+    makeShapePatcher({
+      currentSelectionIds: () => new Set([id]),
+      commit,
+      matches: (kind) => kind === 'screen',
+    })({ screenUrl: url }, 'Screen');
+  // A World Clock's zones and a Jukebox's source (docs/specs/009-elements/social-pieces.md); undefined clears them.
+  const patchClocks = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'world-clock',
+  });
+  const setClockZonesSelected = (zones: ClockZone[] | undefined) =>
+    patchClocks({ clockZones: zones }, 'World-clock');
+  const patchJukeboxes = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'jukebox',
+  });
+  const setJukeboxSourceSelected = (source: string | undefined) =>
+    patchJukeboxes({ jukeboxSource: source }, 'Jukebox');
 
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
@@ -234,20 +265,6 @@ export function useDataShapeSetters({
       ),
     );
     track('Element', 'Changed', 'Checklist');
-  };
-
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode the button hands whoever
-  // presses it. Gated to the button kind, so a multi-selection of mixed
-  // elements only rewrites the buttons in it.
-  const setButtonModeSelected = (mode: SelectionMode) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'mode-button' ? { ...el, mode } : el,
-      ),
-    );
-    track('Element', 'Changed', 'ModeButton');
   };
 
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
@@ -272,6 +289,9 @@ export function useDataShapeSetters({
     setChairFacingSelected,
     setRoomDoorSelected: setRoomDoor,
     setStageSelected,
-    setButtonModeSelected,
+    setScreenUrlSelected,
+    setScreenUrlOf,
+    setClockZonesSelected,
+    setJukeboxSourceSelected,
   };
 }

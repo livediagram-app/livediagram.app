@@ -66,27 +66,17 @@ export type UserPreferences = {
   // How tall the map is. A big canvas is unreadable in a 144px strip; a
   // small one doesn't need more.
   mapSize?: MapSize;
-  // Layers panel options (docs/specs/006-document/layers.md). Both default ON via `!== false`.
-  //
-  // The row thumbnail is the quickest way to tell two similarly-named layers
-  // apart, but it is also the tallest thing in a row — turning it off gives a
-  // compact list on a document with many layers.
-  layersShowPreview?: boolean;
-  // The per-layer element count, beside the name.
-  layersShowCount?: boolean;
   // Panel switches (docs/specs/007-editor/user-preferences.md), each ON
   // unless stored `false`. Off removes the panel and the chrome that reaches
   // it, never the feature underneath. Read them through `panelEnabled`.
   //
-  // Layers: the panel, its cluster button, "Move to layer" in the element
-  // menus and the export's "Hidden layers" row. Layers still apply.
-  layersPanelEnabled?: boolean;
   // Collaborate: the panel and its button. Comments and actions stay.
   collaboratePanelEnabled?: boolean;
-  // Quick style: the selection's style panel. Style memory stays.
-  quickStylePanelEnabled?: boolean;
+  // `quickStylePanelEnabled` is not read: livehuddle has no Quick Style panel
+  // (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). A stored
+  // value is kept, unread, like any key this version does not know.
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
-  // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
+  // rest (floating, popover, the Map, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /
   // focused. Applied via the `--lvd-panel-opacity` custom property (see
   // usePanelOpacity) on every `data-panel-translucent` surface. Buttons are
@@ -103,13 +93,8 @@ export type UserPreferences = {
   uiScalePanels?: number;
   uiScaleToolbar?: number;
   uiScaleCornerButtons?: number;
-  // Quick-add on hover (docs/specs/008-canvas/canvas-and-palette.md). When `true`, an element's quick-add "+"
-  // buttons open their menu on hover instead of requiring a click; moving
-  // the pointer away closes it. The "+" buttons still only appear on the
-  // selected element, and a click still opens the menu either way. Missing /
-  // undefined / false === click to open, the default (hover-open can feel
-  // twitchy, so it's opt-in).
-  quickAddOnHover?: boolean;
+  // (`quickAddOnHover` left livehuddle with Quick Connect, docs/specs/002-project-scope/not-in-livehuddle.md: a
+  // stored value stays, unread, like any key this version does not know.)
   // How an element shows its link, note, action and comments
   // (docs/specs/008-canvas/element-indicators.md): glyphs inside its top, at the top-right of a box
   // ('top', the default), a labelled row along its bottom edge ('footer'), or none ('off').
@@ -152,11 +137,6 @@ export type UserPreferences = {
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.
   homeBanner?: boolean;
-  // Layers panel hover-solo (docs/specs/006-document/layers.md). When `false`, resting the pointer
-  // on a Layers-panel row no longer solos that layer on the canvas.
-  // Missing / undefined / true === on, the default. Flipped from the
-  // panel's settings gear (desktop-only chrome, like the hover itself).
-  layerHoverPreview?: boolean;
   // Whether the bottom-right cluster names its buttons beside their icons on a wide desktop
   // (docs/specs/007-editor/editor-app.md "Named on a wide desktop"). Missing === on; a phone never
   // names them, whatever this says. Read through useDockNames.
@@ -200,7 +180,8 @@ export type UserPreferences = {
   // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
   elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
+  // Counts every element tour as answered (lib/tour-tracks.ts): Settings' Show Me on Every Element, switched off,
+  // writes it, as the retired Power user mode's preset did.
   elementToursSeen?: boolean;
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the document, kept with its tabs, not a per-user list. Nothing reads or writes this any
@@ -211,19 +192,6 @@ export type UserPreferences = {
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB cap.
   quickSwatchOverrides?: SwatchOverrideStore;
-  // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
-  // lib/power-user-mode.ts, never directly: switching it applies or restores
-  // the preset, recorded in `powerUserBaseline` while the mode is on.
-  powerUserMode?: boolean;
-  powerUserBaseline?: Record<
-    string,
-    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
-  >;
-  // A power-user-only setting: honoured only while `powerUserMode` is on,
-  // where missing means on. Read through `isMinimalChrome`.
-  minimalChrome?: boolean;
-  // One-way latch: the power user mode offer has been shown to this account.
-  powerUserOfferShown?: boolean;
   // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the pinned shape
   // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
   // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
@@ -385,8 +353,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
 // Whether a panel switch is on (docs/specs/007-editor/user-preferences.md):
 // on unless stored `false`, so the Settings row and every surface it gates
 // read one rule.
-export type PanelSwitch =
-  'layersPanelEnabled' | 'collaboratePanelEnabled' | 'quickStylePanelEnabled';
+export type PanelSwitch = 'collaboratePanelEnabled';
 export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
   return prefs?.[key] !== false;
 }

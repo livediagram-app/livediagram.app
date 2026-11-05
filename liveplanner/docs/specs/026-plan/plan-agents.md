@@ -38,6 +38,13 @@ never told a change worked when it shows on no board.
   (`"Sam Reed, Ana Diaz"`, `"#3 Website, #5 Launch"`); writes take a comma list or a JSON list of names or numbers
   back, each resolved as one value is, and one value sets a list of one. `change_card_types` sets the switch with
   `multiple` (a Person or Card field only; any other kind is refused).
+- **Clearing a field**: a `set` names fields to clear in its `clear` list, by name or id
+  (`{"op": "set", "item": "#12", "clear": ["Blocked By", "due"]}`); `change_items`' description and the `clear`
+  argument say so. A field that holds several values (a Person or Card field with `multiple` on, Blocked By among
+  them, and a Multiple Choice) is also cleared by an empty value in `fields`, as most APIs read one: `[]`, `null`,
+  `""` (or only commas and spaces, `", "`) and a list of nothing but those. An `add` leaves such a field unset. A
+  field that holds one value keeps what it did: `null` is written as given where the field takes it, and refused
+  where it does not (Rating, Percent, Duration), so `clear` is the one way that empties every field.
 - A **Blocked By** field (a Card field with Blocks on, [Blocked By](item-types.md#blocked-by)) is listed with
   `blocks: true` on its card type, and its value reads as any Card field's (`"#3 Website, #5 Launch"`). A card that
   is blocked carries `blocked`, its count of open blockers (outside the plan-wide done columns; trashed and archived

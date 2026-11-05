@@ -18,9 +18,9 @@ claim. They are kept only until a new set replaces them. The set to shoot, each 
 
 - A Team Pod mid stand-up: characters round the meeting table, a sticky note per person, the timer running.
 - The Virtual Office: rooms, desks, the coffee corner, statuses over a few heads.
-- The All-Hands Hall: a crowd facing the stage, a Reaction Pad's confetti.
+- The All-Hands Hall: a crowd facing the stage, a burst of confetti round a character.
 - A speech bubble and the Avatar panel (outfits, status, the five moves).
-- The Share dialog: Editor, Participant and Viewer links, expiry and password.
+- The Share dialog: Editor and Participant links, expiry and password.
 - The same Space on a phone, a tap to walk.
 
 ### Desktop (`desktop/`)
@@ -36,8 +36,6 @@ claim. They are kept only until a new set replaces them. The set to shoot, each 
 | `editor_2_animation.png`  | The same mind map with an element's menu open on its Animation choices.                                                      |
 | `editor_dark.png`         | A "Growth flywheel" cycle in a dark theme.                                                                                   |
 | `editor_dark_context.png` | The dark flywheel with a selected square's menu open, and the old Tab Activity panel.                                        |
-| `spotlight.png`           | Spotlight mode on the dark flywheel: the canvas dimmed round the element under the cursor.                                   |
-| `isometric.png`           | The flowchart in the Isometric view, raised into 3D blocks.                                                                  |
 | `search.png`              | The search panel over the dark flywheel, searching "tab": tabs, actions, elements to add and help articles.                  |
 | `share.png`               | The **Share this diagram** dialog: Edit or View only links, expiry, an active link with Embed and Live image, a password.    |
 | `editor_new_template.png` | The **New Diagram** wizard's template step: Blank, Mind maps, Flowcharts, Hierarchies, Agile and more.                       |

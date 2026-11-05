@@ -112,10 +112,9 @@ Grouped by priority; each links the keyed article.
 - Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`
-- The call strip in the bottom-right cluster (Join Audio or Listen In, the microphone strip once joined, and Calls
-  Paused) -> `proximity-audio`: a `?` segment at the strip's end, the same height as its buttons and parted from them
-  by the strip's hairline, so the one control with no panel or popover of its own still reaches its article. The
-  Proximity Audio article links on to Cameras and Screen Sharing, so the strip carries one `?`, not two.
+- The call strip in the bottom-right cluster carries **no** help link (removed 2026-11-05 at the owner's request: the
+  `?` segment made the strip longer for little use). The Proximity Audio article is reached from the help centre and
+  search.
 
 **Onboarding / empty states**
 
@@ -158,9 +157,9 @@ help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
-Wired: Palette, Explorer, Activity, Layers, Map, Collaborate, Poll, Vote, and
-the six tool panels (Avatar, Laser, Spotlight, Eraser, Format, Slide Deck)
-(a seventh, the Highlighter's, went when the Highlighter became a Draw tile). This closed the gap the feature was written for and had never
+Wired: Palette, Explorer, Activity, Map, Collaborate, Poll, and
+the tool panels (Avatar, Eraser, Format) (the Highlighter's went when it became a Draw tile, and the Laser's,
+the Spotlight's and the Slide Deck's when those left livehuddle). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

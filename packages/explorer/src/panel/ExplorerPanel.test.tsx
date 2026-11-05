@@ -82,11 +82,6 @@ describe('<ExplorerPanel>', () => {
     );
   });
 
-  it('draws group lines instead of titles in Minimal chrome', () => {
-    renderPanel(createFakeIndex({ items: [] }), { divider: 'lines' });
-    expect(within(rail()).queryAllByRole('heading')).toHaveLength(0);
-  });
-
   it("leaves the open item out of Home's Jump Back In, from one request", async () => {
     const items = [1, 2, 3].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
     const index = createFakeIndex({ items });

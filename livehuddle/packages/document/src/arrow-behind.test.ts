@@ -103,13 +103,6 @@ describe('routeBehindHoles', () => {
     expect(routeBehindHoles(arrow(), from, to, [wellPast])).toEqual([]);
   });
 
-  it('ignores frames — a section backdrop must never break the arrows inside it', () => {
-    const holes = routeBehindHoles(arrow(), from, to, [
-      box('section', -100, -100, { shape: 'frame', width: 800, height: 400 }),
-    ]);
-    expect(holes).toEqual([]);
-  });
-
   it('ignores swimlanes, which a hand-off arrow crosses by design', () => {
     const holes = routeBehindHoles(arrow(), from, to, [
       box('lane', -100, -100, { shape: 'lane', width: 800, height: 400 }),

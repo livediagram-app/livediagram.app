@@ -15,7 +15,7 @@ import { searchArticles } from './articles';
 // Two vocabularies, because the palette has two.
 //
 // Most tiles carry a `caption` — the short name shown under the tile ("Note",
-// "Idea box", "Dot vote"), which is what somebody types when they go looking
+// "Idea box"), which is what somebody types when they go looking
 // for help about it. SHAPE tiles carry none: the grid shows the glyph, and the
 // shape's name lives in its label as "Add Hexagon". So the shapes section
 // contributes its label with the "Add " stripped.
@@ -51,6 +51,12 @@ function paletteNames(): string[] {
   const wholeGroups = new Set(
     [...layouts.matchAll(/\{ id: '(collab-[a-z]+)' \}/g)].map((m) => groupOf[m[1]!]),
   );
+  // The Space categories (space-categories.tsx) are spread into the layout from their one list, each holding its
+  // whole tile group: Travel holds the Avatar Selection Mode button among them.
+  for (const m of read('space-categories.tsx').matchAll(
+    /id: 'collab-[a-z]+',\s*tileGroup: '([a-z]+)'/g,
+  ))
+    wholeGroups.add(m[1]);
   const names: string[] = [];
   for (const tile of defs.split(/\n {2}\{\n/)) {
     const id = /^\s*id: '([^']+)'/m.exec(tile)?.[1];

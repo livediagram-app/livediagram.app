@@ -42,8 +42,8 @@ export function useTabFolders(deps: TabFoldersDeps) {
     commitTabs((ts) =>
       normalizeFolderOrder(ts.map((t) => (t.id === tabId ? { ...t, folder: name } : t))),
     );
-    // Two facts when the name is new, so two events (the deliberate double-emit
-    // pattern docs/specs/017-telemetry/telemetry.md uses for Tab·Started·Vote + PrivateVote): the folder came
+    // Two facts when the name is new, so two events (a deliberate double-emit,
+    // docs/specs/017-telemetry/telemetry.md): the folder came
     // into existence, AND this tab is now filed in it. The old either/or made
     // "tabs filed into folders" undercount by exactly the number of folders
     // anyone had ever created.

@@ -7,7 +7,8 @@ import { useRef } from 'react';
 import { lucideMinimize2, lucideScreenShareOff } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph, Portal, useEscape, useFocusTrap } from '@livehuddle/ui';
 import { setCallMaximised, useCallMaximised, type CallMediaStreams } from '@/lib/calls/calls-store';
-import { MediaVideo, mediaTitle } from './MediaBubble';
+import { useLocalOnly } from '@/lib/calls/local-preview';
+import { MediaVideo, mediaTitle, ONLY_YOU_DESCRIPTION, OnlyYouTag } from './MediaBubble';
 
 const RestoreIcon = lucideGlyph(lucideMinimize2, 16);
 const StopIcon = lucideGlyph(lucideScreenShareOff, 16);
@@ -48,6 +49,9 @@ function Panel({
   onStop?: () => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
+  // Your own local preview says so here too (video-and-screen-bubbles.md "Local preview").
+  const previews = useLocalOnly();
+  const onlyYou = who.name === null && previews[media];
   // Focus goes to Restore, and back to the bubble pressed when the panel closes. With Stop Sharing first in the bar
   // (an Editor's, on someone else's screen), to the panel itself: a stray Enter must never end someone's share.
   useFocusTrap(panel, true, onStop ? 'container' : 'first');
@@ -81,6 +85,11 @@ function Panel({
                 style={{ background: who.color }}
               />
               <span className="truncate">{title}</span>
+              {onlyYou ? (
+                <HoverCard title="Only You" description={ONLY_YOU_DESCRIPTION}>
+                  <OnlyYouTag size="panel" />
+                </HoverCard>
+              ) : null}
             </span>
             <span className="flex shrink-0 items-center gap-2">
               {onStop ? (

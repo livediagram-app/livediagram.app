@@ -28,10 +28,8 @@
 // contract.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
-import { createImage, isBoxed, type Element } from '@livehuddle/document';
-import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
-import { isDataImageId } from '@/lib/offline/offline-images';
-import { isOfflineIdSync } from '@/lib/offline/offline-store';
+import { isBoxed, type Element } from '@livehuddle/document';
+import { apiListImages, type ImageSummary } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import type { PickedImage } from '@/lib/upload-image';
 
@@ -54,15 +52,9 @@ type EditorImagesDeps = {
   // The editor in a workbench uploads but never reads the person's gallery
   // (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table): no recent-images fetch.
   galleryHidden?: boolean;
-  // Viewport centre in canvas coordinates — where freshly placed
-  // images land.
-  getViewportCenter: () => { x: number; y: number };
   // The history-aware element mutator. Snapshots history, same path the
   // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // Selects an element by id (or clears with null). Newly placed
-  // images select themselves so the user can immediately resize.
-  setSelectedId: (id: string | null) => void;
   // The current document id (null before hydration). The picker +
   // recent-images list only operate once it's known.
   documentId: string | null;
@@ -74,7 +66,7 @@ type EditorImagesDeps = {
 };
 
 export function useEditorImages(deps: EditorImagesDeps) {
-  const { editsBlocked, isReadOnly, embedMode, getViewportCenter, commit, setSelectedId } = deps;
+  const { editsBlocked, isReadOnly, embedMode, commit } = deps;
   const { documentId, ownerId, sessionShareCode, galleryHidden = false } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
@@ -205,53 +197,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
     setImagePickerOpenFor(null);
   };
 
-  // Drop a new image element pre-filled with an existing gallery
-  // image (skips the picker entirely). Fired from the Current Tab
-  // "Images" accordion thumbnails. Sizes the placeholder to the
-  // image's natural aspect ratio, capped at 240 px on the larger
-  // side so it lands at a sensible canvas footprint regardless of
-  // the original resolution. `at` centres it on a canvas point (a dropped file lands where it was released); the
-  // viewport's centre otherwise.
-  const addImageFromGallery = (image: ImageDescriptor, at?: { x: number; y: number }) => {
-    // embedMode also blocks the clipboard's paste-image upload, which
-    // funnels through this handler after uploading.
-    if (editsBlocked || embedMode) return;
-    // Offline documents must stay self-contained (docs/specs/006-document/offline-mode.md): a bare gallery
-    // id would break once the server's unused-image cleanup reaps it, so
-    // fetch the bytes and place a data-URI embed instead. Re-entry with
-    // the data URI as the id lands in the placement branch below.
-    if (documentId && isOfflineIdSync(documentId) && !isDataImageId(image.id)) {
-      void apiFetchImageDataUrl(ownerId, image.id)
-        .catch(() => null)
-        .then((href) => {
-          if (href) addImageFromGallery({ ...image, id: href }, at);
-        });
-      return;
-    }
-    const centre = at ?? getViewportCenter();
-    const max = 240;
-    const ratio = image.width / image.height;
-    const w = image.width >= image.height ? max : Math.round(max * ratio);
-    const h = image.height >= image.width ? max : Math.round(max / ratio);
-    const placed = {
-      ...createImage(centre.x - w / 2, centre.y - h / 2),
-      width: w,
-      height: h,
-      imageId: image.id,
-      naturalWidth: image.width,
-      naturalHeight: image.height,
-      alt: image.originalName,
-    };
-    commit((els) => [...els, placed]);
-    setSelectedId(placed.id);
-    track('Element', 'Added', 'Image');
-  };
-
   return {
     imagePickerOpenFor,
     recentImages,
     imageContext,
-    addImageFromGallery,
     openImagePickerFor,
     applyImageToElement,
     removeImageFromElement,

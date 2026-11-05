@@ -65,7 +65,7 @@ The words for the diagram-building elements ([The card](../009-elements/card.md)
 | **Step number**     | The numbered disc element (`step`)                                                      | marker (that is a shape's status mark)    |
 | **attachment**      | A badge or step number held on one of eight points of a host element                    | group, pin, dock                          |
 | **host**            | The element an attached badge or step number sits on                                    | parent                                    |
-| **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame (that is the Frame)    |
+| **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame                        |
 | **concept graphic** | The Timeline: one element laying out its own rows                                       | SmartArt, diagram                         |
 | **row**             | One milestone of a concept graphic (`conceptRows`)                                      | item                                      |
 
@@ -165,8 +165,8 @@ keep "document" and "canvas" beside "space", so an old search still finds the co
 controls); a Space holds tabs, and each tab has a canvas. A sentence that would say both reads as "your work"
 instead. The tab menu's item for putting a tab into another space is **Add to Another Space**, apart from the
 palette's **Add to canvas**, which puts an element on the drawing surface. The **Document** shape is a shape, not an
-item, and keeps its name. The Spaces templates (Virtual Office, Coworking Space, Team Pod, All-Hands Hall) are
-templates a Space is made from; their category keeps its label, **Virtual Spaces**. "Space" the key (hold Space to
+item, and keeps its name. The Spaces templates (Virtual Office, Rooftop Bar, Garden Retreat and the rest) are
+templates a Space is made from, in the Campus, Office, Events, Outdoor and Recreation categories. "Space" the key (hold Space to
 pan) is a key, never the item.
 
 ## This Browser

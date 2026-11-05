@@ -30,8 +30,6 @@ function setup(
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
       tabLocked,
-      layerInertIds: new Set(),
-      adoptLayerName: vi.fn(),
       formatSourceId: null,
       formatToolActive: false,
       documentName,

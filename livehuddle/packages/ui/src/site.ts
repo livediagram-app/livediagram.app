@@ -25,7 +25,7 @@ export const SITE_NAME = 'livehuddle';
 // a place for a team to meet, never a workshop or diagramming tool, which are livediagram's (Work Tracker #423).
 export const SITE_TITLE = 'livehuddle: Meet your team in a Space, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time Space for your team to meet in: walk in as your own character, gather round the table, and keep it moving with a timer and a quick vote.';
+  'A free, real-time Space for your team to meet in: walk in as your own character, gather round the table, and keep it to time with a Timer on the wall.';
 // Lower case: it follows "livehuddle: " or starts a sentence through sentencePitch.
 export const SITE_PITCH = 'a real-time space where your team meets';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;

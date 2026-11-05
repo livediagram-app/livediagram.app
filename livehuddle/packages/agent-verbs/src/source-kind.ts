@@ -1,10 +1,11 @@
 // What a `-f` file holds (docs/specs/015-api/blueprints/cli.md CLI71), and the changeset body it becomes:
-// edit operations send `{ operations }`; a graph, Mermaid, elements or a whole `replace` send `{ replace }`.
+// edit operations send `{ operations }`; a graph, elements or a whole `replace` send `{ replace }`. Mermaid is not
+// one (docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools"): it reads as operation lines.
 
 import type { ChangesetRequest } from '@livehuddle/api-schema';
-import { isRecord, startsWithMermaidHeader } from '@livehuddle/document';
+import { isRecord } from '@livehuddle/document';
 
-type SourceKind = 'operations' | 'graph' | 'mermaid' | 'elements' | 'replace';
+type SourceKind = 'operations' | 'graph' | 'elements' | 'replace';
 
 type ClassifiedSource =
   | { kind: SourceKind; body: Pick<ChangesetRequest, 'operations' | 'replace'> }
@@ -35,7 +36,5 @@ export function classifySource(text: string): ClassifiedSource {
     if (isOperation(value)) return { kind: 'operations', body: { operations: [value] } };
     return { kind: 'unknown' };
   }
-  if (startsWithMermaidHeader(text))
-    return { kind: 'mermaid', body: { replace: { mermaid: text } } };
   return { kind: 'operations', body: { operations: text } };
 }

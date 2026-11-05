@@ -79,11 +79,7 @@ describe('what a press fills', () => {
     expect(paintBucketTarget([rect('r', { locked: true })], P).kind).toBe('locked');
   });
 
-  it('does not see what is on a hidden or locked layer, or outside every box', () => {
-    expect(paintBucketTarget([rect('r'), rect('top')], P, new Set(['top']))).toEqual({
-      kind: 'fill',
-      el: expect.objectContaining({ id: 'r' }),
-    });
+  it('finds nothing outside every box', () => {
     expect(paintBucketTarget([rect('r')], { x: 500, y: 500 }).kind).toBe('none');
     expect(paintBucketTarget([], P).kind).toBe('none');
   });

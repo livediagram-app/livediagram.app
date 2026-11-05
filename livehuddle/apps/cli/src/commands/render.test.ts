@@ -82,32 +82,40 @@ describe('tab render', () => {
 });
 
 describe('graph render', () => {
-  it('draws a Mermaid file offline as the api would lay it out', async () => {
-    const io = fakeIo({ files: { '/work/flow.mmd': 'flowchart LR\n  web[Web app] --> api[API]' } });
-    const png = await cli(['graph', 'render', 'flow.mmd', '--png', 'flow.png'], io);
+  it('draws a graph file offline as the api would lay it out', async () => {
+    const io = fakeIo({
+      files: {
+        '/work/flow.json':
+          '{"nodes":[{"id":"web","label":"Web app"},{"id":"api","label":"API"}],"edges":[{"from":"web","to":"api"}],"direction":"right"}',
+      },
+    });
+    const png = await cli(['graph', 'render', 'flow.json', '--png', 'flow.png'], io);
     expect(png.code).toBe(0);
     expect([...io.byteMap.get('flow.png')!.slice(0, 4)]).toEqual(PNG);
-    await cli(['graph', 'render', 'flow.mmd', '--png', 'again.png'], io);
+    await cli(['graph', 'render', 'flow.json', '--png', 'again.png'], io);
     expect(io.byteMap.has('again.png')).toBe(true);
-    await cli(['graph', 'render', 'flow.mmd', '--svg', 'flow.svg'], io);
+    await cli(['graph', 'render', 'flow.json', '--svg', 'flow.svg'], io);
     const svg = io.fileMap.get('flow.svg')!.data;
     expect(svg).toContain('Web app');
     expect(io.requests).toEqual([]);
   });
 
   it('reads the graph from stdin', async () => {
-    const io = fakeIo({ stdin: 'flowchart TD\n  a --> b' });
+    const io = fakeIo({
+      stdin: '{"nodes":[{"id":"a"},{"id":"b"}],"edges":[{"from":"a","to":"b"}]}',
+    });
     const { code, out } = await cli(['graph', 'render', '-', '--svg', 'g.svg'], io);
     expect([code, out]).toEqual([0, expect.stringMatching(/^g\.svg {2}\d+×\d+ · 1 KB\n$/)]);
   });
 
-  it('refuses a file that holds no graph', async () => {
-    const io = fakeIo({ files: { '/work/notes.txt': 'hello' } });
+  it('refuses a file that holds no graph, Mermaid included', async () => {
+    const io = fakeIo({
+      files: { '/work/notes.txt': 'hello', '/work/flow.mmd': 'flowchart LR\n  a --> b' },
+    });
     const { code, err } = await cli(['graph', 'render', 'notes.txt', '--svg', 'x.svg'], io);
-    expect([code, err]).toEqual([
-      1,
-      expect.stringContaining('notes.txt holds no graph or Mermaid'),
-    ]);
+    expect([code, err]).toEqual([1, expect.stringContaining('notes.txt holds no graph')]);
+    const mmd = await cli(['graph', 'render', 'flow.mmd', '--svg', 'y.svg'], io);
+    expect([mmd.code, mmd.err]).toEqual([1, expect.stringContaining('flow.mmd holds no graph')]);
   });
 });
 

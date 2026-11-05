@@ -8,7 +8,7 @@
 // colour constants), and none of these are wanted elsewhere.
 
 import type { CSSProperties } from 'react';
-import { Cursor, SKY } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import { Cursor } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // Panel chrome in an SVG scene: the white of the editor's panels, slate-900 in dark.
 export const PANEL = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';
@@ -64,7 +64,7 @@ export function Pointer({
 
 // ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
 // the undo cluster, a layer plane and the Layers panel's eye, a photograph and its selection
-// handles, a palette tile with its key, and a sticky collecting votes.
+// handles, a palette tile with its key, and an idea on a sticky.
 
 // One tab pill in the bottom bar: the mode glyph (a small diagram mark) in the tab's accent, its
 // name, and on the active tab a tint and the people on it.
@@ -107,21 +107,17 @@ export function TabPill({
   );
 }
 
-// A sticky with its dot votes landing one by one, and the count badge once they are in.
-export function VoteSticky({
+// An idea on a sticky, as the board holds one.
+export function IdeaSticky({
   x,
   fill,
   ink,
   label,
-  votes,
-  i,
 }: {
   x: number;
   fill: string;
   ink: string;
   label: string;
-  votes: number;
-  i: number;
 }) {
   return (
     <g>
@@ -138,19 +134,6 @@ export function VoteSticky({
       <text x={x + 5} y="25" fontSize="6" fontWeight="600" fill={ink}>
         {label}
       </text>
-      {Array.from({ length: votes }, (_, d) => (
-        <circle
-          key={d}
-          className="fa-pop"
-          style={{ animationDelay: `${0.25 + (i * 3 + d) * 0.18}s` }}
-          cx={x + 8 + d * 7}
-          cy="45"
-          r="2.8"
-          fill={SKY}
-          stroke="#fff"
-          strokeWidth="0.8"
-        />
-      ))}
     </g>
   );
 }

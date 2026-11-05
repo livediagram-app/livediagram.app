@@ -26,7 +26,7 @@ Disturb and the stage line) and part 4 (the palette tile, settings, template and
 ## Behaviour and state (part 1)
 
 **Zones** (`apps/editor/lib/calls/zones.ts`, pure): `roomZones(elements)` maps each `type: 'shape'`, `shape: 'room'`
-element to its interior; the caller passes the tab's elements on visible layers (`visibleLayerElements`, the same list
+element to its interior; the caller passes the tab's elements (the same list
 the walk collides with). `zoneAt(at, zones)` is strict (`x0 < x < x1`, `y0 < y < y1`), so feet on a wall's centre line,
 the doorway's threshold, are outside; of several zones it picks the smallest area, then the lower id, so nesting and
 overlap are deterministic. `zoning(self, walkers, zones)` returns `{ self, of }` with one `zoneAt` per walker.
@@ -43,8 +43,7 @@ fall through to the distance rule unchanged. `inEarshot(self, at, sameRoom)` is 
 `pickSeen`, which reads only `heard`), `place()` (gain and pan) and `someoneNear`. A track arriving or the kill switch
 changing re-runs `hear()` with the kept zoning.
 
-**The canvas** (`apps/editor/components/calls/useCanvasCall.ts`): memoises `roomZones(visibleLayerElements(elements,
-tabLayers))` on the elements and layers, and passes it in the call's deps. `useProximityCall` puts it in the
+**The canvas** (`apps/editor/components/calls/useCanvasCall.ts`): memoises `roomZones(elements)` on the elements, and passes it in the call's deps. `useProximityCall` puts it in the
 `CallScene` memo.
 
 ## Behaviour and state (part 2)
@@ -92,11 +91,11 @@ only when a level changed. The room already stamps `role` from the grant in `hel
 **The tile** (`apps/editor/components/palette/palette-tile-defs.tsx`, `tools:stage`): `tileGroup: 'move'`, `section: 'tools'`,
 `toolGroup: 'behaviour'`, label "Add Stage", caption "Stage", blurb "A platform the whole tab hears", action
 `{ type: 'shape', kind: 'stage' }`, glyph `StageIcon` (`palette-icons.tsx`: the platform's top and front face, a
-microphone on a stand). `palette-layouts.ts`'s `OFFICE_TILES` lists it after `tools:room`, so Navigate reads Room,
-Stage, Meeting Table and on. Placing goes through `placeBoxed`, which prepends a floor piece (`isFloorShape` holds
-`stage`), so a new stage is behind everything. The participant palette (`PARTICIPANT_TILES`) is unchanged. The
+microphone on a stand). Its `tileGroup: 'rooms'` puts it in the Rooms category, after `tools:room` in catalogue order, so
+Rooms reads Fence, Room, Stage, Rug. Placing goes through `placeBoxed`, which prepends a floor piece (`isFloorShape` holds
+`stage`), so a new stage is behind everything. A Participant has no palette ([A Participant walks](../../013-workspace/share-roles.md#a-participant-walks)). The
 palette search finds it by `SHAPE_KEYWORDS.stage` (`apps/editor/lib/palette-tile-keywords.ts`: platform, podium,
-all-hands, town hall, keynote, presenter, speaker); Navigate holds 16 tiles, and its description names "a stage".
+all-hands, town hall, keynote, presenter, speaker); Rooms holds four tiles, and its description names "a stage".
 
 **The settings** (`apps/editor/components/palette/StageMenuSection.tsx`): `StageMenuSection({ target, sectionProps, onSetStage })`,
 an accordion titled "Stage" (section id `stage`) inside the element menu's Tools flyout. A two-column `MenuTileGrid`
@@ -221,7 +220,7 @@ Hearing is still the browser's choice first, and the server now checks it (the s
 subscriberSession, asks)`. `RoomCalls` (`apps/api/src/calls/room-calls.ts`) answers per track from what the room
   relays: positions (`avatar` ops), levels (the grant), hands and who let them speak, stopped shares, and each tab's
   rooms and stages from the stored tab (`SELECT rev`, then `data` only when the revision moved; parsed with
-  `visibleLayerElements`, `roomZones`, `callStages` from `@livehuddle/document`, the editor's own geometry).
+  `roomZones`, `callStages` from `@livehuddle/document`, the editor's own geometry).
 - **The verdict** (`call-hearing.ts`, pure): unknown position: `heard` in the first minute after the room started
   (`ROOM_WAKE_GRACE_MS`), else `unplaced`; another tab `apart`; a stage speaker or a hand let speak by someone who
   still may: `heard`; otherwise each side's possible zones (the point and eight points `EDGE_MARGIN_PX` away) are
@@ -241,11 +240,11 @@ refused` and nothing is delivered. The browser's own check stays.
 
 ## Performance and limits
 
-- `roomZones` is linear in the tab's elements and runs only when the elements or layers change (memoised), never on
+- `roomZones` is linear in the tab's elements and runs only when the elements change (memoised), never on
   a step.
 - Zoning is `walkers × rooms` comparisons once per scene update (at most once a frame while anyone walks), then hearing
   is linear in walkers as before. The test walks 100 walkers through 50 rooms within a CPU budget.
-- Staging adds `walkers × stages` comparisons per update; `callStages` runs only when the elements, layers or rooms
+- Staging adds `walkers × stages` comparisons per update; `callStages` runs only when the elements or rooms
   change. The test runs 100 walkers, 50 rooms and a live stage within the same kind of budget. Measured (best of
   seven, CPU time): a scene of 100 walkers among 50 rooms is 14.5 µs, 16.0 µs with a live stage; `callStages` over a
   tab of 2,051 elements is 6.9 µs.
@@ -307,7 +306,7 @@ room`; the browser counts `CallNotHeard`.
 | The shared geometry                                                                     | `packages/document/src/call-geometry.test.ts`                                                                                    |
 | A big room: nearest, talkers, stickiness, 870 to 143 streams, cost                      | `apps/editor/lib/calls/big-room.test.ts`                                                                                         |
 | `not_heard` held back and retried with backoff; the call re-proves                      | `apps/editor/lib/calls/sfu-session.test.ts`, `proximity-call.test.ts`                                                            |
-| Part 4: the tile, its place in Navigate, its search words                               | `apps/editor/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`, `apps/editor/lib/palette-search.test.ts` |
+| Part 4: the tile, its place in Rooms, its search words                                  | `apps/editor/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`, `apps/editor/lib/palette-search.test.ts` |
 | Part 4: the Stage section's tiles, switch and calls                                     | `apps/editor/components/palette/StageMenuSection.test.tsx`                                                                       |
 | Part 4: the setter patches stages only, counted once                                    | `apps/editor/hooks/canvas/useDataShapeSetters.stage.test.ts`                                                                     |
 | Part 4: no Stage settings in a Participant's or Viewer's menu                           | `apps/editor/components/palette/ReadOnlyElementMenuHost.test.tsx`                                                                |

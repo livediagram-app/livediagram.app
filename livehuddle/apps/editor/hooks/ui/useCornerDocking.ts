@@ -19,7 +19,7 @@ import { track } from '@/lib/telemetry';
 // builder the chrome host threads into each MovablePanel. Self-contained
 // — CanvasChrome mounts the returned refs on its dock layer / corner
 // containers and calls panelWiringFor per panel.
-export function useCornerDocking({ zenMode }: { zenMode: boolean }) {
+export function useCornerDocking({ chromeAway }: { chromeAway: boolean }) {
   // Device-local panel layout + live drag/snap state. Self-contained
   // (reads/writes localStorage itself), so it lives here at the one
   // consumer rather than threaded through the editor view-model.
@@ -27,7 +27,7 @@ export function useCornerDocking({ zenMode }: { zenMode: boolean }) {
   const dock = usePanelDock();
   // The dock layer is an inset-0 child of <main>, so its rect is the
   // positioning origin for free / dragging panels and the basis for the
-  // corner snap zones. Docking is off in zen (no corners to dock into
+  // corner snap zones. Docking is off in an embed (no corners to dock into
   // there). A phone docks too: it is always in the Toolbar layout
   // (docs/specs/007-editor/toolbar-layout.md), which keeps the corners.
   const dockLayerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,7 @@ export function useCornerDocking({ zenMode }: { zenMode: boolean }) {
     }
     return out;
   }, [dock.drag]);
-  const dockingActive = !zenMode;
+  const dockingActive = !chromeAway;
   // Build the per-panel wiring: in docking mode, position comes from the
   // layout (free pos, or null when corner-docked → rendered as a flex
   // child), reset snaps back to the default corner, and the dock bundle

@@ -42,7 +42,6 @@ function editor(over: Record<string, unknown> = {}) {
     editorMode: { mode: 'diagram', setMode: vi.fn(), canSwitch: true },
     canUndo: true,
     canRedo: false,
-    zenMode: false,
     canvasTool: 'select',
     undo: vi.fn(),
     redo: vi.fn(),

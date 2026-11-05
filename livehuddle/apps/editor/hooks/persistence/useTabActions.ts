@@ -27,7 +27,6 @@ import {
 import { apiLinkTab } from '@/lib/api-client';
 import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
-import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
@@ -126,10 +125,10 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
   };
 
-  // Import (id re-mint, content replace, JSON / Excalidraw parsing)
+  // Import (id re-mint, content replace, JSON parsing)
   // lives in useTabImport; remintTabElements is shared with the
   // Duplicate below.
-  const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
+  const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
     tabs,
     activeId,
     commitTabs,
@@ -138,19 +137,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
-    // Declared below; called only once an import runs, after this render has defined it.
-    importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
-  });
-  // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
-  // active tab, or open each board as a new whiteboard tab.
-  const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
-    tabs,
-    activeId,
-    drawMode: false,
-    ownerId,
-    documentId,
-    replaceActiveTabContent,
-    onDocumentsCreated: () => refreshDocumentList(ownerId),
   });
 
   const toggleActiveTabLock = () => {
@@ -343,8 +329,6 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    importSceneIntoActiveTab,
-    importScenesAsNewDocuments,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

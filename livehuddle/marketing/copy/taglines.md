@@ -47,7 +47,7 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 
 Meta-description-adjacent fields, longer banner copy.
 
-- Meet your team in a Space: characters, rooms, sticky notes, a timer and a vote. No sign-up. [91]
+- Meet your team in a Space: characters, rooms, sticky notes and a timer on the wall. No sign-up. [95]
 - A free, open-source virtual office your team walks round from one link, in any browser. [87]
 
 ## Pick-list by use

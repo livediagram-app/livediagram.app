@@ -5,7 +5,7 @@ only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitH
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
-**Nobody is asked.** The New Space wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+**Nobody is asked.** A new Space ([Dedicated route for new-document creation](../007-editor/new-document-route.md#no-welcome-screen))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Space** and **Take Offline**.
 (A Location step would be answered with the default by most people before they had anything on the canvas.) A
@@ -28,11 +28,11 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 
 - One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
-  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a mode chosen
-  in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
+  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): plain `/new` and
+  every link into it (`/new?template=`, `/new?blank=1`, `/new?start=blank`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   livehuddle whoever is creating.
-- Before sign-in has answered, `signedIn` is the `ld_signed_in` hint cookie
+- Before sign-in has answered, `signedIn` is the `lh_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
   signed-in person is never handed a document in This Browser; a guest never waits. The page's 5-second give-up on
@@ -80,13 +80,9 @@ person (livehuddle).
   (`apps/editor/components/start/StartSaveSwitch.tsx`). It reads only state the editor already holds and loads with the
   start's own chunk, so the start screen's first paint makes no request for it.
 
-**In the wizard, before the create.** `/new`'s mode wizard shows the same row under its modes
-(`apps/editor/app/new/NewSaveSwitch.tsx`, the shared `SaveSwitchRow`). Nothing exists yet, so it moves nothing: it
-starts at the default for who is creating (the settled sign-in, or the hint until it answers) and the create goes
-where it says (`resolveSaveLocation`'s `chosen`, null until the person flips it, so a sign-in that answers late still
-sets the default). It is drawn once the page runs in the browser, never in the prerender, and is absent when a
-`/new?folder=` / `?team=` context names a server place. The new canvas's start then shows the switch again, now
-reflecting where the canvas is.
+**Not before the create.** `/new` has no screen of its own ([No welcome screen](../007-editor/new-document-route.md#no-welcome-screen)),
+so nobody is asked before the Space exists: the create goes to the default, and the new Space's start shows the
+switch, reflecting where it went, to move it while it is still empty.
 
 ## Choosing a folder
 
@@ -110,8 +106,7 @@ A save location is one id in a small module, `apps/editor/lib/save-locations.ts`
 Adding a location (say, GitHub) means: a new id in the union, a rule in `defaultSaveLocationFor`
 for who gets it, and a create branch in `/new` that hands the document to that store.
 
-The wire between the wizard and `/new` is `NewDocumentSettings.saveLocation:
-SaveLocationId`.
+The create's settings carry it as `NewDocumentSettings.saveLocation: SaveLocationId`.
 
 ## Google Drive is a mirror, not a location
 
@@ -141,7 +136,6 @@ is.
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
 - `apps/editor/components/start/StartSaveSwitch.tsx`: the start screen's Sync Space to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
-- `apps/editor/app/new/NewSaveSwitch.tsx`: the same row in `/new`'s wizard, choosing the create's location.
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
 
 ## References

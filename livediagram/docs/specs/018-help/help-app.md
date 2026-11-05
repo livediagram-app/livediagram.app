@@ -82,6 +82,14 @@ A figure's words are its caption: the `<figcaption>` names the `<figure>` for a 
 is `aria-hidden` (an unnamed `role="img"` was an image with no alternative on every illustrated article). A picture
 that teaches something says it in its caption.
 
+A figure draws the editor as it is today. The bottom bar's tabs are drawn once, with `BarTab` in the shared art
+primitives, in the shape the editors' footer has (`006-*/tab-folders.md` "Tab bar rendering"): the open tab is a
+white card standing on the bar's bottom edge, rounded only at the top, its name in the accent; the other tabs are
+bare names with no fill and no divider; a tab open in the other pane is a dashed outline. No figure draws a filled
+pill for a tab. A comment thread's figure shows the reaction chips under a comment (an emoji and a count, the
+reader's own highlighted), as `comment-reactions.md` describes. The `Tabs` primitive stays for in-dialog segmented
+controls (the Link and image pickers), which are not the tab bar.
+
 ### Card icons and accents
 
 Separate from the illustrations above: every card in the catalogue carries a

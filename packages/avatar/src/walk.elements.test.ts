@@ -5,6 +5,7 @@ import {
   elementUnderFeet,
   followCorrection,
   peerPushTarget,
+  sitsOnEntry,
   viewportOffsetCentredOn,
 } from './walk';
 
@@ -66,5 +67,25 @@ describe('the walk’s camera and reach', () => {
       null,
     );
     expect(lifted).toMatchObject({ id: 'q', dx: 0, dy: 1 });
+  });
+});
+
+// livehuddle's docs/specs/009-elements/chair.md "Only the chair you are going to".
+describe('sitsOnEntry', () => {
+  const chair = { x: 100, y: 100, width: 40, height: 40 };
+
+  it('sits a character steered into the chair (no click-walk target)', () => {
+    expect(sitsOnEntry(chair, null)).toBe(true);
+  });
+
+  it('sits a click-walk going to the chair, edge included', () => {
+    expect(sitsOnEntry(chair, { x: 120, y: 120 })).toBe(true);
+    expect(sitsOnEntry(chair, { x: 140, y: 100 })).toBe(true);
+  });
+
+  it('walks a click-walk going somewhere else straight through', () => {
+    expect(sitsOnEntry(chair, { x: 300, y: 120 })).toBe(false);
+    expect(sitsOnEntry(chair, { x: 120, y: 141 })).toBe(false);
+    expect(sitsOnEntry(chair, { x: 99, y: 120 })).toBe(false);
   });
 });

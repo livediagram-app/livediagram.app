@@ -97,7 +97,7 @@ async function tourTheChrome(page: Page): Promise<void> {
   await toggle(page, 'Selection mode');
   // A category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
   await openAndClose(page, () =>
-    page.locator('[data-category-bar-button][aria-label="Frame"]').click(),
+    page.locator('[data-category-bar-button][aria-label="Rooms"]').click(),
   );
   await toggle(page, 'Fit to screen');
   // The Explorer popover, and the Space menu on its Current space card.

@@ -572,7 +572,7 @@ document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts foll
 - A forged `X-Changeset-Seen` can only make its own save drop or keep changesets; it reaches no other tab.
 - A `replace` compiles graph and Mermaid text from any token holder inside the worker, so the label cap and the
   Mermaid parser read it in linear time: no pattern that backtracks over a run of one character
-  (`packages/document/src/mermaid-scan.ts`; `graph-input-redos.test.ts` times growth and checks each scan
+  (`../livediagram/packages/document/src/mermaid-scan.ts`; `graph-input-redos.test.ts` times growth and checks each scan
   against the pattern it replaced).
 
 ## Performance and limits

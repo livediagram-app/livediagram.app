@@ -2,7 +2,7 @@
 // is shown with its elements in a visit, the editor enters Avatar mode, for every role. Once per tab per visit, so
 // leaving the mode is yours to keep. Its own slice, composed into useEditorState.
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { Element, Layer } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import { walkEntrance, type WalkInButton } from '@/lib/walk-entrance';
 
 // The Walk In button the canvas starts the character below, with a sequence number so the same button asked for twice
@@ -13,7 +13,6 @@ export function useOpenWalking({
   enabled,
   tabId,
   elements,
-  layers,
   loaded,
   walking,
   openWalking,
@@ -22,7 +21,6 @@ export function useOpenWalking({
   enabled: boolean;
   tabId: string;
   elements: Element[];
-  layers: Layer[] | undefined;
   // The tab's content has arrived: a tab is judged once, then, never while it is still on its way.
   loaded: boolean;
   walking: boolean;
@@ -35,7 +33,7 @@ export function useOpenWalking({
   const judge = useEffectEvent(() => {
     judged.current.add(tabId);
     if (walking) return;
-    const entrance = walkEntrance(elements, layers);
+    const entrance = walkEntrance(elements);
     if (!entrance) return;
     if (entrance.kind === 'button') {
       seq.current += 1;
@@ -47,7 +45,7 @@ export function useOpenWalking({
   useEffect(() => {
     if (!enabled || !loaded || judged.current.has(tabId)) return;
     judge();
-  }, [enabled, loaded, tabId, elements, layers]);
+  }, [enabled, loaded, tabId, elements]);
   // A template this person landed on an empty tab (the start screen) is the tab's first content, so it is judged
   // afresh: a Spaces template opens walking as it lands.
   const rejudge = useCallback((id: string) => {

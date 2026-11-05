@@ -2,7 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { AvatarMode } from '@/components/illustrations/palette-modes';
 import { AddingElements } from '@/components/illustrations/canvas';
-import { NewSpaceWizard } from '@/components/illustrations/getting-started';
+import { StartASpace } from '@/components/illustrations/getting-started';
 
 export const metadata = helpMetadata({
   title: 'Your First Space',
@@ -18,39 +18,28 @@ The quickest way to learn livehuddle is to open a Space and walk round it. This 
 ## Open a Space
 
 <Step n={1}>
-  Open [a new Space](/new). The **New Space** window opens. There is nothing to choose yet.
+  Open [a new Space](/new). It is made there and then, called "Untitled Space", and [Default
+  Folders](/help/explorer/folders/default-folders/) decide which folder it lands in. There is
+  nothing to fill in first.
 </Step>
 
 <Step n={2}>
-  It shows what **Create** makes: a **Blank Space** that opens on its start. Under "Templates on its
-  start" it names the Virtual Spaces waiting there (Virtual Office, Coworking Space and Team Pod).
-  All-Hands Hall is there too.
+  The empty board opens on **Start a Space**, on its **Recommended** templates: a **Blank Space**
+  first, then the Spaces most teams start from. The Campus, Events, Office, Outdoor and Recreation
+  [templates](/help/canvas/templates/) are beside them, with a search. Pick **Team Pod** to follow
+  along, or close it with the × to start from an empty board.
 </Step>
 
-<Step n={3}>
-  Under that, **Sync Space to Server** says where the new Space will be saved. It starts on once you
-  have signed in (saved to your account, on every device) and off while you try things out as a
-  guest (saved in this browser only). Flip it before you create if you want the other place; you can
-  also [move a Space](/help/privacy-and-security/offline-mode/) later. When you start from a folder
-  or a team, the Space goes there and the switch is not shown.
-</Step>
-
-<Step n={4}>
-  Press **Create**. The Space is called "Untitled Space" and [Default
-  Folders](/help/explorer/folders/default-folders/) decide which folder it lands in. **Skip** makes
-  the same blank Space with its start closed, **Open Existing Space** opens the
-  [Explorer](/help/explorer/explorer-page/) instead, and the × (or **Esc**) backs out without making
-  anything.
-</Step>
-
-<Figure caption="The New Space window: the Blank Space that Create makes, the templates waiting on its start, and where it will be saved.">
-  <NewSpaceWizard />
+<Figure caption="Start a Space on a new Space: Recommended first, the other categories beside it, and where the Space is saved.">
+  <StartASpace />
 </Figure>
 
-<Step n={5}>
-  The empty tab opens on **Start a Space**: the four **Virtual Spaces** (Virtual Office, Coworking
-  Space, Team Pod and All-Hands Hall), with a search. See [Templates](/help/canvas/templates/). Pick
-  **Team Pod** to follow along, or close it with the × to start from an empty floor.
+<Step n={3}>
+  At the bottom, **Sync Space to Server** says where the new Space is saved. It is on once you have
+  signed in (saved to your account, on every device) and off while you try things out as a guest
+  (saved in this browser only). Flip it while the Space is still empty if you want the other place;
+  you can also [move a Space](/help/privacy-and-security/offline-mode/) later. When you start from a
+  folder or a team, the Space goes there.
 </Step>
 
 You can rename the Space later: click its title in the header at the top of the editor and type.
@@ -87,8 +76,8 @@ To stop walking and change the Space, pick **Select** from the Selection Mode me
 
 <Step n={1}>
   Find the **Palette**, the strip across the top of the canvas. **Popular** holds what a Space is
-  most often furnished with: a sticky note, text, a frame, an image and a link card, then a room, a
-  meeting table, a chair, Bring Focus and an Avatar Pad.
+  most often furnished with: a sticky note, text, a room, a meeting table, a chair, Bring Focus and
+  an Avatar Pad.
 </Step>
 
 <Step n={2}>
@@ -98,9 +87,9 @@ To stop walking and change the Space, pick **Select** from the Selection Mode me
 </Step>
 
 <Step n={3}>
-  To keep the meeting short, start a **Timer** from the bottom bar, or a **Vote** when the room
-  needs to decide: the countdown and everyone's dots appear for the whole room. See [Session
-  Tools](/help/collaboration/session-tools/).
+  To keep the meeting short, place a **Timer** from the palette's **Meeting** category and press
+  **Start**: the countdown runs for the whole room. See [Timer and
+  Stopwatch](/help/collaboration/session-tools/timer/).
 </Step>
 
 <Figure caption="Drag a tile from the Palette onto the canvas to drop it, and it lands selected.">
@@ -112,7 +101,7 @@ To stop walking and change the Space, pick **Select** from the Selection Mode me
 You now have a Space with a room to meet in. From here:
 
 - **Share the link.** Hand a colleague a link and their character walks into the same Space. See [Sharing Your Space](/help/getting-started/sharing-your-document/).
-- **Host the meeting.** Take the [facilitator](/help/collaboration/facilitator/) role so the timer and the vote answer to you, and press a [Bring Focus](/help/palette/behaviour/bring-focus/) button to bring everyone to one spot.
+- **Host the meeting.** Take the [facilitator](/help/collaboration/facilitator/) role so the timer answers to you, and press a [Bring Focus](/help/palette/behaviour/bring-focus/) button to bring everyone to one spot.
 - **Move and multi-select.** Drag to reposition; drag on an empty part of the canvas to marquee-select several elements at once, or Shift-click to add one at a time.
 
 <Tip>

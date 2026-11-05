@@ -15,25 +15,26 @@ import { templateMatchesQuery } from './template-search';
 import { TEMPLATES } from './templates';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/templates-by-mode.md "The
-// catalogue": the four Spaces in the one Virtual Spaces category, the blank in none.
+// catalogue": the eighteen Spaces in five categories by the kind of place they are, the blank in none.
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('is the one Virtual Spaces category, Title Case, with an even description', () => {
-    expect(TEMPLATE_CATEGORIES).toEqual([
-      {
-        id: 'spaces',
-        label: 'Virtual Spaces',
-        description: 'Offices and halls to walk round as an avatar.',
-      },
+  it('is Campus, Events, Office, Outdoor and Recreation, alphabetical, Title Case, with even descriptions', () => {
+    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
+      'Campus',
+      'Events',
+      'Office',
+      'Outdoor',
+      'Recreation',
     ]);
+    expect(ids).toEqual(['campus', 'events', 'office', 'outdoor', 'recreation']);
     for (const c of TEMPLATE_CATEGORIES) {
       expect(c.description.length, c.id).toBeGreaterThanOrEqual(40);
       expect(c.description.length, c.id).toBeLessThanOrEqual(50);
       expect(c.description, c.id).not.toMatch(/—/);
     }
-    expect(templateCategoryLabel('spaces')).toBe('Virtual Spaces');
-    expect(templateCategorySearchWords('spaces')).toContain('avatar');
+    expect(templateCategoryLabel('office')).toBe('Office');
+    for (const id of ids) expect(templateCategorySearchWords(id), id).toMatch(/avatar walk/);
   });
 
   it('gives every template but the blank exactly one primary category, and the blank none', () => {
@@ -49,14 +50,33 @@ describe('template categories', () => {
     }
   });
 
-  it('files the four Spaces under Virtual Spaces, cross-listed nowhere', () => {
-    const spaces = TEMPLATES.filter((t) => templateCategory(t.kind) === 'spaces').map(
-      (t) => t.kind,
-    );
-    expect(spaces).toEqual(['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall']);
-    expect(TEMPLATE_ALSO_IN).toEqual({});
-    expect(isInTemplateCategory('team-pod', 'spaces')).toBe(true);
-    expect(isInTemplateCategory('blank-session', 'spaces')).toBe(false);
+  it('files two to seven Spaces in each category, the Beach Offsite cross-listed in Campus', () => {
+    const inCategory = (id: (typeof ids)[number]) =>
+      TEMPLATES.filter((t) => templateCategory(t.kind) === id).map((t) => t.kind);
+    expect(inCategory('office')).toEqual([
+      'virtual-office',
+      'coworking-space',
+      'team-pod',
+      'focus-library',
+    ]);
+    expect(inCategory('events')).toEqual(['all-hands-hall', 'training-room', 'expo-hall']);
+    expect(inCategory('recreation')).toEqual(['rooftop-bar', 'cafe']);
+    expect(inCategory('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
+    expect(inCategory('campus')).toEqual([
+      'company-campus',
+      'conference-venue',
+      'startup-hq',
+      'school-quad',
+      'hotel-and-suites',
+      'coworking-tower',
+    ]);
+    for (const id of ids) {
+      expect(inCategory(id).length, id).toBeGreaterThanOrEqual(2);
+      expect(inCategory(id).length, id).toBeLessThanOrEqual(7);
+    }
+    expect(TEMPLATE_ALSO_IN).toEqual({ 'beach-offsite': ['campus'] });
+    expect(isInTemplateCategory('team-pod', 'office')).toBe(true);
+    expect(isInTemplateCategory('blank-session', 'office')).toBe(false);
   });
 
   it('leaves no category empty in every mode', () => {
@@ -85,9 +105,12 @@ describe('template search words', () => {
     expect(find('standup')).toContain('team-pod');
     expect(find('town hall')).toContain('all-hands-hall');
     expect(find('blank')).toContain('blank-session');
-    // A category's search words find its templates.
+    expect(find('drinks')).toEqual(expect.arrayContaining(['rooftop-bar', 'cafe']));
+    expect(find('garden')).toEqual(expect.arrayContaining(['garden-retreat', 'city-park']));
+    expect(find('pub')).toContain('rooftop-bar');
+    // A category's search words find its templates: every Space by "avatar".
     expect(find('avatar')).toEqual(
-      expect.arrayContaining(['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall']),
+      TEMPLATES.filter((t) => t.kind !== 'blank-session').map((t) => t.kind),
     );
     // Every word must match.
     expect(find('office zebra')).toEqual([]);

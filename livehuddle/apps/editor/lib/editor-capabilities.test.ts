@@ -37,40 +37,54 @@ describe('resolveEditorCapabilities', () => {
     ).toBe(false);
   });
 
-  it('lets a Participant write anywhere, move and recolour stickies, remove only its own', () => {
-    const can = resolveEditorCapabilities({ level: 'participate', adderKey: ME });
-    expect(can.takePart && can.addContent).toBe(true);
-    expect(can.writeText(shape())).toBe(true);
-    expect(can.writeText(shape({ locked: true }))).toBe(false);
-    expect(can.writeText(shape({ shape: 'session-button', label: 'Poll' }))).toBe(false);
-    expect(can.move(sticky())).toBe(true);
-    expect(can.move(shape())).toBe(false);
-    expect(can.resize(sticky())).toBe(true);
-    expect(can.resize(shape())).toBe(false);
-    expect(can.resize(shape({ addedBy: ME }))).toBe(true);
-    expect(can.resize(sticky({ locked: true }))).toBe(false);
-    const text = { id: 'x', type: 'text', ...box } as Element;
-    expect(can.move(text) || can.resize(text)).toBe(false);
-    expect(can.move({ ...text, addedBy: ME } as Element)).toBe(true);
-    expect(can.recolour(sticky())).toBe(true);
-    expect(can.recolour(shape())).toBe(false);
-    expect(can.remove(sticky())).toBe(false);
-    expect(can.remove(sticky({ addedBy: 'b'.repeat(32) }))).toBe(false);
-    expect(can.remove(sticky({ addedBy: ME }))).toBe(true);
-    expect(can.remove(shape())).toBe(false);
-    expect(can.remove(sticky({ addedBy: ME, locked: true }))).toBe(false);
+  // docs/specs/013-workspace/share-roles.md "A Participant walks": takes part, changes no content (its own earlier
+  // stickies included), swings unlocked doors and always walks.
+  it('gives a Participant no content gesture, with or without its key', () => {
+    for (const adderKey of [ME, null]) {
+      const can = resolveEditorCapabilities({ level: 'participate', adderKey });
+      expect(can.takePart).toBe(true);
+      expect(can.addContent).toBe(false);
+      const text = { id: 'x', type: 'text', ...box, addedBy: ME } as Element;
+      for (const el of [shape(), sticky(), sticky({ addedBy: ME }), text]) {
+        expect(
+          can.writeText(el) || can.move(el) || can.resize(el) || can.recolour(el) || can.remove(el),
+        ).toBe(false);
+      }
+    }
   });
 
-  it('adds nothing before the room has handed over its adder key', () => {
-    const can = resolveEditorCapabilities({ level: 'participate', adderKey: null });
-    expect(can.addContent).toBe(false);
-    expect(can.remove(sticky({ addedBy: ME }))).toBe(false);
-    expect(can.writeText(sticky())).toBe(true);
+  it('holds only a Participant in Avatar mode', () => {
+    expect(resolveEditorCapabilities({ level: 'participate', adderKey: ME }).alwaysWalks).toBe(
+      true,
+    );
+    expect(resolveEditorCapabilities({ level: 'edit', adderKey: null }).alwaysWalks).toBe(false);
+    expect(resolveEditorCapabilities({ level: 'view', adderKey: null }).alwaysWalks).toBe(false);
   });
 });
 
-// A Participant's content-adding gestures (docs/specs/013-workspace/share-roles.md "The Participant palette"): a
-// sticky dragged from its palette landed nowhere while the placement helpers took the structural guard.
+// docs/specs/009-elements/room-builder.md "Opening and closing": an Editor and a Participant swing doors.
+describe('swingDoor', () => {
+  const door = (extra: Record<string, unknown> = {}) => shape({ shape: 'door', ...extra });
+
+  it('lets an Editor swing any door', () => {
+    const can = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    expect(can.swingDoor(door()) && can.swingDoor(door({ locked: true }))).toBe(true);
+  });
+
+  it('lets a Participant swing any door that is not locked, with or without a key', () => {
+    for (const adderKey of [ME, null]) {
+      const can = resolveEditorCapabilities({ level: 'participate', adderKey });
+      expect(can.swingDoor(door())).toBe(true);
+      expect(can.swingDoor(door({ locked: true }))).toBe(false);
+    }
+  });
+
+  it('lets a Viewer swing none', () => {
+    const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
+    expect(can.swingDoor(door())).toBe(false);
+  });
+});
+
 describe('contentAddBlocked', () => {
   const base = {
     participating: false,

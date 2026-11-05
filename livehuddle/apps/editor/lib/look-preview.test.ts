@@ -1,76 +1,95 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livehuddle/document';
-import { FINISH_PREVIEW_ELEMENTS } from './finish-preview';
-import { firstSelfClosingRect, lookPreviewSvg, lookPreviewTab } from './look-preview';
+import { lookPreviewSvg, lookPreviewTab } from './look-preview';
+import { setAppearanceOverride } from '@livehuddle/ui';
 import { resolveTheme } from './themes';
 import { TAB_LOOKS, activeLookId, tabLookById } from './tab-looks';
 
-// A look's card preview (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks").
+const fills = (id: string) =>
+  new Map(
+    (lookPreviewTab(tabLookById(id)!).elements as Array<Element & { fillColor?: string }>).map(
+      (el) => [el.id.replace('look-preview-', ''), el.fillColor],
+    ),
+  );
+
+// A look's card preview (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): a tiny Space.
 describe('lookPreviewSvg', () => {
-  it('draws the sample in each look, on a tab that reads as that look', () => {
+  it('draws a tiny Space in each look, on a tab that reads as that look', () => {
     for (const look of TAB_LOOKS) {
       expect(activeLookId(lookPreviewTab(look)), look.id).toBe(look.id);
       const svg = lookPreviewSvg(look);
-      expect(svg, look.id).toContain('Plan the work');
+      expect(svg, look.id).toContain('Stand-up at');
+      expect(svg, look.id).toContain('Huddle');
     }
   });
 
-  it('scopes the pattern id to the look, so cards on one page never share a pattern', () => {
-    const graph = lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'graph-paper')!);
-    expect(graph).toContain('lvd-look-graph-paper-bg');
-    expect(graph).not.toContain('lvd-export-bg');
+  it('is a room with a door, a desk and a plant, and a sticky note beside it', () => {
+    const tab = lookPreviewTab(TAB_LOOKS[0]!);
+    const kinds = tab.elements.map((el) => (el.type === 'shape' ? el.shape : el.type));
+    expect(kinds).toEqual(['room', 'door', 'desk', 'plant', 'sticky']);
+    // Every id is fixed, so the Sketch wobble is the same each time the dialog opens.
+    expect(lookPreviewSvg(TAB_LOOKS[0]!)).toBe(lookPreviewSvg(TAB_LOOKS[0]!));
   });
 
-  it('shows two palette colours on a multi-colour look, the arrow still on its pins', () => {
-    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster', 'textbook']) {
-      const els = lookPreviewTab(tabLookById(id)!).elements as Array<
-        Element & { fillColor?: string }
-      >;
-      const [step, decision, arrow] = els;
-      expect(step!.fillColor, id).toBeTruthy();
-      expect(step!.fillColor, id).not.toBe(decision!.fillColor);
-      expect(arrow!.type === 'arrow' && arrow!.from.kind, id).toBe('pinned');
-      expect(els.map((el) => el.id)).toEqual(FINISH_PREVIEW_ELEMENTS.map((el) => el.id));
+  it("lays the scene on the look's floor, its pattern id scoped to the look", () => {
+    const garden = lookPreviewSvg(tabLookById('garden')!);
+    expect(garden).toContain('lvd-look-garden-bg');
+    expect(garden).not.toContain('lvd-export-bg');
+    // A look on None draws no floor at all.
+    expect(lookPreviewSvg(tabLookById('whiteboard')!)).not.toContain('<pattern');
+  });
+
+  it('bleeds the canvas colour and floor past the view, so a wider card shows floor at its sides', () => {
+    const svg = lookPreviewSvg(tabLookById('garden')!);
+    const [vx, vy, vw, vh] = /viewBox="([^"]+)"/.exec(svg)![1]!.split(' ').map(Number) as [
+      number,
+      number,
+      number,
+      number,
+    ];
+    const backdrop = /<rect x="([-\d]+)" y="([-\d]+)" width="(\d+)" height="(\d+)"/.exec(svg)!;
+    const [bx, by, bw, bh] = backdrop.slice(1).map(Number) as [number, number, number, number];
+    expect(bx).toBeLessThan(vx - vw / 2);
+    expect(by).toBeLessThan(vy - vh / 2);
+    expect(bx + bw).toBeGreaterThan(vx + vw * 1.5);
+    expect(by + bh).toBeGreaterThan(vy + vh * 1.5);
+    expect(svg.match(/fill="url\(#lvd-look-garden-bg\)"/g)).toHaveLength(1);
+  });
+
+  it('colours each piece as its own branch on a multi-colour look: the room first, the desk third', () => {
+    for (const [id, theme] of [
+      ['spectrum', 'rainbow'],
+      ['lagoon', 'tropical'],
+    ] as const) {
+      const palette = resolveTheme(theme)!.palette!.map((p) => p.fill);
+      const f = fills(id);
+      expect(f.get('room'), id).toBe(palette[0]);
+      expect(f.get('desk'), id).toBe(palette[2]);
     }
-  });
-
-  it('takes colours from across the palette: the first and the fourth', () => {
-    const fills = (id: string) =>
-      (lookPreviewTab(tabLookById(id)!).elements as Array<Element & { fillColor?: string }>)
-        .slice(0, 2)
-        .map((el) => el.fillColor);
-    const palette = (id: string) => resolveTheme(id)!.palette!.map((p) => p.fill);
-    expect(fills('spectrum')).toEqual([palette('rainbow')[0], palette('rainbow')[3]]);
-    expect(fills('lagoon')).toEqual([palette('tropical')[0], palette('tropical')[3]]);
   });
 
   it('draws the Sketch looks sketched, and the Marker looks in marker', () => {
-    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'notebook')!)).toContain(
-      'data-finish="sketch"',
-    );
-    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'whiteboard')!)).toContain(
-      'data-finish="marker"',
-    );
-  });
-});
-
-describe('firstSelfClosingRect', () => {
-  it('finds the first self-closing rect, skipping an open one', () => {
-    const svg = '<svg><rect width="1"><rect x="0" /><rect y="1"/></svg>';
-    const hit = firstSelfClosingRect(svg)!;
-    expect(svg.slice(hit.index, hit.index + hit.length)).toBe('<rect x="0" />');
+    expect(lookPreviewSvg(tabLookById('notebook')!)).toContain('data-finish="sketch"');
+    expect(lookPreviewSvg(tabLookById('whiteboard')!)).toContain('data-finish="marker"');
   });
 
-  it('returns null when none closes itself', () => {
-    expect(firstSelfClosingRect('<svg><rect >')).toBeNull();
-    expect(firstSelfClosingRect('<rect x="1"')).toBeNull();
-    expect(firstSelfClosingRect('<svg/>')).toBeNull();
+  it("builds a card once per half, and again in the viewer's other half", () => {
+    const look = tabLookById('midnight')!;
+    const light = lookPreviewSvg(look);
+    expect(lookPreviewSvg(look)).toBe(light);
+    expect(lookPreviewTab(look)).toBe(lookPreviewTab(look));
+    setAppearanceOverride('dark');
+    try {
+      expect(lookPreviewSvg(look)).not.toBe(light);
+    } finally {
+      setAppearanceOverride(null);
+    }
+    expect(lookPreviewSvg(look)).toBe(light);
   });
 
-  it('stays linear on a run of unclosed rects', () => {
-    const svg = '<rect '.repeat(200_000);
-    const t0 = performance.now();
-    expect(firstSelfClosingRect(svg)).toBeNull();
-    expect(performance.now() - t0).toBeLessThan(200);
+  it('keeps every card small: the dialog builds them all when it opens', () => {
+    const sizes = TAB_LOOKS.map((look) => lookPreviewSvg(look).length);
+    expect(Math.max(...sizes)).toBeLessThan(48_000);
+    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(560_000);
   });
 });

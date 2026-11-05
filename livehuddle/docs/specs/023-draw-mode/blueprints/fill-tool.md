@@ -47,10 +47,9 @@ code (it is a fill or a pour), "Transparent" in copy (the picker's option is **N
 - Closed across the gap: `roundness = 4πA / P²` (shoelace area, perimeter including the gap)
   `>= STROKE_LOOP_MIN_ROUNDNESS` (0.1), else false. A circle is 1; a line out and back is 0.
 
-### `paintBucketTarget(elements, p, inertIds)`
+### `paintBucketTarget(elements, p)`
 
-- Walks `elements` (paint order, bottom first, from `layerBands`) from the top. Skips ids in
-  `inertIds` (hidden or locked layers).
+- Walks `elements` (paint order, bottom first) from the top.
 - Per element a verdict: `through` (keep walking), `stop` (`none`), `fill` or `loop`.
   - `arrow`, `text`: through. Anything whose box (grown to its circumscribed circle when rotated)
     misses `p`: through, before any geometry is decoded.
@@ -105,9 +104,9 @@ shows its hint (`toast.info`) and reports `FillMissed`; `canRecolour(el)` false 
 - `isStrokeLoop(points: {x,y}[], penWidth: number): boolean`; `closeStrokeLoop(points, pressures?)`
   returns `{ points, pressures }`; `loopFillPath(points, fmt?)` returns `M .. L .. Z` or `''` under
   three points.
-- `paintBucketTarget(elements, p, inertIds?) → BucketTarget`; `pourBucket(target, colour) →
+- `paintBucketTarget(elements, p) → BucketTarget`; `pourBucket(target, colour) →
 Element | null`.
-- `usePaintBucket({ pendingDraw, elements, layers, inertIds, editsBlocked, canRecolour, commit,
+- `usePaintBucket({ pendingDraw, elements, editsBlocked, canRecolour, commit,
 hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 - Telemetry: `Draw·Selected·Fill`, `Draw·Changed·FillColour`, `Draw·Changed·FillMissed`,
   `Element·Changed·FillBucket`, `Element·Changed·FillLoop`, each explained on the dashboard.
@@ -126,7 +125,7 @@ hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 - A loop whose ends already touch (gap at most 0.5 px): closed without a new point.
 - A rotated element: the box test grows to the circumscribed circle; `pointInsideOutline` handles
   the rotation for shapes.
-- A press on a locked element: its hint; on a locked or hidden layer: not seen at all.
+- A press on a locked element: its hint.
 - A colour equal to the current one, or No fill on an open loop: no commit, no undo step.
 
 ## Security and trust

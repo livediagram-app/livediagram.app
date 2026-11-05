@@ -172,8 +172,8 @@ export function svgArrow(
   // inlines several renders of the same arrow (thumbnails, the minimap) gives
   // each its own prefix so no render borrows another's mask.
   maskIdPrefix = 'lvd-ko-',
-  // The boxes an arrow may pass behind: the ones this render draws. An export
-  // that leaves hidden layers out must not break a line around a box that
+  // The boxes an arrow may pass behind: the ones this render draws. A render
+  // that leaves some boxes out must not break a line around a box that
   // isn't in the picture. Defaults to every element.
   occluders: Iterable<Element> = elements,
   // The paper a hollow head is filled with; the surface's default canvas colour unless the caller

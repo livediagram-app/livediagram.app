@@ -5,6 +5,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 // the names of its groups. Pure, so the rules are testable without rendering the strip.
 
 import type { EditorMode } from '@livehuddle/document';
+import { SPACE_CATEGORIES } from './space-categories';
 
 /** The modes whose strip is a category bar: Workshop, the one mode. */
 export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['workshop']);
@@ -13,8 +14,6 @@ export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['workshop'])
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
 const BAR_LABELS: Readonly<Record<string, string>> = {
   write: 'Write',
-  // Selection Mode: its buttons hand everyone a selection mode.
-  'collab-mode': 'Modes',
 };
 
 export function barLabel(categoryId: string, label: string): string {
@@ -42,7 +41,7 @@ export function flyoutColumns(categoryId: string): number {
 // dividers would split twelve tiles into groups of one and three.
 const UNGROUPED: ReadonlySet<string> = new Set(['popular']);
 
-/** A card category's columns: one for a short list (Media's two), so its flyout is narrow; two otherwise. */
+/** A card category's columns: one for a short list (three or fewer), so its flyout is narrow; two otherwise. */
 export const SHORT_CARD_LIST = 3;
 export function flyoutCardColumns(tileCount: number): 1 | 2 {
   return tileCount <= SHORT_CARD_LIST ? 1 : 2;
@@ -54,20 +53,15 @@ const TAGLINES: Readonly<Record<string, string>> = {
   popular: 'What a Space is most often furnished with.',
   shapes: 'The basics, the flowchart vocabulary and more.',
   write: 'Words on the canvas: text and sticky notes.',
-  frame: 'A titled box to group a room’s notes.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Structures that grow as you type.',
   diagrams: 'Structures that grow as you type.',
   layout: 'Lanes, frames and the parts that label a diagram.',
   concepts: 'Ideas laid out as one element that arranges itself.',
-  icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
-  media: 'A picture, uploaded or found, and a link card.',
   stickers: 'Colour emoji to react, mark status and celebrate.',
   data: 'Charts and meters that read at a glance.',
-  'collab-react': 'Celebrate on the canvas.',
-  'collab-mode': 'Buttons that switch how everyone points.',
-  'collab-navigate': 'Places to go, things to sit at, and the office.',
+  ...Object.fromEntries(SPACE_CATEGORIES.map((c) => [c.id, c.tagline])),
   logo: 'The tools a logo is made with.',
   components: 'Ready-made blocks that follow the theme.',
   devices: 'Frames to set a screen design in.',
@@ -112,13 +106,14 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'devices:browser': 'Desktop',
   'devices:phone': 'Mobile',
   'tools:image': 'Pictures',
-  // The meeting palette's Navigate (palette-layouts): what takes you somewhere or seats you, then the office.
-  'tools:door': 'Around the Space',
-  'tools:room': 'Office Pieces',
   'media:embed-youtube': 'Embeds',
   'tools:avatar': 'People',
   'data:pie': 'Charts',
   'data:progress-bar': 'Meters',
+  // Rooms (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): what a room is made with,
+  // then the rest of the floor.
+  'tools:room': 'Build',
+  'tools:fence': 'Floor',
 };
 
 export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };

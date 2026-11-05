@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeRefs, type Element } from '@livehuddle/document';
+import { computeRefs } from '@livehuddle/document';
 import { arrow, box, frame, lint, quiet, tabOf } from './fixtures/build';
 import { graphEdgeIds, lintGraph, lintTab } from './lint';
 
@@ -52,14 +52,7 @@ describe('lintTab', () => {
     expect(report.measures.arrows).toBe(2);
   });
 
-  it('lints only visible layers, and skips boxes without a usable rect (N1, N6)', () => {
-    const hidden = { ...box('h', 0, 0), layerId: 'off' } as Element;
-    const report = lint({
-      elements: [hidden, box('h2', 50, 20, { layerId: 'off' })],
-      layers: [{ id: 'off', name: 'Off', visible: false }],
-    });
-    expect(report.findings).toEqual([]);
-    expect(report.measures.extent).toBeNull();
+  it('skips boxes without a usable rect (N6)', () => {
     const logged: Record<string, unknown>[] = [];
     lint(tabOf(box('nan', Number.NaN, 0), box('ok', 0, 0)), {
       log: (fp, fields) => fp === '[lint] run' && logged.push(fields),

@@ -55,7 +55,7 @@ describe('outlineView on the checkout tab (R8)', () => {
     const subtree = outlineView(checkout(), { only: CHECKOUT_IDS.data }).text.split('\n');
     expect(subtree).toEqual([
       expect.stringContaining('· 30 elements'),
-      'frame ca76 "Data"',
+      'boundary ca76 "Data"',
       '  cylinder d41e "Orders DB" note="Postgres 16, primary + 1 replica."',
       '  cylinder 822f "Inventory DB"',
     ]);
@@ -87,7 +87,7 @@ describe('outline budgets (R20, R21)', () => {
   it('says what it dropped in one closing line, naming the largest collapsed container', () => {
     const { text, json } = outlineView(checkout(), { budget: 200 });
     expect(text.split('\n').at(-1)).toBe(
-      '… notes hidden; attributes hidden; 13 elements in frame c991 hidden: view --only c991',
+      '… notes hidden; attributes hidden; 13 elements in boundary c991 hidden: view --only c991',
     );
     expect(json.elision).toMatchObject({
       dropped: ['notes', 'attributes'],
@@ -126,15 +126,15 @@ describe('outline budgets (R20, R21)', () => {
 });
 
 describe('outline budgets over nested containers', () => {
-  // Two equal frames, the first holding a lane; each holds strokes and boxes.
+  // Two equal boundaries, the first holding a lane; each holds strokes and boxes.
   const elements: Element[] = [
-    shapeAt('frame', 'left', 0, 0, 1000, 1000),
+    shapeAt('boundary', 'left', 0, 0, 1000, 1000),
     shapeAt('lane', 'lane', 0, 500, 1000, 400),
     shapeAt('square', 'in-lane-1', 10, 550, 100, 50, { label: 'A long label '.repeat(4) }),
     shapeAt('square', 'in-lane-3', 600, 550, 100, 50, { label: 'Another long label '.repeat(3) }),
     shapeAt('square', 'in-lane-2', 300, 550),
     shapeAt('square', 'in-left', 10, 10),
-    shapeAt('frame', 'right', 2000, 0, 1000, 1000),
+    shapeAt('boundary', 'right', 2000, 0, 1000, 1000),
     shapeAt('square', 'r1', 2010, 10),
     shapeAt('square', 'r2', 2300, 10),
     shapeAt('square', 'r3', 2600, 10),
@@ -152,7 +152,7 @@ describe('outline budgets over nested containers', () => {
   });
 
   it('collapses the earlier of equal containers first, never a container inside a collapsed one', () => {
-    const budgets = Array.from({ length: 80 }, (_, i) => i + 1);
+    const budgets = Array.from({ length: 120 }, (_, i) => i + 1);
     const collapsedRefs = budgets.map((budget) => {
       const { json } = outlineView(model, { budget });
       return (json.elision?.collapsed ?? []).map((c) => c.ref).join(',');
@@ -170,7 +170,7 @@ describe('outline edge cases', () => {
   });
 
   it('prints unknown kinds with ?, counted and contained by geometry, never dropped (R25, E12)', () => {
-    const frame = shapeAt('frame', 'frame', 0, 0, 500, 500);
+    const frame = shapeAt('boundary', 'frame', 0, 0, 500, 500);
     const hologram = {
       id: 'holo',
       type: 'hologram',
@@ -185,8 +185,8 @@ describe('outline edge cases', () => {
     const { text, json } = outlineView(model);
     expect(text).toBe(
       [
-        'tab tab-1 "T" · 3 elements: 2 boxes, 1 frame · 2 unknown',
-        'frame frame "Frame"',
+        'tab tab-1 "T" · 3 elements: 2 boxes, 1 boundary · 2 unknown',
+        'boundary frame "Region"',
         '  ? hologram holo "Hi"',
         '? blob blob',
       ].join('\n'),

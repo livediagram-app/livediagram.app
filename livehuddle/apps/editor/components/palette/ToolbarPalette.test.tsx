@@ -87,58 +87,70 @@ describe('ToolbarPalette', () => {
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
     expect(barNames()).toEqual([
       'Write',
-      'Frame',
-      'Navigate',
-      'React',
-      'Modes',
-      'Icons',
+      'Rooms',
+      'Seating',
+      'Amenities',
+      'Bar',
+      'Recreation',
+      'Garden',
+      'Meeting',
+      'Travel',
       'Stickers',
-      'Media',
     ]);
     // No tiles of their own on the strip: they are in the flyouts.
-    expect(within(strip()).queryByRole('button', { name: 'Add Frame' })).toBeNull();
+    expect(within(strip()).queryByRole('button', { name: 'Add Chair' })).toBeNull();
   });
 
   it("reaches the same add-handler as the Palette from a category's flyout, and closes it", () => {
     const { h } = show();
-    fireEvent.click(within(openFlyout('Frame')).getByRole('button', { name: 'Add Frame' }));
-    expect(h.onAddShape).toHaveBeenCalledWith('frame', expect.anything());
+    fireEvent.click(within(openFlyout('Seating')).getByRole('button', { name: 'Add Chair' }));
+    expect(h.onAddShape).toHaveBeenCalledWith('chair', expect.anything());
     expect(flyout()).toBeNull();
   });
 
-  it('opens Navigate on the places and seats, then the office pieces, one level deep', () => {
+  // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
+  it('opens Rooms one level deep, on its Build group: Room, Room Builder, Door', () => {
     show();
-    const navigate = openFlyout('Navigate');
-    expect(within(navigate).getByText('Around the Space')).toBeTruthy();
-    expect(within(navigate).getByText('Office Pieces')).toBeTruthy();
-    fireEvent.click(within(navigate).getByRole('button', { name: 'Add Room' }));
+    const rooms = openFlyout('Rooms');
+    expect(
+      within(rooms)
+        .getAllByRole('heading', { level: 4 })
+        .map((h) => h.textContent),
+    ).toEqual(['Build', 'Floor']);
+    const items = [...rooms.querySelectorAll('[data-flyout-item]')].map((b) =>
+      b.getAttribute('aria-label'),
+    );
+    expect(items.slice(0, 3)).toEqual(['Add Room', 'Room Builder', 'Add Door']);
+    fireEvent.click(within(rooms).getByRole('button', { name: 'Add Room' }));
     expect(flyout()).toBeNull();
   });
 
   it("focuses a catalogue's search field when its flyout opens (docs/specs/007-editor/toolbar-layout.md)", () => {
     show();
-    const popover = openFlyout('Icons');
-    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search icons'));
+    const popover = openFlyout('Stickers');
+    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search stickers'));
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
     show();
-    const popover = openFlyout('Icons');
-    expect(document.activeElement).not.toBe(within(popover).getByPlaceholderText('Search icons'));
+    const popover = openFlyout('Stickers');
+    expect(document.activeElement).not.toBe(
+      within(popover).getByPlaceholderText('Search stickers'),
+    );
   });
 
   it('switches the flyout to the category pressed next', () => {
     show();
-    openFlyout('Icons');
-    fireEvent.click(screen.getByRole('button', { name: 'Frame' }));
-    expect(within(flyout()!).getByRole('button', { name: 'Add Frame' })).toBeTruthy();
-    expect(within(flyout()!).queryByPlaceholderText('Search icons')).toBeNull();
+    openFlyout('Stickers');
+    fireEvent.click(screen.getByRole('button', { name: 'Seating' }));
+    expect(within(flyout()!).getByRole('button', { name: 'Add Chair' })).toBeTruthy();
+    expect(within(flyout()!).queryByPlaceholderText('Search stickers')).toBeNull();
   });
 
   it('closes the flyout on Escape', () => {
     show();
-    openFlyout('Icons');
+    openFlyout('Stickers');
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
@@ -175,7 +187,7 @@ describe('ToolbarPalette', () => {
     it('lists only the element types on the tab before anything is typed', () => {
       show({
         tabElements: [
-          { id: 'a', type: 'shape', shape: 'frame', x: 0, y: 0, width: 1, height: 1 },
+          { id: 'a', type: 'shape', shape: 'chair', x: 0, y: 0, width: 1, height: 1 },
         ] as unknown as Element[],
       });
       const popover = openSearch();
@@ -185,7 +197,7 @@ describe('ToolbarPalette', () => {
           .getAllByRole('button')
           .map((b) => b.getAttribute('aria-label'))
           .filter((l) => l?.startsWith('Add ')),
-      ).toEqual(['Add Frame']);
+      ).toEqual(['Add Chair']);
       cleanup();
       show();
       expect(openSearch().textContent).toContain('No elements on this tab yet');
@@ -200,6 +212,12 @@ describe('ToolbarPalette', () => {
         ['cylinder', /^Add Cylinder$/],
         ['lane', /^Add Lane$/],
         ['poll', /^Add Poll$/],
+        ['frame', /^Add Frame$/],
+        ['confetti', /^Add Confetti Pad$/],
+        ['laser', /^Add Laser/],
+        // No Icons (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
+        ['database', /^Add Database$/],
+        ['server', /^Add Server$/],
       ] as const) {
         type(popover, q);
         expect(within(popover).queryAllByRole('button', { name: gone }), q).toEqual([]);
@@ -221,11 +239,11 @@ describe('ToolbarPalette', () => {
     it('uses the best match on Enter', () => {
       const { h } = show();
       const popover = openSearch();
-      type(popover, 'frame');
+      type(popover, 'sofa');
       fireEvent.keyDown(within(popover).getByRole('textbox', { name: 'Search elements' }), {
         key: 'Enter',
       });
-      expect(h.onAddShape).toHaveBeenCalledWith('frame', expect.anything());
+      expect(h.onAddShape).toHaveBeenCalledWith('sofa', expect.anything());
     });
 
     it('says so when nothing matches anywhere', () => {
@@ -240,7 +258,7 @@ describe('ToolbarPalette', () => {
 
     it("is one strip menu at a time with a category's flyout, and closes on Escape", () => {
       show();
-      openFlyout('Icons');
+      openFlyout('Stickers');
       const searchButton = screen.getByRole('button', { name: 'Search elements' });
       fireEvent.pointerDown(searchButton);
       fireEvent.click(searchButton);

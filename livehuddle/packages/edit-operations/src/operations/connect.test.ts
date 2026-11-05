@@ -71,19 +71,6 @@ describe('connect', () => {
     expect(refused(run('connect n1 -> n8 shape=square')).code).toBe('unknown_field');
     expect(refused(run('connect n1 -> n8 id=n2')).code).toBe('id_taken');
   });
-
-  it("goes on its first end's layer", () => {
-    const tab = {
-      ...flowWith((el) => (el.id === 'n1' ? { ...el, layerId: 'top' } : el)),
-      layers: [
-        { id: 'base', name: 'Base' },
-        { id: 'top', name: 'Top' },
-      ],
-    };
-    expect(elementOf(applied(run('connect n1 -> n8', tab)).tab, 'arrow')).toMatchObject({
-      layerId: 'top',
-    });
-  });
 });
 
 describe('rewire', () => {

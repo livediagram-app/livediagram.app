@@ -18,7 +18,6 @@ Scope, by file:
 | `packages/document/src/themes.ts`                          | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
 | `packages/document/src/svg-render-describe.ts`             | Export shape: an ellipse                                            |
 | `apps/editor/lib/canvas.ts`                                | `inheritedSizeFor` keeps the marker size                            |
-| `apps/editor/lib/canvas-selection.ts`                      | No quick-connect plus on an annotation                              |
 | `apps/editor/lib/themes.ts`                                | `deriveNewBoxedColours` treats an annotation like a shape           |
 | `apps/editor/lib/draw-mode.ts`                             | Annotation is absent from draw-to-size                              |
 | `apps/editor/app/document/[id]/useElementCreation.ts`      | `addAnnotation`: viewport-centre drop + telemetry                   |
@@ -87,8 +86,8 @@ States per marker: `hovering` (local `useState`), `isSelected`, `isEditing`.
 
 ### Everything else
 
-Move, recolour (Colours accordion), layer, lock, link, comment, assign an action and delete follow
-the generic boxed paths. No quick-connect plus appears (`showPlus` excludes annotations, D90) [QD11].
+Move, recolour (Colours accordion), reorder, lock, link, comment, assign an action and delete follow
+the generic boxed paths. No quick-connect plus appears: livehuddle draws none on any element (D90, ../../002-project-scope/not-in-livehuddle.md#quick-connect) [QD11].
 The quick style panel does not open for an annotation: `isQuickStyleTarget` takes shapes, arrows
 and text only.
 
@@ -105,7 +104,6 @@ Invariants:
 export type AnnotationElement = {
   id: ElementId;
   type: 'annotation';
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -220,7 +218,7 @@ Telemetry: `Element` / `Added` / `Annotation`; opening reuses `Note` / `Opened`.
 | ---------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
 | New marker is 44 × 44, no note                 | `createAnnotation is a 44x44 boxed marker`     | `packages/document/src/factories.test.ts`                      |
 | Keeps marker size regardless of selection (I2) | `keeps an annotation at its fixed marker size` | `apps/editor/lib/canvas.test.ts`                               |
-| No quick-connect plus                          | `showPlus` false for an annotation             | `apps/editor/lib/canvas-selection.test.ts`                     |
+| No quick-connect plus                          | No `showPlus` derived at all                   | `apps/editor/lib/canvas-selection.test.ts`                     |
 | Telemetry token `Annotation`                   | `elementTelemetryType`                         | `apps/editor/lib/element-telemetry.test.ts`                    |
 | Tile routes to an action                       | palette telemetry coverage                     | `apps/editor/lib/palette-telemetry-coverage.test.ts`           |
 | No inline text (I1)                            | `elementHasText` false for annotation          | `packages/document/src/element-has-text.test.ts`               |

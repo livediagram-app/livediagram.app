@@ -17,7 +17,6 @@ const POD_TABLE = [-260, -150, 560, 190] as const;
 const OFFICE_DESKS = [-300, -445, 470, 170] as const;
 const OFFICE_MEETING = [400, -445, 420, 170] as const;
 const OFFICE_CORRIDOR = [-120, -200, 600, 200] as const;
-const HALL_STAGE = [-330, -360, 660, 220] as const;
 const HALL_ROOM = [-470, -180, 900, 290] as const;
 
 /** A small pill over a character's head: a status, a role, a view being followed. */
@@ -108,7 +107,7 @@ export function CharacterArt() {
   );
 }
 
-/** Four Spaces to start from: the Virtual Office, the Team Pod, the Coworking Space and the All-Hands Hall. */
+/** Spaces to start from: four of them, the Virtual Office, the Team Pod, the Coworking Space and the All-Hands Hall. */
 export function FourSpacesArt() {
   const kinds: TemplateKind[] = ['virtual-office', 'team-pod', 'coworking-space', 'all-hands-hall'];
   return (
@@ -359,61 +358,6 @@ export function CameraArt() {
 /** Follow someone's view: your screen goes where Sam's goes. */
 export function FollowArt() {
   return <ViewFrame following="Sam" />;
-}
-
-/** Spotlight: the hall dims, and only the presenter on the stage is lit. */
-export function SpotlightArt() {
-  const ana = shotPoint(HALL, { name: 'Ana' });
-  const [x, y, w, h] = HALL_STAGE;
-  return (
-    <SpaceShot
-      spec={HALL}
-      box={HALL_STAGE}
-      cast={[{ name: 'Ana' }, { name: 'Jo' }, { name: 'Leo' }, { name: 'Priya' }]}
-    >
-      <defs>
-        <radialGradient id="fa-sp-light">
-          <stop offset="0.6" stopColor="#000" />
-          <stop offset="1" stopColor="#fff" />
-        </radialGradient>
-        <mask id="fa-sp-mask" maskUnits="userSpaceOnUse" x={x} y={y} width={w} height={h}>
-          <rect x={x} y={y} width={w} height={h} fill="#fff" />
-          <circle cx={ana.x} cy={ana.y - 40} r={80} fill="url(#fa-sp-light)" />
-        </mask>
-      </defs>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        mask="url(#fa-sp-mask)"
-        className="fa-a-in fill-slate-900/45 dark:fill-black/65"
-        style={at(0.2)}
-      />
-    </SpaceShot>
-  );
-}
-
-/** A laser pointer everyone sees: a glowing trail across the stage while the presenter talks. */
-export function LaserArt() {
-  return (
-    <SpaceShot
-      spec={HALL}
-      box={HALL_STAGE}
-      cast={[{ name: 'Ana' }, { name: 'Jo' }, { name: 'Leo' }, { name: 'Priya' }]}
-    >
-      <path
-        d="M-180 -300 C -120 -260, -60 -320, 20 -290 S 140 -250, 180 -300"
-        fill="none"
-        strokeWidth={6}
-        strokeLinecap="round"
-        className="fa-a-draw stroke-rose-500/80"
-        style={
-          { '--len': 420, filter: 'drop-shadow(0 0 6px rgb(244 63 94 / 0.7))' } as CSSProperties
-        }
-      />
-    </SpaceShot>
-  );
 }
 
 /** A Space for every meeting: the Team Pod's stand-up round its table, the team in their places. */

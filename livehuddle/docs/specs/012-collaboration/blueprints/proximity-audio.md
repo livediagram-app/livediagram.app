@@ -167,23 +167,21 @@ token. The editor logs through `debugLog('calls', …)`.
 
 ## Testing
 
-| Rule                                                          | Test                                                     |
-| ------------------------------------------------------------- | -------------------------------------------------------- |
-| Production refuses whatever is set; secrets unset refuses     | `apps/api/src/calls/calls-gate.test.ts`                  |
-| Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`                 |
-| Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked)    |
-| Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                      |
-| Voice is tab-scoped and coalesced; 100 talking walkers bound  | `apps/api/src/document-room-fanout.test.ts`              |
-| Parsers                                                       | `packages/api-schema/src/call-voice.test.ts`             |
-| Hearing, gain, pan, hysteresis, bars fade                     | `apps/editor/lib/calls/hearing.test.ts`                  |
-| Detector: threshold, hangover, quantise, rate, refresh, mute  | `apps/editor/lib/calls/voice-detector.test.ts`           |
-| Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`              |
-| Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`                |
-| A vote no longer hides characters                             | `apps/editor/app/document/[id]/usePresenceRows.test.tsx` |
-| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`           |
-| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`              |
-| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`        |
-| A vote keeps sending characters, speech and audio             | `apps/editor/hooks/collab/useEditorBroadcast.test.tsx`   |
+| Rule                                                          | Test                                                  |
+| ------------------------------------------------------------- | ----------------------------------------------------- |
+| Production refuses whatever is set; secrets unset refuses     | `apps/api/src/calls/calls-gate.test.ts`               |
+| Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`              |
+| Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked) |
+| Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                   |
+| Voice is tab-scoped and coalesced; 100 talking walkers bound  | `apps/api/src/document-room-fanout.test.ts`           |
+| Parsers                                                       | `packages/api-schema/src/call-voice.test.ts`          |
+| Hearing, gain, pan, hysteresis, bars fade                     | `apps/editor/lib/calls/hearing.test.ts`               |
+| Detector: threshold, hangover, quantise, rate, refresh, mute  | `apps/editor/lib/calls/voice-detector.test.ts`        |
+| Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`           |
+| Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`             |
+| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`        |
+| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`           |
+| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`     |
 
 ## Constants and configuration
 
@@ -221,4 +219,4 @@ Cloudflare Realtime SFU (`https://rtc.live.cloudflare.com/v1/apps/<id>/…`) and
 
 ## Defaults ledger
 
-See `DEFAULTS.md` rows PA1 to PA6.
+See `DEFAULTS.md` rows PA1 to PA4 and PA6.

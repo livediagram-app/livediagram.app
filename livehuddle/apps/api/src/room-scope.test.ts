@@ -15,14 +15,14 @@ describe('opForScope (what a scoped session receives)', () => {
   });
 
   it('delivers ops on its own tab', () => {
-    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser']) {
+    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'cursor', 'avatar']) {
       const op = { kind, tabId: SCOPE };
       expect(opForScope(op, SCOPE), kind).toBe(op);
     }
   });
 
   it('drops ops on any other tab', () => {
-    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser']) {
+    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'cursor', 'avatar']) {
       expect(opForScope({ kind, tabId: 't1' }, SCOPE), kind).toBeNull();
     }
   });

@@ -10,11 +10,10 @@
     "elements": 30,
     "counts": {
       "boxes": 16,
-      "frames": 3,
+      "boundaries": 3,
       "lanes": 0,
       "arrows": 11
     },
-    "hidden": 0,
     "unknown": 0,
     "threads": {
       "open": 1,
@@ -38,7 +37,7 @@
     {
       "ref": "048c",
       "id": "048c0000-0000-4000-8000-000000000002",
-      "kind": "frame",
+      "kind": "boundary",
       "unknown": false,
       "label": "Edge",
       "summary": null,
@@ -148,7 +147,7 @@
     {
       "ref": "c991",
       "id": "c9910000-0000-4000-8000-000000000003",
-      "kind": "frame",
+      "kind": "boundary",
       "unknown": false,
       "label": "Services",
       "summary": null,
@@ -361,7 +360,7 @@
     {
       "ref": "ca76",
       "id": "ca760000-0000-4000-8000-000000000004",
-      "kind": "frame",
+      "kind": "boundary",
       "unknown": false,
       "label": "Data",
       "summary": null,

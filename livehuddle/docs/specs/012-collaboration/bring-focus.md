@@ -7,7 +7,7 @@ Status: shipped
 A **Bring Focus** element: press it and everyone else in the room is offered a
 jump to it, on your tab, at their own zoom.
 
-It lives in the palette's **Behaviours → Navigate** group, beside Portal, Chair
+It lives in the palette's **Travel** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside Portal, Avatar Pad
 and Link card. All four take somebody somewhere; this is the one that takes
 everybody.
 
@@ -15,8 +15,7 @@ everybody.
 
 On a big canvas, "look at the thing in the bottom right" is a sentence that does
 not work. Every tool for it points AT something from where the speaker already
-is: the laser ([Laser Panel](../008-canvas/laser-panel.md)), the spotlight
-([Spotlight Panel](../008-canvas/spotlight-panel.md)), a walked-to avatar
+is: a walked-to avatar
 ([Avatar mode](../008-canvas/avatar-mode.md)). Follow Me ([Follow-me viewport](follow-me-viewport.md))
 solved the other half by moving one person to another, but it is a PULL: the
 audience has to know to follow, and it pins them for as long as they stay

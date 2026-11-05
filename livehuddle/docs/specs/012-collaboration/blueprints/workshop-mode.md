@@ -9,15 +9,15 @@ livehuddle's one editor mode, every tab is in it, and there is no switch.
 
 ## Domain and naming
 
-| Concept                | Identifier                                                                                    |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| The mode               | `'workshop'`, the only member of `EditorMode` (`packages/document/src/editor-mode.ts`)        |
-| Its catalogue entry    | `EDITOR_MODE_CATALOGUE`'s one row `{ id: 'workshop', label: 'Workshop', description }` (D2)   |
-| Its mark               | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop` |
-| Its palette layout     | `MEETING: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`               |
-| The strip's tools      | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
-| Its blank              | template kind `'blank-session'`, label "Blank Space", document name "Untitled Space"          |
-| Its default folder key | `'mode:workshop'`, words `{ label: 'Spaces', noun: 'spaces' }` (`MODE_WORDS`)                 |
+| Concept                | Identifier                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| The mode               | `'workshop'`, the only member of `EditorMode` (`packages/document/src/editor-mode.ts`)                                   |
+| Its catalogue entry    | `EDITOR_MODE_CATALOGUE`'s one row `{ id: 'workshop', label: 'Workshop', description }` (D2)                              |
+| Its mark               | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop`                            |
+| Its palette layout     | `MEETING: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`                                          |
+| The strip's tools      | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| Its blank              | template kind `'blank-session'`, label "Blank Space", document name "Untitled Space"                                     |
+| Its default folder key | `'mode:workshop'`, words `{ label: 'Spaces', noun: 'spaces' }` (`MODE_WORDS`)                                            |
 
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
 name "Facilitate", which survives only where something stored is read: `LEGACY_EDITOR_MODES`
@@ -25,29 +25,29 @@ name "Facilitate", which survives only where something stored is read: `LEGACY_E
 `facilitateTourSeen` preference (`upgradeLegacyPreferences`) and the router's
 `/help/canvas/facilitate-mode/` redirects. The facilitator (the baton) is a different thing and
 keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; livehuddle's palette
-offers three of their categories, `collab-react` "React", `collab-mode` "Selection Mode" (bar: "Modes") and
-`collab-navigate` "Navigate" (`COLLABORATE_CATEGORY_GROUPS` in `palette-tile-defs.tsx` maps each to its `tileGroup`).
+offers its Space categories: `collab-travel` "Travel", `collab-seating` "Seating", `collab-rooms` "Rooms",
+`collab-amenities` "Amenities" and the rest of `SPACE_CATEGORIES` (there is no `collab-mode`). `COLLABORATE_CATEGORY_GROUPS` in
+`palette-tile-defs.tsx` maps each to its `tileGroup` (`travel`, `seating`, `rooms`, `amenities`, ...), and the
+category's tiles are that group's, in catalogue order: a new tile joins its category by its group alone.
 The bar's Session category (`session-category.tsx`) is deleted; the `BehaviourGroup` / `BehaviourSearch` telemetry
 types stay in the shared enums for history.
 
 ## Constants and configuration
 
-| Constant                  | Value                                                                                                                                                                                                                                                 | Provenance                             |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `MEETING.landing`         | `'popular'`                                                                                                                                                                                                                                           | spec "The palette"                     |
-| `MEETING` Popular tiles   | `tools:sticky`, `tools:text`, `tools:frame`, `tools:image`, `tools:link-card`, `DIVIDE`, `tools:room`, `tools:meeting-table`, `tools:chair`, `tools:focus-button`, `tools:avatar-pad`                                                                 | spec "The palette"                     |
-| `MEETING` categories      | `popular`, `write` (text, sticky), `frame` (frame), `collab-navigate` (door, focus-button, chair, desk, sofa, fence, avatar-pad, link-card, `DIVIDE`, `OFFICE_TILES`), `collab-react`, `collab-mode`, `icons`, `stickers`, `media` (image, link-card) | spec "The palette"                     |
-| `OFFICE_TILES`            | room, meeting-table, plant, bookshelf, water-cooler, coffee-machine, rug                                                                                                                                                                              | [Office](../../009-elements/office.md) |
-| Bands                     | Common (Write, Frame), Meet (band 6: Navigate, React, Selection Mode), Decorate (Icons, Stickers, Media)                                                                                                                                              | spec "The palette"                     |
-| Bar labels                | `BAR_LABELS['collab-mode'] = 'Modes'` (one word); `barCategoriesFor(categories)` drops Popular                                                                                                                                                        | toolbar-layout "Names are one word"    |
-| Navigate group names      | `GROUP_NAMES['tools:door'] = 'Around the Space'`, `GROUP_NAMES['tools:room'] = 'Office Pieces'`                                                                                                                                                       | spec "The palette"                     |
-| `SEARCH_ONLY_TILE_IDS`    | `[]`                                                                                                                                                                                                                                                  | spec "The palette" (Search)            |
-| `sessionStripTools`       | `{ timer: true, vote: true, poll: false }` on every tab; Poll shows only while a stored poll runs (`showPoll = pollRunning \|\| (offersPoll && canStart)`)                                                                                            | spec "The Session strip"               |
-| `EDIT_KEYS`               | E / 0 eraser, F frame, T / 8 text, N sticky (9 image outside the table); no diagram-tool keys                                                                                                                                                         | spec "The palette"                     |
-| Template kinds            | `blank-session`, `virtual-office`, `coworking-space`, `team-pod`, `all-hands-hall`; every one opens in `'workshop'`                                                                                                                                   | spec "Templates"                       |
-| `RETIRED_TEMPLATE_TITLES` | The 34 retired templates' titles, so "Untitled <title>" still reads as a default name                                                                                                                                                                 | spec "Templates"                       |
-| The blank                 | `'blank-session'`                                                                                                                                                                                                                                     | spec "Templates"                       |
-| Default folder words      | `MODE_WORDS.workshop = { label: 'Spaces', noun: 'spaces' }`                                                                                                                                                                                           | spec "Workspace"                       |
+| Constant                  | Value                                                                                                                                                                                                                                                                                                       | Provenance                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `MEETING.landing`         | `'popular'`                                                                                                                                                                                                                                                                                                 | spec "The palette"                  |
+| `MEETING` Popular tiles   | `tools:sticky`, `tools:text`, `DIVIDE`, `tools:room`, `tools:meeting-table`, `tools:chair`, `tools:focus-button`, `tools:avatar-pad`                                                                                                                                                                        | spec "The palette"                  |
+| `MEETING` categories      | `popular`, `write` (text, sticky), `collab-rooms` (`ROOMS_BUILD` then a divider, then the rest of `rooms`), `collab-seating`, `collab-amenities`, `collab-bar`, `collab-recreation`, `collab-garden`, `collab-meeting`, `collab-travel` (each its own `tileGroup`, in `SPACE_CATEGORIES` order), `stickers` | spec "The palette"                  |
+| Bands                     | Common (Write), Meet (band 6: Rooms to Meeting), Travel (band 7: Travel, `SpaceCategory.band`), Decorate (Stickers)                                                                                                                                                                                         | spec "The palette"                  |
+| Bar labels                | `BAR_LABELS.write = 'Write'` (one word); `barCategoriesFor(categories)` drops Popular                                                                                                                                                                                                                       | toolbar-layout "Names are one word" |
+| `SEARCH_ONLY_TILE_IDS`    | `[]`                                                                                                                                                                                                                                                                                                        | spec "The palette" (Search)         |
+| `sessionStripTools`       | `{ timer: true, poll: false }` on every tab; Poll shows only while a stored poll runs (`showPoll = pollRunning \|\| (offersPoll && canStart)`)                                                                                                                                                              | spec "The Session strip"            |
+| `EDIT_KEYS`               | E / 0 eraser, T / 8 text, N sticky (no `9`: the Image left); no diagram-tool keys, no Frame key                                                                                                                                                                                                             | spec "The palette"                  |
+| Template kinds            | `blank-session`, `virtual-office`, `coworking-space`, `team-pod`, `all-hands-hall`; every one opens in `'workshop'`                                                                                                                                                                                         | spec "Templates"                    |
+| `RETIRED_TEMPLATE_TITLES` | The 34 retired templates' titles, so "Untitled <title>" still reads as a default name                                                                                                                                                                                                                       | spec "Templates"                    |
+| The blank                 | `'blank-session'`                                                                                                                                                                                                                                                                                           | spec "Templates"                    |
+| Default folder words      | `MODE_WORDS.workshop = { label: 'Spaces', noun: 'spaces' }`                                                                                                                                                                                                                                                 | spec "Workspace"                    |
 
 ## Behaviour and state
 
@@ -55,7 +55,7 @@ types stay in the shared enums for history.
   tabs it makes. Nothing switches, so there is no switch, Shift+D, peer-switch toast or palette re-landing.
 - **Palette:** `paletteCategoriesFor` returns `MEETING`'s categories.
 - **Search:** the Toolbar strip's Search lists only the palette's tiles (`elementTileSections(...).here`) and the
-  Icons and Stickers entries; `ToolbarSearch` draws no other section.
+  Stickers entries; `ToolbarSearch` draws no other section.
 - **Strip:** `CanvasChrome` mounts the Session strip on every tab.
 - **Elements:** faces, menus and quick menus never read the mode.
 
@@ -83,12 +83,12 @@ export function parseEditorMode(v: unknown): EditorMode | undefined; // 'worksho
 | ------------------------------- | ---------------------------------------------------------------------- |
 | A tab stored as Diagram or Draw | Reads as Workshop; content intact apart from elements livehuddle lacks |
 | `/new?mode=<anything>`          | The mode is ignored; the blank is Blank Space                          |
-| Participant                     | `participantTiles`: sticky and text from Popular, plus image           |
+| Participant                     | No palette (`participantTiles` gone); `can.alwaysWalks` holds Avatar   |
 
 ## Security and trust
 
 - No new trust boundary. A stored mode is validated by `parseEditorMode`; role gating is the session tools' (room
-  drops view-role mutations) and the participant palette's.
+  drops view-role mutations) and the participant content rule's (a Participant has no palette).
 
 ## Performance and limits
 
@@ -119,19 +119,19 @@ export function parseEditorMode(v: unknown): EditorMode | undefined; // 'worksho
 
 ## Testing
 
-| Spec rule                                      | Test                                                                                      |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| One mode; every stored value reads as Workshop | `packages/document/src/editor-mode.test.ts`                                               |
-| The meeting palette and its Popular            | `components/palette/palette-layouts.test.ts`, `bar-categories.test.tsx`                   |
-| Search finds only the palette                  | `palette-tile-search.test.ts`, `ToolbarPalette.test.tsx`                                  |
-| Timer and Vote; a running stored poll ends     | `components/canvas/SessionClusterStrip.test.tsx`                                          |
-| No diagram-tool keys                           | `hooks/canvas/useEditorKeyboardShortcuts.test.ts`, `shortcut-sections.test.ts`            |
-| The five templates; a retired one is unknown   | `packages/templates` `template-catalogue.test.ts`, `retired-templates.test.ts`            |
-| Strip on every tab                             | `components/canvas/SessionClusterStrip.test.tsx`                                          |
-| Share roles                                    | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles) |
-| Templates open in Workshop; blank              | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`             |
-| Default folder key + label                     | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                    |
-| OpenAPI enum current                           | `apps/api` `manifest.test.ts`                                                             |
+| Spec rule                                      | Test                                                                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| One mode; every stored value reads as Workshop | `packages/document/src/editor-mode.test.ts`                                                                              |
+| The meeting palette and its Popular            | `components/palette/palette-layouts.test.ts`, `bar-categories.test.tsx`                                                  |
+| Search finds only the palette                  | `palette-tile-search.test.ts`, `ToolbarPalette.test.tsx`                                                                 |
+| Timer only; a running stored poll ends         | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| No diagram-tool keys                           | `hooks/canvas/useEditorKeyboardShortcuts.test.ts`, `shortcut-sections.test.ts`                                           |
+| The five templates; a retired one is unknown   | `packages/templates` `template-catalogue.test.ts`, `retired-templates.test.ts`                                           |
+| Strip on every tab                             | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| Share roles                                    | `lib/share-roles.test.ts` (the role matrix; a Participant has no palette)                                                |
+| Templates open in Workshop; blank              | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                            |
+| Default folder key + label                     | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                   |
+| OpenAPI enum current                           | `apps/api` `manifest.test.ts`                                                                                            |
 
 ## Defaults ledger
 

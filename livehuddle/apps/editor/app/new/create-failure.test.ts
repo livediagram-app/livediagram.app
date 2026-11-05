@@ -43,7 +43,7 @@ describe('createFailureCopy', () => {
       eyebrow: 'Placement refused',
       title: 'Couldn’t file the space there',
       message,
-      actionLabel: 'Choose another place',
+      actionLabel: 'Use Default Place',
     });
   });
 });

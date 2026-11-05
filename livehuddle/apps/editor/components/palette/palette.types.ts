@@ -6,13 +6,10 @@ import type { PaletteTint } from '@/components/palette/palette-controls';
 export type CanvasTool =
   | 'pan'
   | 'select'
-  | 'laser'
-  | 'spotlight'
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking pixel character, read-only canvas.
   | 'avatar'
   | 'eraser'
-  | 'format'
-  | 'isometric';
+  | 'format';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.
@@ -23,37 +20,23 @@ export type PaletteProps = {
   // the user picks any palette tile while walking, so the add lands instead of
   // being swallowed by the read-only canvas. Omit outside the editor.
   onExitAvatarMode?: () => void;
-  // Enter zen mode (docs/specs/007-editor/zen-mode.md), offered as a Zen entry in the canvas-tool
-  // dropdown under Isometric. An action, not a tool: firing it leaves the
-  // current tool selected. Omit to hide the entry; exit stays on the zoom
-  // dock (the only chrome left in zen).
-  onToggleZen?: () => void;
   // True when the active tab has no elements. Disables the canvas tools that
-  // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
+  // need existing content (Eraser / Format).
   canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one
-  // (docs/specs/009-elements/reaction-pad.md reactions, mode buttons), so a tile per choice places
+  // (docs/specs/009-elements/mode-button.md modes), so a tile per choice places
   // that choice rather than the factory default.
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      reaction?: import('@livehuddle/document').Reaction;
       mode?: import('@livehuddle/document').SelectionMode;
       plan?: string;
       variant?: string;
     },
   ) => void;
-  // Drops a curated icon glyph (shape kind 'icon') carrying the chosen
-  // catalogue id at the viewport centre. Picked from the Icons
-  // accordion's searchable grid.
-  onAddIcon: (iconId: string) => void;
-  // Sticker (docs/specs/010-palette/stickers.md) — its own element kind, so its own handler: unlike an
-  // icon it never folds into the selected shape.
+  // Sticker (docs/specs/010-palette/stickers.md): its own element kind, so its own handler; it never folds into the
+  // selected shape. No icon handlers: livehuddle adds no icon (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
   onAddSticker: (stickerId: string) => void;
-  // Drops a Technology (brand) icon (docs/specs/010-palette/technology-icons.md) as a STANDALONE 'icon'
-  // element carrying the chosen tech-catalogue id. Picked from the
-  // Technology tab's searchable grid; never dropped inside a shape.
-  onAddTechIcon: (iconId: string) => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.
@@ -101,6 +84,8 @@ export type PaletteProps = {
   onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
+  // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
+  onBeginRoomWalls?: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

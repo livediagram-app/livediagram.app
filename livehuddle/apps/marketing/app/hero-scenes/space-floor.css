@@ -22,10 +22,20 @@
 }
 
 /* Below lg the copy spans the window, so the wings would stand cropped against the headline: the wide stage
-   shows its floor alone (from y 490, under the calls to action). */
+   shows its floor alone (from y 490, FLOOR_CLIP_Y, under the calls to action). */
 @media (max-width: 63.999rem) {
   .hsf-floor-only {
     clip-path: inset(490px 0 0 0);
+  }
+  /* A walker whose path crosses that line walks its floor path instead (FLOOR_ONLY in hero-space-floor-cast.ts),
+     so nobody vanishes at the clip mid-walk. Under the stage, to outweigh a bubble's own display. */
+  .hsf-stage .hsf-lg-only {
+    display: none;
+  }
+}
+@media (min-width: 64rem) {
+  .hsf-stage .hsf-below-lg {
+    display: none;
   }
 }
 

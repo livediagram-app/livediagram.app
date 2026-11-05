@@ -9,6 +9,8 @@ import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards
 const CANVAS_STYLESHEETS = [
   'app/canvas-motion.css',
   'app/meeting-motion.css',
+  // The social pieces' own loops: flames, water, notes (docs/specs/009-elements/social-pieces.md).
+  'app/social-motion.css',
   // The animation sets (docs/specs/028-animation/element-animations.md).
   'app/motion-shape.css',
   'app/motion-text.css',

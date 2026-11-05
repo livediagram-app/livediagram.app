@@ -106,7 +106,7 @@ describe('useTabCanvas applyTabLook', () => {
       'steel',
       'professional',
       'inter',
-      'blank',
+      'carpet',
     ]);
     expect(h.tabs()[1]!.theme).toBeUndefined();
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Look');

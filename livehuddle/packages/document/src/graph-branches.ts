@@ -151,7 +151,7 @@ export function branchExits(elements: Element[], opts: BranchOptions): Element[]
   const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
   // The boxes a side exit's one bend must clear: every box but the frames and lanes that hold them.
   const solid = [...boxes.values()].filter(
-    (b) => !(b.type === 'shape' && (b.shape === 'frame' || b.shape === 'lane')),
+    (b) => !(b.type === 'shape' && (b.shape === 'boundary' || b.shape === 'lane')),
   );
   const used = new Set<string>();
   for (const a of arrows)

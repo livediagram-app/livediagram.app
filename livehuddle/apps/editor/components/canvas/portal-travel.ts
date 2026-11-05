@@ -32,6 +32,8 @@ export type PortalTravelDeps = {
   activeTabId?: string;
   /** Switches tab, through the same path a tab link uses. */
   onFollowLink: (link: { kind: 'tab'; tabId: string }) => void;
+  /** Switches tab as travel, keeping Avatar mode (docs/specs/008-canvas/avatar-mode.md "Changing tab"). */
+  onTravelToTab?: (tabId: string) => void;
   /**
    * The scrolling viewport, measured to centre the far portal in it. Typed as
    * the broad `Ref` the canvas is handed, which may be a callback ref with no
@@ -50,6 +52,7 @@ export function usePortalTravel({
   tabs,
   activeTabId,
   onFollowLink,
+  onTravelToTab,
   mainRef,
   readZoom,
   setViewportOffset,
@@ -64,8 +67,10 @@ export function usePortalTravel({
     // A link across tabs switches tab first, through the same follow-a-link
     // path a tab link uses, so selection / edit state is cleaned up the same
     // way. The camera + character then land on the far side.
+    // Travel keeps Avatar mode: the switch is marked as travel, and the character is placed in the same update.
     if (activeTabId && to.tabId && to.tabId !== activeTabId) {
-      onFollowLink({ kind: 'tab', tabId: to.tabId });
+      if (onTravelToTab) onTravelToTab(to.tabId);
+      else onFollowLink({ kind: 'tab', tabId: to.tabId });
     }
     const node = mainRef && 'current' in mainRef ? mainRef.current : null;
     const rect = node?.getBoundingClientRect();

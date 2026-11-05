@@ -26,8 +26,7 @@ export function useChecklistTicks({
     const element = activeElements.find((el) => el.id === elementId);
     const delta = element ? checklistDeltaFor(element, index) : null;
     if (delta) applyElementDelta(elementId, delta);
-    // Box ticks deliberately don't track: high-frequency, low-signal,
-    // matching docs/specs/012-collaboration/session-tools.md's vote-cast precedent.
+    // Box ticks deliberately don't track: high-frequency, low-signal.
   };
   return { toggleChecklistItem };
 }

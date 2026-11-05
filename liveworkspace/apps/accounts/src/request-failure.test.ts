@@ -1,6 +1,7 @@
 // A D1 outage (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails"): accounts answers
 // it itself, retryable, never the runtime's bare error page, and never as someone signed out.
 import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
+import { makeSignature } from 'better-auth/crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from './env.ts';
 import worker from './index.ts';
@@ -17,9 +18,16 @@ const ctx = {
   waitUntil: () => {},
   passThroughOnException: () => {},
 } as unknown as ExecutionContext;
-const call = (path: string) =>
+// A signed-in browser's session cookie, so the session lookup reaches D1. Better Auth checks the signature first,
+// and a request without a valid one is simply signed out, with no database call to fail.
+const sessionCookie = async () => {
+  const token = 'session-token';
+  const signed = `${token}.${await makeSignature(token, env.BETTER_AUTH_SECRET)}`;
+  return `__Secure-better-auth.session_token=${encodeURIComponent(signed)}`;
+};
+const call = async (path: string) =>
   worker.fetch(
-    new Request(`${BASE}${path}`, { headers: { Cookie: 'x=y', Origin: BASE } }),
+    new Request(`${BASE}${path}`, { headers: { Cookie: await sessionCookie(), Origin: BASE } }),
     env,
     ctx,
   );

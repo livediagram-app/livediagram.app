@@ -332,7 +332,7 @@ make room, and it reports every such move.
   `E_FRAME_CAPTURES`, naming it, unless the op says `absorb` (it joins) or `make-room` (it is pushed
   outside along the nearest edge). `tidy` first lays the members out compactly with the layout
   engine, keeping their top-left, which is what "reorganise a section" usually means. The frame goes
-  behind its members in z-order (`layers.ts` frame rank).
+  behind its members in z-order (`layers.tsx` frame rank).
 - **Lanes**: lanes stay first in z-order (`lanesToFront`), as the MCP does today.
 - **Coordinates the agent sees are rounded and offset** to the tab's content origin (tldraw's
   offset-and-round), so numbers are short; the engine converts back, and untouched elements keep their

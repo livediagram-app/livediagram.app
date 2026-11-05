@@ -62,23 +62,18 @@ export type SpeechLine = { who: string; text: string; at: number };
 /** A sticky the scene writes into the room drawing: where it sits, its colour and what it already says. */
 export type SceneSticky = { x: number; y: number; colour: string; text?: string };
 
-/** The notes coming alive: a teammate's cursor writes one, then the room's dot votes land. */
+/** The notes coming alive: a teammate's cursor writes one. */
 export type BoardActivity = {
   // The stickies the activity happens on, by name, all `size` square.
   stickies: Record<string, Point>;
   size: number;
   // The note the cursor writes, and in which sticky.
   note: { sticky: string; text: string; at: number };
-  // The note's and the votes' sizes, to suit the stickies'.
+  // The note's size, to suit the stickies'.
   fontSize: number;
-  voteRadius: number;
-  votes: readonly { sticky: string; dx: number; colour: string; at: number }[];
   // A teammate on the board from their laptop.
   remote: { name: string; colour: string };
 };
-
-/** A burst over the room on the loop, as a Reaction Pad throws one: its emoji, rising from where, and when. */
-export type SceneBurst = { emoji: string; x: number; y: number; at: number };
 
 export type SpaceSceneSpec = {
   // The file names its drawings are written under (public/hero/<id>-*.svg).
@@ -94,7 +89,6 @@ export type SpaceSceneSpec = {
     notes: readonly (SceneSticky & { size: number })[];
   };
   board?: BoardActivity;
-  bursts?: readonly SceneBurst[];
 };
 
 /** The room drawings, one per appearance, served from the marketing app's public/ folder. */
@@ -194,7 +188,7 @@ export const TEAM_POD: SpaceSceneSpec = {
     { who: 'Ana', text: 'Coffee first ☕', at: 16.4 },
   ],
   // The Team Board's stickies (the template's): This week, Blocked on, Wins, Questions, 146 square from x 250. A
-  // teammate on the board from their laptop writes a note into Wins, then the room votes.
+  // teammate on the board from their laptop writes a note into Wins.
   board: {
     stickies: {
       thisWeek: { x: 250, y: -208 },
@@ -205,14 +199,6 @@ export const TEAM_POD: SpaceSceneSpec = {
     size: 146,
     note: { sticky: 'wins', text: 'Beta shipped', at: 8.0 },
     fontSize: 15,
-    voteRadius: 9,
-    votes: [
-      { sticky: 'wins', dx: 0, colour: '#10b981', at: 9.8 },
-      { sticky: 'wins', dx: 1, colour: '#ec4899', at: 10.1 },
-      { sticky: 'wins', dx: 2, colour: '#f59e0b', at: 10.4 },
-      { sticky: 'thisWeek', dx: 0, colour: '#0ea5e9', at: 10.7 },
-      { sticky: 'questions', dx: 0, colour: '#8b5cf6', at: 11.0 },
-    ],
     remote: { name: 'Kit', colour: '#14b8a6' },
   },
 };

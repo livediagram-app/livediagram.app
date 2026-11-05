@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ElementLedger, ShapeElement, Tab, TabLedger, VoteLedger } from './index';
+import type { ElementLedger, ShapeElement, Tab, TabLedger } from './index';
 import {
   ledgerCommentAuthors,
   ledgerKey,
@@ -7,7 +7,6 @@ import {
   mergeLedgerIntoTab,
   opForTheWire,
   recordInLedger,
-  RETIRED_ROUNDS_MAX,
   stampCommentAuthor,
   tabLedgerFrom,
 } from './index';
@@ -43,11 +42,7 @@ function ledgerOf(ops: unknown[], startSeq = 1): TabLedger {
   ops.forEach((op, i) => {
     const key = ledgerKey(op);
     if (!key) return;
-    const next = recordInLedger(
-      store.get(key) as ElementLedger | VoteLedger | undefined,
-      op,
-      startSeq + i,
-    );
+    const next = recordInLedger(store.get(key) as ElementLedger | undefined, op, startSeq + i);
     if (next) store.set(key, next);
   });
   return tabLedgerFrom('t1', store);
@@ -101,66 +96,22 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
     ]);
   });
 
-  it("replaces the round's dots when some arrived after the saver's cursor", () => {
-    const dot = (voter: string, round = 'r1') => ({
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'e1',
-      voter,
-      delta: 1,
-      round,
-    });
-    const ledger = ledgerOf([dot('a'), dot('b')]);
-    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: { e1: ['a'] } };
-    const save = tab([], { vote: { ...vote, round: 'r1' } });
-    expect(mergeLedgerIntoTab(save, ledger, 1).vote?.votes).toEqual({ e1: ['a', 'b'] });
-    // Seen everything: the save stands.
-    expect(mergeLedgerIntoTab(save, ledger, 2)).toBe(save);
-    // Another round: ignored.
-    const next = tab([], { vote: { ...vote, votes: {}, round: 'r2' } });
-    expect(mergeLedgerIntoTab(next, ledger, 0)).toBe(next);
-  });
-
-  // A late op naming a round the room has moved past used to flip the vote
-  // back to that round, dropping the current round's dots.
-  it('drops a late dot or withdraw naming a retired vote round', () => {
-    const dot = (voter: string, round: string, d: 1 | -1 = 1) => ({
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'e1',
-      voter,
-      delta: d,
-      round,
-    });
-    const ledger = ledgerOf([dot('a', 'r1'), dot('b', 'r2'), dot('a', 'r1', -1), dot('c', 'r1')]);
-    expect(ledger.vote).toMatchObject({ round: 'r2', votes: { e1: ['b'] }, retired: ['r1'] });
-  });
-
-  it(`remembers at most ${RETIRED_ROUNDS_MAX} retired rounds`, () => {
-    const ops = Array.from({ length: RETIRED_ROUNDS_MAX + 5 }, (_, i) => ({
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'e1',
-      voter: 'a',
-      delta: 1,
-      round: `r${i}`,
-    }));
-    const retired = ledgerOf(ops).vote?.retired ?? [];
-    expect(retired).toHaveLength(RETIRED_ROUNDS_MAX);
-    expect(retired.at(-1)).toBe(`r${RETIRED_ROUNDS_MAX + 3}`);
-  });
-
   it('skips malformed and untracked ops', () => {
     expect(ledgerKey({ kind: 'el', tabId: 't1' })).toBeNull();
     expect(recordInLedger(undefined, delta({ kind: 'check', index: -1 }), 1)).toBeNull();
     expect(recordInLedger(undefined, delta({ kind: 'comment-add', comment: {} }), 1)).toBeNull();
-    expect(
-      recordInLedger(
-        undefined,
-        { kind: 'vote', tabId: 't1', elementId: 'e', voter: 'a', delta: 1 },
-        1,
-      ),
-    ).toBeNull();
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot is not recorded, and a
+  // room's stored vote entry is skipped when a save is merged.
+  it('records no dot, and merges none a room still holds', () => {
+    const dot = { kind: 'vote', tabId: 't1', elementId: 'e', voter: 'a', delta: 1, round: 'r1' };
+    expect(ledgerKey(dot)).toBeNull();
+    expect(recordInLedger(undefined, dot, 1)).toBeNull();
+    const stored = new Map<string, unknown>([
+      ['ledger:t1:vote', { round: 'r1', votes: { e: ['a'] }, seq: 1 }],
+    ]);
+    expect(tabLedgerFrom('t1', stored)).toEqual({ elements: {} });
   });
 
   it('returns the same tab when nothing needs merging', () => {
@@ -225,55 +176,11 @@ describe('comments in the ledger (docs/specs/012-collaboration/collab-race-harde
   });
 });
 
-// docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": a dot on a card rides the ledger by its key.
-describe('a dot on a Plan card', () => {
-  it('records under the card’s vote key', () => {
-    const op = {
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'item:i1',
-      voter: 'a',
-      delta: 1,
-      round: 'r1',
-    };
-    expect(recordInLedger(undefined, op, 4)).toEqual({
-      round: 'r1',
-      votes: { 'item:i1': ['a'] },
-      seq: 4,
-    });
-  });
-});
-
 describe('mergeLedgerAnswersIntoTab (docs/specs/013-workspace/share-roles.md "Integrity")', () => {
-  const dot = (voter: string) => ({
-    kind: 'vote',
-    tabId: 't1',
-    elementId: 'e1',
-    voter,
-    delta: 1,
-    round: 'r1',
-  });
-
-  it('writes every dot the room holds into the stored tab, once', () => {
-    const ledger = ledgerOf([dot('a')]);
-    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r1' };
-    const stored = tab([card()], { vote });
-    const merged = mergeLedgerAnswersIntoTab(stored, ledger);
-    expect(merged.vote?.votes).toEqual({ e1: ['a'] });
-    expect(mergeLedgerAnswersIntoTab(merged, ledger)).toBe(merged);
-  });
-
   it('leaves ticks, threads and board changes to an Editor', () => {
     const list = card({ shape: 'checklist', checklistItems: [{ text: 'one', done: false }] });
     const ledger = ledgerOf([delta({ kind: 'check', index: 0, text: 'one', done: true })]);
     const stored = tab([list]);
-    expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
-  });
-
-  it('ignores dots from a round the stored tab has moved past', () => {
-    const ledger = ledgerOf([dot('a')]);
-    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: {}, round: 'r2' };
-    const stored = tab([card()], { vote });
     expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
   });
 });

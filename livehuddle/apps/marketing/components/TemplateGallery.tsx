@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { CategoryTiles } from '@/components/CategoryTiles';
 import { TemplateCard } from '@/components/TemplateCard';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
-import { galleryShelves, type ShelfId } from '@/lib/template-gallery';
+import { LEAD_CATEGORY, galleryShelves, type ShelfId } from '@/lib/template-gallery';
 import { shelfScrollTarget } from '@liveworkspace/marketing-site/lib/shelf-scroll';
 import {
   BAND_LEAD,
@@ -16,9 +16,9 @@ import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 // "Browse every template" (docs/specs/019-marketing/marketing-site.md), anchored #templates for the hero's search: every template the
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
-// carousel (TemplateCarousel), Blank Slate on load (every blank and nothing else: one a
-// mode); every other category sits folded underneath as a card (CategoryTiles) that opens it
-// in the open one's place, the shelf it replaces folding back (Blank Slate leading the folds). It only
+// carousel (TemplateCarousel), Office on load (LEAD_CATEGORY, the gallery's first shelf); every
+// other shelf sits folded underneath as a card (CategoryTiles) that opens it in the open one's
+// place, the shelf it replaces folding back in the gallery's order (Blank Slate last). It only
 // browses; the editor's wizard (/new) searches every template. Every
 // card is a link that creates that document straight away and opens it in the editor (TemplateCard).
 
@@ -26,8 +26,8 @@ import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 const SHELVES = galleryShelves();
 
 export function TemplateGallery() {
-  // The open shelf; Blank Slate until the visitor opens another.
-  const [openId, setOpenId] = useState<ShelfId>('popular');
+  // The open shelf; Office until the visitor opens another.
+  const [openId, setOpenId] = useState<ShelfId>(LEAD_CATEGORY);
   // Whether the open shelf was opened by the visitor (it rises in) or is the load's.
   const [opened, setOpened] = useState(false);
   const openShelf = SHELVES.find((s) => s.id === openId) ?? SHELVES[0];

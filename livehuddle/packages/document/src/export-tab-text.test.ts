@@ -128,25 +128,19 @@ describe('tabToMarkdownText', () => {
   });
 });
 
-describe('tabToMarkdownText and hidden layers', () => {
-  it('leaves out what sits on a hidden layer, and the arrows pinned to it', () => {
-    const t = {
-      ...tab('T', [
-        shape('a', { label: 'Shown' }),
-        shape('b', { label: 'Hidden note', layerId: 'L' }),
-        arrow('e', {
-          from: { kind: 'pinned', elementId: 'a' },
-          to: { kind: 'pinned', elementId: 'b' },
-        } as Partial<ArrowElement>),
-      ]),
-      layers: [
-        { id: 'base', name: 'Base' },
-        { id: 'L', name: 'Secret', visible: false },
-      ],
-    } as Tab;
+describe('tabToMarkdownText', () => {
+  it('writes every element, and the arrows pinned between them', () => {
+    const t = tab('T', [
+      shape('a', { label: 'First' }),
+      shape('b', { label: 'Second note' }),
+      arrow('e', {
+        from: { kind: 'pinned', elementId: 'a' },
+        to: { kind: 'pinned', elementId: 'b' },
+      } as Partial<ArrowElement>),
+    ]);
     const md = tabToMarkdownText(t);
-    expect(md).toContain('Shown');
-    expect(md).not.toContain('Hidden note');
-    expect(md).not.toContain('## Connections');
+    expect(md).toContain('First');
+    expect(md).toContain('Second note');
+    expect(md).toContain('## Connections');
   });
 });

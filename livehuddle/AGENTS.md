@@ -281,9 +281,9 @@ each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-proj
 - **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
   Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
   (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
-- **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the Reaction Pads, the
-  facilitator baton and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`,
-  `docs/specs/009-elements/reaction-pad.md`).
+- **The light meeting tools**: Bring Focus, the facilitator baton and follow-me (`bring-focus.md`, `facilitator.md`).
+  livehuddle's Timer is a placed piece of its own (`docs/specs/009-elements/timer-and-stopwatch.md`); the Session
+  strip's Timer is livediagram's alone (`docs/specs/012-collaboration/session-tools.md`).
 - **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
 - **The Spaces templates**: Virtual Office, Coworking Space, Team Pod and All-Hands Hall (`packages/templates`,
   `docs/specs/012-collaboration/virtual-office-template.md`).
@@ -291,7 +291,7 @@ each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-proj
 
 **Leaving livehuddle** (Work Tracker #423, [Not in livehuddle](../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md)):
 the retro and workshop templates, the quizzes and games, every Collaborate element but the Reaction Pads (polls,
-quizzes, Q&A, agendas, reveals and the rest), the Session strip's Poll, the Session button, the Workshop tour, the
+quizzes, Q&A, agendas, reveals and the rest), the Session strip (its Timer and Poll), the Session button, the Workshop tour, the
 diagram tools, and (gone since part 2) Presentation mode, the Slide Deck and the Page element. These are livediagram's
 alone. Until #423's code parts land livehuddle still carries copies of the rest: a fix to one lands in livediagram only, and livehuddle's copy is left for deletion.
 
@@ -299,7 +299,7 @@ The rules:
 
 - **A fix or change to one of these lands in both products in the same PR**, specs and code, **or the code moves to
   `packages/` first** (as `@liveworkspace/*`, the root AGENTS.md order) so there is one copy to change. The pure parts
-  of the Session strip's Timer and Vote, Bring Focus and the facilitator baton are the next extraction, to
+  of Bring Focus and the facilitator baton are the next extraction, to
   `@liveworkspace/session-tools`, the first time a change has to land in both.
 - What is already one copy stays one: the avatar core and its wire shapes (`@liveworkspace/avatar`,
   `@liveworkspace/api-schema`), the realtime room's shared shapes, and everything else in `packages/`.

@@ -16,8 +16,8 @@ the table.
 
 A web app where a team meets in a shared Space, in real time. Everyone has a
 little pixel character, walks to the room they want to meet in, and sees who
-is around. A Space is also a board: sticky notes and pictures on the walls, a
-shared timer and a quick vote keep a meeting moving. It never sits behind a
+is around. A Space is also a board: sticky notes on the walls, and a Timer or a
+Stopwatch in the room keeps a meeting moving. It never sits behind a
 sign-in wall: open a link and you are in.
 
 ## Who it's for
@@ -33,19 +33,20 @@ The unit of value is the group in the room.
 
 ## What it does
 
-- Spaces: 5 templates (Blank Space, Virtual Office, Team Pod, Coworking Space,
-  All-Hands Hall), and office pieces to build more: rooms, walls, desks,
+- Spaces: 19 templates (Blank Space, offices such as the Virtual Office, Team
+  Pod and All-Hands Hall, the Campus templates (Company Campus, Conference
+  Venue, Startup HQ, School Quad, Hotel and Suites, Co-working Tower), Expo
+  Hall, Beach Offsite, bars, gardens and more), many with several floors, and
+  pieces to build more: rooms with real doors, walls, desks,
   chairs, sofas, meeting tables, rugs, plants, bookshelves, a water cooler, a
   coffee machine, portals between rooms and tabs, fences and Avatar Pads.
 - Avatar mode: a pixel character per person with outfits, a status (Available,
   Focusing, In a Meeting or Away), speech bubbles, five moves (jumping jacks,
   wave, spin, cheer, dance) and Follow to go wherever a teammate goes.
-- Light meeting tools: the Session strip's shared timer and quick vote (dots on
-  the sticky notes), the facilitator baton, Bring Focus, the laser and
-  spotlight, and Reaction Pads (Confetti, Sparkles, Hearts, Applause,
-  Fireworks).
-- Light content on the walls: sticky notes, text, images, stickers, icons,
-  link cards and frames.
+- Light meeting tools: the Timer and Stopwatch pieces in the palette's Meeting
+  category, the facilitator baton, Bring Focus and Follow, and five bursts
+  round your own character (Confetti, Sparkles, Hearts, Applause, Fireworks).
+- Light content on the walls: sticky notes, text and stickers.
 - Real-time presence: live cursors, characters, selection rings and presence on
   each tab.
 - Comments with mentions and reactions, and actions assigned to a teammate.
@@ -53,9 +54,10 @@ The unit of value is the group in the room.
 - Undo and redo (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z), personal to each person.
 - Tabs per Space (each a floor), nested folders in the Explorer.
 - Teams: shared team Spaces with their own folders, members and invites.
-- Share links with three roles (Editor, Participant, Viewer), an optional
-  expiry and password, revocable any time. A Participant walks, adds sticky
-  notes, writes and votes; a Viewer walks and watches.
+- Share links as Editor or Participant (the default), with an optional expiry
+  and password, revocable any time. A Participant always walks, talks, comments
+  and reacts, and adds nothing to the Space; Viewer links made before still
+  work, as Viewer (Legacy).
 - Export a tab as PNG, SVG, PDF or a livehuddle JSON file, which imports back.
 - Offline Mode (This Browser): a Space kept only in your browser, never on our
   servers. Google Drive sync for signed-in users.

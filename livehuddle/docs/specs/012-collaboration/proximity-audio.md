@@ -15,7 +15,8 @@ sharing stay [Future work](../005-project-roadmap/future-work.md).
 
 Audio rides [Avatar mode](../008-canvas/avatar-mode.md): only a walking character has a place on the board, so only
 someone in the mode hears or is heard. Leaving the mode, changing tab or closing the page leaves the call. A board
-that is not shared (a This Browser Space, or one with no room) has nobody to talk to and shows no audio controls.
+that is not shared (a This Browser Space, or one with no room) has nobody to talk to and shows no audio controls; the
+camera and Share Screen buttons still show there, as a [local preview](video-and-screen-bubbles.md#local-preview).
 
 - **Join Audio.** Entering the mode does not open the microphone by itself. A **Join Audio** button sits in the
   bottom-right cluster beside Avatar while calls are on. Pressing it is the gesture a browser needs before it plays
@@ -106,11 +107,6 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
 **your** bars to others but hides **theirs** from you, and closes every subscription (no voice, no bubble, not even a
 stage's). Your microphone carries on under its own Mute, so you are heard if you speak.
 
-## Hide cursors
-
-A [hide-cursors vote](session-tools.md#hide-participant-cursors-default-on) hides **cursors only** (owner,
-2026-11-03): characters, their speech bubbles, their equalisers and the audio carry on through a vote.
-
 ## The wire
 
 Three presence ops in `@livehuddle/api-schema` (`call-voice.ts`), each with a field-by-field parser shared by the room
@@ -161,7 +157,8 @@ checks every session and track against its mode ([Calls kill switch](../016-plat
 ## Turning calls on
 
 Calls are on only where everything below holds; the editor learns it from `/api/capabilities` (`callsEnabled`) and
-shows no audio controls otherwise.
+shows no audio controls otherwise (the camera and screen buttons stay, as a
+[local preview](video-and-screen-bubbles.md#local-preview) only you see).
 
 - **Never in production yet.** The mint route refuses every session on the production deployment
   (`www.livehuddle.app`), whatever is configured. The kill switch (#316) is a further gate beside this flag, not its

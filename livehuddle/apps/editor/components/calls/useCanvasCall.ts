@@ -7,7 +7,6 @@
 // bars (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb").
 import { useMemo } from 'react';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
-import { visibleLayerElements } from '@livehuddle/document';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
@@ -17,11 +16,16 @@ import { callStages, mayLetSpeakSelf } from '@/lib/calls/stage';
 import { callMaximised, noteLetSpeak, setCallMaximised } from '@/lib/calls/calls-store';
 import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
+import { useTimerEarshot } from '@/lib/office/timer-earshot';
+import { useMeetingPieces } from '@/lib/office/useMeetingPieces';
 import type { TalkingBarsPeer } from './TalkingBars';
 
 type WalkingSelf = {
   pos: Point | null;
   walkTo: (point: Point, onArrive?: () => void) => void;
+  // The seat you sit on, and standing up from it (the meeting pieces and Knock, useMeetingPieces).
+  seatedOn?: string | null;
+  standUp?: () => void;
 };
 
 export function useCanvasCall(deps: {
@@ -58,16 +62,30 @@ export function useCanvasCall(deps: {
     [ownerId, documentId, shareCode],
   );
 
-  // Each visible Office room is a call of its own (meeting-rooms-and-stage.md "Rooms are calls"): the rooms the walk
-  // collides with, worked out only when the board or its layers change, never on a step.
-  // And each visible stage, with the room it stands in (the same spec's "The stage").
+  // Each Office room is a call of its own (meeting-rooms-and-stage.md "Rooms are calls"): the rooms the walk
+  // collides with, worked out only when the board changes, never on a step.
+  // And each stage, with the room it stands in (the same spec's "The stage").
   const { zones, stages } = useMemo(() => {
-    const visible = visibleLayerElements(props.elements, props.tabLayers);
-    const rooms = roomZones(visible);
-    return { zones: rooms, stages: callStages(visible, rooms) };
-  }, [props.elements, props.tabLayers]);
+    const rooms = roomZones(props.elements);
+    return { zones: rooms, stages: callStages(props.elements, rooms) };
+  }, [props.elements]);
 
   const self = inMode ? avatar.pos : null;
+  // The Screens' and Room Signs' rooms, Knock (docs/specs/009-elements/screen-and-room-sign.md,
+  // docs/specs/012-collaboration/knock.md).
+  useMeetingPieces({
+    elements: props.elements,
+    zones,
+    walkers: props.remoteAvatars,
+    inMode,
+    self,
+    selfSeatedOn: avatar.seatedOn ?? null,
+    doNotDisturb: deps.doNotDisturb === true,
+    send: props.onCallSignal,
+    standUp: avatar.standUp,
+  });
+  // Who hears each Timer's chime: the people in its room (docs/specs/009-elements/timer-and-stopwatch.md "The chime").
+  useTimerEarshot({ elements: props.elements, zones, inMode, self });
   const view = useViewRect(deps.viewport);
   useProximityCall({
     inMode,

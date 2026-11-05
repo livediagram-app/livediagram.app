@@ -97,8 +97,7 @@ type EditorViewportApi = {
   // are fully on screen. Used by the mobile add-element reveal and the
   // keyboard traversal's focus-follows-selection (docs/specs/004-interface-design/canvas-accessibility.md). With
   // `center: true` it always centres the bounds in the visible band
-  // instead of the minimal edge-pull pan; the vote-results walkthrough
-  // (docs/specs/012-collaboration/session-tools.md) uses that so every reviewed pick lands mid-screen.
+  // instead of the minimal edge-pull pan.
   scrollIntoView: (
     bx: number,
     by: number,

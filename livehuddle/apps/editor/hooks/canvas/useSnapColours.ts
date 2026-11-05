@@ -19,13 +19,11 @@ export type SnapColoursApi = {
 
 export function useSnapColours(deps: {
   elements: readonly Element[];
-  // Elements on hidden or locked layers: never changed.
-  inertIds: ReadonlySet<string>;
   editsBlocked: boolean;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
 }): SnapColoursApi {
-  const { elements, inertIds, editsBlocked, commit } = deps;
-  const colours = useMemo(() => snappableCustomColours(elements, inertIds), [elements, inertIds]);
+  const { elements, editsBlocked, commit } = deps;
+  const colours = useMemo(() => snappableCustomColours(elements), [elements]);
 
   const snap = () => {
     if (editsBlocked || colours.length === 0) {
@@ -34,9 +32,9 @@ export function useSnapColours(deps: {
     }
     // What it will do is read from the elements as they are, not from inside the commit's updater, which React may run
     // later; the commit itself snaps the live elements, so an edit since this render is kept.
-    const result = snapTabColours(elements, inertIds);
+    const result = snapTabColours(elements);
     if (result.changed === 0) return 0;
-    commit((els) => (els === elements ? result.elements : snapTabColours(els, inertIds).elements));
+    commit((els) => (els === elements ? result.elements : snapTabColours(els).elements));
     debugLog('[snap-colours] snapped', { colours: result.colours, elements: result.changed });
     track('Draw', 'Changed', 'SnapColours');
     return result.colours;

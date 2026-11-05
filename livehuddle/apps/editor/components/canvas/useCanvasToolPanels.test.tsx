@@ -6,30 +6,30 @@ import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 
-// docs/specs/008-canvas/avatar-mode.md "The Avatar Panel": its button shows in Zen, so its panel does too; only the
-// welcome flow hides it.
-const avatarPanel = ({ zen, welcome }: { zen: boolean; welcome: boolean }) =>
+// docs/specs/008-canvas/avatar-mode.md "The Avatar Panel": its panel shows while the rest of the chrome is away;
+// only the welcome flow hides it.
+const avatarPanel = ({ away, welcome }: { away: boolean; welcome: boolean }) =>
   renderHook(() =>
     useCanvasToolPanels({
       props: {
         canvasTool: 'avatar',
         avatarConfig: DEFAULT_AVATAR_CONFIG,
         welcomeOpen: welcome,
-        zenMode: zen,
+        chromeAway: away,
       } as unknown as CanvasChromeProps,
-      chromeHidden: zen || welcome,
+      chromeHidden: away || welcome,
       panelWiringFor: (() => ({})) as never,
       avatarPopover: { anchor: undefined, onClose: () => {} },
     }),
   ).result.current.avatarEl;
 
 describe('the Avatar panel', () => {
-  it('opens in Zen, where its button stays', () => {
-    expect(avatarPanel({ zen: true, welcome: false })).not.toBeNull();
-    expect(avatarPanel({ zen: false, welcome: false })).not.toBeNull();
+  it('opens while the rest of the chrome is away', () => {
+    expect(avatarPanel({ away: true, welcome: false })).not.toBeNull();
+    expect(avatarPanel({ away: false, welcome: false })).not.toBeNull();
   });
 
   it('stays hidden while the welcome flow is open', () => {
-    expect(avatarPanel({ zen: false, welcome: true })).toBeNull();
+    expect(avatarPanel({ away: false, welcome: true })).toBeNull();
   });
 });

@@ -44,12 +44,9 @@ export function arrowRoutesBehind(arrow: ArrowElement): boolean {
 // The exclusions matter more than the inclusions here, because the feature
 // is ON by default and a wrong obstacle erases an arrow that should be
 // visible:
-//   - `frame` shapes are section BACKDROPS. Everything inside a frame sits
-//     on top of it by design, so treating one as an obstacle would break
-//     every arrow drawn within a section — the single worst failure this
-//     feature could have.
-//   - `lane` shapes are swimlane backdrops for the same reason: they paint
-//     behind everything, and a hand-off arrow crosses lanes by design.
+//   - `lane` shapes are swimlane BACKDROPS: they paint behind everything, and
+//     a hand-off arrow crosses lanes by design, so treating one as an obstacle
+//     would break every arrow drawn within a lane.
 //   - `text` and `annotation` have no fill to hide behind. Breaking a line
 //     under a transparent label reads as a rendering fault, not as depth.
 //   - freehand / arrows aren't boxes at all (a freehand IS boxed in the

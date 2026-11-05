@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplate, buildTemplatedTab } from './template-builders';
+import { buildTemplatedTab } from './template-builders';
 import {
   BLANK_TEMPLATE_FOR_MODE,
   isBlankTemplate,
@@ -8,17 +8,17 @@ import {
   TEMPLATE_CATEGORIES,
   templateCanvasOverrides,
   templateCategory,
-  templateLayers,
   untitledNameForTemplate,
   type TemplateKind,
 } from '@livehuddle/templates';
+import { isFloorPattern } from '@livehuddle/document';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome flow) and the editor: a freshly chosen template and
 // theme have to land in the editor as a fully styled tab, or the person opens an "Untitled" document that doesn't
 // match the option they picked.
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the four Spaces. The
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the eighteen Spaces. The
 // retrospectives, workshops, planning and strategy boards and the quizzes and games left with Work Tracker #423.
 describe('TEMPLATES catalogue', () => {
   const ALL_KINDS: TemplateKind[] = [
@@ -27,12 +27,26 @@ describe('TEMPLATES catalogue', () => {
     'coworking-space',
     'team-pod',
     'all-hands-hall',
+    'focus-library',
+    'training-room',
+    'rooftop-bar',
+    'cafe',
+    'garden-retreat',
+    'city-park',
+    'company-campus',
+    'conference-venue',
+    'startup-hq',
+    'school-quad',
+    'hotel-and-suites',
+    'coworking-tower',
+    'expo-hall',
+    'beach-offsite',
   ];
 
   // Hidden templates are buildable but never listed; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists Blank Space and the four Spaces, in that order', () => {
+  it('lists Blank Space and the eighteen Spaces, in that order', () => {
     expect(listed.map((t) => t.kind)).toEqual(ALL_KINDS);
     expect(listed.map((t) => t.title)).toEqual([
       'Blank Space',
@@ -40,6 +54,20 @@ describe('TEMPLATES catalogue', () => {
       'Coworking Space',
       'Team Pod',
       'All-Hands Hall',
+      'Focus Library',
+      'Training Room',
+      'Rooftop Bar',
+      'Cafe',
+      'Garden Retreat',
+      'City Park',
+      'Company Campus',
+      'Conference Venue',
+      'Startup HQ',
+      'School Quad',
+      'Hotel and Suites',
+      'Co-working Tower',
+      'Expo Hall',
+      'Beach Offsite',
     ]);
   });
 
@@ -66,35 +94,23 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('lays every Space on the dot grid at full strength', () => {
-    for (const kind of [
-      'virtual-office',
-      'coworking-space',
-      'team-pod',
-      'all-hands-hall',
-    ] as const) {
-      expect(templateCanvasOverrides(kind), kind).toEqual({
-        backgroundPattern: 'grid',
+  it('lays every Space on a floor at full strength (docs/specs/011-theme/floors.md)', () => {
+    for (const kind of TEMPLATES.map((t) => t.kind).filter((k) => k !== 'blank-session')) {
+      const overrides = templateCanvasOverrides(kind);
+      expect(isFloorPattern(overrides.backgroundPattern), kind).toBe(true);
+      expect(overrides, kind).toEqual({
+        backgroundPattern: overrides.backgroundPattern,
         opensIn: 'workshop',
       });
     }
+    expect(templateCanvasOverrides('garden-retreat').backgroundPattern).toBe('grass');
+    expect(templateCanvasOverrides('virtual-office').backgroundPattern).toBe('carpet-tiles');
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
     // docs/specs/007-editor/editor-modes.md: the meeting board is the one mode, and it lands on every creation path
     // through here (the template, a new tab, Quick Start, the MCP worker).
     expect(templateCanvasOverrides('blank-session')).toEqual({ opensIn: 'workshop' });
-  });
-});
-
-// Layered templates (docs/specs/006-document/layers.md "Layered templates"): the layered ones left with their
-// templates, so no builder stamps a layer id a tab would not know.
-describe('layered templates (docs/specs/006-document/layers.md)', () => {
-  it('ships no layered template and stamps no layer id', () => {
-    for (const { kind } of TEMPLATES) {
-      expect(templateLayers(kind), kind).toBeUndefined();
-      for (const el of buildTemplate(kind, 0, 0)) expect(el.layerId, kind).toBeUndefined();
-    }
   });
 });
 
@@ -111,9 +127,9 @@ describe('buildTemplatedTab', () => {
     expect(tab.templateChosen).toBe(true);
   });
 
-  it('keeps a Space’s grid over the theme’s own pattern', () => {
+  it('keeps a Space’s floor over the theme’s own pattern', () => {
     const tab = buildTemplatedTab('team-pod', 'slate', 'tab-2', 'Team Pod');
-    expect(tab.backgroundPattern).toBe('grid');
+    expect(tab.backgroundPattern).toBe('carpet');
     expect(tab.opensIn).toBe('workshop');
   });
 });

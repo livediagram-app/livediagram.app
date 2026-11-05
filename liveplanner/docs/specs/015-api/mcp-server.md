@@ -442,7 +442,10 @@ unknown name with the ones there are.
   board answers a hint saying how to get one.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
 status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
-  `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
+  `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once. Its
+  description and `clear` argument say how a `set` empties a field (`"clear": ["Blocked By"]`), and that a field
+  holding several also clears with `[]` or `null` in `fields`
+  ([Clearing a field](../026-plan/plan-agents.md)).
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
   ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 - **`change_board`** (write): a board's title, columns (by name), the card types it takes or its header widgets

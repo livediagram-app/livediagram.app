@@ -9,8 +9,8 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 
-// docs/specs/008-canvas/canvas-and-palette.md: the selection toolbar keeps a wide gap only to clear the "+"
-// quick-connect button; an element that shows none (a Plan board) gets the close gap.
+// docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect: livehuddle has no quick-connect "+" in the
+// gap, so the selection toolbar sits close over every box; an arrow keeps the wide gap for its move frame.
 
 const seen: { compact?: boolean; aside?: unknown }[] = [];
 vi.mock('./SelectionPopover', () => ({
@@ -37,7 +37,6 @@ function compactFor(el: Element, readOnly = false): boolean | undefined {
             tabLocked: false,
             readOnly,
           }}
-          quickRingOpen={false}
         />
       </ViewportStoreProvider>
     </SelectionStoreProvider>,
@@ -46,9 +45,9 @@ function compactFor(el: Element, readOnly = false): boolean | undefined {
 }
 
 describe('selection toolbar gap', () => {
-  it('clears the "+" on an ordinary shape, and sits close when read-only', () => {
+  it('sits close over an ordinary shape, editable or read-only', () => {
     const square = createShape('square', 0, 0);
-    expect(compactFor(square)).toBe(false);
+    expect(compactFor(square)).toBe(true);
     expect(compactFor(square, true)).toBe(true);
   });
 

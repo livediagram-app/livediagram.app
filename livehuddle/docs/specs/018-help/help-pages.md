@@ -56,16 +56,16 @@ livehuddle's scenes:
 | Scene                | Where                | What it shows                                                                                     |
 | -------------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
 | Getting Started      | own                  | a first Space: pick a starting point, walk in, share the link                                     |
-| About                | own                  | three windows: the day's stickies, a Team Pod with the team round its table, a vote               |
+| About                | own                  | three windows: the day's stickies, a Team Pod with the team round its table, a timer              |
 | Canvas               | own                  | a flowchart mid-build, a sticky note, the palette strip, undo and zoom                            |
 | Palette              | own                  | the Shapes category open and a diamond dragged onto the canvas                                    |
-| Selection Modes      | own                  | the mode picker, a marquee and the laser's trail                                                  |
+| Selection Modes      | own                  | the mode picker and a marquee                                                                     |
 | Collaboration        | own                  | three people on one canvas: cursors, a live selection, a comment thread, Share                    |
 | Explorer             | own                  | My Work and a grid of Spaces                                                                      |
 | Tabs                 | own                  | one document's canvases stacked behind the tab bar                                                |
 | User Interface       | own                  | the editor with numbered callouts on its parts                                                    |
-| Tools                | shared, with its own | Auto-align snapping a meeting's notes into line, beside the shared appearance switch and Zen mode |
-| Tips and Tricks      | shared, with its own | the command palette on ⌘K (Zoom to fit, Next editor mode, Zen mode) and R, T and N                |
+| Tools                | shared, with its own | Auto-align snapping a meeting's notes into line, beside the shared appearance switch          |
+| Tips and Tricks      | shared, with its own | the command palette on ⌘K (Zoom to fit, Next editor mode) and R, T and N                          |
 | Search Panel         | shared, with its own | "roadmap" finding a canvas, a tab, a sticky note and a guide                                      |
 | Supported Devices    | shared, with its own | a little diagram on a laptop, a tablet and a phone                                                |
 | Developers           | shared, with its own | `POST /api/documents` making a Service map                                                        |
@@ -108,11 +108,11 @@ so the page reads as a table of contents rather than a wall. A group is the arti
 registry; a category's `groups` field fixes the order its groups appear in (otherwise first appearance). From `lg`
 up, a page with groups shows a sticky **jump list** of its groups beside the grids.
 
-| Category | Groups, in order                                                               |
-| -------- | ------------------------------------------------------------------------------ |
-| Canvas   | Basics, Modes and Boards, Text and Notes, Styling Elements, Layers and Locking |
-| Palette  | Everyday Elements, Layout Kits, Workshop Kits, Palette Settings                |
-| Explorer | Your Library, Activity, Assets                                                 |
+| Category | Groups, in order                                                |
+| -------- | --------------------------------------------------------------- |
+| Canvas   | Basics, Text and Notes, Styling Elements                        |
+| Palette  | Everyday Elements, Layout Kits, Workshop Kits, Palette Settings |
+| Explorer | Your Library, Activity, Assets                                  |
 
 The remaining categories have twelve or fewer cards and stay one grid.
 

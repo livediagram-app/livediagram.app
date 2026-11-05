@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { makeItem } from '../test/fakeClient';
 import { createItemOverlay, OVERLAY_BASE_MAX } from './overlay';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('createItemOverlay', () => {
   it('lays a patch over an item and keeps unpatched items as they are', () => {
@@ -119,9 +120,10 @@ describe('createItemOverlay', () => {
     const overlay = createItemOverlay();
     const items = Array.from({ length: 5000 }, (_, i) => makeItem(i));
     for (const item of items.slice(0, 400)) overlay.patch(item.id, { title: 'x' }).settle();
-    const t = performance.now();
-    for (let r = 0; r < 20; r++) overlay.observe(items, overlay.stamp());
-    expect(performance.now() - t).toBeLessThan(500);
+    const ms = cpuMsOf(() => {
+      for (let r = 0; r < 20; r++) overlay.observe(items, overlay.stamp());
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 
   it('tells subscribers and bumps its version on every change', () => {

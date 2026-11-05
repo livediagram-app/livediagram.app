@@ -29,7 +29,7 @@ describe('HELP_SEARCH_ITEMS', () => {
 
   it('finds an article by concept when the title is no exact match', () => {
     // The user-reported case: searching "opacity" must surface the element
-    // opacity article (Layer Order and Opacity) in the editor's search.
+    // opacity article (Colours, Borders and Opacity) in the editor's search.
     const out = buildSearchResults({
       query: 'opacity',
       documents: [],
@@ -38,7 +38,7 @@ describe('HELP_SEARCH_ITEMS', () => {
     });
     const help = out.find((g) => g.key === 'help')!;
     const hrefs = help.items.map((i) => (i.kind === 'help' ? i.href : ''));
-    expect(hrefs).toContain('/help/canvas/layer-order/');
+    expect(hrefs).toContain('/help/canvas/colours-borders-opacity/');
 
     // And by pure synonym: "transparency" appears in no title, only keywords.
     const bySynonym = buildSearchResults({
@@ -49,7 +49,9 @@ describe('HELP_SEARCH_ITEMS', () => {
     });
     const helpBySynonym = bySynonym.find((g) => g.key === 'help')!;
     expect(
-      helpBySynonym.items.some((i) => i.kind === 'help' && i.href === '/help/canvas/layer-order/'),
+      helpBySynonym.items.some(
+        (i) => i.kind === 'help' && i.href === '/help/canvas/colours-borders-opacity/',
+      ),
     ).toBe(true);
   });
 });

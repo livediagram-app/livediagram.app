@@ -284,7 +284,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   }
 
   // --- Document / tab commands. Always available in-document (independent of
-  // the selection), so a power user can share / rename / theme without first
+  // the selection), so someone at the keyboard can share / rename / theme without first
   // clearing what's selected.
   // Event-storming board verbs (docs/specs/021-event-storming/event-storming.md). Only on such a board: a timeline
   // lane on an ordinary diagram would be a grid for nothing.

@@ -76,7 +76,7 @@ describe('canvas background context menu', () => {
     expect(onCanvasContextMenu).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['spotlight', 'isometric', 'avatar'])('never opens in the %s tool', (tool) => {
+  it.each(['avatar'])('never opens in the %s tool', (tool) => {
     const { result, onCanvasContextMenu } = setup(tool);
     result.current.onContextMenu(ctx(0));
     result.current.onContextMenu(ctx(2));
@@ -127,7 +127,7 @@ describe('a right-click on the empty canvas', () => {
     expect(calls).toEqual(['deselect']);
   });
 
-  it.each(['spotlight', 'isometric', 'avatar'])('keeps the selection in the %s tool', (tool) => {
+  it.each(['avatar'])('keeps the selection in the %s tool', (tool) => {
     const { result, onDeselect } = setup(tool);
     result.current.onContextMenu(ctx(0));
     result.current.onContextMenu(ctx(2));
@@ -225,7 +225,20 @@ describe('a press that pans through an element', () => {
 
 // docs/specs/008-canvas/avatar-mode.md "Walking": a finger's drag pans, and only its tap walks.
 describe('Avatar mode presses', () => {
-  function avatarSetup(peerAvatars: unknown[] = []) {
+  function avatarSetup(
+    peerAvatars: unknown[] = [],
+    {
+      elements,
+      onToggleDoor,
+      onReadElement,
+      feet = { x: 0, y: 0 },
+    }: {
+      elements?: unknown[];
+      onToggleDoor?: (id: string) => boolean;
+      feet?: { x: number; y: number };
+      onReadElement?: (id: string) => void;
+    } = {},
+  ) {
     const walkTo = vi.fn();
     const onPushPeer = vi.fn();
     const setPan = vi.fn();
@@ -254,28 +267,188 @@ describe('Avatar mode presses', () => {
         setPan,
         setMarquee: vi.fn(),
         spotlight: {},
-        avatar: { walkTo, pos: { x: 0, y: 0 }, seatedOn: null },
+        avatar: { walkTo, pos: feet, seatedOn: null },
         peerAvatars,
         onPushPeer,
+        elements,
+        onToggleDoor,
+        onReadElement,
         isoCamera: {},
         beginPendingDrawGesture: () => false,
         onDeselect: vi.fn(),
         onCanvasDoubleClick: vi.fn(),
       } as never),
     );
-    const press = (pointerType: string) =>
+    const stopPropagation = vi.fn();
+    const press = (pointerType: string, target: Element = document.createElement('div')) =>
       result.current.onPointerDownCapture({
-        target: document.createElement('div'),
+        target,
         button: 0,
         detail: 1,
         clientX: 120,
         clientY: 240,
         pointerType,
         preventDefault: vi.fn(),
-        stopPropagation: vi.fn(),
+        stopPropagation,
       } as unknown as ReactPointerEvent);
-    return { press, walkTo, setPan, onPushPeer };
+    return { press, walkTo, setPan, onPushPeer, stopPropagation };
   }
+
+  // A pressable face inside a box of the kind (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+  const faceOf = (kind: string) => {
+    const box = document.createElement('div');
+    box.setAttribute('data-element-kind', kind);
+    const face = document.createElement('button');
+    box.appendChild(face);
+    return face;
+  };
+
+  it.each(['directory', 'elevator', 'notice-board', 'world-clock', 'portal'])(
+    'opens a %s in place: no walk, and the press kept from the element',
+    (kind) => {
+      for (const pointer of ['mouse', 'touch']) {
+        const { press, walkTo, setPan, stopPropagation } = avatarSetup();
+        press(pointer, faceOf(kind));
+        expect(walkTo).not.toHaveBeenCalled();
+        expect(setPan).not.toHaveBeenCalled();
+        expect(stopPropagation).toHaveBeenCalled();
+      }
+    },
+  );
+
+  // A door centred on the press point (120, 240), across a horizontal wall.
+  const door = { id: 'door', type: 'shape', shape: 'door', x: 72, y: 228, width: 96, height: 24 };
+
+  it('swings a door the character stands beside, and does not walk', () => {
+    const onToggleDoor = vi.fn(() => true);
+    const { press, walkTo } = avatarSetup([], {
+      elements: [door],
+      onToggleDoor,
+      feet: { x: 120, y: 270 },
+    });
+    press('mouse');
+    expect(onToggleDoor).toHaveBeenCalledWith('door');
+    expect(walkTo).not.toHaveBeenCalled();
+  });
+
+  it('walks to the near side of a far door, swinging nothing', () => {
+    const onToggleDoor = vi.fn(() => true);
+    const { press, walkTo } = avatarSetup([], {
+      elements: [door],
+      onToggleDoor,
+      feet: { x: 120, y: 700 },
+    });
+    press('mouse');
+    expect(onToggleDoor).not.toHaveBeenCalled();
+    const to = walkTo.mock.calls[0]?.[0] as { x: number; y: number };
+    expect(to.x).toBeCloseTo(120);
+    expect(to.y).toBeGreaterThan(240);
+  });
+
+  it('walks a Viewer, who may not swing it, even beside the door', () => {
+    const onToggleDoor = vi.fn(() => false);
+    const { press, walkTo } = avatarSetup([], {
+      elements: [door],
+      onToggleDoor,
+      feet: { x: 120, y: 270 },
+    });
+    press('mouse');
+    expect(onToggleDoor).toHaveBeenCalledWith('door');
+    expect(walkTo).toHaveBeenCalledTimes(1);
+  });
+
+  // A piece covering the press point (120, 240): the layer is pointer-inert while walking, so the press lands on
+  // the bare surface and the piece is found from its footprint (docs/specs/008-canvas/avatar-mode.md).
+  const pieceAt = (type: string, shape?: string) => ({
+    id: 'piece',
+    type,
+    ...(shape ? { shape } : {}),
+    x: 60,
+    y: 200,
+    width: 120,
+    height: 80,
+  });
+
+  it.each([
+    'directory',
+    'elevator',
+    'portal',
+    'mode-button',
+    'focus-button',
+    'notice-board',
+    'world-clock',
+    'screen',
+    'room-sign',
+    'jukebox',
+  ])(
+    'a press on the middle of a %s face, off its buttons, presses its main action and never walks',
+    (kind) => {
+      const box = document.createElement('div');
+      box.setAttribute('data-element-id', 'piece');
+      const main = document.createElement('button');
+      main.setAttribute('data-piece-main', '');
+      const onMain = vi.fn();
+      main.addEventListener('click', onMain);
+      box.appendChild(main);
+      document.body.appendChild(box);
+      const onReadElement = vi.fn();
+      const { press, walkTo } = avatarSetup([], {
+        elements: [pieceAt('shape', 'room'), pieceAt('shape', kind)],
+        onReadElement,
+      });
+      press('mouse');
+      expect(walkTo).not.toHaveBeenCalled();
+      expect(onMain).toHaveBeenCalledTimes(1);
+      expect(onReadElement).not.toHaveBeenCalled();
+      box.remove();
+    },
+  );
+
+  it('opens a piece with no main action right now (an idle Screen) in the reader, never walking', () => {
+    const onReadElement = vi.fn();
+    const { press, walkTo } = avatarSetup([], {
+      elements: [pieceAt('shape', 'screen')],
+      onReadElement,
+    });
+    press('mouse');
+    expect(onReadElement).toHaveBeenCalledWith('piece');
+    expect(walkTo).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['sticky', undefined],
+    ['text', undefined],
+    ['image', undefined],
+    ['table', undefined],
+    ['shape', 'callout'],
+    ['shape', 'bar-chart'],
+  ])('opens a %s %s in the reader instead of walking', (type, shape) => {
+    const onReadElement = vi.fn();
+    const { press, walkTo } = avatarSetup([], { elements: [pieceAt(type, shape)], onReadElement });
+    press('mouse');
+    expect(onReadElement).toHaveBeenCalledWith('piece');
+    expect(walkTo).not.toHaveBeenCalled();
+  });
+
+  it.each(['chair', 'room', 'tree', 'arcade-machine', 'water-cooler', 'avatar-pad'])(
+    'walks onto a %s under the press',
+    (kind) => {
+      const onReadElement = vi.fn();
+      const { press, walkTo } = avatarSetup([], {
+        elements: [pieceAt('shape', kind)],
+        onReadElement,
+      });
+      press('mouse');
+      expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
+      expect(onReadElement).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['avatar-pad', 'chair'])('walks to a %s it is pressed on', (kind) => {
+    const { press, walkTo } = avatarSetup();
+    press('mouse', faceOf(kind));
+    expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
+  });
 
   it('pans on a finger, walking only when the press turns out a tap', () => {
     const { press, walkTo, setPan } = avatarSetup();
@@ -439,7 +612,7 @@ describe('a double press on the bare canvas', () => {
     child.dblSurface(document.createElement('div'));
     expect(child.onCanvasDoubleClick).not.toHaveBeenCalled();
 
-    for (const tool of ['spotlight', 'isometric', 'avatar']) {
+    for (const tool of ['avatar']) {
       const inert = dblSetup(tool);
       inert.press('touch');
       inert.dblSurface();

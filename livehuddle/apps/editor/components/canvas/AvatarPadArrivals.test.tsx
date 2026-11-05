@@ -2,7 +2,12 @@
 
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AVATAR_PAD_PARTS, AVATAR_PALETTE } from '@livehuddle/document';
+import {
+  AVATAR_PAD_ART,
+  AVATAR_PAD_TONES,
+  AVATAR_PALETTE,
+  isAvatarPadLight,
+} from '@livehuddle/document';
 import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
 import { AvatarPadView } from './collab/AvatarPadView';
 import type { PadArrival } from '@liveworkspace/avatar/pad';
@@ -20,14 +25,23 @@ const arrival = (over: Partial<PadArrival> = {}): PadArrival => ({
 });
 
 describe('AvatarPadView', () => {
-  it('draws every pixel run, crisp, with the lights in the shimmering group', () => {
-    const { container } = render(<AvatarPadView />);
+  it('draws the fixed vector table, smooth, fitted whole, with the lights shimmering', () => {
+    const { container } = render(<AvatarPadView stroke="#475569" />);
     const svg = container.querySelector('svg[data-avatar-pad]')!;
-    expect(svg.getAttribute('shape-rendering')).toBe('crispEdges');
+    expect(svg.getAttribute('shape-rendering')).toBeNull();
     expect(svg.getAttribute('preserveAspectRatio')).toBe('xMidYMid meet');
-    expect(svg.querySelectorAll('rect')).toHaveLength(AVATAR_PAD_PARTS.length);
-    const lights = AVATAR_PAD_PARTS.filter((p) => p.role === 'ring' || p.role === 'lamp');
-    expect(svg.querySelectorAll('.avatar-pad-shimmer rect')).toHaveLength(lights.length);
+    expect(svg.querySelectorAll('[data-pad-role]')).toHaveLength(AVATAR_PAD_ART.length);
+    expect(svg.querySelectorAll('rect')).toHaveLength(0);
+    const lights = AVATAR_PAD_ART.filter((p) => isAvatarPadLight(p.role));
+    expect(svg.querySelectorAll('.avatar-pad-shimmer')).toHaveLength(lights.length);
+  });
+  it('outlines in the theme stroke and lights in the fixed cyan', () => {
+    const { container } = render(<AvatarPadView stroke="#475569" />);
+    const role = (r: string) => container.querySelector(`[data-pad-role="${r}"]`)!;
+    expect(role('top').getAttribute('stroke')).toBe('#475569');
+    expect(role('ring').getAttribute('stroke')).toBe(AVATAR_PAD_TONES.ring);
+    const glow = role('glow').getAttribute('fill')!;
+    expect(container.querySelector(`radialGradient${glow.slice(4, -1)}`)).not.toBeNull();
   });
   it('wears an element animation on its drawing', () => {
     const { container } = render(<AvatarPadView animClass="lvd-anim-text-glow" />);

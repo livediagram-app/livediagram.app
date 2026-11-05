@@ -45,7 +45,6 @@ describe('deriveCanvasSelection', () => {
     expect(s.selected).toBeNull();
     expect(s.selectionBounds).toBeNull();
     expect(s.showPopover).toBe(false);
-    expect(s.showPlus).toBe(false);
     expect(s.showHandlesFor('a')).toBe(false);
     expect(s.showUnionResize).toBe(false);
   });
@@ -58,7 +57,6 @@ describe('deriveCanvasSelection', () => {
     expect(s.selectedIsBoxed).toBe(true);
     expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 100, height: 60 });
     expect(s.showPopover).toBe(true);
-    expect(s.showPlus).toBe(true);
     expect(s.showHandlesFor('a')).toBe(true);
     expect(s.showAnchorsFor('a')).toBe(true);
     // Predicates are per-id: a different element never shows handles.
@@ -69,7 +67,6 @@ describe('deriveCanvasSelection', () => {
   it('hides handles + plus while editing the selected element (popover hides too)', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', editingId: 'a' });
     expect(s.showPopover).toBe(false);
-    expect(s.showPlus).toBe(false);
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
@@ -77,21 +74,18 @@ describe('deriveCanvasSelection', () => {
     const s = derive({ elements: [box('a', { locked: true })], selectedId: 'a' });
     expect(s.selectedLocked).toBe(true);
     expect(s.showPopover).toBe(true); // popover does NOT gate on the element lock
-    expect(s.showPlus).toBe(false);
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
   it('read-only keeps the popover but suppresses plus + handles', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', readOnly: true });
     expect(s.showPopover).toBe(true); // popover does NOT gate on readOnly
-    expect(s.showPlus).toBe(false);
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
   it('a locked tab suppresses every chrome including the popover', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', tabLocked: true });
     expect(s.showPopover).toBe(false);
-    expect(s.showPlus).toBe(false);
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
@@ -119,8 +113,6 @@ describe('deriveCanvasSelection', () => {
     expect(s.multiToolbarBounds).toEqual({ x: 0, y: 0, width: 300, height: 60 });
     // Per-element single-handles stay off when the selection is a group/multi.
     expect(s.showHandlesFor('a')).toBe(false);
-    // Quick-connect plus buttons are single-element only.
-    expect(s.showPlus).toBe(false);
   });
 
   it('a locked member first in z-order leaves the union handles to the members that resize', () => {
@@ -188,37 +180,8 @@ describe('deriveCanvasSelection', () => {
     expect(locked.showMultiToolbar).toBe(false);
   });
 
-  it('pluses follow the element kind and the mode / lock gates', () => {
-    const table = (id: string): Element => ({
-      id,
-      type: 'table',
-      x: 200,
-      y: 0,
-      width: 100,
-      height: 60,
-      cells: [['', '']],
-    });
-    // A lone table shows the pluses (the slimmed table ring, docs/specs/008-canvas/canvas-and-palette.md).
-    expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
-    // A frame shows them as well: it is a container you chain from, the same
-    // as a lane, which always did.
-    const frame = box('f', { shape: 'frame', width: 600, height: 400 });
-    expect(derive({ elements: [frame], selectedId: 'f' }).showPlus).toBe(true);
-    // An annotation marker is a note rather than a node to chain from.
-    const marker: Element = {
-      id: 'n',
-      type: 'annotation',
-      x: 0,
-      y: 0,
-      width: 24,
-      height: 24,
-    };
-    expect(derive({ elements: [marker], selectedId: 'n' }).showPlus).toBe(false);
-    // Locked / read-only suppress them.
-    expect(derive({ elements: [box('a', { locked: true })], selectedId: 'a' }).showPlus).toBe(
-      false,
-    );
-    expect(derive({ elements: [box('a')], selectedId: 'a', readOnly: true }).showPlus).toBe(false);
+  it('derives no quick-connect pluses (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect)', () => {
+    expect('showPlus' in derive({ elements: [box('a')], selectedId: 'a' })).toBe(false);
   });
 
   it('a single selection is bounded by the element itself (no groups, docs/specs/009-elements/web-components-and-no-groups.md)', () => {
@@ -228,17 +191,11 @@ describe('deriveCanvasSelection', () => {
     expect(s.showUnionResize).toBe(false);
     expect(s.selectionBounds).toEqual({ x: 0, y: 0, width: 100, height: 60 });
   });
-
-  it('a marquee multi-selection still suppresses the pluses', () => {
-    const els: Element[] = [box('a'), box('b', { x: 200 })];
-    const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b']) });
-    expect(s.showPlus).toBe(false);
-  });
 });
 
 // A fixed-size element (docs/specs/009-elements/mode-button.md buttons, a shape stamped `fixedSize`)
 // advertises NO resize affordance, and the edge "anchor" grips are resize
-// grips today (arrows are drawn from the quick-connect menu now), so they
+// grips (not arrow anchors), so they
 // have to disappear with the corner handles.
 describe('deriveCanvasSelection: fixed-size elements', () => {
   const fixedShape = {
@@ -282,16 +239,14 @@ describe('deriveCanvasSelection — popover yields to an open context menu', () 
     height: 60,
   } as unknown as Element;
 
-  it('hides the popover (and its pluses) while an element menu is open', () => {
+  it('hides the popover while an element menu is open', () => {
     const s = derive({ elements: [box], selectedId: 'a', elementMenuOpen: true });
     expect(s.showPopover).toBe(false);
-    expect(s.showPlus).toBe(false);
   });
 
   it('brings them back once the menu closes', () => {
     const s = derive({ elements: [box], selectedId: 'a', elementMenuOpen: false });
     expect(s.showPopover).toBe(true);
-    expect(s.showPlus).toBe(true);
   });
 });
 

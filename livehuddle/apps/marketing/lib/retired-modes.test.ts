@@ -22,6 +22,8 @@ describe('marketing copy', () => {
     /\bpressure-sensitive\b/i,
     /\bEvent Storming\b/,
     /\bslide deck\b/i,
+    // Dot voting left livehuddle too (docs/specs/002-project-scope/not-in-livehuddle.md).
+    /\bdot[- ]?vot(e|es|ing)\b/i,
   ];
 
   it.each(COPY_FILES)('%s offers no retired mode as livehuddle’s', (file) => {

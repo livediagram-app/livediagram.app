@@ -3,13 +3,15 @@
 // Proximity audio's door in the canvas (docs/specs/012-collaboration/proximity-audio.md "Who is in a call"): learns
 // whether calls are on, offers Join Audio or Listen In through the calls store, loads the call itself only when
 // somebody presses it, feeds it where everyone stands, and ends it on leaving the mode, the room or the page. The
-// camera and screen share buttons (docs/specs/012-collaboration/video-and-screen-bubbles.md) drive the same call.
+// camera and screen share buttons (docs/specs/012-collaboration/video-and-screen-bubbles.md) drive the same call, and
+// with no call to send on, a local preview only you see (the same spec's "Local preview"), which a call takes on join.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiGetCapabilities } from '@/lib/api/capabilities';
 import type { CallsCaller } from '@/lib/api/calls';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } from './calls-store';
+import { canCapture, LocalPreview, type PreviewCapture } from './local-preview';
 import type { ViewRect } from './bubbles';
 import type { Point } from './hearing';
 import type { CallScene, CallSignal, ProximityCall } from './proximity-call';
@@ -42,6 +44,8 @@ export type ProximityCallDeps = {
   stages?: readonly CallStage[];
   // Your status is Do Not Disturb: nobody's voice or bubbles reach you (meeting-rooms-and-stage.md).
   doNotDisturb?: boolean;
+  // The local preview's capture calls, for tests; the browser's otherwise.
+  capture?: PreviewCapture;
 };
 
 const NO_ZONES: readonly CallZone[] = [];
@@ -72,6 +76,8 @@ export function useProximityCall(deps: ProximityCallDeps): void {
 
   const callRef = useRef<ProximityCall | null>(null);
   const latest = useRef(deps);
+  // The camera and screen with no call to send them (video-and-screen-bubbles.md "Local preview"): one per canvas.
+  const [preview] = useState(() => new LocalPreview(deps.capture));
 
   const scene: CallScene = useMemo(
     () => ({
@@ -92,15 +98,28 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   });
 
   const canShare = deps.canShare === true;
+  // A preview sends nothing, so anyone who may take part has one, in the mode, where the browser can capture.
+  const previewable = deps.inMode && deps.canSpeak;
   useEffect(() => {
-    setCallSelf({ available, canSpeak: deps.canSpeak, canShare });
-  }, [available, deps.canSpeak, canShare]);
+    setCallSelf({
+      available,
+      canSpeak: deps.canSpeak,
+      canShare,
+      canPreviewCamera: previewable && (!!deps.capture?.getUserMedia || canCapture('camera')),
+      canPreviewScreen: previewable && (!!deps.capture?.getDisplayMedia || canCapture('screen')),
+    });
+  }, [available, deps.canSpeak, canShare, previewable, deps.capture]);
 
   // The buttons' actions, stable for the life of the canvas: each reads the latest props through the ref.
   useEffect(() => {
     const stop = () => {
       callRef.current?.stop();
       callRef.current = null;
+    };
+    // A live call that may send this kind drives it as before; anything else is the preview's.
+    const liveCall = () => {
+      const call = callRef.current;
+      return call && !call.ended && callSelf().phase === 'live' ? call : null;
     };
     setCallActions({
       join: () => {
@@ -124,6 +143,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
               canShare: canShare === true,
               context,
               send: (signal) => latest.current.send?.(signal),
+              preview,
             });
             callRef.current = call;
             call.setDoNotDisturb(latest.current.doNotDisturb === true);
@@ -142,25 +162,48 @@ export function useProximityCall(deps: ProximityCallDeps): void {
         track('UI', 'Changed', 'AudioMute');
       },
       toggleCamera: () => {
-        const call = callRef.current;
-        if (!call) return;
-        if (callSelf().camera !== 'on') track('Canvas', 'Used', 'CameraOn');
-        void call.toggleCamera();
+        const self = callSelf();
+        if (self.previewCamera === 'on' || self.previewCamera === 'starting') {
+          preview.stop('camera');
+          return;
+        }
+        const call = liveCall();
+        if (call && latest.current.canSpeak) {
+          // A refusal from before the join is the call's to retry now.
+          if (self.previewCamera === 'blocked') preview.stop('camera');
+          if (self.camera !== 'on') track('Canvas', 'Used', 'CameraOn');
+          void call.toggleCamera();
+          return;
+        }
+        if (!self.canPreviewCamera) return;
+        track('Canvas', 'Used', 'CameraOn');
+        void preview.start('camera');
       },
       toggleScreen: () => {
-        const call = callRef.current;
-        if (!call) return;
-        if (callSelf().screen !== 'on') track('Canvas', 'Used', 'ScreenShare');
-        void call.toggleScreen();
+        const self = callSelf();
+        if (self.previewScreen === 'on' || self.previewScreen === 'starting') {
+          preview.stop('screen');
+          return;
+        }
+        const call = liveCall();
+        if (call && latest.current.canShare) {
+          if (self.screen !== 'on') track('Canvas', 'Used', 'ScreenShare');
+          void call.toggleScreen();
+          return;
+        }
+        if (!self.canPreviewScreen) return;
+        track('Canvas', 'Used', 'ScreenShare');
+        void preview.start('screen');
       },
       raiseHand: () => callRef.current?.raiseHand(),
       lowerHand: () => callRef.current?.lowerHand(),
     });
     return () => {
       stop();
+      preview.stopAll();
       resetCallSelf();
     };
-  }, []);
+  }, [preview]);
 
   // Leaving the mode, the room or the tab ends the call (the spec's "Who is in a call").
   useEffect(() => {
@@ -168,13 +211,18 @@ export function useProximityCall(deps: ProximityCallDeps): void {
     callRef.current?.stop();
     callRef.current = null;
   }, [available]);
+  // Leaving the mode (or losing the right to take part) stops a preview too; a tab change ends both.
+  useEffect(() => {
+    if (!previewable) preview.stopAll();
+  }, [previewable, preview]);
   const tabRef = useRef(deps.tabId);
   useEffect(() => {
     if (tabRef.current === deps.tabId) return;
     tabRef.current = deps.tabId;
     callRef.current?.stop();
     callRef.current = null;
-  }, [deps.tabId]);
+    preview.stopAll();
+  }, [deps.tabId, preview]);
 
   useEffect(() => {
     callRef.current?.update(scene);

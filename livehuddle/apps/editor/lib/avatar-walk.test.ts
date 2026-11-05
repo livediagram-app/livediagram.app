@@ -10,7 +10,14 @@ describe('elementUnderFeet', () => {
     width: 200,
     height: 100,
   };
-  const frame: Element = { ...createShape('frame', 0, 0), id: 'f', width: 900, height: 900 };
+  // A stored Frame (a retired element, docs/specs/002-project-scope/not-in-livehuddle.md "The Frame").
+  const frame = {
+    ...createShape('square', 0, 0),
+    shape: 'frame',
+    id: 'f',
+    width: 900,
+    height: 900,
+  } as unknown as Element;
 
   // docs/specs/009-elements/office.md: a room or a rug is where you stand, and a plant or a bookshelf is walked
   // round; none is a destination. A water cooler is.

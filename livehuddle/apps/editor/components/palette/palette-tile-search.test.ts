@@ -24,9 +24,8 @@ describe('elementTileSections', () => {
   // is not, and the Search never offers it.
   it('holds the meeting palette here, and no leaving tile', () => {
     const { here } = elementTileSections({ mode: 'workshop', hasImage: true });
-    expect(ids(here)).toEqual(
-      expect.arrayContaining(['tools:sticky', 'tools:room', 'tools:frame']),
-    );
+    expect(ids(here)).toEqual(expect.arrayContaining(['tools:sticky', 'tools:room']));
+    expect(ids(here)).not.toContain('tools:frame');
     expect(ids(here)).not.toContain('data:pie');
     expect(ids(here)).not.toContain('tools:arrow');
   });
@@ -60,10 +59,7 @@ describe('tile and element signatures', () => {
   });
 
   it('gives the catalogue tiles none', () => {
-    const catalogue = PALETTE_TILES.filter(
-      (t) =>
-        t.action.type === 'icon' || t.action.type === 'tech-icon' || t.action.type === 'sticker',
-    );
+    const catalogue = PALETTE_TILES.filter((t) => t.action.type === 'sticker');
     for (const t of catalogue) expect(tileSignature(t), t.id).toBeNull();
   });
 });

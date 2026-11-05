@@ -124,7 +124,7 @@ describe('withLookApplied', () => {
     expect(out.elements).toEqual(themed.elements);
     expect(out.finish).toBe('professional');
     expect(out.font).toBe('roboto-mono');
-    expect(out.backgroundPattern).toBe('graph');
+    expect(out.backgroundPattern).toBe('tiles');
   });
 
   it('clears the tab font for a look without one', () => {
@@ -169,12 +169,12 @@ describe('activeLookId', () => {
 });
 
 describe('pattern strength', () => {
-  it('counts only for a look that sets one: a template’s softened grid is still Everyday', () => {
+  it('counts only for a look that sets one: a softened floor is still Everyday', () => {
     expect(activeLookId({ backgroundOpacity: 0.4 })).toBe('everyday');
-    const garden = withLookApplied(tab(), tabLookById('garden')!);
-    expect(garden.backgroundOpacity).toBe(0.4);
-    expect(activeLookId(garden)).toBe('garden');
-    expect(activeLookId({ ...garden, backgroundOpacity: 1 })).toBeUndefined();
+    const daydream = withLookApplied(tab(), tabLookById('daydream')!);
+    expect(daydream.backgroundOpacity).toBe(0.7);
+    expect(activeLookId(daydream)).toBe('daydream');
+    expect(activeLookId({ ...daydream, backgroundOpacity: 1 })).toBeUndefined();
   });
 
   it('leaves the tab’s own strength alone for a look without one', () => {

@@ -19,11 +19,11 @@ export type TidyUpActions = {
   blocked: boolean;
 };
 
-// Whether the cluster shows the button: out of Zen, and only for a session the editor handed
+// Whether the cluster shows the button: outside an embed, and only for a session the editor handed
 // actions to. Phones too: there a tap is the press, with no hover preview.
 export function tidyUpOffered(input: {
   actions: TidyUpActions | undefined;
-  zenMode: boolean;
+  chromeAway: boolean;
 }): boolean {
-  return !!input.actions && !input.zenMode;
+  return !!input.actions && !input.chromeAway;
 }

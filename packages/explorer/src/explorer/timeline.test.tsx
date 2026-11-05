@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { IndexError, type TimelineEvent } from '@liveworkspace/index-client';
 import { createFakeIndex, makeEvent } from '../test/fakeClient';
 import { Explorer, type ExplorerProps } from './Explorer';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 
 const itemHref: ExplorerProps['itemHref'] = (item) => `https://${item.app}.app/open/${item.id}`;
 
@@ -198,13 +199,13 @@ describe('the Timeline view', () => {
       }),
     );
     const index = createFakeIndex({ events });
-    const start = performance.now();
-    renderTimeline(index);
-    await waitFor(() => expect(document.querySelector('[data-timeline-day]')).toBeTruthy());
-    const ms = performance.now() - start;
+    const ms = await cpuMsOfAsync(async () => {
+      renderTimeline(index);
+      await waitFor(() => expect(document.querySelector('[data-timeline-day]')).toBeTruthy());
+    });
     expect(index.count('timeline')).toBe(1);
     expect(cards().length).toBeLessThanOrEqual(30);
-    expect(ms).toBeLessThan(1500);
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 });
 

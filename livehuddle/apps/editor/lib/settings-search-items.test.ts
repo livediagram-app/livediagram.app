@@ -29,11 +29,11 @@ describe('SETTINGS_SEARCH_ITEMS', () => {
   });
 
   it('carries the category and section into the haystack', () => {
-    // So "layers" finds the layer rows from the canvas search too, not just
+    // So "map" finds the Map rows from the canvas search too, not just
     // from inside the dialog.
-    const thumbnails = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'layersShowPreview')!;
-    expect(thumbnails.keywords.toLowerCase()).toContain('panels');
-    expect(thumbnails.keywords.toLowerCase()).toContain('layers');
+    const dim = SETTINGS_SEARCH_ITEMS.find((i) => i.rowKey === 'mapDimOutside')!;
+    expect(dim.keywords.toLowerCase()).toContain('panels');
+    expect(dim.keywords.toLowerCase()).toContain('map');
   });
 
   it('surfaces a Settings group from the shared search builder', () => {
