@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// docs/specs/012-collaboration/session-tools.md "The Session strip": Timer, Vote and Poll in one strip,
+// docs/specs/012-collaboration/session-tools.md "The Session strip": Timer and Vote in one strip,
 // always there for an editor, only the running ones for a view-role visitor, and the Timer showing
 // its clock while a timer runs.
 
@@ -32,7 +32,6 @@ function strip(overrides: Partial<Parameters<typeof SessionClusterStrip>[0]> = {
     <SessionClusterStrip
       timer={null}
       voteRunning={false}
-      pollRunning={false}
       canStart
       open={null}
       onToggle={onToggle}
@@ -43,11 +42,12 @@ function strip(overrides: Partial<Parameters<typeof SessionClusterStrip>[0]> = {
 }
 
 describe('SessionClusterStrip', () => {
-  it('gives an editor all three tools while nothing runs, as icons', () => {
+  // The Poll left with the Collaborate tools (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
+  it('gives an editor the Timer and the Vote while nothing runs, as icons, and no Poll', () => {
     strip();
     expect(screen.getByRole('button', { name: 'Open Timer' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Start a Vote' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Start a Poll' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
     expect(screen.queryByText(/\d:\d\d/)).toBeNull();
   });
 
@@ -56,7 +56,6 @@ describe('SessionClusterStrip', () => {
       <SessionClusterStrip
         timer={null}
         voteRunning={false}
-        pollRunning={false}
         canStart={false}
         open={null}
         onToggle={() => {}}
@@ -69,7 +68,6 @@ describe('SessionClusterStrip', () => {
     strip({ canStart: false, timer: paused, voteRunning: true });
     expect(screen.getByRole('button', { name: /^Timer / })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
   });
 
   it('shows the running timer clock on its button', () => {
@@ -92,9 +90,6 @@ describe('SessionClusterStrip', () => {
     const timer = screen.getByRole('button', { name: /^Timer / });
     fireEvent.click(timer);
     expect(onToggle).toHaveBeenCalledWith('session-timer', timer);
-    const poll = screen.getByRole('button', { name: 'Start a Poll' });
-    fireEvent.click(poll);
-    expect(onToggle).toHaveBeenCalledWith('session-poll', poll);
   });
 
   it('carries your dots left on the Vote button while casting is open', () => {
@@ -102,22 +97,9 @@ describe('SessionClusterStrip', () => {
     const vote = screen.getByRole('button', { name: 'Open Vote (2 dots left)' });
     expect(vote.textContent).toContain('2');
   });
-
-  // The meeting board (docs/specs/012-collaboration/workshop-mode.md "The Session strip"): Timer and Vote, no Poll.
-  it('leaves Poll out where the strip does not offer it, while no poll runs', () => {
-    strip({ offersPoll: false });
-    expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Open Timer' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Start a Vote' })).toBeTruthy();
-  });
-
-  it('still shows a poll a stored Poll card started, so it can be read and ended', () => {
-    strip({ offersPoll: false, pollRunning: true });
-    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
-  });
 });
 
-describe('Pages: a running Vote or Poll only', () => {
+describe('Pages: a running Vote only', () => {
   // Pages passes canStart false and offersTimer false (sessionStripTools runningOnly).
   const pages = { canStart: false, offersTimer: false } as const;
 
@@ -126,17 +108,10 @@ describe('Pages: a running Vote or Poll only', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it('shows the running vote and poll so they can be controlled', () => {
-    strip({ ...pages, voteRunning: true, pollRunning: true });
+  it('shows the running vote so it can be controlled', () => {
+    strip({ ...pages, voteRunning: true });
     expect(screen.getByRole('button', { name: 'Open Vote' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Timer/ })).toBeNull();
-  });
-
-  it('shows only the one that runs', () => {
-    strip({ ...pages, pollRunning: true });
-    expect(screen.getByRole('button', { name: 'Open Poll' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Vote/ })).toBeNull();
   });
 
   it('never shows a Timer, running or not', () => {
@@ -147,7 +122,7 @@ describe('Pages: a running Vote or Poll only', () => {
 
 describe('sessionStripTools', () => {
   it('offers Timer and Vote on a meeting board, none in Diagram or Draw', () => {
-    expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true, poll: false });
+    expect(sessionStripTools('workshop')).toEqual({ timer: true, vote: true });
     expect(sessionStripTools(undefined)).toBeNull();
     expect(sessionStripTools('diagram')).toBeNull();
     expect(sessionStripTools('draw')).toBeNull();
@@ -162,8 +137,8 @@ describe('stripCanStart', () => {
 });
 
 describe('stripSegmentGone', () => {
-  const idle = { timer: false, vote: false, poll: false };
-  const all = { timer: true, vote: true, poll: true };
+  const idle = { timer: false, vote: false };
+  const all = { timer: true, vote: true };
   const workshop = sessionStripTools('workshop');
 
   it('keeps nothing open when no popover is', () => {
@@ -176,19 +151,8 @@ describe('stripSegmentGone', () => {
     const at = { readOnly: false, running: all };
     expect(stripSegmentGone({ ...at, segment: 'session-vote', tools: null })).toBe(true);
     expect(
-      stripSegmentGone({
-        ...at,
-        segment: 'session-poll',
-        tools: { ...all, poll: false },
-        running: idle,
-      }),
+      stripSegmentGone({ ...at, segment: 'session-timer', tools: { ...all, timer: false } }),
     ).toBe(true);
-  });
-
-  it('keeps a running poll’s popover open where the strip does not offer Poll', () => {
-    expect(
-      stripSegmentGone({ segment: 'session-poll', tools: workshop, readOnly: false, running: all }),
-    ).toBe(false);
   });
 
   it("keeps an editor's idle popover open where the strip offers starting one", () => {
@@ -196,14 +160,6 @@ describe('stripSegmentGone', () => {
       expect(stripSegmentGone({ segment, tools: workshop, readOnly: false, running: idle })).toBe(
         false,
       );
-    expect(
-      stripSegmentGone({
-        segment: 'session-poll',
-        tools: workshop,
-        readOnly: false,
-        running: idle,
-      }),
-    ).toBe(true);
   });
 
   it("closes a view role's popover when its tool ends", () => {
@@ -220,7 +176,7 @@ describe('an embed has no Session strip', () => {
     expect(sessionToolsForSurface(tools, false)).toBe(tools);
   });
 
-  it('is what the editor host feeds the canvas chrome, so the Timer, Vote and Poll buttons cannot come back', () => {
+  it('is what the editor host feeds the canvas chrome, so the Timer and Vote buttons cannot come back', () => {
     const host = readFileSync(join(__dirname, 'EditorCanvasHost.tsx'), 'utf8');
     expect(host).toContain('sessionTools={sessionToolsForSurface(sessionTools, embedMode)}');
     expect(host).not.toMatch(/sessionTools=\{sessionTools\}/);

@@ -28,7 +28,6 @@ export const HELP_ARTICLES = {
   // The diagram tools left livehuddle (Work Tracker #423 part 3, docs/specs/002-project-scope/not-in-livehuddle.md):
   // their articles went, but a stored element of a leaving kind still draws and its surfaces still link, so these keys
   // land on the nearest article that stays (the router redirects the old addresses the same way).
-  autoAttachArrows: 'palette/tools',
   embedElements: 'palette/tools/images',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
@@ -49,10 +48,6 @@ export const HELP_ARTICLES = {
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  markdownImport: 'tools/markdown-import',
-  microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
-  drawioImport: 'explorer/drawio-import',
-  shapeLibraries: 'explorer/shape-libraries',
   linkingTabs: 'tabs/linking-tabs',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
@@ -74,7 +69,6 @@ export const HELP_ARTICLES = {
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionPolls: 'collaboration/session-tools',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
@@ -144,10 +138,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Community',
     description: 'Sharing a space publicly, and how people find and copy it.',
   },
-  autoAttachArrows: {
-    title: 'Learn about the palette',
-    description: 'Where each element lives, category by category.',
-  },
   embedElements: {
     title: 'Learn about images',
     description: 'Uploading, searching for and reusing pictures.',
@@ -208,22 +198,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
   },
-  microsoftWhiteboardImport: {
-    title: 'Learn about Microsoft Whiteboard import',
-    description: 'What a board export is and how each board becomes a space.',
-  },
-  shapeLibraries: {
-    title: 'Learn about shape libraries',
-    description: 'How libraries are made, placed from My shapes, and managed.',
-  },
-  drawioImport: {
-    title: 'Learn about draw.io import',
-    description: 'Which files it reads and how each diagram becomes a space.',
-  },
-  markdownImport: {
-    title: 'Learn about Markdown import',
-    description: 'How headings and lists become a themed tree diagram.',
-  },
   linkingTabs: {
     title: 'Learn about linking tabs',
     description: 'How linking to another tab works.',
@@ -272,10 +246,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionPolls: {
-    title: 'Learn about session tools',
-    description: 'The timer and the quick vote, and who can run them.',
   },
   sessionVoting: {
     title: 'Learn about voting',

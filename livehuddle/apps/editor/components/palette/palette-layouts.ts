@@ -9,7 +9,6 @@
 import type { EditorMode } from '@livehuddle/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
-import { openerById } from './palette-openers';
 
 type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
@@ -17,7 +16,7 @@ type PaletteLayoutEntry = {
   label?: string;
   description?: string;
   band?: number;
-  // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
+  // The tiles, in order, by tile id. `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
 };
@@ -33,11 +32,7 @@ type PaletteLayout = {
 };
 
 // The categories whose body is its own content rather than a list of tiles.
-export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
-  'my-shapes',
-  'icons',
-  'stickers',
-]);
+export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['icons', 'stickers']);
 
 // The tiles no strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every element
 // type"). The meeting palette has none: the Search finds only what the palette offers
@@ -130,7 +125,7 @@ export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
 
 const IDENTITY = new Map(PALETTE_CATEGORIES.map((c) => [c.id, c]));
 
-// The listed tiles and openers; a DIVIDE marks the tile before it as ending a group, in this list only.
+// The listed tiles; a DIVIDE marks the tile before it as ending a group, in this list only.
 function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
   const out: PaletteTileDef[] = [];
   for (const id of ids) {
@@ -139,7 +134,7 @@ function resolveTiles(ids: readonly string[]): PaletteTileDef[] {
       if (last) out[out.length - 1] = { ...last, dividerAfter: true };
       continue;
     }
-    const def = tileById(id) ?? openerById(id);
+    const def = tileById(id);
     if (def) out.push(def);
   }
   return out;

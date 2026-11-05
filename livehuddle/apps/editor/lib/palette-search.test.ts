@@ -22,17 +22,15 @@ describe('buildPaletteSearchItems', () => {
     const missing = shapeTiles
       .map((t) => {
         // Tiles that differ only by their creation-time choice (the five
-        // reactions, the three session tools) each get their own id, or the
+        // reactions, the mode buttons) each get their own id, or the
         // panel would show one of them and silently drop the rest.
         const a = t.action as {
           kind: string;
-          session?: string;
           reaction?: string;
           mode?: string;
-          estimateScale?: string;
           plan?: string;
         };
-        const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan;
+        const choice = a.reaction ?? a.mode ?? a.plan;
         return choice ? `shape:${a.kind}:${choice}` : `shape:${a.kind}`;
       })
       .filter((id) => !ids.has(id));
@@ -74,14 +72,8 @@ describe('buildPaletteSearchItems', () => {
     // The Page left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2): no
     // search result places one, though a stored Page still draws.
     expect([...ids].filter((id) => id === 'shape:page' || id === 'tile:tools:page')).toEqual([]);
-    // And the split kinds, one entry per choice (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
-    for (const id of [
-      'shape:session-button:timer',
-      'shape:session-button:vote',
-      'shape:session-button:poll',
-      'shape:reaction-pad:confetti',
-      'shape:reaction-pad:fireworks',
-    ]) {
+    // And the split kinds, one entry per choice (docs/specs/009-elements/reaction-pad.md).
+    for (const id of ['shape:reaction-pad:confetti', 'shape:reaction-pad:fireworks']) {
       expect(ids.has(id)).toBe(true);
     }
   });

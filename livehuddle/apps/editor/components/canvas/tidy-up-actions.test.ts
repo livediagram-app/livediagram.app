@@ -1,5 +1,5 @@
-// docs/specs/008-canvas/layout-cleanup.md "Where it shows" and "Share roles": the Tidy Up button is Diagram
-// mode's, on a desktop and a phone alike, out of Zen, and only for a session the editor handed actions to (an Editor's).
+// docs/specs/008-canvas/layout-cleanup.md "Where it shows" and "Share roles": the Tidy Up button shows on a
+// desktop and a phone alike, out of Zen, and only for a session the editor handed actions to (an Editor's).
 
 import { describe, expect, it } from 'vitest';
 import { tidyUpOffered, type TidyUpActions } from './tidy-up-actions';
@@ -18,7 +18,7 @@ describe('tidyUpOffered', () => {
     expect(tidyUpOffered(base)).toBe(true);
   });
 
-  it('offers it on a locked tab too, where the popover shows the tidiers inert', () => {
+  it('offers it on a locked tab too, where the popover shows Auto-align inert', () => {
     expect(tidyUpOffered({ ...base, actions: { ...actions, blocked: true } })).toBe(true);
   });
 

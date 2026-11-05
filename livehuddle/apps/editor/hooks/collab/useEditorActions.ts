@@ -15,7 +15,7 @@
 // live-state graft in @livehuddle/document carries `action` across
 // undo/redo restores for the same reason.
 //
-// An Action panel holds a LIST (docs/specs/012-collaboration/action-panel.md "The data"), so every mutation
+// A retired Action panel holds a LIST (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"), so every mutation
 // takes an optional action id. On an ordinary element it is ignored (there is
 // only the one); on a card it names which of the card's actions to touch, and
 // a save with none appends a new one.
@@ -55,8 +55,9 @@ type EditorActionsDeps = {
   // Current action for an element on the active tab (undefined when none):
   // the named one on an Action panel, else the element's single action.
   getAction: (elementId: string, actionId?: string | null) => ElementAction | undefined;
-  // Whether the element is an Action panel, which holds a list.
-  isActionCard: (elementId: string) => boolean;
+  // Whether the element holds a LIST of actions: a retired Action panel (docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Retired elements") keeps its stored list and its list behaviour, so nothing on it is lost.
+  holdsActionList: (elementId: string) => boolean;
   // How many actions the element carries now (elementActions): an Action panel takes no more past ACTION_CARD_MAX.
   actionCount: (elementId: string) => number;
   // The assigner: the signed-in account, or the guest participant
@@ -107,9 +108,9 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
   const [assignActionId, setAssignActionId] = useState<string | null>(null);
 
   // Per-element mutator over the element's action LIST (elementActions): an
-  // Action panel writes it back as `actions` (a card saved before the list
-  // existed is migrated on this first edit, its lone `action` dropped); an
-  // ordinary element keeps at most one, as `action`.
+  // element that already carries a list (a retired Action panel, docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Retired elements") writes it back as `actions`, so its stored list is never dropped; every other element
+  // keeps at most one, as `action`.
   const updateActions = (elementId: string, fn: (list: ElementAction[]) => ElementAction[]) => {
     deps.tickTabs((ts) =>
       ts.map((t) =>
@@ -127,7 +128,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
                 } = el as typeof el & {
                   actions?: ElementAction[];
                 };
-                if (el.type === 'shape' && el.shape === 'action-card') {
+                if (Array.isArray((el as { actions?: unknown }).actions)) {
                   return { ...rest, actions: next } as typeof el;
                 }
                 return next[0] ? { ...rest, action: next[0] } : rest;
@@ -169,9 +170,9 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
   };
 
   const openAssignAction = (elementId: string) => {
-    // An Action panel has no popover: its actions are on its face, so the
-    // tile adds another.
-    if (deps.isActionCard(elementId)) {
+    // An element holding a list has no popover for one action: the tile adds
+    // another, and the Collaborate Panel lists them all.
+    if (deps.holdsActionList(elementId)) {
       openAssignActionDialog(elementId, null);
       return;
     }
@@ -187,7 +188,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
   const saveAction = (elementId: string, input: SaveActionInput, actionId?: string | null) => {
     // On an Action panel, no id means "add another"; elsewhere the element's
     // one action (if any) is the one being edited.
-    const card = deps.isActionCard(elementId);
+    const card = deps.holdsActionList(elementId);
     const existing = card && !actionId ? undefined : deps.getAction(elementId, actionId);
     // Editing an action that is gone (a teammate deleted it while this
     // dialog was open): saving must not quietly re-create it as a new one.

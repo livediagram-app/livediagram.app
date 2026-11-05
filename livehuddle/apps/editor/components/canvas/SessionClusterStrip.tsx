@@ -2,7 +2,7 @@
 
 import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livehuddle/document';
 import { HoverCard, SOLID_BRAND_DARK } from '@livehuddle/ui';
-import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
+import { TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import { timerFillStyle } from '@/components/chrome/timer-pill';
 import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
@@ -12,32 +12,30 @@ import {
 } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 
 // The Session strip in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md "The Session
-// strip"): Timer and Vote in one strip left of Layers, and Poll only while a stored Poll card's poll runs. Each
-// opens its tool above it, set-up while idle and the live tool while it runs. An editor always has
+// strip"): Timer and Vote in one strip left of Layers. Each opens its tool above it, set-up while idle and the live tool while it runs. An editor always has
 // Timer and Vote; a view-role visitor, who cannot start anything, gets only the ones running. The Timer
 // shows its clock while a timer runs, so the time reads without opening anything, and the Vote
 // carries your dots left while casting is open (the number the vote banner used to float over the
 // canvas), then an amber dot while the results are walked through.
 
-export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
+export type SessionSegment = 'session-timer' | 'session-vote';
 
 // Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"): Timer and
-// Vote on every meeting board (docs/specs/012-collaboration/workshop-mode.md "The Session strip"). Poll left with the
-// Collaborate tools (docs/specs/002-project-scope/not-in-livehuddle.md); a poll already running on a stored card ends
-// from its card. None for any other mode, even while a tool runs.
+// Vote on every meeting board (docs/specs/012-collaboration/workshop-mode.md "The Session strip"). The live poll left
+// with the Collaborate tools (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"). None for any
+// other mode, even while a tool runs.
 export type SessionStripTools = {
   timer: boolean;
   vote: boolean;
-  poll: boolean;
 };
 
 export function sessionStripTools(mode: string | undefined): SessionStripTools | null {
-  if (mode === 'workshop') return { timer: true, vote: true, poll: false };
+  if (mode === 'workshop') return { timer: true, vote: true };
   return null;
 }
 
 // An embed (docs/specs/013-workspace/embeds.md) has no Session strip: its visitors read the document and
-// cannot run or join a session there, so the Timer, Vote and Poll buttons would only open nothing. The
+// cannot run or join a session there, so the Timer and Vote buttons would only open nothing. The
 // editor host hands the canvas chrome its session tools through this, so an embed gets none.
 export function sessionToolsForSurface<T>(tools: T, embedMode: boolean): T | undefined {
   return embedMode ? undefined : tools;
@@ -51,8 +49,7 @@ export function stripCanStart(readOnly: boolean): boolean {
 
 // Has the button under an open strip popover gone? Then the popover closes rather than float with nothing
 // under it: the mode offers no strip or not that tool (a mode switch), or the strip shows only running tools
-// (a view-role visitor's) and that tool's activity has ended. `running.poll`
-// is a poll whose results are ours to see, which is when its button shows.
+// (a view-role visitor's) and that tool's activity has ended.
 export function stripSegmentGone({
   segment,
   tools,
@@ -63,17 +60,14 @@ export function stripSegmentGone({
   /** The strip's tools, or null when it has none (or no session to run them). */
   tools: SessionStripTools | null;
   readOnly: boolean;
-  running: { timer: boolean; vote: boolean; poll: boolean };
+  running: { timer: boolean; vote: boolean };
 }): boolean {
   if (segment === null) return false;
   if (!tools) return true;
-  // A strip that does not offer Poll still shows it while a poll runs (one a stored Poll card started), so it can end.
-  if (segment === 'session-poll' && !tools.poll) return !running.poll;
   if (segment === 'session-timer' && !tools.timer) return true;
   if (stripCanStart(readOnly)) return false;
   if (segment === 'session-timer') return !running.timer;
-  if (segment === 'session-vote') return !running.vote;
-  return !running.poll;
+  return !running.vote;
 }
 
 type Toggle = (button: HTMLElement) => void;
@@ -87,10 +81,8 @@ export function SessionClusterStrip({
   voteDotsLeft = null,
   voteReviewing = false,
   voteButtonRef,
-  pollRunning,
   canStart,
   offersTimer = true,
-  offersPoll = true,
   open,
   onToggle,
 }: {
@@ -102,24 +94,17 @@ export function SessionClusterStrip({
   voteReviewing?: boolean;
   // The Vote button, so the walkthrough can open its popover over it.
   voteButtonRef?: React.Ref<HTMLButtonElement>;
-  // A poll is running and its results are ours to see (docs/specs/012-collaboration/live-poll.md).
-  pollRunning: boolean;
   // An editor: the idle tools are offered too, to start one.
   canStart: boolean;
   // The mode has a Timer button.
   offersTimer?: boolean;
-  // The mode has a Poll button.
-  offersPoll?: boolean;
   // Which of the strip's popovers is open, if any.
   open: SessionSegment | null;
   onToggle: (segment: SessionSegment, button: HTMLElement) => void;
 }) {
   const showTimer = offersTimer && (canStart || !!timer);
   const showVote = canStart || voteRunning;
-  // Poll is offered to start only where the strip offers it; a poll already running (a stored Poll card's) shows
-  // either way, so its results can be seen and it can end as it always did.
-  const showPoll = pollRunning || (offersPoll && canStart);
-  if (!showTimer && !showVote && !showPoll) return null;
+  if (!showTimer && !showVote) return null;
   return (
     <ClusterStrip dataTourId="session-tools">
       {showTimer ? (
@@ -172,20 +157,6 @@ export function SessionClusterStrip({
           popoverOpen={open === 'session-vote'}
           onTogglePopover={(b) => onToggle('session-vote', b)}
           {...(voteButtonRef ? { buttonRef: voteButtonRef } : {})}
-        />
-      ) : null}
-      {showPoll ? (
-        <ClusterPopoverSegment
-          divided={showTimer || showVote}
-          label={pollRunning ? 'Open Poll' : 'Start a Poll'}
-          name="Poll"
-          hoverTitle="Poll"
-          hoverDescription={
-            pollRunning ? 'The answers to the poll running now.' : 'Ask everyone here a question.'
-          }
-          icon={<LiveBadge live={pollRunning} icon={<PollMenuIcon size={ICON_SIZE} />} />}
-          popoverOpen={open === 'session-poll'}
-          onTogglePopover={(b) => onToggle('session-poll', b)}
         />
       ) : null}
     </ClusterStrip>

@@ -8,11 +8,6 @@
 // context menu / toolbar / header calls), so behaviour + telemetry can't
 // drift between entry points.
 
-import {
-  AUTO_LAYOUT_CHOICES,
-  AUTO_LAYOUT_STYLE_IDS,
-  type AutoLayoutChoice,
-} from './auto-layout-choices';
 import type { ShapeMarker } from '@livehuddle/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
@@ -102,7 +97,6 @@ export type CommandHandlers = {
   redo: () => void;
   toggleZen: () => void;
   fitToScreen: () => void;
-  autoLayout: (choice?: AutoLayoutChoice) => void;
   autoAlign: () => void;
   // Number every step on the tab 1, 2, 3 in reading order (docs/specs/009-elements/step-number.md).
   renumberSteps: () => void;
@@ -321,24 +315,9 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // Layout cleanup moves the tab's elements, so a locked tab offers none of it.
   if (!ctx.tabLocked) {
     out.push({
-      id: 'auto-layout',
-      name: AUTO_LAYOUT_CHOICES.smart.commandName,
-      keywords: AUTO_LAYOUT_CHOICES.smart.keywords,
-      run: () => h.autoLayout(),
-    });
-    // One command per explicit layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles").
-    for (const styleId of AUTO_LAYOUT_STYLE_IDS) {
-      out.push({
-        id: `auto-layout-${styleId}`,
-        name: AUTO_LAYOUT_CHOICES[styleId].commandName,
-        keywords: AUTO_LAYOUT_CHOICES[styleId].keywords,
-        run: () => h.autoLayout(styleId),
-      });
-    }
-    out.push({
       id: 'auto-align',
       name: 'Auto-align to Grid',
-      keywords: 'align grid snap straighten cleanup arrange',
+      keywords: 'align grid snap straighten cleanup arrange tidy up layout',
       run: () => h.autoAlign(),
     });
     if (ctx.tabHasSteps) {
@@ -354,7 +333,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'import',
     name: 'Import…',
-    keywords: 'import markdown upload load open file',
+    keywords: 'import excalidraw json upload load open file',
     run: h.openImport,
   });
   out.push({

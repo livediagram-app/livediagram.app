@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import {
   SELF_PAINTING_SHAPES,
+  isRetiredElement,
   DEFAULT_BOX_RADIUS_PX,
   cornerRadiusPx,
   finishBorderStroke,
@@ -102,8 +103,13 @@ export function describeVariant(
       // drifted, leaving dead Border controls on a code block, a checklist, a
       // portal and a reveal. `actor` / `icon` are in the set too but reach
       // this branch already handled above, so including them changes nothing.
-      if (SELF_PAINTING_SHAPES.has(element.shape)) {
-        return { className: ring, style: { borderRadius: '4px', ...filterShadow } };
+      // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") paints its own
+      // placeholder card too, whatever fill, border or shadow it was stored with.
+      if (SELF_PAINTING_SHAPES.has(element.shape) || isRetiredElement(element)) {
+        return {
+          className: ring,
+          style: { borderRadius: '4px', ...(isRetiredElement(element) ? {} : filterShadow) },
+        };
       }
       // CSS-rendered shapes (square / circle / stadium and the
       // rectangular device frames). The user-pickable border

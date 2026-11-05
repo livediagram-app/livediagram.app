@@ -44,7 +44,7 @@ describe('serialiseElements', () => {
 
   // A copy can travel to another document, another account, another person.
   // Nothing that says WHO does anything should ride along.
-  it('strips comment threads and per-participant responses', () => {
+  it('strips comment threads', () => {
     const withIdentity = shape('a', {
       commentThread: {
         resolved: false,
@@ -59,14 +59,11 @@ describe('serialiseElements', () => {
           },
         ],
       },
-      responses: [{ participantId: 'p1', value: 'done', at: 1 }],
     });
     const text = serialiseElements([withIdentity]);
     expect(text).not.toContain('Someone Else');
-    expect(text).not.toContain('p1');
-    const back = parseElementsPayload(text)![0] as ShapeElement & { responses?: unknown };
+    const back = parseElementsPayload(text)![0] as ShapeElement;
     expect(back.commentThread).toBeUndefined();
-    expect(back.responses).toBeUndefined();
   });
 
   it('strips an assigned action, which would otherwise duplicate its id', () => {
@@ -225,5 +222,29 @@ describe('stroke points (docs/specs/006-document/stroke-points.md)', () => {
     const back = parseElementsPayload(text);
     expect(back).toHaveLength(1);
     expect(typeof (back![0] as FreehandElement).packedPoints).toBe('string');
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a copy keeps the kind and what it stored.
+describe('a retired element', () => {
+  it('pastes back as itself, its kind and its own fields untouched', () => {
+    const retired = {
+      id: 'r',
+      type: 'shape',
+      shape: 'qa-board',
+      x: 0,
+      y: 0,
+      width: 240,
+      height: 160,
+      label: 'Ask us anything',
+      qaNotes: [{ id: 'n1', text: 'When do we ship?', votes: 3 }],
+    } as unknown as Element;
+    const back = parseElementsPayload(serialiseElements([retired]))!;
+    expect(back).toHaveLength(1);
+    expect(back[0]).toMatchObject({
+      shape: 'qa-board',
+      label: 'Ask us anything',
+      qaNotes: [{ id: 'n1', text: 'When do we ship?', votes: 3 }],
+    });
   });
 });

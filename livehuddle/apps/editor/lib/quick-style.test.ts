@@ -68,8 +68,11 @@ describe('quickStyleView: which sections show', () => {
   });
 
   it('offers no text alignment on a kind with its own face, but keeps it on a web component', () => {
-    for (const kind of ['qa-board', 'agenda', 'session-button', 'comment-pin'] as const) {
-      expect(sections([shape('a', { shape: kind })]), kind).not.toContain('textAlign');
+    // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") draws its own placeholder.
+    for (const kind of ['reaction-pad', 'mode-button', 'qa-board', 'comment-pin']) {
+      expect(sections([shape('a', { shape: kind as never, label: 'Hi' })]), kind).not.toContain(
+        'textAlign',
+      );
     }
     expect(sections([shape('a', { shape: 'banner' })])).toContain('textAlign');
   });

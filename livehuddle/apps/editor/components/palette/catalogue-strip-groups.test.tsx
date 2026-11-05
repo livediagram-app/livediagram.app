@@ -32,7 +32,6 @@ describe('catalogueStripGroups', () => {
 
   it('is null for a category of tiles', () => {
     expect(catalogueStripGroups('shapes')).toBeNull();
-    expect(catalogueStripGroups('my-shapes')).toBeNull();
   });
 });
 

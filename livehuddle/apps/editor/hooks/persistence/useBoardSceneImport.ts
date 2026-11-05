@@ -20,6 +20,12 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type { BoardImportProgress, NewBoardDocument } from '@/lib/board-scene-import';
 
+/** Makes each scene its own new document (the Explorer's Excalidraw import's commit). */
+export type ImportScenes = (
+  scenes: BoardScene[],
+  onProgress?: (p: BoardImportProgress) => void,
+) => Promise<ImportOutcome>;
+
 export type BoardSceneImportDeps = {
   tabs: Tab[];
   activeId: string;

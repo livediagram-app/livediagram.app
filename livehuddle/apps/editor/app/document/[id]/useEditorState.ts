@@ -65,10 +65,7 @@ import { voteKeyHandler } from '@/lib/vote-by-key';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
-import { useBehaviourElements } from '@/hooks/canvas/useBehaviourElements';
-import { useCollabElements } from '@/hooks/canvas/useCollabElements';
-import { useQuizElements } from '@/hooks/canvas/useQuizElements';
-import { useQaBoard } from '@/hooks/canvas/useQaBoard';
+import { useChecklistTicks } from '@/hooks/canvas/useChecklistTicks';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useShowFollowersMyView } from '@liveworkspace/workbench/hooks/collab/useShowFollowersMyView';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
@@ -79,7 +76,6 @@ import type { CanvasTool } from '@/components/palette/palette.types';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useBoardSceneInsert } from '@/hooks/canvas/useBoardSceneInsert';
-import { useLibraryShapeInsert } from '@/hooks/canvas/useLibraryShapeInsert';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
@@ -94,14 +90,10 @@ import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
-import type { PollCandidate } from '@/lib/poll-collaborators';
-import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
 import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
 import { withStyleOfTab } from '@/lib/tab-theme-apply';
-import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
-import { useLivePoll } from '@/hooks/collab/useLivePoll';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
@@ -141,7 +133,6 @@ import { useTakeOfflineInPlace } from './useTakeOfflineInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
-import { useIdeaPosts } from '@/hooks/collab/useIdeaPosts';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useReactionBursts } from '@/hooks/canvas/useReactionBursts';
@@ -473,17 +464,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSessionShareCode,
     sessionShareCodeRef,
   } = realtime;
-  // One answer / idea / tick / comment, applied here and sent to the room as
-  // a delta ahead of the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments, the
-  // checklist and the collaboration elements below.
+  // One tick / comment, applied here and sent to the room as a delta ahead of
+  // the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments and the checklist below.
   const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
-  // Idea posts held until the room answers them (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
-  const ideaPosts = useIdeaPosts({
-    tabs,
-    tickTabs,
-    roomRef,
-    onRefused: (message) => toast.error(message),
-  });
   // The mention notify (useCommentMentions, below): declared first because the
   // comments hook takes it before the teams it depends on exist.
   const mentionNotifyRef = useRef<(text: string, mentions: CommentMention[]) => void>(() => {});
@@ -877,26 +860,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }),
     [],
   );
-  // Live poll (docs/specs/012-collaboration/live-poll.md): the ephemeral pulse-check. Declared before the
-  // room connection because that's what feeds it inbound ops. Nothing it
-  // holds is persisted — no tab field, no autosave, no change log.
-  // Kept in step with the facilitator hook below, which cannot be declared up
-  // here: it needs the room, and the room needs this.
-  const sessionBlockedRef = useRef(false);
-  // The room's roster, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md). A ref because the
-  // presence rows it is filled from are derived much further down this file —
-  // they need the room, which needs the poll hook — and because the only
-  // moment its value matters is the instant somebody starts a poll.
-  const pollCollaboratorsRef = useRef<readonly PollCandidate[]>([]);
-  // Our collab key, for the poll's answers and host (docs/specs/012-collaboration/collab-race-hardening.md). A ref: the poll
-  // hook's handlers stay stable while identity hydrates.
-  const pollSelfKeyRef = useLatest(voteSelfId);
-  const livePoll = useLivePoll({
-    roomRef,
-    sessionBlockedRef,
-    collaboratorsRef: pollCollaboratorsRef,
-    selfKeyRef: pollSelfKeyRef,
-  });
   // In-place recovery when the room can't replay our reconnect gap
   // (docs/specs/012-collaboration/resync-without-reload.md), in place of the page reload this used to do.
   const resyncFromServer = useRoomResync({
@@ -955,7 +918,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // announcement reads correctly.
     nameOf: (presenceId) => livePresence.find((p) => p.id === presenceId)?.name ?? null,
   });
-  useAssignRef(sessionBlockedRef, facilitator.sessionToolsBlocked);
 
   // The facilitator has freed an element we were holding (docs/specs/007-editor/editor-app.md lock,
   // docs/specs/012-collaboration/facilitator.md). Only our socket is sent this, so there is no target id to check.
@@ -983,19 +945,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     [setSelectedId, setEditingId, setMultiSelectedIds, toast],
   );
 
-  // The Q&A board (docs/specs/012-collaboration/qa-board.md). Up here, ahead of the room, because the room
-  // lands the server's `qa` ops through it.
-  const qaBoard = useQaBoard({
-    documentId,
-    activeId,
-    selfParticipant,
-    sessionShareCode,
-    applyRemoteTabs,
-    commitTabs,
-    lastSavedTabsRef,
-    onError: (message) => toast.error(message),
-  });
-
   useRoomConnection({
     onAdderKey: participant.setAdderKey,
     hydrated,
@@ -1018,7 +967,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sessionShareCodeRef,
     roomRef,
     applyRemoteOp,
-    pendingIdeaIds: ideaPosts.pendingIdeaIds,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -1042,10 +990,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readFacilitatorToken: facilitator.readFacilitatorToken,
     setFollowerIds,
     readFollowing: () => followingRef.current,
-    receivePoll: livePoll.receivePoll,
-    receivePollAnswer: livePoll.receiveAnswer,
-    receivePollEnd: livePoll.receivePollEnd,
-    receiveQa: qaBoard.receiveQa,
     receiveDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
@@ -1401,27 +1345,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     selfLaserConfig: laserPen.config,
     cursorsHidden: voteCursorsHidden,
   });
-  // Everyone in the document, as poll candidates (docs/specs/012-collaboration/live-poll.md). Self first, then
-  // whoever is present on any tab — the order the Collaborators modal uses, so
-  // a roster poll's ballot reads the way the panel beside it does. Someone on
-  // two tabs appears twice here; de-duplicating is `pollCollaboratorOptions`'s
-  // job, along with numbering shared names and applying the cap, so the
-  // composer's preview and the frozen ballot cannot disagree.
-  const pollCollaborators = useMemo<readonly PollCandidate[]>(
-    () => [
-      { id: selfParticipant.id, name: selfParticipant.name },
-      ...withoutAgentRows([...participantsByTab.values()].flat()).map((p) => ({
-        id: p.id,
-        name: p.name,
-      })),
-    ],
-    [participantsByTab, selfParticipant],
-  );
-  // The poll hook reads the roster through a ref, because it is declared long
-  // before this point (see the note there).
-  useEffect(() => {
-    pollCollaboratorsRef.current = pollCollaborators;
-  }, [pollCollaborators]);
   // Comment-bearing element rows for the floating Comments panel.
   // Only the boxed elements carry threads (arrows can't), so the
   // filter walks `activeTab.elements` and routes the boxed ones
@@ -1464,9 +1387,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       const list = elementActions(el);
       return actionId ? list.find((a) => a.id === actionId) : list[0];
     },
-    isActionCard: (elementId) =>
+    holdsActionList: (elementId) =>
       activeTab.elements.some(
-        (e) => e.id === elementId && e.type === 'shape' && e.shape === 'action-card',
+        (e) => e.id === elementId && Array.isArray((e as { actions?: unknown }).actions),
       ),
     actionCount: (elementId) => {
       const el = activeTab.elements.find((e) => e.id === elementId);
@@ -1873,7 +1796,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // auto-align). All mutate the active tab; see useTabCanvas.
   const {
     autoAlignTab,
-    autoLayoutTab,
     setTabFinish,
     applyTabLook,
     setTabFont,
@@ -1959,70 +1881,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       }),
   });
 
-  // The interactive Behaviour elements that act on the SESSION rather than the
-  // document (docs/specs/012-collaboration/session-button.md, /106, /107): the session button's press, the reveal
-  // zone's local uncover, and the picker's roll.
-  const { pressSessionButton, revealedIds, toggleRevealForMe, pickerFor, setSessionConfigFor } =
-    useBehaviourElements({
-      activeId,
-      commitTabs,
-      tickTabs,
-      editsBlocked,
-      sessionToolsBlocked: runsBlocked,
-      selfParticipant,
-      livePresence,
-      activeTimer: activeTab.timer,
-      activeVote: activeTab.vote,
-      startTimer,
-      pauseTimer,
-      resumeTimer,
-      startVote,
-      startPoll: livePoll.startPoll,
-    });
-
-  // The collaboration elements (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md). Sibling of the
-  // behaviour hook above: these write to the document through `tickTabs`,
-  // which does NOT push undo history, so one person's Ctrl+Z can never
-  // retract another person's answer (docs/specs/012-collaboration/collab-race-hardening.md). Scatter alone commits.
-  const collabElements = useCollabElements({
-    activeId,
-    commitTabs,
-    tickTabs,
+  // A checklist tick is a room press (docs/specs/012-collaboration/collab-race-hardening.md): a delta, not an undoable commit.
+  const { toggleChecklistItem } = useChecklistTicks({
     applyElementDelta,
-    postIdea: ideaPosts.post,
     activeElements: activeTab.elements,
     editsBlocked,
-    sessionToolsBlocked: runsBlocked,
-    selfParticipant,
-    livePresence,
-    startTimer,
   });
-  // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md).
-  const { toggleChecklistItem } = collabElements;
-  // The Quiz (docs/specs/012-collaboration/quiz.md): its own verbs, on the same facilitator-gated patch.
-  const quiz = useQuizElements({
-    activeId,
-    commitTabs,
-    applyElementDelta,
-    patchAsFacilitator: collabElements.patchAsFacilitator,
-    editsBlocked,
-    sessionToolsBlocked: runsBlocked,
-    selfParticipant,
-  });
-
-  // Keeping a poll's results (docs/specs/012-collaboration/poll-result-capture.md). Ends the poll for the room through
-  // the SAME `endPoll` the plain End uses — one op, so a participant sees no
-  // difference and no new op kind exists — and additionally drops the tallies
-  // onto the canvas as an ordinary, undoable element.
-  // Keep Results (docs/specs/012-collaboration/poll-result-capture.md): drop a chart of the tallies so far onto the
-  // active tab. The poll keeps running, so it can be kept again later
-  // (a second chart), and End is still the only thing that ends it.
-  const keepPollResults = () => {
-    const poll = livePoll.poll;
-    if (!poll) return;
-    addBoxed((x, y) => pollResultElement(poll, livePoll.answers, x, y));
-    track('Element', 'Added', 'PollResult');
-  };
 
   // Image domain (picker state, recent-images list, placement + fill
   // handlers). Lives in its own hook so the page no longer carries
@@ -2317,11 +2181,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionLine,
     setHeroCaptionSelected,
     setChecklistItemsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
-    setDecisionStatusSelected,
-    setDecisionDateSelected,
-    setDecisionDriversSelected,
     setChairFacingSelected,
     setRoomDoorSelected,
     setButtonModeSelected,
@@ -2398,11 +2257,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
-    setSessionConfigSelected,
-    setRevealedSelected,
-    setPickerSourceSelected,
     setReactionSelected,
-    setPickerOptionsSelected,
   } = usePortalSetters({
     currentSelectionIds,
     contextTargetId: contextMenu?.mode === 'element' ? contextMenu.elementId : null,
@@ -2410,7 +2265,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tabs,
     activeId,
     setSelectedId,
-    sessionToolsBlocked: facilitator.sessionToolsBlocked,
   });
 
   // Hover-to-preview for the style-preset tiles (docs/specs/010-palette/style-presets.md): hovering a preset on
@@ -2495,7 +2349,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md "Hover to see it first"):
   // hovering a Tidy Up tile lays the whole tab out behind the popover, and it only sticks on press.
-  const { previewCleanup, endCleanupPreview, assessCleanupKind } = useCleanupPreview({
+  const { previewCleanup, endCleanupPreview, assessCleanup } = useCleanupPreview({
     editsBlocked: structureBlocked,
     activeId,
     tabsRef,
@@ -2705,16 +2559,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ownerId: selfParticipant.id,
     documentId,
   });
-  // Shapes placed from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md): like a
-  // paste, one commit, selected.
-  const insertLibraryShape = useLibraryShapeInsert({
-    activeTab,
-    editsBlocked: structureBlocked,
-    commit,
-    setSelectedId,
-    setMultiSelectedIds,
-    getViewportCenter,
-  });
 
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). Flips the chrome-hidden flag and emits
   // the toggle telemetry BEFORE the state change (matches the dark-mode /
@@ -2748,10 +2592,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addShape,
     addText,
     addSticky,
-    addArrow,
     onAddImage: addImage ?? null,
-    onBeginFreehand: beginFreehand,
-    onBeginShapePen: beginShapePen,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
@@ -2894,7 +2735,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     dropBoardFile,
     hasClipboard,
     boardSceneInsert,
-    insertLibraryShape,
     ...panelLayout,
     ...dialogs,
     ...uiState,
@@ -2966,10 +2806,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     anyWelcomeOpen,
     applyImageToElement,
     autoAlignTab,
-    autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
-    assessCleanupKind,
+    assessCleanup,
     // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
     facilitator,
     setTabFinish,
@@ -3107,10 +2946,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     livePresence,
-    // Live poll (docs/specs/012-collaboration/live-poll.md) — the whole ephemeral surface in one object
-    // rather than a dozen flattened keys, since nothing else reads into it.
-    livePoll,
-    keepPollResults,
     followMe,
     loadAllTabs,
     loadedTabIds,
@@ -3131,7 +2966,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openNote,
     participantsByTab,
     pendingDraw,
-    pollCollaborators,
     redo,
     refreshRecentImages,
     remoteAvatarRows,
@@ -3262,30 +3096,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionLine,
     setHeroCaptionSelected,
     setChecklistItemsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
-    setDecisionStatusSelected,
-    setDecisionDateSelected,
-    setDecisionDriversSelected,
     setChairFacingSelected,
     setRoomDoorSelected,
     setButtonModeSelected,
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
-    setSessionConfigSelected,
-    setRevealedSelected,
-    setPickerSourceSelected,
     setReactionSelected,
-    setPickerOptionsSelected,
-    pressSessionButton,
-    revealedIds,
-    toggleRevealForMe,
-    setSessionConfigFor,
-    pickerFor,
-    collabElements,
-    quiz,
-    qaBoard,
     setRatingSelected,
     setRatingAnimSelected,
     setRatingAnimSpeedSelected,

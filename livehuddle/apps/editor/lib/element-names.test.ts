@@ -139,24 +139,28 @@ describe('describeSelected', () => {
 
 // docs/specs/004-interface-design/canvas-accessibility.md "Names on elements": an img's children are presentational,
 // so an element whose face holds controls is a named group, and one that is only drawn stays a picture.
-describe('a session button’s kind', () => {
-  // It names the tool it starts: "Session button" said nothing about what pressing it does.
-  it('reads as the tool, a timer by default', () => {
-    const button = (session?: object) =>
-      ({
-        id: 'b',
-        type: 'shape',
-        shape: 'session-button',
-        x: 0,
-        y: 0,
-        width: 1,
-        height: 1,
-        ...(session ? { session } : {}),
-      }) as Element;
-    expect(kindLabel(button())).toBe('Timer');
-    expect(kindLabel(button({ tool: 'poll', question: 'Q' }))).toBe('Poll');
-    expect(kindLabel(button({ tool: 'vote', dots: 3 }))).toBe('Dot vote');
-    expect(kindLabel(button({ tool: 'stopwatch' }))).toBe('Stopwatch');
+// docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": named as its placeholder names it.
+describe('a retired element’s kind', () => {
+  const retired = (shape: string, extra: object = {}) =>
+    ({
+      id: 'r',
+      type: 'shape',
+      shape,
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+      ...extra,
+    }) as unknown as Element;
+  it('reads as the name it was known by, and a session button as its tool', () => {
+    expect(kindLabel(retired('qa-board'))).toBe('Q&A Board');
+    expect(kindLabel(retired('session-button', { session: { tool: 'poll' } }))).toBe('Poll');
+    expect(kindLabel(retired('no-such-kind'))).toBe('Unknown Element');
+    expect(elementAriaLabel(retired('agenda', { label: 'Monday' }))).toBe('Agenda "Monday"');
+  });
+
+  it('is a picture: its placeholder holds no controls', () => {
+    expect(elementRole(retired('quiz'))).toBe('img');
   });
 });
 
@@ -180,21 +184,12 @@ describe('elementRole', () => {
 
   it('makes an element with controls on its face a group', () => {
     for (const kind of [
-      'session-button',
       'checklist',
-      'qa-board',
-      'agenda',
-      'quiz',
       'reaction-pad',
-      'estimate',
-      'idea-box',
-      'done-check',
-      'comment-pin',
-      'action-card',
+      'mode-button',
       'page',
       'focus-button',
       'portal',
-      'roll-call',
     ])
       expect(elementRole(shape(kind))).toBe('group');
     expect(

@@ -19,7 +19,6 @@ describe('setPowerUserMode on', () => {
     expect(next).toMatchObject({
       powerUserMode: true,
       alignmentGuides: true,
-      autoRebindArrows: true,
       avatarTourSeen: true,
       minimalChrome: true,
     });
@@ -59,7 +58,6 @@ describe('setPowerUserMode off', () => {
   it('restores every setting the user did not touch', () => {
     const before: UserPreferences = {
       alignmentGuides: false,
-      autoRebindArrows: false,
       avatarTourSeen: false,
     };
     const { prefs, restored, kept } = off(on(before));
@@ -75,12 +73,12 @@ describe('setPowerUserMode off', () => {
 
   it('keeps a setting the user changed while the mode was on', () => {
     const changed = {
-      ...on({ alignmentGuides: false, autoRebindArrows: false }),
-      autoRebindArrows: false,
+      ...on({ alignmentGuides: false, avatarTourSeen: false }),
+      avatarTourSeen: false,
     };
     const { prefs, kept, restored } = off(changed);
-    expect(prefs.autoRebindArrows).toBe(false);
-    expect(kept).toEqual(['autoRebindArrows']);
+    expect(prefs.avatarTourSeen).toBe(false);
+    expect(kept).toEqual(['avatarTourSeen']);
     // The untouched one still goes back.
     expect(prefs.alignmentGuides).toBe(false);
     expect(restored).toContain('alignmentGuides');
@@ -112,7 +110,7 @@ describe('setPowerUserMode off', () => {
   });
 
   it('survives the JSON round trip the preferences blob takes', () => {
-    const before: UserPreferences = { alignmentGuides: false, autoRebindArrows: false };
+    const before: UserPreferences = { alignmentGuides: false, avatarTourSeen: false };
     const stored = JSON.parse(JSON.stringify(on(before))) as UserPreferences;
     expect(off(stored).prefs).toEqual(before);
   });

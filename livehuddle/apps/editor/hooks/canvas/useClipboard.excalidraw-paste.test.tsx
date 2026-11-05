@@ -247,9 +247,9 @@ describe('dropping a file on the canvas', () => {
 
   it('points a dropped file the Import dialog reads at Import', () => {
     const h = harness();
-    h.dropBoardFile(new File(['<mxfile/>'], 'flow.drawio', { type: '' }), at);
+    h.dropBoardFile(new File(['{}'], 'tab.json', { type: '' }), at);
     expect(h.toast.info).toHaveBeenCalledWith(
-      'To bring in a draw.io file, use Import in the tab menu.',
+      'To bring in a livehuddle export, use Import in the tab menu.',
     );
     expect(h.insertBoardScene).not.toHaveBeenCalled();
   });

@@ -5,10 +5,8 @@ import type {
   ArrowEnds,
   ComponentKind,
   EmbedProvider,
-  EstimateScale,
   Reaction,
   SelectionMode,
-  SessionTool,
   ShapeKind,
 } from '@livehuddle/document';
 import { EMBED_PROVIDER_LABEL, penColourCss, type PenColour } from '@livehuddle/document';
@@ -27,21 +25,19 @@ export type PendingDraw =
   // drag to size) instead of dropping at a fixed size.
   // `stickerId` rides the same intent for the `sticker` kind (docs/specs/010-palette/stickers.md), the
   // way `iconId` does for `icon`.
-  // `session` (docs/specs/012-collaboration/session-button.md) and `reaction` (docs/specs/009-elements/reaction-pad.md) ride the same intent for
-  // the same reason: both kinds are ONE element with a mode field, and the
-  // palette offers a tile per mode rather than one tile you then reconfigure.
-  // Carrying the choice on the intent is what lets "Add poll" place a poll
-  // instead of placing a timer you have to go and change.
+  // `reaction` (docs/specs/009-elements/reaction-pad.md) and `mode` ride the same intent for
+  // the same reason: each kind is ONE element with a field, and the
+  // palette offers a tile per choice rather than one tile you then reconfigure.
+  // Carrying the choice on the intent is what lets "Add Hearts" place hearts
+  // instead of placing confetti you have to go and change.
   | {
       type: 'shape';
       kind: ShapeKind;
       iconId?: string;
       stickerId?: string;
       label?: string;
-      session?: SessionTool;
       reaction?: Reaction;
       mode?: SelectionMode;
-      estimateScale?: EstimateScale;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
       // What the tile that armed it calls it ("Funnel", "Org Chart"), for the banner: a variant or a
@@ -124,7 +120,7 @@ export type PendingDraw =
 /** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
 export type AddShapeOptions = Pick<
   Extract<PendingDraw, { type: 'shape' }>,
-  'session' | 'reaction' | 'mode' | 'estimateScale' | 'variant' | 'name'
+  'reaction' | 'mode' | 'variant' | 'name'
 >;
 
 // The shape the banner names ("Click to drop or drag to draw Square"), as the tile the person just picked names it.

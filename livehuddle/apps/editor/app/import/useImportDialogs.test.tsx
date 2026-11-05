@@ -23,16 +23,14 @@ describe('useImportDialogs', () => {
     expect(result.current.dialogs).toBeNull();
   });
 
-  for (const source of ['microsoft-whiteboard', 'excalidraw', 'drawio'] as const) {
-    it(`opens the ${source} dialog`, () => {
-      const { result } = renderHook(() =>
-        useImportDialogs({ ownerId: 'owner', folderId: 'f1', onDocumentsCreated: vi.fn() }),
-      );
-      expect(result.current.dialogs).toBeNull();
-      act(() => {
-        expect(result.current.open(source)).toBe(true);
-      });
-      expect(result.current.dialogs).not.toBeNull();
+  it('opens the Excalidraw dialog', () => {
+    const { result } = renderHook(() =>
+      useImportDialogs({ ownerId: 'owner', folderId: 'f1', onDocumentsCreated: vi.fn() }),
+    );
+    expect(result.current.dialogs).toBeNull();
+    act(() => {
+      expect(result.current.open('excalidraw')).toBe(true);
     });
-  }
+    expect(result.current.dialogs).not.toBeNull();
+  });
 });

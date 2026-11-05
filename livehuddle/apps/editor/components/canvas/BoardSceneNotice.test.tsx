@@ -43,7 +43,7 @@ describe('BoardSceneNotice', () => {
   it('shows image progress', () => {
     render(
       <BoardSceneNotice
-        notice={{ kind: 'progress', source: 'microsoft-whiteboard', done: 3, total: 12 }}
+        notice={{ kind: 'progress', source: 'excalidraw', done: 3, total: 12 }}
         onClose={() => {}}
       />,
     );

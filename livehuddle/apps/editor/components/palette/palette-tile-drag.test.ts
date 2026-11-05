@@ -39,8 +39,8 @@ describe('tileDragStart', () => {
   });
 
   it('carries a shape’s creation-time choice alongside its kind', () => {
-    const { data } = drag({ type: 'shape', kind: 'session-button', session: 'poll' });
-    expect(data.get(PALETTE_DND_MIME)).toBe('session-button|poll');
+    const { data } = drag({ type: 'shape', kind: 'reaction-pad', reaction: 'hearts' });
+    expect(data.get(PALETTE_DND_MIME)).toBe('reaction-pad|hearts');
   });
 
   it('carries a sticky note', () => {

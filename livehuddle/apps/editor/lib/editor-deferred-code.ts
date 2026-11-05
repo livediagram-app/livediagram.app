@@ -13,8 +13,6 @@ export const loadAvatarSpeechLayer = () =>
   import('@liveworkspace/avatar/components/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
 
 export const loadTableView = () => import('@/components/canvas/TableView').then((m) => m.TableView);
-export const loadCollabFaceRouter = () =>
-  import('@/components/canvas/collab/CollabFaceRouter').then((m) => m.CollabFaceRouter);
 
 export const loadExplorerPanel = () => import('@/components/panels/Explorer');
 export const loadEditorSearchPanel = () =>
@@ -24,10 +22,8 @@ export const loadLayersPanel = () =>
 export const loadQuickStylePanel = () =>
   import('@/components/canvas/QuickStylePanel').then((m) => m.QuickStylePanel);
 export const loadToolPanels = () => import('@/components/canvas/tool-panels');
-export const loadSessionElementSettings = () =>
-  import('@/components/canvas/SessionElementSettings');
 
-export const DOCUMENT_CONTENT_CODE = [loadTableView, loadCollabFaceRouter] as const;
+export const DOCUMENT_CONTENT_CODE = [loadTableView] as const;
 
 export const EDITOR_SURFACE_CODE = [
   loadExplorerPanel,
@@ -35,5 +31,4 @@ export const EDITOR_SURFACE_CODE = [
   loadLayersPanel,
   loadQuickStylePanel,
   loadToolPanels,
-  loadSessionElementSettings,
 ] as const;

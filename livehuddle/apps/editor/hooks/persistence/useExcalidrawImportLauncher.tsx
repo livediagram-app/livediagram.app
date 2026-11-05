@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useState, type ReactNode } from 'react';
-import type { ImportScenes } from './useMsWhiteboardImport';
+import type { ImportScenes } from './useBoardSceneImport';
 
 // Loaded on first open: the parser joins nothing on the host's first load.
 const ExcalidrawImportDialog = dynamic(

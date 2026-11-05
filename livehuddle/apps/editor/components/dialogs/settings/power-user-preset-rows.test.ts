@@ -4,13 +4,7 @@ import { setPowerUserMode } from '@/lib/power-user-mode';
 
 // The "Set By Power User Mode" readout (docs/specs/007-editor/power-user-mode.md#in-settings).
 
-const ALL = new Set([
-  'alignmentGuides',
-  'autoRebindArrows',
-  'avatarTourSeen',
-  'pagesTourSeen',
-  'elementToursSeen',
-]);
+const ALL = new Set(['alignmentGuides', 'avatarTourSeen', 'pagesTourSeen', 'elementToursSeen']);
 
 describe('presetSummaryLines', () => {
   it('lists every preset setting but Minimal chrome, with its value and home', () => {
@@ -18,7 +12,6 @@ describe('presetSummaryLines', () => {
     const lines = presetSummaryLines(prefs, ALL);
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
       ['Alignment Guides', 'On', 'Editor'],
-      ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Avatar Tour', 'Off', 'Tours'],
       ['Show Me on Every Element', 'Off', 'Tours'],
     ]);

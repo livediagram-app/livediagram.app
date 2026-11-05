@@ -13,7 +13,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 export type StripGroup = { id: string; label: string; icon: ReactNode };
 
-// What a strip popover opened on: a catalogue's group, an opener (palette-openers) for a category or one of its
+// What a strip popover opened on: a catalogue's group, an opener for a category or one of its
 // groups, or a tile's presets (`variants`, docs/specs/009-elements/card.md "Card presets"). `key` is the tile that
 // opened it.
 export type StripOpen = {

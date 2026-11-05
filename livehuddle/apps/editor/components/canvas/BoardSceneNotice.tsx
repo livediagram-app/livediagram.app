@@ -11,7 +11,6 @@ import { useNoticeSlot } from './useNoticeSlot';
 
 const SOURCE_NAMES: Readonly<Record<BoardSceneSource, string>> = {
   excalidraw: 'Excalidraw',
-  'microsoft-whiteboard': 'Microsoft Whiteboard',
 };
 
 export function BoardSceneNotice({

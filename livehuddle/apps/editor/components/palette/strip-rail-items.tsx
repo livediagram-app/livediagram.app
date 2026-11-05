@@ -12,7 +12,7 @@ import type { useStripPopover } from '@liveworkspace/workbench/components/palett
 
 // The Toolbar strip's rail items and the popover a group or opener opens (docs/specs/007-editor/toolbar-layout.md
 // "More"), kept out of ToolbarPalette: a catalogue's groups, or a category's tiles with its openers
-// (palette-openers) and fixed dividers.
+// and fixed dividers.
 
 // What a tile's presets popover says under its name when the tile says nothing of its own.
 const PRESETS_DESCRIPTION = 'Start from a preset, then change any of it.';

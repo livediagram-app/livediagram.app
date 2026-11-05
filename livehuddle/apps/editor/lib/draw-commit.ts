@@ -1,4 +1,4 @@
-import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@livehuddle/document';
+import { isFixedSizeShape, REACTION_PAD_LABEL } from '@livehuddle/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -279,28 +279,8 @@ export function buildDrawnBoxed(
     ...(intent.type === 'shape' && intent.iconId && isTechIconId(intent.iconId)
       ? { aspectLocked: false }
       : {}),
-    // The palette offers a tile per session tool and per reaction (docs/specs/012-collaboration/session-button.md,
-    // docs/specs/009-elements/reaction-pad.md), so the choice arrives with the intent and is applied here
-    // rather than left on the factory default for the user to go and change.
-    ...(intent.type === 'shape' && intent.kind === 'session-button' && intent.session
-      ? {
-          session: { ...defaultSessionConfig(intent.session) },
-          // A TIMER renders as the pill from the top chrome (docs/specs/012-collaboration/session-button.md), which
-          // is wide and short; the session button's square-ish default box
-          // clipped the kicker off one end and the remove control off the
-          // other. Only on a TAP — a deliberate drag is the user saying what
-          // size they want.
-          ...(intent.session === 'timer' && isTap ? { width: 224, height: 64 } : {}),
-          // A POLL carries the question on its face, and the default box is
-          // sized for "Start vote" — anything of a realistic length was
-          // clipped before it finished. Wider and a little taller so a
-          // sentence fits on two lines.
-          ...(intent.session === 'poll' && isTap ? { width: 240, height: 116 } : {}),
-        }
-      : {}),
-    ...(intent.type === 'shape' && intent.kind === 'estimate' && intent.estimateScale
-      ? { estimateScale: intent.estimateScale }
-      : {}),
+    // The palette offers a tile per mode and per reaction (docs/specs/009-elements/reaction-pad.md), so the choice
+    // arrives with the intent and is applied here rather than left on the factory default for the user to change.
     ...(intent.type === 'shape' && intent.kind === 'mode-button' && intent.mode
       ? { mode: intent.mode }
       : {}),

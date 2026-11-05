@@ -133,17 +133,8 @@ export function ElementAppearanceSections({
   const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
-  // The other Behaviour kinds with settings (docs/specs/012-collaboration/session-button.md, /106, /107).
-  // Both are the facilitator's while somebody holds the baton (docs/specs/012-collaboration/facilitator.md): no handler, no section.
-  const isSessionButton =
-    target.type === 'shape' && target.shape === 'session-button' && !!props.onSetSession;
-  const isReveal = target.type === 'shape' && target.shape === 'reveal' && !!props.onSetRevealed;
-  const isPicker = target.type === 'shape' && target.shape === 'picker';
+  // Reaction pad (docs/specs/009-elements/reaction-pad.md): its one setting is which burst it throws.
   const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
-  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-  const isEstimate = target.type === 'shape' && target.shape === 'estimate';
-  const isAgenda = target.type === 'shape' && target.shape === 'agenda';
-  const isDecision = target.type === 'shape' && target.shape === 'decision';
   // A desk and a sofa share the chair's facing section (docs/specs/009-elements/chair.md "Desk and sofa").
   // The meeting table does not turn (docs/specs/009-elements/office.md), so it has no facing section.
   const isChair =
@@ -241,13 +232,7 @@ export function ElementAppearanceSections({
         isChecklist={isChecklist}
         isModeButton={isModeButton}
         isPortal={isPortal}
-        isSessionButton={isSessionButton}
-        isReveal={isReveal}
-        isPicker={isPicker}
         isReactionPad={isReactionPad}
-        isEstimate={isEstimate}
-        isAgenda={isAgenda}
-        isDecision={isDecision}
         isChair={isChair}
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}

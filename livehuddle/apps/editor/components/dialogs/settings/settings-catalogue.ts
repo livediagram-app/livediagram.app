@@ -7,7 +7,6 @@ import {
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livehuddle/api-schema';
 import {
-  autoRebindArrowsEnabled,
   panelEnabled,
   type MapSize,
   type PanelSwitch,
@@ -427,21 +426,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.alignmentGuides !== false,
         write: (p, v) => ({ ...p, alignmentGuides: v }),
         event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'autoRebindArrows',
-        keywords: 'connector reattach sticky arrows connections',
-        section: 'Canvas',
-        label: 'Auto-Attach Arrows',
-        description:
-          'After a move, an arrow that cuts through its shape reattaches to the side facing its other end.',
-        helpArticle: 'autoAttachArrows',
-        // On by default (docs/specs/007-editor/user-preferences.md); the editor gates the rebind on this
-        // same helper, so the switch and the behaviour cannot disagree.
-        read: autoRebindArrowsEnabled,
-        write: (p, v) => ({ ...p, autoRebindArrows: v }),
-        event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
       },
       {
         // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,

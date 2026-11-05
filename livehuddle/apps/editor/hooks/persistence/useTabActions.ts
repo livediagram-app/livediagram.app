@@ -126,15 +126,11 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
   };
 
-  // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
+  // Import (id re-mint, content replace, JSON / Excalidraw parsing)
   // lives in useTabImport; remintTabElements is shared with the
   // Duplicate below.
   const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
     tabs,
-    createTab,
-    markTabLoaded,
-    ownerId,
-    documentId,
     activeId,
     commitTabs,
     setSelectedId,

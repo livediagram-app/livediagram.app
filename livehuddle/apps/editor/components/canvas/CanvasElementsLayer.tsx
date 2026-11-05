@@ -3,7 +3,6 @@ import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/Remote
 import { identityVars } from '@livehuddle/ui';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
-import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
@@ -20,7 +19,6 @@ import {
   laneSeamCoordinates,
   layerOpacityOf,
   snapSeamCoordinate,
-  type CommentMention,
   createElementGridTracker,
   type ElementIndex,
   stackedElementIds,
@@ -122,30 +120,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
-    onPressSessionButton,
-    sessionStartBlocked,
-    sessionRunBy,
-    timerState,
-    // The tab's live timer plus the handlers that drive it, so a Timer
-    // session element can BE the timer (docs/specs/012-collaboration/session-button.md) rather than a button that
-    // starts one elsewhere. The handlers no-op when edits are blocked, so a
-    // read-only surface needs no separate gate here.
-    tabTimer,
-    onSetSessionConfig,
     onOpenElementSettings,
-    commentSelfId,
-    commentPanelActions,
-    actionSelfId,
-    actionPanelActions,
-    onPauseTimer,
-    onResumeTimer,
-    onResetTimer,
-    onClearTimer,
-    onSetTimerDuration,
-    revealedIds,
-    onToggleReveal,
-    onRollPicker,
-    collab,
     chairSitters,
     onOpenComments,
     onOpenAction,
@@ -236,9 +211,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
-    onPressSessionButton,
-    onToggleReveal,
-    onRollPicker,
     onOpenComments,
     onOpenAction,
     onOpenNote,
@@ -247,61 +219,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onDropIcon,
     onLinkCell,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
-    onSetSessionConfig,
     onOpenElementSettings,
     onEnterPortal,
     onFireReaction,
     onReactionBurstDone,
-    onPauseTimer,
-    onResumeTimer,
-    onResetTimer,
-    onClearTimer,
-    onSetTimerDuration,
-    commentAdd: commentPanelActions?.add,
-    commentRemove: commentPanelActions?.remove,
-    commentResolve: commentPanelActions?.resolve,
-    commentUnresolve: commentPanelActions?.unresolve,
-    actionConfigure: actionPanelActions?.configure,
-    actionComplete: actionPanelActions?.complete,
-    actionReopen: actionPanelActions?.reopen,
   });
-  // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
-  // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
-  // Running the timer is the session's runner's (docs/specs/013-workspace/share-roles.md, facilitator.md): a
-  // Participant, a Viewer and anyone but the facilitator see the face without its controls.
-  const timerControls = useMemo(
-    () =>
-      sessionStartBlocked
-        ? {}
-        : {
-            pause: h.onPauseTimer,
-            resume: h.onResumeTimer,
-            reset: h.onResetTimer,
-            clear: h.onClearTimer,
-            setDuration: h.onSetTimerDuration,
-          },
-    [h, sessionStartBlocked],
-  );
-  const commentActionsFor = useMemo(() => {
-    const { commentAdd, commentRemove, commentResolve, commentUnresolve } = h;
-    if (!commentAdd || !commentRemove || !commentResolve || !commentUnresolve) return null;
-    return idBound((id) => ({
-      add: (text: string, mentions: CommentMention[]) => commentAdd(id, text, mentions),
-      remove: (commentId: string) => commentRemove(id, commentId),
-      resolve: () => commentResolve(id),
-      unresolve: () => commentUnresolve(id),
-    }));
-  }, [h]);
-  const actionActionsFor = useMemo(() => {
-    const { actionConfigure, actionComplete, actionReopen } = h;
-    if (!actionConfigure || !actionComplete || !actionReopen) return null;
-    return idBound((id) => ({
-      add: () => actionConfigure(id, null),
-      edit: (actionId: string) => actionConfigure(id, actionId),
-      complete: (actionId: string) => actionComplete(id, actionId),
-      reopen: (actionId: string) => actionReopen(id, actionId),
-    }));
-  }, [h]);
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
@@ -388,19 +310,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onFollowLink: h.onFollowLink,
       onPressModeButton: h.onPressModeButton,
       onPressFocusButton: h.onPressFocusButton,
-      onPressSessionButton: h.onPressSessionButton,
-      sessionStartBlocked,
-      sessionRunBy,
-      timerState,
-      tabTimer: tabTimer ?? null,
-      onSetSessionConfig: h.onSetSessionConfig,
       onOpenElementSettings: h.onOpenElementSettings,
-      commentSelfId,
-      actionSelfId,
-      timerControls,
-      onToggleReveal: h.onToggleReveal,
-      onRollPicker: h.onRollPicker,
-      collab,
       chairSitters,
       // Mode Buttons light up for the mode they hand out; the canvas-tool union is wider than the mode vocabulary
       // (Isometric has no Mode Button), so narrow rather than widen.
@@ -429,14 +339,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       voteMax,
       voteReview,
       stablePalette,
-      sessionStartBlocked,
-      sessionRunBy,
-      timerState,
-      tabTimer,
-      commentSelfId,
-      actionSelfId,
-      timerControls,
-      collab,
       chairSitters,
       canvasTool,
       imageContext,
@@ -533,9 +435,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           canWriteText={canWriteText}
           canResize={canResize}
           voteReview={voteReview}
-          commentActionsFor={commentActionsFor}
-          actionActionsFor={actionActionsFor}
-          revealedIds={revealedIds}
           reactionBursts={reactionBursts}
           tabFont={tabFont}
           tabFinish={tabFinish}

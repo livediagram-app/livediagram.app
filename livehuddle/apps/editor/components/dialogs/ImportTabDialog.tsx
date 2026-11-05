@@ -22,7 +22,7 @@ type ImportTabDialogProps = {
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
   // Runs a text import (the paste/write path) for the chosen format,
-  // bypassing the file picker (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
+  // bypassing the file picker.
   onImportText: (
     format: Format,
     text: string,
@@ -41,11 +41,6 @@ const FORMATS: {
   title: string;
   description: string;
   placeholder: string;
-  // Optional footnote for this format's paste step — a help link for a
-  // format whose mapping isn't obvious from the placeholder alone. It rides
-  // on the format rather than the picker screen so it appears once the
-  // reader has actually chosen that format and the answer is relevant.
-  note?: { article: 'markdownImport' | 'importTabs'; label: string };
 }[] = [
   {
     key: 'json',
@@ -55,43 +50,19 @@ const FORMATS: {
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livehuddle.tab",\n  "tab": { … }\n}',
   },
   {
-    key: 'mermaid',
-    title: 'Mermaid',
-    description:
-      'A Mermaid flowchart, state diagram, or ER diagram. Keeps every connection. Paste it or pick a file.',
-    placeholder: 'flowchart TD\n  A([Start]) --> B{OK?}\n  B -->|yes| C[Ship]\n  B -->|no| A',
-  },
-  {
-    key: 'markdown',
-    title: 'Markdown',
-    description:
-      'A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree.',
-    placeholder: '# Project\n\n- Research\n  - Interviews\n  - Survey\n- Build\n- Launch',
-    note: { article: 'markdownImport', label: 'See how a Markdown outline maps to a tree' },
-  },
-  {
     key: 'excalidraw',
     title: 'Excalidraw',
     description:
       'A .excalidraw scene, or a PNG / SVG exported with the scene. Keeps shapes, labels, connections, drawings, and images.',
     placeholder: '{\n  "type": "excalidraw",\n  "version": 2,\n  "elements": [ … ]\n}',
   },
-  {
-    key: 'drawio',
-    title: 'draw.io',
-    description:
-      'A .drawio file, or a PNG / SVG with the diagram inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further page.',
-    placeholder:
-      '<mxfile>\n  <diagram name="Page-1">\n    <mxGraphModel>…</mxGraphModel>\n  </diagram>\n</mxfile>',
-    note: { article: 'importTabs', label: 'See what carries over from draw.io' },
-  },
 ];
 
 // Counterpart to ExportTabDialog: pick a format to import INTO the current
-// tab. Importing REPLACES the tab's contents (docs/specs/020-import-export/markdown-import.md), so the dialog leads
-// with a warning before the format cards. Every format is text, so each card
-// opens the same two-step panel: paste/write the content, or pick a file
-// (docs/specs/020-import-export/mermaid.md). Errors render inline; on success the dialog closes.
+// tab. Importing REPLACES the tab's contents, so the dialog leads with a warning before the format cards. Every
+// format is text, so each card opens the same two-step panel: paste/write the content, or pick a file. Errors
+// render inline; on success the dialog closes. The draw.io, Mermaid and Markdown cards are gone from livehuddle
+// (Work Tracker #423, part 4).
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
 // An import shows its report when it met images, changed or dropped anything, or left a board out.
@@ -204,19 +175,6 @@ function ImportChooser({
         <TextImportPanel
           formatTitle={activeFormat.title}
           placeholder={activeFormat.placeholder}
-          /* Quiet footnote for this format. It used to sit under the picker
-               grid, where it asked "Importing a Markdown outline?" of a reader
-               who had not picked a format yet — an answer to a question nobody
-               had. */
-          note={
-            activeFormat.note ? (
-              <HelpArticleLink
-                article={activeFormat.note.article}
-                variant="text"
-                label={activeFormat.note.label}
-              />
-            ) : null
-          }
           onImportText={(text, onProgress) => onImportText(activeFormat.key, text, onProgress)}
           onImportFile={(onProgress) => onImportFile(activeFormat.key, onProgress)}
           onDone={onDone}
@@ -224,8 +182,8 @@ function ImportChooser({
         />
       ) : (
         <div
-          // Two columns on a phone: three left each card about 110px wide, its description wrapping to eight lines.
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+          // Its two formats side by side, a phone too.
+          className="grid grid-cols-2 gap-3"
         >
           {formats.map((f) => (
             <FormatCard
@@ -244,16 +202,7 @@ function ImportChooser({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  const label =
-    kind === 'mermaid'
-      ? 'mmd'
-      : kind === 'markdown'
-        ? 'md'
-        : kind === 'excalidraw'
-          ? 'excali'
-          : kind === 'drawio'
-            ? 'drawio'
-            : 'json';
+  const label = kind === 'excalidraw' ? 'excali' : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

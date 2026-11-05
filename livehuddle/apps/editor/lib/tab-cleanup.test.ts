@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape, type Element, type Layer } from '@livehuddle/document';
 import { cleanupElements, lockedElementIds } from './tab-cleanup';
 
-// docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put": neither cleanup moves or
+// docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put": Auto-align never moves or
 // resizes a locked element, or anything on a locked layer.
 
 const at = (id: string, x: number, y: number, extra: Partial<Element> = {}): Element =>
@@ -28,17 +28,20 @@ const elements = (): Element[] => [
 ];
 
 describe('cleanup leaves locked elements alone', () => {
-  for (const kind of ['align', 'smart', 'tree'] as const) {
-    it(`${kind} keeps locked and locked-layer elements in place`, () => {
-      const before = elements();
-      const after = cleanupElements(before, kind, LAYERS);
-      const byId = new Map(after.map((e) => [e.id, e]));
-      expect(byId.get('own-lock')).toBe(before[2]);
-      expect(byId.get('layer-lock')).toBe(before[3]);
-      // Something unlocked still moved, so the cleanup ran.
-      expect(byId.get('a')).not.toEqual(before[0]);
-    });
-  }
+  it('keeps locked and locked-layer elements in place', () => {
+    const before = elements();
+    const after = cleanupElements(before, LAYERS);
+    const byId = new Map(after.map((e) => [e.id, e]));
+    expect(byId.get('own-lock')).toBe(before[2]);
+    expect(byId.get('layer-lock')).toBe(before[3]);
+    // Something unlocked still moved, so the cleanup ran.
+    expect(byId.get('a')).not.toEqual(before[0]);
+  });
+
+  it('leaves an empty tab as it is', () => {
+    const none: Element[] = [];
+    expect(cleanupElements(none)).toBe(none);
+  });
 
   it('collects element locks and layer locks', () => {
     expect([...lockedElementIds(elements(), LAYERS)].sort()).toEqual(['layer-lock', 'own-lock']);

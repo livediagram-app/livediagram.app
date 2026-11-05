@@ -13,10 +13,7 @@ import type {
   ChartLegendPosition,
   ChartType,
   ChecklistItem,
-  AgendaItem,
   ChairFacing,
-  DecisionStatus,
-  EstimateScale,
   Element,
   ChartPaletteId,
   CodeThemeId,
@@ -206,26 +203,8 @@ export type EditorContextMenuProps = {
   // "create the far end for me" for the common case where it doesn't exist yet.
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
-  // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
-  // their settings, applied to the element the menu is acting on. The session button's and the cover's are
-  // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
-  onSetSession?: (config: import('@livehuddle/document').SessionButtonConfig) => void;
-  onSetRevealed?: (revealed: boolean) => void;
-  onSetPickerSource: (source: import('@livehuddle/document').PickerSource) => void;
-  onSetPickerOptions: (options: string[]) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
   onSetReaction: (reaction: import('@livehuddle/document').Reaction) => void;
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature
-  // check, idea box and roll call carry no settings — everything they do
-  // happens on their own faces — so they need no setter here.
-  onSetEstimateScale: (scale: EstimateScale) => void;
-  onSetAgendaItems: (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => void;
-  onSetDecisionStatus: (status: DecisionStatus) => void;
-  onSetDecisionDate: (date: string | undefined) => void;
-  onSetDecisionDrivers: (drivers: string[]) => void;
   onSetChairFacing: (facing: ChairFacing) => void;
   // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;

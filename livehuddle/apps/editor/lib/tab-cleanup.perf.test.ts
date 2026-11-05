@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createPinnedArrow, createShape, type Element } from '@livehuddle/document';
-import { cleanupElements, type CleanupKind } from './tab-cleanup';
+import { cleanupElements } from './tab-cleanup';
 
-// docs/specs/008-canvas/blueprints/tidy-up.md "Performance and limits": a Tidy Up hover runs one cleanup over
-// the whole tab, so the worst case a hand-drawn diagram reaches must stay inside one hover's budget.
+// docs/specs/008-canvas/blueprints/tidy-up.md "Performance and limits": a Tidy Up hover runs Auto-align over
+// the whole tab, so the worst case a hand-drawn board reaches must stay inside one hover's budget.
 
 const TIDY_PREVIEW_WORST_CASE_NODES = 300;
 const TIDY_PREVIEW_BUDGET_MS = 100;
@@ -31,18 +31,13 @@ function bigDiagram(n: number): Element[] {
 
 describe('Tidy Up hover budget', () => {
   const els = bigDiagram(TIDY_PREVIEW_WORST_CASE_NODES);
-  for (const kind of ['smart', 'flow-down', 'flow-right', 'tree', 'align'] as CleanupKind[]) {
-    // Named with the budget it holds here, so a CI failure names CI's.
-    it(`${kind} lays out ${TIDY_PREVIEW_WORST_CASE_NODES} nodes inside ${cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS)} ms`, () => {
-      // Untimed warm-ups first: `cpuUsage` bills the whole process, so while V8 still compiles and
-      // collects on its background threads a pass pays for them (on a CI runner under coverage one warm-up
-      // left Smart at 105 to 109 ms; it is about 20 ms locally). Then CPU time, not wall time: the
-      // parallel suite starves a wall-clock budget (#586). Same pattern as mind-connector-route.perf.test.ts.
-      for (let pass = 0; pass < WARM_UP_PASSES; pass++) cleanupElements(els, kind);
-      const best = Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void cleanupElements(els, kind))));
-      // The hover budget as written on a developer's machine; CI's coverage-instrumented runners get
-      // CI_CPU_HEADROOM, as Smart measures about 100 ms there against 24 ms locally.
-      expect(best).toBeLessThan(cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS));
-    });
-  }
+  // Named with the budget it holds here, so a CI failure names CI's.
+  it(`Auto-align snaps ${TIDY_PREVIEW_WORST_CASE_NODES} nodes inside ${cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS)} ms`, () => {
+    // Untimed warm-ups first: `cpuUsage` bills the whole process, so while V8 still compiles and collects on its
+    // background threads a pass pays for them. Then CPU time, not wall time: the parallel suite starves a
+    // wall-clock budget (#586). Same pattern as mind-connector-route.perf.test.ts.
+    for (let pass = 0; pass < WARM_UP_PASSES; pass++) cleanupElements(els);
+    const best = Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void cleanupElements(els))));
+    expect(best).toBeLessThan(cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS));
+  });
 });

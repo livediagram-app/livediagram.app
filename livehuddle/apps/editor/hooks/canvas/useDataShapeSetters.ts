@@ -6,14 +6,7 @@ import {
   LEGEND_MAX_TEXT,
   type LegendItem,
   CHECKLIST_MAX_TEXT,
-  AGENDA_MAX_ITEMS,
-  AGENDA_MAX_TEXT,
-  DECISION_MAX_DRIVERS,
-  DECISION_MAX_TEXT,
-  type AgendaItem,
   type ChairFacing,
-  type DecisionStatus,
-  type EstimateScale,
   clampPercent,
   CODE_MAX_LENGTH,
   isProgressShape,
@@ -23,7 +16,6 @@ import {
   type CodeLanguage,
   type Element,
   type ProgressAnim,
-  type ShapeElement,
   turnsWithFacing,
   seatingFacing,
   turnedSeatingBox,
@@ -188,76 +180,6 @@ export function useDataShapeSetters({
     );
   };
 
-  // --- The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130) ----------------
-  // Selection-wide like every other setter here, each gated to its own kind so
-  // a multi-selection containing a chair and a chart only writes the chair.
-  const setCollabFieldSelected = (
-    kind: ShapeElement['shape'],
-    patch: Partial<ShapeElement>,
-    telemetryType: string,
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === kind ? { ...el, ...patch } : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
-
-  const setEstimateScaleSelected = (scale: EstimateScale) =>
-    setCollabFieldSelected('estimate', { estimateScale: scale }, 'Estimate');
-
-  // The current segment travels with its row (docs/specs/012-collaboration/agenda.md
-  // "The current segment"): `moveCurrent` says where a reorder or removal put
-  // it, and a current index past the new rows is cleared either way.
-  const setAgendaItemsSelected = (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const agendaItems = items.slice(0, AGENDA_MAX_ITEMS).map((item) => ({
-      label: item.label.slice(0, AGENDA_MAX_TEXT),
-      minutes: item.minutes,
-    }));
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'agenda') return el;
-        let current = el.agendaCurrent;
-        if (current !== undefined && moveCurrent) current = moveCurrent(current);
-        if (current !== undefined && current >= agendaItems.length) current = undefined;
-        return {
-          ...el,
-          agendaItems,
-          agendaCurrent: current,
-          ...(current === undefined ? { agendaTimerStartedAt: undefined } : {}),
-        };
-      }),
-    );
-    track('Element', 'Changed', 'Agenda');
-  };
-
-  const setDecisionStatusSelected = (status: DecisionStatus) =>
-    setCollabFieldSelected('decision', { decisionStatus: status }, 'Decision');
-
-  // An empty date CLEARS the field, so an undated card renders nothing at all
-  // rather than an empty slot (docs/specs/012-collaboration/decision-record.md).
-  const setDecisionDateSelected = (date: string | undefined) =>
-    setCollabFieldSelected('decision', { decisionDate: date || undefined }, 'Decision');
-
-  const setDecisionDriversSelected = (drivers: string[]) =>
-    setCollabFieldSelected(
-      'decision',
-      {
-        decisionDrivers: drivers
-          .slice(0, DECISION_MAX_DRIVERS)
-          .map((d) => d.slice(0, DECISION_MAX_TEXT)),
-      },
-      'Decision',
-    );
-
   // Chair, desk and sofa (docs/specs/009-elements/chair.md): one facing for all three. A desk or a
   // sofa turned onto its side swaps its box about its centre, so the drawing keeps its proportions.
   const setChairFacingSelected = (facing: ChairFacing) => {
@@ -337,11 +259,6 @@ export function useDataShapeSetters({
     setLegendItemsSelected,
     setPageHeading,
     setChecklistItemsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
-    setDecisionStatusSelected,
-    setDecisionDateSelected,
-    setDecisionDriversSelected,
     setChairFacingSelected,
     setRoomDoorSelected: setRoomDoor,
     setButtonModeSelected,

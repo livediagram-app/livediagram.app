@@ -4,7 +4,7 @@
 // (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) for the person. The Explorer page itself is
 // liveworkspace's, served at this address's /explorer (@liveworkspace/workbench/lib/explorer-href.ts); a frame keeps its own. Everything it
 // lists comes from the index through /api/index; livehuddle supplies the addresses and Help articles
-// (lib/explorer-host.ts), New (the /new flow), the Library (Image Gallery, Shape Libraries and Import from,
+// (lib/explorer-host.ts), New (the /new flow), the Library (Image Gallery and Import from,
 // lib/explorer-library-host.tsx), the hero's setting (the synced
 // `homeBanner` preference, docs/specs/013-workspace/explorer-home.md "Hiding the banner"), and the person: an
 // account's teams from its token, or a guest's identity from liveworkspace, which the first visit fetches before the
@@ -177,7 +177,6 @@ export function ExplorerHost({
         defaultFolderOptions={DEFAULT_FOLDER_OPTIONS}
         onFolderShown={onFolderShown}
         gallery={library.gallery}
-        shapeLibraries={library.shapeLibraries}
         imports={explorerImports}
         onLensSelected={trackLens}
         header={header ? ({ search }) => header(search, chrome) : undefined}

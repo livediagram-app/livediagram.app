@@ -18,7 +18,6 @@ import {
   lucideFolder,
   lucideHouse,
   lucideImage,
-  lucideShapes,
   lucideShare2,
 } from '@liveworkspace/icons/lucide';
 
@@ -91,8 +90,6 @@ export const ClockIcon = lucideGlyph(lucideClock, 13);
 
 export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
-// Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
-export const ShapesIcon = lucideGlyph(lucideShapes, 13);
 // A team: one drawing, shared with the landing page (@livehuddle/ui).
 export { TeamIcon } from '@livehuddle/ui';
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My

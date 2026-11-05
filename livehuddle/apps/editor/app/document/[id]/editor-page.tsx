@@ -17,7 +17,6 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
 import { LocalStorePrompts } from '@/components/dialogs/LocalStorePrompts';
 import { EditorContext } from './EditorContext';
@@ -202,11 +201,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       <MentionContext.Provider value={state.commentMentions}>
         {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
         <CommentReactionsProvider value={state.commentReactions}>
-          {/* The owner's shape libraries, for the palette's My shapes
-              (docs/specs/013-workspace/shape-libraries.md). */}
-          <ShapeLibraryProvider ownerId={ownerId}>
-            <EditorView />
-          </ShapeLibraryProvider>
+          <EditorView />
         </CommentReactionsProvider>
       </MentionContext.Provider>
       {/* This browser's own store: an old livehuddle.app guest's claim, its retired parts, and moving documents in

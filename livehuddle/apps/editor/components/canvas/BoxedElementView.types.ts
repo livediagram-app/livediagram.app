@@ -97,78 +97,9 @@ export type BoxedElementViewProps = {
   // this element. Absent on a surface with nobody to ask (an export, a solo
   // canvas), which renders the face inert.
   onPressFocusButton?: (element: import('@livehuddle/document').ShapeElement) => void;
-  // Session button (docs/specs/012-collaboration/session-button.md): press it to start the tool it carries. Absent
-  // on a surface with no session to run; `sessionStartBlocked` is the softer
-  // case — there IS a session, but this viewer may not start things (view
-  // role), so the face renders inert and explains rather than lying.
-  onPressSessionButton?: (element: import('@livehuddle/document').ShapeElement) => void;
-  sessionStartBlocked?: boolean;
-  // The facilitator's name when the face is blocked because somebody else runs the session.
-  sessionRunBy?: string | null;
-  // What the tab's timer is doing, so a timer button can say "Pause" /
-  // "Continue" instead of always promising a fresh countdown.
-  timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
-  // The tab's live timer, so a Timer session element can BE the timer rather
-  // than a button that starts one elsewhere (docs/specs/012-collaboration/session-button.md). Null when none is
-  // running; absent on a surface with no session behind it.
-  tabTimer?: import('@livehuddle/document').TabTimer | null;
-  // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, and the thread mutators for THIS
-  // element. All keyed by element id already, so the panel drives the same
-  // comment machinery the anchored popover does.
-  commentSelfId?: string;
-  commentActions?: {
-    add?: (text: string, mentions: import('@livehuddle/document').CommentMention[]) => void;
-    remove?: (commentId: string) => void;
-    resolve?: () => void;
-    unresolve?: () => void;
-  };
-  // Action panel (docs/specs/012-collaboration/action-panel.md): who I am, and the action mutators for THIS
-  // element, bound by id the way commentActions are.
-  actionSelfId?: string | null;
-  // An Action panel holds a list (docs/specs/012-collaboration/action-panel.md): add one, or edit / complete /
-  // reopen the named one.
-  actionActions?: {
-    add: () => void;
-    edit: (actionId: string) => void;
-    complete: (actionId: string) => void;
-    reopen: (actionId: string) => void;
-  };
-  // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md).
-  onSetSessionConfig?: (
-    element: import('@livehuddle/document').ShapeElement,
-    config: import('@livehuddle/document').SessionButtonConfig,
-  ) => void;
   // The `…` on a Behaviours element's face opens that element's own context
   // menu beside it (docs/specs/008-canvas/canvas-and-palette.md), rather than a second copy of its settings form.
   onOpenElementSettings?: (elementId: string) => void;
-  // Pause / resume / restart / cancel for that timer. Absent on a read-only
-  // surface, which renders the timer readable but inert.
-  timerControls?: {
-    pause?: () => void;
-    resume?: () => void;
-    reset?: () => void;
-    clear?: () => void;
-    // Change a running or paused countdown's length, restarting it there.
-    setDuration?: (ms: number) => void;
-  };
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): whether THIS viewer has lifted the cover (local,
-  // ephemeral — the shared state lives on the element), and the toggle.
-  revealedForMe?: boolean;
-  onToggleReveal?: (elementId: string) => void;
-  // Picker (docs/specs/012-collaboration/picker.md): resolves what a roll can land on right now and performs
-  // one, returning the result to animate towards. `shared` says whether this
-  // viewer's roll is written back, so the face can tell its own landing apart
-  // from one that arrived from a peer.
-  onRollPicker?: (element: import('@livehuddle/document').ShapeElement) => {
-    candidates: import('@/lib/picker').PickerCandidate[];
-    shared: boolean;
-    roll: () => import('@/lib/picker').PickerCandidate | null;
-  };
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): who the viewer is, who
-  // else is in the room, and the writes they may make. One prop for all five
-  // faces — see CollabFaceRouter. Absent on a surface with no session behind
-  // it, which renders them readable but inert.
-  collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
   // Chair (docs/specs/009-elements/chair.md): who peer presence says is seated on this chair right
   // now. A function of the element id rather than a map prop so the common
   // case (no chairs on the tab) costs nothing. Occupancy is never in the

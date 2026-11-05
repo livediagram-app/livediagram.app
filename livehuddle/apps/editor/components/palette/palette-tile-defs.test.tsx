@@ -54,7 +54,7 @@ describe('PALETTE_TILES catalogue', () => {
 // description and decide whether it still describes what is in the tab.
 //
 // Categories filled from a catalogue or a layout rather than from tiles (Popular,
-// Icons, Stickers, Technology, My shapes) hold none, and are pinned at 0 so that stays
+// Icons, Stickers, Technology) hold none, and are pinned at 0 so that stays
 // true by intent rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
@@ -65,15 +65,11 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   draw: 6,
   icons: 0,
   stickers: 0,
-  'my-shapes': 0,
   media: 8,
   components: 11,
   data: 7,
-  // The Collaborate elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"): 34 tiles between them.
-  'collab-ask': 7,
-  'collab-tools': 5,
-  'collab-record': 5,
+  // The meeting elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
+  // "The palette"): 28 tiles between them.
   'collab-react': 5,
   'collab-mode': 8,
   'collab-navigate': 15,
@@ -160,16 +156,6 @@ describe('palette tile glyph size', () => {
 
   it.each(glyphTiles)('%s renders at the tile step', (id, svg) => {
     expect(Number(/width="([\d.]+)"/.exec(svg)![1]), id).toBe(TILE_GLYPH_PX);
-  });
-});
-
-// docs/specs/012-collaboration/session-button.md: the Timer and Stopwatch tiles sit side by side and must not
-// wear the same glyph.
-describe('session clock tiles', () => {
-  it('draw the timer and the stopwatch differently', () => {
-    const glyph = (id: string) =>
-      renderToStaticMarkup(<>{PALETTE_TILES.find((t) => t.id === id)!.icon}</>);
-    expect(glyph('tools:session-timer')).not.toBe(glyph('tools:session-stopwatch'));
   });
 });
 

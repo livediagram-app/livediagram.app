@@ -13,7 +13,6 @@ export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['workshop'])
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
 const BAR_LABELS: Readonly<Record<string, string>> = {
   write: 'Write',
-  'my-shapes': 'Library',
   // Selection Mode: its buttons hand everyone a selection mode.
   'collab-mode': 'Modes',
 };
@@ -54,7 +53,6 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 const TAGLINES: Readonly<Record<string, string>> = {
   popular: 'What a Space is most often furnished with.',
   shapes: 'The basics, the flowchart vocabulary and more.',
-  'my-shapes': 'Shapes from your imported libraries.',
   write: 'Words on the canvas: text and sticky notes.',
   frame: 'A titled box to group a room’s notes.',
   draw: 'Sketch, outline and connect by hand.',
@@ -67,9 +65,6 @@ const TAGLINES: Readonly<Record<string, string>> = {
   media: 'A picture, uploaded or found, and a link card.',
   stickers: 'Colour emoji to react, mark status and celebrate.',
   data: 'Charts and meters that read at a glance.',
-  'collab-ask': 'Put a question to the room.',
-  'collab-tools': 'Run the session: timers, reveals and picks.',
-  'collab-record': 'Keep what happened: comments, actions, decisions.',
   'collab-react': 'Celebrate on the canvas.',
   'collab-mode': 'Buttons that switch how everyone points.',
   'collab-navigate': 'Places to go, things to sit at, and the office.',

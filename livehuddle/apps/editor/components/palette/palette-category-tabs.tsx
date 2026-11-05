@@ -14,8 +14,6 @@
 // grouping by `group` under the CATEGORY_BANDS headings.
 
 import { PALETTE_CATEGORIES } from './palette-categories';
-import { PaletteMyShapesTab } from './PaletteMyShapesTab';
-import type { ShapeLibraryItem } from '@livehuddle/api-schema';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import {
@@ -53,8 +51,6 @@ export function paletteCategoryTabs(
     categories: ResolvedPaletteCategory[];
     pendingDraw: PendingDraw | null | undefined;
     tileActions: PaletteTileActions;
-    // Places a shape from My shapes (docs/specs/013-workspace/shape-libraries.md).
-    insertLibraryShape: (item: ShapeLibraryItem) => void;
   } & IconDeps &
     StickerDeps,
 ) {
@@ -62,7 +58,6 @@ export function paletteCategoryTabs(
     categories,
     pendingDraw,
     tileActions,
-    insertLibraryShape,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -83,8 +78,6 @@ export function paletteCategoryTabs(
   const bodyFor = (c: ResolvedPaletteCategory): React.ReactNode => {
     const tiles = c.tiles ?? [];
     switch (c.id) {
-      case 'my-shapes':
-        return <PaletteMyShapesTab onInsert={insertLibraryShape} />;
       case 'icons':
         return (
           <IconPickerTab
@@ -119,9 +112,6 @@ export function paletteCategoryTabs(
         return <PaletteComponentsTab {...tab} tiles={tiles} />;
       case 'data':
         return <PaletteDataTab {...tab} tiles={tiles} />;
-      case 'collab-ask':
-      case 'collab-tools':
-      case 'collab-record':
       case 'collab-react':
       case 'collab-mode':
       case 'collab-navigate':

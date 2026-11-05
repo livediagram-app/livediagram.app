@@ -5,7 +5,7 @@ import type { BoardScene } from '@/lib/board-scene/scene';
 import { excalidrawBuilder, excalidrawText } from '@/lib/excalidraw-fixtures';
 import { EXCALIDRAW_NOT_A_SCENE } from '@/lib/excalidraw-board-file';
 import type { ImportOutcome } from '@/lib/import-tab';
-import type { ImportScenes } from './useMsWhiteboardImport';
+import type { ImportScenes } from './useBoardSceneImport';
 import { track } from '@/lib/telemetry';
 import { UNEXPECTED, useExcalidrawFileImport } from './useExcalidrawFileImport';
 

@@ -114,10 +114,8 @@ export function EditorSearchPanel() {
           : (add) => {
               if (add.type === 'shape')
                 addShape(add.shapeKind, {
-                  session: add.session,
                   reaction: add.reaction,
                   mode: add.mode,
-                  estimateScale: add.estimateScale,
                   variant: add.variant,
                 });
               else if (add.type === 'icon') addIcon(add.iconId);

@@ -3,7 +3,7 @@ import { Button } from '@livehuddle/ui';
 import { ImportDropZone } from './ImportDropZone';
 import { ImportImageReport } from './ImportImageReport';
 import type { ImportOutcome } from '@/lib/import-tab';
-import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
+import type { ImportScenes } from '@/hooks/persistence/useBoardSceneImport';
 import {
   useExcalidrawFileImport,
   type ExcalidrawImportStep,
