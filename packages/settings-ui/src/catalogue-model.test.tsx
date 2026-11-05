@@ -18,20 +18,17 @@ const toggle = (id: string, extra: Partial<CatalogueRow> = {}) =>
   }) as CatalogueRow;
 
 describe('an app’s catalogue in the panel', () => {
-  it('shows a nested row only while its switch is on, and a power user’s only to them', () => {
+  it('shows a nested row only while its switch is on', () => {
     const when = { key: 'panel', on: true, off: false, fallback: true };
     const category: CatalogueCategory = {
       id: 'c',
       label: 'C',
-      rows: [toggle('panel'), toggle('child', { when }), toggle('power', { powerUser: true })],
+      rows: [toggle('panel'), toggle('child', { when })],
     };
     const ids = (all: object, app: object) =>
       visibleCatalogueRows(category, { all: { ...all }, app: { ...app } }).map((r) => r.id);
     expect(ids({}, {})).toEqual(['panel', 'child']);
     expect(ids({}, { panel: false })).toEqual(['panel']);
-    expect(ids({ powerUserMode: true }, {})).toEqual(['panel', 'child', 'power']);
-    // A shared key only counts from the shared scope.
-    expect(ids({}, { powerUserMode: true })).toEqual(['panel', 'child']);
   });
 
   it("draws the app's rows in the shared view's model, each change handing over what to store", () => {

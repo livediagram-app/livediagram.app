@@ -113,7 +113,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   }
 
   // --- Project / tab commands. Always available in-project (independent of
-  // the selection), so a power user can share / rename / theme without first
+  // the selection), so someone at the keyboard can share / rename / theme without first
   // clearing what's selected.
   out.push({
     id: 'create-tab',

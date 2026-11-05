@@ -5,7 +5,6 @@ import { tileCaption } from './tile-caption';
 import { useModKeyHeld } from '@liveworkspace/workbench/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
 import { HoverCard, Tooltip } from '@livehuddle/ui';
-import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { paletteFinishClass } from './palette-tile-finish';
 import type { PaletteTileDef } from './palette-tile-defs';
@@ -151,10 +150,7 @@ export function IconButton({
   // A reason greys the tile out as `disabled` does, but keeps it focusable so the reason can be read.
   const refused = !!disabledReason && !disabledProp;
   const disabled = disabledProp || refused;
-  // Minimal chrome (docs/specs/007-editor/power-user-mode.md): icon only, named by a Tooltip.
-  const minimalChrome = useMinimalChrome();
-  const captionHidden = hideCaption || minimalChrome;
-  const hintKind = minimalChrome ? (hint ?? 'tooltip') : tileHint(hint, hideCaption);
+  const hintKind = tileHint(hint, hideCaption);
   // A dragKind tile is draggable and carries the palette DnD payload; an
   // explicit draggable/onDragStart (the icon grid) is used otherwise.
   const effectiveDraggable = refused ? false : dragKind ? true : draggable;
@@ -225,14 +221,10 @@ export function IconButton({
       className={
         hideCaption
           ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${stripTile ? 'phone:w-8' : ''} ${tone}`
-          : minimalChrome
-            ? // Keeps its grid cell's width, so the icon stays centred where the
-              // captioned tile had it.
-              `relative flex h-9 w-full items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
-            : `relative flex w-full flex-col items-center justify-start gap-0.5 rounded-md px-0.5 py-1 transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
+          : `relative flex w-full flex-col items-center justify-start gap-0.5 rounded-md px-0.5 py-1 transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
       }
     >
-      {captionHidden ? (
+      {hideCaption ? (
         <span style={glyphStyle} className={`${glyphClass}flex items-center justify-center`}>
           {children}
         </span>

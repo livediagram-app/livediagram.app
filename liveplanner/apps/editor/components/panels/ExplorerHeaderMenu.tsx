@@ -12,9 +12,6 @@ import {
 import { SettingsIcon, ScaleIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
 import { Glyph } from '@liveplanner/ui';
 import type { ExplorerMenuActions } from './Explorer.types';
-import type { HelpArticleKey } from '@/lib/help-articles';
-import { HelpMarkIcon, openHelpArticle } from '@/components/primitives/HelpArticleLink';
-import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 
 // The Explorer panel header's ⋯ menu (docs/specs/013-workspace/folders.md): the project-level verbs that
@@ -27,15 +24,10 @@ import { assignAppLocation } from '@liveworkspace/workbench/lib/app-location';
 export function ExplorerHeaderMenu({
   onNewProject,
   actions = {},
-  helpArticle,
 }: {
   onNewProject?: () => void;
   actions?: ExplorerMenuActions;
-  // The panel's article. Minimal chrome hides the header's `?`, so Help moves
-  // here (docs/specs/007-editor/power-user-mode.md).
-  helpArticle?: HelpArticleKey;
 }) {
-  const minimalChrome = useMinimalChrome();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = () => setAnchor(null);
   const run = (fn: () => void) => () => {
@@ -93,15 +85,6 @@ export function ExplorerHeaderMenu({
     {
       key: 'app',
       rows: [
-        helpArticle && minimalChrome ? (
-          <MenuActionRow
-            key="help"
-            plain
-            icon={<HelpMarkIcon />}
-            label="Help"
-            onClick={run(() => openHelpArticle(helpArticle))}
-          />
-        ) : null,
         actions.onSearch ? (
           <MenuActionRow
             key="search"

@@ -9,7 +9,6 @@ import {
   writeSettingsView as writeView,
 } from '@liveworkspace/settings-ui';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { setPowerUserMode } from '@/lib/power-user-mode';
 
 const VIEW_KEY = 'livehuddle:settings-view:v1';
 const readSettingsView = () => readView(VIEW_KEY);
@@ -58,28 +57,21 @@ afterEach(() => {
 });
 
 describe('SettingsDialog', () => {
-  it('goes from the power user preset readout to the setting in its own category', () => {
+  it('shows no Power User heading or rows, and keeps the other settings, for a blob with the retired keys', () => {
+    // docs/specs/007-editor/power-user-mode.md "What happens to stored preferences".
     setViewport(false);
-    Element.prototype.scrollIntoView = vi.fn();
-    renderDialog(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Alignment Guides in Editor' }));
-    // Editor is open, with the Alignment Guides row ringed.
-    expect(screen.getByRole('switch', { name: /Alignment Guides/ })).toBeTruthy();
-    const ringed = document.querySelector('[data-settings-row="alignmentGuides"]');
-    expect(ringed?.className).toContain('ring-2');
-  });
-
-  it('shows Minimal Chrome only while power user mode is on', () => {
-    setViewport(false);
-    const { onChange } = renderDialog();
+    renderDialog({
+      powerUserMode: true,
+      minimalChrome: true,
+      alignmentGuides: false,
+    } as UserPreferences);
+    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
+    expect(screen.queryByText('Power User')).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Minimal Chrome' })).toBeNull();
-    fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
-    const next = onChange.mock.calls[0]![0] as UserPreferences;
-    expect(next.powerUserMode).toBe(true);
-    expect(next.alignmentGuides).toBe(true);
-    cleanup();
-    renderDialog(next);
-    expect(screen.getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();
+    expect(
+      screen.getByRole('switch', { name: /Alignment Guides/ }).getAttribute('aria-checked'),
+    ).toBe('false');
   });
 
   it('opens on desktop with the rail and the first category already showing', () => {

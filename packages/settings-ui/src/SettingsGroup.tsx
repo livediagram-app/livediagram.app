@@ -31,7 +31,7 @@ export function SettingsGroup({ children }: { children: ReactNode }) {
   );
 }
 
-// The rows nested under a parent row (a panel's Enable switch, Power User Mode), inside the same
+// The rows nested under a parent row (a panel's Enable switch, a tour's Show Me switch), inside the same
 // card: indented and faintly tinted, so they read as that row's own settings.
 export function SettingsGroupChildren({ label, children }: { label: string; children: ReactNode }) {
   return (

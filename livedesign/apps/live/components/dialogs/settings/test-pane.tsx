@@ -17,7 +17,6 @@ export function SettingsCategoryPane({
   settings,
   onChange,
   focusRowKey = null,
-  onGoToRow,
   onOpenCategory,
   focusSectionId = null,
 }: {
@@ -25,7 +24,6 @@ export function SettingsCategoryPane({
   settings: UserPreferences;
   onChange: (next: UserPreferences) => void;
   focusRowKey?: string | null;
-  onGoToRow?: (categoryId: string, rowKey: string) => void;
   onOpenCategory?: (categoryId: string) => void;
   focusSectionId?: string | null;
 }) {
@@ -37,7 +35,6 @@ export function SettingsCategoryPane({
         category={model!}
         isMobile={isMobile}
         focusRowKey={focusRowKey}
-        onGoToRow={onGoToRow}
         onOpenCategory={onOpenCategory}
         focusSectionId={focusSectionId}
       />

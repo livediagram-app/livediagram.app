@@ -15,7 +15,6 @@ import { BrandMark, ProductNavLinks } from '@livedocuments/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
@@ -60,7 +59,6 @@ function ExplorerImpl({
   onPopoverClose,
   popoverAnchor,
 }: ExplorerProps) {
-  const minimalChrome = useMinimalChrome();
   const isMobile = useIsMobileViewport();
   const sheet = isMobile;
   const router = useAppNavigation();
@@ -153,11 +151,7 @@ function ExplorerImpl({
       onMoveTo={NO_MOVE}
       headerActions={
         sheet ? undefined : (
-          <ExplorerHeaderMenu
-            onNewDocument={onNewDocument}
-            actions={menuActions}
-            helpArticle="explorerPanel"
-          />
+          <ExplorerHeaderMenu onNewDocument={onNewDocument} actions={menuActions} />
         )
       }
       popoverOpen={popoverOpen}
@@ -201,9 +195,8 @@ function ExplorerImpl({
         // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
         layout={sheet ? 'sheet' : 'side'}
         open={shown}
-        divider={minimalChrome ? 'lines' : 'titles'}
-        // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).
-        notice={minimalChrome ? null : <SignInPrompt bar />}
+        // The sign-in note under the card.
+        notice={<SignInPrompt bar />}
         // The product's surfaces, which the editor header no longer carries as a menu.
         footer={
           <ProductNavLinks

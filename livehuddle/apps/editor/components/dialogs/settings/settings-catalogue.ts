@@ -12,7 +12,6 @@ import {
   type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -91,13 +90,11 @@ function emailSwitch(
 // nothing can send, AND a signed-in account, or there is no address to send
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
-// Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
-  powerUserMode?: boolean;
   preferences?: UserPreferences;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
   workbench?: boolean;
@@ -133,13 +130,13 @@ type RowBase = {
   // description: a test fails if a row that needs them has none.
   keywords?: string;
   // Sub-heading this row sits under, within its category. A category holding
-  // several unrelated clusters (Editor's Power User rows) reads as one long undifferentiated list without them. Rows
+  // several unrelated clusters (Editor's Canvas and Mouse rows) reads as one long undifferentiated list without them. Rows
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
   // The key of a row in the same category this one belongs to: it renders
   // directly beneath that row, indented, in a group named after it
-  // (docs/specs/007-editor/power-user-mode.md#in-settings).
+  // (docs/specs/007-editor/user-preferences.md).
   parent?: string;
   // A setting with no effect on a phone-sized viewport, holding the note that
   // says so there. The row stays visible (so Settings reads the same on every
@@ -247,10 +244,6 @@ export type SettingsRetiredPartsRowSpec = RowBase & { kind: 'retiredParts' };
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
 export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
 
-// What power user mode's preset set, as a live readout: each line's value is
-// its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
-export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -266,8 +259,7 @@ export type SettingsRowSpec =
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
   | SettingsRetiredPartsRowSpec
-  | SettingsDefaultFoldersRowSpec
-  | SettingsPresetSummaryRowSpec;
+  | SettingsDefaultFoldersRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -473,46 +465,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.middleMousePan !== false,
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
-      },
-      {
-        // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
-        // recommended values once; switching off restores the untouched ones.
-        kind: 'toggle',
-        key: 'powerUserMode',
-        keywords: 'power user expert advanced pro minimal chrome fewer labels declutter',
-        section: 'Power User',
-        label: 'Power User Mode',
-        description:
-          'Applies recommended settings for experienced users and hides the tours. Switching it off puts back whatever you did not change since.',
-        helpArticle: 'powerUserMode',
-        read: isPowerUserMode,
-        write: (p, v) => setPowerUserMode(p, v).prefs,
-        event: { category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'minimalChrome',
-        keywords: 'minimal chrome hide labels captions titles hints icons only declutter',
-        section: 'Power User',
-        label: 'Minimal Chrome',
-        description:
-          'Hides captions, panel titles and hints. Every control stays, and shows its name on hover.',
-        helpArticle: 'powerUserMode',
-        parent: 'powerUserMode',
-        available: (ctx) => ctx.powerUserMode === true,
-        read: (p) => p.minimalChrome !== false,
-        write: (p, v) => ({ ...p, minimalChrome: v }),
-        event: { category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' },
-      },
-      {
-        kind: 'presetSummary',
-        key: 'powerUserPreset',
-        keywords: 'power user preset recommended defaults restore',
-        section: 'Power User',
-        label: 'Set By Power User Mode',
-        description: 'Change any of them in its own row.',
-        parent: 'powerUserMode',
-        available: (ctx) => ctx.powerUserMode === true,
       },
     ],
   },

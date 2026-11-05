@@ -73,26 +73,26 @@ describe('SettingsView on desktop', () => {
       privacy: [
         {
           kind: 'toggle',
-          key: 'pum',
-          label: 'Power User Mode',
+          key: 'map',
+          label: 'Show Map',
           description: '',
           value: true,
           onChange: vi.fn(),
         },
         {
           kind: 'toggle',
-          key: 'mini',
-          label: 'Minimal Chrome',
+          key: 'dim',
+          label: 'Dim Outside',
           description: '',
-          parent: 'pum',
+          parent: 'map',
           value: false,
           onChange: vi.fn(),
         },
       ],
     });
     view({ categories, initialCategoryId: 'privacy' });
-    const group = screen.getByRole('group', { name: 'Power User Mode settings' });
-    expect(within(group).getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();
+    const group = screen.getByRole('group', { name: 'Show Map settings' });
+    expect(within(group).getByRole('switch', { name: 'Dim Outside' })).toBeTruthy();
   });
 
   it('draws a closed section with its switch count, opening on its heading', () => {

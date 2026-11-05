@@ -586,6 +586,7 @@ Migrations, in order:
 | `DEVICE_PREFERENCES`                | `(object or list, see file)`                                             | `device.ts`          |
 | `COMMON_SETTING_KEYS`               | `(object or list, see file)`                                             | `index.ts`           |
 | `ALL_SETTING_KEYS`                  | `(object or list, see file)`                                             | `index.ts`           |
+| `RETIRED_ALL_SETTING_KEYS`          | `['powerUserMode', 'minimalChrome']`                                     | `index.ts`           |
 | `PRESENCE_COLOURS`                  | `(object or list, see file)`                                             | `presence.ts`        |
 | `PRESENCE_COLOUR_VALUES`            | `PRESENCE_COLOURS.map((c) => c.value)`                                   | `presence.ts`        |
 | `PROFILE_NAME_MAX`                  | `120`                                                                    | `presence.ts`        |

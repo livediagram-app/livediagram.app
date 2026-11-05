@@ -19,9 +19,6 @@ type ShortcutShape =
   'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram' | 'frame';
 
 export type EditorKeyboardShortcutsDeps = {
-  // Called once per key the editor acted on: the power user mode offer counts
-  // them (docs/specs/007-editor/power-user-mode.md).
-  onShortcutUsed?: () => void;
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
   setFormatSourceId: (v: string | null) => void;

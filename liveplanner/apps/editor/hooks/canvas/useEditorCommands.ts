@@ -1,5 +1,5 @@
 // Binds the contextual command catalogue (lib/editor-commands.ts) to the live
-// editor so the SearchPanel can surface a power-user action palette (docs/specs/008-canvas/canvas-and-palette.md
+// editor so the SearchPanel can surface a keyboard-first action palette (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Reads the editor's existing action handlers off
 // EditorContext, returns the searchable `commandItems` the
 // panel matches against plus a `runCommand` dispatcher.

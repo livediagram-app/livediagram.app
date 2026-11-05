@@ -12,13 +12,7 @@ export {
   type AppearanceSetting,
   type AppearanceStore,
 } from './appearance-store';
-export {
-  APPEARANCE_LABEL,
-  appearanceToggleName,
-  nextAppearanceSetting,
-  oppositeAppearanceSetting,
-  quickAppearanceToggleName,
-} from './appearance-cycle';
+export { APPEARANCE_LABEL, appearanceToggleName, nextAppearanceSetting } from './appearance-cycle';
 export { AppearanceIcon } from './AppearanceIcon';
 export { useAppearanceStore } from './useAppearanceStore';
 export { SiteAppearanceToggle } from './SiteAppearanceToggle';
