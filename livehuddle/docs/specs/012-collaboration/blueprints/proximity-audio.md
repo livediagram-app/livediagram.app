@@ -83,7 +83,7 @@ Routes (`apps/api/src/routes/calls.ts`), each JSON:
 | `PUT /api/documents/:id/calls/renegotiate` | `{ sessionId, sessionToken, sdp }`                                                             | `{ ok: true }`                                                                             |
 | `PUT /api/documents/:id/calls/close`       | `{ sessionId, sessionToken, mids, sdp? }`                                                      | `CallTracksResponse`                                                                       |
 
-Rejections: `503 { error: 'calls_off', reason: 'production' | 'unconfigured' | 'paused' | 'audio-only' }` (the
+Rejections: `503 { error: 'calls_off', reason: 'unconfigured' | 'paused' | 'audio-only' }` (the
 last two from the [kill switch](../../016-platform/blueprints/calls-kill-switch.md#wired-in-part-2)); `404` without a grant; `410` trashed;
 `403 { error: 'calls_listen_only' }` for a listener's publish or a listener-signed session; `400 { error:
 'invalid_call_request' }` for a malformed body, a bad session token, a bad track token, more than
@@ -169,7 +169,7 @@ token. The editor logs through `debugLog('calls', …)`.
 
 | Rule                                                          | Test                                                  |
 | ------------------------------------------------------------- | ----------------------------------------------------- |
-| Production refuses whatever is set; secrets unset refuses     | `apps/api/src/calls/calls-gate.test.ts`               |
+| Secrets unset refuses; production open once they are set      | `apps/api/src/calls/calls-gate.test.ts`               |
 | Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`              |
 | Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked) |
 | Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                   |

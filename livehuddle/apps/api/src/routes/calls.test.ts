@@ -161,14 +161,13 @@ describe('the gates, in order', () => {
     expect(upstream).toEqual([]);
   });
 
-  it('refuses every session on production, whatever is set (the hard flag)', async () => {
+  it('mints a session on production once the secrets are set', async () => {
     const res = await call('POST', 'session', undefined, {
       ...SECRETS,
       APP_BASE_URL: 'https://www.livehuddle.app',
     });
-    expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ error: 'calls_off', reason: 'production' });
-    expect(upstream).toEqual([]);
+    expect(res.status).toBe(200);
+    expect(upstream.length).toBeGreaterThan(0);
   });
 
   it('is off without the secrets', async () => {
@@ -450,11 +449,8 @@ describe('the kill switch', () => {
     expect(upstream.map((u) => u.body)).toEqual([{ tracks: [{ mid: '1' }], force: true }]);
   });
 
-  it('holds production and unset secrets before the switch, close included', async () => {
+  it('holds unset secrets before the switch, close included', async () => {
     const proof = await listenerProof();
-    const production = { ...withMode('off'), APP_BASE_URL: 'https://www.livehuddle.app' };
-    const res = await call('PUT', 'close', { ...proof, mids: ['1'] }, production);
-    expect(await res.json()).toEqual({ error: 'calls_off', reason: 'production' });
     const bare = await call('PUT', 'close', { ...proof, mids: ['1'] }, { CALLS_SWITCH: fakeKv() });
     expect(await bare.json()).toEqual({ error: 'calls_off', reason: 'unconfigured' });
     expect(upstream).toEqual([]);
