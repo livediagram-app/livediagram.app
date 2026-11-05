@@ -53,7 +53,6 @@ const INERT_HANDLERS: CommandHandlers = {
   redo: noop,
   toggleZen: noop,
   fitToScreen: noop,
-  autoLayout: noop,
   autoAlign: noop,
   openExport: noop,
   openImport: noop,
@@ -109,7 +108,6 @@ export function useEditorCommands(open: boolean): {
     zenMode,
     toggleZenMode,
     fitToScreen,
-    autoLayoutTab,
     autoAlignTab,
     setExportOpen,
     setExportScope,
@@ -249,13 +247,12 @@ export function useEditorCommands(open: boolean): {
     // its own UI·Opened·Collaborators, so this adds none.
     openCollaborators: () => ctx.openCollaborators(null),
     // The remaining handlers track internally (undo/redo, zen, fit,
-    // auto layout/align) or have untracked entry points everywhere
+    // auto-align) or have untracked entry points everywhere
     // (export / import / templates), so no extra telemetry here.
     undo,
     redo,
     toggleZen: toggleZenMode,
     fitToScreen,
-    autoLayout: autoLayoutTab,
     autoAlign: autoAlignTab,
     openExport: () => {
       setExportScope('tab');

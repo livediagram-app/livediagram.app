@@ -53,18 +53,11 @@ import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';
 import {
-  AgendaMenuSection,
+  // The office pieces' settings: a chair's facing and a room's doorway.
   ChairMenuSection,
   RoomMenuSection,
-  DecisionMenuSection,
-  EstimateMenuSection,
 } from '@/components/palette/CollabMenuSections';
-import {
-  PickerMenuSection,
-  ReactionMenuSection,
-  RevealMenuSection,
-  SessionMenuSection,
-} from '@/components/palette/BehaviourMenuSections';
+import { ReactionMenuSection } from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
 import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
@@ -109,16 +102,7 @@ type ElementDataSectionsProps = {
   isLegend: boolean;
   isModeButton: boolean;
   isPortal: boolean;
-  isSessionButton: boolean;
-  isReveal: boolean;
-  isPicker: boolean;
   isReactionPad: boolean;
-  // The collaboration elements that carry settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-  // The temperature check, idea box and roll call have none — they are entirely
-  // driven from their own faces — so they get no flag.
-  isEstimate: boolean;
-  isAgenda: boolean;
-  isDecision: boolean;
   isChair: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
@@ -155,13 +139,7 @@ export function ElementDataSections({
   isLegend,
   isModeButton,
   isPortal,
-  isSessionButton,
-  isReveal,
-  isPicker,
   isReactionPad,
-  isEstimate,
-  isAgenda,
-  isDecision,
   isChair,
   sectionProps,
   flyoutProps,
@@ -192,13 +170,7 @@ export function ElementDataSections({
     isLegend ||
     isModeButton ||
     isPortal ||
-    isSessionButton ||
-    isReveal ||
-    isPicker ||
     isReactionPad ||
-    isEstimate ||
-    isAgenda ||
-    isDecision ||
     isChair ||
     shapeTarget?.shape === 'room' ||
     shapeTarget?.shape === 'stage';
@@ -284,31 +256,6 @@ export function ElementDataSections({
                 onEdit={() => target.type === 'shape' && props.onEditCodeBlock(target.id)}
               />
             </MenuAccordionSection>
-          ) : null}
-          {/* The collaboration elements' settings (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130).
-            Each is a small form of its own — see CollabMenuSections. */}
-          {isEstimate ? (
-            <EstimateMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetScale={props.onSetEstimateScale}
-            />
-          ) : null}
-          {isAgenda ? (
-            <AgendaMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetItems={props.onSetAgendaItems}
-            />
-          ) : null}
-          {isDecision ? (
-            <DecisionMenuSection
-              target={shapeTarget ?? undefined}
-              sectionProps={sectionProps}
-              onSetStatus={props.onSetDecisionStatus}
-              onSetDate={props.onSetDecisionDate}
-              onSetDrivers={props.onSetDecisionDrivers}
-            />
           ) : null}
           {shapeTarget?.shape === 'room' ? (
             <RoomMenuSection
@@ -479,32 +426,6 @@ export function ElementDataSections({
               onSetPortalName={props.onSetPortalName}
               onCreateLinkedPortal={props.onCreateLinkedPortal}
               sectionProps={sectionProps('portal-target')}
-            />
-          ) : null}
-          {/* Session button (docs/specs/012-collaboration/session-button.md) — which tool a press starts, and its
-            one setting. See BehaviourMenuSections. */}
-          {isSessionButton && shapeTarget && props.onSetSession ? (
-            <SessionMenuSection
-              element={shapeTarget}
-              onSetSession={props.onSetSession}
-              sectionProps={sectionProps('session')}
-            />
-          ) : null}
-          {/* Reveal zone (docs/specs/009-elements/reveal-zone.md) — off for everyone, or back on. */}
-          {isReveal && shapeTarget && props.onSetRevealed ? (
-            <RevealMenuSection
-              element={shapeTarget}
-              onSetRevealed={props.onSetRevealed}
-              sectionProps={sectionProps('reveal')}
-            />
-          ) : null}
-          {/* Picker (docs/specs/012-collaboration/picker.md) — where it draws candidates from. */}
-          {isPicker && shapeTarget ? (
-            <PickerMenuSection
-              element={shapeTarget}
-              onSetPickerSource={props.onSetPickerSource}
-              onSetPickerOptions={props.onSetPickerOptions}
-              sectionProps={sectionProps('picker')}
             />
           ) : null}
           {/* Reaction pad (docs/specs/009-elements/reaction-pad.md) — which burst it throws. */}

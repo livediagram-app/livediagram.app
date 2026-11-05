@@ -885,19 +885,16 @@ export function ExportMenu() {
  *  format cards. */
 export function ImportWarning() {
   const W = 420;
-  const H = 210;
+  const H = 170;
   const dx = 20;
   const dy = 10;
   const cards: [string, string][] = [
     ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
-    ['Markdown', 'md'],
     ['Excalidraw', 'excali'],
-    ['draw.io', 'drawio'],
   ];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={190} title="Import to Tab" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={380} h={150} title="Import to Tab" sceneW={W} sceneH={H}>
         {/* The amber warning banner */}
         <rect
           x={dx + 16}
@@ -934,9 +931,9 @@ export function ImportWarning() {
         {cards.map(([title, badge], i) => (
           <FormatCard
             key={title}
-            x={dx + 16 + (i % 3) * 118}
-            y={dy + 100 + Math.floor(i / 3) * 40}
-            w={112}
+            x={dx + 16 + i * 176}
+            y={dy + 100}
+            w={172}
             title={title}
             badge={badge}
           />

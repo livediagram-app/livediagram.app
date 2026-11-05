@@ -15,8 +15,6 @@ import {
   type TextSize,
 } from '@livehuddle/document';
 import { track, titleCaseType } from '@/lib/telemetry';
-import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
-import type { CleanupKind } from '@/lib/tab-cleanup';
 import { withTidyEngine, type TidyEngine } from '@/lib/tidy-engine';
 import { useTabTheme } from './useTabTheme';
 import { tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
@@ -37,7 +35,7 @@ type TabCanvasDeps = {
   notify?: (message: string) => void;
   activeId: string;
   activeTab: Tab;
-  // History-aware element mutator. Used by auto-align and auto-layout.
+  // History-aware element mutator. Used by auto-align.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // History-pushing tab mutator, for the DISCRETE tab-meta edits (theme
   // / font / pattern picks); each is one undoable step.
@@ -74,16 +72,15 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // unmount / page hide so the last drag isn't lost (docs/specs/017-telemetry/telemetry.md).
   const scheduleCanvasTelemetry = useDebouncedCanvasTelemetry();
 
-  // A tidier that would change nothing or damage the drawing is refused with a notice
+  // An Auto-align that would change nothing or damage the drawing is refused with a notice
   // (docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work"). The Tidy Up popover
-  // judges first and greys such a tidier out, so its presses arrive `judged`; the command palette's
-  // are judged here, on the live tab (no preview is on screen there). The tidiers load on demand
+  // judges first and greys it out, so its presses arrive `judged`; the command palette's
+  // are judged here, on the live tab (no preview is on screen there). The tidier loads on demand
   // (lib/tidy-engine.ts): already there after the popover opens, fetched at the press otherwise.
-  const refused = (engine: TidyEngine, kind: CleanupKind, judged: boolean | undefined): boolean => {
+  const refused = (engine: TidyEngine, judged: boolean | undefined): boolean => {
     if (judged) return false;
-    const verdict = engine.assessCleanup(activeTab.elements, kind, activeTab.layers);
-    const name = kind === 'align' ? 'Auto-align' : AUTO_LAYOUT_CHOICES[kind].tileName;
-    const notice = engine.verdictNotice(name, verdict);
+    const verdict = engine.assessCleanup(activeTab.elements, activeTab.layers);
+    const notice = engine.verdictNotice('Auto-align', verdict);
     if (notice) notify?.(notice);
     return notice !== null;
   };
@@ -92,31 +89,10 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
     withTidyEngine((engine) => {
-      if (refused(engine, 'align', opts.judged)) return;
+      if (refused(engine, opts.judged)) return;
       // `commit` snapshots the pre-align state, so undo restores it.
-      commit((els) => engine.cleanupElements(els, 'align', activeTab.layers));
+      commit((els) => engine.cleanupElements(els, activeTab.layers));
       track('Tab', 'Aligned');
-    });
-  };
-
-  // Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md, GitHub #12): recompute element
-  // positions from the arrow graph rather than merely grid-snapping current
-  // positions like Auto-align. `choice` picks the layout style (docs/specs/008-canvas/layout-cleanup.md
-  // "Layout styles"): the smart layered default, a forced-direction
-  // flowchart, tree, or mindmap. The tidy profile lands the laid-out block
-  // where the shapes were, clear of what it does not move, with centres on the
-  // grid. One undoable op via `commit`.
-  const autoLayoutTab = (choice: AutoLayoutChoice = 'smart', opts: { judged?: boolean } = {}) => {
-    if (editsBlocked) return;
-    if (activeTab.elements.length === 0) return;
-    withTidyEngine((engine) => {
-      if (refused(engine, choice, opts.judged)) return;
-      // Everything the layout needs, including the origin it pins to, is read
-      // inside the updater from the elements it is given: a commit taken while a
-      // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,
-      // so `current` is the true pre-hover state and undo returns there.
-      commit((current) => engine.cleanupElements(current, choice, activeTab.layers));
-      track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
     });
   };
 
@@ -222,7 +198,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   return {
     autoAlignTab,
-    autoLayoutTab,
     setTabFont,
     setTabDefaultTextSize,
     setTabFinish,

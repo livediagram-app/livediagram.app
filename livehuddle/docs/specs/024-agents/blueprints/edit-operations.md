@@ -216,8 +216,8 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 
 - **Stored field names** are `ELEMENT_FIELD_NAMES[el.type]`. `id` and `type` are refused (`invalid_value`,
   "cannot be changed"). `__proto__`, `constructor` and `prototype` are always `unknown_field`.
-- **Live fields.** A key in `LIVE_ELEMENT_FIELDS` (the comment thread, responses, ideas) is `invalid_value` with
-  the hint "comments go through the comment commands; responses and ideas are people's".
+- **Live fields.** A key in `LIVE_ELEMENT_FIELDS` (the comment thread and the assigned actions; responses and ideas
+  left with their elements in part 4 of Work Tracker #423) is `invalid_value` with the hint "comments go through the comment commands; assigned actions are people's".
 - **Value parsing.** JSON form values are JSON. Line form values: a quoted value is a string; an unquoted value is
   read as JSON when the whole value is a JSON number, `true` or `false`, or it starts with `[` or `{`, else it is a
   string (EO19): `label=2FA`, `label=3D` and `label=1st` are strings, `width=200` is a number.

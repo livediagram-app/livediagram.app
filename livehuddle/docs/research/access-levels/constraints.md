@@ -63,7 +63,7 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 | Cursor, select, laser, avatar, reaction, viewport, Bring Focus       | presence ops (`PRESENCE_OP_KINDS`)                                              | yes  | yes  |
 | Answer a live poll                                                   | `poll-answer`, classed as **presence**                                          | yes  | yes  |
 | Add a comment (also how one replies), delete one's own               | REST, `gateRead`, author stamped server-side                                    | yes  | yes  |
-| Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1                              | yes  | yes  |
+| Add to and upvote a Q&A board (gone, Work Tracker #423 part 4)       | REST `POST .../qa`, `gateRead`; the room writes D1                              | yes  | yes  |
 | Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                                                    | no   | yes  |
 | Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                                             | no   | yes  |
 | Change elements, tabs, document                                      | room mutations, tab `PUT`                                                       | no   | yes  |

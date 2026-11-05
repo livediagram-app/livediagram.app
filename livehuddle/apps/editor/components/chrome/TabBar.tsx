@@ -32,7 +32,7 @@ import type { AccessLevel } from '@livehuddle/api-schema';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
 // Cleanup category used to live here too but were removed: the palette and quick-connect cover
-// adding, and the command palette's Actions keep Auto Layout and Auto-align.)
+// adding, and the command palette's Actions keep Auto-align.)
 export type CanvasMenuActions = {
   // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md); greyed,
   // not hidden, when the buffer is empty.

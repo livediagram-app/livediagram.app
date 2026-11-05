@@ -1,6 +1,6 @@
 # Per-participant responses
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/participant-responses.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/participant-responses.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
 
 Status: **implemented**.
 
@@ -39,7 +39,7 @@ and the id of who cast it (see below; it is NOT the owner id).
   `pieSlices`, so it bounds in `validate.ts` with the same array clamp as the
   rest and round-trips through JSON export with no key-order surprise.
 
-Helpers live in `packages/document/src/responses.ts`: a leaf module (types
+Helpers live in `../livediagram/packages/document/src/responses.ts`: a leaf module (types
 only), for the same module-cycle reason `data-shapes.ts` is one.
 
 ## `participantId` is the COLLAB KEY, not the owner id

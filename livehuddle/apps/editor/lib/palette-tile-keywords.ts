@@ -17,7 +17,9 @@ import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 // This used to be a hand-written list of the shapes themselves, and it had
 // silently fallen 22 kinds behind the palette: every Devices, Data, Media and
 // Behaviour element was unfindable from the search panel.
-export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
+// 'estimate' (retired in Work Tracker #423 part 4) keeps its row until open PR #1310, which adds the stage beside it,
+// merges; the row matches no tile, so it finds nothing.
+export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
   square: 'square box rect node',
   circle: 'oval ellipse round node',
   diamond: 'decision rhombus flowchart',
@@ -44,9 +46,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   boundary: 'region zone vpc network container group cloud system c4 subnet cluster',
   'mode-button': 'mode switch button press avatar',
   portal: 'teleport jump link warp travel',
-  'session-button': 'timer vote poll session start',
-  reveal: 'hide cover spoiler blur uncover',
-  picker: 'random pick spinner wheel choose',
   chair: 'seat sit stool furniture',
   desk: 'computer office workstation monitor screen sit seat furniture',
   sofa: 'couch settee loveseat two seater sit seat furniture lounge',
@@ -62,18 +61,8 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   stage:
     'stage platform podium all-hands all hands town hall keynote presenter speaker speak broadcast audience',
   estimate: 'points sizing poker fist estimate vote',
-  temperature: 'mood check pulse gauge feeling',
-  quiz: 'quiz question trivia test answer correct right wrong multiple choice timed kahoot',
-  'idea-box': 'suggestions ideas inbox submit',
-  'qa-board': 'slido q&a questions ask upvote vote rank queue audience ama',
-  agenda: 'plan schedule topics running order',
-  decision: 'decided outcome record resolution',
-  'roll-call': 'attendance present who register',
-  'comment-pin': 'annotate feedback discuss thread remark marker note',
-  'action-card': 'task todo to-do assign assignee follow-up owner action item',
   'focus-button':
     'look here attention bring everyone jump navigate spotlight point show gather focus',
-  'done-check': 'complete finished tick ready everyone signed off',
   'reaction-pad': 'emoji react clap applause celebrate burst',
   actor: 'person stick figure user role uml',
   'progress-bar': 'bar meter percent loading completion',

@@ -21,7 +21,7 @@ import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
-import { isCollabPanelShape } from './collab-shapes';
+import { SHAPE_KINDS } from './shape-kinds';
 import { isSeatingShape } from './seating';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
@@ -397,13 +397,13 @@ export function describeBoxedExport(
 }
 
 // A shape that writes its own text, so no centred label is printed over it: a self-drawing shape
-// (charts; the legend is its own case), a Collaborate panel, a Behaviour face other than the chair, a
-// web component.
+// (charts; the legend is its own case), a Behaviour face other than the chair, a web component, a retired
+// element's placeholder (svg-render-retired.ts, its stored label under its name).
 export function selfLabelled(el: BoxedElement): boolean {
   if (el.type !== 'shape') return false;
   return (
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
-    isCollabPanelShape(el.shape) ||
+    !SHAPE_KINDS.has(el.shape) ||
     // A room's and a stage's label is their name plate (docs/specs/009-elements/office.md).
     (BEHAVIOUR_FACE_SHAPES.has(el.shape) &&
       !isSeatingShape(el.shape) &&

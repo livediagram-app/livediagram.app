@@ -343,6 +343,10 @@ These features left livehuddle on purpose, and their articles with them; each ol
 | `/help/tips-and-tricks/presenting-well/`               | `/help/canvas/follow-along/`             | The same                                                                            |
 | `/help/palette/tools/pages/`                           | `/help/palette/write/`                   | The Page element left livehuddle (Work Tracker #423); the other Write elements stay |
 | `/help/tools/layout-cleanup/auto-layout/`              | `/help/tools/layout-cleanup/`            | Auto Layout arranges shapes by their arrows, which a Space no longer draws (#494)   |
+| `/help/explorer/shape-libraries/`                      | `/help/explorer/explorer-page/`          | Shape Libraries left livehuddle (Work Tracker #423 part 4)                          |
+| `/help/explorer/drawio-import/`                        | `/help/tabs/import-tabs/`                | The draw.io import left livehuddle (#423 part 4)                                    |
+| `/help/explorer/microsoft-whiteboard-import/`          | `/help/tabs/import-tabs/`                | The Microsoft Whiteboard import left livehuddle (#423 part 4)                       |
+| `/help/tools/markdown-import/`                         | `/help/tabs/import-tabs/`                | The Markdown import left livehuddle (#423 part 4)                                   |
 
 The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`, and so does a bare `/self-hosting/…` that lost its `/help` prefix.
 

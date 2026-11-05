@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./idea-box-race.md - when building or changing how an idea post that lost the race for a full box's last card is taken back: card ids, pending posts, the yield, the notice
+- ./idea-box-race.md - (Gone from livehuddle, Work Tracker #423 part 4) when building or changing how an idea post that lost the race for a full box's last card is taken back: card ids, pending posts, the yield, the notice
 - ./workshop-mode.md - when implementing or changing Workshop mode: the `workshop` editor mode, its palette layout (the one palette), the Session strip, the templates and blank that open in it, its telemetry and default folder
 - ./workshop-tour.md - when implementing or changing the Workshop tour: its host, steps, offer, Settings rerun and telemetry
 - ./vote-keys.md - when building or changing dot voting from the keyboard: the vote keys, what each press says, the role gate

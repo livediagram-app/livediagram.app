@@ -136,9 +136,12 @@ where it was.
 
 ### The setting
 
-- The **Auto-Attach Arrows** setting (`autoRebindArrows`, Settings → Editor,
-  [User preferences](../007-editor/user-preferences.md)) turns the auto-rebind on or off.
-- It is **on by default**. When it is off, a move never changes an anchor.
+- livehuddle has **no setting** for it: the auto-rebind always runs. The **Auto-Attach Arrows** switch
+  (`autoRebindArrows`, Settings → Editor) is gone from livehuddle (Work Tracker #423, part 4), a diagram tool a
+  meeting product does not need ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)); livediagram keeps
+  it. A value an old browser stored stays in its preferences, unread.
+- The editor still hands the drag and nudge handlers the flag as a ref (always `true`), so their own tests can hold
+  it off.
 
 ### When it runs
 

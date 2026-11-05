@@ -75,19 +75,20 @@ describe('isVotable', () => {
     ).toBe(true);
   });
 
-  // Behaviour elements (docs/specs/009-elements/mode-button.md, docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md) DO something when pressed. A votable
-  // one would give the same tap two meanings, decided by whether a vote
-  // happened to be running.
+  // Behaviour elements (docs/specs/009-elements/mode-button.md, docs/specs/009-elements/portal-element.md,
+  // docs/specs/009-elements/reaction-pad.md) DO something when pressed. A votable one would give the same tap two
+  // meanings, decided by whether a vote happened to be running.
   it('rejects the interactive Behaviour shapes', () => {
-    for (const kind of ['mode-button', 'portal', 'session-button', 'reveal', 'picker'] as const) {
+    for (const kind of ['mode-button', 'portal', 'reaction-pad'] as const) {
       expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
     }
   });
 
-  // The collaboration panels are controls too: a press on one answers it.
-  it('rejects the collaboration panels', () => {
-    for (const kind of ['estimate', 'temperature', 'done-check', 'quiz', 'idea-box'] as const) {
-      expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is a placeholder for
+  // something livehuddle no longer has, not an idea to rank.
+  it('rejects a retired element', () => {
+    for (const kind of ['estimate', 'quiz', 'never-a-kind']) {
+      expect(isVotable(shape(kind, { shape: kind as never }))).toBe(false);
     }
   });
 

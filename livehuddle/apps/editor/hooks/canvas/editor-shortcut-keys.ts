@@ -71,24 +71,14 @@ export type EditorKeyboardShortcutsDeps = {
   canvasTool: CanvasTool;
   // Element-add callbacks. F fires addShape('frame'); T and N fire the dedicated handlers; 9 opens the image
   // picker. Each mirrors its palette counterpart so the keyboard route reaches the same code path as the click
-  // route. addArrow, onBeginFreehand and onBeginShapePen no longer have a key (Work Tracker #423); part 4 drops them.
+  // route.
   // onAddImage is nullable: pure-guest deploys without an api worker
   // hide the palette button + null this prop, and the shortcut goes
   // dormant to match.
   addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
-  addArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   onAddImage: (() => void) | null;
-  // F enters the one-shot pencil (freehand) draw mode, mirroring the
-  // palette's Pencil button. Distinct from the element-add shortcuts
-  // above because the pencil is gestural (no element drops without a
-  // drag), but it lives next to them in the keyboard surface so the
-  // user reaches for the same row of letters for every tool.
-  onBeginFreehand: () => void;
-  // S arms the shape pen — the same gesture as the pencil, but the stroke is
-  // run through shape recognition on release (docs/specs/008-canvas/two-pens.md).
-  onBeginShapePen: () => void;
   // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
   // multi). On Shift+L rather than plain Cmd+L so it never fights the
   // browser's "focus the address bar" binding.

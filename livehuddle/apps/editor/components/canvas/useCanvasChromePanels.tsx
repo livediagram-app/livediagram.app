@@ -112,7 +112,6 @@ export function useCanvasChromePanels({
     layers,
     activeLayerId,
     layerCounts,
-    pollPanel,
     tabVote,
     voteResults,
     onJumpToVoteResult,
@@ -374,9 +373,7 @@ export function useCanvasChromePanels({
   // segment whose button has gone (a view-role visitor's tool ended, a poll dismissed) closes its
   // popover rather than leaving it floating with no button under it.
   const sessionSegment =
-    activeDockPanel === 'session-timer' ||
-    activeDockPanel === 'session-vote' ||
-    activeDockPanel === 'session-poll'
+    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
       ? activeDockPanel
       : null;
   // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
@@ -385,7 +382,7 @@ export function useCanvasChromePanels({
     segment: sessionSegment,
     tools: sessionTools ? stripTools : null,
     readOnly: !!readOnly,
-    running: { timer: !!sessionTools?.timer, vote: !!tabVote, poll: !!pollPanel },
+    running: { timer: !!sessionTools?.timer, vote: !!tabVote },
   });
   useEffect(() => {
     if (sessionButtonGone) closeDockPanel();
@@ -398,9 +395,7 @@ export function useCanvasChromePanels({
       ? !!sessionTools?.timer
       : sessionSegment === 'session-vote'
         ? !!tabVote
-        : sessionSegment === 'session-poll'
-          ? !!sessionTools?.livePoll
-          : false;
+        : false;
   // Per segment: switching from a running tool's popover to an idle one is not an ending.
   const wasRunning = useRef({ segment: sessionSegment, running: sessionRunning });
   useEffect(() => {
@@ -421,7 +416,6 @@ export function useCanvasChromePanels({
           canVote={!readOnly || !!takePart}
           holdOpen={!isMobile}
           voteSelfId={participantKey(selfParticipant)}
-          pollPanel={pollPanel}
           vote={{
             tabVote,
             elements,

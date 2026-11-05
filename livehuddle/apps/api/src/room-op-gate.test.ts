@@ -32,8 +32,8 @@ describe('gateClientOp', () => {
     expect(gateClientOp(tab, as('admin'))).toEqual(DROP);
   });
 
-  it('keeps a viewer from taking part: answers, reactions, speech and focus', () => {
-    for (const op of [{ kind: 'poll-answer' }, { kind: 'reaction' }, say, { kind: 'focus-here' }])
+  it('keeps a viewer from taking part: reactions, speech and focus', () => {
+    for (const op of [{ kind: 'reaction' }, say, { kind: 'focus-here' }])
       expect(gateClientOp(op, as('view'))).toEqual(DROP);
     expect(gateClientOp({ kind: 'reaction' }, as('participate'))).toEqual(relay(true));
     expect(gateClientOp(say, as('participate'))).toEqual(relay(true));

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
-import { syntheticExportZip } from '../ms-whiteboard-board';
+import { importExcalidrawBoards } from '../excalidraw-boards';
 import { freshUserId, installSession, type StubUser } from './session';
 
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
@@ -43,23 +43,6 @@ async function apiCreate(
   expect(res.status(), `create ${name}`).toBe(201);
 }
 
-async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
-  // The Explorer's Import from opens the /import page for its source.
-  await page.goto('/import?source=microsoft-whiteboard');
-  const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Choose a .zip' }).click();
-  await (
-    await chooser
-  ).setFiles({
-    name: 'boards.zip',
-    mimeType: 'application/zip',
-    buffer: syntheticExportZip(boards),
-  });
-  // One board imports at once; several are listed first, to choose from.
-  if (boards === 2) await page.getByRole('button', { name: 'Import 2 boards' }).click();
-  await expect(page.getByTestId('import-documents')).toContainText('Sprint board');
-}
-
 // Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
 const jumpBackIn = (page: Page) =>
   page.getByRole('region', { name: 'Jump Back In' }).getByRole('listitem');
@@ -85,14 +68,14 @@ test('signed in, a single imported board is in Jump Back In; a two-board import 
   pageErrors,
 }) => {
   await signedIn(page, freshUserId('importer'));
-  await importBoards(page, 2);
+  await importExcalidrawBoards(page, 2);
   await page.goto('/explorer/home');
   await expect(page.getByRole('region', { name: 'Jump Back In' })).toContainText(
     /will gather here\./,
     { timeout: 30_000 },
   );
 
-  await importBoards(page, 1);
+  await importExcalidrawBoards(page, 1);
   await page.goto('/explorer/home');
   await expect(jumpBackIn(page).getByRole('link')).toHaveCount(1);
   await expect(jumpBackIn(page).getByRole('link', { name: 'Sprint board' })).toBeVisible();

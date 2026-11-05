@@ -12,7 +12,6 @@ import type { Env } from '../types';
 import { setGrantVerifierForTests } from '../index-service';
 import { ITEM_GRANT_HEADER, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
-import { networkTagFor } from '../vote-integrity';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
@@ -78,7 +77,6 @@ const SPOOFED = {
   'X-Verified-Grant-Exp': '99999999999',
   'X-Verified-Owner': '1',
   'X-Verified-Adder': 'forged',
-  'X-Verified-Network': 'forged',
   'X-Verified-Item-Owner': 'evil',
   'X-Verified-Item-Team': 'evil',
   'X-Verified-Account': '1',
@@ -277,27 +275,6 @@ describe("WebSocket upgrade: the room's own trust headers", () => {
       await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(t)}`);
       expect(seen.at(-1)!.headers.get('X-Verified-Adder')).toBe('');
     }
-  });
-
-  // docs/specs/012-collaboration/vote-integrity.md: what caps one network's poll answers, derived from the edge's
-  // client address on every upgrade, so a client can never choose its own.
-  it('stamps X-Verified-Network from the caller address, over anything the client sent', async () => {
-    const t = grantFor({ item: 'p1', sub: 'link:abc', level: 'view' });
-    const network = async (ip: string) => {
-      const { env, seen } = roomEnv();
-      await handleDocumentRoomRoutes(
-        makeTestRouteContext('GET', `/api/documents/p1/ws?t=${encodeURIComponent(t)}`, {
-          env,
-          headers: { ...SPOOFED, 'CF-Connecting-IP': ip },
-          grant: null,
-        }),
-      );
-      return seen[0]!.headers.get('X-Verified-Network');
-    };
-    const a = await network('203.0.113.7');
-    expect(a).toBe(await networkTagFor('p1', '203.0.113.7'));
-    // One IPv6 /64 is one network.
-    expect(await network('2001:db8:0:1::5')).toBe(await network('2001:db8:0:1:ffff::9'));
   });
 });
 

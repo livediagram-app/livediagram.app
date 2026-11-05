@@ -24,7 +24,7 @@ const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
   ({
     id,
     type: 'shape',
-    shape: 'rectangle',
+    shape: 'square',
     ...box,
     label: 'Column',
     ...extra,
@@ -165,8 +165,18 @@ describe("applyParticipantOp: update someone else's element", () => {
     expect(r.changed).toBe(true);
   });
 
-  it("never writes on a Behaviour's words, a poll's question among them", () => {
-    const stored = shape('poll', { shape: 'session-button', label: 'Lunch?' });
+  it("never writes on a Behaviour's words, nor on a retired element's", () => {
+    const retired = shape('poll', { shape: 'session-button', label: 'Lunch?' });
+    const retiredTab = tabOf([retired]);
+    const kept = applied(
+      applyParticipantOp(
+        retiredTab,
+        { kind: 'update', element: { ...retired, label: 'Mine' } },
+        ME,
+      ),
+    );
+    expect(kept.tab.elements[0]).toEqual(retired);
+    const stored = shape('go', { shape: 'mode-button', label: 'Walk' });
     const tab = tabOf([stored]);
     const r = applied(
       applyParticipantOp(tab, { kind: 'update', element: { ...stored, label: 'Mine' } }, ME),
@@ -374,11 +384,12 @@ describe("applyParticipantOp: update someone else's element", () => {
 });
 
 describe('applyParticipantOp: update its own element', () => {
-  it('takes any field, keeping identity, adder and answers from stored', () => {
-    const stored = sticky('mine', {
-      addedBy: ME,
-      responses: [{ participantId: 'p', value: '3', at: 1 }],
-    });
+  it('takes any field, keeping identity, adder and its thread from stored', () => {
+    const thread = {
+      resolved: false,
+      comments: [{ id: 'c1', text: 'hi', createdAt: 1, authorName: 'Bea', authorColor: '#f00' }],
+    };
+    const stored = sticky('mine', { addedBy: ME, commentThread: thread });
     const r = applied(
       applyParticipantOp(
         tabOf([stored]),
@@ -388,7 +399,7 @@ describe('applyParticipantOp: update its own element', () => {
             width: 300,
             textBold: true,
             addedBy: THEM,
-            responses: [],
+            commentThread: { resolved: false, comments: [] },
           }),
         },
         ME,
@@ -398,7 +409,7 @@ describe('applyParticipantOp: update its own element', () => {
       width: 300,
       textBold: true,
       addedBy: ME,
-      responses: [{ participantId: 'p', value: '3', at: 1 }],
+      commentThread: thread,
     });
   });
 });

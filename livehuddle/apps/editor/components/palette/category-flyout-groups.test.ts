@@ -34,7 +34,7 @@ describe('the category bar', () => {
 
   it('names every category in one word', () => {
     expect(barLabel('write', 'Write & Build')).toBe('Write');
-    expect(barLabel('my-shapes', 'My shapes')).toBe('Library');
+    expect(barLabel('collab-mode', 'Selection Mode')).toBe('Modes');
     expect(barLabel('shapes', 'Shapes')).toBe('Shapes');
   });
 });

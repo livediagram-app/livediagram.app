@@ -60,6 +60,8 @@ export const PERSON_ID_FIELDS = [
   'actions[].assignee.userId',
   'actions[].assignee.memberId',
   'actions[].teamId',
+  // A retired element's stored answers and Q&A votes (docs/specs/002-project-scope/not-in-livehuddle.md): kept as
+  // stored, so their person ids are still held back.
   'responses[].participantId',
   'qaNotes[].voters',
   // Which Participant added a sticky or text (docs/specs/013-workspace/share-roles.md): the room's record, a key

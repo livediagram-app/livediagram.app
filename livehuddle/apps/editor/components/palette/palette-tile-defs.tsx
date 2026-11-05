@@ -5,16 +5,8 @@ import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { EmbedProvider } from '@livehuddle/document';
 import { REACTION_EMOJI } from '@livehuddle/document';
 
-import type {
-  ComponentKind,
-  EstimateScale,
-  Reaction,
-  SelectionMode,
-  SessionTool,
-  ShapeKind,
-} from '@livehuddle/document';
+import type { ComponentKind, Reaction, SelectionMode, ShapeKind } from '@livehuddle/document';
 import {
-  AgendaIcon,
   AvatarModeIcon,
   ChairIcon,
   DeskIcon,
@@ -29,27 +21,15 @@ import {
   CoffeeMachineIcon,
   RugIcon,
   SofaIcon,
-  DecisionIcon,
   EraserIcon,
-  EstimateIcon,
   FormatPainterIcon,
   HighlighterIcon,
   IsometricIcon,
   LaserIcon,
   PanIcon,
-  IdeaBoxIcon,
-  QaBoardIcon,
-  PickerIcon,
   SelectIcon,
   ShapePenIcon,
   SpotlightIcon,
-  SessionPollIcon,
-  SessionVoteIcon,
-  RevealIcon,
-  RollCallIcon,
-  TemperatureIcon,
-  StopwatchIcon,
-  TimerIcon,
 } from '@/components/palette/palette-icons';
 import {
   lucideCircle,
@@ -108,14 +88,8 @@ export type PaletteTileSection =
   | 'build'
   | 'tools'
   | 'data'
-  // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
-  // docs/specs/012-collaboration/roll-call.md) had its own category on the reasoning that Behaviour is
-  // "pressing this does something to your session" while these are "the canvas
-  // is collecting an answer from everybody". In the picker that line never
-  // held: both are elements whose content arrives at runtime, both are reached
-  // for while facilitating, and a user looking for the Done check found it in
-  // one and the Estimate card in the other with nothing to tell them which.
-  // They are now Collaborate elements, offered as six categories: see COLLABORATE_CATEGORY_GROUPS.
+  // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md), and the collaboration elements
+  // with it (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
   | 'media'
   | 'components'
   | 'stickers'
@@ -126,22 +100,19 @@ export type PaletteTileSection =
 // drive the tile's drag-to-place payload + pending-draw highlight; the
 // singleton tools map one-to-one onto the editor's add-handlers.
 type PaletteTileAction =
-  // `session` / `reaction` are creation-time choices, not separate kinds: both
-  // elements are ONE kind with a mode field, and the palette offers a tile per
-  // mode inside an accordion (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md) the way Media does for embed
-  // providers. Placing "Poll" has to place a poll, not a timer to reconfigure.
+  // `reaction` / `mode` are creation-time choices, not separate kinds: each element is ONE kind with a field, and
+  // the palette offers a tile per choice (docs/specs/009-elements/reaction-pad.md) the way Media does for embed
+  // providers. Placing "Hearts" has to place hearts, not confetti to reconfigure.
   | {
       type: 'shape';
       kind: ShapeKind;
-      session?: SessionTool;
       reaction?: Reaction;
       mode?: SelectionMode;
-      estimateScale?: EstimateScale;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
     }
   | { type: 'text' }
-  // An opener (palette-openers): stands for a category, or one group of a catalogue, and opens it; places nothing.
+  // An opener: stands for a category, or one group of a catalogue, and opens it; places nothing.
   | { type: 'open'; category: string; group?: string }
   | { type: 'freehand' }
   // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
@@ -222,12 +193,9 @@ export type PaletteTileDef = {
   toolGroup?: ToolGroupId;
   // Collapses this tile into a named group inside its category, rather than
   // showing it as a top-level row (docs/specs/009-elements/embed-providers.md). 'embed' = the Media tab's embed
-  // providers; 'web' = the Components tab's website composites; 'session' and
-  // 'reaction' = the Behaviour tab's session tools and reactions; 'mode' its
-  // selection-mode buttons; 'move' / 'tools' the rest of Behaviour; and
-  // 'ask' / 'record' the two halves of Collaborate.
-  tileGroup?:
-    'embed' | 'web' | 'session' | 'reaction' | 'mode' | 'move' | 'tools' | 'ask' | 'record';
+  // providers; 'web' = the Components tab's website composites; 'reaction' = the
+  // Behaviour tab's reactions; 'mode' its selection-mode buttons; and 'move' the rest of Behaviour.
+  tileGroup?: 'embed' | 'web' | 'reaction' | 'mode' | 'move';
   label: string;
   // Overrides the caption derived from `label` where that runs too long
   // for the tile (see IconButton).
@@ -767,105 +735,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the ro  {
-    // Session tools (docs/specs/012-collaboration/session-button.md): one tile per tool, grouped, rather than one
-    // button you place and then reconfigure. The tools have nothing in common
-    // at the moment of choosing — you know whether you want a countdown or a
-    // vote before you reach for the palette.
-    id: 'tools:session-timer',
-    tileGroup: 'tools',
-    blurb: 'A countdown everyone can see',
-    caption: 'Timer',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Timer Button',
-    description:
-      'A button that starts a countdown for everyone in the room. Pressing it again pauses, and again continues. Set the minutes from its right-click menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'timer' },
-    icon: <TimerIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:session-stopwatch',
-    tileGroup: 'tools',
-    blurb: 'Counts up from zero',
-    caption: 'Stopwatch',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Stopwatch Button',
-    description:
-      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set: a stopwatch has no length.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
-    icon: <StopwatchIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'tools:session-vote',
-    tileGroup: 'ask',
-    blurb: 'Dot voting, a few dots each',
-    caption: 'Dot Vote',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Dot Vote Button',
-    description:
-      'A button that starts a dot vote for everyone in the room: each person gets a few dots to place on whatever they think matters. Set how many from its right-click menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'vote' },
-    icon: <SessionVoteIcon />,
-  },
-  {
-    id: 'tools:session-poll',
-    tileGroup: 'ask',
-    blurb: 'A question you write in advance',
-    caption: 'Poll',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Poll Button',
-    description:
-      'A button that opens a poll you have written in advance, so the press asks the question rather than opening a composer. Write it from its right-click menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'session-button', session: 'poll' },
-    icon: <SessionPollIcon />,
-  },
-  {
-    // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
-    id: 'tools:reveal',
-    tileGroup: 'tools',
-    blurb: 'Double-click to look underneath',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Reveal Zone',
-    caption: 'Reveal',
-    description:
-      'A cover over part of the canvas. Double-click it to uncover it just for you, or reveal it for everyone from the menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'reveal' },
-    icon: <RevealIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    // Done check (docs/specs/012-collaboration/done-check.md): who has finished, live.
-    id: 'tools:done-check',
-    tileGroup: 'tools',
-    blurb: 'Everyone marks themselves finished',
-    caption: 'Done',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Done Check',
-    description:
-      'Everyone marks themselves done and the card shows who has and who has not, from whoever is actually in the room. It flashes when the last person finishes. Reset it for the next round from its own menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'done-check' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* Two ticked rows over one still waiting. */}
-        <path d="M3.2 7.2 4.6 8.6 7.4 5.8" />
-        <path d="M3.2 13 4.6 14.4 7.4 11.6" />
-        <circle cx="4.8" cy="19" r="1.5" />
-        <path d="M10.5 7.2h10.3M10.5 13h10.3M10.5 19h6.4" />
-      </Glyph>
-    ),
-  },
-  {
     // Reaction pads (docs/specs/009-elements/reaction-pad.md): one tile per reaction, grouped, rather than one
     // pad you place and then switch. Which reaction you want is the whole
     // decision — a pad is not useful until it is the right one.
@@ -937,21 +806,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'reaction-pad', reaction: 'fireworks' },
     icon: <span className="text-[15px] leading-none">{REACTION_EMOJI['fireworks']}</span>,
-  },
-  {
-    // Picker (docs/specs/012-collaboration/picker.md): rolls a person or a written option.
-    id: 'tools:picker',
-    tileGroup: 'tools',
-    blurb: 'Pick someone at random',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Picker',
-    caption: 'Picker',
-    description:
-      'Press it to choose at random: one of the people in the room, or one of the options you write on it.',
-    filled: true,
-    action: { type: 'shape', kind: 'picker' },
-    icon: <PickerIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): Navigate, beside Portal and Chair, because all
@@ -1172,182 +1026,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'rug' },
     icon: <RugIcon size={TILE_GLYPH_PX} />,
-  },
-  // --- Collaborate (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) ----------------------------------
-  // Elements that collect what the ROOM thinks. Rows with a blurb, like
-  // Behaviour: none of these glyphs can say what the element does, and
-  // "everyone picks privately, then all at once" is the thing being chosen.
-  {
-    // Comment pin (docs/specs/012-collaboration/comment-pin.md): a remark about a PLACE rather than a shape.
-    id: 'collab:comment-pin',
-    blurb: 'A comment thread as a card on the canvas',
-    caption: 'Comment',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    tileGroup: 'record',
-    label: 'Add Comment Panel',
-    description:
-      'A card that carries a whole comment thread, read and answered where it sits. Drop it on any spot to talk about that spot, rather than attaching the remark to whichever shape happens to be nearest.',
-    filled: true,
-    action: { type: 'shape', kind: 'comment-pin' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <path d="M20.5 12.2c0 3.9-3.8 7-8.5 7-.9 0-1.8-.1-2.6-.3l-5 3.1 1.1-4.5A6.6 6.6 0 0 1 3.5 12.2c0-3.9 3.8-7 8.5-7s8.5 3.1 8.5 7z" />
-        <path d="M8.6 11.9h.01M12 11.9h.01M15.4 11.9h.01" />
-      </Glyph>
-    ),
-  },
-  {
-    // Action panel (docs/specs/012-collaboration/action-panel.md): one assigned action as a card on the canvas, the
-    // Comment panel's sibling.
-    id: 'collab:action-card',
-    blurb: 'Assigned actions as a card on the canvas',
-    caption: 'Action',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    tileGroup: 'record',
-    label: 'Add Action Panel',
-    description:
-      'A card that carries a list of assigned actions: what needs doing, who owns each, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
-    filled: true,
-    action: { type: 'shape', kind: 'action-card' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13.5A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
-        <rect x="9" y="3" width="6" height="3.5" rx="1" />
-        <path d="m9 13.5 2.2 2.2 4-4.5" />
-      </Glyph>
-    ),
-  },
-  {
-    // Quiz (docs/specs/012-collaboration/quiz.md): one question with a right answer, opened on a timer and
-    // revealed by the facilitator. In Ask, beside the poll and the estimate,
-    // because it is putting a question to the room.
-    id: 'collab:quiz',
-    tileGroup: 'ask',
-    blurb: 'A timed question with a right answer',
-    caption: 'Quiz',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Quiz',
-    description:
-      'One multiple-choice question for the room. Start it and the answers fan out around the question for everyone to pick; it locks when the time runs out, then Reveal turns the right answer green and names who got it.',
-    filled: true,
-    action: { type: 'shape', kind: 'quiz' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* A disc with a question mark, answers around it. */}
-        <circle cx="12" cy="12" r="4.6" />
-        <path d="M10.7 10.9a1.4 1.4 0 1 1 1.9 1.3c-.4.2-.6.5-.6.9" />
-        <circle cx="12" cy="14.5" r=".35" />
-        <circle cx="12" cy="2.8" r="1.4" />
-        <circle cx="21.2" cy="12" r="1.4" />
-        <circle cx="12" cy="21.2" r="1.4" />
-        <circle cx="2.8" cy="12" r="1.4" />
-      </Glyph>
-    ),
-  },
-  {
-    // Estimate card (docs/specs/012-collaboration/estimate-card.md): ONE tile. The three scales are the same
-    // card with different answers, so they are one entry here, and a new card
-    // asks for its scale on the canvas ("Choosing a scale"); the element
-    // menu's Scale changes it later.
-    id: 'collab:estimate',
-    tileGroup: 'ask',
-    blurb: 'Planning poker: pick a scale on the card',
-    caption: 'Estimate',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Estimate Card',
-    description:
-      'Planning poker on the canvas: everyone picks privately, then one Reveal shows every answer and the spread. Choose Fibonacci, T-shirt sizes or powers of two on the card once it is placed.',
-    filled: true,
-    action: { type: 'shape', kind: 'estimate' },
-    icon: <EstimateIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:temperature',
-    tileGroup: 'ask',
-    blurb: 'Fist of five: how does the room feel?',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Temperature Check',
-    caption: 'Temperature',
-    description:
-      'A fist-of-five gauge. Everyone registers 1 to 5 and the bars and average move as the answers land.',
-    filled: true,
-    action: { type: 'shape', kind: 'temperature' },
-    icon: <TemperatureIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:idea-box',
-    tileGroup: 'ask',
-    blurb: 'Anonymous ideas, held until you open it',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Idea Box',
-    caption: 'Idea Box',
-    description:
-      'Anyone can drop in an idea without their name on it. Nothing shows until you open the box.',
-    filled: true,
-    action: { type: 'shape', kind: 'idea-box' },
-    icon: <IdeaBoxIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:qa-board',
-    tileGroup: 'ask',
-    blurb: 'Notes the room upvotes, best on top',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Q&A Board',
-    caption: 'Q&A Board',
-    description:
-      'Anyone can add a note, named or anonymous, and upvote others. The most wanted rise to the top; the facilitator spotlights one to discuss.',
-    filled: true,
-    action: { type: 'shape', kind: 'qa-board' },
-    icon: <QaBoardIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:agenda',
-    tileGroup: 'record',
-    blurb: 'Segments with minutes that start the timer',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Agenda',
-    caption: 'Agenda',
-    description:
-      'The run of the session. Press a segment and it starts the tab timer for that long and marks where the room is.',
-    filled: true,
-    action: { type: 'shape', kind: 'agenda' },
-    icon: <AgendaIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:decision',
-    tileGroup: 'record',
-    blurb: 'What was decided, why, and whether it stands',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Decision Record',
-    caption: 'Decision Record',
-    description:
-      'A decision on the canvas beside the thing it decided: the statement, a status, the date, and what drove it.',
-    filled: true,
-    action: { type: 'shape', kind: 'decision' },
-    icon: <DecisionIcon size={TILE_GLYPH_PX} />,
-  },
-  {
-    id: 'collab:roll-call',
-    tileGroup: 'record',
-    blurb: 'Freezes who was in the room, right now',
-    section: 'tools',
-    toolGroup: 'behaviour',
-    label: 'Add Roll Call',
-    caption: 'Roll Call',
-    description:
-      'Press Take Roll and it records everyone in the room at that moment, and keeps them after they leave.',
-    filled: true,
-    action: { type: 'shape', kind: 'roll-call' },
-    icon: <RollCallIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:checklist',
@@ -1977,15 +1655,12 @@ export function tileDisplayName(def: PaletteTileDef): string {
   return tileCaption(def.label, def.caption);
 }
 
-// The Collaborate elements' six categories (docs/specs/012-collaboration/workshop-mode.md "The palette"):
+// The meeting elements' three categories (docs/specs/012-collaboration/workshop-mode.md "The palette"):
 // each holds the `behaviour` tool group's tiles of one `tileGroup`, in catalogue order. Workshop
 // offers them in place of one Collaborate category with a group browser inside it.
 export const COLLABORATE_CATEGORY_GROUPS: Readonly<
   Record<string, NonNullable<PaletteTileDef['tileGroup']>>
 > = {
-  'collab-ask': 'ask',
-  'collab-tools': 'tools',
-  'collab-record': 'record',
   'collab-react': 'reaction',
   'collab-mode': 'mode',
   'collab-navigate': 'move',

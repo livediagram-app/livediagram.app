@@ -739,13 +739,13 @@ heads, border style and radius, font) with its values, bold and italic, `colorPr
 `iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
-**Facilitation kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
-with `minutes`, a stopwatch, a vote with `dots`, a poll with `question` and `options`), an agenda's `agendaItems`,
-a checklist's `checklistItems`, a stat row's `stats`, a callout's `pageTitle` over its `label` body, a banner's
-`pageTitle` and `pageSubtitle`, and a sticker's `stickerId`. A bare `text` is centred in its box unless it sets
-`textAlignX`. The entries of a Q&A board, an idea box and a temperature check are the people's, never an edit's,
-so starter questions go on stickies beside them. An agenda written with segments grows to draw every one
-([Agenda](../012-collaboration/agenda.md) "The face").
+**Kinds that hold a list.** The format also names a checklist's `checklistItems`, a stat row's `stats`, a
+callout's `pageTitle` over its `label` body, a banner's `pageTitle` and `pageSubtitle`, and a sticker's `stickerId`.
+A bare `text` is centred in its box unless it sets `textAlignX`. The Collaborate kinds the format once named (the
+session button, the agenda, the Q&A board, the idea box, the temperature check and the rest) and the Page are gone
+from it (Work Tracker #423, part 4; [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#retired-elements)):
+the shape kind list an agent reads is `AGENT_SHAPE_KINDS` (`@livehuddle/edit-operations`), every shape kind but the
+Page, which stays a kind only so a stored one still draws. An agent that names one gets a square.
 
 **Hand-drawn strokes.** A `freehand` element is written with `points` as canvas coordinates, `[[x, y], ...]` in
 drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a hued pen). The stored form is a box

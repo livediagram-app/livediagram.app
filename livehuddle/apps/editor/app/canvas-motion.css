@@ -3,7 +3,7 @@
  *
  * Motion OF the canvas, not of the chrome around it: element entry, the
  * animated-element set, arrow flow, icon / progress / rating / pie
- * animations, the done-check flash,
+ * animations,
  * presentation slide transitions and the touch long-press ring. Each follows
  * its own spec, so this stylesheet is the one the chrome motion budget does
  * not read (the guard in apps/editor/motion-budget.test.ts lists it as canvas).
@@ -1070,117 +1070,6 @@
   transition:
     left 160ms ease-out,
     top 160ms ease-out;
-}
-
-/* Done check: the all-done flash (docs/specs/012-collaboration/done-check.md).
-   A pulse of the card's own ring rather than a colour wash, so it reads on a
-   card of any theme colour, and it RUNS OUT after a few cycles: a card that
-   flashed forever would be noise on a canvas somebody left open, and the state
-   is still legible from the roster and the count once it stops. */
-@keyframes lvd-done-flash {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgb(34 197 94 / 0);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgb(34 197 94 / 0.45);
-  }
-}
-
-.lvd-done-complete {
-  animation: lvd-done-flash 900ms ease-in-out 4;
-  border-radius: inherit;
-}
-@media (prefers-reduced-motion: reduce) {
-  /* The completion is information, so it stays visible — as a steady ring
-     rather than a pulsing one. */
-  .lvd-done-complete {
-    animation: none;
-    box-shadow: 0 0 0 3px rgb(34 197 94 / 0.45);
-  }
-}
-
-/* Quiz (docs/specs/012-collaboration/quiz.md). Three motions, all driven by
-   classes so the reduced-motion block below can reach every one:
-   - the answers FAN OUT from the disc when a round opens, one after another
-     (each pill sets --lvd-quiz-dx / --lvd-quiz-dy to the offset back to the
-     centre and --lvd-quiz-delay for its place in the order);
-   - the right answer POPS and glows green on the reveal;
-   - the countdown ring drains, which is a transition on stroke-dashoffset
-     rather than an animation, so a late joiner lands on the right fraction. */
-@keyframes lvd-quiz-fan {
-  from {
-    opacity: 0;
-    transform: translate(var(--lvd-quiz-dx, 0), var(--lvd-quiz-dy, 0)) scale(0.3);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.lvd-quiz-fan {
-  animation: lvd-quiz-fan 520ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  animation-delay: var(--lvd-quiz-delay, 0ms);
-}
-
-@keyframes lvd-quiz-correct {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgb(22 163 74 / 0);
-  }
-  40% {
-    transform: scale(1.14);
-    box-shadow: 0 0 0 10px rgb(22 163 74 / 0.35);
-  }
-  100% {
-    transform: scale(1.06);
-    box-shadow: 0 0 0 5px rgb(22 163 74 / 0.25);
-  }
-}
-
-.lvd-quiz-correct {
-  animation: lvd-quiz-correct 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-}
-
-.lvd-quiz-ring {
-  transition: stroke-dashoffset 250ms linear;
-}
-
-/* Who picked each answer, arriving just after the right one pops. */
-@keyframes lvd-quiz-pickers {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.lvd-quiz-pickers {
-  animation: lvd-quiz-pickers 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  animation-delay: var(--lvd-quiz-delay, 0ms);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* Every state stays; only the motion goes. The answers are simply in place
-     and the right one is simply green, with its ring held steady. */
-  .lvd-quiz-fan {
-    animation: none;
-  }
-  .lvd-quiz-correct {
-    animation: none;
-    transform: scale(1.06);
-    box-shadow: 0 0 0 5px rgb(22 163 74 / 0.25);
-  }
-  .lvd-quiz-ring {
-    transition: none;
-  }
-  .lvd-quiz-pickers {
-    animation: none;
-  }
 }
 
 /* The Avatar Pad (docs/specs/009-elements/avatar-pad.md). Pixel motion: every keyframe is stepped, never smooth, so

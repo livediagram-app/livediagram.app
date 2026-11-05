@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Button, BackBar } from '@livehuddle/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
@@ -6,16 +6,15 @@ import type { ImportImageProgress } from '@/lib/import-images';
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 type ProgressListener = (progress: ImportImageProgress) => void;
 
-// The paste-or-file sub-view for a text import format (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
+// The paste-or-file sub-view for a text import format (the Import to Tab dialog's JSON and Excalidraw).
 // A textarea to paste/write the content, an Import button, and a "pick a
 // file instead" escape hatch. Format-agnostic — the parent supplies the
 // placeholder example and the two runners (text vs file). Owns its own
-// text / busy / error so the format grid stays simple. Shared by JSON,
-// Mermaid, and Markdown.
+// text / busy / error so the format grid stays simple. Shared by JSON and
+// Excalidraw.
 export function TextImportPanel({
   formatTitle,
   placeholder,
-  note,
   onImportText,
   onImportFile,
   onDone,
@@ -25,12 +24,6 @@ export function TextImportPanel({
   // which format is being pasted.
   formatTitle: string;
   placeholder: string;
-  // Optional footnote for this format (a help link). It rides in the footer's
-  // left slot, level with the action buttons — the conventional spot for a
-  // dialog's help link, and the slot the old "← Back" link vacated when the
-  // way back became the BackBar above. Left to hang under the footer instead,
-  // it read as a stray line that had fallen off the dialog.
-  note?: ReactNode;
   // Runners get a progress listener: an import that meets images reports
   // them as they store (docs/specs/020-import-export/import-image-pipeline.md).
   onImportText: (text: string, onProgress: ProgressListener) => Promise<ImportOutcome>;
@@ -92,17 +85,14 @@ export function TextImportPanel({
         </p>
       ) : null}
       <div className="mt-4 flex items-center justify-between gap-3">
-        {/* The left slot carries the format's note, or, while images store, the
-            progress (announced politely). Progress lives here rather than in
+        {/* The left slot carries, while images store, the progress (announced politely). Progress lives here rather than in
             the button so the buttons never move while it counts. */}
         <div aria-live="polite" className="min-w-0">
           {busy && progress && progress.total > 0 ? (
             <p className="text-xs text-slate-600 tabular-nums dark:text-slate-300">
               Importing images {progress.done} of {progress.total}…
             </p>
-          ) : (
-            note
-          )}
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <Button

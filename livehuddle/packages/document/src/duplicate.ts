@@ -21,11 +21,12 @@ import { remapElementRefs as sharedRemapElementRefs } from '@liveworkspace/model
 // Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
 // afresh by the room.
 // What belongs to the original rather than to the shape, so no copy carries it: a comment thread is a conversation
-// about that element, `responses` were cast in a session (docs/specs/012-collaboration/participant-responses.md),
+// about that element, a retired element's `responses` were people's answers cast in a session (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"),
 // and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
 // timeline never sees added.
-// The clipboard strips the same list on the way out (stripIdentity in apps/editor).
+// The clipboard strips the same list on the way out (stripIdentity in apps/editor). Every other stored field of a
+// retired element rides along with a copy untouched.
 export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'responses', 'action', 'actions'] as const;
 
 export function freshCopyFields(el: Element): {

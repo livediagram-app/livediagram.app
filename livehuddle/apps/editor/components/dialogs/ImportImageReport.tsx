@@ -3,7 +3,6 @@ import { Button } from '@livehuddle/ui';
 import { describeImportImageReport, type ImportImageReport as Report } from '@/lib/import-images';
 import type { BoardSceneReport } from '@/lib/board-scene/report';
 import { BoardSceneReportList } from './BoardSceneReportList';
-import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 
 // How an import came across (docs/specs/020-import-export/import-image-pipeline.md "The report",
 // docs/specs/020-import-export/board-scene.md "The report"): shown in the Import dialog in place
@@ -15,7 +14,6 @@ export function ImportImageReport({
   scene,
   failures,
   documents,
-  libraries,
   onDone,
 }: {
   report?: Report;
@@ -23,8 +21,6 @@ export function ImportImageReport({
   failures?: { title: string; message: string }[];
   // The documents an import made, one per board, each opened from here.
   documents?: { id: string; name: string }[];
-  // The shape libraries an import made, opened together on the Explorer's Shape libraries page.
-  libraries?: { id: string; name: string }[];
   onDone: () => void;
 }) {
   const doneRef = useRef<HTMLButtonElement>(null);
@@ -50,21 +46,6 @@ export function ImportImageReport({
             key: d.id,
             name: d.name,
             href: `/document/${encodeURIComponent(d.id)}`,
-          }))}
-        />
-      ) : null}
-      {libraries && libraries.length > 0 ? (
-        <LinkList
-          label={
-            libraries.length === 1
-              ? 'New shape library:'
-              : `${libraries.length} new shape libraries:`
-          }
-          testId="import-libraries"
-          links={libraries.map((l) => ({
-            key: l.id,
-            name: l.name,
-            href: explorerHref('shape-libraries'),
           }))}
         />
       ) : null}

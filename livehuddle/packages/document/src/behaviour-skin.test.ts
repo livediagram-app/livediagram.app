@@ -6,7 +6,7 @@ import type { ShapeElement, ShapeKind } from './index';
 
 // The control-like Behaviour elements store no colour and follow the surface
 // (docs/specs/009-elements/mode-button.md, behaviour-skin.ts).
-const KINDS: ShapeKind[] = ['mode-button', 'session-button', 'picker', 'reveal', 'chair'];
+const KINDS: ShapeKind[] = ['mode-button', 'chair'];
 const resolved = (el: ShapeElement, surface: 'light' | 'dark') => {
   const own = ownColours(el);
   return {
@@ -34,14 +34,14 @@ describe('Behaviour element skins', () => {
       expect(resolved(el, 'light').text, kind).toBe('#0f172a');
       expect(resolved(el, 'dark').text, kind).not.toBe('#0f172a');
     }
-    const timer = createShape('session-button', 0, 0);
-    expect(resolved(timer, 'light').fill).toBe('#ffffff');
-    expect(resolved(timer, 'dark').fill).not.toBe('#ffffff');
+    const button = createShape('mode-button', 0, 0);
+    expect(resolved(button, 'light').fill).toBe('#ffffff');
+    expect(resolved(button, 'dark').fill).not.toBe('#ffffff');
   });
 
   it('treat the skin an element was once created with as unset', () => {
     const old = {
-      ...createShape('session-button', 0, 0),
+      ...createShape('mode-button', 0, 0),
       fillColor: '#ffffff',
       strokeColor: '#cbd5e1',
       textColor: '#0f172a',
@@ -53,10 +53,10 @@ describe('Behaviour element skins', () => {
   });
 
   it('keep a colour the author picked', () => {
-    const red = { ...createShape('session-button', 0, 0), fillColor: '#ef4444' };
+    const red = { ...createShape('mode-button', 0, 0), fillColor: '#ef4444' };
     expect(ownColours(red).fill).toBe('#ef4444');
     const almost = {
-      ...createShape('picker', 0, 0),
+      ...createShape('mode-button', 0, 0),
       fillColor: '#ffffff',
       strokeColor: '#cbd5e1',
       textColor: '#111111',

@@ -11,10 +11,9 @@ export function tileDragStart(
 ): ((e: React.DragEvent) => void) | undefined {
   switch (action.type) {
     case 'shape': {
-      const choice =
-        action.session ?? action.reaction ?? action.mode ?? action.estimateScale ?? action.variant;
+      const choice = action.reaction ?? action.mode ?? action.variant;
       return (e) => {
-        // `kind` or `kind|choice`, so a dragged Poll drops a poll, not a timer.
+        // `kind` or `kind|choice`, so a dragged Hearts pad drops hearts, not confetti.
         copy(e, PALETTE_DND_MIME, choice ? `${action.kind}|${choice}` : action.kind);
         const { width, height } = SHAPE_DEFAULT_SIZE[action.kind];
         setPaletteDragPreview({ kind: action.kind, width, height });

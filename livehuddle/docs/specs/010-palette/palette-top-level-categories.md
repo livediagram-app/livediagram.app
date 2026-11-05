@@ -48,7 +48,7 @@ tools plus Frame). The **User / actor** tile was deleted outright; see below.
 | Band            | Categories                                                                                                              |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | _(no heading)_  | Popular, full width                                                                                                     |
-| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw              |
+| **Common**      | Shapes, Write, Draw (My shapes left with [shape libraries](../013-workspace/shape-libraries.md))                        |
 | **Structure**   | Layout (with the [Timeline](../009-elements/timeline.md)); Components is in the catalogue but on no strip (Search only) |
 | **Decorate**    | Icons, Stickers, Media                                                                                                  |
 | **Dynamic**     | Data                                                                                                                    |

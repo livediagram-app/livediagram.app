@@ -8,7 +8,7 @@ const box = { x: 0, y: 0, width: 10, height: 10 };
 const sticky = (extra: Record<string, unknown> = {}) =>
   ({ id: 's', type: 'sticky', ...box, ...extra }) as Element;
 const shape = (extra: Record<string, unknown> = {}) =>
-  ({ id: 'h', type: 'shape', shape: 'rectangle', ...box, ...extra }) as unknown as Element;
+  ({ id: 'h', type: 'shape', shape: 'square', ...box, ...extra }) as unknown as Element;
 
 describe('resolveEditorCapabilities', () => {
   it('gives an Editor everything', () => {

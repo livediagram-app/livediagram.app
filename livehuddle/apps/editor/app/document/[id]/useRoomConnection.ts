@@ -11,13 +11,12 @@ import {
   syncRemoteBesideTabs,
 } from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { QaNote, Tab } from '@livehuddle/document';
+import type { Tab } from '@livehuddle/document';
 import {
   type AgentPresence,
   type AvatarPresence,
   type ChangesetRoomOp,
   type FacilitatorReason,
-  type LivePoll,
 } from '@livehuddle/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
@@ -37,7 +36,7 @@ import {
 } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
+import { applyRoomOpToTabs } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
@@ -114,9 +113,6 @@ export function useRoomConnection(opts: {
   // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
   // never brings back what the peer changed.
   applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
-  // This browser's own idea posts the room has not answered (useIdeaPosts), so a peer's card that reaches a
-  // full box takes the newest one's place (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
-  pendingIdeaIds?: PendingIdeaIds;
   // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
   // for a tab still waiting on its first fetch is left to that fetch.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
@@ -137,11 +133,8 @@ export function useRoomConnection(opts: {
   setRemoteViewports: Dispatch<SetStateAction<Map<string, RemoteViewport>>>;
   setDocumentName: Dispatch<SetStateAction<string>>;
   setSelfParticipant: Dispatch<SetStateAction<Participant>>;
-  // Live poll (docs/specs/012-collaboration/live-poll.md) inbound handlers, owned by useLivePoll. Stable
-  // (useCallback with no changing deps) so they don't reopen the socket —
-  // the effect's dep list stays [hydrated, documentId, documentServerStored].
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable, like the
-  // poll handlers below, so it can't reopen the socket.
+  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable
+  // (useCallback with no changing deps), so it can't reopen the socket.
   receiveAvatarPush: (dx: number, dy: number) => void;
   // A peer set off a reaction pad (docs/specs/009-elements/reaction-pad.md). Purely visual: nothing is
   // written, so there is nothing here to persist, order, or undo.
@@ -165,12 +158,6 @@ export function useRoomConnection(opts: {
   // The facilitator freed an element we were holding (docs/specs/007-editor/editor-app.md lock). Only our
   // socket is sent this, so there is nothing to check it against.
   receiveSelectionReleased: (msg: { elementId: string; by: string }) => void;
-  receivePoll: (poll: LivePoll) => void;
-  receivePollAnswer: (from: string, pollId: string, value: string | null, key?: string) => void;
-  receivePollEnd: (pollId: string) => void;
-  // A Q&A board's authoritative state after a server write (docs/specs/012-collaboration/qa-board.md).
-  // Stable, like the poll handlers, so it can't reopen the socket.
-  receiveQa: (tabId: string, elementId: string, notes: QaNote[], rev: number) => void;
   // The document went to the Trash (docs/specs/013-workspace/trash.md): the
   // worker's document-trashed op, or the room closing the socket with 4004.
   // Stable, like the others, so it can't reopen the socket.
@@ -208,7 +195,6 @@ export function useRoomConnection(opts: {
     sessionShareCodeRef,
     roomRef,
     applyRemoteOp,
-    pendingIdeaIds,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -229,10 +215,6 @@ export function useRoomConnection(opts: {
     readFacilitatorToken,
     setFollowerIds,
     readFollowing,
-    receivePoll,
-    receivePollAnswer,
-    receivePollEnd,
-    receiveQa,
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
@@ -435,7 +417,7 @@ export function useRoomConnection(opts: {
         applyRemoteOp((prev) =>
           op.kind === 'document-meta'
             ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : applyRoomOpToTabs(prev, op, pendingIdeaIds),
+            : applyRoomOpToTabs(prev, op),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         // In the same batch as the tabs update, so the render that shows the op also counts it.
@@ -534,23 +516,6 @@ export function useRoomConnection(opts: {
         });
         // Their other pane, side by side (docs/specs/007-editor/split-view.md "Presence").
         setRemoteBesideTab(from, op.besideTabId);
-      } else if (op.kind === 'poll-start') {
-        // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
-        // hook's memory and never touches tabs or autosave, so there is
-        // nothing here to persist or undo.
-        receivePoll(op.poll);
-      } else if (op.kind === 'poll-answer') {
-        // `from` keys the answer so a peer changing their mind replaces
-        // it. It is never rendered — results carry no identity.
-        receivePollAnswer(from, op.pollId, op.value, op.key);
-      } else if (op.kind === 'poll-end') {
-        receivePollEnd(op.pollId);
-      } else if (op.kind === 'qa') {
-        // The api's word on a Q&A board (docs/specs/012-collaboration/qa-board.md). System-only: the worker
-        // sends it through /broadcast after the write is already in D1, and
-        // the room refuses it from a client socket, so the sender check is
-        // defence in depth like share-revoked's below.
-        if (from === 'system') receiveQa(op.tabId, op.elementId, op.notes, op.rev);
       } else if (op.kind === 'share-revoked' || op.kind === 'share-rescoped') {
         // The owner revoked or rescoped a share link (share-link-ops.ts).
         // A session hydrated with that exact code leaves the editor on a

@@ -82,7 +82,6 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], HelpArticleKey>> = {
   trash: 'trash',
   search: 'explorerFilters',
   gallery: 'imageGallery',
-  'shape-libraries': 'shapeLibraries',
 };
 
 export const explorerHelpHref: HelpHref = (view) => {

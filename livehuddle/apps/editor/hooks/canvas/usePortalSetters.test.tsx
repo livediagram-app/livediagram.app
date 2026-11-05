@@ -1,44 +1,46 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createShape, type Tab } from '@livehuddle/document';
+import { createShape, type ShapeElement, type Tab } from '@livehuddle/document';
 import { usePortalSetters } from './usePortalSetters';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const cover = { ...createShape('reveal', 0, 0), id: 'cover' };
-const button = { ...createShape('session-button', 0, 0), id: 'button' };
-const tabs = [{ id: 't1', elements: [cover, button] } as unknown as Tab];
+const pad = { ...createShape('reaction-pad', 0, 0), id: 'pad' };
+const square = { ...createShape('square', 0, 0), id: 'square' };
+const tabs = [{ id: 't1', elements: [pad, square] } as unknown as Tab];
 
-const setters = (sessionToolsBlocked: boolean) => {
+const setters = (selected: string[]) => {
   const commitTabs = vi.fn();
   const { result } = renderHook(() =>
     usePortalSetters({
-      currentSelectionIds: () => new Set(['cover', 'button']),
+      currentSelectionIds: () => new Set(selected),
       contextTargetId: null,
       commitTabs,
       tabs,
       activeId: 't1',
       setSelectedId: vi.fn(),
-      sessionToolsBlocked,
     }),
   );
   return { ...result.current, commitTabs };
 };
 
-// docs/specs/012-collaboration/facilitator.md "What the facilitator runs"
-describe('usePortalSetters under a facilitator', () => {
-  it('reveals a cover for all and configures a session button with nobody facilitating', () => {
-    const s = setters(false);
-    s.setRevealedSelected(true);
-    s.setSessionConfigSelected({ tool: 'timer' });
-    expect(s.commitTabs).toHaveBeenCalledTimes(2);
+// docs/specs/009-elements/reaction-pad.md: which burst a pad throws.
+describe('usePortalSetters: reaction pad', () => {
+  it('sets the burst on the selected pad and nothing else', () => {
+    const s = setters(['pad', 'square']);
+    s.setReactionSelected('hearts');
+    expect(s.commitTabs).toHaveBeenCalledTimes(1);
+    const map = s.commitTabs.mock.calls[0]![0] as (ts: Tab[]) => Tab[];
+    const next = map(tabs);
+    const [nextPad, nextSquare] = next[0]!.elements as ShapeElement[];
+    expect(nextPad!.reaction).toBe('hearts');
+    expect(nextSquare).toBe(square);
   });
 
-  it('refuses both while somebody else holds the baton', () => {
-    const s = setters(true);
-    s.setRevealedSelected(true);
-    s.setSessionConfigSelected({ tool: 'timer' });
+  it('writes nothing when no pad is selected', () => {
+    const s = setters(['square']);
+    s.setReactionSelected('hearts');
     expect(s.commitTabs).not.toHaveBeenCalled();
   });
 });

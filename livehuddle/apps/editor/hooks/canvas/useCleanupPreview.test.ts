@@ -27,7 +27,7 @@ const link = (from: string, to: string): Element => ({
   id: `arr-${from}-${to}`,
 });
 
-// A small graph drawn untidily, so every tidier moves something.
+// A small graph drawn off the grid, so Auto-align moves something.
 const graph = (): Element[] => [
   at('a', 7, 3),
   at('b', 413, 211),
@@ -75,15 +75,15 @@ describe('useCleanupPreview', () => {
   it('lays the tab out exactly as the press would, and flags the preview for autosave', () => {
     const h = harness();
     const before = h.tab('tab1').elements;
-    h.api().previewCleanup('tree');
-    expect(h.tab('tab1').elements).toEqual(cleanupElements(before, 'tree'));
+    h.api().previewCleanup();
+    expect(h.tab('tab1').elements).toEqual(cleanupElements(before));
     expect(h.previewingRef.current).toBe(true);
   });
 
   it('puts the tab back as it was and clears the flag', () => {
     const h = harness();
     const before = h.tab('tab1').elements;
-    h.api().previewCleanup('smart');
+    h.api().previewCleanup();
     h.api().endCleanupPreview();
     expect(h.tab('tab1').elements).toBe(before);
     expect(h.previewingRef.current).toBe(false);
@@ -93,7 +93,7 @@ describe('useCleanupPreview', () => {
     const h = harness();
     const one = h.tab('tab1').elements;
     const two = h.tab('tab2').elements;
-    h.api().previewCleanup('tree');
+    h.api().previewCleanup();
     h.switchTo('tab2');
     h.api().endCleanupPreview();
     expect(h.tab('tab1').elements).toBe(one);
@@ -102,13 +102,13 @@ describe('useCleanupPreview', () => {
 
   it('does nothing while edits are blocked, on an empty tab, or with no preview to end', () => {
     const blocked = harness({ editsBlocked: true });
-    blocked.api().previewCleanup('smart');
+    blocked.api().previewCleanup();
     blocked.api().endCleanupPreview();
     expect(blocked.ticks()).toBe(0);
     expect(blocked.previewingRef.current).toBe(false);
 
     const empty = harness({ tabs: [{ id: 'tab1', name: 'One', elements: [] }] });
-    empty.api().previewCleanup('smart');
+    empty.api().previewCleanup();
     expect(empty.ticks()).toBe(0);
     expect(empty.previewingRef.current).toBe(false);
   });

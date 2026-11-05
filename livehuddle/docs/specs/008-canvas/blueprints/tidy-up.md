@@ -1,38 +1,47 @@
 # Tidy Up: blueprint
 
+> **Auto Layout is gone from livehuddle's Tidy Up** (Work Tracker #423, part 4): not part of livehuddle's meeting
+> product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). The popover holds the Auto-align row
+> alone; `CleanupKind` is `'align'`, `cleanupElements(elements, layers)`, `previewCleanup()` and
+> `assessCleanup(elements, layers)` take no kind, and the `rearranges-lanes` verdict, `TIDY_LANES_NOTE`, the style
+> tiles and their drawings, and the choices file are deleted. The empty note reads "Nothing to tidy yet. Add some notes
+> or frames to this Space first." livediagram keeps the whole design
+> ([its blueprint there](../../../../../livediagram/docs/specs/008-canvas/blueprints/tidy-up.md)). Where the rest of
+> this page describes Auto Layout's tiles, it records what livehuddle had; the `packages/document` tidy profile it
+> names stays, Work Tracker #459's.
+
 Derived from [Layout cleanup](../layout-cleanup.md#the-tidy-up-button). The spec decides; this file only adds engineering precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
 cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                                               | Role                                                                                       |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `apps/editor/lib/auto-layout-choices.ts`                                                           | Each choice's tile name and line, beside its command name, options and telemetry type      |
-| `apps/editor/lib/tab-cleanup.ts`                                                                   | `cleanupElements`: the one transform the preview and the press both run; settles a layout  |
-| `apps/editor/lib/tidy-engine.ts`                                                                   | `loadTidyEngine`, `tidyEngine`, `withTidyEngine`: the tidiers loaded on demand             |
-| `apps/editor/lib/locked-element-ids.ts`                                                            | `lockedElementIds`: the lock rule, light enough for callers that do not tidy               |
-| `apps/editor/lib/tidy-verdict.ts`                                                                  | `assessCleanup`, `cleanupVerdict`: whether a tidier is offered, its tile line and notice   |
-| `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts`                                             | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard  |
-| `packages/document/src/auto-layout-tidy.ts`                                                        | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit     |
-| `packages/document/src/auto-layout-tidy-graph.ts`                                                  | Units, riders, dashed arrows: the graph of nodes the profile lays out                      |
-| `packages/document/src/auto-layout-tidy-rank.ts`                                                   | Drawn-order loop breaking, side steps, zero-length side edges in the layering              |
-| `packages/document/src/auto-layout-tidy-flow.ts`                                                   | One component's flow positions: blocks, label-sized gaps, lane centres                     |
-| `packages/document/src/auto-layout-route.ts`                                                       | Square arrow routes around the boxes                                                       |
-| `../packages/model-core/src/auto-layout-route-grid.ts`                                             | Bucket grid of the boxes a route must clear                                                |
-| `apps/editor/hooks/canvas/useCleanupPreview.ts`                                                    | `previewCleanup(kind)` / `endCleanupPreview()`: snapshot, present-only ticks, revert       |
-| `apps/editor/components/canvas/tidy-up-actions.ts`                                                 | `TidyUpActions` and the pure gate `tidyUpOffered`                                          |
-| `apps/editor/components/canvas/TidyUpPopover.tsx`                                                  | The popover: the Auto Layout tiles, the Auto-align row, the empty and locked notes, Escape |
-| `apps/editor/components/canvas/tidy-up-drawings.tsx`                                               | The five tile drawings                                                                     |
-| `../packages/ui/src/icons/editor-chrome.tsx`                                                       | `TidyUpIcon`: Lucide `brush-cleaning` at the cluster's 20 px                               |
-| `apps/editor/components/canvas/LayersThemeStrip.tsx`                                               | The Tidy Up segment, first in the strip                                                    |
-| `apps/editor/hooks/canvas/useDockPopovers.ts`                                                      | `'tidy-up'` in `DockPanel`, its width, its `UI·Opened·TidyUp`                              |
-| `apps/editor/components/canvas/useCanvasChromePanels.tsx`                                          | `tidyUpPopoverEl`, and closing it when the button goes                                     |
-| `apps/editor/components/canvas/CanvasChrome.tsx`                                                   | Passes the segment to the strip, renders the popover beside the corner layer               |
-| `apps/editor/components/canvas/Canvas.types.ts`                                                    | `tidyUp?: TidyUpActions`: present only when the session offers the button                  |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`                                               | Builds `tidyUp` from the editor state                                                      |
-| `apps/editor/app/document/[id]/useEditorState.ts`                                                  | Mounts `useCleanupPreview` and returns its two functions                                   |
-| `apps/editor/lib/help-articles.ts`                                                                 | `layoutCleanup` → `tools/layout-cleanup`, the popover's help link                          |
-| The features and content catalogues and the event explanations of livehuddle's telemetry dashboard | `TIDY_UP_OPENED` in Tab Actions, and its sentence                                          |
+| File                                                                                               | Role                                                                                      |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `apps/editor/lib/tab-cleanup.ts`                                                                   | `cleanupElements`: the one transform the preview and the press both run; settles a layout |
+| `apps/editor/lib/tidy-engine.ts`                                                                   | `loadTidyEngine`, `tidyEngine`, `withTidyEngine`: the tidiers loaded on demand            |
+| `apps/editor/lib/locked-element-ids.ts`                                                            | `lockedElementIds`: the lock rule, light enough for callers that do not tidy              |
+| `apps/editor/lib/tidy-verdict.ts`                                                                  | `assessCleanup`, `cleanupVerdict`: whether a tidier is offered, its tile line and notice  |
+| `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts`                                             | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard |
+| `packages/document/src/auto-layout-tidy.ts`                                                        | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit    |
+| `packages/document/src/auto-layout-tidy-graph.ts`                                                  | Units, riders, dashed arrows: the graph of nodes the profile lays out                     |
+| `packages/document/src/auto-layout-tidy-rank.ts`                                                   | Drawn-order loop breaking, side steps, zero-length side edges in the layering             |
+| `packages/document/src/auto-layout-tidy-flow.ts`                                                   | One component's flow positions: blocks, label-sized gaps, lane centres                    |
+| `packages/document/src/auto-layout-route.ts`                                                       | Square arrow routes around the boxes                                                      |
+| `../packages/model-core/src/auto-layout-route-grid.ts`                                             | Bucket grid of the boxes a route must clear                                               |
+| `apps/editor/hooks/canvas/useCleanupPreview.ts`                                                    | `previewCleanup()` / `endCleanupPreview()` : snapshot, present-only ticks, revert         |
+| `apps/editor/components/canvas/tidy-up-actions.ts`                                                 | `TidyUpActions` and the pure gate `tidyUpOffered`                                         |
+| `apps/editor/components/canvas/TidyUpPopover.tsx`                                                  | The popover: the Auto-align row, the empty and locked notes, Escape                       |
+| `apps/editor/components/canvas/tidy-up-drawings.tsx`                                               | `AutoAlignDrawing`, the row's drawing                                                     |
+| `../packages/ui/src/icons/editor-chrome.tsx`                                                       | `TidyUpIcon`: Lucide `brush-cleaning` at the cluster's 20 px                              |
+| `apps/editor/components/canvas/LayersThemeStrip.tsx`                                               | The Tidy Up segment, first in the strip                                                   |
+| `apps/editor/hooks/canvas/useDockPopovers.ts`                                                      | `'tidy-up'` in `DockPanel`, its width, its `UI·Opened·TidyUp`                             |
+| `apps/editor/components/canvas/useCanvasChromePanels.tsx`                                          | `tidyUpPopoverEl`, and closing it when the button goes                                    |
+| `apps/editor/components/canvas/CanvasChrome.tsx`                                                   | Passes the segment to the strip, renders the popover beside the corner layer              |
+| `apps/editor/components/canvas/Canvas.types.ts`                                                    | `tidyUp?: TidyUpActions`: present only when the session offers the button                 |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`                                               | Builds `tidyUp` from the editor state                                                     |
+| `apps/editor/app/document/[id]/useEditorState.ts`                                                  | Mounts `useCleanupPreview` and returns its two functions                                  |
+| `apps/editor/lib/help-articles.ts`                                                                 | `layoutCleanup` → `tools/layout-cleanup`, the popover's help link                         |
+| The features and content catalogues and the event explanations of livehuddle's telemetry dashboard | `TIDY_UP_OPENED` in Tab Actions, and its sentence                                         |
 
 ## Domain and naming
 

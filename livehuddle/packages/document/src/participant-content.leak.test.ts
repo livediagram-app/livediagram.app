@@ -39,8 +39,8 @@ const theirs = (el: Element, id: string): Element => ({ ...el, id, addedBy: THEM
 const SAMPLES: Sample[] = [
   { name: 'shape (square)', el: theirs(createShape('square', 0, 0), 'sq'), allowed: TEXT },
   {
-    name: 'shape (Behaviour: session button)',
-    el: theirs(createShape('session-button', 0, 0), 'sb'),
+    name: 'shape (Behaviour: mode button)',
+    el: theirs(createShape('mode-button', 0, 0), 'sb'),
     allowed: [],
   },
   { name: 'text', el: theirs(createText(0, 0), 'tx'), allowed: TEXT },

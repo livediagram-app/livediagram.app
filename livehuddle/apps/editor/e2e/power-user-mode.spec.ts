@@ -105,7 +105,7 @@ test.describe('Power user mode', () => {
     );
     await expect(
       children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
-    ).toHaveCount(4);
+    ).toHaveCount(3);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
@@ -184,7 +184,7 @@ test.describe('Power user mode', () => {
     pageErrors,
   }) => {
     await openEditor(page);
-    // Before: alignment guides off (left alone later), auto-attach arrows on (the default).
+    // Before: alignment guides off (left alone later), the Avatar Tour still owed (the default).
     await openSettings(page);
     await dialog(page).getByRole('switch', { name: 'Alignment Guides' }).click();
     await closeSettings(page);
@@ -194,13 +194,15 @@ test.describe('Power user mode', () => {
     let prefs = await storedPrefs(page);
     expect(prefs).toMatchObject({
       powerUserMode: true,
-      autoRebindArrows: true,
+      avatarTourSeen: true,
       alignmentGuides: true,
     });
 
     // Change one preset setting while the mode is on, reached from the readout.
-    await dialog(page).getByRole('button', { name: 'Change Auto-Attach Arrows in Editor' }).click();
-    await dialog(page).getByRole('switch', { name: 'Auto-Attach Arrows' }).click();
+    await dialog(page).getByRole('button', { name: 'Change Avatar Tour in Tours' }).click();
+    await dialog(page).getByRole('switch', { name: 'Avatar Tour' }).click();
+    // The readout sits with the mode's row in Editor (power-user-mode.md "In Settings"); Change went to Tours.
+    await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
     const readout = dialog(page).getByRole('list', { name: 'Set By Power User Mode' });
     await expect(readout.getByRole('listitem').first()).toContainText(
       'Restored when you switch off',
@@ -217,7 +219,7 @@ test.describe('Power user mode', () => {
     // Untouched: back to what it was.
     expect(prefs.alignmentGuides).toBe(false);
     // Changed: the user's change stays.
-    expect(prefs.autoRebindArrows).toBe(false);
+    expect(prefs.avatarTourSeen).toBe(false);
     // Minimal chrome is off with the mode.
     await expect(tabBar(page).getByText('Search', { exact: true })).toBeVisible();
     expectNoPageErrors(pageErrors);

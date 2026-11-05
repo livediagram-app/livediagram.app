@@ -159,12 +159,8 @@ fetch fails and the cache stays authoritative, as above.
 
 ```ts
 type UserPreferences = {
-  // When false, the live editor skips the auto-rebind that moves a
-  // pinned arrow end to the side facing the other end once its drawn
-  // path runs through a shape after a move (packages/document's
-  // `rebindArrowAnchorsAfterMove`, see ../008-canvas/arrow-anchors.md).
-  // Defaults to ON.
-  autoRebindArrows?: boolean;
+  // (`autoRebindArrows`, the Auto-Attach Arrows switch, is gone from livehuddle, Work Tracker #423 part 4:
+  // arrows always reattach after a move, ../008-canvas/arrow-anchors.md. A stored value stays, unread.)
 
   // When false, the live editor's `track()` helper is a no-op:
   // nothing leaves the browser. Distinct from the build-time
@@ -331,15 +327,9 @@ another version's flags.
 
 Missing key === undefined === default behaviour. Concretely:
 
-- `autoRebindArrows` undefined → the auto-rebind runs (the default,
-  [Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)).
-  Setting it to `false` is the only state that turns it off, and then
-  a move never changes an anchor. The rule is the same for every
-  pinned end, including ends the user placed by hand. The derivation
-  lives in ONE place, `autoRebindArrowsEnabled(prefs)` in
-  `apps/editor/lib/user-preferences.ts`, shared by the Settings
-  dialog's row and the editor-preferences hook so the default
-  can't drift between consumers.
+- `autoRebindArrows` is not read (the Auto-Attach Arrows switch is gone from livehuddle, Work Tracker #423
+  part 4): the auto-rebind always runs ([Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)),
+  whatever an old browser stored. The stored value is kept, like any key this version does not know.
 - `telemetryEnabled` undefined → telemetry on (the default).
   Setting it to `false` is the only state that opts out.
 - `recogniseShapes` is ignored whatever its value ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)): the
@@ -551,8 +541,8 @@ and the dialog stays as the one complete, browsable index of them.
     you flip things whose effect is on the canvas behind it.
 
   **It is the central place to find every preference.** Categories:
-  **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
-  element indicators; a **Mouse** section: quick-add on hover, middle-mouse
+  **Editor** (a **Canvas** section: alignment guides,
+  element indicators (Auto-Attach Arrows left in Work Tracker #423 part 4); a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
   readout nested under it while the mode is on; no Presenting sub-category since Work Tracker #423 part 2), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**

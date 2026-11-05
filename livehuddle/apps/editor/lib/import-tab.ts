@@ -1,9 +1,7 @@
-// Counterpart to export-tab.ts — parses an imported `.livehuddle-
-// tab.json` envelope back into a Tab. Markdown is also importable
-// (docs/specs/020-import-export/markdown-import.md) via its own module (`markdown-import.ts`). The Import
-// dialog (docs/specs/020-import-export/markdown-import.md) lets the user pick which format; the chosen format
-// drives the picker's file filter + which parser runs. PNG / PDF
-// remain export-only.
+// Counterpart to export-tab.ts: parses an imported `.livehuddle-
+// tab.json` envelope back into a Tab. The Import dialog lets the user pick
+// which format (this JSON, or Excalidraw); the chosen format drives the
+// picker's file filter + which parser runs. PNG / PDF remain export-only.
 
 // The result of an import attempt, surfaced back to the Import dialog:
 // 'done' (replaced the tab — close, or show the image report when the import
@@ -20,8 +18,6 @@ export type ImportOutcome =
       failures?: { title: string; message: string }[];
       // The documents an import made, one per board (docs/specs/020-import-export/board-import.md).
       documents?: { id: string; name: string }[];
-      // The shape libraries a draw.io import made (docs/specs/013-workspace/shape-libraries.md).
-      libraries?: { id: string; name: string }[];
     }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };
@@ -99,7 +95,7 @@ export function parseImportedTab(text: string): ImportResult {
 
 // Open the browser's file picker and resolve with the chosen file's name
 // + text content. `accept` narrows the picker to the format the user
-// chose in the Import dialog (JSON vs Markdown).
+// chose in the Import dialog (JSON or Excalidraw).
 //
 // Crucially, this ALWAYS settles — resolving `null` on cancel. Browsers
 // don't fire `change` when the file dialog is dismissed, so we detect a
@@ -113,7 +109,7 @@ export function parseImportedTab(text: string): ImportResult {
 type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
 
 export function pickTabFile(
-  accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
+  accept = 'application/json,.json',
   opts: { maxBytes?: number } = {},
 ): Promise<PickedTabFile | null> {
   return new Promise((resolve) => {

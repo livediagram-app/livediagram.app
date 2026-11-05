@@ -2,9 +2,8 @@
 // as new documents"): read the picked files into boards, make each its own document through the
 // host's commit, and hand the report on, with the files that could not be read listed first.
 import { useState } from 'react';
-import type { BoardImportProgress } from '@/hooks/persistence/useBoardSceneImport';
+import type { BoardImportProgress, ImportScenes } from '@/hooks/persistence/useBoardSceneImport';
 import { importingStepOf, type BoardImportingStep } from '@/lib/board-scene-import';
-import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { ExcalidrawContainer } from '@/lib/excalidraw-embedded';
 import type { ImportOutcome } from '@/lib/import-tab';

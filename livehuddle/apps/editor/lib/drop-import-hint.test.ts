@@ -4,16 +4,15 @@ import { dropImportHint } from './drop-import-hint';
 // docs/specs/020-import-export/excalidraw-import-export.md "Dropped files"
 describe('dropImportHint', () => {
   it('points a file the Import dialog reads at Import', () => {
-    expect(dropImportHint({ name: 'Flow.DRAWIO' })).toBe(
-      'To bring in a draw.io file, use Import in the tab menu.',
+    expect(dropImportHint({ name: 'Tab.JSON' })).toBe(
+      'To bring in a livehuddle export, use Import in the tab menu.',
     );
-    expect(dropImportHint({ name: 'plan.mmd' })).toContain('a Mermaid file');
-    expect(dropImportHint({ name: 'notes.md' })).toContain('a Markdown file');
-    expect(dropImportHint({ name: 'tab.json' })).toContain('a livehuddle export');
   });
 
-  it('says nothing for any other file', () => {
+  // The draw.io, Mermaid and Markdown imports left livehuddle (Work Tracker #423, part 4): Import is no way in.
+  it("says nothing for any other file, a diagram tool's included", () => {
     expect(dropImportHint({ name: 'photo.jpg' })).toBeNull();
-    expect(dropImportHint({ name: 'drawio' })).toBeNull();
+    for (const name of ['Flow.drawio', 'plan.mmd', 'notes.md'])
+      expect(dropImportHint({ name })).toBeNull();
   });
 });

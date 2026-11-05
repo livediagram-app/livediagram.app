@@ -13,6 +13,7 @@ import {
   tileDisplayName,
   type PaletteTileDef,
 } from '@/components/palette/palette-tile-defs';
+import { paletteCategoriesFor, SEARCH_ONLY_TILE_IDS } from '@/components/palette/palette-layouts';
 import {
   getLoadedIconCatalog,
   getLoadedStickerCatalog,
@@ -36,25 +37,16 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
   const action = tile.action as {
     type: 'shape';
     kind: ShapeKind;
-    session?: string;
     reaction?: string;
     mode?: string;
-    estimateScale?: string;
     plan?: string;
     variant?: string;
   };
   const kind = action.kind;
   // Keyed on the CHOICE where there is one, not just the kind: the five
-  // reaction tiles and the three session tiles all place the same shape,
-  // so keying on kind alone gave eight results three distinct ids and the
-  // panel silently dropped the duplicates.
-  const choice =
-    action.session ??
-    action.reaction ??
-    action.mode ??
-    action.estimateScale ??
-    action.plan ??
-    action.variant;
+  // reaction tiles all place the same shape, so keying on kind alone gave
+  // five results one id and the panel silently dropped the duplicates.
+  const choice = action.reaction ?? action.mode ?? action.plan ?? action.variant;
   return {
     id: choice ? `shape:${kind}:${choice}` : `shape:${kind}`,
     name: tileDisplayName(tile),
@@ -65,10 +57,8 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
     add: {
       type: 'shape' as const,
       shapeKind: kind,
-      ...(action.session ? { session: action.session as never } : {}),
       ...(action.reaction ? { reaction: action.reaction as never } : {}),
       ...(action.mode ? { mode: action.mode as never } : {}),
-      ...(action.estimateScale ? { estimateScale: action.estimateScale as never } : {}),
       ...(action.variant ? { variant: action.variant } : {}),
       ...(action.plan ? { plan: action.plan } : {}),
     },
@@ -89,9 +79,22 @@ const OTHER_TILES = PALETTE_TILES.filter(
     t.action.type !== 'sticker',
 );
 
-// Every non-shape tile, as a search item; image tiles only when the editor takes images.
+// Search adds only what the meeting palette offers (docs/specs/002-project-scope/not-in-livehuddle.md "The diagram
+// tools still in livehuddle's UI"): its categories' tiles and the search-only ones. The catalogue keeps every tile,
+// because a stored element of any kind still finds its tile's name and glyph. A fixed set, so built once.
+let offeredIds: ReadonlySet<string> | null = null;
+function offered(tile: PaletteTileDef): boolean {
+  offeredIds ??= new Set([
+    ...paletteCategoriesFor('workshop').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
+    ...SEARCH_ONLY_TILE_IDS,
+  ]);
+  return offeredIds.has(tile.id);
+}
+const offeredShapeTiles = () => SHAPE_TILES.filter(offered);
+
+// Every offered non-shape tile, as a search item; image tiles only when the editor takes images.
 function otherTileItems(hasImage: boolean): PaletteSearchItem[] {
-  return OTHER_TILES.filter((t) => !t.needsImage || hasImage).map((tile) => ({
+  return OTHER_TILES.filter((t) => offered(t) && (!t.needsImage || hasImage)).map((tile) => ({
     id: `tile:${tile.id}`,
     name: tileDisplayName(tile),
     keywords: tileKeywords(tile),
@@ -118,10 +121,10 @@ export function buildPaletteSearchItems({
   // React Compiler re-runs this when they land. Before then they hold nothing to add.
   catalogues?: boolean;
 } = {}): PaletteSearchItem[] {
-  if (!catalogues) return [...SHAPE_TILES.map(shapeTileSearchItem), ...otherTileItems(hasImage)];
+  const tiles = [...offeredShapeTiles().map(shapeTileSearchItem), ...otherTileItems(hasImage)];
+  if (!catalogues) return tiles;
   return [
-    ...SHAPE_TILES.map(shapeTileSearchItem),
-    ...otherTileItems(hasImage),
+    ...tiles,
     // Line art only. The catalogue still carries the legacy emoji entries so
     // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
     // a second way to place something that is a sticker now.

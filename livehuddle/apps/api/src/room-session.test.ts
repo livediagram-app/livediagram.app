@@ -13,7 +13,6 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Tab-Scope': 't1',
         'X-Verified-Share-Code': '',
         'X-Verified-Person': 'p',
-        'X-Verified-Network': 'n',
         'X-Verified-Workbench-Pairing': 'w',
         'X-Verified-Adder': 'a',
         'X-Verified-Document': 'd',
@@ -29,7 +28,6 @@ describe('verifiedSessionOf', () => {
       shareCode: null,
       personTag: 'p',
       account: false,
-      networkTag: 'n',
       workbenchPairing: 'w',
       adderKey: 'a',
       documentId: 'd',
@@ -52,7 +50,6 @@ describe('newSessionAttachment', () => {
         tabScope: null,
         shareCode: null,
         personTag: long,
-        networkTag: long,
         workbenchPairing: long,
         adderKey: long,
         documentId: long,
@@ -62,10 +59,8 @@ describe('newSessionAttachment', () => {
     expect(a.presenceId).toBe('presence-1');
     expect(a.presence).toBeNull();
     expect(
-      [a.personTag, a.networkTag, a.workbenchPairing, a.adderKey, a.documentId].map(
-        (s) => s?.length,
-      ),
-    ).toEqual([64, 32, 36, 32, 64]);
+      [a.personTag, a.workbenchPairing, a.adderKey, a.documentId].map((s) => s?.length),
+    ).toEqual([64, 36, 32, 64]);
   });
 });
 

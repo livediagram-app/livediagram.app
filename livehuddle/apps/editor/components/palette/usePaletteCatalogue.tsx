@@ -9,7 +9,6 @@ import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
-import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import {
   paletteCategoriesFor,
@@ -54,7 +53,6 @@ export function usePaletteCatalogue({
   onAddIcon,
   onAddSticker,
   onAddTechIcon,
-  onInsertLibraryShape,
   onAddText,
   onAddSticky,
   onAddTable,
@@ -86,7 +84,6 @@ export function usePaletteCatalogue({
   // (the shared useIsMobileViewport, as MovablePanel uses) so the option
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
-  const { libraries } = useShapeLibraries();
   // The editor mode picks the palette layout (palette-layouts): Workshop, the one mode.
   const editorMode = DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
@@ -209,12 +206,10 @@ export function usePaletteCatalogue({
   // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
-  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md).
-  const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
+  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
   const categories = participant
     ? participantPaletteCategories()
-    : paletteCategoriesFor(editorMode).filter((c) => hasLibraryShapes || c.id !== 'my-shapes');
+    : paletteCategoriesFor(editorMode);
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -228,7 +223,6 @@ export function usePaletteCatalogue({
     stickerQuery,
     setStickerQuery,
     stickerResults,
-    insertLibraryShape: (item) => armed(() => onInsertLibraryShape(item))(),
   });
 
   // The canvas-tool picker's options, and its change handler: 'zen' is an

@@ -1,5 +1,7 @@
 # Microsoft Whiteboard import
 
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/020-import-export/whiteboard-import.md) is the one to read and change. livehuddle's Explorer and /import page offer no Microsoft Whiteboard import, and its code for it is deleted. A board it already brought in stays as an ordinary Space. The rest of this page records what livehuddle had.
+
 **Import from Microsoft Whiteboard**, in the Explorer, brings boards made in
 Microsoft Whiteboard across as **documents**, one per board, each holding one
 Workshop tab ([Editor modes](../007-editor/editor-modes.md)): pressure ink as marker

@@ -3,7 +3,7 @@ import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
 import { TELEMETRY_TYPE_PATTERN } from '@livehuddle/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
-import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
+import type { UserPreferences } from '@/lib/user-preferences';
 
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
@@ -26,13 +26,11 @@ function tokensOf(row: SettingsRowSpec): string[] {
 }
 
 describe('settings catalogue', () => {
-  it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
-    // A fresh profile has the feature OFF; the switch has to say so, or the
-    // first click flips a switch that looked on to the off it already was.
-    const row = TOGGLES.find((r) => r.key === 'autoRebindArrows')!;
-    for (const prefs of [{}, { autoRebindArrows: true }, { autoRebindArrows: false }]) {
-      expect(row.read(prefs as UserPreferences)).toBe(autoRebindArrowsEnabled(prefs));
-    }
+  // The Auto-Attach Arrows setting left livehuddle (Work Tracker #423, part 4): arrows always reattach after a
+  // move, and the stored key is left unread.
+  it('offers no Auto-Attach Arrows setting', () => {
+    const keys = SETTINGS_CATEGORIES.flatMap((c) => c.rows.map((r) => r.key ?? ''));
+    expect(keys).not.toContain('autoRebindArrows');
   });
 
   it('round-trips every toggle through read/write in both directions', () => {
@@ -339,7 +337,6 @@ describe('settings sub-categories', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
     expect(keys).toEqual([
       'alignmentGuides',
-      'autoRebindArrows',
       'elementIndicatorStyle',
       'quickAddOnHover',
       'middleMousePan',

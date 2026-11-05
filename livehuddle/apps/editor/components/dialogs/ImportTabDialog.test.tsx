@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The Import dialog's draw.io card and its routing: a clean import closes, an
-// import with a report shows the summary (docs/specs/020-import-export/drawio-import.md "UI").
+// The Import dialog's Excalidraw card and its routing: a clean import closes, an
+// import with a report shows the summary (docs/specs/020-import-export/excalidraw-import-export.md).
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -21,17 +21,21 @@ function open(outcome: ImportOutcome) {
       onClose={onClose}
     />,
   );
-  fireEvent.click(screen.getByRole('button', { name: /draw\.io/ }));
-  fireEvent.change(screen.getByRole('textbox'), { target: { value: '<mxfile/>' } });
+  fireEvent.click(screen.getByRole('button', { name: /Excalidraw/ }));
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: '{"type":"excalidraw"}' } });
   fireEvent.click(screen.getByRole('button', { name: 'Import' }));
   return { onClose, onImportText };
 }
 
-describe('ImportTabDialog, draw.io', () => {
-  it('offers draw.io and passes the pasted XML to it', async () => {
+describe('ImportTabDialog, Excalidraw', () => {
+  it('offers Excalidraw and passes the pasted scene to it', async () => {
     const { onImportText, onClose } = open({ status: 'done' });
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
-    expect(onImportText).toHaveBeenCalledWith('drawio', '<mxfile/>', expect.any(Function));
+    expect(onImportText).toHaveBeenCalledWith(
+      'excalidraw',
+      '{"type":"excalidraw"}',
+      expect.any(Function),
+    );
   });
 
   it('shows the summary instead of closing when the import reports changes', async () => {
@@ -73,12 +77,13 @@ describe('ImportTabDialog, offered formats', () => {
     onClose: vi.fn(),
   };
 
-  it('offers only the formats it is given', () => {
-    render(<ImportTabDialog {...props} formats={['json', 'mermaid']} />);
+  // The draw.io, Mermaid and Markdown imports left livehuddle (Work Tracker #423, part 4).
+  it('offers a livehuddle tab and Excalidraw, and no diagram tool', () => {
+    render(<ImportTabDialog {...props} />);
     expect(screen.getByRole('button', { name: /JSON/ })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Mermaid/ })).toBeTruthy();
-    for (const other of [/Markdown/, /Excalidraw/, /draw\.io/]) {
-      expect(screen.queryByRole('button', { name: other })).toBeNull();
+    expect(screen.getByRole('button', { name: /Excalidraw/ })).toBeTruthy();
+    for (const gone of [/Markdown/, /Mermaid/, /draw\.io/]) {
+      expect(screen.queryByRole('button', { name: gone })).toBeNull();
     }
   });
 
@@ -90,9 +95,9 @@ describe('ImportTabDialog, offered formats', () => {
   });
 });
 
-// docs/specs/020-import-export/markdown-import.md: two cards across on a phone; the warning's keys only for a keyboard.
+// Two cards across, a phone too; the warning's keys only for a keyboard.
 describe('ImportTabDialog on a phone', () => {
-  it('lays its formats out two across below sm and names Undo’s keys only on a fine pointer', () => {
+  it('lays its formats out two across and names Undo’s keys only on a fine pointer', () => {
     render(
       <ImportTabDialog
         tabName="Board"
@@ -101,9 +106,8 @@ describe('ImportTabDialog on a phone', () => {
         onClose={vi.fn()}
       />,
     );
-    const grid = screen.getByRole('button', { name: /draw\.io/ }).parentElement!;
+    const grid = screen.getByRole('button', { name: /Excalidraw/ }).parentElement!;
     expect(grid.className).toContain('grid-cols-2');
-    expect(grid.className).toContain('sm:grid-cols-3');
     const keys = screen.getByText(/⌘Z/);
     expect(keys.className).toContain('pointer-coarse:hidden');
     expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
@@ -125,9 +129,9 @@ describe('ImportTabDialog for a screen reader', () => {
         onClose={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /^Mermaid/ }));
-    const field = screen.getByRole('textbox', { name: 'Mermaid to import' });
-    fireEvent.change(field, { target: { value: 'graph TD' } });
+    fireEvent.click(screen.getByRole('button', { name: /^JSON/ }));
+    const field = screen.getByRole('textbox', { name: 'JSON to import' });
+    fireEvent.change(field, { target: { value: '{}' } });
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
     expect((await screen.findByRole('alert')).textContent).toBe('No nodes found.');
   });

@@ -63,8 +63,8 @@ describe('Power User Mode children', () => {
     expect(
       minimal.compareDocumentPosition(readout) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    // The Workshop tour's row left with the tour (Work Tracker #423).
-    expect(within(readout).getAllByRole('listitem')).toHaveLength(4);
+    // The Workshop tour's row left with the tour, and Auto-Attach Arrows' with its setting (Work Tracker #423).
+    expect(within(readout).getAllByRole('listitem')).toHaveLength(3);
     expect(within(readout).getAllByText('On').length).toBeGreaterThan(0);
   });
 

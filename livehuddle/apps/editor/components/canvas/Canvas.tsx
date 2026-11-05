@@ -204,7 +204,6 @@ function CanvasView(props: CanvasProps) {
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
     onDropFile: props.onDropFile,
-    onDropLibraryShape: props.onDropLibraryShape,
     // A tile DRAGGED onto the canvas is an edit too (docs/specs/008-canvas/avatar-mode.md), so it leaves
     // Avatar mode the same way a tile click does — otherwise the element
     // landed while the canvas still read as read-only.
@@ -435,7 +434,7 @@ function CanvasView(props: CanvasProps) {
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
       {/* The surface's slide View Transition went with presenting (Work Tracker #423 part 2). A fragment keeps the
-            surface's indentation until part 4 unwraps it, so a branch editing inside it still merges. */}
+            surface's indentation until open PR #1301 (which edits inside it) merges; it is unwrapped then. */}
       <>
         <main
           ref={mainRef}

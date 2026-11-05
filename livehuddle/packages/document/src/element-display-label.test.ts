@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { createShape } from './factories';
 import type { BoxedElement } from './index';
 import { elementDisplayLabel } from './element-display-label';
 
@@ -38,12 +37,17 @@ describe('elementDisplayLabel', () => {
   });
 });
 
-describe('an unlabelled Comment or Action panel', () => {
-  it('is named by what it is, not "Untitled"', () => {
-    expect(elementDisplayLabel(createShape('action-card', 0, 0) as never)).toBe('Action Panel');
-    expect(elementDisplayLabel(createShape('comment-pin', 0, 0) as never)).toBe('Comment Panel');
-    expect(elementDisplayLabel({ ...createShape('action-card', 0, 0), label: 'Follow-ups' })).toBe(
-      'Follow-ups',
-    );
+describe('an unlabelled retired element (docs/specs/002-project-scope/not-in-livehuddle.md)', () => {
+  const retired = (kind: string, label = ''): BoxedElement =>
+    ({ ...shape(label), shape: kind }) as never;
+
+  it('is named by what it was, not "Untitled"', () => {
+    expect(elementDisplayLabel(retired('action-card'))).toBe('Action Panel');
+    expect(elementDisplayLabel(retired('comment-pin'))).toBe('Comment Panel');
+    expect(elementDisplayLabel(retired('never-a-kind'))).toBe('Unknown Element');
+  });
+
+  it('keeps its stored label when it has one', () => {
+    expect(elementDisplayLabel(retired('action-card', 'Follow-ups'))).toBe('Follow-ups');
   });
 });

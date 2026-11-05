@@ -2,7 +2,7 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogCloseButton, DialogHeader } from '@livehuddle/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ExcalidrawImportPanel } from './ExcalidrawImportPanel';
-import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
+import type { ImportScenes } from '@/hooks/persistence/useBoardSceneImport';
 
 const EXCALIDRAW_IMPORT_TITLE = 'Import from Excalidraw';
 

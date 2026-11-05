@@ -26,6 +26,22 @@ describe('elementSchemaDoc', () => {
     expect(doc).toContain('"e"'.replace(/"/g, '')); // anchor 'e' from packages/document
     expect(doc).toContain('Do NOT set colours');
   });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md: no agent schema names a retired kind or the Page.
+  it('names no retired kind, the live poll, the Q&A board or the Page', () => {
+    const texts = [
+      elementSchemaDoc(),
+      SERVER_INSTRUCTIONS,
+      JSON.stringify(z.toJSONSchema(z.object(createDocumentShape), { io: 'input' })),
+      JSON.stringify(z.toJSONSchema(z.object(updateDocumentShape), { io: 'input' })),
+    ];
+    const retired =
+      /"(session-button|reveal|picker|comment-pin|action-card|done-check|estimate|temperature|idea-box|qa-board|agenda|decision|roll-call|quiz|page)"|\bpoll\b|Q&A/;
+    for (const text of texts) expect(text).not.toMatch(retired);
+    const kinds = /Shape kind \(([^)]*)\)/.exec(texts[2]!)?.[1] ?? '';
+    expect(kinds).toContain('square');
+    expect(kinds.split(', ')).not.toContain('page');
+  });
 });
 
 describe('tool input shapes', () => {

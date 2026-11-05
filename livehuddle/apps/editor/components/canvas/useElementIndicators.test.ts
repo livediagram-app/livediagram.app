@@ -101,11 +101,17 @@ describe('elementIndicatorItems', () => {
     expect(b).toBeTruthy();
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": its own face is gone, so its thread shows here.
+  it("shows a retired comment pin's thread like any element's", () => {
+    const pin = {
+      ...createShape('square', 0, 0),
+      shape: 'comment-pin',
+      commentThread: thread(2),
+    } as unknown as BoxedElement;
+    expect(kinds(pin)).toEqual(['comment']);
+  });
+
   it('skips what an element already shows on its own face', () => {
-    const pin = { ...createShape('comment-pin', 0, 0), commentThread: thread(2) } as BoxedElement;
-    expect(kinds(pin)).toEqual([]);
-    const panel = { ...createShape('action-card', 0, 0), action: action('open') } as BoxedElement;
-    expect(kinds(panel)).toEqual([]);
     const card = {
       id: 'c',
       type: 'link-card',

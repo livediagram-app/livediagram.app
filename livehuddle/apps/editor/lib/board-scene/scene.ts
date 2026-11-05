@@ -1,5 +1,5 @@
 // The board scene (docs/specs/020-import-export/board-scene.md): the one source-neutral picture
-// of a board every import and paste reduces to. Parsers (Excalidraw, Microsoft Whiteboard) produce
+// of a board every import and paste reduces to. Parsers (Excalidraw) produce
 // it; one landing (land.ts) turns it into elements. Types only: no values, no React, no DOM.
 //
 // Units: coordinates are canvas px; `widthPx` is a line's drawn width at medium pressure; `fontPx`
@@ -176,13 +176,14 @@ export type SceneAsset = {
 export type SceneNote = { rule: string; count: number; kind?: 'degraded' | 'skipped' };
 
 export type BoardScene = {
-  source: 'excalidraw' | 'microsoft-whiteboard';
+  // The one tool a board comes from now the Microsoft Whiteboard import is gone (Work Tracker #423, part 4).
+  source: 'excalidraw';
   title?: string;
   /** Tool plus the tool's board id, when it has one. */
   sourceId?: string;
   /**
-   * The board's own created and last-modified dates, ISO 8601 (Microsoft Whiteboard's
-   * `createdTime` / `lastModifiedTime`): an imported board's document is dated as the board.
+   * The board's own created and last-modified dates, ISO 8601 (an Excalidraw file's, from its default
+   * name or the file): an imported board's document is dated as the board.
    */
   createdAt?: string;
   modifiedAt?: string;

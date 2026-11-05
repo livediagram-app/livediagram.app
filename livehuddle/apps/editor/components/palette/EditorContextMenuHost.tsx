@@ -32,7 +32,6 @@ const ReadOnlyElementMenuHost = dynamic(
 export function EditorContextMenuHost() {
   const {
     contextMenu,
-    facilitator,
     userPreferences,
     activeTab,
     isReadOnly,
@@ -121,11 +120,6 @@ export function EditorContextMenuHost() {
     toggleChecklistItem,
     setWebRowsSelected,
     setHeroCaptionSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
-    setDecisionStatusSelected,
-    setDecisionDateSelected,
-    setDecisionDriversSelected,
     setChairFacingSelected,
     setRoomDoorSelected,
     setStageSelected,
@@ -133,11 +127,7 @@ export function EditorContextMenuHost() {
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
-    setSessionConfigSelected,
-    setRevealedSelected,
-    setPickerSourceSelected,
     setReactionSelected,
-    setPickerOptionsSelected,
     tabs,
     commitShapeColorPreset,
     previewShapeColorPreset,
@@ -325,11 +315,6 @@ export function EditorContextMenuHost() {
       onToggleChecklistItem={toggleChecklistItem}
       onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
-      onSetEstimateScale={setEstimateScaleSelected}
-      onSetAgendaItems={setAgendaItemsSelected}
-      onSetDecisionStatus={setDecisionStatusSelected}
-      onSetDecisionDate={setDecisionDateSelected}
-      onSetDecisionDrivers={setDecisionDriversSelected}
       onSetChairFacing={setChairFacingSelected}
       onSetRoomDoor={setRoomDoorSelected}
       onSetStage={setStageSelected}
@@ -337,11 +322,7 @@ export function EditorContextMenuHost() {
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}
       onCreateLinkedPortal={createLinkedPortal}
-      onSetSession={facilitator.sessionToolsBlocked ? undefined : setSessionConfigSelected}
-      onSetRevealed={facilitator.sessionToolsBlocked ? undefined : setRevealedSelected}
-      onSetPickerSource={setPickerSourceSelected}
       onSetReaction={setReactionSelected}
-      onSetPickerOptions={setPickerOptionsSelected}
       tabs={tabs}
       activeTabId={activeTab.id}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}

@@ -15,7 +15,6 @@ import {
   PopularTabIcon,
   IconsTabIcon,
   MediaTabIcon,
-  MyShapesTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   WriteTabIcon,
@@ -24,14 +23,7 @@ import {
   Prims,
 } from '@livehuddle/ui';
 import { lucidePanelTop } from '@liveworkspace/icons/lucide';
-import {
-  AskGroupIcon,
-  WorkshopGroupIcon,
-  ModeGroupIcon,
-  MoveGroupIcon,
-  ReactionGroupIcon,
-  RecordGroupIcon,
-} from '@livehuddle/ui';
+import { ModeGroupIcon, MoveGroupIcon, ReactionGroupIcon } from '@livehuddle/ui';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -80,15 +72,6 @@ export const PALETTE_CATEGORIES: {
     group: 0,
     description: 'Square, circle, diamond, and the flowchart shape vocabulary.',
     icon: <ShapesTabIcon />,
-  },
-  {
-    // My shapes (docs/specs/013-workspace/shape-libraries.md): the owner's imported shape libraries,
-    // after Shapes in the Common band; offered only when there is a shape to place.
-    id: 'my-shapes',
-    label: 'My shapes',
-    group: 0,
-    description: 'Shapes from your imported libraries, ready to place.',
-    icon: <MyShapesTabIcon />,
   },
   {
     id: 'write',
@@ -172,37 +155,11 @@ export const PALETTE_CATEGORIES: {
       'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
     icon: <DataTabIcon />,
   },
-  // The Collaborate elements (docs/specs/010-palette/palette-top-level-categories.md): everything whose
-  // content arrives at RUNTIME rather than being drawn by the author, the ones that do something when
-  // pressed and the ones that collect what the room thinks. Their own Collaborate band. Six categories, one per group, in
-  // room-first order: Workshop offers them in place of one Collaborate category with a group
-  // browser inside it, since every group is something a facilitator reaches for mid-session and a
-  // parent category was a click in front of each (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS.
-  {
-    id: 'collab-ask',
-    label: 'Ask',
-    group: 6,
-    description:
-      'Put a question to the room: dot votes, polls, quizzes, estimates, a temperature check, an idea box and a Q&A board.',
-    icon: <AskGroupIcon />,
-  },
-  {
-    id: 'collab-tools',
-    label: 'Tools',
-    group: 6,
-    description:
-      'Run the session: a timer or a stopwatch, a reveal zone, a done check and a picker.',
-    icon: <WorkshopGroupIcon />,
-  },
-  {
-    id: 'collab-record',
-    label: 'Record',
-    group: 6,
-    description:
-      'Leave a record on the canvas: comments, actions, an agenda, decisions and a roll call.',
-    icon: <RecordGroupIcon />,
-  },
+  // The meeting elements (docs/specs/010-palette/palette-top-level-categories.md): the ones that do something when
+  // pressed, and the office. Their own band, three categories, one per group: the Meeting Board offers them in
+  // place of one category with a group browser inside it (docs/specs/012-collaboration/workshop-mode.md "The
+  // palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS. Ask, Tools and Record left with the elements they held
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
   {
     id: 'collab-react',
     label: 'React',

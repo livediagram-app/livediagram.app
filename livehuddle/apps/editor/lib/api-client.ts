@@ -39,9 +39,7 @@ export {
 export * from './api/documents';
 export * from './api/tabs';
 export * from './api/changesets';
-export * from './api/qa-board';
 export * from './api/share';
-export * from './api/shape-libraries';
 export * from '@liveworkspace/workbench/lib/api/tokens';
 export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';

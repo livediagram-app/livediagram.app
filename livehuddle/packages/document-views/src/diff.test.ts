@@ -51,23 +51,20 @@ describe('diffView (R17, VW36)', () => {
       checklistItems: [{ text: 'x', done: false }],
     });
     const c = shapeAt('square', 'c', 600, 0, 100, 50, { note: 'old' });
-    const d = shapeAt('estimate', 'd', 700, 0, 100, 50, { responses: [] });
     expect(
       changeLines(
-        [frame, a, b, c, d],
+        [frame, a, b, c],
         [
           frame,
           { ...a, shape: 'circle', label: undefined, note: undefined, x: 900 },
           { ...b, checklistItems: [{ text: 'x', done: true }] },
           { ...c, note: 'new', locked: true, label: 'C' },
-          { ...d, responses: [{ participantId: 'p', value: '3', at: 0 }], responsesRevealed: true },
         ],
       ),
     ).toEqual([
       '~ circle a kind square → circle · label "A" → none · note removed · in f → canvas · moved +890,+0',
       '~ checklist b done=0/1 → done=1/1',
       '~ square c label none → "C" · note changed · locked none → on',
-      '~ estimate d votes 0 → 1 · revealed none → on',
     ]);
     expect(
       changeLines(
@@ -125,15 +122,16 @@ describe('diffView (R17, VW36)', () => {
     ).toEqual(['~ arrow r to arrow:ab → arrow:ba']);
   });
 
-  // A card's id moves with its card: the ideas count speaks for both, no "other field".
-  it('reads an idea with its card id as one change to the ideas', () => {
-    const box = { ...shapeAt('idea-box', 'i', 0, 0), ideaCards: ['a'] } as Element;
-    const lines = changeLines(
-      [box],
-      [{ ...box, ideaCards: ['a', 'b'], ideaCardIds: ['', 'x'] } as Element],
-    );
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).not.toContain('other field');
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md) has no state attribute: a change to what
+  // it stored is an other field.
+  it('reads a change to a retired element as other fields', () => {
+    const box = {
+      ...shapeAt('square', 'i', 0, 0),
+      shape: 'idea-box',
+      ideaCards: ['a'],
+    } as unknown as Element;
+    const lines = changeLines([box], [{ ...box, ideaCards: ['a', 'b'] } as unknown as Element]);
+    expect(lines).toEqual(['~ ? idea-box i +1 other field']);
   });
 
   it('lists removals in the before order and additions under an unlabelled container', () => {

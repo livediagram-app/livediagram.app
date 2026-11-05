@@ -35,6 +35,8 @@ import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
+import { isRetiredElement } from './retired-kinds';
+import { svgRetiredElement } from './svg-render-retired';
 import { svgPageFold } from './svg-render-page';
 import { svgHeroCaption } from './svg-render-web';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
@@ -235,6 +237,11 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
   let shapeStr = '';
+  if (el.type === 'shape' && isRetiredElement(el)) {
+    // A kind livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
+    // placeholder card, in place of its body, border and label.
+    return `<g${opAttr}${rotAttr}>${svgRetiredElement(el, surface, fontFamily)}</g>`;
+  }
   if (el.type === 'table') {
     // The real grid (tracks / headers / zebra / per-cell text), not a
     // box-with-nothing. Tables carry no element label; the cells are the

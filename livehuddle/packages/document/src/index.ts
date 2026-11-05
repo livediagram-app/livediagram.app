@@ -248,6 +248,10 @@ export type Tab = {
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './accent-edge';
+// Retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kinds livehuddle no longer
+// has, their names, and the placeholder card every surface draws them as.
+export * from './retired-kinds';
+export * from './retired-placeholder';
 export * from './card';
 export * from './chip';
 export * from './attachment';
@@ -353,9 +357,6 @@ export * from '@liveworkspace/model-core/shape-marker';
 // Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
 export * from './selection-mode';
 export * from './behaviour-skin';
-// How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md), shared by the Session button's
-// stored config below and by @livehuddle/api-schema's wire `LivePoll`.
-export * from './poll-style';
 export * from './comments';
 export * from './collab-index-rows';
 export * from './comment-thread';
@@ -384,13 +385,9 @@ export * from './chart-types';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
-// Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
-// (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
-export * from './responses';
+// The chair's facings and which kinds draw their own face (docs/specs/009-elements/chair.md). A leaf module, for the
+// factories cycle.
 export * from './collab-shapes';
-export * from './agenda-current';
-// Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
-export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
 export * from '@liveworkspace/avatar/fence';
@@ -407,8 +404,6 @@ export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
-// The Q&A board (docs/specs/012-collaboration/qa-board.md)
-export * from './qa-board';
 export * from './web-components';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
@@ -570,7 +565,7 @@ export * from '@liveworkspace/model-core/adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
-// (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
+// (docs/specs/012-collaboration/collab-race-hardening.md): checklist ticks and comments.
 export * from './element-deltas';
 
 // The room's record of those deltas, merged into each save so D1 keeps what
@@ -615,8 +610,6 @@ export * from './element-refs';
 export * from './containment';
 export * from '@liveworkspace/model-core/style-keys';
 export * from '@liveworkspace/model-core/tab-names';
-export { agendaFitHeight } from './svg-render-agenda';
-export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.

@@ -28,7 +28,7 @@ Or add with edit operations, each one placed beside the element it names:
 
 Look things up as you need them:
 
-  livehuddle schema agenda               a kind's fields and values
+  livehuddle schema checklist            a kind's fields and values
   livehuddle icon search lightbulb       an id for iconId=
 
 Check how it is drawn; each finding ends with a fix written as edit operations:

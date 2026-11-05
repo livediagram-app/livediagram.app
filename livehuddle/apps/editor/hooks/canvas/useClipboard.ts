@@ -334,7 +334,7 @@ export function useClipboard(deps: ClipboardDeps) {
     if (isReadOnly) return;
     const refuse = () => toast.info(DROP_NOT_A_SCENE);
     const asImage = () => void pasteImageFile(file, at);
-    // A draw.io, Mermaid, Markdown or JSON file replaces the tab through Import, and is told so.
+    // A livehuddle JSON file replaces the tab through Import, and is told so.
     const importHint = dropImportHint(file);
     if (importHint) return toast.info(importHint);
     const image = file.type.startsWith('image/');

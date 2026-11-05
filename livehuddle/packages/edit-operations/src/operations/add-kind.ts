@@ -55,6 +55,13 @@ const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
 // The kinds besides the shape kinds that `add` makes.
 export const OTHER_KINDS: readonly string[] = Object.keys(FACTORIES);
 
+// The shape kinds an agent may make (docs/specs/002-project-scope/not-in-livehuddle.md): every one but the Page,
+// which stays a shape kind only so a stored one still draws. `add page` makes a square, as an unknown kind does.
+const NOT_FOR_AGENTS: ReadonlySet<string> = new Set(['page']);
+export const AGENT_SHAPE_KINDS: readonly string[] = [...SHAPE_KINDS].filter(
+  (kind) => !NOT_FOR_AGENTS.has(kind),
+);
+
 export type Built = { el: BoxedElement; coerced: string | null };
 
 // The factory element of a kind, unplaced and without an id; an unknown kind is coerced to a shape
@@ -64,10 +71,10 @@ export function buildKind(kind: string): Built | { refusal: string } {
   if (refused !== undefined) return { refusal: refused };
   const factory = FACTORIES[kind];
   if (factory) return { el: { ...factory(), textSize: 'sm' }, coerced: null };
-  const shape = kind === 'shape' ? 'square' : coerceShapeKind(kind);
+  const shape = kind === 'shape' || NOT_FOR_AGENTS.has(kind) ? 'square' : coerceShapeKind(kind);
   return {
     el: { ...createShape(shape, 0, 0), textSize: 'sm' },
-    coerced: kind === 'shape' || SHAPE_KINDS.has(kind) ? null : shape,
+    coerced: kind === 'shape' || shape === kind ? null : shape,
   };
 }
 

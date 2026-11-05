@@ -9,12 +9,7 @@
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
 import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
-import {
-  DEFAULT_BUTTON_MODE,
-  DEFAULT_PICKER_SOURCE,
-  DEFAULT_SESSION_TOOL,
-  DEFAULT_TIMER_MINUTES,
-} from './selection-mode';
+import { DEFAULT_BUTTON_MODE } from './selection-mode';
 import {
   CHECKLIST_DEFAULT_ITEMS,
   LEGEND_DEFAULT_ITEMS,
@@ -24,12 +19,7 @@ import {
   RATING_DEFAULT,
   REACTION_DEFAULT,
 } from './data-shapes';
-import {
-  AGENDA_DEFAULT_MINUTES,
-  DEFAULT_CHAIR_FACING,
-  DEFAULT_DECISION_STATUS,
-} from './collab-shapes';
-import { QUIZ_DEFAULT_SECONDS } from './quiz';
+import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { DEFAULT_SEATING_FACING } from './seating';
 import { FENCE_DEFAULT_SIZE } from '@liveworkspace/avatar/fence';
 import { AVATAR_PAD_DEFAULT_SIZE } from '@liveworkspace/avatar/pad-art';
@@ -59,17 +49,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   lane: { width: 900, height: 200 },
   // Reaction pad: a press-me square, sized like the other Behaviour buttons.
   'reaction-pad': { width: 150, height: 110 },
-  // Comment panel (docs/specs/012-collaboration/comment-pin.md "The look"): a card sized for a short
-  // conversation (three or four bubbles) above the composer. It reflows, so a
-  // resize makes room for more of the thread.
-  'comment-pin': { width: 300, height: 320 },
-  // Action panel (docs/specs/012-collaboration/action-panel.md): sized for a few actions above the Add
-  // Action bar. It reflows, so a resize makes room for more actions.
-  'action-card': { width: 300, height: 300 },
-  // Done check: taller than the other room-response panels because it stacks
-  // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
-  // room already overflowed by a few pixels and the body grew a scrollbar.
-  'done-check': { width: 280, height: 220 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
   // render path means the ends stay perfectly semicircular at any
@@ -134,14 +113,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'focus-button': { width: 120, height: 96 },
   // Portal (docs/specs/009-elements/portal-element.md): portal-shaped — taller than it is wide, like a portal.
   portal: { width: 72, height: 112 },
-  // Session button (docs/specs/012-collaboration/session-button.md): the Selection Mode button's tile, so a row of
-  // Behaviour controls lines up.
-  'session-button': { width: 104, height: 96 },
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover, so it arrives big enough to actually
-  // cover something — a column of notes rather than one sticky.
-  reveal: { width: 320, height: 220 },
-  // Picker (docs/specs/012-collaboration/picker.md): a card wide enough for a name at a readable size.
-  picker: { width: 220, height: 132 },
   // Chair (docs/specs/009-elements/chair.md): furniture at human scale beside a 40px-wide Avatar-mode
   // character — a seat the sprite fits into rather than a throne it rattles
   // around in.
@@ -165,33 +136,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   rug: { width: 200, height: 120 },
   // A stage (docs/specs/009-elements/office.md "Stage"): room for a few speakers side by side, and its front edge.
   stage: { width: 360, height: 140 },
-  // Estimate card (docs/specs/012-collaboration/estimate-card.md): the eight fibonacci chips wrap to two rows, and
-  // the card has to hold them PLUS the answered avatars PLUS the two footer
-  // buttons without clipping — a card that arrives already cut off is the
-  // first thing anybody sees.
-  estimate: { width: 360, height: 310 },
-  // Quiz (docs/specs/012-collaboration/quiz.md): a square, because the face is a disc with the answers on a
-  // ring around it. Big enough that six answers fit round the ring at a
-  // readable size before anybody resizes it.
-  quiz: { width: 520, height: 520 },
-  // Temperature check (docs/specs/012-collaboration/temperature-check.md): five faces over five bars over
-  // the mood meter. Wide enough for each face to carry its word, and tall
-  // enough that the bars, the main read, get real height.
-  temperature: { width: 320, height: 300 },
-  // Idea box (docs/specs/012-collaboration/idea-box.md): a list of ideas over the composer, so it arrives
-  // sized like a retro column rather than a sticky, and tall enough for its
-  // empty state (the breathing rows plus the invitation under them) above the
-  // composer without scrolling.
-  'idea-box': { width: 340, height: 420 },
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): a spotlight over a ranked list over the add field,
-  // so it arrives tall enough for five or six notes before it scrolls.
-  'qa-board': { width: 360, height: 460 },
-  // Agenda (docs/specs/012-collaboration/agenda.md): a run of six segments before it needs resizing.
-  agenda: { width: 330, height: 300 },
-  // Decision record (docs/specs/012-collaboration/decision-record.md): a card for a sentence plus three drivers.
-  decision: { width: 330, height: 220 },
-  // Roll call (docs/specs/012-collaboration/roll-call.md): two columns of names, six rows deep.
-  'roll-call': { width: 300, height: 260 },
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },
@@ -281,42 +225,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       aspectLocked: true,
     };
   }
-  // Session button (docs/specs/012-collaboration/session-button.md): same skin and rules as the Selection Mode
-  // button — it IS one, pointed at a session tool instead of a mode — with a
-  // default five-minute timer so a fresh one already does something.
-  if (kind === 'session-button') {
-    return {
-      ...base,
-      session: { tool: DEFAULT_SESSION_TOOL, minutes: DEFAULT_TIMER_MINUTES },
-      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.24 },
-      borderRadius: 'lg',
-      textSize: 'sm',
-      textBold: true,
-    };
-  }
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a frosted cover. It paints itself, so the element
-  // box carries no fill of its own; the label names what is underneath and
-  // sits at the top, out of the way of the middle where the hint goes.
-  if (kind === 'reveal') {
-    return {
-      ...base,
-      label: 'Hidden',
-      borderRadius: 'lg',
-      textAlignY: 'top',
-      textBold: true,
-    };
-  }
-  // Picker (docs/specs/012-collaboration/picker.md): a plain card — the result is the content, so it gets
-  // the room by default rather than a written list.
-  if (kind === 'picker') {
-    return {
-      ...base,
-      pickerSource: DEFAULT_PICKER_SOURCE,
-      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
-      borderRadius: 'lg',
-      textSize: 'sm',
-    };
-  }
   // Chair (docs/specs/009-elements/chair.md): furniture, so it paints its own seat and back and the
   // element box carries no fill. The label (a name, a role) sits UNDER the
   // chair, out of the way of the character that will sit in it.
@@ -370,105 +278,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
         ? { textSize: 'sm' as const, textAlignY: 'bottom' as const }
         : {}),
       aspectLocked: true,
-    };
-  }
-  // The collaboration panels (docs/specs/012-collaboration/estimate-card.md, 124, 125, 127, 129): each paints a
-  // card with its own pressable face, so they share one skin — a white
-  // surface, a soft shadow, a small top-aligned title. The label is the
-  // question / prompt / session name, which belongs at the top of the card
-  // rather than centred over the controls.
-  if (
-    kind === 'estimate' ||
-    kind === 'temperature' ||
-    kind === 'idea-box' ||
-    kind === 'qa-board' ||
-    kind === 'agenda' ||
-    kind === 'roll-call'
-  ) {
-    // Deliberately NO fill / stroke / text colour: the card takes the tab
-    // theme's element colours like a plain square does, so a dark theme gives
-    // a dark card. Pinning white here made them the only elements on the canvas
-    // that stayed bright when everything around them darkened.
-    const seed: ShapeElement = {
-      ...base,
-      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.2 },
-      borderRadius: 'lg',
-      textSize: 'sm',
-      textBold: true,
-      textAlignX: 'left',
-      textAlignY: 'top',
-    };
-    if (kind === 'estimate') {
-      // No scale: the card asks for one on the canvas (estimateScalePending).
-      return { ...seed, label: 'Estimate' };
-    }
-    if (kind === 'temperature') return { ...seed, label: 'How are we feeling?' };
-    if (kind === 'idea-box') return { ...seed, label: 'Ideas' };
-    if (kind === 'qa-board') return { ...seed, label: 'Questions' };
-    if (kind === 'agenda') {
-      return {
-        ...seed,
-        label: 'Agenda',
-        // A fresh agenda is a real one-hour-shaped session rather than an
-        // empty list, so a dropped element demonstrates what it does.
-        agendaItems: [
-          { label: 'Set the scene', minutes: AGENDA_DEFAULT_MINUTES },
-          { label: 'Gather input', minutes: 10 },
-          { label: 'Discuss', minutes: 15 },
-          { label: 'Agree actions', minutes: AGENDA_DEFAULT_MINUTES },
-        ],
-      };
-    }
-    return { ...seed, label: 'Roll call' };
-  }
-  // Decision record (docs/specs/012-collaboration/decision-record.md): the label IS the decision statement, so it
-  // reads left-aligned from the top like a sentence rather than centred like a
-  // node caption, with the chip and the drivers drawn around it.
-  if (kind === 'decision') {
-    return {
-      ...base,
-      label: 'We will …',
-      decisionStatus: DEFAULT_DECISION_STATUS,
-      textAlignX: 'left',
-      textAlignY: 'top',
-      // Theme colours, like the collaboration cards above.
-      borderRadius: 'lg',
-      shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.18 },
-    };
-  }
-  // Quiz (docs/specs/012-collaboration/quiz.md): arrives as a real question so a dropped card
-  // demonstrates what it does, with its aspect locked because a stretched
-  // ring stops being a ring.
-  if (kind === 'quiz') {
-    return {
-      ...base,
-      label: 'Which planet is closest to the sun?',
-      quizOptions: ['Venus', 'Mercury', 'Mars', 'Earth'],
-      quizCorrect: 1,
-      quizSeconds: QUIZ_DEFAULT_SECONDS,
-      aspectLocked: true,
-    };
-  }
-  if (kind === 'done-check') {
-    // The title states the QUESTION, because "Done" alone reads as a claim
-    // that something is done rather than a request to say whether you are.
-    return { ...base, label: 'Everyone done?' };
-  }
-  if (kind === 'comment-pin') {
-    return {
-      ...base,
-      // No label: the panel's content IS the thread, and a caption above it
-      // would be a title for a conversation nobody has had yet.
-      label: '',
-    };
-  }
-  if (kind === 'action-card') {
-    return {
-      ...base,
-      // No label: the Assign Action dialog prefills the action's NAME from the
-      // element's label (docs/specs/012-collaboration/assigned-actions.md §2), so a default caption here would become
-      // every new action's name.
-      label: '',
     };
   }
   if (kind === 'reaction-pad') {

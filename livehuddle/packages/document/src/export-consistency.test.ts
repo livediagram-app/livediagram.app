@@ -59,22 +59,8 @@ describe('every kind with a body draws one', () => {
     'lane',
     'chair',
     'portal',
-    'reveal',
-    'picker',
     'mode-button',
-    'session-button',
     'reaction-pad',
-    'comment-pin',
-    'action-card',
-    'estimate',
-    'temperature',
-    'idea-box',
-    'qa-board',
-    'agenda',
-    'decision',
-    'roll-call',
-    'done-check',
-    'quiz',
     'focus-button',
   ];
 
@@ -141,7 +127,7 @@ describe('a self-painting element gets no box drawn round it', () => {
 
 describe('a face paints in the element typeface', () => {
   it('wraps a card in the font its label would use (docs/specs/004-interface-design/fonts.md)', () => {
-    const el = { ...createShape('agenda', 0, 0), label: 'Standup', font: 'caveat' };
+    const el = { ...createShape('mode-button', 0, 0), label: 'Standup', font: 'caveat' };
     // The group carries the face, so every text mark inside inherits it: a
     // card exported in a different typeface to the canvas is the same bug this
     // file is about, in smaller type.

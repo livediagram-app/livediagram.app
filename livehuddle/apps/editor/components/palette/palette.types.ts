@@ -1,4 +1,3 @@
-import type { ShapeLibraryItem } from '@livehuddle/api-schema';
 import type { EmbedProvider } from '@livehuddle/document';
 import type { ShapeKind } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -33,15 +32,13 @@ export type PaletteProps = {
   // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
   canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one
-  // (docs/specs/012-collaboration/session-button.md session tools, docs/specs/009-elements/reaction-pad.md reactions), so a tile per choice places
+  // (docs/specs/009-elements/reaction-pad.md reactions, mode buttons), so a tile per choice places
   // that choice rather than the factory default.
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      session?: import('@livehuddle/document').SessionTool;
       reaction?: import('@livehuddle/document').Reaction;
       mode?: import('@livehuddle/document').SelectionMode;
-      estimateScale?: import('@livehuddle/document').EstimateScale;
       plan?: string;
       variant?: string;
     },
@@ -57,9 +54,6 @@ export type PaletteProps = {
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.

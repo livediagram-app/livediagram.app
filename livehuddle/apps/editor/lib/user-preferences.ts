@@ -43,12 +43,8 @@ import {
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 export type UserPreferences = {
-  // When `false`, the editor skips the auto-rebind on move
-  // (docs/specs/008-canvas/arrow-anchors.md, `rebindArrowAnchorsAfterMove`
-  // in packages/document). Missing / undefined / true === on.
-  // Consumers derive the effective value via
-  // `autoRebindArrowsEnabled` below so the default lives here once.
-  autoRebindArrows?: boolean;
+  // (`autoRebindArrows`, the Auto-Attach Arrows switch, left livehuddle in Work Tracker #423 part 4: arrows
+  // always reattach after a move, and a stored value stays in old browsers' storage, unread.)
   // When `false`, `track()` in lib/telemetry is a no-op (the user
   // opted out of analytics). Distinct from the build-time
   // NEXT_PUBLIC_TELEMETRY_ENABLED gate and the api worker's
@@ -253,14 +249,6 @@ export type UserPreferences = {
 // the string wrong — see the note there.
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livehuddle:preferences-changed';
-
-// The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by
-// default, so only an explicit `false` turns the on-move rebind off. The
-// single home for the default: the Settings row and the editor-preferences
-// hook both call this instead of re-deriving it.
-export function autoRebindArrowsEnabled(prefs: UserPreferences): boolean {
-  return prefs.autoRebindArrows !== false;
-}
 
 // Read the current preferences from localStorage. Returns `{}` on
 // missing key, an SSR / private-window environment without

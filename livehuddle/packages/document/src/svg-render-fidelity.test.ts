@@ -18,44 +18,6 @@ const svgOf = (el: ShapeElement, background?: string) =>
   renderElementsToSvg({ id: 't', name: 'T', elements: [el] }, { background });
 
 describe('Behaviour face export', () => {
-  it('draws a timer Session button as the idle dial: ticks, the kicker and its length', () => {
-    const svg = svgOf(shape('session-button', { session: { tool: 'timer', minutes: 10 } }));
-    expect(svg).toContain('>TIMER<');
-    expect(svg).toContain('>10:00<');
-    // 24 ticks, the quarters taller.
-    expect(svg.match(/<rect[^<>]*height="7" fill="[^"]+" fill-opacity="0.3"\/>/g)).toHaveLength(4);
-    expect(svg.match(/<rect[^<>]*height="4" fill="[^"]+" fill-opacity="0.16"\/>/g)).toHaveLength(
-      20,
-    );
-  });
-
-  it('draws a vote, poll or stopwatch Session button as its tool and what pressing it does', () => {
-    const vote = svgOf(shape('session-button', { session: { tool: 'vote', dots: 3 }, label: '' }));
-    expect(vote).toContain('>START VOTE<');
-    expect(vote).toContain('>3 dots each<');
-    expect(vote.match(/<circle[^<>]*r="3"/g)).toHaveLength(3);
-    const poll = svgOf(
-      shape('session-button', {
-        session: { tool: 'poll', question: 'Ship it?', options: ['Yes', 'No'] },
-        label: '',
-      }),
-    );
-    expect(poll).toContain('>Ship it?<');
-    // The kicker names the shape of its answers.
-    expect(poll).toContain('>ASK · 2 OPTIONS<');
-    const yesNo = svgOf(
-      shape('session-button', {
-        session: { tool: 'poll', style: 'yesNo', question: 'Ship it?' },
-        label: '',
-      }),
-    );
-    expect(yesNo).toContain('>ASK · YES / NO<');
-    expect(poll).toContain('rx="1"');
-    const watch = svgOf(shape('session-button', { session: { tool: 'stopwatch' }, label: 'Lap' }));
-    expect(watch).toContain('>Lap<');
-    expect(watch).toContain('r="10"');
-  });
-
   it('names an unlabelled Mode button by its destination', () => {
     const svg = svgOf(shape('mode-button', { mode: 'laser', label: '' }));
     expect(svg).toContain('>SWITCH TO<');
@@ -114,35 +76,8 @@ describe('Behaviour face export', () => {
     expect(svg).toMatch(/fill-opacity="0.07"\/><text[^>]*font-size="10.5"[^>]*>Applause</);
   });
 
-  it('covers a Reveal with the gesture chip, on the wrapper radius', () => {
-    const svg = svgOf(shape('reveal', { label: 'Answer' }));
-    expect(svg).toContain('>Double-click to reveal<');
-    expect(svg).toMatch(/rx="4" fill="#/);
-  });
-
   it('prints a chair label under the seat', () => {
     expect(svgOf(shape('chair', { label: 'Scribe' }))).toContain('>Scribe<');
-  });
-
-  it('shades a Picker at both lips and offers Again once something landed', () => {
-    const svg = svgOf(shape('picker', { label: 'Who?', pickerResult: 'Sam' }));
-    expect(svg).toContain('linearGradient id="reel-el-picker"');
-    expect(svg).toContain('>Sam<');
-    expect(svg).toContain('>Again<');
-  });
-
-  it('writes a roll call with the stack, the chips and the Take Again bar', () => {
-    const at = Date.now();
-    const svg = svgOf(
-      shape('roll-call', {
-        rollCall: [
-          { name: 'Priya Kaur', color: '#db2777', at },
-          { name: 'Sam Lee', color: '#16a34a', at },
-        ],
-      }),
-    );
-    for (const s of ['>2<', '>PRESENT<', '>Priya Kaur<', '>Sam Lee<', '>Take Again<'])
-      expect(svg).toContain(s);
   });
 
   it('starts a page label under the masthead, and turns back its corner', () => {

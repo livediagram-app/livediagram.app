@@ -1,6 +1,6 @@
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
-import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livehuddle/document';
+import type { ElementDelta, RoomElementOp, Tab } from '@livehuddle/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
@@ -9,7 +9,6 @@ import type { AvatarHandOp, AvatarLetSpeakOp } from './call-hand';
 import type { CallSessionOp, CallStopShareOp } from './call-control';
 import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
-import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 
@@ -25,13 +24,6 @@ export type { AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/ava
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
 //
-// `poll-answer` (docs/specs/012-collaboration/live-poll.md) is here for the ROLE half rather than the
-// presence half: answering a poll changes nothing on the document, and a
-// presenter pulse-checking an audience on a view link is the main thing
-// polls are for, so a view-role participant must be able to send one.
-// `poll-start` / `poll-end` are deliberately NOT here — they stay behind
-// the edit-role gate below, so an audience member can answer a poll but
-// can't start one or end someone else's.
 // `avatar` (docs/specs/008-canvas/avatar-mode.md) is presence in the plainest sense: someone's walking
 // character, at cursor rates, mutating nothing. View-role senders included —
 // an audience member walking around a document they were shown a link to is
@@ -50,7 +42,6 @@ export const PRESENCE_OP_KINDS = [
   'select',
   'laser',
   'tab-focus',
-  'poll-answer',
   'avatar',
   // A shove (docs/specs/008-canvas/avatar-mode.md) moves nothing on the server and nothing in the
   // document — it asks one peer to step aside. Same trust level as `avatar`.
@@ -118,10 +109,6 @@ export const PRESENCE_OP_KINDS = [
 // Room op kinds that DO change the document: they get a monotonic `seq` within
 // the room's epoch, land in the bounded catch-up log so a reconnecting peer can
 // replay them (docs/specs/012-collaboration/realtime-conflict-resolution.md), and are refused from a view-role sender.
-//
-// `poll-start` / `poll-end` sit here rather than with `poll-answer` above on
-// purpose: an audience member on a view link may answer a poll but must not be
-// able to start one or end someone else's (docs/specs/012-collaboration/live-poll.md).
 export const MUTATION_OP_KINDS = [
   'tab',
   'tab-meta',
@@ -130,12 +117,10 @@ export const MUTATION_OP_KINDS = [
   // gets a seq, lands in the catch-up log, and is refused from a view-role
   // sender, because casting already requires edit rights.
   'vote',
-  // One answer, idea, checklist tick or comment change on one element
+  // One checklist tick or comment change on one element
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'document-meta',
-  'poll-start',
-  'poll-end',
 ] as const;
 
 // Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
@@ -143,12 +128,6 @@ export const MUTATION_OP_KINDS = [
 // arrive on a client socket: without that, any edit-role peer could forge
 // `share-revoked` carrying the code from their own URL and force-redirect every
 // collaborator out of the session (docs/specs/013-workspace/share-password.md).
-//
-// `qa` (docs/specs/012-collaboration/qa-board.md) is here for the same reason: it is the api's authoritative
-// word on a Q&A board after a write it has already persisted. A client that
-// could send one could rewrite every peer's board without touching D1. Unlike
-// `share-revoked` it is SEQUENCED into the catch-up log (the worker asks for
-// that on the /broadcast body), because it changes the document.
 //
 // `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
 // `share-revoked`: a forged one would reload every holder of a code.
@@ -165,7 +144,6 @@ export const MUTATION_OP_KINDS = [
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
-  'qa',
   'document-trashed',
   'changeset',
   'calls-mode',
@@ -193,13 +171,13 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
   return typeof kind === 'string' && (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 }
 
-// A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a person's own dot, response or idea.
+// A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a person's own dot.
 // A Participant's socket may send these beside presence; every other mutation from it is dropped, except an `el`
 // op, which the room applies through the participant content rule instead of relaying.
 const PARTICIPATION_OP_KINDS = ['vote'] as const;
 // A comment reaction is taking part too (docs/specs/012-collaboration/comment-reactions.md): whoever may comment
 // may react, and the room writes a Participant's reactions as it writes its answers.
-const PARTICIPATION_DELTA_KINDS = ['response', 'idea', 'comment-react'] as const;
+const PARTICIPATION_DELTA_KINDS = ['comment-react'] as const;
 
 export function isParticipationOp(op: unknown): boolean {
   if (typeof op !== 'object' || op === null) return false;
@@ -440,10 +418,10 @@ export type RoomOp =
   // `round` names the vote the dot was cast in (docs/specs/012-collaboration/collab-race-hardening.md): a receiver drops a
   // dot for any other round, or for a vote that has closed. Optional so a
   // peer on an older client still parses.
-  // ONE change to a field many people write at once: an answer, an idea, a
-  // checklist tick, a comment (docs/specs/012-collaboration/collab-race-hardening.md). The `vote` op's reasoning, applied to
+  // ONE change to a field many people write at once: a checklist tick, a
+  // comment (docs/specs/012-collaboration/collab-race-hardening.md). The `vote` op's reasoning, applied to
   // element fields: a whole-element `el` update replaced a peer's copy with the
-  // sender's snapshot, so two people pressing the same done check lost a mark.
+  // sender's snapshot, so two people ticking the same checklist row lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
   | {
       kind: 'vote';
@@ -580,33 +558,6 @@ export type RoomOp =
   // receiver resolves the name from the presence list it holds, so a renamed
   // participant's invitation reads correctly.
   | { kind: 'focus-here'; tabId: string; at: { x: number; y: number }; zoom: number }
-  // --- Live poll (docs/specs/012-collaboration/live-poll.md) -------------------------------------------
-  // Deliberately NOT a Tab field like the timer / dot-vote: a poll is
-  // ephemeral, so nothing here reaches D1 or undo. The
-  // room keeps the running poll and its answers in its own storage and
-  // replays them on hello (docs/specs/012-collaboration/live-poll.md).
-  // `poll-start` / `poll-end` are sequenced mutations; `poll-answer` relays
-  // unordered, like presence.
-  //
-  // The host opened a poll. Replaces any poll already on screen (one at a
-  // time per document).
-  | { kind: 'poll-start'; poll: LivePoll }
-  // One participant's answer; `null` means they skipped. Keyed by sender
-  // on receipt, so re-sending REPLACES that person's earlier answer
-  // rather than stacking a second one. Allowed from view-role senders
-  // too (docs/specs/012-collaboration/live-poll.md) — polling an audience on a view link is the point.
-  //
-  // `key` is the answerer's collab key (docs/specs/012-collaboration/collab-race-hardening.md): answers used to be keyed
-  // by the per-socket presence id, so re-answering after a reconnect counted
-  // twice. Optional so an older client still parses.
-  //
-  // `proof` is the sender's per-browser collab secret (docs/specs/012-collaboration/vote-integrity.md): it proves the
-  // key is the sender's own. The room checks it and NEVER relays it; a relayed or replayed answer carries the key the
-  // room decided and no proof.
-  | { kind: 'poll-answer'; pollId: string; value: string | null; key?: string; proof?: string }
-  // The host ended the poll: drop the question, the answers, and the
-  // panel everywhere. Edit-role only, like poll-start.
-  | { kind: 'poll-end'; pollId: string }
   // A share link was revoked by the document owner. Every connected
   // peer using that share code (the `X-Share-Code` they handed in to
   // hydrate) should hard-redirect to a "share revoked" surface so
@@ -618,9 +569,6 @@ export type RoomOp =
   // hydrated with that code reload into the new scope; the room closes their
   // sockets. Worker-originated, like share-revoked.
   | { kind: 'share-rescoped'; code: string }
-  // A Q&A board's whole state after a server write (docs/specs/012-collaboration/qa-board.md). Replaces the
-  // element's notes when `rev` is newer than the local `qaRev`.
-  | { kind: 'qa'; tabId: string; elementId: string; notes: QaNote[]; rev: number }
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp

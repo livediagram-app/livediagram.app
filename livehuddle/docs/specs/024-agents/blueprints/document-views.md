@@ -328,31 +328,24 @@ The table line prints its label first when it has one. Every text a summary prin
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
-| Kind                    | State attribute                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `estimate`              | `votes=<responses.length>`, then `revealed` when `responsesRevealed`                  |
-| `temperature`           | `votes=<responses.length>`                                                            |
-| `done-check`            | `done=<responses.length>`                                                             |
-| `idea-box`              | `ideas=<ideaCards.length>`, then `revealed` when `ideasRevealed`                      |
-| `qa-board`              | `questions=<qaNotes.length>`                                                          |
-| `agenda`                | `item=<agendaCurrent + 1>/<n>` once started, else `items=<n>`; then `minutes=<total>` |
-| `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
-| `decision`              | `status=<decisionStatus>` when set                                                    |
-| `roll-call`             | `present=<rollCall.length>`                                                           |
-| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
-| `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
-| `reveal`                | `revealed` when `revealed`                                                            |
-| `stat-row`              | `stats=<stats.length>`                                                                |
-| `process`               | `steps=<processSteps.length>`                                                         |
-| `site-header`           | `links=<navLinks.length>`                                                             |
-| `legend`                | `items=<legendItems.length>`                                                          |
-| `rating`                | `rating=<rating>/5`                                                                   |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                                                        |
-| `timeline-rail`         | `milestones=<conceptRows.length>`                                                     |
-| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set                            |
-| `badge`, `step`         | `attached` when `attachedTo` is set                                                   |
+| Kind                    | State attribute                                            |
+| ----------------------- | ---------------------------------------------------------- |
+| `stat-row`              | `stats=<stats.length>`                                     |
+| `process`               | `steps=<processSteps.length>`                              |
+| `site-header`           | `links=<navLinks.length>`                                  |
+| `legend`                | `items=<legendItems.length>`                               |
+| `rating`                | `rating=<rating>/5`                                        |
+| `progress-bar`, `-ring` | `progress=<progress, else 50>`                             |
+| `timeline-rail`         | `milestones=<conceptRows.length>`                          |
+| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set |
+| `badge`, `step`         | `attached` when `attachedTo` is set                        |
 
-Every other kind has no state attribute; `show` has its content.
+Every other kind has no state attribute; `show` has its content. A retired element
+([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)) has none either: its kind word is `? <kind>`.
+
+> **Gone from livehuddle (part 4)**: the Collaborate panels' state attributes (estimate, temperature, done check,
+> idea box, Q&A board, agenda, session button, decision, roll call, quiz, picker, reveal) and `diff`'s matching
+> attribute sources.
 
 **Attributes** (`attributesOf`), in this order after the summary and the state attribute (`VW14`):
 

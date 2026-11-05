@@ -14,10 +14,11 @@ const carrying = (): Element =>
 
 // docs/specs/012-collaboration/assigned-actions.md "A copy doesn't carry the action"
 describe('freshCopyFields', () => {
-  it("drops the original's comments, responses and actions from a duplicate", () => {
+  it("drops the original's comments and actions from a duplicate", () => {
     const { newElements } = duplicateElements([carrying()], new Set(['orig']), 10, 10);
     const copy = JSON.parse(JSON.stringify(newElements[0])) as Record<string, unknown>;
     expect(copy.commentThread).toBeUndefined();
+    // A retired element's stored answers (docs/specs/002-project-scope/not-in-livehuddle.md) were people's, not the copy's.
     expect(copy.responses).toBeUndefined();
     expect(copy.action).toBeUndefined();
     expect(copy.actions).toBeUndefined();

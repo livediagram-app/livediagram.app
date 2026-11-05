@@ -581,14 +581,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   }
                   voteReviewing={!!props.voteReview}
                   voteButtonRef={voteButtonRef}
-                  pollRunning={!!props.pollPanel}
                   canStart={stripCanStart(!!readOnly)}
                   offersTimer={stripTools.timer}
-                  offersPoll={stripTools.poll}
                   open={
-                    activeDockPanel === 'session-timer' ||
-                    activeDockPanel === 'session-vote' ||
-                    activeDockPanel === 'session-poll'
+                    activeDockPanel === 'session-timer' || activeDockPanel === 'session-vote'
                       ? activeDockPanel
                       : null
                   }

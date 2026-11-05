@@ -45,36 +45,19 @@ describe('cleanupVerdict', () => {
       count: 1,
     });
   });
-
-  it('catches lanes strung out of their stack', () => {
-    const els = [
-      box('lane1', 0, 0, 600, 100),
-      box('lane2', 0, 120, 600, 100),
-      box('a', 10, 10),
-      box('b', 10, 130),
-      arrow('a', 'b'),
-    ];
-    // Both lanes move as blocks (their shapes inside), the second ending up beside the first.
-    const after = moved(moved(els, 'lane2', 700, -120), 'b', 700, -120);
-    expect(cleanupVerdict(els, after)).toEqual({ kind: 'rearranges-lanes' });
-  });
 });
 
 describe('verdict copy', () => {
   it('has a line and a notice for every verdict but ok', () => {
     expect(verdictLine({ kind: 'ok' })).toBeNull();
-    expect(verdictNotice('Smart', { kind: 'ok' })).toBeNull();
+    expect(verdictNotice('Auto-align', { kind: 'ok' })).toBeNull();
     expect(verdictLine({ kind: 'covers', count: 1 })).toBe('Would cover a shape');
     expect(verdictLine({ kind: 'covers', count: 3 })).toBe('Would cover 3 shapes');
-    expect(verdictNotice('Tree', { kind: 'unchanged' })).toBe(
-      'Tree: the tab is already tidy, so nothing moved.',
+    expect(verdictNotice('Auto-align', { kind: 'unchanged' })).toBe(
+      'Auto-align: the tab is already tidy, so nothing moved.',
     );
-    for (const v of [
-      { kind: 'leaves-container', count: 2 },
-      { kind: 'rearranges-lanes' },
-    ] as const) {
-      expect(verdictLine(v)).toBeTruthy();
-      expect(verdictNotice('Tree', v)).toMatch(/^Tree .*nothing moved\.$/);
-    }
+    const v = { kind: 'leaves-container', count: 2 } as const;
+    expect(verdictLine(v)).toBeTruthy();
+    expect(verdictNotice('Auto-align', v)).toMatch(/^Auto-align .*nothing moved\.$/);
   });
 });

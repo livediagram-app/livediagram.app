@@ -48,8 +48,8 @@ const NO_MOVE = () => {};
 // The editor's floating Explorer panel: the shared Explorer's panel (@liveworkspace/explorer, with the same lists,
 // menus and dialogs as the Explorer at /explorer, from the index) inside the editor's movable panel, opened only
 // as the canvas menu button's popover. The open canvas shows on top, read once from the index when the panel
-// opens; every list is one request a page, loaded only once its section is chosen. The person's Image Gallery and
-// Shape Libraries come through this site's API, and Import from opens this site's /import page.
+// opens; every list is one request a page, loaded only once its section is chosen. The person's Image Gallery
+// comes through this site's API, and Import from opens this site's /import page.
 //
 // Wrapped in React.memo so it skips re-rendering on the editor's per-drag-frame churn: its props are ids and stable
 // handlers.
@@ -205,7 +205,6 @@ function ExplorerImpl({
         onOrganise={trackOrganise}
         itemMenu={itemMenu}
         gallery={library.gallery}
-        shapeLibraries={library.shapeLibraries}
         imports={explorerImports}
         // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
         layout={sheet ? 'sheet' : 'side'}

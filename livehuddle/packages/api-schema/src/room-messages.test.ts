@@ -18,19 +18,23 @@ describe('isRoomOpRef', () => {
 
 // The room's participation class (docs/specs/013-workspace/share-roles.md "Integrity").
 describe('isParticipationOp', () => {
-  it('admits a dot, a response and an idea', () => {
+  it('admits a dot and a comment reaction', () => {
     expect(
       isParticipationOp({ kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta: 1 }),
     ).toBe(true);
-    for (const kind of ['response', 'idea']) {
-      expect(
-        isParticipationOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind } }),
-      ).toBe(true);
-    }
+    expect(
+      isParticipationOp({
+        kind: 'el-delta',
+        tabId: 't',
+        elementId: 'e',
+        delta: { kind: 'comment-react' },
+      }),
+    ).toBe(true);
   });
 
   it('refuses every other mutation and anything malformed', () => {
-    for (const kind of ['check', 'board', 'comment-add', 'comment-remove']) {
+    // A retired per-participant response and idea box answer included (Work Tracker #423, part 4).
+    for (const kind of ['check', 'board', 'comment-add', 'comment-remove', 'response', 'idea']) {
       expect(isParticipationOp({ kind: 'el-delta', delta: { kind } })).toBe(false);
     }
     for (const op of [{ kind: 'el' }, { kind: 'tab' }, { kind: 'el-delta' }, null, 'vote', 3]) {

@@ -15,14 +15,14 @@ describe('opForScope (what a scoped session receives)', () => {
   });
 
   it('delivers ops on its own tab', () => {
-    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser', 'qa']) {
+    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser']) {
       const op = { kind, tabId: SCOPE };
       expect(opForScope(op, SCOPE), kind).toBe(op);
     }
   });
 
   it('drops ops on any other tab', () => {
-    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser', 'qa']) {
+    for (const kind of ['el', 'tab', 'tab-meta', 'el-delta', 'vote', 'cursor', 'laser']) {
       expect(opForScope({ kind, tabId: 't1' }, SCOPE), kind).toBeNull();
     }
   });
@@ -57,14 +57,7 @@ describe('opForScope (what a scoped session receives)', () => {
   });
 
   it('delivers the tab-less session ops', () => {
-    for (const kind of [
-      'poll-start',
-      'poll-answer',
-      'poll-end',
-      'share-revoked',
-      'share-rescoped',
-      'document-trashed',
-    ]) {
+    for (const kind of ['share-revoked', 'share-rescoped', 'document-trashed']) {
       const op = { kind };
       expect(opForScope(op, SCOPE), kind).toBe(op);
     }
@@ -102,9 +95,10 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
     expect(scopedSenderMayRelay({ kind: 'document-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
   });
 
-  it('lets it take part in the session', () => {
+  it('refuses the retired live poll ops, which no longer name a session tool', () => {
     for (const kind of ['poll-answer', 'poll-start', 'poll-end']) {
-      expect(scopedSenderMayRelay({ kind }, SCOPE), kind).toBe(true);
+      expect(scopedSenderMayRelay({ kind }, SCOPE), kind).toBe(false);
+      expect(opForScope({ kind }, SCOPE), kind).toBeNull();
     }
   });
 

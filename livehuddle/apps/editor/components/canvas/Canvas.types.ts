@@ -3,14 +3,12 @@ import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
-import type { ShapeLibraryItem } from '@livehuddle/api-schema';
-import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { CommentMention, EmbedProvider, Finish, FrameHandle } from '@livehuddle/document';
+import type { EmbedProvider, Finish, FrameHandle } from '@livehuddle/document';
 import type {
   BackgroundPattern,
   EditorMode,
@@ -109,62 +107,10 @@ export type CanvasProps = {
   // this element. Absent on a surface with nobody to ask (an export, a solo
   // canvas), which renders the face inert.
   onPressFocusButton?: (element: import('@livehuddle/document').ShapeElement) => void;
-  // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
-  onPressSessionButton?: (element: import('@livehuddle/document').ShapeElement) => void;
-  // True when this viewer can't start session tools (view role): the button
-  // renders inert and says why instead of failing silently on press.
-  sessionStartBlocked?: boolean;
-  // Who is running the session when it is somebody else (docs/specs/012-collaboration/facilitator.md), so a blocked
-  // face names the person to ask; null when nobody else holds the baton.
-  sessionRunBy?: string | null;
-  // The tab timer's state for the session button's face (docs/specs/012-collaboration/session-button.md).
-  timerState?: import('@/components/canvas/SessionButtonFace').TimerState;
-  // Reveal zones (docs/specs/009-elements/reveal-zone.md) this viewer has lifted for themselves. Ephemeral
-  // and local — the shared state is `revealed` on the element.
-  revealedIds?: ReadonlySet<string>;
-  onToggleReveal?: (elementId: string) => void;
-  // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md):
-  // the timer's length, the vote's dots, the poll's question and answers.
-  // Absent on a read-only surface, which renders the menu's trigger not at all.
-  // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, plus the thread mutators, so a panel
-  // shows and edits its thread in place. All keyed by element id, which is how
-  // the anchored popover already drives them.
-  commentSelfId?: string;
-  commentPanelActions?: {
-    add: (elementId: string, text: string, mentions?: CommentMention[]) => void;
-    remove: (elementId: string, commentId: string) => void;
-    resolve: (elementId: string) => void;
-    unresolve: (elementId: string) => void;
-  };
-  // Action panel (docs/specs/012-collaboration/action-panel.md): who I am (for "Assigned to you"), plus the
-  // docs/specs/012-collaboration/assigned-actions.md action mutators, keyed by element id like everything else that
-  // drives an action. Absent on a read-only surface: the card renders inert.
-  actionSelfId?: string | null;
-  actionPanelActions?: {
-    // Opens the Assign Action dialog: to add (no action id) or edit one.
-    configure: (elementId: string, actionId?: string | null) => void;
-    complete: (elementId: string, actionId?: string | null) => void;
-    reopen: (elementId: string, actionId?: string | null) => void;
-  };
-  onSetSessionConfig?: (
-    element: import('@livehuddle/document').ShapeElement,
-    config: import('@livehuddle/document').SessionButtonConfig,
-  ) => void;
   // Open an element's own context menu from the `…` on its face, anchored at
   // the trigger's screen position (docs/specs/008-canvas/canvas-and-palette.md). Absent on a read-only surface,
   // where there is nothing to configure.
   onOpenElementSettings?: (elementId: string) => void;
-  // Picker (docs/specs/012-collaboration/picker.md): the candidates a roll can land on, and the roll itself.
-  // `shared` says whether this viewer's roll is written back (and so reaches
-  // the room), which is how the face tells its own landing apart from a peer's.
-  onRollPicker?: (element: import('@livehuddle/document').ShapeElement) => {
-    candidates: import('@/lib/picker').PickerCandidate[];
-    shared: boolean;
-    roll: () => import('@/lib/picker').PickerCandidate | null;
-  };
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): the viewer's identity,
-  // the room, and the writes they may make — one prop for all five faces.
-  collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): the name of whoever we are following, for the pill,
   // and the way out of it. Null / absent = not following anybody.
   followingName?: string | null;
@@ -307,9 +253,6 @@ export type CanvasProps = {
   onAddSticker: (stickerId: string) => void;
   // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
   onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
@@ -328,9 +271,6 @@ export type CanvasProps = {
   // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
   // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
-  // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
-  // Absent where nothing can be placed.
-  onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
   // Spawn an empty image placeholder + open the picker. Optional so
   // view-role visitors / no-R2 deployments can simply omit it; the
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
@@ -439,18 +379,6 @@ export type CanvasProps = {
   // The session tools for the Session strip (docs/specs/012-collaboration/session-tools.md "The Session
   // strip"): the same bundle the tab menu's Session Studio drives. Absent on a surface without one.
   sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
-  // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running
-  // and its results are yours to see, so null means the Poll button opens the composer instead.
-  pollPanel: {
-    poll: import('@livehuddle/api-schema').LivePoll;
-    answers: Map<string, string | null>;
-    isHost: boolean;
-    onEnd: () => void;
-    // Keep the tallies so far on the canvas as a chart, without ending the
-    // poll (docs/specs/012-collaboration/poll-result-capture.md). Absent for a viewer who can't add elements.
-    onKeepResults?: () => void;
-    onDismiss: () => void;
-  } | null;
   // Per-user preferences (docs/specs/007-editor/user-preferences.md): where Contents sits, among others.
   userPreferences: UserPreferences;
   // Live vote panel (docs/specs/012-collaboration/session-tools.md): turnout while casting is open, then the
@@ -666,20 +594,11 @@ export type CanvasProps = {
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
+  // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's vote state +
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off
-  // the tab; handlers no-op when edits are blocked.
-  tabTimer?: import('@livehuddle/document').TabTimer;
+  // the tab; handlers no-op when edits are blocked. (The tab timer runs from the Session strip, sessionTools.)
   tabVote?: import('@livehuddle/document').TabVote;
-  onStartTimer: (mode: import('@livehuddle/document').TimerMode, durationMs?: number) => void;
-  onPauseTimer: () => void;
-  onResumeTimer: () => void;
-  onResetTimer: () => void;
-  onClearTimer: () => void;
-  // Change a running / paused countdown's length, restarting it at the new
-  // one (docs/specs/012-collaboration/session-button.md). Driven by the Timer element's own `…` menu.
-  onSetTimerDuration?: (durationMs: number) => void;
   onStartVote: (votesPerPerson: number, privacy?: import('@livehuddle/document').VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;

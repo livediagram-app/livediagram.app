@@ -8,8 +8,6 @@ import {
   createText,
   fontSizeFor,
   type Element,
-  type SessionButtonConfig,
-  type ShapeElement,
 } from '@livehuddle/document';
 import { PAPER_INK } from './template-inks';
 
@@ -19,11 +17,9 @@ export const SUBTITLE_H = 30;
 export const HEAD_GAP = 28;
 export const MUTED = '#64748b';
 export const SECTION_H = 32;
-export const BUTTON_H = 96;
 // A reaction pad beside its note, and where a section's content starts under its heading.
 export const PAD_W = 150;
 export const UNDER_SECTION = SECTION_H + 12;
-export const BUTTON_W = 152;
 const CHECK_ROW_H = 40;
 // A bold large title's average glyph advance (a share of its size) and its box's inner room.
 const TITLE_CHAR_EM = 0.6;
@@ -193,25 +189,4 @@ export function stepCards(
     elements.push(createPinnedArrow(ids[i]!, 's', ids[i + 1]!, 'n'));
   }
   return { elements, ids };
-}
-
-// A session button with the line that says when to press it beside it.
-export function kitRow(
-  x: number,
-  y: number,
-  width: number,
-  button: ShapeElement,
-  text: string,
-): Element[] {
-  return [{ ...button, x, y }, note(x + BUTTON_W + 16, y, width - BUTTON_W - 16, BUTTON_H, text)];
-}
-
-// A session button of the board's standard size, set to one tool.
-export function sessionButton(session: SessionButtonConfig): ShapeElement {
-  return {
-    ...createShape('session-button', 0, 0),
-    width: BUTTON_W,
-    height: BUTTON_H,
-    session,
-  };
 }

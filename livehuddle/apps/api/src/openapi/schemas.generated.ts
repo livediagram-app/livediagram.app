@@ -13,19 +13,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     enum: ['view', 'participate', 'edit'],
     type: 'string',
   },
-  AgendaItem: {
-    additionalProperties: false,
-    properties: {
-      label: {
-        type: 'string',
-      },
-      minutes: {
-        type: 'number',
-      },
-    },
-    required: ['label', 'minutes'],
-    type: 'object',
-  },
   AgentPresenceResult: {
     additionalProperties: false,
     properties: {
@@ -1316,10 +1303,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['accountId', 'accountName', 'tokenId', 'tokenName', 'role', 'expiresAt'],
     type: 'object',
   },
-  DecisionStatus: {
-    enum: ['proposed', 'accepted', 'rejected', 'superseded'],
-    type: 'string',
-  },
   DiffView: {
     additionalProperties: false,
     properties: {
@@ -2026,10 +2009,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'object',
       },
     ],
-  },
-  EstimateScale: {
-    enum: ['fibonacci', 'tshirt', 'powers'],
-    type: 'string',
   },
   FieldChange: {
     additionalProperties: false,
@@ -3351,22 +3330,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['id', 'name', 'color', 'createdAt'],
     type: 'object',
   },
-  ParticipantResponse: {
-    additionalProperties: false,
-    properties: {
-      at: {
-        type: 'number',
-      },
-      participantId: {
-        type: 'string',
-      },
-      value: {
-        type: 'string',
-      },
-    },
-    required: ['participantId', 'value', 'at'],
-    type: 'object',
-  },
   PathElement: {
     additionalProperties: false,
     properties: {
@@ -3564,10 +3527,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     ],
   },
-  PickerSource: {
-    enum: ['participants', 'options'],
-    type: 'string',
-  },
   PieAnim: {
     enum: ['grow', 'pop', 'spin', 'pulse'],
     type: 'string',
@@ -3588,57 +3547,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['label', 'value'],
     type: 'object',
   },
-  PollStyle: {
-    enum: ['yesNo', 'yesNoAbstain', 'choice', 'collaborators', 'rating', 'text'],
-    type: 'string',
-  },
   ProgressAnim: {
     enum: ['fill', 'pulse', 'stripes'],
-    type: 'string',
-  },
-  QaNote: {
-    additionalProperties: false,
-    properties: {
-      at: {
-        type: 'number',
-      },
-      author: {
-        additionalProperties: false,
-        properties: {
-          color: {
-            type: 'string',
-          },
-          name: {
-            type: 'string',
-          },
-        },
-        required: ['name', 'color'],
-        type: 'object',
-      },
-      doneAt: {
-        type: 'number',
-      },
-      id: {
-        type: 'string',
-      },
-      state: {
-        $ref: '#/components/schemas/QaNoteState',
-      },
-      text: {
-        type: 'string',
-      },
-      voters: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-    },
-    required: ['id', 'text', 'at', 'voters'],
-    type: 'object',
-  },
-  QaNoteState: {
-    enum: ['discussing', 'done'],
     type: 'string',
   },
   QuickSwatchSlot: {
@@ -3957,22 +3867,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['changeset', 'reverted', 'kept', 'lint'],
     type: 'object',
   },
-  RollCallEntry: {
-    additionalProperties: false,
-    properties: {
-      at: {
-        type: 'number',
-      },
-      color: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-    },
-    required: ['name', 'color', 'at'],
-    type: 'object',
-  },
   RoomDoor: {
     enum: ['n', 'e', 's', 'w', 'none'],
     type: 'string',
@@ -3992,38 +3886,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   SelectionMode: {
     enum: ['select', 'pan', 'laser', 'spotlight', 'avatar', 'eraser', 'format', 'isometric'],
-    type: 'string',
-  },
-  SessionButtonConfig: {
-    additionalProperties: false,
-    properties: {
-      dots: {
-        type: 'number',
-      },
-      minutes: {
-        type: 'number',
-      },
-      options: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      question: {
-        type: 'string',
-      },
-      style: {
-        $ref: '#/components/schemas/PollStyle',
-      },
-      tool: {
-        $ref: '#/components/schemas/SessionTool',
-      },
-    },
-    required: ['tool'],
-    type: 'object',
-  },
-  SessionTool: {
-    enum: ['timer', 'stopwatch', 'vote', 'poll'],
     type: 'string',
   },
   ShapeAnimation: {
@@ -4063,18 +3925,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           $ref: '#/components/schemas/ElementAction',
         },
         type: 'array',
-      },
-      agendaCurrent: {
-        type: 'number',
-      },
-      agendaItems: {
-        items: {
-          $ref: '#/components/schemas/AgendaItem',
-        },
-        type: 'array',
-      },
-      agendaTimerStartedAt: {
-        type: 'number',
       },
       animation: {
         $ref: '#/components/schemas/ElementAnimation',
@@ -4148,9 +3998,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       codeWrap: {
         type: 'boolean',
       },
-      collabRound: {
-        type: 'string',
-      },
       colorPreset: {
         type: 'string',
       },
@@ -4171,21 +4018,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           $ref: '#/components/schemas/ConceptRow',
         },
         type: 'array',
-      },
-      decisionDate: {
-        type: 'string',
-      },
-      decisionDrivers: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      decisionStatus: {
-        $ref: '#/components/schemas/DecisionStatus',
-      },
-      estimateScale: {
-        $ref: '#/components/schemas/EstimateScale',
       },
       fillColor: {
         type: 'string',
@@ -4234,21 +4066,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       id: {
         $ref: '#/components/schemas/ElementId',
-      },
-      ideaCardIds: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      ideaCards: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      ideasRevealed: {
-        type: 'boolean',
       },
       keyMeanings: {
         additionalProperties: {
@@ -4334,18 +4151,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       penTextColour: {
         $ref: '#/components/schemas/PenColourName',
       },
-      pickerOptions: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      pickerResult: {
-        type: 'string',
-      },
-      pickerSource: {
-        $ref: '#/components/schemas/PickerSource',
-      },
       pieAnim: {
         $ref: '#/components/schemas/PieAnim',
       },
@@ -4395,36 +4200,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       progressAnimSpeed: {
         $ref: '#/components/schemas/AnimationSpeed',
       },
-      qaNotes: {
-        items: {
-          $ref: '#/components/schemas/QaNote',
-        },
-        type: 'array',
-      },
-      qaRev: {
-        type: 'number',
-      },
-      quizCorrect: {
-        type: 'number',
-      },
-      quizLockedAt: {
-        type: 'number',
-      },
-      quizOptions: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      quizRevealed: {
-        type: 'boolean',
-      },
-      quizSeconds: {
-        type: 'number',
-      },
-      quizStartedAt: {
-        type: 'number',
-      },
       railCount: {
         type: 'number',
       },
@@ -4449,27 +4224,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       reaction: {
         $ref: '#/components/schemas/Reaction',
       },
-      responses: {
-        items: {
-          $ref: '#/components/schemas/ParticipantResponse',
-        },
-        type: 'array',
-      },
-      responsesRevealed: {
-        type: 'boolean',
-      },
-      revealed: {
-        type: 'boolean',
-      },
       richText: {
         items: {
           $ref: '#/components/schemas/TextRun',
-        },
-        type: 'array',
-      },
-      rollCall: {
-        items: {
-          $ref: '#/components/schemas/RollCallEntry',
         },
         type: 'array',
       },
@@ -4478,9 +4235,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       rotation: {
         type: 'number',
-      },
-      session: {
-        $ref: '#/components/schemas/SessionButtonConfig',
       },
       shadow: {
         $ref: '#/components/schemas/ElementShadow',
@@ -4621,13 +4375,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'site-header',
       'mode-button',
       'portal',
-      'session-button',
-      'reveal',
-      'picker',
       'reaction-pad',
-      'comment-pin',
-      'action-card',
-      'done-check',
       'chair',
       'fence',
       'avatar-pad',
@@ -4641,14 +4389,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'coffee-machine',
       'rug',
       'stage',
-      'estimate',
-      'temperature',
-      'idea-box',
-      'qa-board',
-      'agenda',
-      'decision',
-      'roll-call',
-      'quiz',
       'stadium',
       'actor',
       'final-state',

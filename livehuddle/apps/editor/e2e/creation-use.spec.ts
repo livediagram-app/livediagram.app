@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { adoptGuest, expect, expectNoPageErrors, mintGuest, test } from './fixtures';
-import { syntheticExportZip } from './ms-whiteboard-board';
+import { BOARD_NAMES, importExcalidrawBoards } from './excalidraw-boards';
 
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
 // "Making a document"), end to end against the real build and api worker, as a guest, in dark
@@ -10,26 +10,7 @@ import { syntheticExportZip } from './ms-whiteboard-board';
 
 test.use({ colorScheme: 'dark' });
 
-const SINGLE_BOARD = 'Sprint board';
-const UNTITLED_BOARD = 'Whiteboard, 1 Jan 2026';
-
-/** The Explorer's Microsoft Whiteboard import (the /import page its Import from opens) of a synthesised
- *  export of `boards` boards. */
-async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
-  await page.goto('/import?source=microsoft-whiteboard');
-  const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Choose a .zip' }).click();
-  await (
-    await chooser
-  ).setFiles({
-    name: 'boards.zip',
-    mimeType: 'application/zip',
-    buffer: syntheticExportZip(boards),
-  });
-  // One board imports at once; several are listed first, to choose from.
-  if (boards === 2) await page.getByRole('button', { name: 'Import 2 boards' }).click();
-  await expect(page.getByTestId('import-documents')).toContainText(SINGLE_BOARD);
-}
+const [SINGLE_BOARD, SECOND_BOARD] = BOARD_NAMES;
 
 // Jump Back In's documents: the Most Used and Recent lists on a wide screen, the strip on a phone.
 const jumpBackIn = (page: Page) =>
@@ -49,7 +30,7 @@ test('a board imported on its own is in Jump Back In without being opened', asyn
 }) => {
   await freshGuest(page);
   await page.setViewportSize({ width: 1280, height: 800 });
-  await importBoards(page, 1);
+  await importExcalidrawBoards(page, 1);
 
   await page.goto('/explorer/home');
   const tile = jumpBackIn(page).getByRole('link', { name: SINGLE_BOARD });
@@ -70,7 +51,7 @@ test('a two-board import marks neither used: Jump Back In stays empty, All has b
 }) => {
   await freshGuest(page);
   await page.setViewportSize({ width: 1280, height: 800 });
-  await importBoards(page, 2);
+  await importExcalidrawBoards(page, 2);
 
   await page.goto('/explorer/home');
   const jump = page.getByRole('region', { name: 'Jump Back In' });
@@ -81,7 +62,7 @@ test('a two-board import marks neither used: Jump Back In stays empty, All has b
   // Never opened, so not in Recent either: All lists every item the person can open.
   await page.goto('/explorer/all');
   await expect(page.getByRole('link', { name: SINGLE_BOARD }).first()).toBeVisible();
-  await expect(page.getByRole('link', { name: UNTITLED_BOARD }).first()).toBeVisible();
+  await expect(page.getByRole('link', { name: SECOND_BOARD }).first()).toBeVisible();
 
   // Opened, one of them joins.
   await page.getByRole('link', { name: SINGLE_BOARD }).first().click();
@@ -89,6 +70,6 @@ test('a two-board import marks neither used: Jump Back In stays empty, All has b
   await expect(page.getByText(SINGLE_BOARD).first()).toBeVisible();
   await page.goto('/explorer/home');
   await expect(jumpBackIn(page).getByRole('link', { name: SINGLE_BOARD })).toBeVisible();
-  await expect(jumpBackIn(page).getByRole('link', { name: UNTITLED_BOARD })).toHaveCount(0);
+  await expect(jumpBackIn(page).getByRole('link', { name: SECOND_BOARD })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });

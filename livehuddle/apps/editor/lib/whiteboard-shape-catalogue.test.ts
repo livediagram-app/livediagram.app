@@ -21,9 +21,9 @@ describe('the whiteboard shape catalogue', () => {
     expect(draw).toEqual(['line', 'arrow']);
   });
 
-  it('keys each creation choice apart, so a poll is not a timer', () => {
-    expect(whiteboardShapeEntry('session-button:poll')?.label).toBe('Poll');
-    expect(whiteboardShapeEntry('session-button:timer')?.label).toBe('Timer');
+  it('keys each creation choice apart, so hearts are not confetti', () => {
+    expect(whiteboardShapeEntry('reaction-pad:hearts')?.label).toBe('Hearts');
+    expect(whiteboardShapeEntry('reaction-pad:confetti')?.label).toBe('Confetti');
   });
 
   it('holds the sticky note as a shape, armed as a plain note', () => {
@@ -47,9 +47,6 @@ describe('the whiteboard shape catalogue', () => {
       'draw',
       'build',
       'data',
-      'collab-ask',
-      'collab-tools',
-      'collab-record',
       'collab-react',
       'collab-mode',
       'collab-navigate',

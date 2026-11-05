@@ -151,7 +151,7 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
       'badge',
       'card',
       'desk',
-      'quiz',
+      'mode-button',
       'entity',
     ]) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(true);

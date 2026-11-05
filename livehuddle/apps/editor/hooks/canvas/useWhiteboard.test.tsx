@@ -348,11 +348,11 @@ describe('shapes from the catalogue', () => {
 
   it('arms any catalogue shape plain, as a board shape, with its creation choice', () => {
     const { deps, hook } = setup(board());
-    act(() => hook.result.current.pickShape('session-button:poll'));
+    act(() => hook.result.current.pickShape('reaction-pad:hearts'));
     expect(deps.beginDraw).toHaveBeenLastCalledWith({
       type: 'shape',
-      kind: 'session-button',
-      session: 'poll',
+      kind: 'reaction-pad',
+      reaction: 'hearts',
       board: true,
     });
   });

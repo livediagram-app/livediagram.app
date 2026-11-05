@@ -141,9 +141,10 @@ exposes the custom type only to pages in the same browser engine, so:
   element centred where it was released, through the same upload as a pasted one
   ([Image import pipeline](import-image-pipeline.md)), so dragging a screenshot in works as pasting it does. Any
   other dropped file is refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with the
-  scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livehuddle JSON file, by
-  its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import
-  replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.)
+  scene embedded."_ A file the Import dialog reads (a livehuddle JSON file, by its name) is told where it goes
+  instead: _"To bring in a livehuddle export, use Import in the tab menu."_ (Import replaces the tab's content, so a
+  drop never does it unasked; `lib/drop-import-hint.ts`.) A draw.io, Mermaid or Markdown file is refused like any
+  other, since those imports are gone from livehuddle (Work Tracker #423, part 4).
 
 ## Scene mapping (Excalidraw to board scene)
 

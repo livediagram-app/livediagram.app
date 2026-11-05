@@ -11,12 +11,10 @@ import {
 } from '@livehuddle/api-schema';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
-import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { documentRoom } from '../document-client';
 import { indexService, linkCodeOf } from '../index-service';
 import { personTagFor } from '../person-tag';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
-import { networkTagFor } from '../vote-integrity';
 import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
@@ -112,9 +110,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');
     forwarded.headers.set('X-Verified-Document', id);
-    // The caller's network, hashed with the canvas id (docs/specs/012-collaboration/vote-integrity.md): what caps
-    // a poll's answers from one network.
-    forwarded.headers.set('X-Verified-Network', await networkTagFor(id, clientRateKey(request)));
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));

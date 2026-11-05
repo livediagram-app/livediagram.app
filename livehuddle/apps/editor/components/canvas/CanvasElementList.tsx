@@ -52,9 +52,6 @@ export type BoxedShared = Omit<
   | 'writable'
   | 'resizable'
   | 'isVoteFocus'
-  | 'commentActions'
-  | 'actionActions'
-  | 'revealedForMe'
   | 'reactionBurst'
   | 'fontFamily'
 >;
@@ -95,7 +92,6 @@ type CanvasElementListProps = Pick<
   | 'canWriteText'
   | 'canResize'
   | 'voteReview'
-  | 'revealedIds'
   | 'reactionBursts'
   | 'tabFont'
   | 'tabFinish'
@@ -108,17 +104,11 @@ type CanvasElementListProps = Pick<
   boxedShared: BoxedShared;
   arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
   arrowLabels: ArrowLabels;
-  commentActionsFor: ((id: string) => BoxedViewProp<'commentActions'>) | null;
-  actionActionsFor: ((id: string) => BoxedViewProp<'actionActions'>) | null;
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
   fontEpoch: number;
   // The ids a stack holds, which glide to their slots when it reflows (docs/specs/009-elements/stack.md).
   stackedIds: ReadonlySet<string>;
 };
-
-type BoxedViewProp<K extends string> = K extends keyof Parameters<typeof SelectableBoxedView>[0]
-  ? Parameters<typeof SelectableBoxedView>[0][K]
-  : never;
 
 export const CanvasElementList = memo(function CanvasElementList({
   shownOrder,
@@ -143,9 +133,6 @@ export const CanvasElementList = memo(function CanvasElementList({
   canWriteText,
   canResize,
   voteReview,
-  commentActionsFor,
-  actionActionsFor,
-  revealedIds,
   reactionBursts,
   tabFont,
   tabFinish,
@@ -257,9 +244,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 writable={!readOnly || canWriteText?.(element) === true}
                 resizable={!readOnly || canResize?.(element) === true}
                 isVoteFocus={voteReview?.focusId === element.id}
-                commentActions={commentActionsFor?.(element.id)}
-                actionActions={actionActionsFor?.(element.id)}
-                revealedForMe={revealedIds?.has(element.id)}
                 reactionBurst={reactionBursts?.get(element.id)}
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
                 fontFamily={exportFontFamily(element, tabFont, tabFinish)}

@@ -75,11 +75,10 @@ export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boole
   );
 }
 
-// Categories whose body carries more than tiles: a search box or a library
-// picker. They always get More, even
+// Categories whose body carries more than tiles: a search box. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'stickers', 'my-shapes']);
+const ALWAYS_MORE = new Set(['icons', 'stickers']);
 
 function allTilesFor(
   categoryId: string,

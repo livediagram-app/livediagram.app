@@ -10,7 +10,7 @@ import { claimBaton, FREE_BATON, grantBaton } from './facilitator';
 //   held     a Participant's element op the rule took with nothing of it landing (no permitted field changed)
 //   refused  a Participant's element op the rule refused, its correction sent back
 //   dropped  never relayed, never answered
-// REST doors (comments, Q&A notes, tab and document writes) are held per level in routes/context.test.ts and
+// REST doors (comments, tab and document writes) are held per level in routes/context.test.ts and
 // routes/comment-routes.test.ts; the room's own plumbing around this gate in document-room*.test.ts.
 
 type Level = 'edit' | 'participate' | 'view';
@@ -44,7 +44,7 @@ const BOARD = {
     shape('chair', 'chair'),
     shape('room', 'room', { label: 'Lounge' }),
     { id: 'link', type: 'link-card', ...box, link: { kind: 'url', url: 'https://example.com' } },
-    shape('col', 'rectangle', { label: 'Column' }),
+    shape('col', 'square', { label: 'Column' }),
     sticky('theirs'),
     sticky('mine', { addedBy: ADDER }),
   ],
@@ -211,8 +211,6 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   row(
     'Start, end, reveal or configure a session tool',
     {
-      'start a poll': { kind: 'poll-start', poll: { id: 'p1', question: 'Q', options: ['A'] } },
-      'end a poll': { kind: 'poll-end', pollId: 'p1' },
       'start the timer': { kind: 'tab-meta', tabId: 't', patch: { timer: { running: true } } },
       'open a vote': { kind: 'tab-meta', tabId: 't', patch: { vote: { active: true } } },
       'tick the done check': delta({ kind: 'check', index: 0, text: 'a', done: true }),
@@ -221,26 +219,19 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     EDITOR_ONLY,
   );
 
-  // A Participant answers as itself only; the presence answers (a poll answer, a reaction) the room then checks
-  // against the running poll.
+  // A Participant votes as itself only.
   row(
-    'Take part in a session tool (vote, answer, react)',
+    'Take part in a session tool (vote, react)',
     {
       vote: { kind: 'vote', tabId: 't', elementId: 'col', voter: ME, delta: 1 },
-      answer: delta({ kind: 'response', participantId: ME, value: '3' }),
-      idea: delta({ kind: 'idea', id: 'i1', text: 'More coffee' }),
-      'poll answer': { kind: 'poll-answer', pollId: 'p1', value: 'A', key: ME, proof: 'x' },
       react: { kind: 'reaction', tabId: 't', id: 'r1', reaction: 'clap', x: 0, y: 0 },
     },
     TAKING_PART,
   );
 
-  it("Take part: a Participant's vote or answer as somebody else is dropped", () => {
-    const asOther = [
-      { kind: 'vote', tabId: 't', elementId: 'col', voter: 'you', delta: 1 },
-      delta({ kind: 'response', participantId: 'you', value: '3' }),
-    ];
-    for (const op of asOther) expect(roomDoes(op, 'participate')).toBe('dropped');
+  it("Take part: a Participant's vote as somebody else is dropped", () => {
+    const asOther = { kind: 'vote', tabId: 't', elementId: 'col', voter: 'you', delta: 1 };
+    expect(roomDoes(asOther, 'participate')).toBe('dropped');
   });
 
   describe('Hold the facilitator baton', () => {

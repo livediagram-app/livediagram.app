@@ -6,7 +6,6 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 // the preset replaced, for every setting still holding what the preset wrote.
 export const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
-  autoRebindArrows: { autoRebindArrows: true },
   avatarTourSeen: { avatarTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   minimalChrome: { minimalChrome: true },

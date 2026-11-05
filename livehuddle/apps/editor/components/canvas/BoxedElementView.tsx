@@ -15,6 +15,7 @@ import {
   defaultTextAlign,
   defaultTextColor,
   ownColours,
+  isRetiredElement,
   isSelfDrawingShape,
   isUprightTitle,
   labelBodyInset,
@@ -122,22 +123,7 @@ function BoxedElementViewImpl({
   onFollowLink,
   onPressModeButton,
   onPressFocusButton,
-  onPressSessionButton,
-  sessionStartBlocked,
-  sessionRunBy,
-  timerState,
-  tabTimer,
-  timerControls,
-  onSetSessionConfig,
   onOpenElementSettings,
-  commentSelfId,
-  commentActions,
-  actionSelfId,
-  actionActions,
-  revealedForMe,
-  onToggleReveal,
-  onRollPicker,
-  collab,
   chairSitters,
   onEnterPortal,
   onFireReaction,
@@ -216,8 +202,11 @@ function BoxedElementViewImpl({
   );
   // Rendered where it belongs below (under the content, or over an image's picture); a function, as it reads the
   // border colour worked out further down.
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") draws its placeholder
+  // card and nothing of the kind it was: no hand-drawn body, accent edge or border overlay over it.
+  const retired = isRetiredElement(element);
   const sketchOverlay = () =>
-    sketch ? (
+    sketch && !retired ? (
       <SketchOverlay
         paint={sketch}
         width={element.width}
@@ -282,11 +271,6 @@ function BoxedElementViewImpl({
         : isLocked || !movable
           ? 'cursor-default'
           : 'cursor-move';
-  // A Quiz (docs/specs/012-collaboration/quiz.md) is a disc in a square box:
-  // the box itself takes no presses, so the empty corners and the gaps between
-  // its answers behave as bare canvas. The face re-enables the disc, which is
-  // the one place that selects and drags it.
-  const bodyPassesThrough = element.type === 'shape' && element.shape === 'quiz';
 
   // When at least one remote participant has selected this element, the
   // border / stroke colour is overridden with the first remote selector's
@@ -459,7 +443,7 @@ function BoxedElementViewImpl({
         // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
         // class (both drive the `animation` property, so they can't co-exist).
         wrapperAnimClass
-      } ${variant.className} ${cursor} ${bodyPassesThrough ? 'pointer-events-none' : ''}`}
+      } ${variant.className} ${cursor}`}
       style={{
         // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
         ...({ '--iso-z': isoDepth } as React.CSSProperties),
@@ -518,10 +502,12 @@ function BoxedElementViewImpl({
         <SketchFace
           active={finish === 'sketch' && finishSplitsFace(element) && !liveFiltersRedrawOnRepaint()}
         >
-          <AccentEdgeOverlay
-            element={withTagAccent(element, tagColours)}
-            stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          />
+          {retired ? null : (
+            <AccentEdgeOverlay
+              element={withTagAccent(element, tagColours)}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+            />
+          )}
           {element.type === 'shape' && element.shape === 'pointer-note' ? (
             <PointerNoteOverlay
               element={element}
@@ -552,6 +538,7 @@ function BoxedElementViewImpl({
           match). Solid / dashed / dotted stay on the cheaper CSS path. */}
           {element.type === 'shape' &&
           !sketch &&
+          !retired &&
           !isSvgRenderedShape(element.shape) &&
           !remoteBorderColor &&
           !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
@@ -650,19 +637,8 @@ function BoxedElementViewImpl({
             writable={writable}
             fontFamily={fontFamily}
             activeMode={activeMode}
-            collab={collab}
-            commentActions={commentActions}
-            actionSelfId={actionSelfId}
-            actionActions={actionActions}
-            commentSelfId={commentSelfId}
             imageContext={imageContext}
             tabSummaries={tabSummaries}
-            tabTimer={tabTimer}
-            timerControls={timerControls}
-            timerState={timerState}
-            sessionStartBlocked={sessionStartBlocked}
-            sessionRunBy={sessionRunBy}
-            revealedForMe={revealedForMe}
             onCommitTable={onCommitTable}
             onEnterPortal={onEnterPortal}
             onFireReaction={onFireReaction}
@@ -670,14 +646,10 @@ function BoxedElementViewImpl({
             onLinkCell={onLinkCell}
             onPressModeButton={onPressModeButton}
             onPressFocusButton={onPressFocusButton}
-            onPressSessionButton={onPressSessionButton}
-            onRollPicker={onRollPicker}
             onSetPageHeading={onSetPageHeading}
             onSetWebRows={onSetWebRows}
             onSetHeroCaptionLine={onSetHeroCaptionLine}
-            onSetSessionConfig={onSetSessionConfig}
             onOpenElementSettings={onOpenElementSettings}
-            onToggleReveal={onToggleReveal}
             label={label}
             labelNode={labelNode}
             // Clear of the indicators and on the label body (a cylinder's, under its lid).

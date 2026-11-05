@@ -25,8 +25,8 @@ forks, no drifted telemetry):
 
 - **History:** Undo, Redo, offered only when `canUndo` / `canRedo`.
 - **View:** Toggle zen mode, Fit to screen.
-- **Cleanup:** Auto Layout (one per style), Auto-align: their only home, as the tab menu has no
-  Cleanup category ([Layout cleanup](../008-canvas/layout-cleanup.md)); Renumber Steps, while the tab
+- **Cleanup:** Auto-align (Auto Layout's commands left livehuddle in Work Tracker #423 part 4): its home
+  beside the Tidy Up button, as the tab menu has no Cleanup category ([Layout cleanup](../008-canvas/layout-cleanup.md)); Renumber Steps, while the tab
   holds a step number ([The step number](../009-elements/step-number.md)).
 - **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts (opens
   Settings on its Keyboard category, [User preferences](user-preferences.md)), Browse templates.

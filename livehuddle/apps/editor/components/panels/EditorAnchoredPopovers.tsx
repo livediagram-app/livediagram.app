@@ -158,7 +158,7 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === assignActionFor && isBoxed(el),
             );
             if (!target || !isBoxed(target)) return null;
-            const cardTarget = target.type === 'shape' && target.shape === 'action-card';
+            const cardTarget = Array.isArray((target as { actions?: unknown }).actions);
             // Default action name (docs/specs/012-collaboration/assigned-actions.md §2): the element's own text —
             // its label, or a table's first non-empty cell. Null when the
             // element is unlabelled (the field just starts empty).
