@@ -374,14 +374,14 @@ export function EditorView() {
               <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
                 {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
                     tab of the document live beside it when one has been dragged to the right. */}
-                  <SplitViewFrame header={header} footer={footer}>
-                    {(headerInColumn, footerInColumn) => (
-                      <div
-                        // The open tab's editor mode, for the e2e helpers (e2e/fixtures.ts).
-                        data-editor-mode={ctx.editorMode.mode}
-                        className="flex h-dvh flex-col"
-                      >
-                        {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
+                <SplitViewFrame header={header} footer={footer}>
+                  {(headerInColumn, footerInColumn) => (
+                    <div
+                      // The open tab's editor mode, for the e2e helpers (e2e/fixtures.ts).
+                      data-editor-mode={ctx.editorMode.mode}
+                      className="flex h-dvh flex-col"
+                    >
+                      {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
         is armed so the user knows the next shape click connects, and
         gives a click target to cancel (clicking empty canvas also
         cancels). */}
@@ -425,91 +425,38 @@ export function EditorView() {
                             <CommentBadgesContext.Provider
                               value={!(embedMode && isReadOnly) && !sessionCommunity}
                             >
-                              Click a shape to connect the arrow
-                              <span className="text-brand-300" aria-hidden>
-                                |
-                              </span>
-                              <span className="text-brand-700 dark:text-brand-300">Cancel</span>
-                            </button>
-                          </div>
-                        ) : null}
-                        {headerInColumn}
-                        {sessionCommunity && appChrome && hydrated ? (
-                          <CommunityBar
-                            community={sessionCommunity}
-                            onMakeCopy={() => void makeCopy()}
-                            copying={copying}
-                          />
-                        ) : null}
-                        <AreaErrorBoundary area="TabDialogs">
-                          <EditorTabDialogs />
-                        </AreaErrorBoundary>
-                        <AreaErrorBoundary area="Collaborators">
-                          <CollaboratorsHost />
-                        </AreaErrorBoundary>
-                        {/* At the canvas's top edge, under the header and any Community bar. */}
-                        {landscapeBarsHandle}
-                        <AreaErrorBoundary
-                          area="Canvas"
-                          fallback="panel"
-                          fallbackClassName="flex-1"
-                        >
-                          {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                          <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
-                            {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                            <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                              {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                              <CommentBadgesContext.Provider
-                                value={!(embedMode && isReadOnly) && !sessionCommunity}
-                              >
-                                {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                <SuppressElementIndicators when={embedMode}>
-                                  <EditorCanvasHost />
-                                </SuppressElementIndicators>
-                              </CommentBadgesContext.Provider>
-                            </AgentFocusContext.Provider>
-                          </ChangesetRevealContext.Provider>
-                        </AreaErrorBoundary>
-                        {embedMode ? (
-                          // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
-                          // switcher replace the full TabBar. Same selection clears as
-                          // the TabBar's onSelect so element state never leaks across a
-                          // tab switch.
-                          <EmbedChrome
-                            tabs={tabs}
-                            activeId={activeId}
-                            shareCode={sessionShareCode}
-                            onSelectTab={selectTab}
-                          />
-                        ) : null}
-                        {workbench ? (
-                          // The workbench's Reconnect line; its Open in livehuddle sits in the tab bar.
-                          <WorkbenchReconnectLine
-                            workbenchName={workbench.workbenchName}
-                            ended={workbench.ended}
-                          />
-                        ) : null}
-                        {footerInColumn}
-                        {/* Clear Styles for the element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md).
-            Headless: livehuddle has no Quick Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). */}
-                        <AreaErrorBoundary area="QuickStyle">
-                          <ClearStylesHost deps={quickStyleDeps} />
-                        </AreaErrorBoundary>
-                        {ctx.searchOpen ? (
-                          <AreaErrorBoundary area="Search">
-                            <EditorSearchPanel />
-                          </AreaErrorBoundary>
-                        ) : null}
-                        {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog: it is a question addressed to
-        you, not a status line. Shown to view-role visitors too. */}
-                        <FocusInviteDialog
-                          from={
-                            focusInvite.invite
-                              ? (livePresence.find((p) => p.id === focusInvite.invite!.from)
-                                  ?.name ?? 'Someone')
-                              : null
-                          }
+                              {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                              <SuppressElementIndicators when={embedMode}>
+                                <EditorCanvasHost />
+                              </SuppressElementIndicators>
+                            </CommentBadgesContext.Provider>
+                          </AgentFocusContext.Provider>
+                        </ChangesetRevealContext.Provider>
+                      </AreaErrorBoundary>
+                      {embedMode ? (
+                        // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
+                        // switcher replace the full TabBar. Same selection clears as
+                        // the TabBar's onSelect so element state never leaks across a
+                        // tab switch.
+                        <EmbedChrome
+                          tabs={tabs}
+                          activeId={activeId}
+                          shareCode={sessionShareCode}
+                          onSelectTab={selectTab}
                         />
+                      ) : null}
+                      {workbench ? (
+                        // The workbench's Reconnect line; its Open in livehuddle sits in the tab bar.
+                        <WorkbenchReconnectLine
+                          workbenchName={workbench.workbenchName}
+                          ended={workbench.ended}
+                        />
+                      ) : null}
+                      {footerInColumn}
+                      {/* Clear Styles for the element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md).
+            Headless: livehuddle has no Quick Style panel (docs/specs/002-project-scope/not-in-livehuddle.md#quick-style). */}
+                      <AreaErrorBoundary area="QuickStyle">
+                        <ClearStylesHost deps={quickStyleDeps} />
                       </AreaErrorBoundary>
                       {ctx.searchOpen ? (
                         <AreaErrorBoundary area="Search">
@@ -549,15 +496,15 @@ export function EditorView() {
                       {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
         the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
         (z-[var(--z-overlay)]). */}
-                        {showSignInBanner ? (
-                          <SignInBanner
-                            surface="Editor"
-                            onDismiss={dismissSignIn}
-                            placementClassName="z-[var(--z-overlay)]"
-                            standOnChrome
-                          />
-                        ) : null}
-                        <EditorStartPanels />
+                      {showSignInBanner ? (
+                        <SignInBanner
+                          surface="Editor"
+                          onDismiss={dismissSignIn}
+                          placementClassName="z-[var(--z-overlay)]"
+                          standOnChrome
+                        />
+                      ) : null}
+                      <EditorStartPanels />
 
                       {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
         right now. Suppressed while a mode banner owns the top slot. */}
