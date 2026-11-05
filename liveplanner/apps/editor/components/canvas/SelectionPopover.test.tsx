@@ -3,11 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { SelectionPopover } from './SelectionPopover';
 import { MultiSelectionToolbar } from './MultiSelectionToolbar';
-import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
-
-// The selection toolbars (docs/specs/008-canvas/canvas-and-palette.md#selection-popover): More only on
-// touch, and under Minimal chrome (docs/specs/007-editor/power-user-mode.md) no caption and no
-// desktop bin.
+// The selection toolbars (docs/specs/008-canvas/canvas-and-palette.md#selection-popover): More, the
+// caption and the bin on every device, for everyone.
 
 function setTouch(touch: boolean) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
@@ -22,35 +19,31 @@ function setTouch(touch: boolean) {
 
 const BOUNDS = { x: 100, y: 100, width: 80, height: 40 };
 
-function renderSingle(minimal = false, powerUser = minimal) {
+function renderSingle() {
   render(
-    <MinimalChromeProvider value={minimal} powerUser={powerUser}>
-      <SelectionPopover
-        bounds={BOUNDS}
-        canvasOffset={{ x: 0, y: 0 }}
-        zoom={1}
-        title="Selected Square"
-        onDelete={() => {}}
-        onDuplicate={() => {}}
-        onOpenContextMenu={() => {}}
-      />
-    </MinimalChromeProvider>,
+    <SelectionPopover
+      bounds={BOUNDS}
+      canvasOffset={{ x: 0, y: 0 }}
+      zoom={1}
+      title="Selected Square"
+      onDelete={() => {}}
+      onDuplicate={() => {}}
+      onOpenContextMenu={() => {}}
+    />,
   );
 }
 
-function renderMulti(minimal = false, powerUser = minimal, allLocked = false) {
+function renderMulti(allLocked = false) {
   render(
-    <MinimalChromeProvider value={minimal} powerUser={powerUser}>
-      <MultiSelectionToolbar
-        allLocked={allLocked}
-        selectedElements={[]}
-        onDuplicate={() => {}}
-        onDelete={() => {}}
-        onToggleLock={() => {}}
-        onExport={() => {}}
-        onOpenContextMenu={() => {}}
-      />
-    </MinimalChromeProvider>,
+    <MultiSelectionToolbar
+      allLocked={allLocked}
+      selectedElements={[]}
+      onDuplicate={() => {}}
+      onDelete={() => {}}
+      onToggleLock={() => {}}
+      onExport={() => {}}
+      onOpenContextMenu={() => {}}
+    />,
   );
 }
 
@@ -60,68 +53,26 @@ afterEach(() => {
 });
 
 describe('SelectionPopover', () => {
-  it('shows More on desktop, the visible way into the element menu', () => {
-    setTouch(false);
+  it.each([false, true])('shows More and the bin, touch %s', (touch) => {
+    setTouch(touch);
     renderSingle();
     expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy();
   });
 
-  it('drops More on desktop in power user mode, where right-click opens the menu', () => {
-    setTouch(false);
-    renderSingle(false, true);
-    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
-  });
-
-  it('keeps More on touch, which cannot right-click, even in power user mode', () => {
-    setTouch(true);
-    renderSingle(true, true);
-    expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
-  });
-
-  it('names itself with the caption, shown until Minimal chrome', () => {
+  it('names itself with the caption, which it shows', () => {
     setTouch(false);
     renderSingle();
     expect(screen.getByRole('toolbar', { name: 'Selected Square' })).toBeTruthy();
     expect(screen.getByText('Selected Square')).toBeTruthy();
-    cleanup();
-    renderSingle(true);
-    expect(screen.getByRole('toolbar', { name: 'Selected Square' })).toBeTruthy();
-    expect(screen.queryByText('Selected Square')).toBeNull();
-  });
-
-  it('drops the bin under Minimal chrome on desktop only', () => {
-    setTouch(false);
-    renderSingle(true);
-    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
-    cleanup();
-    setTouch(true);
-    renderSingle(true);
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeTruthy();
   });
 });
 
 describe('MultiSelectionToolbar', () => {
-  it('shows More on desktop except in power user mode, and always on touch', () => {
-    setTouch(false);
+  it.each([false, true])('shows More and the bin, touch %s', (touch) => {
+    setTouch(touch);
     renderMulti();
     expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
-    cleanup();
-    renderMulti(false, true);
-    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
-    cleanup();
-    setTouch(true);
-    renderMulti(true, true);
-    expect(screen.getByRole('button', { name: 'More actions' })).toBeTruthy();
-  });
-
-  it('drops the bin under Minimal chrome on desktop only', () => {
-    setTouch(false);
-    renderMulti(true);
-    expect(screen.queryByRole('button', { name: 'Delete selected elements' })).toBeNull();
-    cleanup();
-    setTouch(true);
-    renderMulti(true);
     expect(screen.getByRole('button', { name: 'Delete selected elements' })).toBeTruthy();
   });
 });
@@ -143,13 +94,13 @@ describe('SelectionPopover tap areas', () => {
 describe('MultiSelectionToolbar lock', () => {
   it('offers Lock for a selection that is only partly locked', () => {
     setTouch(false);
-    renderMulti(false, false, false);
+    renderMulti(false);
     expect(screen.getByRole('button', { name: 'Lock selected elements' })).toBeTruthy();
   });
 
   it('offers Unlock once every member is locked', () => {
     setTouch(false);
-    renderMulti(false, false, true);
+    renderMulti(true);
     expect(screen.getByRole('button', { name: 'Unlock selected elements' })).toBeTruthy();
   });
 });
@@ -159,17 +110,15 @@ describe('SelectionPopover overflow', () => {
   function renderToolbar() {
     setTouch(true);
     render(
-      <MinimalChromeProvider value={false} powerUser={false}>
-        <SelectionPopover
-          bounds={BOUNDS}
-          canvasOffset={{ x: 0, y: 0 }}
-          zoom={1}
-          title="Selected Note"
-          onDelete={() => {}}
-          onDuplicate={() => {}}
-          onOpenContextMenu={() => {}}
-        />
-      </MinimalChromeProvider>,
+      <SelectionPopover
+        bounds={BOUNDS}
+        canvasOffset={{ x: 0, y: 0 }}
+        zoom={1}
+        title="Selected Note"
+        onDelete={() => {}}
+        onDuplicate={() => {}}
+        onOpenContextMenu={() => {}}
+      />,
     );
   }
 

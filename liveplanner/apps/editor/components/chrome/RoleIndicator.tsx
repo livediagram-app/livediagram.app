@@ -1,21 +1,15 @@
 'use client';
 
 import { useId } from 'react';
-import { lucideGlyph, PencilIcon, Tooltip } from '@liveplanner/ui';
-import { lucideVote } from '@liveworkspace/icons/lucide';
-import { EyeIcon } from '@/components/panels/layers-panel-icons';
+import { Tooltip } from '@liveplanner/ui';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
 // Whether you are editing, participating in or viewing this project
-// (docs/specs/013-workspace/share-roles.md), in two shapes
-// (docs/specs/007-editor/editor-app.md#role-pill): the title bar's pill, and Minimal chrome's
-// status bar icon (docs/specs/007-editor/power-user-mode.md). Both step the local preview (Editing, Participating,
-// Viewing, back to Editing) when `onToggle` is given, i.e. when your role allows editing. A Participant's pill is
-// static, as a Viewer's.
+// (docs/specs/013-workspace/share-roles.md): the title bar's pill (docs/specs/007-editor/editor-app.md#role-pill). It
+// steps the local preview (Editing, Participating, Viewing, back to Editing) when `onToggle` is given, i.e. when your
+// role allows editing. A Participant's pill is static, as a Viewer's.
 
 export type Role = AccessLevel;
-
-const VoteIcon = lucideGlyph(lucideVote, 14);
 
 const ROLE_WORD: Record<Role, string> = {
   edit: 'Editing',
@@ -87,54 +81,4 @@ export function RolePill({
     </span>
   );
   return owner ? <Tooltip label={owner}>{pill}</Tooltip> : pill;
-}
-
-const ICON_LABEL: Record<Role, string> = {
-  edit: 'Editing',
-  participate: 'Participating',
-  view: 'Viewing (read-only)',
-};
-// The status bar control's box (chrome-button's CHROME_BTN), in the role's own
-// colour rather than the bar's slate.
-const ICON_BOX =
-  'flex h-7 min-w-7 shrink-0 items-center justify-center rounded-md transition hover:bg-slate-100 dark:hover:bg-slate-800';
-const ICON_TONE: Record<Role, string> = {
-  edit: 'text-emerald-700 dark:text-emerald-300',
-  participate: 'text-teal-700 dark:text-teal-300',
-  view: 'text-amber-700 dark:text-amber-300',
-};
-
-// Minimal chrome's stand-in for the pill: first in the status bar.
-export function RoleStatusIcon({ role, onToggle }: { role: Role; onToggle?: () => void }) {
-  const label = ICON_LABEL[role];
-  const glyph =
-    role === 'edit' ? (
-      <PencilIcon size={14} />
-    ) : role === 'participate' ? (
-      <VoteIcon />
-    ) : (
-      <EyeIcon />
-    );
-  const content = onToggle ? (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-label={label}
-      data-role-icon={role}
-      className={`${ICON_BOX} ${ICON_TONE[role]}`}
-    >
-      {glyph}
-    </button>
-  ) : (
-    <span
-      role="img"
-      tabIndex={0}
-      aria-label={label}
-      data-role-icon={role}
-      className={`${ICON_BOX} ${ICON_TONE[role]}`}
-    >
-      {glyph}
-    </span>
-  );
-  return <Tooltip label={label}>{content}</Tooltip>;
 }

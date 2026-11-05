@@ -66,9 +66,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
-import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
-import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
-import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
+import { RolePill } from '@/components/chrome/RoleIndicator';
 import {
   UiScaleProvider,
   useUiScalePreview,
@@ -187,8 +185,6 @@ export function EditorView() {
     openCollaborators,
     userPreferences,
   } = ctx;
-  // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
-  const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
   // While a Settings slider is dragged its patch wins, so the chrome resizes
   // as you go; the preference is written once, on release.
@@ -288,8 +284,7 @@ export function EditorView() {
             copying={copying}
             readOnly={isStructureReadOnly}
             renameNonce={renameProjectNonce}
-            // Minimal chrome moves the pill to an icon in the status bar.
-            rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+            rolePill={<RolePill {...role} />}
             onOpenAccount={() => openSettingsOn('account')}
             onOpenShare={() => {
               setShareDialogOpen(true);
@@ -317,7 +312,6 @@ export function EditorView() {
       <LandscapeBarFold shown={landscapeBars.shown}>
         <AreaErrorBoundary area="TabBar" fallback="panel">
           <TabBar
-            powerUser={isPowerUserMode(userPreferences)}
             workbenchBack={
               workbenchFrame
                 ? (labelled) => (
@@ -338,11 +332,6 @@ export function EditorView() {
                     />
                   )
                 : undefined
-            }
-            roleIcon={
-              minimalChrome ? (
-                <RoleStatusIcon role={role.role} onToggle={role.onToggle} />
-              ) : undefined
             }
             tabs={tabs}
             activeId={activeId}
@@ -449,10 +438,6 @@ export function EditorView() {
                           canComment={ctx.can.takePart}
                         >
                           <CanvasFocusProvider value={ctx.focusBounds}>
-                            <MinimalChromeProvider
-                              value={minimalChrome}
-                              powerUser={isPowerUserMode(userPreferences)}
-                            >
                               <UiScaleProvider value={uiScales}>
                                 <DockNamesProvider
                                   value={userPreferences?.dockButtonNames !== false}
@@ -563,14 +548,12 @@ export function EditorView() {
 
                                         {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
           right now. Suppressed while a mode banner owns the top slot. */}
-                                        {minimalChrome ? null : (
-                                          <ModifierHint
+                                        <ModifierHint
                                             readOnly={isReadOnly}
                                             drag={drag}
                                             elements={activeTab.elements}
                                             hasElements={activeTab.elements.length > 0}
                                           />
-                                        )}
 
                                         {/* An editor older than the server's project format offers a reload, once its edits
             are saved (docs/specs/016-platform/new-version-prompt.md). */}
@@ -582,7 +565,6 @@ export function EditorView() {
                                   </SplitViewFrame>
                                 </DockNamesProvider>
                               </UiScaleProvider>
-                            </MinimalChromeProvider>
                           </CanvasFocusProvider>
                         </SheetsProviders>
                       </FormBoardContext.Provider>
