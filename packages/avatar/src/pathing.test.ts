@@ -241,7 +241,8 @@ describe('findWalkPath on a big board', () => {
     const unreachable = cpuMsOf(() => {
       for (let i = 0; i < runs; i++) findWalkPath(shutGrid, from, { x: to.x - i, y: to.y });
     });
-    // Measured about 1.4 ms and 1.1 ms a query (the first, before the JIT warms, about 5.5 ms).
-    expect(Math.max(query, unreachable) / runs).toBeLessThan(cpuBudgetMs(4));
+    // Measured about 1.4 ms and 1.1 ms a query (the first, before the JIT warms, about 5.5 ms). CI's coverage run
+    // measured 14.4 ms, so the budget allows for instrumentation; a search gone exponential still blows past it.
+    expect(Math.max(query, unreachable) / runs).toBeLessThan(cpuBudgetMs(10));
   });
 });
