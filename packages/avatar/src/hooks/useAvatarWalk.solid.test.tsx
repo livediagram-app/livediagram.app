@@ -20,7 +20,15 @@ afterEach(() => {
 
 const bar = { id: 'bar', type: 'shape', shape: 'bar', x: 0, y: 0, width: 240, height: 120 };
 // Its top at the counter's middle, so its seat (y 95.6) is 14.8 px inside the counter's front edge (y 110.4).
-const stool = { id: 'stool', type: 'shape', shape: 'bar-stool', x: 98, y: 70, width: 44, height: 64 };
+const stool = {
+  id: 'stool',
+  type: 'shape',
+  shape: 'bar-stool',
+  x: 98,
+  y: 70,
+  width: 44,
+  height: 64,
+};
 
 describe('useAvatarWalk standing up in a footprint', () => {
   it('walks away from the bar after standing up from a stool tucked under it', () => {

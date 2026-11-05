@@ -276,7 +276,11 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   };
 
   // The centred camera (docs/specs/008-canvas/avatar-mode.md "The camera"): one step of the view after a move.
-  const centreStep = (from: AvatarPoint, to: AvatarPoint, r: NonNullable<ReturnType<typeof rects>>) => {
+  const centreStep = (
+    from: AvatarPoint,
+    to: AvatarPoint,
+    r: NonNullable<ReturnType<typeof rects>>,
+  ) => {
     const prev = offsetRef.current;
     const nextOffset = centredCamera(
       prev,
