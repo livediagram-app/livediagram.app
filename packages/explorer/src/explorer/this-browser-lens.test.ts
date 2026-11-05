@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { parseLens, type LensContext } from '../lens';
 import type { ThisBrowserItem } from '../this-browser';
 import { narrowThisBrowser, thisBrowserSubjects } from './this-browser-lens';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const context: LensContext = {
   view: 'scoped',
@@ -62,11 +63,12 @@ describe('This Browser’s lens', () => {
       local(i % 60, { id: `l${i}`, title: `Item ${i} ${i % 7 ? 'plan' : 'road map'}` }),
     );
     const lens = parseLens('road map edited:30d opens-in:canvas', context).lens;
-    const started = performance.now();
-    const left = narrowThisBrowser(many, lens, 'livediagram', NOW);
-    const ms = performance.now() - started;
+    let left: ReturnType<typeof narrowThisBrowser> = [];
+    const ms = cpuMsOf(() => {
+      left = narrowThisBrowser(many, lens, 'livediagram', NOW);
+    });
     console.info(`This Browser lens, 5,000 items: ${ms.toFixed(1)} ms`);
     expect(left.length).toBeGreaterThan(0);
-    expect(ms).toBeLessThan(50);
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 });

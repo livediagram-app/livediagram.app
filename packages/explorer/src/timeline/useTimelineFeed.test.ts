@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { IndexClient, TimelineEvent, TimelinePage } from '@liveworkspace/index-client';
 import { mergeHead } from './merge';
 import { useTimelineFeed } from './useTimelineFeed';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const event = (id: string): TimelineEvent => ({
   id,
@@ -149,12 +150,13 @@ describe('mergeHead', () => {
       ...event(i % 2 ? `e${i}` : `n${i}`),
       occurredAt: 20_000_000 - i,
     }));
-    const started = performance.now();
-    const merged = mergeHead(shown, fresh);
-    const ms = performance.now() - started;
+    let merged: ReturnType<typeof mergeHead> = [];
+    const ms = cpuMsOf(() => {
+      merged = mergeHead(shown, fresh);
+    });
     console.info(`mergeHead, 100 into 5,000: ${ms.toFixed(1)} ms`);
     expect(merged).toHaveLength(5_050);
     expect(merged[0]!.id).toBe('n0');
-    expect(ms).toBeLessThan(50);
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 });
