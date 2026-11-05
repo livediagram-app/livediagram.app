@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { roomZones } from '@livehuddle/document';
 import {
   meetingLive,
@@ -77,9 +78,13 @@ describe('zonesOfWalkers', () => {
       id: `w${i}`,
       at: { x: i * 23, y: i * 9 },
     }));
-    const start = performance.now();
-    for (let n = 0; n < 100; n++) zonesOfWalkers(walkers, zones);
-    expect((performance.now() - start) / 100).toBeLessThan(5);
+    const run = () => {
+      for (let n = 0; n < 100; n++) zonesOfWalkers(walkers, zones);
+    };
+    // Warm up, then CPU time (docs/ci.md "Speed budgets"): 100 runs well inside 500 ms, i.e. under 5 ms each.
+    run();
+    const best = Math.min(...[0, 1, 2].map(() => cpuMsOf(run)));
+    expect(best).toBeLessThan(cpuBudgetMs(500));
   });
 });
 
