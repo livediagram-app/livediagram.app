@@ -52,4 +52,6 @@ shared pieces stay in `packages/` (`MinimalChromeProvider` in workbench, the `po
 settings-ui, the quick switch's helpers in ui), and the Explorer's last Minimal chrome reads
 (`components/panels/Explorer.tsx`, `ExplorerHeaderMenu.tsx`, [Explorer structure](../013-workspace/explorer-structure.md))
 stay with them: nothing provides the flag any more, so they always read it off. The help article
-(User Interface › Power user mode) is retired with a redirect in a later change.
+(User Interface › Power user mode) is retired: its address lands on Settings through a moved stub in the help app
+(`powerUserModeMoved` in help-site), and the Settings, Quick Controls, Title Bar, Toolbar, Dark Mode, Explorer panel,
+Multi-select, Search panel and Pages tour articles no longer mention the mode.

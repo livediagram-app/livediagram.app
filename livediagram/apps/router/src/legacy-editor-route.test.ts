@@ -137,6 +137,9 @@ describe('legacyHelpRedirect', () => {
       ['/help/explorer/tags/', '/help/explorer/folders/'],
       ['/help/tools/ai/', '/help/account-and-data/connect-ai-mcp/'],
       ['/help/tools/ai/ai-tools/', '/help/account-and-data/connect-ai-mcp/'],
+      // Power User Mode was removed (Work Tracker #500): its article lands on Settings.
+      ['/help/user-interface/power-user-mode/', '/help/user-interface/settings/'],
+      ['/help/user-interface/power-user-mode', '/help/user-interface/settings'],
       // A retired category's link that lost its `/help` prefix lands on the help centre home too.
       ['/self-hosting', '/help/'],
       ['/self-hosting/', '/help/'],

@@ -78,6 +78,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/themes/custom-themes': 'canvas/themes',
   'explorer/themes-library': 'canvas/themes',
   'explorer/tags': 'explorer/folders',
+  'user-interface/power-user-mode': 'user-interface/settings',
   'tools/ai': 'account-and-data/connect-ai-mcp',
   'tools/ai/ai-tools': 'account-and-data/connect-ai-mcp',
   'self-hosting': '',
