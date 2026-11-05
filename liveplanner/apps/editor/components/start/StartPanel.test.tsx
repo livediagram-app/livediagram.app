@@ -93,3 +93,51 @@ describe('the footer strip', () => {
     expect(footer.className).toContain('empty:hidden');
   });
 });
+
+// docs/specs/007-editor/start-panel.md "Keyboard": on a fine pointer the search takes focus as the panel opens, but
+// only from the page or the canvas. The panel's chunk loads when drawn, so it can arrive after a menu opened from the
+// keyboard; it never takes focus from one.
+describe('the search taking focus as the panel opens', () => {
+  const pointer = (fine: boolean) => {
+    // jsdom has no matchMedia: the panel asks it whether the pointer is fine.
+    window.matchMedia = (query: string) =>
+      ({ matches: fine && query === '(pointer: fine)' }) as MediaQueryList;
+  };
+  afterEach(() => {
+    // @ts-expect-error jsdom has none to put back.
+    delete window.matchMedia;
+    document.body.replaceChildren();
+  });
+
+  it('takes it from the page', () => {
+    pointer(true);
+    const { search } = startPlanning();
+    expect(document.activeElement).toBe(search);
+  });
+
+  it('takes it from the canvas the panel stands on', () => {
+    pointer(true);
+    const canvas = document.createElement('main');
+    canvas.setAttribute('data-canvas-root', '');
+    canvas.tabIndex = 0;
+    document.body.append(canvas);
+    canvas.focus();
+    const { search } = startPlanning();
+    expect(document.activeElement).toBe(search);
+  });
+
+  it('leaves it with a control reached before the panel arrived', () => {
+    pointer(true);
+    const menuControl = document.createElement('button');
+    document.body.append(menuControl);
+    menuControl.focus();
+    startPlanning();
+    expect(document.activeElement).toBe(menuControl);
+  });
+
+  it('leaves the page alone on a coarse pointer', () => {
+    pointer(false);
+    startPlanning();
+    expect(document.activeElement).toBe(document.body);
+  });
+});

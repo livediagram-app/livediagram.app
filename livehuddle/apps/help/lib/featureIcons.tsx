@@ -184,6 +184,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17.5 13v-3M16 10h3" />
     </Glyph>
   ),
+  // The Stage: a platform's top and the front face you see, with a microphone on a stand, as its palette tile.
+  stage: (
+    <Glyph>
+      <path d="M4.5 13.5h15L22 17H2z" />
+      <path d="M2 17v3.5h20V17" />
+      <rect x="10.25" y="2.5" width="3.5" height="5.5" rx="1.75" />
+      <path d="M12 8v5.5" />
+    </Glyph>
+  ),
   // A pressable pill with the pointer arriving from outside it: every Behaviour
   // element is something a participant activates rather than reads. The pointer
   // sits clear of the pill — overlapping the two made one shape nobody could
@@ -605,16 +614,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4 20h.01M9 20h.01M14.5 20h.01M20 20h.01" />
       <rect x="8.5" y="8.5" width="7" height="7" rx="1" />
       <path d="M6.2 6.2l1.6 1.6M17.8 17.8l-1.6-1.6" />
-    </Glyph>
-  ),
-  // A tidied flowchart: boxes and arrows, which is what the graph becomes.
-  // `multicolour-themes` uses circles for its nodes.
-  'auto-layout': (
-    <Glyph>
-      <rect x="8.5" y="3" width="7" height="4.5" rx="1" />
-      <rect x="2.5" y="16.5" width="7" height="4.5" rx="1" />
-      <rect x="14.5" y="16.5" width="7" height="4.5" rx="1" />
-      <path d="M12 7.5v3.5M6 16.5V11h12v5.5" />
     </Glyph>
   ),
   about: (

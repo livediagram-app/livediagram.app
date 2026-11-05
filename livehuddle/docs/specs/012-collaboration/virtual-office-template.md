@@ -21,6 +21,11 @@ six [rooms](../009-elements/office.md#room) either side of a corridor, every doo
 At the corridor's end: a [Selection Mode button](../009-elements/mode-button.md) set to Avatar, labelled **Walk In**,
 so one press puts a visitor's character at the door, and a line saying how to walk, talk, sit and get a coffee.
 
+Every **Walk In** button in the office and the Spaces below has open floor under it: the character opens a full figure
+below the button ([Entering from a button](../008-canvas/avatar-mode.md)), so that spot is never furniture or a wall.
+The Virtual Office's corridor is deep enough for the button and that figure, and a test checks the spawn rectangle in
+all four templates.
+
 - The rooms are first in the tab, so they lie under the furniture; the rugs come next.
 - Every room keeps its name as its label, so renaming one is renaming the room.
 - The tab opens on a meeting board ([The meeting board](workshop-mode.md)) on grid paper.
@@ -36,8 +41,9 @@ Three siblings, built the same way (`template-office-parts.ts`: rooms first, rug
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
   machine, a plant and a bookshelf, and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
   Questions).
-- **All-Hands Hall**: one big room with a **Stage** (a rug, with a "Stage" text over it: a rug has nothing to write
-  on; it becomes a real [Stage](meeting-rooms-and-stage.md#the-stage-part-2-planned) element in #319's later parts) and a [Bring Focus](bring-focus.md) button
+- **All-Hands Hall**: one big room with a real [Stage](../009-elements/office.md#stage) up front (400 × 160,
+  centred, with Show Cameras on; whoever speaks from it is heard by the whole hall,
+  [Meeting rooms and the stage](meeting-rooms-and-stage.md#the-stages-way-in-part-4-built)) and a [Bring Focus](bring-focus.md) button
   for the presenter, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants and a
   water cooler.
 

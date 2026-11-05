@@ -378,7 +378,8 @@ describe('a Calculated field in an export', () => {
     expect(lone.svg).not.toContain('Total:');
     const inHand = planCardFace(p, 0, 0, 240, { palette, types, items });
     expect(inHand.svg).toContain('Total: 4');
-    expect(inHand.svg).not.toContain('Done:');
+    // No done columns known: nothing is done, so Count Done draws 0 rather than going missing.
+    expect(inHand.svg).toContain('Done: 0');
     const withDone = planCardFace(p, 0, 0, 240, {
       palette,
       types,

@@ -26,7 +26,7 @@ export type SankeyElementTourContext = {
   // The parts each canvas step lifts, as indices into the drawn layout; null leaves the step out.
   band: number | null;
   leftover: number | null;
-  // The selection toolbar's More button is showing (not for a power user on a desktop, who right-clicks).
+  // The selection toolbar's More button is showing; the menu steps say "Right-click it" where it is not.
   hasMore: boolean;
   // A touch screen, which double-taps where a mouse double-clicks.
   touch: boolean;

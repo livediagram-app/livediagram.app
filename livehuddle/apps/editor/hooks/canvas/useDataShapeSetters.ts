@@ -34,6 +34,7 @@ import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
+import type { StagePatch } from '@/components/palette/StageMenuSection';
 
 // The kinds carrying masthead lines (see setPageHeading).
 const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout', 'card', 'boundary']);
@@ -288,6 +289,15 @@ export function useDataShapeSetters({
   });
   const setRoomDoor = (door: RoomDoor) => setRoomDoorSelected({ roomDoor: door }, 'Room');
 
+  // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in"): Who Can Speak and Show
+  // Cameras, on every selected stage and nothing else.
+  const patchStages = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'stage',
+  });
+  const setStageSelected = (patch: StagePatch) => patchStages(patch, 'Stage');
+
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -344,6 +354,7 @@ export function useDataShapeSetters({
     setDecisionDriversSelected,
     setChairFacingSelected,
     setRoomDoorSelected: setRoomDoor,
+    setStageSelected,
     setButtonModeSelected,
   };
 }

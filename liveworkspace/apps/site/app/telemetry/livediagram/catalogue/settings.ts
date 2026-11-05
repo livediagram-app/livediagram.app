@@ -75,20 +75,6 @@ export const EDITOR_SETTINGS = settingsStack(
       'Whiteboard Dock Position',
       'A whiteboard dock moved to the top or the bottom.',
     ),
-    toggle(
-      'UI',
-      'PowerUserModeOn',
-      'PowerUserModeOff',
-      'Power User Mode',
-      'The recommended-settings preset, from Settings or the offer.',
-    ),
-    toggle(
-      'UI',
-      'MinimalChromeOn',
-      'MinimalChromeOff',
-      'Minimal Chrome',
-      'Labels and hints hidden, for power users.',
-    ),
   ],
 );
 

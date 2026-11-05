@@ -1,21 +1,10 @@
 // A tour of several tracks offers each once (lib/tour-tracks.ts, docs/specs/007-editor/user-preferences.md "Tours").
 import { describe, expect, it } from 'vitest';
-import { markPlanTracksSeen, planTrackSeen } from './plan-tour';
-import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
+import { markPlanTracksSeen, PLAN_TOUR_TRACKS, planTrackSeen } from './plan-tour';
+import { withTracksAnswered } from './tour-tracks';
+import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
 
 describe('tour tracks', () => {
-  it('counts a track seen once answered', () => {
-    expect(tourTrackSeen({}, ['a'], undefined, 'a')).toBe(true);
-    expect(tourTrackSeen({}, ['a'], undefined, 'b')).toBe(false);
-    expect(tourTrackSeen(null, undefined, undefined, 'a')).toBe(false);
-  });
-
-  it('reads the old single flag as every track only while Power user mode is on', () => {
-    expect(tourTrackSeen({}, undefined, true, 'a')).toBe(false);
-    expect(tourTrackSeen({ powerUserMode: true }, undefined, true, 'a')).toBe(true);
-    expect(tourTrackSeen({ powerUserMode: true }, undefined, false, 'a')).toBe(false);
-  });
-
   it('adds each answered track once, in order', () => {
     expect(withTracksAnswered(['b'], ['a', 'b'])).toEqual(['b', 'a']);
     expect(withTracksAnswered(undefined, ['a'])).toEqual(['a']);
@@ -32,6 +21,11 @@ describe('the Plan tour’s tracks', () => {
 
   it('offers both again to someone who answered the single Plan tour', () => {
     expect(planTrackSeen({ planTourSeen: true }, 'boards')).toBe(false);
-    expect(planTrackSeen({ planTourSeen: true, powerUserMode: true }, 'sheets')).toBe(true);
+  });
+
+  it('keeps every track seen for someone who had Power user mode on, as their blob is read', () => {
+    // docs/specs/007-editor/power-user-mode.md "What happens to stored preferences".
+    const prefs = upgradeLegacyPreferences({ powerUserMode: true, planTourSeen: true });
+    expect(PLAN_TOUR_TRACKS.every((t) => planTrackSeen(prefs, t))).toBe(true);
   });
 });

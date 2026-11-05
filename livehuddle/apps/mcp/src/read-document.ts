@@ -98,7 +98,7 @@ export async function readDocument(
     .map((t) => ({ id: t.id, name: t.name }));
   if (!summary)
     return errorResult(
-      `No tab "${tabId}" in this document. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
+      `No tab "${tabId}" in this Space. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
     );
   const tabPath = `/documents/${encodeURIComponent(document.id)}/tabs/${encodeURIComponent(tabId)}`;
   const auth = { env, token, documentId: document.id };

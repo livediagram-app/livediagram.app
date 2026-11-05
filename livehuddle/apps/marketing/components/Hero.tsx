@@ -22,10 +22,10 @@ const FLOOR_ROOM = 'h-[316px]';
 
 export function Hero() {
   return (
-    <section className="hero-band relative overflow-hidden bg-(--hero-bg) text-(--hero-ink)">
+    <section className="hero-band hero-tall relative overflow-hidden bg-(--hero-bg) text-(--hero-ink)">
       <div aria-hidden className="hero-band-dots hsf-dots pointer-events-none absolute inset-0" />
       <HeroSpaceStage />
-      <div className="relative mx-auto w-full max-w-6xl px-4 pt-12 text-center sm:px-6 sm:pt-16 lg:pt-20">
+      <div className="hero-tall-copy relative mx-auto w-full max-w-6xl px-4 pt-12 text-center sm:px-6 sm:pt-16 lg:pt-20">
         {/* Two promises, each its own badge and each true today. A phone keeps the first, so the row stays one line. */}
         <ul aria-label="Our promises" className="flex justify-center gap-2.5">
           <li className={BADGE}>
@@ -37,14 +37,14 @@ export function Hero() {
             No sign-up to start
           </li>
         </ul>
-        <h1 className="mx-auto mt-6 max-w-4xl text-balance text-[clamp(2.5rem,6.5vw,4.5rem)] font-semibold leading-[1.02] tracking-tight">
+        <h1 className="mx-auto mt-6 max-w-4xl sm:mt-8 text-balance text-[clamp(2.5rem,6.5vw,4.5rem)] font-semibold leading-[1.02] tracking-tight">
           Meet and run workshops together
         </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl">
+        <p className="mx-auto mt-5 max-w-2xl sm:mt-7 text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl">
           Walk into a Space as yourself, gather round the table, and run the session on the same
           board: timers, votes and polls built in. Share one link and everyone&rsquo;s in.
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:mt-10">
           <a href={ctaHref('/new', 'Home.Hero')} className={PRIMARY}>
             Open a Space
             <ChevronRightIcon size={18} aria-hidden />

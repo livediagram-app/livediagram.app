@@ -32,7 +32,7 @@ it appears"), with liveplanner's tours on it:
   drawn at all. What a run records (`planTourTracks`, `formTourSeen`, [User preferences](user-preferences.md)) is
   what the Settings **Tours** rows read, and turning a row back on puts its tour back on the button (and runs it on
   closing Settings, if it could run right then). The rule lives once in the shared offer (`useOfferTour`'s `seen`,
-  `tour-offer.ts`), the same in every editor. Power user mode, which answers every tour, clears the button too.
+  `tour-offer.ts`), the same in every editor.
   Until 1 November 2026 a taken tour stayed on the button for good (Work Tracker #177).
 - **A press starts the first step.** There is no welcome card: the button already said what it starts. A press
   while another tour is on screen does nothing (one tour at a time). A run ends completed or skipped; there is no

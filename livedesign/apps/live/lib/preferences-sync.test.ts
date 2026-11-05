@@ -40,13 +40,16 @@ const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0
 // the api's cap, after which every save was refused.
 function fullAccount(): UserPreferences {
   return {
-    ...({ recentExcludedIds: Array.from({ length: 60 }, (_, i) => uuid(i)) } as UserPreferences),
+    ...({
+      recentExcludedIds: Array.from({ length: 60 }, (_, i) => uuid(i)),
+      // Written by the retired Power user mode (docs/specs/007-editor/power-user-mode.md), until a read drops it.
+      powerUserBaseline: {
+        showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
+        notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
+      },
+    } as UserPreferences),
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
     logoGuidesHidden: ['centre', 'keylines', 'safe', 'grid'],
-    powerUserBaseline: {
-      showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
-      notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
-    },
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
     customSwatches: Array.from({ length: 220 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
@@ -55,7 +58,6 @@ function fullAccount(): UserPreferences {
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',
     reduceMotion: true,
-    powerUserMode: true,
     notifyTips: false,
     notifyMilestones: false,
   };

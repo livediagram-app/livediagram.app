@@ -1,12 +1,4 @@
-import type { MouseEvent } from 'react';
-import {
-  APPEARANCE_LABEL,
-  AppearanceIcon,
-  appearanceToggleName,
-  HoverCard,
-  oppositeAppearanceSetting,
-  quickAppearanceToggleName,
-} from '@liveplanner/ui';
+import { APPEARANCE_LABEL, AppearanceIcon, appearanceToggleName, HoverCard } from '@liveplanner/ui';
 import type { AppearanceSetting } from '@liveplanner/ui';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import {
@@ -23,10 +15,6 @@ import {
 // The glyph shows the CURRENT setting, not the next one: with three states, one of
 // them deferring to the OS, the only readable thing is where you are, so the
 // hover card and accessible name carry where the next click takes you.
-//
-// In power user mode it is a quick switch instead
-// (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch): a click flips to the
-// opposite of the painted appearance, and the context menu gesture sets System.
 
 const DESCRIPTION: Record<AppearanceSetting, string> = {
   light: 'The editor chrome is light.',
@@ -34,36 +22,17 @@ const DESCRIPTION: Record<AppearanceSetting, string> = {
   system: 'The editor chrome follows your device setting.',
 };
 
-export function AppearanceToggle({
-  labelled = false,
-  quick = false,
-}: {
-  labelled?: boolean;
-  quick?: boolean;
-}) {
-  const { setting, appearance, set, cycle } = useAppearance();
-  const opposite = oppositeAppearanceSetting(appearance);
-
-  const onContextMenu = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    if (setting !== 'system') set('system');
-  };
-
-  const description = quick
-    ? `${DESCRIPTION[setting]} Click for ${APPEARANCE_LABEL[opposite]}${
-        setting === 'system' ? '.' : '; right-click to follow your device.'
-      }`
-    : DESCRIPTION[setting];
-
+export function AppearanceToggle({ labelled = false }: { labelled?: boolean }) {
+  const { setting, cycle } = useAppearance();
   return (
-    <HoverCard title={`Appearance: ${APPEARANCE_LABEL[setting]}`} description={description}>
+    <HoverCard
+      title={`Appearance: ${APPEARANCE_LABEL[setting]}`}
+      description={DESCRIPTION[setting]}
+    >
       <button
         type="button"
-        onClick={quick ? () => set(opposite) : cycle}
-        onContextMenu={quick ? onContextMenu : undefined}
-        aria-label={
-          quick ? quickAppearanceToggleName(setting, appearance) : appearanceToggleName(setting)
-        }
+        onClick={cycle}
+        aria-label={appearanceToggleName(setting)}
         className={labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN}
       >
         <AppearanceIcon setting={setting} />

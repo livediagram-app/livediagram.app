@@ -61,7 +61,9 @@ describe('room op vocabulary', () => {
     // Kinds the room keeps and never relays, so none ever arrives: a `follow` reaches the person followed as a
     // `followers` frame instead (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"). A
     // `calls-check` only asks the room to read the calls kill switch (docs/specs/016-platform/calls-kill-switch.md).
-    const roomKept = new Set(['follow', 'calls-check']);
+    // `call-session` proves a call's Realtime session to the room, which keeps it for the hearing check
+    // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Trust").
+    const roomKept = new Set(['follow', 'calls-check', 'call-session']);
     const unhandled = [...PRESENCE_OP_KINDS, ...MUTATION_OP_KINDS, ...SYSTEM_OP_KINDS].filter(
       (kind) => !handled.has(kind) && !roomKept.has(kind),
     );

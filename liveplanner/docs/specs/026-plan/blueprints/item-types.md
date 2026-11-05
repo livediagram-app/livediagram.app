@@ -318,9 +318,9 @@ selfId)` names to ids by token spans, `shownFormula` ids to names (`nameAsWritte
     (`withFormula`, resolved after the change's fields with `resolveFormulas`; "The formula for "Left" doesn't
     work: ..."). `plan-listing.ts` lists `formula` (shown), `result` and `formulaError`; the api answers the
     widened `calculated`; the SVG export draws a Formula with or without the cards.
-  - Editor: `FormulaEditor.tsx` (Result and Currency, the Formula box, the check line `role="status"`, Fields and
-    Functions chips inserting at the caret, `FormulaPreview` on the type's first live card through
-    `calculatedFieldOutcome`), made from Add Field's Formula tile (`KIND_VARIANTS.formula`; `CalculationSelect` offers only
+  - Editor: `FormulaEditor.tsx` (Result and Currency, the Formula box, the check line `role="status"`, `CalculatedPreview` (right under the check
+    line, above the chips, so it clears Add Field's sticky footer on a 390 px phone) on the type's first live card
+    through `calculatedFieldOutcome`, then Fields and Functions chips inserting at the caret), made from Add Field's Formula tile (`KIND_VARIANTS.formula`; `CalculationSelect` offers only
     `COUNT_CALCULATIONS` and shows only while `pickOf(field)` is `calculated`), `CustomFieldForm` (keeps the last working formula) and `AddFieldShape`
     (`kindReadiness` 'formula', "Write a formula that works."). `PlanCardFace` draws a problem as a red "Error"
     pill with the problem in its spoken label; `CalculatedFieldValue` shows the problem in red,
@@ -353,7 +353,7 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
     (`resolveRollups`, after `resolveFormulas`) with refusals in `type-change-refused.ts`; `plan-listing.ts` lists
     `through`, `aggregate`, `source`, `result`, `currency` and `error`; the api passes the plan's types to
     `calculatedValuesOf`; the SVG export passes `isDone` and the types.
-  - Editor: `RollupEditor.tsx` (Through, Calculate, Field, the `role="status"` line, `rollupPatch`) in
+  - Editor: `RollupEditor.tsx` (Through, Calculate, Field, `CalculatedPreview`, then the `role="status"` line, so a longer line never pushes Preview under Add Field's footer on a phone; `rollupPatch`) in
     `CustomFieldForm` and `AddFieldShape` (`kindReadiness` 'through' and 'source'); `CalculatedPreview.tsx` is
     shared with `FormulaEditor` (a Rollup's prefers the first card with a value other than 0).
 - Percent fields (spec "Percent"): `percent-fields.ts` (packages/items) is the one reading, shared by every surface:

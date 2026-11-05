@@ -1,11 +1,10 @@
 # Meeting rooms and the stage
 
-Status: **in progress** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
-calls**, part 2, **the stage under the hood** (the element, its hearing and its role gate, not yet in the palette), and
-part 3, **raise hand and Do Not Disturb** (with the line under the call strip for a stage you may not speak from), are
-built for staging; the stage's palette tile, settings, template and full help (part 4) are specified here and built
-later. Under the calls kill switch and off in production with the rest of calls
-([Turning calls on](proximity-audio.md#turning-calls-on)).
+Status: **built for staging** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
+calls**, part 2, **the stage under the hood** (the element, its hearing and its role gate), part 3, **raise hand and
+Do Not Disturb** (with the line under the call strip for a stage you may not speak from), and part 4, **the stage's
+way in** (its palette tile, its settings, the All-Hands Hall on a real stage, and its help). Under the calls kill
+switch and off in production with the rest of calls ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
 Plain distance ([Proximity audio](proximity-audio.md#hearing)) suits an open floor, but not every gathering. A meeting
 room should be private: whoever is in it hears everyone else in it, and nobody outside hears a word. An all-hands
@@ -43,13 +42,19 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
 - A **Virtual Office** template's rooms become its calls with no change to the board: the meeting rooms, the phone
   booths and the kitchen are private, the open floor between them is by distance. The **Coworking Space** and the
   **All-Hands Hall** are each one big room, so everyone inside either hears everyone else inside it (see
-  [Cost](#cost)); the hall's stage changes that once the template stands a Stage on it (part 4).
+  [Cost](#cost)) until someone speaks from the hall's [Stage](#the-stage-part-2-built) (part 4).
+- **A big room hears its talkers** (#482). In a room where you would hear more than 8 people, you receive the 3
+  nearest of them and anyone in the room who talked in the last 30 seconds (at most the 8 who talked last), rather
+  than everyone. Somebody quiet who starts talking from across the room is heard within about half a second, so the
+  first word or two may be lost; the people beside you are always heard from the first word. One of the nearest
+  stays received until two others are nearer, so walking past nobody makes them flicker. Rooms of 9 or fewer are
+  unchanged. See [Cost](#cost).
 
 ## The stage (part 2, built)
 
-The All-Hands Hall's stage today is only a rug with "Stage" written over it. It becomes a real element. Part 2 builds
-the element and its hearing; the palette tile, its settings in the element menu, the hall template's switch from the
-rug and the help come in part 4, so until then a stage arrives only from an agent, the API or a pasted board.
+The All-Hands Hall's stage was a rug with "Stage" written over it. It is a real element: part 2 builds the element
+and its hearing, and part 4 gives it its tile, its settings and the hall
+([The stage's way in](#the-stages-way-in-part-4-built)).
 
 - **A Stage** is an office piece (shape kind `stage`, [Office](../009-elements/office.md#stage)): a raised platform
   drawn from the room's camera, the floor's fill a little lighter, a front edge you see the face of, and its name
@@ -128,13 +133,37 @@ screen reader hears it once on stepping on.
 - **Only livehuddle offers it.** The status vocabulary is shared with livediagram (`@liveworkspace/avatar`), which has
   no calls: there the Avatar panel keeps offering the four, though a `dnd` status on the wire still parses and draws.
 
+## The stage's way in (part 4, built)
+
+- **The tile.** **Stage** sits in the palette's **Navigate** category, among its office pieces, straight after Room
+  (Room, Stage, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug): a platform with a microphone on
+  a stand. Its line: "A raised platform: whoever stands on it is heard by the whole tab." A new stage goes in behind
+  everything, like a room or a rug, so chairs already placed stand in front of it. Only an Editor's palette offers
+  it ([Share roles](#share-roles)).
+- **Its settings** are in the element menu's **Tools › Stage** section, as a room's doorway is in Tools › Room (a Tools flyout
+  holding one section shows that section at the menu's top level, so the menu reads **Stage**):
+  - **Who Can Speak**: two tiles, **Editors** (the default) and **Editors and Participants** (`stageSpeakers`:
+    `'edit'`, `'take-part'`), with the line "Who the whole tab hears from the stage. Anyone else standing on it is
+    heard as the audience is."
+  - **Show Cameras**: a switch (`stageCameras`, off by default), described "Everyone on the tab sees a speaker's
+    camera and screen".
+  - A selection holding several stages sets them all; other kinds in it are left alone. Each change is one undoable
+    step, synced like any edit.
+- **The All-Hands Hall** template ([Virtual office](virtual-office-template.md#spaces)) stands a real Stage at the
+  front of the hall, 400 × 160, centred, named "Stage", where the rug and its "Stage" text were. It keeps the
+  defaults but one: **Show Cameras** is on, since the hall exists for a presenter everyone watches. Editors speak
+  from it; an Editor switches it to **Editors and Participants** for a panel or a demo from the floor.
+- **Help**: a **Stage** article in the help centre, under Palette › Virtual Office, with a figure of a speaker on a
+  stage heard by the hall; the Virtual Office article's Stage section links to it.
+- **livediagram's All-Hands Hall keeps its rug**: livediagram has no calls, so it has no Stage element.
+
 ## Share roles
 
 | Act                                         | Editor | Participant                   | Viewer |
 | ------------------------------------------- | ------ | ----------------------------- | ------ |
 | Hear and be heard in a room's call (part 1) | Yes    | Yes                           | Hear   |
 | Speak from a stage (part 2)                 | Yes    | When the stage allows (below) | No     |
-| Change a stage's settings (part 4)          | Yes    | No                            | No     |
+| Place a stage, change its settings (part 4) | Yes    | No                            | No     |
 | Raise and lower a hand (part 3)             | Yes    | Yes                           | No     |
 | Let a raised hand speak (part 3)            | Yes    | From the stage                | No     |
 | Set Do Not Disturb (part 3)                 | Yes    | Yes                           | Yes    |
@@ -146,25 +175,49 @@ screen reader hears it once on stepping on.
   browser claims; your own is your session's `can`.
 - A Viewer never speaks anywhere ([Proximity audio](proximity-audio.md#share-roles)); it hears a room or a stage as
   anyone does.
+- **Placing and setting up a stage is an Editor's** (part 4): only an Editor's palette offers the tile, and the Stage
+  section lives in the Editor's element menu; a Participant's or a Viewer's short menu has none. On the server, the
+  participant content rule keeps a stage's settings (and its name: a stage is a Behaviour piece) as stored whatever
+  a Participant's change says, and a Viewer's element change reaches nobody.
 - Gated in the editor on the session's `can` (never `isReadOnly`), and in the room on the grant's level for the hand
   and let-speak ops (part 3), as the room gates `avatar-voice` and `call-track`: a Viewer's `avatar-hand` or
-  `avatar-let-speak` reaches nobody. Whether the person pressing Let Speak stands on a stage is checked in the
-  browsers (the room does not place people), as hearing is.
+  `avatar-let-speak` reaches nobody. **The room checks Let Speak too** (#495): a let-speak (or a Done) reaches its
+  hand only from an Editor, or from someone the room places on a stage that lets them speak (their last shared
+  position on the tab, on the tab's stored stages, with the same small margin the hearing check allows); any other
+  is dropped and logged. Each browser still checks it as before.
 
 ## Trust
 
-Hearing is decided in each browser, from positions every walker already shares, as distance is: the room relays
-positions and the mint route lets any session in the Space subscribe to a microphone published in it. A browser that
-ignores the rule could still subscribe to a microphone in a room it is not in. The rooms, stage and hands are for
-arranging a meeting, not for keeping a secret from someone with edit access to the code; a server-side check (the
-mint route asking the room who may hear whom) is a follow-up, recorded on the card.
+Hearing is decided in each browser, from positions every walker already shares, and **checked again on the server**
+(#483) whenever a browser subscribes, so a modified browser cannot listen in on a room it is not in:
+
+- **The room tells the mint route who may hear whom.** A call proves its session to the room once it starts (the
+  `call-session` op, [Proximity audio](proximity-audio.md#the-wire)), so the room knows which session is whose. Every
+  subscribe asks the room, for each track, whether the subscriber may hear its publisher now: from both people's last
+  shared positions on the same tab, the tab's visible rooms and stages as last saved, and the hands let speak.
+- **Allowed** when the two share a room, or both stand in the open within earshot, or the publisher speaks from a
+  stage that lets them, or has been let speak by someone who still may. A camera or screen follows the same answer
+  (bubbles follow hearing).
+- **Conservative, so nobody is silenced by mistake.** Positions on the server lag the screen by a step or two, so the
+  check allows a margin: 160 canvas px beyond the release radius in the open, and 64 canvas px either side of a wall
+  or a stage's edge. Someone pressed against a wall's outside may therefore be allowed to subscribe; nobody further
+  off is. A room drawn or moved in the last few seconds counts once it is saved. If the room does not know a
+  position yet (just after it starts), it allows for its first minute.
+- **A refusal is never an error.** The track is refused alone (`not_heard`); the call asks again after 2 seconds
+  while it still wants it, and proves its session again, so a refusal from a stale position heals itself. Each
+  refusal is logged on the server and counted in the browser that met it, so false refusals show.
+- The rooms, stage and hands arrange a meeting; the check stops listening in from elsewhere on the board. It cannot
+  stop someone from walking their character into a room in plain sight, which everyone sees.
 
 ## Cost
 
 A room is one call, so everyone in it receives everyone else's microphone: a room of `n` people is `n × (n − 1)`
-streams, about 0.018 GB per stream-hour. Four in a meeting room is 12 streams, about 0.2 GB an hour ($0.01). The
-Coworking Space's open floor with 30 people is 870 streams, about 16 GB an hour, about $0.78 an hour once past the
-free 1,000 GB a month; the same 30 spread round the floor in the open would hear only their neighbours.
+streams, about 0.018 GB per stream-hour. Four in a meeting room is 12 streams, about 0.2 GB an hour ($0.01). Without a
+cap, the Coworking Space's open floor with 30 people would be 870 streams, about 16 GB an hour, about $0.78 an hour
+once past the free 1,000 GB a month. A big room hears its talkers (#482), so the same 30 with two people talking is
+at most about 150 streams (each listener's 3 nearest and the 2 talkers; 143 measured), about 2.7 GB an hour, about
+$0.14 an hour,
+close to the 30 spread round the floor in the open hearing only their neighbours.
 
 A stage (part 2) is one speaker to everyone: about 0.018 GB per listener-hour, so a hall of 100 is about $0.09 an
 hour, and its audience whispers by distance, so a big hall costs what a stage costs plus the whispering, not `n²`.
@@ -174,10 +227,12 @@ Video on the stage is under the kill switch's limits ([Calls kill switch](../016
 
 Part 1 adds none: hearing is not an act. Part 2: `track('Canvas', 'Used', 'StageSpeak')` when, in a call, you step
 onto a stage that lets you speak (once per stepping on). Part 3: `track('Canvas', 'Used', 'RaiseHand')`, `track('Canvas', 'Used', 'LetSpeak')`, and the status
-change already counted (`AvatarStatus`). Never who, never how long.
+change already counted (`AvatarStatus`). Part 4: placing a stage is `Element · Added · Stage`, as every element is
+counted; changing its Who Can Speak or Show Cameras is `Element · Changed · Stage`. Never who, never how long.
 
 ## Out of scope
 
 - Walls that damp rather than block (#436 asked; the owner chose rooms as calls).
-- Muting someone else, and per-person volume ([Proximity audio](proximity-audio.md#out-of-scope)).
+- Muting someone else, and per-person volume ([Proximity audio](proximity-audio.md#out-of-scope)). An Editor may stop
+  someone else's screen share ([Video and screen share bubbles](video-and-screen-bubbles.md#share-roles)).
 - Recording a stage, or any transcript.

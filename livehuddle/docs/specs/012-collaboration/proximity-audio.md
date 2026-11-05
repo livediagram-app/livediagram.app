@@ -131,6 +131,12 @@ and the editor:
 
 The room drops any of them from a Viewer, and drops one that fails its parser, as it drops a Viewer's `avatar-say`.
 
+- `call-session`: `{ kind, tabId, sessionId, sessionToken }`, sent once a call has its session (a listener's too),
+  and again after a subscribe was refused. It proves to the room which Realtime session is this connection's, so the
+  mint route can ask the room who may hear whom ([Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)).
+  The room checks the token as the mint route does, keeps the session on the connection, and never relays the op;
+  one that fails its parser or its token is dropped. From any level: a Viewer subscribes too.
+
 ## The mint route
 
 The browser never talks to Cloudflare Realtime's API: livehuddle's api Worker holds the Realtime app's secret and the
@@ -142,7 +148,9 @@ TURN key, and makes every call on the browser's behalf, after checking the calle
 - `POST /api/documents/:id/calls/tracks`: publish this browser's microphone (an offer and its `mid`; Editor or
   Participant only), or subscribe to speakers' microphones (their `call-track` locators). A locator's `token` is the
   api's signature over the Space and the publishing session, so a listener can only subscribe to a microphone
-  published in the same Space.
+  published in the same Space. Each subscription is then checked with the room (#483,
+  [Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)): a track the subscriber may not hear now is
+  answered with `errorCode: 'not_heard'` in its place, and the rest are subscribed as asked.
 - `PUT /api/documents/:id/calls/renegotiate`: the browser's answer to an offer the SFU made.
 - `PUT /api/documents/:id/calls/close`: stop subscriptions or the microphone, by `mid`.
 
@@ -174,7 +182,8 @@ hour. The equaliser adds no Realtime cost, only small presence messages.
 
 ## Telemetry
 
-`track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on joining (by the door: speaker or listener),
+`track('Canvas', 'Used', 'CallNotHeard')` when the mint route refuses a subscription as not heard (#483: counts
+false refusals). `track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on joining (by the door: speaker or listener),
 `track('UI', 'Changed', 'AudioMute')` on a mute or unmute, and `track('Canvas', 'Used', 'WalkToTalker')` on pressing
 someone's bars. Never who, never how long, never anything heard.
 

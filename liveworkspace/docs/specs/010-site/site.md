@@ -107,7 +107,10 @@ moves between them, and the one account that joins them.
    clockwise in the
    order work moves through them, and a collaborator's cursor at each. Each app there is a link to its
    site that lifts and rings in its accent on hover, and holds still while pointed at. On phones (below
-   `sm`) it is left out, and the hero's words, calls to action and promises are centred.
+   `sm`) it is left out, and the hero's words, calls to action and promises are centred. **Height:** from `sm`
+   it fills the first screen under the 64px header, capped at 72rem and never shorter than its content, the words
+   and the prism centred in it (the products' shared `hero-tall` stylesheet from `@liveworkspace/marketing-site`,
+   the header's height handed over as `--hero-tall-header`); a phone keeps its content's height.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe

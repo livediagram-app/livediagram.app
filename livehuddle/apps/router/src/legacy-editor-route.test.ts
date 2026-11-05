@@ -176,6 +176,8 @@ describe('legacyHelpRedirect', () => {
         '/help/getting-started/adding-shapes-and-arrows/',
         '/help/canvas/the-canvas/adding-elements/',
       ],
+      // Auto Layout arranges shapes by their arrows, which a Space no longer draws (Work Tracker #494).
+      ['/help/tools/layout-cleanup/auto-layout/', '/help/tools/layout-cleanup/'],
       // A retired category's link that lost its `/help` prefix lands on the help centre home too.
       ['/self-hosting', '/help/'],
       ['/self-hosting/', '/help/'],
@@ -191,8 +193,10 @@ describe('legacyHelpRedirect', () => {
 
   it('leaves articles that kept their address alone', () => {
     for (const path of [
-      '/help/getting-started/your-first-diagram/',
-      '/help/account-and-data/exporting-diagrams/',
+      '/help/getting-started/your-first-space/',
+      '/help/account-and-data/exporting-spaces/',
+      '/help/tools/layout-cleanup/',
+      '/help/tools/layout-cleanup/auto-align/',
       '/help/tabs/add-to-document/',
       '/help/canvas/draw-mode/',
       '/help/canvas/themes/',

@@ -5,6 +5,9 @@ import {
   bubbleMotion,
   edgeShift,
   screenX,
+  screenY,
+  topShift,
+  SPEECH_TOP_CLEAR,
   flightMs,
   headPoint,
   nextDraft,
@@ -167,6 +170,20 @@ describe('nextDraft (typing past the limit is refused, a paste is clamped)', () 
   });
   it('clamps a paste past the limits', () => {
     expect(nextDraft('', words(80), true)).toBe(fifty);
+  });
+});
+
+describe('topShift (a bubble stays below the top chrome, Work Tracker #394)', () => {
+  it('leaves a card whose top is clear of the top chrome', () => {
+    expect(topShift(SPEECH_TOP_CLEAR)).toBe(0);
+    expect(topShift(300)).toBe(0);
+  });
+  it('drops a card rising into the top chrome back below it', () => {
+    expect(topShift(100)).toBe(20);
+    expect(topShift(-30)).toBe(150);
+  });
+  it('reads a canvas y on screen as screenX reads an x', () => {
+    expect(screenY(100, 2, 7.5, 390)).toBe(screenX(100, 2, 7.5, 390));
   });
 });
 

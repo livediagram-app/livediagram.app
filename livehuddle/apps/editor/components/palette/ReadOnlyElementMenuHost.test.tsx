@@ -117,6 +117,17 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(rows()).toContain('Copy Text');
   });
 
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles": a stage's settings are an Editor's.
+  it('gives a Participant or a Viewer no Stage settings on a stage', () => {
+    for (const level of ['participate', 'view'] as const) {
+      open(level, { ...createShape('stage', 0, 0), id: 'sg' });
+      expect(screen.queryByText('Who Can Speak')).toBeNull();
+      expect(screen.queryByText('Show Cameras')).toBeNull();
+      expect(rows()).not.toContain('Editors');
+      cleanup();
+    }
+  });
+
   it('renders nothing without an element menu open, or for an element gone', () => {
     open('view', square({ label: 'A' }), { contextMenu: null });
     expect(rows()).toEqual([]);

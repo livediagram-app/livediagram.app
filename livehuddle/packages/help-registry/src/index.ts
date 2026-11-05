@@ -928,9 +928,9 @@ export const articles: Article[] = [
     slug: 'virtual-office',
     title: 'Virtual Office',
     description:
-      'Rooms with doorways, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
+      'Rooms with doorways, a stage, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms walls door doorway meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
+      'virtual office room rooms walls door doorway stage platform meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -1127,8 +1127,7 @@ export const articles: Article[] = [
   {
     slug: 'tab-cleanup',
     title: 'Cleaning Up a Tab',
-    description:
-      'Tidy a tab from the command palette: snap to a grid, or auto-lay-out from the arrows.',
+    description: 'Tidy a tab in one press: snap its notes, frames and pictures onto a tidy grid.',
     keywords: 'tidy auto layout snap grid arrange organise organize align command palette cleanup',
     category: 'Tabs',
     categorySlug: 'tabs',
@@ -1211,7 +1210,7 @@ export const articles: Article[] = [
     slug: 'shape-libraries',
     title: 'Shape libraries',
     description:
-      "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
+      'The draw.io libraries you imported, kept as named shape libraries you rename and tidy on the Explorer page.',
     keywords:
       'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
     category: 'Explorer',
@@ -1222,7 +1221,7 @@ export const articles: Article[] = [
     slug: 'drawio-import',
     title: 'Importing draw.io files',
     description:
-      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own canvas with a tab per page.',
+      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own space with a tab per page.',
     keywords:
       'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop document',
     category: 'Explorer',
@@ -1428,8 +1427,8 @@ export const articles: Article[] = [
   {
     slug: 'layout-cleanup',
     title: 'Layout Cleanup',
-    description: 'Auto-align to a grid or auto-layout the whole board.',
-    keywords: 'tidy align arrange auto grid organise organize straighten',
+    description: 'Tidy Up: snap notes, frames and pictures onto the grid in one press.',
+    keywords: 'tidy up align arrange auto grid organise organize straighten neat auto layout broom',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -1506,7 +1505,7 @@ export const articles: Article[] = [
   {
     slug: 'animations',
     title: 'Animating Elements',
-    description: 'Animate shapes, text, notes, drawings, media, tables, arrows, and icons.',
+    description: 'Animate sticky notes, text, frames, link cards, pictures and icons.',
     keywords:
       'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
     category: 'Canvas',
@@ -1697,6 +1696,18 @@ export const articles: Article[] = [
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
+  },
+
+  // ---- Sub-articles: Virtual Office ----
+  {
+    slug: 'stage',
+    title: 'Stage',
+    description: 'A platform whoever stands on is heard by everyone on the tab, for an all-hands.',
+    keywords:
+      'stage platform podium all-hands all hands town hall keynote presenter presenting speaker speak talk heard everyone broadcast audience raise hand who can speak editors participants show cameras video call calls audio',
+    category: 'Palette',
+    categorySlug: 'palette/virtual-office',
+    parentSlug: 'virtual-office',
   },
 
   // ---- Sub-articles: Selecting and Grouping ----
@@ -1933,16 +1944,6 @@ export const articles: Article[] = [
     title: 'Auto-Align',
     description: 'Snap every element on the tab onto a 10 px grid.',
     keywords: 'grid tidy straighten arrange snap organise organize',
-    category: 'Tools',
-    categorySlug: 'tools/layout-cleanup',
-    parentSlug: 'layout-cleanup',
-  },
-  {
-    slug: 'auto-layout',
-    title: 'Auto Layout',
-    description: 'Tidy Up the arrow graph as a flowchart, tree, or mindmap.',
-    keywords:
-      'arrange flowchart tree mindmap tidy up automatic graph preview hover try before greyed out disabled already tidy lanes swimlane route arrows',
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
     parentSlug: 'layout-cleanup',

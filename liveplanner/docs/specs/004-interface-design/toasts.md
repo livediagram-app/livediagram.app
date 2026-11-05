@@ -7,7 +7,7 @@ Status: shipped
 A toast is a short, floating notice that says what just happened or what went wrong, and offers at most a couple of
 answers to it. It is the editor and Explorer's one notification surface (`useToast`, `apps/editor/hooks/ui/useToast.tsx`):
 a failure that would otherwise be silent, a consequential action that would otherwise go unconfirmed ("“Roadmap”
-deleted", with Undo), or an offer (power user mode). It never says what is already visible on screen (an element
+deleted", with Undo), or an offer (a new version to reload into). It never says what is already visible on screen (an element
 appearing, a copy button turning into "Copied"), and autosave has its own header pill.
 
 Inline notices that belong to a surface (a dialog's error line, a panel's empty state) are not toasts.

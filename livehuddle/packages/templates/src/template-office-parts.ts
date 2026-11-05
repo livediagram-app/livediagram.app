@@ -21,6 +21,8 @@ export type OfficePiece = {
   facing?: ChairFacing;
   w?: number;
   h?: number;
+  // A stage's Show Cameras (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in").
+  stageCameras?: boolean;
 };
 export type OfficeRoom = {
   name: string;
@@ -44,7 +46,7 @@ function sizeOf(
   return {};
 }
 
-/** Rooms, then rugs, then furniture, each piece placed in its room. `x0, y0` is the plan's top left. */
+/** Rooms, then rugs and stages, then furniture, each piece placed in its room. `x0, y0` is the plan's top left. */
 export function furnishRooms(rooms: readonly OfficeRoom[], x0: number, y0: number): Element[] {
   const walls: Element[] = [];
   const floor: Element[] = [];
@@ -64,9 +66,10 @@ export function furnishRooms(rooms: readonly OfficeRoom[], x0: number, y0: numbe
       const el: Element = {
         ...base,
         ...(p.facing ? { chairFacing: p.facing } : {}),
+        ...(p.stageCameras ? { stageCameras: true } : {}),
         ...sizeOf(p, base),
       };
-      (p.kind === 'rug' ? floor : furniture).push(el);
+      (isFloorShape(p.kind) ? floor : furniture).push(el);
     }
   }
   return [...walls, ...floor, ...furniture];

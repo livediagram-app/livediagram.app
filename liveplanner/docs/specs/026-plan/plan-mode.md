@@ -72,7 +72,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   panel (up to 1024 px, kept clear of the toolbar above and the bottom-right buttons below, scrolling inside itself)
   in which every way to start is one look away, without steps.
   - **Header**: **Start Planning** (20 px), "Pick how to run the work. You can add more boards, sheets and dashboards
-    later.", a search field (**Find a board, sheet or layout**, focused as the panel opens on a desktop) and Help.
+    later.", a search field (**Find a board, sheet or layout**, focused as the panel opens on a desktop, unless focus has gone somewhere since ([Start panel](../007-editor/start-panel.md))) and Help.
   - **The rail** (left, 208 px; on a phone a row of chips under the header that scrolls sideways): **Recommended**,
     **Boards**, **Spreadsheets** and **Dashboards**, each with its glyph and how many it holds (a count badge, tinted with the chosen one), the chosen one tinted in
     the brand colour; then, under a hairline, **Inspiration** (as the others). The arrow keys move along the rail. It opens on

@@ -5,7 +5,8 @@
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
 import { IsoCard, iso } from './palette-modes-parts';
-import { PickerTrigger, PixelCharacter } from './selection-modes';
+import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
+import { PickerTrigger } from './selection-modes';
 
 // --- Mode scenes ------------------------------------------------------------
 

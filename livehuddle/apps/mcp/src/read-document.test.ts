@@ -143,7 +143,7 @@ describe('readDocument', () => {
     const named = await readDocument(env, 'tok', { documentId: 'd1', tabId: 'elsewhere' });
     expect(named).toEqual({
       content: [
-        { type: 'text', text: 'No tab "elsewhere" in this document. Tabs: Plan (t1), Risks (t2).' },
+        { type: 'text', text: 'No tab "elsewhere" in this Space. Tabs: Plan (t1), Risks (t2).' },
       ],
       isError: true,
     });

@@ -59,6 +59,8 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'water-cooler': 'water cooler drink cup kitchen break chat office',
   'coffee-machine': 'coffee machine espresso drink cup mug kitchen break office',
   rug: 'rug carpet mat floor lounge reception office',
+  stage:
+    'stage platform podium all-hands all hands town hall keynote presenter speaker speak broadcast audience',
   estimate: 'points sizing poker fist estimate vote',
   temperature: 'mood check pulse gauge feeling',
   quiz: 'quiz question trivia test answer correct right wrong multiple choice timed kahoot',

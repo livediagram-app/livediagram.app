@@ -761,7 +761,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     count into a Formula): a **Result** menu (and **Currency** for a Currency result, **Show as Percent Bar** for a Percent one), a monospaced **Formula** box, the type's
     fields as chips under it (pressing one writes its name at the caret), and a line that checks the formula as it is
     typed: "Works" with a tick, or the problem in red. **Preview** works it out on a real card: the type's first
-    live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Add {Name} waits until the formula
+    live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Preview sits straight under that
+    line, above the chips, so on a 390 px phone it is in view above the footer's Add button without scrolling (a
+    Rollup's and a Lookup's sit straight under their menus, above the line saying what they work out, for the same
+    reason). Add {Name} waits until the formula
     works ("Write a formula that works"). In an existing field's form, a formula that doesn't work is not kept: the
     field keeps its last working one, and the line says so ("Not saved: Unknown field "Spnt"").
   - **Agents**: `change_card_types` takes `formula` (by names) and `result` on `custom`, `addCustom` and
@@ -790,7 +793,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       field whose result is a Date. Count and Count Done read none. The menu lists the fields of the card types
       that link here through the chosen field (any of them for All Linked Cards), each once, by name.
     - A child without the field, or with it empty, is skipped; so is a child whose own worked-out value is an error.
-      With nothing left Sum, Average, Min, Max, Earliest and Latest read no value; Count and Count Done read 0.
+      With nothing left Sum, Average, Min, Max, Earliest and Latest read no value; Count and Count Done read 0 (Count Done too on a board with no done columns, and wherever no done rule is held: none done).
   - **Lookup** shows one field of the card a Card field links to. Its settings: **Through** (`through`), one of this
     type's own Card fields (required), and **Field** (`source`), any field of the card types that field links to
     that a [Formula](#formula-fields) can read (Title, Number, Type, Estimate, Start and Due Date, Priority,

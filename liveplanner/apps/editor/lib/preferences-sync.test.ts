@@ -39,10 +39,13 @@ const mockedPut = vi.mocked(apiPutPreferences);
 function fullAccount(): UserPreferences {
   return {
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } },
-    powerUserBaseline: {
-      showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
-      notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
-    },
+    ...({
+      // Written by the retired Power user mode (docs/specs/007-editor/power-user-mode.md), until a read drops it.
+      powerUserBaseline: {
+        showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
+        notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
+      },
+    } as UserPreferences),
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
     customSwatches: Array.from({ length: 400 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
@@ -51,7 +54,6 @@ function fullAccount(): UserPreferences {
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',
     reduceMotion: true,
-    powerUserMode: true,
     notifyTips: false,
     notifyMilestones: false,
   };
@@ -82,7 +84,7 @@ describe('fitPreferences', () => {
     const fitted = fitPreferences(prefs);
     expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
     expect(fitted.customSwatches).toBeUndefined();
-    expect(fitted.powerUserBaseline).toEqual(prefs.powerUserBaseline);
+    expect(fitted.quickSwatchOverrides).toEqual(prefs.quickSwatchOverrides);
   });
 
   it('stays fast on the largest blob it can be handed', () => {
@@ -117,16 +119,16 @@ describe('savePreferences', () => {
     setServerPreferences('owner-1', {
       uiScale: 1,
       uiScalePanels: 0.9,
-      powerUserBaseline: { chrome: { before: { uiScale: 1 }, applied: { uiScale: 1.2 } } },
+      quickSwatchOverrides: { brand: { fill: ['#112233'] } },
     });
     savePreferences('owner-1', {
       uiScale: 1.05,
       uiScalePanels: 0.9,
-      powerUserBaseline: { chrome: { before: { uiScale: 1 }, applied: { uiScale: 1.2 } } },
+      quickSwatchOverrides: { brand: { fill: ['#112233'] } },
     });
     savePreferences('owner-1', {
       uiScale: 1.1,
-      powerUserBaseline: { chrome: { before: { uiScale: 1 }, applied: { uiScale: 1.1 } } },
+      quickSwatchOverrides: { brand: { fill: ['#445566'] } },
     });
     expect(mockedPut).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
@@ -135,7 +137,7 @@ describe('savePreferences', () => {
     expect(mockedPut.mock.calls[0]![1]).toEqual({
       uiScale: 1.1,
       uiScalePanels: null,
-      powerUserBaseline: { chrome: { before: { uiScale: 1 }, applied: { uiScale: 1.1 } } },
+      quickSwatchOverrides: { brand: { fill: ['#445566'] } },
     });
     expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull();
   });

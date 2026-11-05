@@ -1,4 +1,4 @@
-// A runtime colour under white text in dark mode (docs/specs/004-interface-design/color-scheme.md, Dark palette
+// A runtime colour under readable text in both modes (docs/specs/004-interface-design/color-scheme.md, Dark palette
 // rules): @liveworkspace/ui's identity fill, on this product's colour maths (@livediagram/document's shade and contrastRatio).
 import { contrastRatio, shade } from '@livediagram/document';
 import { createIdentityFill } from '@liveworkspace/ui/identity-fill';

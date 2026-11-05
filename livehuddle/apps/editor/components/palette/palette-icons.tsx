@@ -412,6 +412,19 @@ export function RugIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// The Stage (docs/specs/009-elements/office.md "Stage"): a platform seen from the room's camera, its top and the
+// front face you see, with a microphone on a stand.
+export function StageIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M4.5 13.5h15L22 17H2z" />
+      <path d="M2 17v3.5h20V17" />
+      <rect x="10.25" y="2.5" width="3.5" height="5.5" rx="1.75" />
+      <path d="M12 8v5.5" />
+    </Glyph>
+  );
+}
+
 export function FenceIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>

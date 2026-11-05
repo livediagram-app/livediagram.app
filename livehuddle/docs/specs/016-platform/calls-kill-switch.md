@@ -138,7 +138,9 @@ refuse whatever the switch says.
   (`on` or `audio-only`), so a browser that joins learns it.
 - **Publish and subscribe.** Each track asked for is checked against the mode by its kind: `off` refuses with reason
   `paused`, a video or screen track under `audio-only` with reason **`audio-only`**. A refusal is the whole request's
-  (nothing is half-made).
+  (nothing is half-made). The switch is checked first; past it, the room's hearing check
+  ([meeting rooms](../012-collaboration/meeting-rooms-and-stage.md) "Trust") may answer single subscribed tracks
+  `not_heard`, which is not a pause and never shows Calls Paused.
 - **Renegotiate** is refused while `off`: it finishes setting up a subscription.
 - **Close** is always allowed while the calls gate is open, `off` included: closing tracks never costs anything, and
   lets a browser leave cleanly.

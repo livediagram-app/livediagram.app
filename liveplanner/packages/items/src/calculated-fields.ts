@@ -328,8 +328,9 @@ function rollupValue(w: Walk, field: CalculatedDef, item: Item): CalculatedValue
   const aggregate = aggregateOf(field);
   if (aggregate === 'count') return kids.length;
   const isDone = w.isDone;
+  // No done rule held (a board with no done columns, a caller that has none) means none are done: 0, never blank.
   if (aggregate === 'countDone')
-    return isDone ? kids.filter((k) => isDone(itemStatus(k))).length : null;
+    return isDone ? kids.filter((k) => isDone(itemStatus(k))).length : 0;
   const dates = aggregateReads(aggregate) === 'date';
   const values: number[] = [];
   for (const k of kids) {
@@ -448,8 +449,8 @@ export function calculatedText(
 }
 
 // A plan's worked-out values as sort, CSV, swimlanes and sheets read them: the child index made on first need, once
-// per items map and catalogue (childIndexFor), each value through the same walk. Without `isDone` Count Done and
-// Children Done read none.
+// per items map and catalogue (childIndexFor), each value through the same walk. Without `isDone` Count Done reads 0
+// and Children Done none.
 export type CalculatedRead = (field: CustomFieldDef, item: Item) => CalculatedValue;
 
 export function calculatedReaderOf(

@@ -94,7 +94,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   **Every pen shows the same rows**, so Marker width stays at the same height
   whichever pen is in hand: Marker 1's colour row holds its one colour,
   the ink. A caption above the rows names whose style it is ("Marker 2",
-  "Marker stroke", "3 marker strokes"); power user mode leaves it out.
+  "Marker stroke", "3 marker strokes").
 - **Read-only:** a view-role visitor sees the board without the dock; there
   is nothing on it they could use.
 - **One dock, no modes.** Every user sees the same three groups; the shapes

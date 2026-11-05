@@ -18,7 +18,6 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useHideCursors } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { presetSummaryLines } from './power-user-preset-rows';
 import type {
   SettingsAppearanceRowSpec,
   SettingsCategorySpec,
@@ -56,16 +55,11 @@ export function settingsModel(
   categories: readonly SettingsCategorySpec[],
   settings: UserPreferences,
   onChange: (next: UserPreferences) => void,
-  // Row keys the dialog offers right now, across every category: the preset readout's "Change"
-  // goes only to those.
-  offered: ReadonlySet<string> = new Set(categories.flatMap((c) => c.rows.map((r) => r.key))),
 ): SettingsCategory[] {
   const ctx = { settings, onChange, track: trackSetting };
   const modelRow = (row: SettingsRowSpec): SettingsRow => {
     if (isBindableRow(row)) return bindRow(row, ctx, rowSharedByAllApps(row.key));
     switch (row.kind) {
-      case 'presetSummary':
-        return { ...row, kind: 'presetSummary', lines: presetSummaryLines(settings, offered) };
       case 'shortcutList':
         return { ...row, kind: 'shortcutList', sections: SHORTCUT_SECTIONS };
       case 'appearance':

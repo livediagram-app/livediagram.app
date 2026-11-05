@@ -17,7 +17,6 @@ import { useMovablePanelMeasure } from './useMovablePanelMeasure';
 import { useDockPopoverKeys } from '@liveworkspace/workbench/components/primitives/useDockPopoverKeys';
 import { usePopoverTopClearance } from './usePopoverTopClearance';
 import { MovablePanelHeader, PanelTitle } from './MovablePanelHeader';
-import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { cornerInsetStyle } from './movable-panel-scale';
@@ -66,7 +65,6 @@ export function MovablePanel({
   opaque = false,
   children,
 }: MovablePanelProps) {
-  const minimalChrome = useMinimalChrome();
   // UI scale (docs/specs/007-editor/ui-scale.md): the panel is zoomed at its
   // root, so every screen-px offset written on it goes through toSurfacePx.
   const scale = useUiScale('panels');
@@ -279,11 +277,11 @@ export function MovablePanel({
               <PanelTitle title={title} />
               {titleAdornment}
             </span>
-            {headerExtra || headerActions || (helpArticle && !minimalChrome) ? (
+            {headerExtra || headerActions || helpArticle ? (
               <div className="ml-auto flex items-center gap-1">
                 {headerExtra}
                 {headerActions}
-                {helpArticle && !minimalChrome ? <HelpArticleLink article={helpArticle} /> : null}
+                {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
               </div>
             ) : null}
           </div>

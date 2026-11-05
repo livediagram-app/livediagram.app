@@ -300,8 +300,7 @@ over, never refused, so they never hide the panel from the rest.
 - **The caption** above the rows on a whiteboard names what they style when marker strokes are
   among it: "Marker stroke" or "3 marker strokes" when only strokes are styled, and the count of
   styled elements when strokes mix with other kinds ("12 elements"). Elements passed over are not
-  counted, and a selection without strokes keeps no caption: its rows name themselves. Power user
-  mode leaves it out, as it does every caption.
+  counted, and a selection without strokes keeps no caption: its rows name themselves.
 - **Stroke style on a mixed selection** of shapes and arrows offers the shape row (Solid / Dashed /
   Dotted): each of those means something for both kinds (arrows draw dotted lines too), whereas
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an
@@ -376,12 +375,8 @@ WCAG 2.2 AA.
   reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
   visible title.
-- **Minimal chrome keeps the section titles** ([Power user mode](../007-editor/power-user-mode.md)).
-  Minimal chrome removes words that teach the interface; these name what each row changes. Two
-  rows of seven coloured squares (Stroke, Background) look alike without them, and a user who
-  knows the editor still has to tell them apart at a glance. The docked panel's header follows the
-  panel rule instead: Minimal chrome hides a panel's title and help button, which would leave an
-  empty strip, so the header is not shown; the panel keeps its accessible name ("Quick style").
+- **Section titles always show**: they name what each row changes. Two rows of seven coloured
+  squares (Stroke, Background) look alike without them.
 - **Scrolling is in-theme**: when the docked body scrolls, its scrollbar is the app's slim themed
   one (`scrollbar-slim`), light and dark, not the operating system's.
 - **No layout shift.** Showing, hiding or re-placing the panel moves nothing else; it floats above

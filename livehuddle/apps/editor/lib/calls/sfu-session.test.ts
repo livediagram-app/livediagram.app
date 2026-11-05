@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CallsApiError } from '@/lib/api/calls';
-import { SfuSession, SUBSCRIBE_BATCH } from './sfu-session';
+import {
+  NOT_HEARD_RETRY_MAX_MS,
+  NOT_HEARD_RETRY_MS,
+  SfuSession,
+  SUBSCRIBE_BATCH,
+} from './sfu-session';
 
 const api = vi.hoisted(() => ({
   apiCallTracks:
@@ -107,6 +112,7 @@ function open() {
     onFailed: vi.fn(),
     onPaused: vi.fn(),
     onAudioOnly: vi.fn(),
+    onNotHeard: vi.fn(),
   };
   const sfu = new SfuSession(caller, session, events);
   return { sfu, events, pc: FakePc.last };
@@ -212,6 +218,45 @@ describe('SfuSession', () => {
     pc.iceConnectionState = 'failed';
     pc.listeners.get('iceconnectionstatechange')!({});
     expect(events.onFailed).toHaveBeenCalledTimes(1);
+  });
+
+  // The server hearing check (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Trust", #483).
+  it('asks again for a track the room said is not heard yet, waiting longer each time, and stops once closed', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout'] });
+    try {
+      const { sfu, events } = open();
+      const tick = (ms: number) => vi.advanceTimersByTimeAsync(ms);
+      const notHeard = {
+        requiresImmediateRenegotiation: false,
+        tracks: [{ errorCode: 'not_heard' }],
+      };
+      api.apiCallTracks.mockResolvedValueOnce(notHeard).mockResolvedValueOnce(notHeard);
+      sfu.want([loc('a')]);
+      await tick(0);
+      expect(events.onNotHeard).toHaveBeenCalledTimes(1);
+      // Held back meanwhile: another step asks nothing for it.
+      sfu.want([loc('a')]);
+      await tick(NOT_HEARD_RETRY_MS - 1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+      await tick(1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(2);
+      // Refused again: the next wait doubles, then it is received.
+      await tick(NOT_HEARD_RETRY_MS * 2 - 1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(2);
+      await tick(1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(3);
+      expect(events.onNotHeard).toHaveBeenCalledTimes(2);
+      // The waits are capped, and nothing is asked once the session closed.
+      expect(NOT_HEARD_RETRY_MAX_MS).toBe(NOT_HEARD_RETRY_MS * 8);
+      api.apiCallTracks.mockResolvedValueOnce(notHeard);
+      sfu.want([loc('a'), loc('b')]);
+      await tick(0);
+      sfu.close();
+      await tick(NOT_HEARD_RETRY_MAX_MS);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(4);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").

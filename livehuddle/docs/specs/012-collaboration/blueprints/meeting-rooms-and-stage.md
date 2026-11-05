@@ -1,8 +1,8 @@
 # Meeting rooms and the stage blueprint
 
 Derived from [Meeting rooms and the stage](../meeting-rooms-and-stage.md). Paths are livehuddle's; `../packages/…` is
-the monorepo's. Part 1 (rooms are calls), part 2 (the stage under the hood) and part 3 (raise hand, Let Speak, Do Not
-Disturb and the stage line) are built; part 4 (the palette tile, settings, template and help) builds on them.
+the monorepo's. Part 1 (rooms are calls), part 2 (the stage under the hood), part 3 (raise hand, Let Speak, Do Not
+Disturb and the stage line) and part 4 (the palette tile, settings, template and help) are built.
 
 ## Domain and naming
 
@@ -82,10 +82,43 @@ you may speak, else `view`). Each `update` works out the zoning, then the stagin
 the heard set without the unseen speakers, and places by `togetherWith` as before. Stepping onto a stage that carries
 you tracks `StageSpeak` once until you step off.
 
-**Levels** (`calls-store.ts`): `setCallLevels(participants)` keeps each peer's stamped `role` from every presence
+**Levels** (`calls-hands-store.ts`): `setCallLevels(participants)` keeps each peer's stamped `role` from every presence
 list (`useRoomConnection`'s `roomPresence`), notifying the call (`onCallLevels`, which re-stages the scene it holds)
 only when a level changed. The room already stamps `role` from the grant in `helloPresence`
 (`apps/api/src/document-room-rules.ts`), so the wire is unchanged.
+
+## Behaviour and state (part 4)
+
+**The tile** (`apps/editor/components/palette/palette-tile-defs.tsx`, `tools:stage`): `tileGroup: 'move'`, `section: 'tools'`,
+`toolGroup: 'behaviour'`, label "Add Stage", caption "Stage", blurb "A platform the whole tab hears", action
+`{ type: 'shape', kind: 'stage' }`, glyph `StageIcon` (`palette-icons.tsx`: the platform's top and front face, a
+microphone on a stand). `palette-layouts.ts`'s `OFFICE_TILES` lists it after `tools:room`, so Navigate reads Room,
+Stage, Meeting Table and on. Placing goes through `placeBoxed`, which prepends a floor piece (`isFloorShape` holds
+`stage`), so a new stage is behind everything. The participant palette (`PARTICIPANT_TILES`) is unchanged. The
+palette search finds it by `SHAPE_KEYWORDS.stage` (`apps/editor/lib/palette-tile-keywords.ts`: platform, podium,
+all-hands, town hall, keynote, presenter, speaker); Navigate holds 16 tiles, and its description names "a stage".
+
+**The settings** (`apps/editor/components/palette/StageMenuSection.tsx`): `StageMenuSection({ target, sectionProps, onSetStage })`,
+an accordion titled "Stage" (section id `stage`) inside the element menu's Tools flyout. A two-column `MenuTileGrid`
+of `STAGE_SPEAKERS` with `STAGE_SPEAKER_LABELS` ("Editors", "Editors and Participants"), the active one
+`target.stageSpeakers ?? DEFAULT_STAGE_SPEAKERS`; the hint line; then `MenuToggleRow` "Show Cameras" on
+`target.stageCameras === true`. Pressing a tile calls `onSetStage({ stageSpeakers })`; the switch
+`onSetStage({ stageCameras: !on })`. `ElementDataSections` shows the Tools flyout and the section when the target is
+a `stage`. The setter is `useDataShapeSetters`' `setStageSelected(patch)`, a `makeShapePatcher` matching `stage`,
+tracked `Element · Changed · Stage`, wired through `useEditorState` and `EditorContextMenuHost` as
+`onSetStage` (`EditorContextMenu.types.ts`).
+
+**The hall** (`packages/templates/src/template-builders-spaces.ts`, `buildAllHandsHall`): the hall room's pieces hold
+`{ kind: 'stage', x: (HALL_W - STAGE_W) / 2, y: 48, w: STAGE_W, h: STAGE_H, stageCameras: true }` with `STAGE_W` 400
+and `STAGE_H` 160; the rug and the "Stage" text go. `OfficePiece` gains an optional `stageCameras`, copied onto the
+element by `furnishRooms` (`template-office-parts.ts`), which now sorts every `isFloorShape` piece (a rug or a stage)
+with the floors, as `officePlan` does. The hall's preview (`packages/template-previews/src/template-preview-23.tsx`)
+draws the stage's top and front face, and `packages/templates/welcome.json` is regenerated from it.
+
+**Help**: `apps/help/app/palette/virtual-office/stage/page.mdx` (registered in `packages/help-registry`, slug
+`stage`, `categorySlug: 'palette/virtual-office'`, `parentSlug: 'virtual-office'`, with a feature colour and icon),
+its figures in `apps/help/components/illustrations/stage.tsx` (`StageHall`, `StageSettings`); the Virtual Office
+article gains a Stage section linking to it.
 
 ## Behaviour and state (part 3)
 
@@ -97,7 +130,7 @@ every socket unbatched (not a sample kind), and delivers `avatar-let-speak` to t
 `avatar-push` (`sendToPresence`), dropping one aimed at nobody. The room cannot place people, so whether the presser
 stands on a stage is left to the browsers.
 
-**Hands in the store** (`calls-store.ts`): `receiveCallOp` keeps a peer's `avatar-hand` as a `CallHand` (`raised`
+**Hands in the store** (`calls-hands-store.ts`): `receiveCallOp` keeps a peer's `avatar-hand` as a `CallHand` (`raised`
 false deletes it; a first raise stamps `at`, a later op keeps it, so the order is the order hands went up), at most
 `HANDS_MAX` (`ROOM_MAX_CONNECTIONS`, 100) at once. Hands go with `forgetCallPeer`, `pruneCallPeers` and
 `resetCallPeers`, so leaving the mode, a dropped socket or the room closing lowers them. `receiveLetSpeak(from, op)`
@@ -178,9 +211,33 @@ document, which loads as before (no stage, no change). Hands and Do Not Disturb 
 
 ## Security and trust
 
-Hearing is the browser's choice, as distance is (the spec's Trust). The mint route checks only that a microphone was
-published in the same Space. A server-side check, the room telling the mint route who may hear whom from the
-positions and zones it relays, is a recorded follow-up.
+Hearing is still the browser's choice first, and the server now checks it (the spec's Trust, #483):
+
+- **Binding.** After the mint, the call sends `call-session {sessionId, sessionToken}`; the room verifies the HMAC
+  token (`openSessionToken` with `REALTIME_APP_TOKEN`) and keeps `callSession` in the socket's attachment, so it
+  survives hibernation. Never relayed. A forged proof is dropped with `[calls] token room`. Publishers are mapped by
+  this proven session too, never by `call-track` locators, which anyone could copy.
+- **The question.** The tracks route, before a subscribe, asks the room over RPC `callsHearing(documentId,
+subscriberSession, asks)`. `RoomCalls` (`apps/api/src/calls/room-calls.ts`) answers per track from what the room
+  relays: positions (`avatar` ops), levels (the grant), hands and who let them speak, stopped shares, and each tab's
+  rooms and stages from the stored tab (`SELECT rev`, then `data` only when the revision moved; parsed with
+  `visibleLayerElements`, `roomZones`, `callStages` from `@livehuddle/document`, the editor's own geometry).
+- **The verdict** (`call-hearing.ts`, pure): unknown position: `heard` in the first minute after the room started
+  (`ROOM_WAKE_GRACE_MS`), else `unplaced`; another tab `apart`; a stage speaker or a hand let speak by someone who
+  still may: `heard`; otherwise each side's possible zones (the point and eight points `EDGE_MARGIN_PX` away) are
+  intersected: a shared room is `heard`, the shared open floor is `heard` within the release radius plus
+  `HEARING_MARGIN_PX`. A subscriber session the room has not been shown is `unknown-session`; a stopped screen is
+  `stopped`.
+- **The answer.** `subscribe-hearing.ts` splits the request: refused tracks come back in place as
+  `{ sessionId, trackName, errorCode: 'not_heard' }`, the rest go to Realtime. Each refusal logs
+  `[calls] not heard <answer> <track>`. A room that cannot answer (throws, times out, missing binding) refuses
+  nobody (`[calls] hearing unanswered`).
+- **The retry.** `SfuSession` holds a `not_heard` track back for `NOT_HEARD_RETRY_MS` (2 s), doubling to
+  `NOT_HEARD_RETRY_MAX_MS` (16 s) while refused, and calls `onNotHeard`; the call counts `CallNotHeard` and sends
+  `call-session` again (at most every `REPROVE_MS`), which heals a room that restarted or a socket that reconnected.
+- **Let-speak** (#495). The room delivers an `avatar-let-speak` only when `RoomCalls.letSpeak` passes: an Editor, or
+  someone it places (with the edge margin) on a stage that lets their level speak. Otherwise `[calls] let-speak
+refused` and nothing is delivered. The browser's own check stays.
 
 ## Performance and limits
 
@@ -199,44 +256,69 @@ positions and zones it relays, is a recorded follow-up.
 - A stage is one speaker to everyone: `listeners` streams per speaker (the spec's Cost), subscribed in batches of 16.
 - A room is one call: everyone in it subscribes to everyone else, `n × (n − 1)` streams (the spec's Cost). The SFU
   session batches subscribes at `MAX_SUBSCRIBE_BATCH` (16) per request, so a crowded room joins in a few requests.
+- **A big room** (#482, `lib/calls/big-room.ts`): when more than `BIG_ROOM_AFTER` (8) of the people heard share your
+  room, `capBigRoom` keeps everyone heard outside it, the `NEAREST_IN_ROOM` (3) nearest (one already received stays
+  within `NEAREST_RELEASE`, 5) and the `MAX_ROOM_TALKERS` (8) who talked last within `RECENT_TALK_MS` (30 s). The
+  store notes `talkedAt` from the relayed `avatar-voice` levels (which reach the whole tab whatever is subscribed) and
+  `onCallTalkStart` re-runs the choice when someone starts. Measured: a 30-person floor with two talkers drops from
+  870 microphone streams to 143; 200 choices in a room of 100 cost 33 ms CPU on a loaded laptop (about 0.17 ms each).
+- **The server check** costs one RPC to the room per subscribe request (already batched at 16) plus one `SELECT rev`
+  per tab asked about; the tab's JSON is parsed again only when its revision moved. Measured on a loaded laptop: 1,600
+  verdicts 31 ms CPU (about 19 µs each), 100 subscribes of 16 tracks in a room of 100 31 ms (about 0.3 ms each).
+  Positions are kept per presence (bounded by the room's connections) and forgotten on close.
 
 ## Observability
 
 Part 1 adds no log: zoning runs on every step, and the subscriptions it changes go through `SfuSession` and its
 existing `[calls]` logs. Part 3: the room's gate drops a Viewer's or malformed `avatar-hand` silently, as it drops
 every other refused op (no log: a flood would log a line a frame); the editor logs `[calls] let speak ignored` when a
-let-speak fails the check, and `[calls] hand` on each raise and lower.
+let-speak fails the check, and `[calls] hand` on each raise and lower. The server check logs `[calls] not heard`
+per refused track, `[calls] hearing unanswered` when it fails open, `[calls] let-speak refused` and `[calls] token
+room`; the browser counts `CallNotHeard`.
 
 ## Testing
 
-| Rule                                                                       | Test                                                          |
-| -------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| A room's interior is inside its wall centre lines, for any size and door   | `../packages/avatar/src/office-geometry.test.ts`              |
-| Zones from rooms only; strict edges; innermost wins; ties by id            | `apps/editor/lib/calls/zones.test.ts`                         |
-| Same room opposite corners at full gain; next room through a wall silent;  | `apps/editor/lib/calls/hearing.test.ts`                       |
-| hallway to room silent; hallway to hallway by distance; 100 × 50 in budget |                                                               |
-| The call subscribes by zone, re-zones on update, bubbles follow, Live      | `apps/editor/lib/calls/proximity-call.test.ts`                |
-| The canvas passes visible rooms only                                       | `apps/editor/components/calls/useCanvasCall.test.tsx`         |
-| Stages: visible only, top strict, smallest wins, room found, gate by level | `apps/editor/lib/calls/stage.test.ts`                         |
-| Stage reaches the tab centred; audience by distance; walls kept; unseen    | `apps/editor/lib/calls/hearing.test.ts`                       |
-| The call hears and places the stage, hides unseen bubbles, StageSpeak once | `apps/editor/lib/calls/proximity-call.test.ts`                |
-| Levels kept from presence, notified on change only                         | `apps/editor/lib/calls/calls-store.test.ts`                   |
-| The element: defaults, drawing, validation, export, Copy Format            | `packages/document/src/office.test.ts` and siblings           |
-| Hand and let-speak parsers: bounds, booleans, ids                          | `packages/api-schema/src/call-hand.test.ts`                   |
-| The gate: a Viewer's hand and let-speak dropped, malformed dropped         | `apps/api/src/room-op-gate.test.ts`                           |
-| Let-speak addressed to its target alone; a hand relayed to all             | `apps/api/src/document-room.test.ts`                          |
-| Hands kept in order, bounded, pruned with presence; let-by-me              | `apps/editor/lib/calls/calls-store.test.ts`                   |
-| Who may let speak; let-speak speakers heard by the tab, unseen             | `apps/editor/lib/calls/stage.test.ts`                         |
-| Raise, Let Speak, Done, walking out, leaving; Do Not Disturb hears nobody  | `apps/editor/lib/calls/proximity-call.test.ts`                |
-| Strip: Raise/Lower/Speaking by role, count, stage line, DND segment        | `apps/editor/components/calls/CallClusterButton.test.tsx`     |
-| Badges: who sees a button, Let Speak and Done sent                         | `apps/editor/components/calls/RaisedHands.test.tsx`           |
-| The panel offers the list it is given; dnd parses and draws                | `../packages/avatar/src/status.test.ts` and the panel's tests |
+| Rule                                                                                    | Test                                                                                                                             |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| A room's interior is inside its wall centre lines, for any size and door                | `../packages/avatar/src/office-geometry.test.ts`                                                                                 |
+| Zones from rooms only; strict edges; innermost wins; ties by id                         | `apps/editor/lib/calls/zones.test.ts`                                                                                            |
+| Same room opposite corners at full gain; next room through a wall silent;               | `apps/editor/lib/calls/hearing.test.ts`                                                                                          |
+| hallway to room silent; hallway to hallway by distance; 100 × 50 in budget              |                                                                                                                                  |
+| The call subscribes by zone, re-zones on update, bubbles follow, Live                   | `apps/editor/lib/calls/proximity-call.test.ts`                                                                                   |
+| The canvas passes visible rooms only                                                    | `apps/editor/components/calls/useCanvasCall.test.tsx`                                                                            |
+| Stages: visible only, top strict, smallest wins, room found, gate by level              | `apps/editor/lib/calls/stage.test.ts`                                                                                            |
+| Stage reaches the tab centred; audience by distance; walls kept; unseen                 | `apps/editor/lib/calls/hearing.test.ts`                                                                                          |
+| The call hears and places the stage, hides unseen bubbles, StageSpeak once              | `apps/editor/lib/calls/proximity-call.test.ts`                                                                                   |
+| Levels kept from presence, notified on change only                                      | `apps/editor/lib/calls/calls-store.test.ts`                                                                                      |
+| The element: defaults, drawing, validation, export, Copy Format                         | `packages/document/src/office.test.ts` and siblings                                                                              |
+| Hand and let-speak parsers: bounds, booleans, ids                                       | `packages/api-schema/src/call-hand.test.ts`                                                                                      |
+| The gate: a Viewer's hand and let-speak dropped, malformed dropped                      | `apps/api/src/room-op-gate.test.ts`                                                                                              |
+| Let-speak addressed to its target alone; a hand relayed to all                          | `apps/api/src/document-room.test.ts`                                                                                             |
+| Hands kept in order, bounded, pruned with presence; let-by-me                           | `apps/editor/lib/calls/calls-store.test.ts`                                                                                      |
+| Who may let speak; let-speak speakers heard by the tab, unseen                          | `apps/editor/lib/calls/stage.test.ts`                                                                                            |
+| Raise, Let Speak, Done, walking out, leaving; Do Not Disturb hears nobody               | `apps/editor/lib/calls/proximity-call.test.ts`                                                                                   |
+| Strip: Raise/Lower/Speaking by role, count, stage line, DND segment                     | `apps/editor/components/calls/CallClusterButton.test.tsx`                                                                        |
+| Badges: who sees a button, Let Speak and Done sent                                      | `apps/editor/components/calls/RaisedHands.test.tsx`                                                                              |
+| The panel offers the list it is given; dnd parses and draws                             | `../packages/avatar/src/status.test.ts` and the panel's tests                                                                    |
+| Server verdicts: rooms, booths, margins, tabs, grace, stages, let-speak                 | `apps/api/src/calls/call-hearing.test.ts`                                                                                        |
+| Room state by role: hearing, let-speak, stopped shares, tab cache, cost                 | `apps/api/src/calls/room-calls.test.ts`                                                                                          |
+| The route answers `not_heard` in place, fails open                                      | `apps/api/src/calls/subscribe-hearing.test.ts`, `routes/calls.test.ts`                                                           |
+| Through the real room: proof kept, hearing, let-speak refused, stop-share               | `apps/api/src/document-room-calls.test.ts`                                                                                       |
+| The shared geometry                                                                     | `packages/document/src/call-geometry.test.ts`                                                                                    |
+| A big room: nearest, talkers, stickiness, 870 to 143 streams, cost                      | `apps/editor/lib/calls/big-room.test.ts`                                                                                         |
+| `not_heard` held back and retried with backoff; the call re-proves                      | `apps/editor/lib/calls/sfu-session.test.ts`, `proximity-call.test.ts`                                                            |
+| Part 4: the tile, its place in Navigate, its search words                               | `apps/editor/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`, `apps/editor/lib/palette-search.test.ts` |
+| Part 4: the Stage section's tiles, switch and calls                                     | `apps/editor/components/palette/StageMenuSection.test.tsx`                                                                       |
+| Part 4: the setter patches stages only, counted once                                    | `apps/editor/hooks/canvas/useDataShapeSetters.stage.test.ts`                                                                     |
+| Part 4: no Stage settings in a Participant's or Viewer's menu                           | `apps/editor/components/palette/ReadOnlyElementMenuHost.test.tsx`                                                                |
+| Part 4: a Participant's change to a stage's settings kept as stored                     | `packages/document/src/participant-content.leak.test.ts`                                                                         |
+| Part 4: the hall stands a real stage, cameras on, no rug; its presenter reaches the tab | `packages/templates/src/template-builders-office.test.ts`, `apps/editor/lib/calls/stage.test.ts`                                 |
 
 ## Constants and configuration
 
 Part 1 adds no constant: the interior comes from the room's own `ROOM_WALL` and `ROOM_BACK_FACE`. Part 2 adds
 `STAGE_FRONT` (24, the front face), `STAGE_FLOOR` (`#fbf7ef` on light paper, `#3a3430` on dark) and
 `DEFAULT_STAGE_SPEAKERS` (`edit`), in `packages/document/src/office.ts`. Part 3 adds `HANDS_MAX` (the room's
-`ROOM_MAX_CONNECTIONS`, 100: one hand a connection) in `calls-store.ts`, `PRESENCE_ID_MAX` (64, the room's other id
+`ROOM_MAX_CONNECTIONS`, 100: one hand a connection) in `calls-hands-store.ts`, `PRESENCE_ID_MAX` (64, the room's other id
 bound) in `call-hand.ts`, and the Do Not Disturb colour `#e11d48` (rose 600, apart from In a Meeting's red
 `#ef4444` by its bar).

@@ -20,13 +20,13 @@ import { isRecord } from '@liveworkspace/model-core/is-record';
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T {
-  // A former Pages tab (./retired-pages) opens in Diagram, its pages, articles and page-only elements dropped, and a
-  // former Plan tab (./retired-plan) as an ordinary one, its dashboard, form and Plan-only elements dropped.
+  // A former Pages tab (./retired-pages) opens as an ordinary meeting board, its pages, articles and page-only elements
+  // dropped, and a former Plan tab (./retired-plan) the same way, its dashboard, form and Plan-only elements dropped.
   return upgradeStoredTab(dropRetiredPlan(dropRetiredPages(tab)));
 }
 
 /**
- * Every stored-tab upgrade but the Pages and Plan drops, for the move from the historical livehuddle.app
+ * Every stored-tab upgrade but the Pages and Plan drops, for the move from the historical livediagram.app
  * (docs/migration.md at the monorepo root, step 3): its migrate tool hands a tab's Pages and Plan content to
  * livedocuments, livedesign and liveplanner, which don't run livehuddle's older read migrations, so the tab comes
  * back in today's shape with its pages, articles, dashboard, form and their elements still in it. Never for a tab

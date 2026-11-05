@@ -315,7 +315,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   downward (`absolute top-full mt-1.5 left-0`), spanning the panel under `sm`. The menu opens at design size: on
   opening, the chip reads its host's effective zoom (`effectiveZoom`: `currentCSSZoom`, else screen width over
   layout width) and the menu sets `zoom: 1 / hostZoom`, undoing the panel UI scale ([UI scale](../ui-scale.md)).
-  The same for everyone: power user mode does not change it.
+  The same for everyone.
 - The tab pill shows no mode icon (its name alone); `TabModeIcon` marks the split view's chip.
 - No Mode section in the tab menu.
 - No other cue marks the mode (spec "No further cue").
