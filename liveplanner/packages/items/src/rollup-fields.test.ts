@@ -221,14 +221,21 @@ describe('Rollup', () => {
   it('counts children, and the done ones by the boards rule', () => {
     expect(value(p, 'f-count')).toBe(5);
     expect(value(p, 'f-done')).toBe(2);
-    // Without the done rule, Count Done reads none.
+    // Without the done rule (no done columns), Count Done reads 0, never blank (item-types.md, Rollup).
     expect(
       calculatedValue(def(project, 'f-done'), p, index, undefined, {
         type: project,
         items: byId,
         types,
       }),
-    ).toBeNull();
+    ).toBe(0);
+    expect(
+      calculatedValue(def(project, 'f-done'), p, index, () => false, {
+        type: project,
+        items: byId,
+        types,
+      }),
+    ).toBe(0);
   });
 
   it('reads no value with nothing to aggregate, and 0 with nothing to count', () => {

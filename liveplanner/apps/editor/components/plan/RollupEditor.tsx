@@ -207,9 +207,7 @@ export function RollupEditor({
           </Select>
         </label>
       ) : null}
-      <p id={`${ids}-line`} role="status" className={LINE}>
-        {line}
-      </p>
+      {/* Right under the menus, so the line below growing never pushes it under Add Field's footer on a phone. */}
       <CalculatedPreview
         typeId={draft.typeId}
         typeLabel={draft.typeId ? type.label : undefined}
@@ -218,6 +216,9 @@ export function RollupEditor({
         waiting={rollup ? 'Waiting for a field to read' : 'Waiting for a field to look up'}
         preferValue
       />
+      <p id={`${ids}-line`} role="status" className={LINE}>
+        {line}
+      </p>
     </div>
   );
 }

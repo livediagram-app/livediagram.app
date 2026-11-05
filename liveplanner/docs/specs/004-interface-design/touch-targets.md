@@ -31,8 +31,8 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
   The Plan cogs (a column's, Board Settings, a Sheet's) and the empty-tab card's close take the
   full `touch-target`.
-  In the card panel, the card's number tag (`#12`, Copy Card Number) gets `touch-target-y` (the type picker sits 8px
-  to its left), and a rich text field's **Edit** button (the description's) the full `touch-target`; where that button
+  In the card panel, the card's number tag (`#12`, Copy Card Number) gets the full `touch-target`, 44px wide as well as
+  tall (the owner's decision, 2026-11-01), and a rich text field's **Edit** button (the description's) the full `touch-target`; where that button
   is always shown (a phone, a screen with no hover) the text keeps 64px clear of it rather than running under it.
 - **A phone sheet's grab handle** (BottomSheet, Dialog's `phoneSheet`, the start panels) is one shared strip,
   `SheetHandle`: the sheet's full width and 32px tall (`SHEET_HANDLE_PX`), its pill 48 by 6px, so a thumb finds it

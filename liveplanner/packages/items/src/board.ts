@@ -846,7 +846,7 @@ export function laneGroups(
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
-  // The boards' done rule, for a Rollup's Count Done (none without it).
+  // The boards' done rule, for a Rollup's Count Done (0 without it).
   isDone?: IsDoneStatus,
   // A Labels or Multiple Choice card sits in a row per value, not its first (a filter's reading, never a board's).
   everyValue = false,
