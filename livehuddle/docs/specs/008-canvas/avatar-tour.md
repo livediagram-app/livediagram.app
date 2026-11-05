@@ -90,8 +90,3 @@ Every tour's funnel, with its own tokens:
   `AvatarTourStepOutro`).
 - **End**: `UI` · `Ended` · `AvatarTourCompleted` | `AvatarTourSkipped`.
 - **Settings row**: `UI` · `Toggled` · `AvatarTourSeenOn` | `AvatarTourSeenOff`.
-
-## Power user mode
-
-[Power user mode](../007-editor/power-user-mode.md) marks the Avatar tour seen alongside the Workshop
-tour.
