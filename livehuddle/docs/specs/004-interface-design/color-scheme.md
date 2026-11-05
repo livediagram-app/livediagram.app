@@ -173,13 +173,14 @@ The wordmark's "live" half is the one vivid note: **emerald-400 `#34d399`** in d
   selection is held to 3:1 against its track (WCAG 2.2 SC 1.4.11), measured in the Home switch's end-to-end test. The
   track is `SEGMENT_TRACK`, the deepest surface in dark mode (`slate-950`): `brand-600` reads 3.2:1 there, 2.7:1 on
   `slate-800`. In light mode the selection is `brand-700` on `slate-100`, 5.4:1.
-- **White text on an identity colour** (avatar initials, cursor and presence labels, a comment author's disc, a
-  team's tile: a participant's or team's colour under white text) sits on a **deeper shade of the same hue** in dark
-  mode (`identityDeep`): each participant colour's own Tailwind 700 step (5.0 to 7.9:1 under white), and for any
-  other colour the lightest darkening that reaches 4.5:1. White fails AA on all ten participant colours as they
-  are. The text stays white, and light mode keeps the colour exactly. The colour is carried by the shared
-  `identityVars` style and `IDENTITY_FILL` class, never an inline background, which the dark shade could not
-  override.
+- **Text on an identity colour** (avatar initials, cursor and presence labels, a comment author's disc, a team's
+  tile: a participant's or team's colour under text) sits on a **deeper shade of the same hue** in dark mode
+  (`identityDeep`): each participant colour's own Tailwind 700 step (5.0 to 7.9:1 under white), and for any other
+  colour the lightest darkening that reaches 4.5:1. Light mode keeps the colour exactly. The text is **white where
+  white reaches 4.5:1** on the fill, **otherwise the dark ink, slate-950** (`identityInk`): white fails AA on all ten
+  participant colours as they are, so light mode's initials are dark ink (4.5 to 10.2:1), and dark mode's deep
+  shades keep white. The colour and its ink are carried by the shared `identityVars` style and `IDENTITY_FILL`
+  class, never an inline background, which the dark shade could not override.
 - **Secondary text** in dark mode is `slate-400` or lighter (6.4:1 on `slate-900`). `slate-500` is for non-text only
   in dark mode: as text it is 3.4 to 3.9:1 on every dark surface.
 - **Brand-coloured text** in dark mode is `brand-400` or lighter (`#37c697` on `slate-900` is 8.0:1).

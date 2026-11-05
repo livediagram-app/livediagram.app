@@ -758,7 +758,12 @@ function CanvasView(props: CanvasProps) {
                 bubbles={speechBubbles}
                 activeTabId={props.activeTabId ?? ''}
                 zoom={viewportZoom}
-                view={{ offsetX: viewportOffset.x, width: mainSize.width }}
+                view={{
+                  offsetX: viewportOffset.x,
+                  width: mainSize.width,
+                  offsetY: viewportOffset.y,
+                  height: mainSize.height,
+                }}
                 peers={props.remoteAvatars}
                 self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
                 composer={

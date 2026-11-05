@@ -9,7 +9,7 @@ import {
   sayOneLine,
   withinSayLimits,
 } from '@liveworkspace/api-schema/avatar-say';
-import { AVATAR_HEIGHT, type AvatarPoint } from './walk';
+import { AVATAR_FOLLOW_MARGIN, AVATAR_HEIGHT, type AvatarPoint } from './walk';
 
 // Flight time: 4 s up to two words, 0.15 s more for each further word, at most 10 s.
 const SPEECH_BASE_MS = 4000;
@@ -147,6 +147,11 @@ export function screenX(x: number, zoom: number, offsetX: number, viewWidth: num
   return zoom * (x + offsetX) + (viewWidth / 2) * (1 - zoom);
 }
 
+/** Where a canvas y is on screen: `screenX`'s formula on the other axis. */
+export function screenY(y: number, zoom: number, offsetY: number, viewHeight: number): number {
+  return screenX(y, zoom, offsetY, viewHeight);
+}
+
 /** Screen px kept clear between a bubble and the view's left or right edge. */
 export const SPEECH_EDGE_MARGIN = 8;
 
@@ -161,6 +166,22 @@ export function edgeShift(centre: number, width: number, viewWidth: number): num
   let shift = Math.min(0, viewWidth - SPEECH_EDGE_MARGIN - right);
   if (left + shift < SPEECH_EDGE_MARGIN) shift = SPEECH_EDGE_MARGIN - left;
   return shift;
+}
+
+/**
+ * Screen px kept clear above a bubble: the canvas's top edge carries the header's palette strip floating over it, so a
+ * bubble keeps below it by the same margin the walk's camera follow keeps a character in (AVATAR_FOLLOW_MARGIN).
+ */
+export const SPEECH_TOP_CLEAR = AVATAR_FOLLOW_MARGIN;
+
+/**
+ * The downward shift, in screen px, that keeps a card whose top is at screen y `top` at least SPEECH_TOP_CLEAR below
+ * the view's top edge, clear of the chrome floating there. Zero while it already fits: a bubble rises until it meets
+ * that line, then holds there as it fades, and one over a character standing under the chrome starts there rather
+ * than behind it.
+ */
+export function topShift(top: number): number {
+  return Math.max(0, SPEECH_TOP_CLEAR - top);
 }
 
 /** How far from a card's corners its tail keeps, so it never rides onto the rounded corner. */

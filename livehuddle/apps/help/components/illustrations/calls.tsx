@@ -23,7 +23,7 @@ import {
 import type { IconPrim } from '@liveworkspace/icons';
 import { Prims } from '@livehuddle/ui';
 import { Cursor, Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { PixelCharacter } from './selection-modes';
+import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
 
 // --- The strip ----------------------------------------------------------------
 

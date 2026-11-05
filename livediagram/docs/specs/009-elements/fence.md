@@ -64,7 +64,9 @@ fence**, from either side.
   portal is a gate), sitting snaps a character onto its chair, and a new character appears where
   the mode puts it. Put down beside a fence or wall, inside its reach but not in it, it is nudged just clear of it
   to the side its feet were on, so it never opens held where a click past the wall does nothing; put down in the
-  wall itself, it stays there, free to walk off either side. A character that starts inside a fenced area stays
+  wall itself, it stays there, free to walk off either side. The same nudge follows a fence or room moved,
+  pasted or resized onto a standing character, once the change settles (never on each frame of a drag), and a seat
+  snap or a step aside that lands inside a wall's reach. A character that starts inside a fenced area stays
   inside until it takes a portal out.
 - **A fence is not a destination.** Standing beside one does not ring it as "the element you are
   on".
