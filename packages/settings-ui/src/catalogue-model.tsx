@@ -38,18 +38,13 @@ const TILES = new Set<string>([
   'privacy',
 ] satisfies SettingsTileId[]);
 
-// The rows to show now: a power user's only with Power User Mode on, and a nested row only while its switch is
-// on, as the app's own Settings does.
+// The rows to show now: a nested row only while its switch is on, as the app's own Settings does.
 export function visibleCatalogueRows(
   category: CatalogueCategory,
   value: AppScopes,
 ): CatalogueRow[] {
   const joined = joinSettings(value.all, value.app);
-  return category.rows.filter(
-    (row) =>
-      (!row.powerUser || joined.powerUserMode === true) &&
-      (!row.when || readToggleValue(joined, row.when)),
-  );
+  return category.rows.filter((row) => !row.when || readToggleValue(joined, row.when));
 }
 
 // The app's label for a slider's value, as its own slider shows it.
@@ -128,9 +123,8 @@ export function shortLabel(label: string, groups: ReadonlyMap<string, number>): 
   return group === 'Account' || (groups.get(group) ?? 0) > 1 ? own : group;
 }
 
-/** The app's categories with the rows showing now (a power user's only in Power User Mode, a nested row only while
- *  its switch is on), none left empty. A sub-category whose parent shows nothing sits at the top level, under a
- *  short name (shortLabel). */
+/** The app's categories with the rows showing now (a nested row only while its switch is on), none left empty. A
+ *  sub-category whose parent shows nothing sits at the top level, under a short name (shortLabel). */
 export function catalogueModel(
   catalogue: AppCatalogue,
   value: AppScopes,

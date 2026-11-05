@@ -213,8 +213,6 @@ export type ExplorerPanelProps = {
   notice?: ReactNode;
   // Pinned under the rail and pane, outside their scroll (the product's links).
   footer?: ReactNode;
-  // Group titles over the rail's groups, or a hairline between them (Minimal chrome).
-  divider?: 'titles' | 'lines';
   /** Other people's names and Google pictures, as on the Explorer page (`createExplorerAccounts` over the app's
    *  router with the person's token): the Inbox's and history's avatars then show pictures. Without it, initials. */
   accounts?: ExplorerAccounts | null;
@@ -288,7 +286,6 @@ function PanelInner({
   open = false,
   notice,
   footer,
-  divider = 'titles',
 }: Omit<ExplorerPanelProps, keyof LibraryHostProps | 'teamsHost' | 'teams' | 'thisBrowser'>) {
   const { teams } = useTeams();
   const driveMarks = useDriveMarks(drive);
@@ -413,7 +410,6 @@ function PanelInner({
               selected={section}
               onPick={pick}
               phone={stacked}
-              divider={divider}
               offlineCount={offlineCount}
             />
             <Pane
@@ -690,14 +686,12 @@ function Rail({
   selected,
   onPick,
   phone,
-  divider,
   offlineCount,
 }: {
   groups: PanelSectionGroup[];
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
   phone: boolean;
-  divider: 'titles' | 'lines';
   // How many items this browser keeps only for itself: This Browser's count.
   offlineCount: number;
 }) {
@@ -786,18 +780,11 @@ function Rail({
           {groups.map((g, i) =>
             g.sections.length ? (
               <section key={g.id} aria-label={SECTION_GROUP_TITLES[g.id]}>
-                {divider === 'titles' ? (
-                  <h3
-                    className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${i ? 'mt-4' : ''}`}
-                  >
-                    {SECTION_GROUP_TITLES[g.id]}
-                  </h3>
-                ) : i ? (
-                  <span
-                    aria-hidden
-                    className="mx-2 my-2.5 block h-px bg-slate-200 dark:bg-slate-700"
-                  />
-                ) : null}
+                <h3
+                  className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${i ? 'mt-4' : ''}`}
+                >
+                  {SECTION_GROUP_TITLES[g.id]}
+                </h3>
                 <ul className="flex flex-col gap-0.5">
                   {g.sections.map(entry)}
                   {g.id === 'spaces' ? newTeamEntry : null}

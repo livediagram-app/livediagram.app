@@ -51,8 +51,6 @@ interface RowCommon {
   // Shown only while another switch is on (the app nests it beneath that switch). The switch's
   // binding may be a shared key, so it is read from both scopes together.
   when?: ToggleBinding;
-  // Offered only with Power User Mode on (a shared key), as in the app.
-  powerUser?: true;
 }
 
 export interface ToggleBinding extends CatalogueBinding {
@@ -218,7 +216,6 @@ export interface SourceContext {
   emailEnabled: boolean;
   signedIn: boolean;
   authEnabled?: boolean;
-  powerUserMode?: boolean;
   workbench?: boolean;
 }
 
@@ -226,7 +223,6 @@ const SITE_CONTEXT: SourceContext = {
   emailEnabled: true,
   signedIn: true,
   authEnabled: true,
-  powerUserMode: false,
   workbench: false,
 };
 
@@ -331,14 +327,9 @@ function deriveSlider(row: SourceRow): Omit<CatalogueSlider, keyof RowCommon | '
   return { ...binding, min, max, step, labels, fallback };
 }
 
-// Whether the row is offered on the site: always, only with Power User Mode on, or never.
-function availability(row: SourceRow): 'always' | 'powerUser' | 'never' {
-  if (!row.available) return 'always';
-  if (attempt(() => row.available!(SITE_CONTEXT)) === true) return 'always';
-  if (attempt(() => row.available!({ ...SITE_CONTEXT, powerUserMode: true })) === true) {
-    return 'powerUser';
-  }
-  return 'never';
+// Whether the row is offered on the site.
+function offeredOnSite(row: SourceRow): boolean {
+  return !row.available || attempt(() => row.available!(SITE_CONTEXT)) === true;
 }
 
 // A row the catalogue keeps: one over the app's own scope, or over a common setting (kept in `all`, and still the
@@ -351,15 +342,13 @@ const catalogued = (binding: CatalogueBinding) =>
 const withEvent = (event: SettingEvent | undefined) => (event ? { event: { ...event } } : {});
 
 function deriveRow(row: SourceRow, category: SourceCategory): CatalogueRow | null {
-  const offered = availability(row);
-  if (offered === 'never') return null;
+  if (!offeredOnSite(row)) return null;
   const common: RowCommon = {
     id: row.key,
     label: row.label,
     description: row.description,
     ...(row.keywords ? { keywords: row.keywords } : {}),
     ...(row.section ? { section: row.section } : {}),
-    ...(offered === 'powerUser' ? { powerUser: true as const } : {}),
   };
   if (row.parent) {
     const parent = category.rows.find((r) => r.key === row.parent);

@@ -50,8 +50,9 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
   follows the account ([User preferences](user-preferences.md)). Until 25 October 2026 it listed the kinds whose
   offer had been answered (Play or Cancel) and hid the offer for them; from then until 1 November 2026 it only fed
   the Settings rows. Now it hides that kind's tour from the Start Tour button again, until its switch is turned on.
-- `elementToursSeen`, written only by [Power user mode](power-user-mode.md)'s preset, counts every kind as taken
-  while the mode is on, as `pagesTourSeen` does for its kinds.
+- `elementToursSeen` counts every kind as taken: **Show Me on Every Element** switched off writes it (with every kind
+  listed), and so did the retired [Power user mode](power-user-mode.md)'s preset, which listed none. Turning a kind's
+  switch back on lifts it, keeping every other kind answered.
 
 ## Settings
 
@@ -62,8 +63,8 @@ over them all (on while any is not yet taken; off marks every kind taken, on for
 toured kind nested beneath it, named for the element alone: **Timeline**, linking the Timeline article.
 On means "not yet taken": switching one on forgets its run and puts that kind's tour back on the Start Tour button
 whenever such an element is selected; off takes it off the button. The accordion opens on its own when Settings is
-opened on one of its rows (a search result) or on the section. Power user mode's readout lists the switch over them
-all as **Show Me on Every Element**.
+opened on one of its rows (a search result) or on the section. The switch over them all is **Show Me on Every
+Element**.
 
 ## Menu steps
 
@@ -110,7 +111,7 @@ On the selected Timeline, from `timeline-tour-steps.ts`.
 
 The chart, stack, lane, boundary and portal are edited mostly from their own section of the
 element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
-otherwise the element itself, with "Right-click it" in place of "More" (a power user on a desktop has no More button).
+otherwise the element itself, with "Right-click it" in place of "More".
 The tour points at the section by name; it never opens the menu itself.
 
 ## The Chart tour

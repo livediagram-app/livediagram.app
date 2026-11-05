@@ -319,7 +319,7 @@ Transitions are driven by selection and those flags only; the panel owns no stat
 - Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon
   alignment, then Actions.
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
-dark:text-slate-400` (always shown, Minimal chrome included; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
+dark:text-slate-400` (always shown; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
   a divider above Actions.
 - Colour row: 24 × 24 px target buttons, each drawing the colour picker's `SwatchChip` (20 px, a
   selected swatch a 2 px ring in `brand-500`, an overridden one its `marked` corner dot), touching,

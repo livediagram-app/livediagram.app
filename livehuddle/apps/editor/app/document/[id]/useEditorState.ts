@@ -77,14 +77,13 @@ import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { previewAdderKey, useViewPreview } from './useViewPreview';
 import { useParticipantSession } from './useParticipantSession';
-import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
-import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
+import { writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
 import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
 import { withStyleOfTab } from '@/lib/tab-theme-apply';
@@ -625,19 +624,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // edit link edits its one tab's content, nothing around it
   // (docs/specs/013-workspace/tab-scoped-share-links.md).
   const isStructureReadOnly = isReadOnly || sessionTabScope !== null;
-  // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md). Its shortcut
-  // counter rides the keyboard hook below.
-  const powerUserOffer = usePowerUserOffer({
-    prefs: userPreferences,
-    settled: prefsSettled,
-    editable: hydrated && !isReadOnly,
-    embed: !appChrome,
-    apply: (next) => {
-      // Built on this render's preferences: moved onto the freshest before the whole blob is written.
-      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id));
-    },
-    offer: toast.offer,
-  });
 
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
@@ -2441,7 +2427,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onZoomOut: () => setViewportZoom((z) => Math.max(0.1, Math.round((z - 0.1) * 10) / 10)),
     onZoomReset: () => setViewportZoom(1),
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
-    onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: shortcutsEnabled,
     // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
     whiteboard: whiteboardDock.whiteboard

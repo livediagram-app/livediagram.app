@@ -162,9 +162,7 @@ describe('settings catalogue', () => {
       'elementTour-diagram-key': ['elementTourKinds'],
       'elementTour-portal': ['elementTourKinds'],
     };
-    // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
-    // exactly the preset's settings, pinned by its own test below.
-    for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
+    for (const row of TOGGLES) {
       const after = row.write(before, !row.read(before));
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
@@ -289,32 +287,6 @@ describe('settings catalogue', () => {
     expect(notifyRows(without)).toContain('notificationsEnabled');
   });
 
-  it('offers Minimal chrome only while power user mode is on', () => {
-    const editorRows = (powerUserMode: boolean) =>
-      visibleCategories({ emailEnabled: false, signedIn: false, powerUserMode })
-        .find((c) => c.id === 'editor')!
-        .rows.map((r) => r.key);
-    expect(editorRows(false)).toContain('powerUserMode');
-    expect(editorRows(false)).not.toContain('minimalChrome');
-    expect(editorRows(true)).toEqual(expect.arrayContaining(['powerUserMode', 'minimalChrome']));
-  });
-
-  it('switches power user mode through the preset, not a bare flag', () => {
-    const row = TOGGLES.find((r) => r.key === 'powerUserMode')!;
-    const on = row.write({ alignmentGuides: false }, true);
-    expect(on.alignmentGuides).toBe(true);
-    expect(on.minimalChrome).toBe(true);
-    expect(row.read(on)).toBe(true);
-    const off = row.write(on, false);
-    expect(off).toEqual({ alignmentGuides: false });
-    expect(row.event).toEqual({ category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' });
-  });
-
-  it('names the Minimal chrome flips in telemetry', () => {
-    const row = TOGGLES.find((r) => r.key === 'minimalChrome')!;
-    expect(row.event).toEqual({ category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' });
-  });
-
   it('never offers a category with no rows', () => {
     // An empty category is a dead end: a row that pushes a blank pane.
     for (const ctx of BOTH_CONTEXTS) {
@@ -340,9 +312,6 @@ describe('settings sub-categories', () => {
       'alignmentGuides',
       'elementIndicatorStyle',
       'middleMousePan',
-      'powerUserMode',
-      'minimalChrome',
-      'powerUserPreset',
     ]);
   });
 

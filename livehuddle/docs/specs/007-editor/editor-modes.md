@@ -15,7 +15,7 @@ with the elements only they offered ([Purpose](../001-project-vision/purpose.md#
 | **editor mode**   | How a tab is worked on. In livehuddle always `workshop` (`EditorMode`), kept as a type so stored tabs and shared code read one value. |
 | **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip.                                              |
 
-- "Mode" on its own is ambiguous (Avatar mode, Power user mode); in specs and code say **editor mode**.
+- "Mode" on its own is ambiguous (Avatar mode is not an editor mode); in specs and code say **editor mode**.
 - "Whiteboard" names an activity, never a tab kind, a mode or a type of document.
 
 ## Kinds versus modes

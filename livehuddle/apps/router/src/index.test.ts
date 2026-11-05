@@ -59,7 +59,7 @@ describe('production dispatch (service bindings)', () => {
     try {
       const res = await router.fetch(
         new Request('https://www.livehuddle.app/api/index/items?app=livehuddle', {
-          headers: { Cookie: 'ld_signed_in=1', Authorization: 'Bearer t' },
+          headers: { Cookie: 'lh_signed_in=1', Authorization: 'Bearer t' },
         }),
         { ...env, INDEX_ORIGIN: 'https://index.test' },
       );

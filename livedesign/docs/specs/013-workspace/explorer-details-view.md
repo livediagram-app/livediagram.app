@@ -56,11 +56,6 @@ by any column.
   as the list and card views; a right-click opens it too.
 - The table is named "Folders and designs" for assistive technology.
 
-## Dense rows
-
-- In [power user mode](../007-editor/power-user-mode.md) rows are half as tall: no vertical padding
-  around the cells and a smaller `⋯`. Everything else is the same.
-
 ## Sorting
 
 - Every column header is a button that sorts by it. The first press sorts in the column's natural

@@ -45,11 +45,12 @@ export type Participant = {
   // legacy callers that don't track it can still construct a
   // Participant; treated as "now" when omitted.
   lastActiveAt?: number;
-  // Server-verified share-code role inside this document. Set by the
-  // api worker at WS upgrade time; clients can't forge it. Optional
-  // because guest / private-document sessions don't have a role. The
-  // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
-  // their name.
+  // Server-verified role inside this document. The api worker stamps it on
+  // every socket at WS upgrade time; clients can't forge it. Optional only
+  // for a socket from before the stamp (kept open across a hibernation),
+  // which reads as a Viewer's, as the room's facilitator check reads it
+  // (Work Tracker #362). The hover card uses it to tag a peer as 'Editor' /
+  // 'Viewer' alongside their name.
   role?: AccessLevel;
   // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
   // line an agent set, on its own row, shown in the hover card, the Collaborators row and the accessible name.

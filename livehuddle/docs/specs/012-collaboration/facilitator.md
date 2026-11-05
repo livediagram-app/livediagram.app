@@ -309,6 +309,11 @@ On this tab: Board
 | Mine, somebody else holds it | **Take Over**                     | Owner only: the one row that makes "the document can always take back control" true                         |
 | Mine, I hold it              | **Step Down**                     | Always                                                                                                      |
 
+A peer's level is the one the room stamped on their presence, read through the role ladder (`mayHoldBaton`), never
+assumed. The api stamps every socket's level at upgrade, so every peer carries one; a presence without one (a socket
+from before the stamp, still open across a hibernation) reads as a Viewer's, as the room's own `canHold` reads it, so
+their row's **Make Facilitator** is disabled rather than offered and then refused.
+
 Self rows carry no button today; this is the first thing that gives them one,
 which is what makes claiming and stepping down possible without a second
 surface.

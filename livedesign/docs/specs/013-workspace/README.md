@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./explorer-structure.md - when working on the Explorer sidebar or the editor's Explorer panel: places vs views, the Overview / Spaces / More groups, page titles that follow the rows, visibility rules, titles vs separators (Minimal chrome), alignment, ARIA tree keyboard model, mobile drawer, designs in This Browser
+- ./explorer-structure.md - when working on the Explorer sidebar or the editor's Explorer panel: places vs views, the Overview / Spaces / More groups, page titles that follow the rows, visibility rules, group titles, alignment, ARIA tree keyboard model, mobile drawer, designs in This Browser
 - ./folders.md - when working on Folders: Nested folders for designs in the Explorer; designs with no folder sit at the root of their space; deleting a folder moves its contents up to its parent
 - ./share-roles.md - when working on what a share link or embed may do: Viewer, Participant, Editor; ownership powers
 - ./share-password.md - when working on Share password: the index's per-item password over every link, and livedesign's password gate

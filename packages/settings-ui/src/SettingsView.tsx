@@ -96,7 +96,7 @@ export function SettingsView({
   canonicalRef.current = canonical;
 
   const [query, setQuery] = useState('');
-  // The row to ring: a targeted open's, or one the power user preset readout went to.
+  // The row to ring: a targeted open's.
   const [goTo, setGoTo] = useState<SettingsFocus | null>(() =>
     focus ? { ...focus, categoryId: canonical(focus.categoryId) ?? focus.categoryId } : null,
   );
@@ -134,15 +134,6 @@ export function SettingsView({
     [forgetRestore, onCategoryOpened],
   );
   // Stable, so the pane's memoised rows keep their memo across a keystroke.
-  const goToRow = useCallback(
-    (to: string, rowKey: string) => {
-      const categoryId = canonicalRef.current(to) ?? to;
-      setQuery('');
-      select(categoryId);
-      setGoTo({ categoryId, rowKey });
-    },
-    [select],
-  );
   const openCategory = useCallback(
     (to: string) => {
       setQuery('');
@@ -249,7 +240,6 @@ export function SettingsView({
                 isMobile={isMobile}
                 focusRowKey={goTo?.categoryId === selected.id ? goTo.rowKey : null}
                 focusSectionId={selected.id === initialId ? initialSectionId : null}
-                onGoToRow={goToRow}
                 onOpenCategory={openCategory}
               />
               {/* A phone's way down to a parent's sub-categories: the root

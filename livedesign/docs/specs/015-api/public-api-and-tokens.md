@@ -17,7 +17,7 @@ advanced, opt-in feature for users with an account; the canvas, guests, and the
 share/realtime flows are unaffected and stay account-free ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
 A token always acts as a signed-in account; there are **no guest-owned tokens**. This
 is a deliberate constraint, not a limitation to apologise for: programmatic API
-use is a power-user need, requiring an account for it is reasonable, and it
+use is an advanced need, requiring an account for it is reasonable, and it
 keeps tokens apart from guests entirely (a guest is a liveworkspace guest with
 its own token, [§4](#4-guests-and-grants)).
 

@@ -174,7 +174,7 @@ export function QuickStylePanel({
   // placement's screen-px spot is converted to the panel's own px.
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
-  // Section titles stay under Minimal chrome: they are what tells two rows of
+  // Section titles: they are what tells two rows of
   // coloured squares (Stroke, Background) apart at a glance.
   const titles = showTitles ?? true;
   const { view } = quickStyle;

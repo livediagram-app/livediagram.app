@@ -170,6 +170,8 @@ describe('the silent sign-in script', () => {
     // A held app signs in on its own address too.
     expect(script).toContain('"localhost:3500":"livehuddle"');
     expect(script).toContain('if(a==="livehuddle")');
+    // livehuddle's own hint, never livediagram's (Work Tracker #374).
+    expect(script).toContain('lh_signed_in');
     expect(script).toContain('/auth/silent?return=');
     expect(script).not.toContain('liveworkspace.app"');
     expect(script.startsWith('(function(){var h=location.host')).toBe(true);

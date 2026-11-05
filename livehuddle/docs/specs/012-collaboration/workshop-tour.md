@@ -8,4 +8,4 @@ article; `/help/canvas/workshop-mode/workshop-tour/` redirects to the Avatar tou
 
 - The stored `workshopTourSeen` preference is kept as it is: nothing reads or writes it, and no migration runs
   ([User preferences](../007-editor/user-preferences.md)).
-- `ActiveTour` no longer has `'workshop'`; Power User mode's preset no longer sets `workshopTourSeen`.
+- `ActiveTour` no longer has `'workshop'`.

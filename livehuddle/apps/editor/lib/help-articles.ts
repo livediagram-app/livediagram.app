@@ -91,7 +91,6 @@ export const HELP_ARTICLES = {
   timelineRail: 'palette/virtual-office',
   palette: 'palette',
   // Settings
-  powerUserMode: 'user-interface/power-user-mode',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
@@ -304,10 +303,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
-  },
-  powerUserMode: {
-    title: 'Learn about power user mode',
-    description: 'The recommended settings it applies, and Minimal chrome.',
   },
   whatWeCollect: {
     title: 'Learn about what we collect',

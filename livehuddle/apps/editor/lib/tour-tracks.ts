@@ -1,19 +1,15 @@
-import { isPowerUserMode } from './power-user-mode';
-import type { UserPreferences } from './user-preferences';
-
 // A tour of several tracks offers each one once (docs/specs/007-editor/user-preferences.md "Tours"): the element
 // tours. A synced list holds the tracks answered (taken, skipped or declined). The tour's single flag counts every
-// track as seen only while Power user mode is on, the one place it is written.
+// track as seen: Settings writes it when the tour's switch goes off, as the retired Power user mode's preset did.
 
-/** Whether `track` has been answered, or the tour is off for a power user. */
+/** Whether `track` has been answered, or every track has. */
 export function tourTrackSeen<T>(
-  prefs: UserPreferences | null | undefined,
   answered: readonly T[] | undefined,
   allSeen: boolean | undefined,
   track: T,
 ): boolean {
   if ((answered ?? []).includes(track)) return true;
-  return allSeen === true && !!prefs && isPowerUserMode(prefs);
+  return allSeen === true;
 }
 
 /** The answered list with `tracks` added, each once, in the order answered. */

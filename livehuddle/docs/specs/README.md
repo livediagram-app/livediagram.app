@@ -33,7 +33,7 @@ place. The specs themselves are unnumbered and named by subject.
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking how livehuddle gets built, what comes after v1 (audio, video, screen sharing), what the owner still has to decide, and what the forked code holds today
 - ./006-document/README.md - when working on the document model and its domain language: tabs, tab kinds, storage, snapshots, offline documents, stroke points
-- ./007-editor/README.md - when working on the live editor shell: routes, editor modes, side by side tabs, preferences, power user mode, panels, tours (incl. Show Me), AI, command palette
+- ./007-editor/README.md - when working on the live editor shell: routes, editor modes, side by side tabs, preferences, panels, tours (incl. Show Me), AI, command palette
 - ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, corner radius, finishes (Flexible / Professional / Sketch / Marker), and tool panels
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, per-mode layouts and Popular, icon and sticker catalogues, presets

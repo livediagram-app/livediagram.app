@@ -11,7 +11,7 @@ import { signedInFromCookie } from './browser-repair/identity';
 
 // The site header's primary (docs/specs/019-marketing/marketing-site.md "Header"): @liveworkspace/ui's,
 // Choose Template for a visitor and Open Explorer for someone signed in, as the api's readable
-// `ld_signed_in` hint cookie says, with the page's funnel slot on its /new link.
+// `lh_signed_in` hint cookie says, with the page's funnel slot on its /new link.
 
 // The Explorer is liveworkspace's, served under livehuddle's own address while its switch is on
 // (@liveworkspace/sites/workspace-proxy), so its Home is this site's /explorer/home.

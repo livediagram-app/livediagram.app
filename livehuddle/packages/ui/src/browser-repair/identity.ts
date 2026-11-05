@@ -5,7 +5,7 @@ import { GUEST_IDENTITY_KEYS } from './kept-keys';
 // Who this browser is, for the diagnostics report (docs/specs/007-editor/load-recovery.md "Diagnostics").
 // Readable from any app on the origin, so the help centre's Repair page reports it too, without the
 // session loaded: the guest token is plain localStorage, and the api keeps a readable
-// `ld_signed_in` hint cookie that is `0` signed out and `1` signed in. That cookie says whether, not
+// `lh_signed_in` hint cookie that is `0` signed out and `1` signed in. That cookie says whether, not
 // who; the editor adds the account id it resolved.
 //
 // Only the first GUEST_ID_PREFIX_LENGTH characters of the guest's id ever leave this module, and the

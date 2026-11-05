@@ -19,6 +19,7 @@ import {
   FLOOR_AVATAR_SCALE,
   FLOOR_CAST_HREF,
   FLOOR_FURNITURE_SCALE,
+  FLOOR_MOTION,
   FLOOR_PAPER,
   FLOOR_RUG,
   FLOOR_STAGES,
@@ -114,10 +115,10 @@ function spriteFor(walker: Walker, key: StillKey) {
   return { ...base, facing: a as AvatarFacing };
 }
 
-/** Every still of every character on every stage, one <symbol> each, cropped to the strip's frame. */
+/** Every still of every character on every stage and floor path, one <symbol> each, cropped to the strip's frame. */
 function castSheet(): string {
   const symbols = new Map<string, string>();
-  for (const stage of FLOOR_STAGES) {
+  for (const stage of FLOOR_MOTION) {
     for (const walker of stage.cast) {
       for (const key of stillKeysOf(walker)) {
         const id = stillId(walker, key);
@@ -159,7 +160,7 @@ describe('the hero Space floor art', () => {
 
   it('dresses a character the same on every stage, so they share their stills', () => {
     const byName = new Map<string, Walker>();
-    for (const walker of FLOOR_STAGES.flatMap((s) => s.cast)) {
+    for (const walker of FLOOR_MOTION.flatMap((s) => s.cast)) {
       const seen = byName.get(walker.name);
       if (seen) {
         expect(walker.config).toEqual(seen.config);
@@ -184,7 +185,7 @@ describe('the hero Space floor art', () => {
   });
 
   it('moves as the committed keyframes say', () => {
-    const css = floorCss(FLOOR_STAGES);
+    const css = floorCss(FLOOR_MOTION);
     const path = appPath('app/hero-scenes/space-floor.generated.css');
     write(path, css);
     expect(readFileSync(path, 'utf8')).toBe(css);

@@ -131,14 +131,15 @@ test('Settings reopens deep inside a tall row without drifting', async ({ page, 
   await dismissQuickTour(page);
 
   await openSettings(page);
-  await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
+  // Appearance's theme picker is the tallest row with enough below it to scroll 160px inside it.
+  await dialog(page).getByRole('button', { name: 'Appearance', exact: true }).click();
   const scroller = dialog(page)
     .locator('[data-settings-row]')
     .first()
     .locator('xpath=ancestor::div[contains(@class, "overflow-y-auto")][1]');
-  await scrollDeepInto(page, scroller, 'alignmentGuides', 160);
+  await scrollDeepInto(page, scroller, 'appearance', 160);
   const leftAt = await topRow(scroller);
-  expect(leftAt.key).toBe('alignmentGuides');
+  expect(leftAt.key).toBe('appearance');
   expect(leftAt.offset).toBeLessThan(-120);
   await page.keyboard.press('Escape');
   await expect(dialog(page)).toBeHidden();

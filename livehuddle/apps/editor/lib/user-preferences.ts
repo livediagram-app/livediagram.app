@@ -180,7 +180,8 @@ export type UserPreferences = {
   // a record for Settings (it never hides the Start Tour button). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted). Read through lib/element-tours.
   elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
+  // Counts every element tour as answered (lib/tour-tracks.ts): Settings' Show Me on Every Element, switched off,
+  // writes it, as the retired Power user mode's preset did.
   elementToursSeen?: boolean;
   // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
   // picked with + in the document, kept with its tabs, not a per-user list. Nothing reads or writes this any
@@ -191,19 +192,6 @@ export type UserPreferences = {
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB cap.
   quickSwatchOverrides?: SwatchOverrideStore;
-  // Power user mode (docs/specs/007-editor/power-user-mode.md). Read and written through
-  // lib/power-user-mode.ts, never directly: switching it applies or restores
-  // the preset, recorded in `powerUserBaseline` while the mode is on.
-  powerUserMode?: boolean;
-  powerUserBaseline?: Record<
-    string,
-    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
-  >;
-  // A power-user-only setting: honoured only while `powerUserMode` is on,
-  // where missing means on. Read through `isMinimalChrome`.
-  minimalChrome?: boolean;
-  // One-way latch: the power user mode offer has been shown to this account.
-  powerUserOfferShown?: boolean;
   // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the pinned shape
   // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
   // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.

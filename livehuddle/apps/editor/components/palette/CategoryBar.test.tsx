@@ -6,7 +6,6 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
-import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
@@ -25,20 +24,18 @@ afterEach(() => {
   cleanup();
 });
 
-function show({ minimal = false }: { minimal?: boolean } = {}) {
+function show() {
   const h = Object.fromEntries(
     PALETTE_ADD_HANDLER_KEYS.map((k) => [k, vi.fn()]),
   ) as unknown as PaletteAddHandlers;
   render(
-    <MinimalChromeProvider value={minimal}>
-      <ToolbarPalette
-        canvasTool="select"
-        onSetCanvasTool={vi.fn()}
-        canvasEmpty={false}
-        pendingDraw={null}
-        {...h}
-      />
-    </MinimalChromeProvider>,
+    <ToolbarPalette
+      canvasTool="select"
+      onSetCanvasTool={vi.fn()}
+      canvasEmpty={false}
+      pendingDraw={null}
+      {...h}
+    />,
   );
   return h;
 }

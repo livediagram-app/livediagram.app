@@ -11,6 +11,7 @@ import {
   personColour,
   summariseHistory,
 } from './history';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // Sunday 25 October 2026, mid-afternoon, local time.
 const NOW = new Date(2026, 9, 25, 15, 0).getTime();
@@ -66,13 +67,14 @@ describe('buildHistory', () => {
         occurredAt: NOW - i * 600_000,
       }),
     );
-    const t = performance.now();
-    const days = buildHistory(events, NOW);
-    historyCategories(events);
-    summariseHistory(events);
-    const ms = performance.now() - t;
+    let days: ReturnType<typeof buildHistory> = [];
+    const ms = cpuMsOf(() => {
+      days = buildHistory(events, NOW);
+      historyCategories(events);
+      summariseHistory(events);
+    });
     expect(days.reduce((n, d) => n + d.count, 0)).toBe(10_000);
-    expect(ms).toBeLessThan(150);
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
   });
 });
 

@@ -377,12 +377,11 @@ export function panelModel({
     }),
   );
   // An editor's own copies of the Account section's switches and of the common settings are left out of its
-  // categories (a readout line pointing at a common row points under Common).
+  // categories.
   const commonIds = common ? commonRowIds(common) : new Set<string>();
   const ownFiled = (app: SettingsAppId, keepEmpty: boolean) =>
     groupCategories(app, own ?? [], {
       omit: (row) => (row.allApps === true && ACCOUNT_KEYS.has(row.key)) || commonIds.has(row.key),
-      groupOf: (rowKey) => (commonIds.has(rowKey) ? COMMON_GROUP : app),
       keepEmpty,
     });
   // An app's sub-heading inside a category: its logo and name.

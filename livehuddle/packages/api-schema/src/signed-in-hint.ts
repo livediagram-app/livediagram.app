@@ -8,7 +8,7 @@
 
 import { createSignedInHintReader } from '@liveworkspace/api-schema/signed-in-hint';
 
-export const SIGNED_IN_HINT_COOKIE = 'ld_signed_in';
+export const SIGNED_IN_HINT_COOKIE = 'lh_signed_in';
 
 /** True / false from the hint in a `document.cookie` string, null when the browser has none. */
 export const signedInHintOf = /* @__PURE__ */ createSignedInHintReader(SIGNED_IN_HINT_COOKIE);

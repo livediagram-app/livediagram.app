@@ -25,8 +25,8 @@ const TOKEN = `${b64url({ alg: 'EdDSA' })}.${b64url({
 
 describe('signedInFromCookie', () => {
   it('reads the signed-in hint cookie', () => {
-    expect(signedInFromCookie('a=1; ld_signed_in=1')).toBe(true);
-    expect(signedInFromCookie('ld_signed_in=0')).toBe(false);
+    expect(signedInFromCookie('a=1; lh_signed_in=1')).toBe(true);
+    expect(signedInFromCookie('lh_signed_in=0')).toBe(false);
     expect(signedInFromCookie('theme=dark')).toBeNull();
     expect(signedInFromCookie('')).toBeNull();
   });
@@ -36,7 +36,7 @@ describe('readBrowserIdentity', () => {
   it('reads the guest token and keeps only the id prefix', () => {
     const id = readBrowserIdentity({
       localStorage: storage({ 'livehuddle:v2:guest-token': TOKEN }),
-      document: { cookie: 'ld_signed_in=0' },
+      document: { cookie: 'lh_signed_in=0' },
     });
     expect(id).toEqual({ signedIn: false, guestIdPrefix: '6f1c2d3e', guestExpiresAt: EXP * 1000 });
   });

@@ -59,8 +59,6 @@ export const ALL_SETTING_KEYS = [
   'uiScaleCornerButtons',
   'middleMousePan',
   'dockButtonNames',
-  'powerUserMode',
-  'minimalChrome',
   // Your own colours, offered in every app's swatches.
   'customSwatches',
   // The editor settings two or more apps have.
@@ -69,8 +67,16 @@ export const ALL_SETTING_KEYS = [
 
 export type AllSettingKey = (typeof ALL_SETTING_KEYS)[number];
 
+// Shared keys whose feature is gone (liveworkspace/docs/specs/003-accounts/accounts.md "Retired shared keys"): no app or
+// panel shows them, and a stored copy is dropped on read and cleared by the next write, never reverted. joinSettings
+// still carries one, so an editor's record of the server's blob has it and its next write names it with a null (the
+// editor's own read drops it); splitSettings sends that null to `all`, and to the app's scope for any old copy there.
+// Power user mode and its Minimal chrome (Work Tracker #500).
+export const RETIRED_ALL_SETTING_KEYS = ['powerUserMode', 'minimalChrome'] as const;
+
 const ALL = new Set<string>(ALL_SETTING_KEYS);
 const COMMON = new Set<string>(COMMON_SETTING_KEYS);
+const RETIRED = new Set<string>(RETIRED_ALL_SETTING_KEYS);
 
 export function isAllSetting(key: string): key is AllSettingKey {
   return ALL.has(key);
@@ -101,11 +107,16 @@ export type SettingsBlob = Record<string, unknown>;
 
 // A patch of preferences (as an editor holds them) split into the two scopes it is stored in. A common setting
 // also deletes the app's old copy (`null` in the app's patch), so once `all` has it nothing can bring the old one
-// back there, even a reset that deletes the key. Linear in the patch.
+// back there, even a reset that deletes the key; a retired shared key is deleted from both. Linear in the patch.
 export function splitSettings(prefs: SettingsBlob): { all: SettingsBlob; app: SettingsBlob } {
   const all: SettingsBlob = {};
   const app: SettingsBlob = {};
   for (const [key, value] of Object.entries(prefs)) {
+    if (RETIRED.has(key)) {
+      all[key] = null;
+      app[key] = null;
+      continue;
+    }
     if (!ALL.has(key)) {
       app[key] = value;
       continue;
@@ -118,13 +129,16 @@ export function splitSettings(prefs: SettingsBlob): { all: SettingsBlob; app: Se
 
 // The two stored scopes as one flat set. A shared key comes from `all`, so a stale copy left in an
 // app's own row never wins over it. A common setting `all` has no value for yet falls back to the
-// app's own copy, kept there from before it was shared, so nobody loses what they had set.
+// app's own copy, kept there from before it was shared, so nobody loses what they had set. A retired
+// shared key comes through the same way, for the editor to drop and then clear (RETIRED_ALL_SETTING_KEYS).
 export function joinSettings(all: SettingsBlob, app: SettingsBlob): SettingsBlob {
   const joined: SettingsBlob = {};
   for (const [key, value] of Object.entries(app)) {
     if (!ALL.has(key) || (COMMON.has(key) && !Object.hasOwn(all, key))) joined[key] = value;
   }
-  for (const [key, value] of Object.entries(all)) if (ALL.has(key)) joined[key] = value;
+  for (const [key, value] of Object.entries(all)) {
+    if (ALL.has(key) || RETIRED.has(key)) joined[key] = value;
+  }
   return joined;
 }
 

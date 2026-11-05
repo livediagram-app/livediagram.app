@@ -58,9 +58,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
-import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
-import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
-import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
+import { RolePill } from '@/components/chrome/RoleIndicator';
 import {
   UiScaleProvider,
   useUiScalePreview,
@@ -179,8 +177,6 @@ export function EditorView() {
     community: sessionCommunity !== null && !sessionCommunity.ownDocumentId,
     makeCopy,
   });
-  // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
-  const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
   // While a Settings slider is dragged its patch wins, so the chrome resizes
   // as you go; the preference is written once, on release.
@@ -253,8 +249,7 @@ export function EditorView() {
           copying={copying}
           readOnly={isStructureReadOnly}
           renameNonce={renameDocumentNonce}
-          // Minimal chrome moves the pill to an icon in the status bar.
-          rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+          rolePill={<RolePill {...role} />}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
             setShareDialogOpen(true);
@@ -280,7 +275,6 @@ export function EditorView() {
       <LandscapeBarFold shown={landscapeBars.shown}>
         <AreaErrorBoundary area="TabBar" fallback="panel">
           <TabBar
-            powerUser={isPowerUserMode(userPreferences)}
             workbenchLink={
               workbench && documentId
                 ? (labelled) => (
@@ -290,11 +284,6 @@ export function EditorView() {
                     />
                   )
                 : undefined
-            }
-            roleIcon={
-              minimalChrome ? (
-                <RoleStatusIcon role={role.role} onToggle={role.onToggle} />
-              ) : undefined
             }
             tabs={tabs}
             activeId={activeId}
@@ -381,13 +370,9 @@ export function EditorView() {
           <CanvasFinishProvider finish={activeTab.finish}>
             {/* The wobble Sketch palette tiles are drawn through (palette-tile-finish.ts). */}
             <SketchFilterDefs />
-            <MinimalChromeProvider
-              value={minimalChrome}
-              powerUser={isPowerUserMode(userPreferences)}
-            >
-              <UiScaleProvider value={uiScales}>
-                <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
-                  {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
+            <UiScaleProvider value={uiScales}>
+              <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
+                {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
                     tab of the document live beside it when one has been dragged to the right. */}
                   <SplitViewFrame header={header} footer={footer}>
                     {(headerInColumn, footerInColumn) => (
@@ -400,12 +385,45 @@ export function EditorView() {
         is armed so the user knows the next shape click connects, and
         gives a click target to cancel (clicking empty canvas also
         cancels). */}
-                        {connectSourceId !== null ? (
-                          <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
-                            <button
-                              type="button"
-                              onClick={cancelConnect}
-                              className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
+                      {connectSourceId !== null ? (
+                        <div className="pointer-events-none fixed inset-x-0 top-16 z-[var(--z-modal)] flex justify-center">
+                          <button
+                            type="button"
+                            onClick={cancelConnect}
+                            className="pointer-events-auto flex items-center gap-2 rounded-full border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 shadow-sm transition hover:bg-brand-100 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-200"
+                          >
+                            Click a shape to connect the arrow
+                            <span className="text-brand-300" aria-hidden>
+                              |
+                            </span>
+                            <span className="text-brand-700 dark:text-brand-300">Cancel</span>
+                          </button>
+                        </div>
+                      ) : null}
+                      {headerInColumn}
+                      {sessionCommunity && appChrome && hydrated ? (
+                        <CommunityBar
+                          community={sessionCommunity}
+                          onMakeCopy={() => void makeCopy()}
+                          copying={copying}
+                        />
+                      ) : null}
+                      <AreaErrorBoundary area="TabDialogs">
+                        <EditorTabDialogs />
+                      </AreaErrorBoundary>
+                      <AreaErrorBoundary area="Collaborators">
+                        <CollaboratorsHost />
+                      </AreaErrorBoundary>
+                      {/* At the canvas's top edge, under the header and any Community bar. */}
+                      {landscapeBarsHandle}
+                      <AreaErrorBoundary area="Canvas" fallback="panel" fallbackClassName="flex-1">
+                        {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
+                        <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
+                          {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                          <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
+                            {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                            <CommentBadgesContext.Provider
+                              value={!(embedMode && isReadOnly) && !sessionCommunity}
                             >
                               Click a shape to connect the arrow
                               <span className="text-brand-300" aria-hidden>
@@ -491,28 +509,44 @@ export function EditorView() {
                                   ?.name ?? 'Someone')
                               : null
                           }
-                          onAccept={focusInvite.acceptFocus}
-                          onDismiss={focusInvite.dismissFocus}
                         />
-                        <AreaErrorBoundary area="Modals">
-                          <EditorModals />
+                      </AreaErrorBoundary>
+                      {ctx.searchOpen ? (
+                        <AreaErrorBoundary area="Search">
+                          <EditorSearchPanel />
                         </AreaErrorBoundary>
-                        <AreaErrorBoundary area="Popovers">
-                          <EditorAnchoredPopovers />
-                        </AreaErrorBoundary>
-                        <AreaErrorBoundary area="ContextMenu">
-                          <EditorContextMenuHost />
-                        </AreaErrorBoundary>
-                        <AreaErrorBoundary area="ElementDialogs">
-                          <EditorElementDialogs />
-                        </AreaErrorBoundary>
-                        {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
+                      ) : null}
+                      {/* Bring Focus (docs/specs/012-collaboration/bring-focus.md). A dialog: it is a question addressed to
+        you, not a status line. Shown to view-role visitors too. */}
+                      <FocusInviteDialog
+                        from={
+                          focusInvite.invite
+                            ? (livePresence.find((p) => p.id === focusInvite.invite!.from)?.name ??
+                              'Someone')
+                            : null
+                        }
+                        onAccept={focusInvite.acceptFocus}
+                        onDismiss={focusInvite.dismissFocus}
+                      />
+                      <AreaErrorBoundary area="Modals">
+                        <EditorModals />
+                      </AreaErrorBoundary>
+                      <AreaErrorBoundary area="Popovers">
+                        <EditorAnchoredPopovers />
+                      </AreaErrorBoundary>
+                      <AreaErrorBoundary area="ContextMenu">
+                        <EditorContextMenuHost />
+                      </AreaErrorBoundary>
+                      <AreaErrorBoundary area="ElementDialogs">
+                        <EditorElementDialogs />
+                      </AreaErrorBoundary>
+                      {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
         wizard's "Show me around" handoff flag is pending. */}
-                        <AreaErrorBoundary area="Tour">
-                          <EditorTours />
-                        </AreaErrorBoundary>
+                      <AreaErrorBoundary area="Tour">
+                        <EditorTours />
+                      </AreaErrorBoundary>
 
-                        {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
+                      {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
         the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
         (z-[var(--z-overlay)]). */}
                         {showSignInBanner ? (
@@ -525,31 +559,26 @@ export function EditorView() {
                         ) : null}
                         <EditorStartPanels />
 
-                        {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
+                      {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
         right now. Suppressed while a mode banner owns the top slot. */}
-                        {minimalChrome ? null : (
-                          <ModifierHint
-                            readOnly={isReadOnly}
-                            drag={drag}
-                            elements={activeTab.elements}
-                            hasElements={activeTab.elements.length > 0}
-                            suppressed={
-                              canvasTool === 'format' ||
-                              formatSourceId !== null ||
-                              pendingDraw !== null
-                            }
-                          />
-                        )}
+                      <ModifierHint
+                        readOnly={isReadOnly}
+                        drag={drag}
+                        elements={activeTab.elements}
+                        hasElements={activeTab.elements.length > 0}
+                        suppressed={
+                          canvasTool === 'format' || formatSourceId !== null || pendingDraw !== null
+                        }
+                      />
 
-                        {/* An editor older than the server's document format offers a reload, once its edits
+                      {/* An editor older than the server's document format offers a reload, once its edits
           are saved (docs/specs/016-platform/new-version-prompt.md). */}
-                        <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
-                      </div>
-                    )}
-                  </SplitViewFrame>
-                </DockNamesProvider>
-              </UiScaleProvider>
-            </MinimalChromeProvider>
+                      <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
+                    </div>
+                  )}
+                </SplitViewFrame>
+              </DockNamesProvider>
+            </UiScaleProvider>
           </CanvasFinishProvider>
         </CanvasSurfaceProvider>
       </ViewportStoreProvider>
