@@ -35,7 +35,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
   'auto-align': '#22c55e',
-  'auto-layout': '#2563eb',
   about: '#0891b2',
   minimap: '#94a3b8',
   settings: '#475569',

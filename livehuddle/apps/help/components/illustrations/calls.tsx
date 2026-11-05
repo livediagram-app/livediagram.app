@@ -2,7 +2,8 @@
 // microphone's states, earshot and the talking bars, and the camera and screen bubbles. Calls cannot run without
 // the Realtime secrets, so these are drawn rather than shot, from the call components' own words and tones:
 // apps/editor/components/calls/CallClusterButton.tsx (the strip and its hover cards), TalkingBars.tsx
-// ("Sam is talking, walk over"), MediaBubble.tsx ("Sam's Camera"), MaximisedBubble.tsx (Restore) and
+// ("Sam is talking, walk over"), MediaBubble.tsx ("Maximise Sam's Camera"), CallBubbles.tsx (a close group's row
+// and tails), MaximisedBubble.tsx (Restore) and
 // ScreenShareBar.tsx (Stop Sharing). Icons are the strip's own Lucide glyphs.
 
 import type { ReactNode } from 'react';
@@ -442,17 +443,58 @@ function BubbleRing({ x, y, hue }: { x: number; y: number; hue: 'emerald' | 'vio
   );
 }
 
-/** Bubbles above their characters: Sam's camera, hovered ("Sam's Camera", its maximise mark showing), and Priya's
- *  camera beside her shared screen. */
+// Bubbles of people standing close share a row (apps/editor/lib/calls/bubble-layout.ts), drawn at 96/120 of the
+// editor's canvas px: the gap between bubbles, and how far a tail keeps from a row's ends.
+const BUBBLE_GAP = 6;
+const TAIL_INSET = 11;
+
+/** The tail under a person's bubbles, in their colour, slid back towards their head and held inside the row's ends
+ *  (`tailShift`). Drawn before the bubbles, so only its lower half shows. */
+function BubbleTail({
+  left,
+  width,
+  head,
+  y,
+  hue,
+}: {
+  left: number;
+  width: number;
+  head: number;
+  y: number;
+  hue: 'emerald' | 'violet';
+}) {
+  const centre = left + width / 2;
+  const reach = width / 2 - TAIL_INSET;
+  const x = centre + Math.min(reach, Math.max(-reach, head - centre));
+  return (
+    <path
+      d={`M${x} ${y - 5} l5 5 l-5 5 l-5 -5 z`}
+      className={hue === 'emerald' ? 'fill-emerald-500' : 'fill-violet-500'}
+    />
+  );
+}
+
+/** Two people talking close: Sam's camera, hovered ("Maximise Sam's Camera", its maximise mark showing), and Priya's
+ *  camera beside her shared screen, laid out in one row centred on the pair, each person's tail pointing at them. */
 export function CallBubbles() {
-  const sam = { x: 112, y: 236 };
-  const priya = { x: 302, y: 236 };
+  const sam = { x: 176, y: 236 };
+  const priya = { x: 244, y: 236 };
   const by = sam.y - CHIP_TOP - 8 - BUBBLE_H;
-  const samX = sam.x - BUBBLE_W / 2;
-  const priyaCam = priya.x - BUBBLE_W - 4;
-  const priyaScreen = priya.x + 4;
+  const priyaWidth = BUBBLE_W * 2 + BUBBLE_GAP;
+  const rowWidth = BUBBLE_W + BUBBLE_GAP + priyaWidth;
+  const samX = (sam.x + priya.x) / 2 - rowWidth / 2;
+  const priyaCam = samX + BUBBLE_W + BUBBLE_GAP;
+  const priyaScreen = priyaCam + BUBBLE_W + BUBBLE_GAP;
   return (
     <Scene w={420} h={248}>
+      <BubbleTail left={samX} width={BUBBLE_W} head={sam.x} y={by + BUBBLE_H} hue="emerald" />
+      <BubbleTail
+        left={priyaCam}
+        width={priyaWidth}
+        head={priya.x}
+        y={by + BUBBLE_H}
+        hue="violet"
+      />
       <CameraPicture x={samX} y={by} hue="emerald" />
       <BubbleRing x={samX} y={by} hue="emerald" />
       {/* The maximise mark a hovered bubble shows in its corner. */}
@@ -473,15 +515,14 @@ export function CallBubbles() {
           className="stroke-white"
         />
       </g>
-      <PixelCharacter fx={sam.x} fy={sam.y} shirt="emerald" name="Sam" hair="fill-slate-800" />
-      <Card x={samX + 20} y={by - 34} w={84} title="Sam's Camera" />
-      <Cursor x={samX + BUBBLE_W - 30} y={by + 24} />
-
       <CameraPicture x={priyaCam} y={by} hue="violet" />
       <BubbleRing x={priyaCam} y={by} hue="violet" />
       <ScreenPicture x={priyaScreen} y={by} />
       <BubbleRing x={priyaScreen} y={by} hue="violet" />
+      <PixelCharacter fx={sam.x} fy={sam.y} shirt="emerald" name="Sam" hair="fill-slate-800" />
       <PixelCharacter fx={priya.x} fy={priya.y} shirt="violet" name="Priya" hair="fill-slate-900" />
+      <Card x={samX} y={by - 34} w={150} title="Maximise Sam's Camera" />
+      <Cursor x={samX + BUBBLE_W - 30} y={by + 24} />
     </Scene>
   );
 }

@@ -180,8 +180,8 @@ export function elementTileSections({
 }: {
   mode: EditorMode;
   hasImage: boolean;
-  // Draw mode's markers (palette-marker-tiles): Draw has no palette layout, and the strip that
-  // searches is never shown in Draw, so they are always another mode's.
+  // livediagram's Draw mode markers (palette-marker-tiles), which livehuddle has no Draw mode to offer:
+  // nothing passes them today, so the list is empty.
   drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;

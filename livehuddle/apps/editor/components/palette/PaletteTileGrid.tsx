@@ -36,7 +36,7 @@ export type PaletteTileActions = {
   // Technology catalogue icon, same handlers the Icons / Technology tabs use.
   addIcon: (iconId: string) => void;
   addTechIcon: (iconId: string) => void;
-  // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
+  // Picks up one of livediagram's Draw mode markers (palette-marker-tiles); no livehuddle tile offers one today.
   beginMarker: (penId: WhiteboardPenId) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;

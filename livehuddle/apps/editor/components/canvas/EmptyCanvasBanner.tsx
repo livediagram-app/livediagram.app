@@ -77,7 +77,7 @@ export function EmptyCanvasBanner({
         {readOnly ? null : (
           // Help is a desktop's: on a phone the help centre is a tap away in the Explorer.
           <div className="mt-1 flex items-center gap-2 phone:hidden">
-            <HelpArticleLink article="yourFirstDiagram" variant="button" />
+            <HelpArticleLink article="yourFirstSpace" variant="button" />
           </div>
         )}
       </div>

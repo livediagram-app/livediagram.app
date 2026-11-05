@@ -17,8 +17,8 @@ import {
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else: one
-// a mode), then one shelf per category. The data half lives here
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (the blank and nothing else:
+// livehuddle has one mode, so one blank), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
 export type GalleryTemplate = TemplateDescriptor & {
@@ -54,12 +54,12 @@ export function toGallery(t: TemplateDescriptor): GalleryTemplate {
 
 // Every listed template on a category shelf: hidden templates never appear in a listing, and the
 // blanks are only ever on Blank Slate, never on a category shelf
-// (docs/specs/007-editor/templates-by-mode.md "Three blanks").
+// (docs/specs/007-editor/templates-by-mode.md "The blank").
 export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Blank Slate's blanks in mode order (the mode switch's).
+// Blank Slate's blanks, one per editor mode: livehuddle's one, Blank Space.
 const BLANK_SLATE_KINDS = EDITOR_MODES.map((mode) => BLANK_TEMPLATE_FOR_MODE[mode]);
 
 // Blank Slate: every blank and nothing else, in its fixed order.

@@ -607,16 +607,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6.2 6.2l1.6 1.6M17.8 17.8l-1.6-1.6" />
     </Glyph>
   ),
-  // A tidied flowchart: boxes and arrows, which is what the graph becomes.
-  // `multicolour-themes` uses circles for its nodes.
-  'auto-layout': (
-    <Glyph>
-      <rect x="8.5" y="3" width="7" height="4.5" rx="1" />
-      <rect x="2.5" y="16.5" width="7" height="4.5" rx="1" />
-      <rect x="14.5" y="16.5" width="7" height="4.5" rx="1" />
-      <path d="M12 7.5v3.5M6 16.5V11h12v5.5" />
-    </Glyph>
-  ),
   about: (
     <Glyph>
       <circle cx="12" cy="12" r="9" />
