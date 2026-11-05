@@ -115,8 +115,6 @@ scrolling when long:
   fixed height** whatever it says, room for the name and two lines of description (`FLYOUT_FOOTER_HEIGHT`, 69 px),
   a longer description clamped to two lines: a footer that grew and shrank with each tile moved the flyout's edge
   under the pointer as it travelled.
-- Under Minimal Chrome ([Power user mode](power-user-mode.md)) a picture tile shows its icon alone, named by a
-  Tooltip; a card keeps its name, which is its content.
 - Every tile places, arms, drags onto the canvas (with the canvas ghost), shows its armed and refused states and
   draws in the tab theme's tint and finish, as the strip's own tile does (`useTileGlyph`, shared with `IconButton`).
 - **Widths:** 26rem for a picture grid, 36rem for two columns of cards, 19rem for one, 37.5rem for a catalogue's

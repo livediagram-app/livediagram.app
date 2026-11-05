@@ -70,7 +70,7 @@ retired, [The tab window](../009-elements/tab-window.md)).
 The feature categories group the feature guides by area. **Pages is the first**: it is what livedocuments is for.
 
 - **Pages**: the pages a document is made of, in two groups: **Basics** (Working with Pages, page layouts, exporting pages, the Pages tour) and **Kinds of Page** (articles, slides and infographics).
-- **User Interface**: the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls and power user mode.
+- **User Interface**: the panels, toolbar, context menus, the Map, zoom and tab bars, and quick controls.
 - **Explorer**: the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
 - **Selection Modes**: one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight.
 - **Palette**: the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.

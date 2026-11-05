@@ -16,7 +16,7 @@ Every app's root layout inlines the same tiny script, before first paint, that a
 ## The control
 
 - One button that **cycles Light → Dark → System**, showing the CURRENT setting (sun / moon / monitor); its accessible name says where the next click goes.
-- In the editor it sits in the tab bar's controls ([Editor app](../007-editor/editor-app.md)). In [Power user mode](../007-editor/power-user-mode.md#quick-appearance-switch) a click switches between Light and Dark, and a right-click sets System. The public sites, the home page included, have no power user mode and always cycle.
+- In the editor it sits in the tab bar's controls ([Editor app](../007-editor/editor-app.md)). It cycles there as everywhere: the quick Light / Dark switch of the retired [Power user mode](../007-editor/power-user-mode.md) is gone.
 - On the public sites the toggle is **never in the header**. It sits on **its own small rail at the right edge**, directly under the [share rail](../019-marketing/marketing-site.md#social-sharing) where that shows, an icon button in the rail's style, with the toolbar name "Appearance". The rail shows from `xl` up on every public site, and from `2xl` on the wide ones (`max-w-7xl` pages: the help centre), where a narrower screen leaves no gutter beside the content. A surface that turns sharing off, such as the help centre, keeps the Appearance card alone. Below that there is no gutter for it, so it is left out and the appearance follows its saved choice or the device (System). It is quiet (a ghost icon button).
 - The public-site control emits **no telemetry**: those sites report page views only ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). The editor's control keeps its `UI / Toggled / <setting>` event.
 
