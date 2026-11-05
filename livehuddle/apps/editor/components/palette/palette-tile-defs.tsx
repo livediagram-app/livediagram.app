@@ -21,6 +21,7 @@ import {
   FenceIcon,
   AvatarPadIcon,
   RoomIcon,
+  StageIcon,
   MeetingTableIcon,
   PlantIcon,
   BookshelfIcon,
@@ -1066,6 +1067,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'room' },
     icon: <RoomIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Stage (docs/specs/009-elements/office.md "Stage", docs/specs/012-collaboration/meeting-rooms-and-stage.md).
+    id: 'tools:stage',
+    tileGroup: 'move',
+    blurb: 'A platform the whole tab hears',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Stage',
+    caption: 'Stage',
+    description:
+      'A raised platform: whoever stands on it is heard by the whole tab. It goes in behind everything, so chairs stand in front of it; choose who may speak from it in its menu.',
+    filled: true,
+    action: { type: 'shape', kind: 'stage' },
+    icon: <StageIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Meeting Table (docs/specs/009-elements/office.md).

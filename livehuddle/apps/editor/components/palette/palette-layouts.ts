@@ -48,6 +48,7 @@ export const SEARCH_ONLY_TILE_IDS: readonly string[] = [];
 // the furniture.
 const OFFICE_TILES = [
   'tools:room',
+  'tools:stage',
   'tools:meeting-table',
   'tools:plant',
   'tools:bookshelf',
