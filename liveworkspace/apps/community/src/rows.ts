@@ -3,8 +3,11 @@
 
 import {
   COMMUNITY_ANONYMOUS_AUTHOR,
+  isCommunityApp,
   isCommunityCategory,
+  isCommunityCategoryOf,
   type CommunityAuthor,
+  type CommunityCategory,
   type CommunityPost,
   type CommunityPostState,
 } from '@liveworkspace/community';
@@ -57,6 +60,15 @@ export function rowAuthor(row: PostRow): CommunityAuthor {
   return { name: row.author_name, color: row.author_color, picture: row.author_picture };
 }
 
+// A stored category its app no longer offers (livehuddle's retired `workshops`, say, which livediagram still
+// has) reads as Something Else; the row itself is never rewritten.
+export function rowCategory(row: Pick<PostRow, 'app' | 'category'>): CommunityCategory {
+  const known = isCommunityApp(row.app)
+    ? isCommunityCategoryOf(row.app, row.category)
+    : isCommunityCategory(row.category);
+  return known ? (row.category as CommunityCategory) : 'other';
+}
+
 // The public shape: never the owner or the app's document id. `liked` comes from the caller's
 // community key.
 export function rowToPost(row: PostRow, liked: boolean): CommunityPost {
@@ -64,7 +76,7 @@ export function rowToPost(row: PostRow, liked: boolean): CommunityPost {
     id: row.id,
     title: row.title,
     description: row.description,
-    category: isCommunityCategory(row.category) ? row.category : 'other',
+    category: rowCategory(row),
     tags: parseTags(row.tags),
     likeCount: row.like_count,
     copyCount: row.copy_count,

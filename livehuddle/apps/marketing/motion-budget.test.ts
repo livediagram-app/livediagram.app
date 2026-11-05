@@ -10,7 +10,6 @@ import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards
 // @liveworkspace/marketing-site's, which keeps its own budget.
 const CONTENT_STYLESHEETS = [
   'app/hero-animations.css',
-  'app/hero-mode-animations.css',
   // Each hero scene's own keyframes, one stylesheet per scene.
   ...readdirSync(fileURLToPath(new URL('app/hero-scenes/', import.meta.url)))
     .filter((f) => f.endsWith('.css'))

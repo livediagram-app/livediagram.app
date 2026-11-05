@@ -5,7 +5,6 @@
 // Everything is at the mock's scale, about five eighths of the editor's.
 
 import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
-import { lucideChartColumn, lucideTimer } from '@liveworkspace/icons/lucide';
 import {
   AppearanceIcon,
   ChevronDownIcon,
@@ -39,11 +38,9 @@ function Lucide({
   );
 }
 
-// The extra group a mode adds to the cluster, as CanvasChrome lays it out: Workshop's session
-// tools (timer, poll).
-const MODE_GROUP: Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]> = {
-  workshop: [lucideTimer, lucideChartColumn],
-};
+// The extra group a mode adds to the cluster, as CanvasChrome lays it out: none since the Timer and Stopwatch
+// became pieces on the board.
+const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]>> = {};
 
 // The canvas cluster, bottom right, as CanvasChrome lays it out: undo / redo, the mode's own group,
 // the Tab Style brush, and the zoom readout.

@@ -1,7 +1,7 @@
 # Community
 
-**Community** is the public gallery of Spaces people are proud of: offices, meeting rooms, retrospectives,
-workshops and games other teams can start from. A signed-in owner **publishes** a document to
+**Community** is the public gallery of Spaces people are proud of: offices, meeting rooms, event halls and
+community hangouts other people can start from. A signed-in owner **publishes** a document to
 Community with a title, a description, a category and a few tags; anyone can browse the gallery, filter it, open a
 post's document read-only, like it, and make their own copy of it. It lives in its own app, `apps/community`, served at
 `/community`.
@@ -107,20 +107,23 @@ A post shows every tab of the document. A document that is empty (its first tab 
 
 The closed set, in display order. The id is stored; the label is shown.
 
-| id               | Label               | For                                           |
-| ---------------- | ------------------- | --------------------------------------------- |
-| `offices`        | Offices & Spaces    | Virtual offices, team pods, coworking floors  |
-| `meetings`       | Meetings            | Stand-ups, agendas, town halls, all-hands     |
-| `retrospectives` | Retrospectives      | Retros, lessons learned, health checks        |
-| `workshops`      | Workshops           | Brainstorms, crazy eights, lean coffee, ideas |
-| `decisions`      | Votes & Decisions   | Dot votes, polls, estimates, priorities       |
-| `games`          | Quizzes & Games     | Quizzes, icebreakers, team games              |
-| `learning`       | Learning & Teaching | Classes, training, lessons                    |
-| `other`          | Something Else      | Anything that fits nowhere above              |
+| id            | Label               | For                                           |
+| ------------- | ------------------- | --------------------------------------------- |
+| `offices`     | Offices & Spaces    | Virtual offices, team pods, coworking floors  |
+| `meetings`    | Meetings            | Stand-ups, one-to-ones, all-hands, town halls |
+| `socials`     | Socials & Events    | Meetups, parties, launches, team socials      |
+| `communities` | Communities & Clubs | Community hangouts, clubs, study groups       |
+| `learning`    | Learning & Teaching | Classrooms, training rooms, office hours      |
+| `other`       | Something Else      | Anything that fits nowhere above              |
 
 They are livehuddle's own set on the shared service
 ([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#categories)), for
-meetings and workshops; livediagram's diagram categories (Architecture, Mind Maps and the rest) are not offered.
+meeting in Spaces; livediagram's diagram and workshop categories (Architecture, Workshops and the rest) are not
+offered.
+
+The retrospectives, workshops, votes and games categories were retired when livehuddle became a product for meeting in
+Spaces (Work Tracker #423, owner, 2026-11-04). A post stored under `retrospectives`, `workshops`, `decisions` or
+`games` keeps its stored id but reads as Something Else on its card and its page; nothing is rewritten.
 
 ## Tags
 

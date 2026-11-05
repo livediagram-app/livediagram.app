@@ -23,7 +23,9 @@ describe('landing page on a touch screen', () => {
   it("gives the hero's calls to action a 48px target", () => {
     const html = renderToStaticMarkup(<Hero />);
     const ctas = [
-      ...html.matchAll(/<a [^>]*class="([^"]*)"[^>]*>(?:Open a Space|Browse Templates)/g),
+      ...html.matchAll(
+        /<a [^>]*class="([^"]*)"[^>]*>(?:<span[^>]*>)?(?:Open a Space|Browse Templates)/g,
+      ),
     ];
     expect(ctas).toHaveLength(2);
     for (const [, c] of ctas) expect(c).toMatch(/\bh-12\b/);

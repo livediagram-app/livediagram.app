@@ -72,7 +72,7 @@ export function popularTemplates(): GalleryTemplate[] {
 }
 
 // The editor's own search (templateMatchesQuery): every typed word has to hit the title, the description, the
-// kind, a category name or the template's search words ("retro" finds every retrospective). An empty query is the whole list.
+// kind, a category name or the template's search words ("office" finds every Virtual Spaces template). An empty query is the whole list.
 export function filterGallery(items: GalleryTemplate[], query: string): GalleryTemplate[] {
   if (templateQueryWords(query).length === 0) return items;
   return items.filter((t) => templateMatchesQuery(t, query));

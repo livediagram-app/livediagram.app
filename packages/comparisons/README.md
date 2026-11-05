@@ -33,6 +33,7 @@ the app's `brand-*` Tailwind ramp, so the accent is the app's; each app's `globa
 | liveplanner   | Trello, Asana, Monday.com, Notion, Jira, ClickUp, Airtable, Smartsheet     | [marketing-site.md](../../liveplanner/docs/specs/019-marketing/marketing-site.md)   |
 | livedocuments | Google Slides                                                              | [marketing-site.md](../../livedocuments/docs/specs/019-marketing/marketing-site.md) |
 | livedesign    | Figma                                                                      | [marketing-site.md](../../livedesign/docs/specs/019-marketing/marketing-site.md)    |
+| livehuddle    | Gather, Teamflow, Kumospace                                                | [marketing-site.md](../../livehuddle/docs/specs/019-marketing/marketing-site.md)    |
 
 liveworkspace.app keeps none. Its old `/alternatives/<slug>` addresses redirect permanently (301) to the
 same slug on the app that answers it, and its `/alternatives` to `/compare`, a small page that points at
@@ -147,6 +148,30 @@ dashboard on liveworkspace.app shows them under its own app.
 **The set**: Figma (`/alternatives/figma`), compared as a design tool on logos and wireframes and on the photo edits that go with them. Figma is the deeper product design tool (components, auto layout, prototypes, developer handoff), and the page says so. There is no Figma importer; a Figma link embeds live on the canvas.
 
 **Candidates** by fit: Canva (logos), Balsamiq (wireframes) and Photopea or Pixlr (photo editing). Each of those products is far deeper in its own job, so each needs an honest angle before it gets a page.
+
+## livehuddle
+
+- **Compete on their ground**: Gather, Teamflow and Kumospace as virtual offices and spatial meeting places, where a
+  remote team walks between rooms to meet. livehuddle is a place to meet in Spaces (its
+  [Purpose](../../livehuddle/docs/specs/001-project-vision/purpose.md)), so these are its ground too.
+- **Talking is their edge, said plainly.** Each of them has voice and video built in; livehuddle's proximity audio and
+  calls are built but off in production ([Proximity audio](../../livehuddle/docs/specs/012-collaboration/proximity-audio.md)).
+  Every page says so in its table, its fairness section and an FAQ, and tells a team to run its usual call beside the
+  Space. Screen sharing, desktop apps and large broadcast events are theirs too. A page never says people can talk by
+  voice or video in livehuddle until calls are on in production.
+- **Our ground**: free with no tiers, MIT open source, no sign-up even to create, any browser with nothing to install,
+  a Space that is also a board (sticky notes, the Session strip's timer and quick vote), the three share roles, the
+  REST API, CLI and MCP server, Google Drive sync and This Browser.
+- **Migration answers are honest.** There is no importer for any of them; the answer is a template (Virtual Office,
+  Coworking Space) and the office pieces.
+- **Meet-first words** (Work Tracker #423): no workshops, retros, polls, decks or diagrams, pinned by the app's
+  `lib/meet-first.test.ts`.
+
+**The set**: Gather, Teamflow and Kumospace. **Retired**: Miro and FigJam, compared for meetings and workshops until
+the meet-first refocus (2026-11-05); their old livehuddle.app addresses redirect permanently to the hub, pinned by
+livehuddle's `lib/comparison-redirects.test.ts`. Both remain livediagram's comparisons.
+
+**Candidates** for later: Wonder, SpatialChat and oVice, each needing an honest angle first.
 
 ## Comparing several apps at once
 

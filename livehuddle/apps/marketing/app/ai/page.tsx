@@ -14,7 +14,7 @@ import { AI_CLIENTS, AI_PRODUCT, STARTER_PROMPTS } from '@/lib/ai-clients';
 export const metadata = pageMetadata({
   title: 'Build with AI · livehuddle',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livehuddle in a minute, then ask your AI to set up meetings, retros and workshops.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livehuddle in a minute, then ask your AI to set up a stand-up, an office or an all-hands Space.',
   path: '/ai',
 });
 
@@ -29,11 +29,12 @@ export default function BuildWithAiPage() {
         prompts={STARTER_PROMPTS}
         heroLede={
           <>
-            Connect the AI tool you already use, then ask it for a stand-up, a retro or a workshop.
-            It lands in your account, ready to run together. Set up takes about a minute.
+            Connect the AI tool you already use, then ask it for a Team Pod for the stand-up, a
+            Virtual Office for the team or an All-Hands Hall for Friday. It lands in your account,
+            ready to meet in. Set up takes about a minute.
           </>
         }
-        ask="a stand-up, a retro or a workshop"
+        ask="a Team Pod, a Virtual Office or an All-Hands Hall"
         art={<AiChatArt />}
         capabilities={<AiCapabilities />}
         controlLead={

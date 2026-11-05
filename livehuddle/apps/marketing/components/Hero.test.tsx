@@ -10,15 +10,15 @@ import { timelineOf } from './hero-space-floor-motion';
 const html = renderToStaticMarkup(<Hero />);
 
 describe('the hero', () => {
-  it('pitches meetings and workshops under its two promise badges', () => {
-    expect(html).toContain('>Meet and run workshops together</h1>');
+  it('pitches meeting in a Space under its two promise badges', () => {
+    expect(html).toContain('>Meet your team in a Space</h1>');
     expect(html).toMatch(/aria-label="Our promises"/);
     expect(html).toContain('Free and open source');
     expect(html).toContain('No sign-up to start');
   });
 
   it('opens a Space from its own funnel slot, and browses the templates under it', () => {
-    expect(html).toMatch(/href="\/new\?via=Home\.Hero"[^>]*>Open a Space/);
+    expect(html).toMatch(/href="\/new\?via=Home\.Hero"[^>]*>(?:<span[^>]*>)?Open a Space/);
     expect(html).toMatch(/href="\/#templates"[^>]*>Browse Templates/);
   });
 
@@ -37,7 +37,7 @@ describe('the hero', () => {
       expect(
         before
           .slice(before.lastIndexOf('<div'))
-          .startsWith('<div aria-hidden="true" class="hsf-stage'),
+          .startsWith('<div aria-hidden="true" data-optical-ignore="true" class="hsf-stage'),
       ).toBe(true);
       const markup = html.slice(start);
       expect(markup).toContain(`src="${floorArtHref(stage.key, 'light')}"`);

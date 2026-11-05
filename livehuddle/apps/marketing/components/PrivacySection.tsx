@@ -54,5 +54,5 @@ const PROMISES: PrivacyPromise[] = [
 ];
 
 export function PrivacySection() {
-  return <Section promises={PROMISES} maker="a meeting and workshop app" />;
+  return <Section promises={PROMISES} maker="a meeting app" />;
 }
