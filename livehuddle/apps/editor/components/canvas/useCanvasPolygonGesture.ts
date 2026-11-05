@@ -1,8 +1,7 @@
-import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
-import { snapToAlignment } from '@livehuddle/document';
+import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
+import { snap45, snapToAlignment } from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 const EMPTY_ID_SET: Set<string> = new Set();
 
@@ -24,19 +23,33 @@ export function useCanvasPolygonGesture({
   wrapperRef,
   viewportZoom,
   onCommitPolygon,
-}: Pick<CanvasProps, 'pendingDraw' | 'elements' | 'onCommitPolygon'> & {
+  onCommitRoomWalls,
+}: Pick<CanvasProps, 'pendingDraw' | 'elements' | 'onCommitPolygon' | 'onCommitRoomWalls'> & {
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
 }) {
-  const [polygonVertices, setPolygonVertices] = useState<{ x: number; y: number }[]>([]);
+  const [polygonVertices, setVerticesState] = useState<{ x: number; y: number }[]>([]);
   // Live pointer position (canvas coords) for the rubber-band preview
   // segment. Null until the pointer moves after the first vertex.
   const [polygonCursor, setPolygonCursor] = useState<{ x: number; y: number } | null>(null);
-  // Mirror for the window key handlers, which must read the latest
-  // vertices without re-subscribing per click.
-  const verticesRef = useLatest(polygonVertices);
+  // The corners as placed, written in the same call that sets the state rather than after the render commits: two
+  // clicks inside one frame used to build on the same stale list, dropping a corner (and a room closed on what was
+  // left could be refused and cleared). The press, the keys and the rubber band all read this.
+  const verticesRef = useRef<{ x: number; y: number }[]>([]);
+  const setPolygonVertices = (next: { x: number; y: number }[]) => {
+    verticesRef.current = next;
+    setVerticesState(next);
+  };
 
-  const polygonArmed = pendingDraw?.type === 'polygon';
+  // The Room Builder (docs/specs/009-elements/room-builder.md) is the same gesture: corners snapped to 45 degrees from
+  // the last (Cmd / Ctrl places freely, docs/specs/008-canvas/snap-override.md), and every finish closes the room.
+  const roomMode = pendingDraw?.type === 'room-walls';
+  const polygonArmed = pendingDraw?.type === 'polygon' || roomMode;
+  // Where a press at `raw` puts the next corner: 45 degrees from the last in room mode.
+  const placeAt = (raw: { x: number; y: number }, free: boolean) => {
+    const last = verticesRef.current[verticesRef.current.length - 1];
+    return roomMode && last && !free ? snap45(last, raw) : raw;
+  };
 
   const resetGesture = () => {
     setPolygonVertices([]);
@@ -46,15 +59,21 @@ export function useCanvasPolygonGesture({
   // Commit helpers. onCommitPolygon clears pendingDraw editor-side;
   // the armed-flag effect below then clears the local gesture state,
   // but reset eagerly too so the preview never flashes stale.
-  const finishOpen = () => {
-    const vertices = verticesRef.current;
-    resetGesture();
-    onCommitPolygon(vertices, false);
-  };
   const finishClosed = () => {
     const vertices = verticesRef.current;
     resetGesture();
-    onCommitPolygon(vertices, true);
+    if (roomMode) onCommitRoomWalls?.(vertices);
+    else onCommitPolygon(vertices, true);
+  };
+  // A room is never open: its double-click and Enter close it (three corners or more).
+  const finishOpen = () => {
+    if (roomMode) {
+      if (verticesRef.current.length >= 3) finishClosed();
+      return;
+    }
+    const vertices = verticesRef.current;
+    resetGesture();
+    onCommitPolygon(vertices, false);
   };
 
   // A primary-button press while the polygon intent is armed places a
@@ -83,6 +102,11 @@ export function useCanvasPolygonGesture({
     if (last && Math.hypot(raw.x - last.x, raw.y - last.y) <= 2 / viewportZoom) {
       return true;
     }
+    // A room's corner after the first runs at 45 degrees from the last.
+    if (roomMode && last) {
+      setPolygonVertices([...vertices, placeAt(raw, e.metaKey || e.ctrlKey)]);
+      return true;
+    }
     // Same alignment snap as a draw gesture's start point, so vertices
     // can latch onto neighbouring element edges / centres.
     const snap = snapToAlignment(
@@ -99,13 +123,19 @@ export function useCanvasPolygonGesture({
   // when consumed so Canvas skips the add-text double-click path.
   const handlePolygonDoubleClick = (): boolean => {
     if (!polygonArmed) return false;
-    if (verticesRef.current.length >= 2) finishOpen();
+    if (verticesRef.current.length >= (roomMode ? 3 : 2)) finishOpen();
     return true;
   };
 
   // Clear the gesture whenever the intent disarms (commit, Escape via
   // the editor's cancelDraw, or a tool switch).
-  if (!polygonArmed && (polygonVertices.length > 0 || polygonCursor)) resetGesture();
+  if (!polygonArmed && (polygonVertices.length > 0 || polygonCursor)) {
+    setVerticesState([]);
+    setPolygonCursor(null);
+  }
+  useEffect(() => {
+    if (!polygonArmed) verticesRef.current = [];
+  }, [polygonArmed]);
 
   // Rubber-band tracking: while armed with at least one vertex, follow
   // the pointer (rAF-throttled) so the preview segment tracks the
@@ -119,7 +149,9 @@ export function useCanvasPolygonGesture({
     const onMove = (e: PointerEvent) => {
       const rect = wrapperEl?.getBoundingClientRect();
       if (!rect) return;
-      latest = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+      const raw = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
+      const last = verticesRef.current[verticesRef.current.length - 1];
+      latest = roomMode && last && !(e.metaKey || e.ctrlKey) ? snap45(last, raw) : raw;
       if (rafId !== null) return;
       rafId = window.requestAnimationFrame(() => {
         rafId = null;
@@ -131,7 +163,7 @@ export function useCanvasPolygonGesture({
       window.removeEventListener('pointermove', onMove);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
-  }, [polygonArmed, hasVertices, viewportZoom, wrapperRef]);
+  }, [polygonArmed, roomMode, hasVertices, viewportZoom, wrapperRef, verticesRef]);
 
   // Finish / edit keys, capture-phase so they win over the editor's
   // own keydown handlers while a polygon is in flight:
@@ -143,8 +175,8 @@ export function useCanvasPolygonGesture({
   // The handler is an effect event, so it reads the newest vertices and
   // commit handler while the listener stays attached for the whole gesture.
   const onKeyDown = useEffectEvent((e: KeyboardEvent) => {
-    const vertices = polygonVertices;
-    if (e.key === 'Enter' && vertices.length >= 2) {
+    const vertices = verticesRef.current;
+    if (e.key === 'Enter' && vertices.length >= (roomMode ? 3 : 2)) {
       e.preventDefault();
       e.stopImmediatePropagation();
       finishOpen();

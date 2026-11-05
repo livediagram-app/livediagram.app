@@ -116,11 +116,10 @@ describe('colour-on-themed, judged on what set the colour', () => {
     expect(named(new Set())).toEqual([]);
   });
 
-  it('leaves a template’s scaffold and a fill locked against the theme alone', () => {
+  it('leaves a fill locked against the theme alone', () => {
     const report = lint(
       themed(
         'ocean',
-        coloured('s', 0, { layerId: 'layer:template:scaffold' }),
         coloured('l', 300, { themeLockFill: true }),
         coloured('k', 600, { themeLockFill: true, strokeColor: '#654321' }),
         coloured('u', 900, { themeLockFill: false }),

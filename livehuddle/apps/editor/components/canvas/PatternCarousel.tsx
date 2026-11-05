@@ -1,23 +1,23 @@
 'use client';
 
-// A carousel of canvas patterns (the Tab Style Canvas panel, docs/specs/011-theme/canvas-and-theme-dialog.md
-// "Canvas panel"): each pattern drawn for real on the tab's canvas colour, its name beneath, nine to a page (six on a
-// phone, so the tiles stay big without a long scroll). Animated patterns cannot be stilled into a tile, so theirs show
-// the pattern's glyph on the canvas colour.
+// A carousel of floors (the Tab Style Canvas panel, docs/specs/011-theme/canvas-and-theme-dialog.md "Canvas panel"):
+// each floor drawn for real, in the half the tab's canvas colour is in, its name beneath, nine to a page (six on a
+// phone, so the tiles stay big without a long scroll). Drawn a little smaller than on the canvas, so a tile shows
+// enough of its floor to read (a few planks, a run of cobbles).
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import { HoverCard, useMediaQuery } from '@livehuddle/ui';
-import type { BackgroundPattern } from '@livehuddle/document';
+import type { BackgroundPattern, SpacePattern } from '@livehuddle/document';
 import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import type { PatternEntry } from '@/components/palette/palette-controls';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 
 const headingClass = 'text-[10px] font-medium text-slate-500 dark:text-slate-300';
+const PREVIEW_SCALE = 0.6;
 
 export function PatternCarousel({
   heading,
   patterns,
-  animated = false,
   active,
   onPick,
   backgroundColor,
@@ -25,8 +25,7 @@ export function PatternCarousel({
 }: {
   heading: string;
   patterns: readonly PatternEntry[];
-  animated?: boolean;
-  active: BackgroundPattern;
+  active: SpacePattern;
   onPick: (pattern: BackgroundPattern) => void;
   backgroundColor: string;
   patternColor: string;
@@ -36,7 +35,7 @@ export function PatternCarousel({
     <PagedCarousel
       items={patterns}
       perPage={wide ? 9 : 6}
-      label={`${heading} patterns`}
+      label={`${heading} choices`}
       heading={<p className={headingClass}>{heading}</p>}
       gridClass="grid grid-cols-3 gap-2"
       initialIndex={patterns.findIndex((p) => p.id === active)}
@@ -46,33 +45,32 @@ export function PatternCarousel({
             active={active === p.id}
             label={p.shortLabel}
             onClick={() => onPick(p.id)}
-            style={
-              animated
-                ? { backgroundColor, color: patternColor }
-                : tabBackgroundStyle(p.id, { x: 0, y: 0 }, backgroundColor, patternColor)
-            }
-          >
-            {animated ? <p.icon /> : null}
-          </PatternPreviewTile>
+            style={tabBackgroundStyle(
+              p.id,
+              { x: 0, y: 0 },
+              backgroundColor,
+              patternColor,
+              1,
+              PREVIEW_SCALE,
+            )}
+          />
         </HoverCard>
       )}
     />
   );
 }
 
-// One pattern option: the pattern drawn for real on the tab's canvas colour, its name beneath.
+// One floor: drawn for real on the tab's canvas colour, its name beneath.
 function PatternPreviewTile({
   active,
   label,
   onClick,
   style,
-  children,
 }: {
   active: boolean;
   label: string;
   onClick: () => void;
   style: CSSProperties;
-  children?: ReactNode;
 }) {
   return (
     <button
@@ -90,9 +88,7 @@ function PatternPreviewTile({
         aria-hidden
         className="flex h-16 w-full items-center justify-center rounded-md border border-slate-200 dark:border-slate-700"
         style={style}
-      >
-        {children}
-      </span>
+      />
       <span className="w-full truncate px-0.5 text-center text-[11px] font-medium">{label}</span>
     </button>
   );

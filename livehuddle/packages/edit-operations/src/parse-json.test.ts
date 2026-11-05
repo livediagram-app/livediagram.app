@@ -76,7 +76,7 @@ describe('validateEditOperations', () => {
         { op: 'move', target: 'n1' },
         { op: 'rewire', target: 'a1' },
         { op: 'order', target: 'n1', to: 'front', above: 'n2' },
-        { op: 'wrap', targets: ['n1'], in: 'frame', absorb: true, makeRoom: true },
+        { op: 'wrap', targets: ['n1'], in: 'boundary', absorb: true, makeRoom: true },
         { op: 'add', element: {}, id: 'x' },
       ]).map((e) => e.details[0]),
     ).toEqual([
@@ -143,7 +143,7 @@ describe('validateEditOperations', () => {
         { op: 'add', element: 'square' },
         { op: 'move', target: 'n1', by: [1] },
         { op: 'insert', kind: 'square', between: ['n1'] },
-        { op: 'wrap', targets: [], in: 'frame' },
+        { op: 'wrap', targets: [], in: 'boundary' },
         { op: 'wrap', targets: ['n1'], in: 'box' },
         { op: 'order', target: 'n1', to: 'middle' },
       ]).map((e) => [e.operation, e.details[0]]),
@@ -156,7 +156,7 @@ describe('validateEditOperations', () => {
       [6, 'member "by": expected [dx, dy] numbers'],
       [7, 'member "between": expected [a, b] selectors'],
       [8, 'member "targets": expected a non-empty array of selectors'],
-      [9, 'member "in": expected frame or lane'],
+      [9, 'member "in": expected boundary or lane'],
       [10, 'member "to": expected front or back'],
     ]);
     expect(

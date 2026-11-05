@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Room Sign',
+  description:
+    "A sign by a room's door: Free, In Use with how many and how long, or Do Not Disturb for a closed pod, and a Knock button to ask to come in.",
+  path: '/help/palette/room-sign/',
+});
+
+<ArticleLayout
+  title="Room Sign"
+  description="See whether a room is free before you walk in on a meeting, and knock to ask the people inside."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("room-sign")}
+>
+
+A **Room Sign** is the plaque beside a meeting room's door. It shows the room's name and whether anyone is in there, and lets you knock.
+
+It lives in the palette's **Meeting** category, one of the [meeting elements](/help/palette/behaviour/), beside the [Screen](/help/palette/screen/), and search adds one too.
+
+## Placing it
+
+Put the sign beside a room's door, just outside the room (or inside it). It belongs to the nearest room or [Office Pod](/help/palette/virtual-office/) within a short step. Its name is the room's name, so rename the room and the sign follows. A sign too far from any room reads **No Room**.
+
+## What it says
+
+- **Free** (green): nobody is inside.
+- **In Use** (amber), with how many people are inside ("In Use · 3") and, underneath, for how long ("12 min"). People in an Office Pod inside the room are counted on the pod's own sign.
+- **Do Not Disturb** (red): an Office Pod whose door is shut, because both its seats are taken.
+
+How long counts from when you first saw the room in use, so if you join while a meeting is already going it starts at **Just now**.
+
+## Knocking
+
+While a room is In Use or Do Not Disturb, the sign shows a **Knock** button to anyone walking in [Avatar mode](/help/selection-modes/avatar-mode/) who isn't already inside. Walking up to a closed Office Pod's door offers you a **Knock** too.
+
+- Everyone inside sees **"Sam is knocking"** with **Let In** and **Not Now**. Anyone set to Do Not Disturb isn't shown knocks.
+- You hear back: **"Sam let you in"** or **"Sam says Not Now"**. A room's doorway is always open, so in a room you simply walk in.
+- At a closed Office Pod, **Let In** stands up whoever pressed it, so a seat is free and the door slides open for you.
+- You can knock once every 10 seconds. Knocks are never saved.
+
+## Who can do what
+
+- **Editors** place, move and delete a Room Sign.
+- **Everyone**, Editors, Participants and Viewers, sees it, and anyone walking can knock and answer a knock.
+
+## The look
+
+A small plaque with a coloured stripe down its left edge that matches its status, light on a light theme and slate on a dark one. It has no label of its own and no **…** on its face, and characters walk past it freely.
+
+</ArticleLayout>

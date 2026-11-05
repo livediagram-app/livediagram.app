@@ -18,9 +18,6 @@ const POPOVER_WIDTH = 256;
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
-  // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
-  'session-timer': 288,
-  'session-vote': 288,
   // The Tidy Up popover's `w-80`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
   'tidy-up': 320,
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
@@ -29,11 +26,7 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
 
 export type DockPanel =
   | 'explorer'
-  | 'layers'
   | 'collaborate'
-  // The Session strip's Timer and Vote (docs/specs/012-collaboration/session-tools.md "The Session strip").
-  | 'session-timer'
-  | 'session-vote'
   // The Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
   | 'tidy-up'
   // Avatar mode's character sheet (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
@@ -45,10 +38,7 @@ export type { DockAnchor };
 // their cluster button. Only on the open transition: re-opening the panel already showing is not a
 // new open.
 function trackDockPanelOpened(id: DockPanel): void {
-  if (id === 'layers') track('Layer', 'Opened', 'Panel');
-  else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-  else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
-  else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
+  if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');
   else if (id === 'avatar') track('UI', 'Opened', 'AvatarPanel');
 }

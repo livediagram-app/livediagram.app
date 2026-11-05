@@ -52,13 +52,7 @@ describe('the shared settings ellipsis (docs/specs/008-canvas/canvas-and-palette
 
 describe('hasOwnFace', () => {
   it('is the buttons, the seating, the portal and a retired element', () => {
-    for (const kind of [
-      'chair',
-      'mode-button',
-      'focus-button',
-      'reaction-pad',
-      'portal',
-    ] as const) {
+    for (const kind of ['chair', 'mode-button', 'focus-button', 'portal'] as const) {
       expect(hasOwnFace(kind), kind).toBe(true);
     }
     expect(hasOwnFace(retired('estimate'))).toBe(true);
@@ -82,7 +76,6 @@ describe('supportsTextAlign', () => {
     const kinds: ShapeKind[] = [
       'chair',
       'focus-button',
-      'reaction-pad',
       'portal',
       'mode-button',
       'stat-row',

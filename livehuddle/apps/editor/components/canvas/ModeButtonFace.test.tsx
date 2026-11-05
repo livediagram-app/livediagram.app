@@ -8,15 +8,7 @@ afterEach(cleanup);
 // docs/specs/009-elements/mode-button.md: in its own mode the button is the way out, and says so.
 describe('ModeButtonFace', () => {
   it('shows its own label while it switches you in', () => {
-    render(
-      <ModeButtonFace
-        mode="avatar"
-        label="Walk In"
-        activeMode="select"
-        textColor="#0f172a"
-        onPress={() => {}}
-      />,
-    );
+    render(<ModeButtonFace mode="avatar" label="Walk In" textColor="#0f172a" onPress={() => {}} />);
     expect(screen.getByText('Walk In')).toBeTruthy();
   });
 
@@ -32,5 +24,15 @@ describe('ModeButtonFace', () => {
     );
     expect(screen.queryByText('Walk In')).toBeNull();
     expect(screen.getByText('Leave')).toBeTruthy();
+  });
+
+  // A Participant's button is inert (it is always walking, docs/specs/013-workspace/share-roles.md "A Participant
+  // walks"): it offers no way out, so it never reads Leave.
+  it('keeps its own label when it is inert in its own mode', () => {
+    render(
+      <ModeButtonFace mode="avatar" label="Walk In" activeMode="avatar" textColor="#0f172a" />,
+    );
+    expect(screen.getByText('Walk In')).toBeTruthy();
+    expect(screen.queryByText('Leave')).toBeNull();
   });
 });

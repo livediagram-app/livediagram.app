@@ -15,7 +15,6 @@ function setup() {
   return renderHook(() =>
     useCanvasEraser({
       editsBlocked: false,
-      layerInertIds: new Set<string>(),
       activeId: 't',
       activeTab: { id: 't', name: 'Tab', elements: [] },
       tick: vi.fn(),
@@ -76,7 +75,6 @@ describe('useCanvasEraser on a whiteboard (docs/specs/023-draw-mode/draw-mode.md
     const { result } = renderHook(() =>
       useCanvasEraser({
         editsBlocked: false,
-        layerInertIds: new Set<string>(),
         activeId: 't',
         activeTab: { id: 't', name: 'Tab', elements: [stroke] },
         tick,
@@ -114,7 +112,6 @@ describe('useCanvasEraser on a whiteboard (docs/specs/023-draw-mode/draw-mode.md
     const { result } = renderHook(() =>
       useCanvasEraser({
         editsBlocked: false,
-        layerInertIds: new Set<string>(),
         activeId: 't',
         activeTab: { id: 't', name: 'Tab', elements: [stroke] },
         tick,

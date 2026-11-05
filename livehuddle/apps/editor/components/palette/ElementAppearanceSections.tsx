@@ -129,12 +129,8 @@ export function ElementAppearanceSections({
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isLegend = target.type === 'shape' && isLegendShape(target.shape);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
-  // Mode button (docs/specs/009-elements/mode-button.md): its one setting is which mode it hands out.
-  const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): its one setting is which burst it throws.
-  const isReactionPad = target.type === 'shape' && target.shape === 'reaction-pad';
   // A desk and a sofa share the chair's facing section (docs/specs/009-elements/chair.md "Desk and sofa").
   // The meeting table does not turn (docs/specs/009-elements/office.md), so it has no facing section.
   const isChair =
@@ -230,9 +226,7 @@ export function ElementAppearanceSections({
         isCodeBlock={isCodeBlock}
         isLegend={isLegend}
         isChecklist={isChecklist}
-        isModeButton={isModeButton}
         isPortal={isPortal}
-        isReactionPad={isReactionPad}
         isChair={isChair}
         sectionProps={sectionProps}
         flyoutProps={flyoutProps}

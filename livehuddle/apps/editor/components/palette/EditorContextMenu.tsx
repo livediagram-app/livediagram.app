@@ -54,7 +54,6 @@ import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';
 
 import { OpacityRow } from '@/components/palette/context-menu-rows';
-import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
@@ -96,9 +95,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     arrowheadColorHandlers,
     strokeColorHandlers,
   } = useContextMenuScaffold(props);
-  // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length
-  // and the votes-per-person budget, local until the facilitator hits Start
-  // (mirrors the old tab editor's Session accordion).
+  // Session-tool pickers (docs/specs/012-collaboration/session-tools.md): the chosen timer mode + countdown length,
+  // local until the facilitator hits Start (mirrors the old tab editor's Session accordion).
 
   if (menu.mode === 'multi') {
     return (
@@ -118,13 +116,12 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const isIcon = target.type === 'shape' && target.shape === 'icon';
     const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
-    // Regular shapes (not the dedicated icon glyph, not a frame container, not
-    // a self-drawing data shape which carries its own data) can morph to
-    // another common kind in place.
+    // Regular shapes (not the dedicated icon glyph, not a self-drawing data
+    // shape which carries its own data) can morph to another common kind in
+    // place.
     const morphable =
       target.type === 'shape' &&
       !isIcon &&
-      target.shape !== 'frame' &&
       // Every self-drawing kind carries its own data (progress / rail /
       // rating / charts / code block / checklist), so none of them morph.
       !isSelfDrawingShape(target.shape);
@@ -162,7 +159,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
-        <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
+        <MenuAccordionSection title="Arrange" icon={<LayersGlyph />} {...sectionProps('layer')}>
           {/* Layer order tweaks keep the menu open so you can nudge
             front/back a few times in a row. */}
           <MenuTileGrid cols={2}>
@@ -173,17 +170,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             />
             <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
           </MenuTileGrid>
-          {/* Move to a named layer (docs/specs/006-document/layers.md), only once the tab has
-            more than one layer (the row renders nothing otherwise). */}
-          {props.onMoveSelectionToLayer ? (
-            <MoveToLayerRow
-              layers={props.layers}
-              elements={props.elements}
-              tabFont={props.tabFont}
-              currentLayerId={props.selectionLayerId}
-              onMove={props.onMoveSelectionToLayer}
-            />
-          ) : null}
           <ContextMenuDivider />
           {/* Opacity slider: a non-closing row (dragging stays inside the
             menu, so the outside-click guard leaves it open). */}

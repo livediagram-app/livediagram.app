@@ -9,16 +9,13 @@ import {
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { isAnimatedPattern } from '@livehuddle/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
-import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { WhiteboardPenPreview } from '@/components/canvas/whiteboard/WhiteboardPenPreview';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
-import { useQuickRing } from '@liveworkspace/workbench/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@liveworkspace/workbench/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
@@ -45,9 +42,6 @@ import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
-import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
-import { useIsometricView } from '@/hooks/canvas/useIsometricView';
-import { SpotlightOverlay } from '@liveworkspace/workbench/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@liveworkspace/workbench/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
@@ -56,6 +50,7 @@ import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
 import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
 import { parseAvatarStatus } from '@liveworkspace/avatar/status';
+import { isDrinkKind } from '@liveworkspace/avatar/office-geometry';
 import { headPoint } from '@liveworkspace/avatar/speech';
 import { avatarScale } from '@liveworkspace/avatar/config';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
@@ -73,6 +68,7 @@ import { reactionPose } from '@liveworkspace/avatar/reactions';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
+import { PlacementPreview } from '@/components/canvas/collab/PlacementPreview';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
@@ -87,6 +83,8 @@ import { TalkingBars } from '@/components/calls/TalkingBars';
 import { RaisedHands } from '@/components/calls/RaisedHands';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
+import { isPieceControlPress } from '@/lib/piece-control';
+import { useElementReader } from '@/components/canvas/collab/ElementReader';
 
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
@@ -99,6 +97,8 @@ export const Canvas = withStableEventProps(CanvasView);
 // The canvas is what shows the view (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the
 // canvas"): CanvasView subscribes to it; what it renders takes the view only where it shows it.
 const wholeView = (v: View) => v;
+// livehuddle has no layers (docs/specs/006-document/layers.md): nothing is inert to the shared select handlers.
+const NO_INERT_IDS = new Set<string>();
 
 function CanvasView(props: CanvasProps) {
   const {
@@ -106,10 +106,8 @@ function CanvasView(props: CanvasProps) {
     readOnly,
     tabBackgroundPattern,
     tabBackgroundColor,
-    tabLayers,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
-    tabBackgroundAnimationSpeed,
     tabPatternColor,
     mainRef,
     isPinchingRef,
@@ -161,12 +159,9 @@ function CanvasView(props: CanvasProps) {
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
-  // Which quick-connect ring (if any) is open. Self-contained state + reset /
-  // outside-close effects live in useQuickRing.
   // The selection lives in the store (docs/specs/008-canvas/blueprints/selection-store.md): the canvas
   // reads it when a handler runs and subscribes only to the narrow slices it draws.
   const selectionStore = useSelectionStore();
-  const [quickRingOpen, setQuickRingOpen] = useQuickRing(selectionStore);
   // Which panel is open as a popover off its button (the Toolbar Explorer,
   // the cluster popovers). See useDockPopovers; the popover anchor math is
   // the tested computeDockAnchor.
@@ -270,8 +265,13 @@ function CanvasView(props: CanvasProps) {
     ),
   );
 
-  const { spotlightLook, spotlight, eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } =
-    useCanvasPointer({ canvasTool, mainRef, onCanvasPointerMove, wrapperRef, viewportZoom });
+  const { eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
+    canvasTool,
+    mainRef,
+    onCanvasPointerMove,
+    wrapperRef,
+    viewportZoom,
+  });
 
   const {
     avatar,
@@ -282,6 +282,7 @@ function CanvasView(props: CanvasProps) {
     padArrivals,
     playAvatarBurst,
     pressModeButton,
+    pressAvatarPad,
     resolvePortal,
     setAvatarBurst,
     setAvatarStatus,
@@ -292,7 +293,6 @@ function CanvasView(props: CanvasProps) {
     props,
     canvasTool,
     elements,
-    tabLayers,
     mainRef,
     wrapperRef,
     viewportOffset,
@@ -317,12 +317,6 @@ function CanvasView(props: CanvasProps) {
   // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
   const callBubbleRects = useCallBubbleRects();
 
-  // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
-  // transform fragment, pivoted on the content centre — see
-  // useIsometricView. Shift-drag on the canvas spins / tilts it (see
-  // the <main> pointerdown handler).
-  const { isoCamera, isoFragment } = useIsometricView({ canvasTool, elements, mainRef });
-
   const cursorClass = canvasCursorClass({
     pendingDraw: !!pendingDraw,
     pan: !!pan,
@@ -336,7 +330,7 @@ function CanvasView(props: CanvasProps) {
   // views — see useCanvasSelectHandlers.
   const { handleElementContextSelect, handleArrowSelect, handleElementClick } =
     useCanvasSelectHandlers({
-      inertIds: props.layerInertIds,
+      inertIds: NO_INERT_IDS,
       isPaintMode,
       readSelection: selectionStore.get,
       onSelect,
@@ -378,6 +372,8 @@ function CanvasView(props: CanvasProps) {
   const doubleTap = useDoubleTapZoom(mainRef, viewportStore, { id: props.activeTabId, elements });
   const smallElementTap = useSmallElementDoubleTap(doubleTap.onElement);
   const stickyPeel = useStickyPeelVars();
+  // A walking click on a reading piece opens it large (docs/specs/008-canvas/avatar-mode.md "The reader").
+  const elementReader = useElementReader(elements);
   const surface = useCanvasSurfaceGestures({
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
@@ -390,11 +386,12 @@ function CanvasView(props: CanvasProps) {
     spaceHeldRef,
     setPan,
     setMarquee,
-    spotlight,
     avatar,
     peerAvatars: props.remoteAvatars,
     onPushPeer: props.onAvatarPush,
-    isoCamera,
+    elements,
+    onToggleDoor: props.onToggleDoor,
+    onReadElement: elementReader.open,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     interceptPress: (e) => pathTool.beginEditPress(e),
     onEraseStart: props.onEraseStart,
@@ -408,8 +405,6 @@ function CanvasView(props: CanvasProps) {
         {
           whiteboard: false,
           elements,
-          layers: tabLayers,
-          inertIds: props.layerInertIds,
         },
         { x, y },
         {
@@ -454,7 +449,9 @@ function CanvasView(props: CanvasProps) {
           onDrop={paletteDrop.onDrop}
           onPointerDownCapture={(e) => {
             surface.onPointerDownCapture(e);
-            if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
+            // A piece's own control is never a double-tap on its piece either (lib/piece-control).
+            if (!e.isPropagationStopped() && !isPieceControlPress(e.target))
+              smallElementTap.onPointerDownCapture(e);
           }}
           // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
           // ink is tuned for light paper and vanishes on a dark wall. Flagged
@@ -513,19 +510,6 @@ function CanvasView(props: CanvasProps) {
           {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
           <CanvasLiveRegion />
-          {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
-          canvas content; the static patterns ride the <main> background
-          above. tabBackgroundStyle returns just the backdrop colour for
-          these, so this layer is the only thing that draws their motion. */}
-          {isAnimatedPattern(tabBackgroundPattern) ? (
-            <AnimatedCanvasBackground
-              variant={tabBackgroundPattern}
-              color={tabPatternColor}
-              scale={tabBackgroundPatternScale}
-              speed={tabBackgroundAnimationSpeed}
-              opacity={tabBackgroundOpacity}
-            />
-          ) : null}
           <div
             ref={wrapperRef}
             data-canvas-content=""
@@ -536,29 +520,12 @@ function CanvasView(props: CanvasProps) {
               if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
               surface.onWrapperDoubleClick(e);
             }}
-            // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
-            // canvas layer ignore pointer events so NO element kind can be
-            // selected, dragged, or edited (a per-element capture guard can't
-            // catch every select path — boxed elements, arrow hit-bands, labels,
-            // click vs pointerdown). Clicks then fall through to <main>, where the
-            // capture handler turns them into grow / shrink, and middle-mouse or
-            // held-Space still pans.
-            // Isometric view (docs/specs/008-canvas/isometric-view.md): like Spotlight, the layer goes
-            // pointer-events-none so NO element kind can be selected / dragged —
-            // it's a read-only view tool. Clicks fall through to <main>, where a
-            // drag pans (canvasTool === 'isometric' is added to `wantsPan`).
-            // Avatar mode (docs/specs/008-canvas/avatar-mode.md): same treatment for the same reason — the mode
-            // is read-only, so the canvas layer goes inert and every click falls
+            // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the mode is read-only, so the canvas layer
+            // ignores pointer events (a per-element capture guard can't catch every select path) and every click falls
             // through to <main>, where the capture handler turns it into a walk.
             className={`absolute inset-0 origin-center touch-none ${
-              canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'avatar'
-                ? 'pointer-events-none'
-                : ''
+              canvasTool === 'avatar' ? 'pointer-events-none' : ''
             } ${pendingDraw ? '' : cursorClass}`}
-            // Scopes the [data-iso] CSS (globals.css): frames settle just under
-            // the base plane while the camera orbits so they can't z-fight
-            // (flicker) with the coplanar contents above them.
-            data-iso={canvasTool === 'isometric' ? '' : undefined}
             // A whiteboard pen draws wherever it presses, so nothing under it swaps
             // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
             data-pen-in-hand={
@@ -572,16 +539,7 @@ function CanvasView(props: CanvasProps) {
             style={{
               // Translate is in canvas-coords (applied first); scale is centred
               // on the wrapper so zooming keeps the viewport centre stable.
-              // Isometric tilt (docs/specs/008-canvas/isometric-view.md) is appended INNERMOST (last in the list,
-              // so it transforms the content first): that keeps the pan translate
-              // in screen space, so a drag moves the scene the way the cursor
-              // moves at any camera angle. The fragment (built above as
-              // isoFragment) pivots the tilt around the content centre so the
-              // canvas tilts in place / stays centred while orbiting rather than
-              // swinging off-screen. preserve-3d lets the depth layer's
-              // translateZ stack read as real extruded height.
-              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
-              ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
+              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
               // Draw-mode cursor: every intent gets a custom inline-SVG
               // cursor (crosshair at the pointer tip plus a small glyph
               // hinting at what's about to land). Without this, tool
@@ -593,10 +551,6 @@ function CanvasView(props: CanvasProps) {
               ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
             }}
           >
-            {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
-            behind the real element layer, which caps each column at z=0.
-            Only mounted while the tool is active. */}
-            {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
             <CanvasStillProvider still={false}>
               <CanvasArrivalProvider
                 tabId={props.activeTabId ?? ''}
@@ -612,9 +566,6 @@ function CanvasView(props: CanvasProps) {
                       // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
                       // so the prop from the host is overridden with the local resolver.
                       onEnterPortal={resolvePortal}
-                      onFireReaction={props.onFireReaction}
-                      reactionBursts={props.reactionBursts}
-                      onReactionBurstDone={props.onReactionBurstDone}
                       // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
                       // lives, rather than threaded from the page.
                       chairSitters={sittersOf}
@@ -622,7 +573,9 @@ function CanvasView(props: CanvasProps) {
                       // the character at THAT button (see avatarSpawn), not the viewport
                       // centre: you pressed a thing on the canvas, so the character should
                       // appear where you pressed it.
-                      onPressModeButton={pressModeButton}
+                      // None for a Participant, who is always walking: its buttons draw inert.
+                      onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
+                      onPressAvatarPad={pressAvatarPad}
                       onPressFocusButton={props.onPressFocusButton}
                       hasArrows={hasArrows}
                       arrowLabels={arrowLabels}
@@ -631,8 +584,6 @@ function CanvasView(props: CanvasProps) {
                       handleArrowSelect={handleArrowSelect}
                       handleElementClick={handleElementClick}
                       handleElementContextSelect={handleElementContextSelect}
-                      quickRingOpen={quickRingOpen}
-                      setQuickRingOpen={setQuickRingOpen}
                       drawDrag={drawDrag}
                     />
                   </ElementIndicatorStyleProvider>
@@ -653,6 +604,15 @@ function CanvasView(props: CanvasProps) {
             ) : null}
             {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
             {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+            {/* Where the placed piece being added would land (docs/specs/010-palette/palette-drag-ghost.md
+            "Placed pieces preview themselves"). */}
+            <PlacementPreview
+              pendingDraw={pendingDraw}
+              elements={elements}
+              wrapperRef={wrapperRef}
+              zoom={viewportZoom}
+              drawing={!!drawDrag}
+            />
             {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
             {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
@@ -672,12 +632,8 @@ function CanvasView(props: CanvasProps) {
                 lift={peer.avatar.lift}
                 wave={peer.avatar.wave}
                 seated={!!peer.avatar.seatedOn}
-                // Parsed, not trusted: anything but the two drinks draws an empty hand.
-                holding={
-                  peer.avatar.holding === 'water' || peer.avatar.holding === 'coffee'
-                    ? peer.avatar.holding
-                    : null
-                }
+                // Parsed, not trusted: anything but a known drink draws an empty hand.
+                holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
                 status={parseAvatarStatus(peer.avatar.status)}
                 // Replayed locally from the kind + elapsed time in their packet, by
                 // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
@@ -692,9 +648,7 @@ function CanvasView(props: CanvasProps) {
                 glideMs={peer.glideMs}
               />
             ))}
-            {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather
-            than around a pad. Same engine, same particles: the pad and the
-            avatar panel are two ways to set off one effect, not two effects.
+            {/* A reaction burst (docs/specs/008-canvas/avatar-mode.md "Reactions") thrown around the character.
             Positioned at the character's canvas point, inside the transformed
             wrapper, so it pans and zooms with the canvas it is celebrating. */}
             {avatar.pos && avatarBurst ? (
@@ -770,14 +724,8 @@ function CanvasView(props: CanvasProps) {
             ) : null}
           </div>
 
-          {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the
-          transformed wrapper so the light stays fixed on screen while the
-          canvas pans / zooms underneath. Rendered before CanvasChrome so the
-          palette + chrome paint ON TOP and stay reachable to switch tools
-          back; pointer-events-none lets clicks fall through to <main>. */}
-          {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): the same screen-space layer as
-          the shroud, for the same reason — it must not pan or zoom with the
-          canvas, and it must never take a pointer event. */}
+          {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): screen space, so it does not pan
+          or zoom with the canvas, and it never takes a pointer event. */}
           {canvasTool === 'eraser' ? (
             <EraserBrushRing
               pos={eraserPos}
@@ -793,19 +741,8 @@ function CanvasView(props: CanvasProps) {
               }
             />
           ) : null}
-          {canvasTool === 'spotlight' ? (
-            <SpotlightOverlay
-              pos={spotlight.pos}
-              radius={spotlight.radius}
-              config={spotlightLook.config}
-            />
-          ) : null}
 
-          <CanvasSelectionToolbars
-            props={props}
-            selectionInput={selectionInput}
-            quickRingOpen={quickRingOpen !== null}
-          />
+          <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
           {pathTool.toolbar ? (
             <PathEditToolbar
               {...pathTool.toolbar}
@@ -829,15 +766,6 @@ function CanvasView(props: CanvasProps) {
             mainSize={mainSize}
             avatarConfig={avatarLook.config}
             onChangeAvatarField={avatarLook.setField}
-            laserConfig={props.laserConfig}
-            onChangeLaserField={props.onChangeLaserField}
-            spotlightConfig={spotlightLook.config}
-            onChangeSpotlightField={spotlightLook.setField}
-            spotlightRadius={spotlight.radius}
-            onSetSpotlightRadius={spotlight.setRadius}
-            spotlightPanelPosition={props.spotlightPanelPosition}
-            onMoveSpotlightPanel={props.onMoveSpotlightPanel}
-            onResetSpotlightPanel={props.onResetSpotlightPanel}
             eraserConfig={props.eraserConfig}
             onChangeEraserField={props.onChangeEraserField}
             formatConfig={props.formatConfig}
@@ -850,9 +778,6 @@ function CanvasView(props: CanvasProps) {
             eraserPanelPosition={props.eraserPanelPosition}
             onMoveEraserPanel={props.onMoveEraserPanel}
             onResetEraserPanel={props.onResetEraserPanel}
-            laserPanelPosition={props.laserPanelPosition}
-            onMoveLaserPanel={props.onMoveLaserPanel}
-            onResetLaserPanel={props.onResetLaserPanel}
             onRandomiseAvatar={avatarLook.randomise}
             avatarStatus={avatarStatus}
             onSetAvatarStatus={setAvatarStatus}
@@ -879,8 +804,6 @@ function CanvasView(props: CanvasProps) {
             handleZoomIn={handleZoomIn}
             handleZoomOut={handleZoomOut}
             handleSetZoom={handleSetZoom}
-            onIsoOrbit={isoCamera.startOrbit}
-            onIsoReset={isoCamera.reset}
           />
           {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
@@ -896,6 +819,7 @@ function CanvasView(props: CanvasProps) {
           {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
             press-and-hold affordance that opens the context menu on touch. */}
           <LongPressRing point={surface.canvasLongPress.pressPoint} />
+          {elementReader.reader}
         </main>
       </>
     </CanvasFinishProvider>

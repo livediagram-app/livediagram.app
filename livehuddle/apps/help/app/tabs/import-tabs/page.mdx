@@ -5,48 +5,36 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import a livehuddle tab or an Excalidraw board into a tab by pasting text or picking a file, images included. It replaces the tab contents.',
+    'Import a livehuddle tab export into a tab by pasting its JSON or picking a file, images included. It replaces the tab contents.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab or an Excalidraw scene, images included, into the active tab."
+  description="Bring a tab's contents back in from a livehuddle JSON export, pasted or picked as a file, images included, into the active tab."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
 **Import** brings content into the active tab from pasted text or a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one space, import it into a tab somewhere else.
 
-A Space is for meeting, so what you import is a board to meet around: a tab exported from another space, or a whiteboard from Excalidraw. To bring in a diagram from draw.io, Mermaid or Markdown, use livediagram, livehuddle's sister app for diagrams.
+Import reads livehuddle's own tab export, so you can back a tab up and restore it, or move it from one space to another. A Space is for meeting, so livehuddle reads no other tool's files: to bring in a board from Excalidraw, draw.io, Mermaid or Markdown, use livediagram, livehuddle's sister app for diagrams.
 
-## Import formats
+## Importing a tab export
 
-Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens with a card per format:
-
-- **JSON** reads a livehuddle tab export (a `.livehuddle-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
-- **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. It comes in as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog reads a livehuddle tab export (a `.livehuddle-tab.json` file) and restores its elements exactly.
 
 <Figure caption="The tab menu holds Import, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 
-Each format card opens the same panel: **paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses. **All formats** at the top of the panel takes you back to the cards.
+**Paste** the JSON into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
 
-## Paste from Excalidraw
+## Images in an imported tab
 
-You don't need a file to bring a drawing across. In Excalidraw, select what you want and copy it (Ctrl+C, or Cmd+C on a Mac), then click into a livehuddle tab and paste (Ctrl+V or Cmd+V). The drawing lands where your pointer is, or in the middle of the view, and stays selected so you can move or restyle it at once. One undo takes the whole paste back.
+When an imported tab carries images, they come across with it. Each one is resized in your browser (to at most 2048 pixels on its longest side) and saved to your [image gallery](/help/explorer/image-gallery/), so it counts towards the gallery's space like any image you add yourself. An image you already have is recognised and reused rather than stored twice.
 
-- The drawing comes in as diagram elements, just as importing the file would.
-- You can also **drag** a `.excalidraw` file, or a PNG or SVG exported from Excalidraw with **Embed scene** on, straight onto the canvas.
-
-When something couldn't come across exactly (Excalidraw groups, for example), a small note at the bottom of the canvas lists what changed. Pasting adds to the tab; it never replaces what is already there.
-
-## Images in an imported file
-
-When an imported file carries images, they come across with it. Each one is resized in your browser (to at most 2048 pixels on its longest side) and saved to your [image gallery](/help/explorer/image-gallery/), so it counts towards the gallery's space like any image you add yourself. An image you already have is recognised and reused rather than stored twice.
-
-While the images save, the panel counts them ("Importing images 3 of 12…"). When it finishes, the dialog tells you how many were imported, how many were already in your gallery, and how many were left as placeholders and why: the file didn't include the image, its format couldn't be read, it was too large, or your gallery is full. The rest of the file always imports. Double-click a placeholder to add its image later.
+While the images save, the panel counts them ("Importing images 3 of 12…"). When it finishes, the dialog tells you how many were imported, how many were already in your gallery, and how many were left as placeholders and why: the file didn't include the image, its format couldn't be read, it was too large, or your gallery is full. The rest of the tab always imports. Double-click a placeholder to add its image later.
 
 In a [space in This Browser](/help/privacy-and-security/offline-mode/), images are kept inside the space in this browser instead of your gallery, up to a limit for each import.
 
@@ -56,7 +44,7 @@ Importing **replaces the active tab's contents** with what comes in, it does not
 
 **Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits, and the tab menu isn't offered on a view-only share link.
 
-<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
+<Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the import box.">
   <ImportWarning />
 </Figure>
 

@@ -32,7 +32,6 @@ import {
   writeFields,
 } from '../state';
 import type { ConnectOperation, RewireOperation } from '../types';
-import { layerFor } from './add-kind';
 
 const centreOf = (el: BoxedElement) => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
 
@@ -135,11 +134,7 @@ export function applyConnect(
     const styled = prevailingLine(state, written.next, a.el, b.el);
     if (styled) written.next = styled;
   }
-  const layerId = layerFor(state, a.el);
-  const arrow = recolourElementForTheme(
-    layerId === undefined ? written.next : { ...written.next, layerId },
-    state.theme,
-  );
+  const arrow = recolourElementForTheme(written.next, state.theme);
   state.warnings.push(...written.warnings);
   const later = state.order.indexOf(a.el.id) > state.order.indexOf(b.el.id) ? a.el.id : b.el.id;
   insertElement(state, arrow, index, { after: later });

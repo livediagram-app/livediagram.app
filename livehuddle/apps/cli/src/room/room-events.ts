@@ -111,10 +111,6 @@ export function classifyRoomOp(op: unknown): RoomEvent[] {
       return elementEvent(op.op, tabId);
     case 'el-delta':
       return deltaEvent(op, tabId);
-    case 'vote': {
-      const elementId = str(op, 'elementId');
-      return elementId === null ? [] : [{ kind: 'element', tabId, elementId, change: 'changed' }];
-    }
     case 'tab':
     case 'tab-meta':
       return [{ kind: 'tab', tabId }];

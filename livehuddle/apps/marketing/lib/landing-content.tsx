@@ -10,7 +10,6 @@ import {
   ExportArt,
   FacilitatorArt,
   FollowAlongArt,
-  LaserArt,
   LiveImageArt,
   LockArt,
   McpArt,
@@ -20,7 +19,6 @@ import {
   SelectionGlowArt,
   SessionToolsArt,
   ShareLinksArt,
-  SpotlightArt,
   TabsArt,
   TeamsArt,
   TemplatesArt,
@@ -71,10 +69,10 @@ export const LANDING_SECTIONS: LandingSection[] = [
     description:
       'Walk into a Space as your own little character, find the team round the table, and talk it through: status above your head, a speech bubble for a quick hello, a cheer when it goes well.',
     metaDescription:
-      'Walk into a Space as your own character: offices, team pods and halls to meet in, with status, speech bubbles and reactions for the whole room.',
+      'Walk into a Space as your own character: offices, halls, bars and gardens to meet in, with status, speech bubbles and reactions for the whole room.',
     highlights: [
       'Walk in as yourself',
-      'Four Spaces to start from',
+      'Eighteen Spaces to start from',
       'Status at a glance',
       'Say it in a bubble',
     ],
@@ -99,9 +97,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/palette/virtual-office/',
         group: 'Rooms to meet in',
-        title: 'Four Spaces to start from',
+        title: 'Eighteen Spaces to start from',
         description:
-          'Open a Virtual Office of rooms either side of a corridor, a Coworking Space with phone booths, a Team Pod with a meeting table and a board for the week, or an All-Hands Hall of chairs facing a stage. Each is ready to walk into, with no floor plan to draw first.',
+          'Open a Virtual Office of rooms either side of a corridor, a Team Pod with a board for the week, an All-Hands Hall of chairs facing a stage, a Rooftop Bar with stools at the counter or a Garden Retreat of paths and trees. Each is ready to walk into, with no floor plan to draw first.',
       },
       {
         art: <BringFocusArt />,
@@ -133,7 +131,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Say hello',
         title: 'Everyone walks together',
         description:
-          'On a shared Space every character is on everyone else’s board, in its owner’s colour with their name above its head. Click a teammate’s character to walk over and give them a gentle push. Viewers can walk too: walking changes nothing on the board.',
+          'On a shared Space every character is on everyone else’s board, in its owner’s colour with their name above its head. Click a teammate’s character to walk over and give them a gentle push. Everyone can walk, whatever their role: walking changes nothing on the board.',
       },
       {
         art: <SelectionGlowArt />,
@@ -153,11 +151,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <AvatarModeArt />,
-        href: '/help/palette/behaviour/reaction-pads/',
+        href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'Wave, cheer and dance',
         description:
-          'Five moves, each one key: jumping jacks, a wave, a spin, a cheer and a dance, and five bursts of confetti, sparkles, hearts, applause or fireworks. Reaction pads on the board throw them over the whole room when someone presses one or walks onto it.',
+          'Five moves, each one key: jumping jacks, a wave, a spin, a cheer and a dance, and five bursts of confetti, sparkles, hearts, applause or fireworks.',
       },
       {
         art: <FollowAlongArt />,
@@ -176,11 +174,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore meetings',
     title: 'Run the meeting from the room',
     description:
-      'What a meeting needs is in the room: a timer everyone sees, a quick vote on the notes, a baton so one person runs it, and a way to ask everyone to look at the same thing.',
+      'What a meeting needs is in the room: a timer everyone sees, a baton so one person runs it, and a way to ask everyone to look at the same thing.',
     metaDescription:
-      'Run stand-ups and all-hands in a Space: a shared timer, a quick dot vote, a facilitator baton, Bring Focus, the laser and the spotlight.',
+      'Run stand-ups and all-hands in a Space: a shared timer, a facilitator baton and Bring Focus.',
     highlights: [
-      'Timer and vote',
+      'Timer and Stopwatch',
       'One person runs the room',
       'Ask the room to look here',
       'A Space for every meeting',
@@ -188,11 +186,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <SessionToolsArt />,
-        href: '/help/collaboration/session-tools/',
+        href: '/help/collaboration/session-tools/timer/',
         group: 'Run the room',
-        title: 'Timer and vote',
+        title: 'Timer and Stopwatch',
         description:
-          'Timer and Vote sit in the Session strip at the foot of every board. Start a countdown the whole room sees, or open a dot vote with a budget of dots on the notes in a room. Results tally live, and revealing a vote walks the room through the top picks one at a time.',
+          'Place a Timer or a Stopwatch in any room. Start a countdown the whole room sees, or run a stopwatch, and pause or restart it for everyone at once, with a gentle chime at zero.',
       },
       {
         art: <FacilitatorArt />,
@@ -200,7 +198,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Run the room',
         title: 'One person runs the room',
         description:
-          'Hand someone the facilitator baton and the tools that run the meeting answer to them alone: the timer and the votes. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
+          'Hand someone the facilitator baton and the tools that run the meeting answer to them alone, starting with the timer. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
       },
       {
         art: <BringFocusArt />,
@@ -211,28 +209,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
-        art: <SpotlightArt />,
-        href: '/help/selection-modes/spotlight/',
-        group: 'Run the room',
-        title: 'Spotlight the room on one thing',
-        description:
-          'Switch on Spotlight and the board dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy board one piece at a time, and nobody else’s view is touched.',
-      },
-      {
-        art: <LaserArt />,
-        href: '/help/selection-modes/laser/',
-        group: 'Run the room',
-        title: 'A laser pointer everyone sees',
-        description:
-          'Switch to the laser and your cursor leaves a glowing trail on everyone’s screen. Point at the thing you mean while you talk it through, and the trail fades on its own.',
-      },
-      {
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Run the room',
         title: 'A Space for every meeting',
         description:
-          'Start from a Team Pod for the stand-up, an All-Hands Hall with a stage, a Coworking Space to work side by side or a whole Virtual Office, or from a blank Space you furnish yourself.',
+          'Start from a Team Pod for the stand-up, a Training Room for group work, an All-Hands Hall with a stage, a Cafe or a City Park for a catch-up, or from a blank Space you furnish yourself.',
       },
     ],
   },
@@ -245,11 +227,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     description:
       'Share a link and your team is in the Space with you: live cursors, comments on any element, actions handed to teammates, and links for whoever runs it, whoever takes part and whoever watches.',
     metaDescription:
-      'Share a link and your team is in the Space with you: live cursors, comments, assigned actions, and share links for editors, participants and viewers.',
+      'Share a link and your team is in the Space with you: live cursors, comments, assigned actions, and share links for editors and participants.',
     highlights: [
       'Live presence',
       'Comments on any element',
-      'Editor, participant or view-only links',
+      'Editor and participant links',
       'Assign actions to teammates',
     ],
     items: [
@@ -321,9 +303,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <ShareLinksArt />,
         href: '/help/collaboration/sharing/',
         group: 'Share & access',
-        title: 'Editor, participant or view-only links',
+        title: 'Editor and participant links',
         description:
-          'Create an editor link for whoever runs the session, a participant link for a room that should add stickies, write and vote without reshaping the board, or a view-only link for people who should watch and walk, not touch. Point one at a single tab to keep the rest private.',
+          'Create an editor link for whoever runs the session, or a participant link, the default, for a room that should talk, add stickies, write and comment without reshaping the board. Point one at a single tab to keep the rest private.',
       },
       {
         art: <TeamsArt />,

@@ -212,7 +212,7 @@ describe('writeFieldsOnto', () => {
     expect(unknown.details).toEqual([
       'arrow has no field "fill"',
       expect.stringMatching(
-        /^fields: label stroke text-color border text line, then id type layerId /,
+        /^fields: label stroke text-color border text line, then id type from to /,
       ),
     ]);
   });

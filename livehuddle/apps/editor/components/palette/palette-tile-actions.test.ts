@@ -19,8 +19,8 @@ describe('withTileActionPreamble', () => {
   });
 
   it('returns the wrapped action’s value, so a handler that reports back still can', () => {
-    const wrapped = withTileActionPreamble({ addIcon: () => 'dropped' }, () => {});
-    expect(wrapped.addIcon()).toBe('dropped');
+    const wrapped = withTileActionPreamble({ addSticker: () => 'dropped' }, () => {});
+    expect(wrapped.addSticker()).toBe('dropped');
   });
 
   it('fires the preamble once per call, not once per bundle', () => {

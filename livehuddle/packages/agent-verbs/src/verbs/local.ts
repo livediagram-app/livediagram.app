@@ -291,14 +291,14 @@ export const push = defineVerb({
 });
 
 // Every document to files, read-only, for backups and docs (blueprint "Pull and push", CLI29).
-export const EXPORT_FORMATS = ['json', 'svg', 'png', 'mermaid', 'md'] as const;
+export const EXPORT_FORMATS = ['json', 'svg', 'png', 'md'] as const;
 
 export const exportAll = defineVerb({
   id: 'export',
   files: true,
   summary: 'Every Space to files, for backups and docs',
   description:
-    'Writes every Space the token can read: <slug>.livehuddle.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
+    'Writes every Space the token can read: <slug>.livehuddle.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -359,14 +359,14 @@ export const tabRender = defineVerb({
 
 export const graphRender = defineVerb({
   id: 'graph.render',
-  summary: 'A picture of a graph or Mermaid file, before writing it',
+  summary: 'A picture of a graph file, before writing it',
   description:
-    'Lays a graph or Mermaid file out as the api would and writes it to --png or --svg (one of them), at scale 1. Nothing is sent.',
+    'Lays a graph file out as the api would and writes it to --png or --svg (one of them), at scale 1. Nothing is sent.',
   behaviour: 'read',
   local: true,
   offline: true,
   input: z.object({
-    file: z.string().describe('The graph or Mermaid file, or - for stdin'),
+    file: z.string().describe('The graph file, or - for stdin'),
     ...pictureFlags,
   }),
   output: pictureOutput,
@@ -375,7 +375,7 @@ export const graphRender = defineVerb({
     positionals: ['file'],
     examples: [
       'livehuddle graph render arch.json --png arch.png',
-      'livehuddle graph render flow.mmd --svg flow.svg',
+      'livehuddle graph render flow.json --svg flow.svg',
     ],
     prints: '<path>  <width>×<height> · <n> KB',
   },

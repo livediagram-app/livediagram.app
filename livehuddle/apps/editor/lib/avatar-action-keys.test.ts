@@ -17,8 +17,8 @@ const press = (
   });
 
 describe('avatarActionForKey', () => {
-  it('leaves the ways out of the mode alone: V, H, K, I and Z', () => {
-    for (const key of ['v', 'h', 'k', 'i', 'z']) {
+  it('leaves the ways out of the mode alone: V and H', () => {
+    for (const key of ['v', 'h']) {
       expect(VIEW_TOOL_KEYS[key]).toBeDefined();
       expect(press(key)).toBeNull();
     }

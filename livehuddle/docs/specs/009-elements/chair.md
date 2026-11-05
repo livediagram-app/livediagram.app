@@ -20,8 +20,8 @@ portal ([Portal element](portal-element.md)) works.
 
 ## The element
 
-A **shape kind**, `chair`, in the palette's **Collaborate** category under
-**Navigate**, beside the portal, the bring focus button and the link card.
+A **shape kind**, `chair`, in the palette's **Seating** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside the desk, the sofa and the
+meeting table.
 
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
   reads as furniture rather than as a box with a label. It is drawn **upright at every facing**
@@ -78,6 +78,13 @@ Walking a character onto a chair seats it, fired **once on arrival** by the
 same `useAvatarWalk` mechanism the portal uses (not every frame it stands
 there).
 
+- **Only the chair you are going to.** A click-walk sits you only in the piece its destination is in: clicking a
+  chair (a desk, a sofa, a meeting table) walks you there and sits you down, but a walk to somewhere else that
+  happens to cross a chair on the way walks straight through it, neither sitting you nor stopping you beside a
+  taken one. Steering with the arrow keys sits you in whatever you steer into, since steering into a chair is
+  choosing it; walking alongside one, feet outside it, never does. (`sitsOnEntry` in `@liveworkspace/avatar`'s
+  walk.)
+
 - The character **snaps to the chair's seat point** and switches to a seated
   pose: legs forward, body lowered, **facing the way the chair faces**
   (`n` down the canvas, `e` left, `s` up, `w` right: the same words the menu
@@ -128,7 +135,7 @@ reaches the stored document or undo.
 
 ## Desk and sofa
 
-Two more pieces of furniture seat a character exactly as a chair does, beside it in **Navigate**:
+Two more pieces of furniture seat a character exactly as a chair does, beside it in **Seating**:
 
 - **Desk** (shape kind `desk`): a chair pulled up to a desk with a computer on it, the monitor's
   screen toward the room. Whoever sits at it **faces the computer**, so a new desk is placed with

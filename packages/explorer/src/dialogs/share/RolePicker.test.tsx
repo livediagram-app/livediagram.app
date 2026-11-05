@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import type { Level } from '@liveworkspace/index-client';
+import { LEVEL_PASS } from './parts';
 import { RolePicker } from './RolePicker';
 
 function Picker() {
@@ -31,5 +32,23 @@ describe('RolePicker', () => {
     fireEvent.click(editor);
     expect(card().getAttribute('aria-label')).toBe('Pass level: Editor. Change level');
     expect(document.activeElement).toBe(card());
+  });
+
+  // An app's own blurb (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): livehuddle's Participant, and
+  // the shared words everywhere else.
+  it("words a level in the app's own blurb where it has one", () => {
+    const { unmount } = render(
+      <RolePicker
+        level="participate"
+        onChange={() => {}}
+        levels={['edit', 'participate']}
+        app="livehuddle"
+      />,
+    );
+    expect(screen.getAllByText('Walks, talks and uses the pieces; adds nothing.').length).toBe(2);
+    expect(screen.getByText('Works with you in real time.')).toBeTruthy();
+    unmount();
+    render(<RolePicker level="participate" onChange={() => {}} app="livediagram" />);
+    expect(screen.getAllByText(LEVEL_PASS.participate.blurb).length).toBe(2);
   });
 });

@@ -5,22 +5,20 @@
 import { WORK_KINDS, defaultTemplateHref } from '@liveworkspace/explorer';
 import { TEMPLATES, isTemplateKind, templateCategory } from '@livehuddle/templates';
 import { describe, expect, it } from 'vitest';
-import { wizardBypassKind } from './new-document-params';
+import { linkedTemplateKind } from './new-document-params';
 
 describe("livehuddle's kinds on Home's hero", () => {
   const kinds = WORK_KINDS.livehuddle;
 
-  it('are its four Spaces, every one in the catalogue’s Virtual Spaces', () => {
+  it('are four of its Spaces, every one in a catalogue category', () => {
     expect(kinds.map((k) => k.template)).toEqual([
       'virtual-office',
       'team-pod',
       'coworking-space',
       'all-hands-hall',
     ]);
-    const spaces = TEMPLATES.filter((t) => templateCategory(t.kind) === 'spaces').map(
-      (t) => t.kind,
-    );
-    expect([...spaces].sort()).toEqual(kinds.map((k) => k.template).sort());
+    const spaces = TEMPLATES.filter((t) => templateCategory(t.kind) !== null).map((t) => t.kind);
+    for (const k of kinds) expect(spaces, k.template).toContain(k.template);
   });
 
   it.each(kinds.map((k) => [k.label, k.template] as const))(
@@ -30,7 +28,7 @@ describe("livehuddle's kinds on Home's hero", () => {
       const href = defaultTemplateHref('livehuddle')('livehuddle', template)!;
       const url = new URL(href, 'https://www.livehuddle.app');
       expect(url.pathname).toBe('/new');
-      expect(wizardBypassKind(url.search)).toBe(template);
+      expect(linkedTemplateKind(url.search)).toBe(template);
     },
   );
 });

@@ -1,11 +1,9 @@
 // Tab import (docs/specs/020-import-export/README.md), lifted out of useTabActions: the id re-mint
-// imported elements go through, the single-undo-step content replace, and the format-dispatched importer with
-// its lazy-loaded parsers: a livehuddle tab's JSON, and Excalidraw
-// (docs/specs/020-import-export/excalidraw-import-export.md). The draw.io, Mermaid and Markdown imports are gone
-// from livehuddle (Work Tracker #423, part 4).
+// imported elements go through, the single-undo-step content replace, and the importer with its lazy-loaded
+// parser: a livehuddle tab's JSON. Imports from other tools are gone from livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools").
 
 import { remapElementRefs, savableElements, type Element, type Tab } from '@livehuddle/document';
-import type { BoardScene } from '@/lib/board-scene/scene';
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
@@ -36,14 +34,8 @@ export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
   return { ...tab, elements: remintElements(tab.elements).elements };
 }
 
-export type ImportFormat = 'json' | 'excalidraw';
+export type ImportFormat = 'json';
 type ImportProgressListener = (progress: ImportImageProgress) => void;
-
-const EXCALIDRAW_TELEMETRY_TYPE = {
-  json: 'Excalidraw',
-  png: 'ExcalidrawPng',
-  svg: 'ExcalidrawSvg',
-} as const;
 
 type TabImportDeps = {
   tabs: Tab[];
@@ -56,8 +48,6 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Replaces the active tab with a board scene (useBoardSceneImport): the Excalidraw format's commit.
-  importScene: (scene: BoardScene, onProgress?: ImportProgressListener) => Promise<ImportOutcome>;
 };
 
 export function useTabImport({
@@ -69,7 +59,6 @@ export function useTabImport({
   setFormatSourceId,
   setImportError,
   requestFit,
-  importScene,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
@@ -97,45 +86,15 @@ export function useTabImport({
   // the exact same parse + replace. The parsers are lazy-loaded so their
   // code stays out of the editor's initial bundle. Never throws — returns
   // the outcome the dialog renders (close / stay / show error).
-  // Excalidraw: a scene as JSON text, or inside a PNG / SVG export, read into a board scene and
-  // landed by the shared commit path; its images are stored BEFORE the tab changes, so the whole
-  // import stays one undo step (docs/specs/020-import-export/excalidraw-import-export.md).
-  const importExcalidraw = async (
-    input: Uint8Array | string,
-    onProgress?: ImportProgressListener,
-  ): Promise<ImportOutcome> => {
-    const [{ extractExcalidrawScene }, { sceneFromExcalidrawText }] = await Promise.all([
-      import('@/lib/excalidraw-embedded'),
-      import('@/lib/excalidraw-read'),
-    ]);
-    const extracted = await extractExcalidrawScene(input);
-    if (!extracted.ok) return { status: 'error', error: extracted.error };
-    const read = sceneFromExcalidrawText(extracted.text);
-    if (!read.ok) return { status: 'error', error: read.error };
-    // The shared board-scene commit: landed for the tab's profile, images stored, one replace.
-    const outcome = await importScene(read.scene, onProgress);
-    debugLog('[excalidraw-import]', {
-      container: extracted.container,
-      items: read.scene.items.length,
-      status: outcome.status,
-    });
-    if (outcome.status === 'done') {
-      track('Tab', 'Imported', EXCALIDRAW_TELEMETRY_TYPE[extracted.container]);
-    }
-    return outcome;
-  };
-
   const importTextIntoActiveTab = async (
-    format: ImportFormat,
+    _format: ImportFormat,
     text: string,
-    onProgress?: ImportProgressListener,
+    _onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
-
-    if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     const { parseImportedTab } = await import('@/lib/import-tab');
     const result = parseImportedTab(text);
@@ -151,23 +110,15 @@ export function useTabImport({
   // outcome; 'cancelled' when the file picker is dismissed.
   const importIntoActiveTab = async (
     format: ImportFormat,
-    onProgress?: ImportProgressListener,
+    _onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
-    const accept =
-      format === 'excalidraw'
-        ? '.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml'
-        : '.json,application/json';
     const { pickTabFile } = await import('@/lib/import-tab');
-    const picked = await pickTabFile(accept);
+    const picked = await pickTabFile('.json,application/json');
     if (!picked) return { status: 'cancelled' };
-    // An Excalidraw PNG export is binary, so that format reads the bytes.
-    if (format === 'excalidraw') {
-      return importExcalidraw(new Uint8Array(await picked.file.arrayBuffer()), onProgress);
-    }
     return importTextIntoActiveTab(format, picked.text);
   };
 

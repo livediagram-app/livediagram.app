@@ -1,4 +1,4 @@
-// The particle engine behind a Reaction Pad burst (docs/specs/009-elements/reaction-pad.md).
+// The particle engine behind a Reaction Pad burst (docs/specs/008-canvas/avatar-mode.md).
 //
 // Pure data and pure functions: spawning takes a random source and returns
 // plain particles, stepping is a fixed transform of particle + dt, and drawing

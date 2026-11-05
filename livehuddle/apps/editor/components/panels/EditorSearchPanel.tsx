@@ -43,9 +43,7 @@ export function EditorSearchPanel() {
     setSelectedId,
     isReadOnly,
     addShape,
-    addIcon,
     addSticker,
-    addTechIcon,
     addImage,
     setSearchOpen,
     openSettingsAt,
@@ -114,16 +112,14 @@ export function EditorSearchPanel() {
           : (add) => {
               if (add.type === 'shape')
                 addShape(add.shapeKind, {
-                  reaction: add.reaction,
                   mode: add.mode,
                   variant: add.variant,
                 });
-              else if (add.type === 'icon') addIcon(add.iconId);
               else if (add.type === 'sticker') addSticker(add.stickerId);
-              else if (add.type === 'tile') {
+              else {
                 const def = PALETTE_TILES.find((t) => t.id === add.tileId);
                 if (def) tileHandler(def, tileActions)();
-              } else addTechIcon(add.iconId);
+              }
             }
       }
       commandItems={commandItems}

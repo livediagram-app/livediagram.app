@@ -1,5 +1,5 @@
 // Derived containment and the content origin (docs/specs/024-agents/document-views.md "The outline"):
-// the one rule views, edit-operation membership reports, the lint and the editor's frame drag read.
+// the one rule views, edit-operation membership reports, the lint and the editor's container drag read.
 import type { Element, ElementId } from './index';
 import type { Point } from '@liveworkspace/model-core/geometry-primitives';
 
@@ -43,8 +43,9 @@ function hasGeometry(el: Element): el is Boxed {
 }
 
 // The containers (docs/specs/009-elements/boundary.md "A container"): a box that holds the elements whose centre is
-// inside it and carries them when it moves. One list, read wherever a frame, a lane or a boundary is special.
-const CONTAINER_KINDS: ReadonlySet<string> = new Set(['frame', 'lane', 'boundary', 'stack']);
+// inside it and carries them when it moves. One list, read wherever a lane or a boundary is special. (A stored Frame is a retired element, not a container:
+// docs/specs/002-project-scope/not-in-livehuddle.md "The Frame".)
+const CONTAINER_KINDS: ReadonlySet<string> = new Set(['lane', 'boundary', 'stack']);
 
 export function isContainerKind(kind: string): boolean {
   return CONTAINER_KINDS.has(kind);
@@ -52,7 +53,7 @@ export function isContainerKind(kind: string): boolean {
 
 const isContainerShape = (el: Boxed) => el.type === 'shape' && isContainerKind(el.shape);
 
-// The container of every non-arrow element: the smallest frame or lane of strictly greater area holding its
+// The container of every non-arrow element: the smallest lane or boundary of strictly greater area holding its
 // centre (earlier on a tie), else null for the root.
 export function deriveContainers(elements: readonly Element[]): Map<ElementId, ElementId | null> {
   const byArea = elements
@@ -84,13 +85,13 @@ export function contentOrigin(elements: readonly Element[]): Point {
   return { x: Math.round(minOf('x')), y: Math.round(minOf('y')) };
 }
 
-// A frame, lane or boundary: a shape whose box holds members.
+// A lane, boundary or stack: a shape whose box holds members.
 export function isContainer(el: Element): boolean {
   return el.type === 'shape' && isContainerKind(el.shape);
 }
 
 // What travels with moved containers (docs/specs/024-agents/blueprints/edit-operations.md "Carry"): `ids`
-// itself, every element whose chain of holders reaches a container in `ids` (a nested frame or lane with
+// itself, every element whose chain of holders reaches a container in `ids` (a nested lane or boundary with
 // all it holds), and every arrow whose free ends all lie, as points, in such a container. Pinned ends
 // follow their elements. `ids` unchanged when none of them is a container.
 export function containerContents(

@@ -193,16 +193,10 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 }
 
 // Full live-state graft for undo/redo: comment threads + assigned actions
-// (above) PLUS the per-tab session tools (docs/specs/012-collaboration/session-tools.md `timer` / `vote`), which
-// also mutate outside undo history — a timer start or a vote dot isn't
-// undoable, so a restored snapshot predates them and would silently wipe
-// them for the whole room (autosave persists + broadcasts the restored tab).
-export function graftLiveTabState(
-  from: Tab[],
-  onto: Tab[],
-  opts: { sessionFields?: boolean } = {},
-): Tab[] {
-  const sessionFields = opts.sessionFields !== false;
+// (above) PLUS the fields that change outside undo history (a notice board's notes, a Timer's clock,
+// docs/specs/009-elements/timer-and-stopwatch.md): a press isn't undoable, so a restored snapshot predates it
+// and would silently undo it for the whole room (autosave persists + broadcasts the restored tab).
+export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
@@ -244,16 +238,29 @@ export function graftLiveTabState(
           next = { ...next, checklistItems: items };
         }
       }
+      // A notice board's notes are live whole (docs/specs/009-elements/social-pieces.md "Notice Board"): a pin is
+      // not undoable, like a comment, so a restored snapshot keeps the board's notes as they are now.
+      if (
+        next.type === 'shape' &&
+        liveEl?.type === 'shape' &&
+        next.noticeNotes !== liveEl.noticeNotes
+      ) {
+        changed = true;
+        const { noticeNotes: _drop, ...rest } = next;
+        next = liveEl.noticeNotes ? { ...rest, noticeNotes: liveEl.noticeNotes } : rest;
+      }
+      // A Timer's or Stopwatch's clock likewise: an undo never stops (or restarts) everyone's timer.
+      if (
+        next.type === 'shape' &&
+        liveEl?.type === 'shape' &&
+        next.pieceTimer !== liveEl.pieceTimer
+      ) {
+        changed = true;
+        const { pieceTimer: _drop, ...rest } = next;
+        next = liveEl.pieceTimer ? { ...rest, pieceTimer: liveEl.pieceTimer } : rest;
+      }
       return next;
     });
-    let next = changed ? { ...tab, elements } : tab;
-    if (sessionFields && (src.timer !== tab.timer || src.vote !== tab.vote)) {
-      next = next === tab ? { ...tab } : next;
-      if (src.timer !== undefined) next.timer = src.timer;
-      else delete next.timer;
-      if (src.vote !== undefined) next.vote = src.vote;
-      else delete next.vote;
-    }
-    return next;
+    return changed ? { ...tab, elements } : tab;
   });
 }

@@ -100,10 +100,12 @@ On the selected Timeline, from `timeline-tour-steps.ts`.
    turns above and below.
 2. **What Happens**: rings the first milestone's name; click (tap) to type over it.
 3. **And When**: rings the first milestone's when; click (tap) to change it.
-4. **Add a Milestone**: the "+" ring open on **Add Milestone**; one at the end, up to eight.
-5. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
-6. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
-7. **That Is a Timeline**: the closing card.
+4. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
+5. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
+6. **That Is a Timeline**: the closing card.
+
+(The Add a Milestone step rang the "+" ring's **Add Milestone**; livehuddle has no "+" ring,
+[Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-connect).)
 
 ## Menu steps on the elements of round two
 
@@ -144,7 +146,7 @@ On a selected stack, from `stack-tour-steps.ts`.
 2. **Drag to Reorder** (a stack holding something; rings its first child): drag one past its neighbour and it takes
    that slot, the rest reflowing. An empty stack instead has **Drop Things In** on the stack: what is dropped inside
    takes the next slot, and an empty stack keeps its size as a target.
-3. **Carries What It Holds**: rings the stack; dragging it brings everything inside, as a frame does.
+3. **Carries What It Holds**: rings the stack; dragging it brings everything inside.
 4. **The Stack Menu**: the menu step. Row, Column or Grid (with Columns), Gap, Padding, Align.
 5. **That Is a Stack**: the closing card, with **Stacks Help**.
 
@@ -155,7 +157,7 @@ On a selected lane, from `lane-tour-steps.ts`. Its gutter carries `data-lane-gut
 1. **A Band for Each Role**: rings the lane; a role, a team or a system per lane, lanes butting edge to edge.
 2. **The Title Gutter**: rings the gutter; double-click (double-tap) to name it, its colour is Heading under Colours.
 3. **Drag the Seam** (rings the seam): more or less room for the title, snapping to the seams of the lanes around it.
-4. **Carries Its Steps**: rings the lane; dragging it brings everything inside, as a frame does.
+4. **Carries Its Steps**: rings the lane; dragging it brings everything inside.
 5. **Rows or Columns**: the menu step. Centring the title at the top turns the lane into a column; Upright Title
    (Text) turns a side title to read bottom to top.
 6. **That Is a Lane**: the closing card, with **Lanes Help**.

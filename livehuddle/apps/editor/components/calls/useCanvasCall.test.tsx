@@ -111,14 +111,14 @@ describe('useCanvasCall', () => {
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
   });
 
-  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls": only rooms you can see are calls.
-  it('hands the call the rooms and stages on visible layers, and nothing else', () => {
-    const room = (id: string, layerId: string) => ({
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls": every room on the tab is a call, and
+  // nothing else (a rug is not).
+  it('hands the call the rooms and stages, and nothing else', () => {
+    const room = (id: string, x: number) => ({
       id,
       type: 'shape',
       shape: 'room',
-      layerId,
-      x: 0,
+      x,
       y: 0,
       width: 480,
       height: 320,
@@ -128,24 +128,10 @@ describe('useCanvasCall', () => {
         props: {
           ...props,
           elements: [
-            room('shown', 'a'),
-            room('hidden', 'b'),
-            {
-              id: 'rug',
-              type: 'shape',
-              shape: 'rug',
-              layerId: 'a',
-              x: 0,
-              y: 0,
-              width: 99,
-              height: 99,
-            },
-            { ...room('stage', 'a'), shape: 'stage', x: 40, y: 40, width: 360, height: 140 },
-            { ...room('hidden stage', 'b'), shape: 'stage', width: 360, height: 140 },
-          ],
-          tabLayers: [
-            { id: 'a', name: 'A' },
-            { id: 'b', name: 'B', visible: false },
+            room('one', 0),
+            room('two', 1000),
+            { id: 'rug', type: 'shape', shape: 'rug', x: 0, y: 0, width: 99, height: 99 },
+            { ...room('stage', 0), shape: 'stage', x: 40, y: 40, width: 360, height: 140 },
           ],
         } as unknown as CanvasProps,
         canvasTool: 'avatar',
@@ -157,9 +143,9 @@ describe('useCanvasCall', () => {
       zones: { id: string }[];
       stages: { id: string; zone: string | null }[];
     };
-    expect(zones.map((z) => z.id)).toEqual(['shown']);
-    // And the stages you can see, each with the room it stands in (the same spec's "The stage").
-    expect(stages.map((s) => [s.id, s.zone])).toEqual([['stage', 'shown']]);
+    expect(zones.map((z) => z.id)).toEqual(['one', 'two']);
+    // And each stage with the room it stands in (the same spec's "The stage").
+    expect(stages.map((s) => [s.id, s.zone])).toEqual([['stage', 'one']]);
   });
 
   // meeting-rooms-and-stage.md "Raise hand" and "Do Not Disturb" (part 3).

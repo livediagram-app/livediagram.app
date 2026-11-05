@@ -83,7 +83,11 @@ import {
   type SessionAttachment,
 } from '../room-session';
 
-import { CHANGESET_RETENTION_MS, type CommunityAuthor } from '@livehuddle/api-schema';
+import {
+  CHANGESET_RETENTION_MS,
+  createKnockThrottle,
+  type CommunityAuthor,
+} from '@livehuddle/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
@@ -311,7 +315,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // The tab write queue (blueprint SR2): a Participant's writes, one at a time per document. A Durable Object only
   // serialises the synchronous parts of its handlers: while one write is awaiting its store, the runtime happily
   // starts the next request, and two read-modify-writes of the same row would be exactly the race that once cost the
-  // dot vote its votes. In memory because a queue only matters while requests are in flight; a hibernation wake has
+  // retired dot vote its votes. In memory because a queue only matters while requests are in flight; a hibernation wake has
   // none.
   private tabWriteQueue: Promise<unknown> = Promise.resolve();
   // The surface the api worker's internal endpoints act on (room-internal.ts).
@@ -1186,6 +1190,8 @@ export class DocumentRoom extends DurableObject<Env> {
   });
   // Who may hear whom, and who may let a hand speak, as the server sees it (docs/specs/012-collaboration/
   // meeting-rooms-and-stage.md "Trust"; calls/room-calls.ts): what the mint route asks before a subscription.
+  // Knocks pass one per sender per window (docs/specs/012-collaboration/knock.md "The wire"): memory only.
+  private readonly knocks = createKnockThrottle();
   private readonly calls = new RoomCalls({
     now: () => Date.now(),
     sessions: () => this.callSessions(),
@@ -1440,6 +1446,7 @@ export class DocumentRoom extends DurableObject<Env> {
         role: sender.role,
         tabScope: session.tabScope ?? null,
         key: sender.key,
+        adderKey: session.adderKey ?? null,
       });
       if (gate.kind === 'drop') return;
       if (gate.kind === 'participant-content') {
@@ -1532,7 +1539,14 @@ export class DocumentRoom extends DurableObject<Env> {
           this.sendToPresence(targetId, { kind: 'op', from: sender.id, op: msg.op }, ws);
           return;
         }
-        if (opKind === 'avatar-push' || opKind === 'avatar-let-speak') {
+        // A knock (docs/specs/012-collaboration/knock.md): one per sender per 10 seconds, then broadcast below; each
+        // receiver checks it stands in the room. Its answer is addressed to the knocker, as a shove is.
+        if (opKind === 'avatar-knock' && !this.knocks.allow(sender.id, Date.now())) return;
+        if (
+          opKind === 'avatar-push' ||
+          opKind === 'avatar-let-speak' ||
+          opKind === 'avatar-knock-answer'
+        ) {
           const targetId = (msg.op as { targetId?: unknown }).targetId;
           if (typeof targetId === 'string') {
             this.sendToPresence(targetId, { kind: 'op', from: sender.id, op: msg.op }, ws);
@@ -1743,6 +1757,7 @@ export class DocumentRoom extends DurableObject<Env> {
     this.presenceRelay.forget(ws, presenceId);
     if (presenceId) {
       this.calls.forget(presenceId);
+      this.knocks.forget(presenceId);
       this.baton.startGrace(presenceId);
       void this.selections.drop(presenceId).catch(() => {});
     }

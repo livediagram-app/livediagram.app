@@ -7,7 +7,7 @@ something it cannot.
 
 1. **Write the role line into the spec first.** In the feature's spec, one short section or table: what each of
    Editor, Participant and Viewer sees and may do. The defaults: a Viewer only looks; a Participant takes part
-   (answers, votes, comments, adds content) but never reshapes the board, runs the session or changes settings;
+   (answers, comments, adds content) but never reshapes the board, runs the session or changes settings;
    everything else is an Editor's. A fork from those defaults is the user's call: ask.
 2. **Name it in the Share roles spec.** If the feature is something a Participant may do, add it to the May column
    of "What a Participant changes"; if it is explicitly not, to the Never column.

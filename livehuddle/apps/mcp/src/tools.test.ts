@@ -72,7 +72,7 @@ function okResponse(request: Request): Response {
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
-    return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
+    return json({ link: { code: 'abc', role: 'participate', expiresAt: null } });
   }
   // Tab writes are changesets and the tab name route (docs/specs/024-agents/agent-changesets.md).
   if (path.endsWith('/changesets')) {

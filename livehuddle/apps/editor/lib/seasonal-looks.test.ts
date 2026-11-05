@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FINISHES,
   FONTS,
-  isAnimatedPattern,
+  isFloorPattern,
   isSeasonalPattern,
   SEASONAL_BACKGROUND_PATTERNS,
 } from '@livehuddle/document';
@@ -40,9 +40,8 @@ describe('SEASONAL_LOOKS', () => {
           FONTS.some((f) => f.id === look.font),
           look.id,
         ).toBe(true);
-      expect(isSeasonalPattern(look.pattern) || isAnimatedPattern(look.pattern), look.id).toBe(
-        true,
-      );
+      // A seasonal motif, or a floor (Fireside's floorboards).
+      expect(isSeasonalPattern(look.pattern) || isFloorPattern(look.pattern), look.id).toBe(true);
       // Its card names its ingredients: the theme first, the pattern last.
       expect(look.description.startsWith(theme!.label), look.id).toBe(true);
       expect(look.description.endsWith(patternLabel(look.pattern).toLowerCase()), look.id).toBe(

@@ -4,8 +4,8 @@ import type { DragEvent as ReactDragEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { usePaletteDrop } from './usePaletteDrop';
 
-// A file dropped on the canvas (docs/specs/020-import-export/excalidraw-import-export.md "Paste"):
-// handed over with the canvas point it was released at.
+// A file dropped on the canvas: handed over with the canvas point it was released at (what it does with it is
+// useClipboard's dropBoardFile).
 
 function setup(deps: { onDropFile?: boolean } = {}) {
   const wrapper = document.createElement('div');

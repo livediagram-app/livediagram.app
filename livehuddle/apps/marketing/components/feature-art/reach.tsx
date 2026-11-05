@@ -21,13 +21,13 @@ import {
 import { Cursor, Frame, MONO } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // The search panel: "lay" typed after ⌘K, a matching tab and element above, then the Actions group
-// with Auto Layout and the Laser Pointer tool, the first action highlighted to run on Enter.
+// with Auto Layout and the Hand tool, the first action highlighted to run on Enter.
 export function SearchPaletteArt() {
   const rows = [
     { group: 'Tabs', label: 'Layout ideas', hint: 'Tab' },
     { group: 'Actions', label: 'Auto Layout', hint: '↵', active: true },
     { group: '', label: 'Auto-align to Grid', hint: '' },
-    { group: '', label: 'Laser Pointer', hint: 'Tool' },
+    { group: '', label: 'Hand Tool', hint: 'Tool' },
   ];
   return (
     <Frame canvas>

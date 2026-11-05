@@ -25,7 +25,7 @@ export const SITE_NAME = 'livehuddle';
 // a place to meet and run workshops, never a diagramming tool, which is livediagram's.
 export const SITE_TITLE = 'livehuddle: Meet and run workshops together, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time Space for meetings and workshops: walk in, gather round the table and run the session with timers, votes and polls.';
+  'A free, real-time Space for meetings and workshops: walk in, gather round the table and keep the session to time.';
 // Lower case: it follows "livehuddle: " or starts a sentence through sentencePitch.
 export const SITE_PITCH = 'a real-time space to meet and run workshops together';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;

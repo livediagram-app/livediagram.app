@@ -6,10 +6,12 @@
 // you, and Leave Audio. While the calls kill switch pauses calls: Calls Paused, calm, never an error, and a press tries
 // again (docs/specs/016-platform/calls-kill-switch.md "Calls Paused"). Nothing at all while calls are off or there is
 // nobody to talk to. Once in, the camera and Share Screen sit beside the microphone (docs/specs/012-collaboration/
-// video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone. In every state the strip
-// ends in a `?` to the calls article (docs/specs/018-help/contextual-help-links.md). A stage adds Raise Hand (or the
+// video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone. The strip carries no help
+// link (docs/specs/018-help/contextual-help-links.md). A stage adds Raise Hand (or the
 // count of raised hands for its speakers) and, on a stage you may not speak from, a line above the strip; Do Not
 // Disturb adds a segment that clears it (meeting-rooms-and-stage.md "Raise hand", "The stage line", "Do Not Disturb").
+// With no call to offer, or before joining, the camera and Share Screen still show where the browser can capture, as a
+// local preview only you see (video-and-screen-bubbles.md "Local preview").
 import {
   lucideHeadphoneOff,
   lucideHeadphones,
@@ -30,7 +32,7 @@ import {
   type CallActions,
   type CallSelf,
 } from '@/lib/calls/calls-store';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { localOnly, selfCamera, selfScreen } from '@/lib/calls/local-preview';
 import { ScreenShareBar } from './ScreenShareBar';
 import { Segment } from './CallSegment';
 import { DoNotDisturbSegment, HandSegment, StageLine } from './StageSegments';
@@ -82,18 +84,6 @@ const INDICATOR_TEXT: Record<MicIndicator, { title: string; description: string 
   },
 };
 
-// The strip's last segment: the calls article (docs/specs/018-help/contextual-help-links.md), the one help link a
-// control with no panel or popover of its own can carry. The shared `?`, sized to the strip's height and parted from
-// the button before it by the strip's hairline.
-function CallHelpLink() {
-  return (
-    <HelpArticleLink
-      article="proximityAudio"
-      className="!h-11 !w-9 !rounded-none border-l border-slate-100 !text-[15px] dark:border-slate-800"
-    />
-  );
-}
-
 // A soft ring round the microphone while somebody hears you, breathing with your own level.
 function LiveRing({ level }: { level: number }) {
   return (
@@ -115,7 +105,19 @@ export function CallClusterButton({
 } = {}) {
   const self = useCallSelf();
   const actions = useCallActions();
-  if (!self.available || !actions) return null;
+  if (!actions) return null;
+  if (!self.available) {
+    // No call here (no room, calls off): the camera and screen alone, as a local preview.
+    if (!self.canSpeak || !(self.canPreviewCamera || self.canPreviewScreen)) return null;
+    return (
+      <>
+        <ClusterStrip dataTourId="call-button">
+          <MediaSegments self={self} actions={actions} first />
+        </ClusterStrip>
+        <ScreenShareBar />
+      </>
+    );
+  }
   const paused = self.mode === 'off' && self.phase !== 'live';
   return (
     <>
@@ -161,7 +163,7 @@ function CallControl({
           onClick={actions.join}
           disabled={trying}
         />
-        <CallHelpLink />
+        <MediaSegments self={self} actions={actions} />
       </ClusterStrip>
     );
   }
@@ -187,7 +189,7 @@ function CallControl({
           disabled={joining}
           tone={self.phase === 'error' ? 'warn' : 'rest'}
         />
-        <CallHelpLink />
+        <MediaSegments self={self} actions={actions} />
       </ClusterStrip>
     );
   }
@@ -197,7 +199,7 @@ function CallControl({
   const mutable = indicator !== 'listening' && indicator !== 'blocked';
   return (
     <div className="relative flex">
-      <StageLine barredBy={self.barredBy} />
+      <StageLine barredBy={self.barredBy} onStage={self.stage === 'speaker'} />
       <ClusterStrip dataTourId="call-button">
         <Segment
           label={self.muted ? 'Unmute' : indicator === 'listening' ? 'Listening' : 'Mute'}
@@ -239,7 +241,6 @@ function CallControl({
           onClick={actions.leave}
           divided
         />
-        <CallHelpLink />
       </ClusterStrip>
     </div>
   );
@@ -266,12 +267,86 @@ const CAMERA_TEXT: Record<'on' | 'blocked' | 'off', MediaText> = {
   },
 };
 
-// The camera and Share Screen, between the microphone and Leave (video-and-screen-bubbles.md "The camera", "The
-// screen share", "The kill switch"). A Viewer has neither; Share Screen is an Editor's; under audio only both give way
-// to one calm Video Paused.
-function MediaSegments({ self, actions }: { self: CallSelf; actions: CallActions }) {
+// Why a preview is yours alone, ending each preview hover card (video-and-screen-bubbles.md "Local preview").
+function previewWhy(self: CallSelf): string {
+  return self.available ? 'until you join audio' : 'here: this Space has no call to send it on';
+}
+
+function cameraText(self: CallSelf, live: boolean): MediaText {
+  const camera = selfCamera(self);
+  if (localOnly(self, 'video')) {
+    return {
+      label: 'Turn Off Camera',
+      title: 'Only You See Your Camera',
+      description: `Nothing is sent: only you see it ${previewWhy(self)}. Press to turn it off.`,
+    };
+  }
+  if (!live && camera === 'off') {
+    return {
+      label: 'Turn On Camera',
+      title: 'Camera',
+      description: `Preview your camera in a bubble above your head. Only you see it ${previewWhy(self)}.`,
+    };
+  }
+  return CAMERA_TEXT[camera === 'on' || camera === 'blocked' ? camera : 'off'];
+}
+
+function screenText(self: CallSelf, live: boolean): MediaText {
+  const sending = self.screen === 'on';
+  // A Participant previews a screen even in a call: sharing one is an Editor's.
+  const why = live || self.canShare ? previewWhy(self) : 'here';
+  if (localOnly(self, 'screen')) {
+    return {
+      label: 'Stop Sharing',
+      title: 'Only You See Your Screen',
+      description:
+        live && !self.canShare
+          ? 'Nothing is sent: your link lets you preview a screen, not share it. Press to stop.'
+          : `Nothing is sent: only you see it ${why}. Press to stop.`,
+    };
+  }
+  if (sending) {
+    return {
+      label: 'Stop Sharing',
+      title: 'Sharing Your Screen',
+      description: 'The people near you see your screen. Press to stop sharing.',
+    };
+  }
+  if (live && self.canShare) {
+    return {
+      label: 'Share Screen',
+      title: 'Share Screen',
+      description:
+        'Share a screen, window or tab in a bubble above your head to the people near you.',
+    };
+  }
+  return {
+    label: 'Share Screen',
+    title: 'Share Screen',
+    description:
+      live && !self.canShare
+        ? 'Preview a screen, window or tab above your head. Only you see it: your link lets you preview a screen, not share it.'
+        : `Preview a screen, window or tab in a bubble above your head. Only you see it ${why}.`,
+  };
+}
+
+// The camera and Share Screen (video-and-screen-bubbles.md "The camera", "The screen share", "Local preview", "The
+// kill switch"): between the microphone and Leave once in, beside Join Audio before, and alone with no call. A Viewer
+// has neither; in a call Share Screen sends for an Editor and previews for a Participant; under audio only in a call
+// both give way to one calm Video Paused.
+function MediaSegments({
+  self,
+  actions,
+  first = false,
+}: {
+  self: CallSelf;
+  actions: CallActions;
+  // The strip's first segment: no hairline before it.
+  first?: boolean;
+}) {
   if (!self.canSpeak) return null;
-  if (!callsModeAllows(self.mode, 'video')) {
+  const live = self.phase === 'live';
+  if (live && !callsModeAllows(self.mode, 'video')) {
     return (
       <Segment
         label="Video Paused"
@@ -283,39 +358,41 @@ function MediaSegments({ self, actions }: { self: CallSelf; actions: CallActions
       />
     );
   }
-  const camera = self.camera;
-  const cameraText = CAMERA_TEXT[camera === 'on' || camera === 'blocked' ? camera : 'off'];
-  const sharing = self.screen === 'on';
+  const camera = selfCamera(self);
+  const screen = selfScreen(self);
+  const showCamera = live || self.canPreviewCamera || camera !== 'off';
+  const showScreen = (live && self.canShare) || self.canPreviewScreen || screen !== 'off';
+  const camText = cameraText(self, live);
+  const scrText = screenText(self, live);
+  const on = screen === 'on';
   return (
     <>
-      <Segment
-        label={cameraText.label}
-        name={camera === 'starting' ? 'Starting…' : 'Camera'}
-        title={cameraText.title}
-        description={cameraText.description}
-        icon={camera === 'on' ? <VideoIcon /> : <VideoOffIcon />}
-        onClick={actions.toggleCamera}
-        disabled={camera === 'starting'}
-        pressed={camera === 'on'}
-        tone={camera === 'on' ? 'live' : camera === 'blocked' ? 'warn' : 'rest'}
-        divided
-      />
-      {self.canShare ? (
+      {showCamera ? (
         <Segment
-          label={sharing ? 'Stop Sharing' : 'Share Screen'}
-          name={self.screen === 'starting' ? 'Choosing…' : sharing ? 'Sharing' : 'Share'}
-          title={sharing ? 'Sharing Your Screen' : 'Share Screen'}
-          description={
-            sharing
-              ? 'The people near you see your screen. Press to stop sharing.'
-              : 'Share a screen, window or tab in a bubble above your head to the people near you.'
-          }
-          icon={sharing ? <ScreenOffIcon /> : <ScreenIcon />}
+          label={camText.label}
+          name={camera === 'starting' ? 'Starting…' : 'Camera'}
+          title={camText.title}
+          description={camText.description}
+          icon={camera === 'on' ? <VideoIcon /> : <VideoOffIcon />}
+          onClick={actions.toggleCamera}
+          disabled={camera === 'starting'}
+          pressed={camera === 'on'}
+          tone={camera === 'on' ? 'live' : camera === 'blocked' ? 'warn' : 'rest'}
+          divided={!first}
+        />
+      ) : null}
+      {showScreen ? (
+        <Segment
+          label={scrText.label}
+          name={screen === 'starting' ? 'Choosing…' : on ? 'Sharing' : 'Share'}
+          title={scrText.title}
+          description={scrText.description}
+          icon={on ? <ScreenOffIcon /> : <ScreenIcon />}
           onClick={actions.toggleScreen}
-          disabled={self.screen === 'starting'}
-          pressed={sharing}
-          tone={sharing ? 'live' : 'rest'}
-          divided
+          disabled={screen === 'starting'}
+          pressed={on}
+          tone={on ? 'live' : 'rest'}
+          divided={!first || showCamera}
         />
       ) : null}
     </>

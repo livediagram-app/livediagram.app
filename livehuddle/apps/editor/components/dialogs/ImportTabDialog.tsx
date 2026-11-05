@@ -1,12 +1,8 @@
-import { useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
-import { reportHasLosses } from '@/lib/board-scene/report';
-import { ImportImageReport } from './ImportImageReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
 import { Glyph, DialogCloseButton, DialogHeader } from '@livehuddle/ui';
 
@@ -28,205 +24,52 @@ type ImportTabDialogProps = {
     text: string,
     onProgress: (progress: ImportImageProgress) => void,
   ) => Promise<ImportOutcome>;
-  // The formats offered, in catalogue order; absent offers every one. A single format opens straight at its
-  // panel.
-  formats?: readonly Format[];
   onClose: () => void;
 };
 
-// Per-format copy for the grid card + the paste-panel placeholder. Every
-// format is a text format, so each opens the same paste-or-file panel.
-const FORMATS: {
-  key: Format;
-  title: string;
-  description: string;
-  placeholder: string;
-}[] = [
-  {
-    key: 'json',
-    title: 'JSON',
-    description:
-      'A livehuddle tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
-    placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livehuddle.tab",\n  "tab": { … }\n}',
-  },
-  {
-    key: 'excalidraw',
-    title: 'Excalidraw',
-    description:
-      'A .excalidraw scene, or a PNG / SVG exported with the scene. Keeps shapes, labels, connections, drawings, and images.',
-    placeholder: '{\n  "type": "excalidraw",\n  "version": 2,\n  "elements": [ … ]\n}',
-  },
-];
+// The one format: a livehuddle tab's JSON, and the paste panel's placeholder.
+const JSON_FORMAT: Format = 'json';
+const JSON_PLACEHOLDER = '{\n  "schemaVersion": 1,\n  "kind": "livehuddle.tab",\n  "tab": { … }\n}';
 
-// Counterpart to ExportTabDialog: pick a format to import INTO the current
-// tab. Importing REPLACES the tab's contents, so the dialog leads with a warning before the format cards. Every
-// format is text, so each card opens the same two-step panel: paste/write the content, or pick a file. Errors
-// render inline; on success the dialog closes. The draw.io, Mermaid and Markdown cards are gone from livehuddle
-// (Work Tracker #423, part 4).
-type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
-
-// An import shows its report when it met images, changed or dropped anything, or left a board out.
-function needsReport(outcome: DoneOutcome): boolean {
-  return (
-    outcome.images !== undefined ||
-    (outcome.scene !== undefined && reportHasLosses(outcome.scene)) ||
-    (outcome.failures?.length ?? 0) > 0 ||
-    (outcome.documents?.length ?? 0) > 0
-  );
-}
-
+// Counterpart to ExportTabDialog: import a livehuddle tab's JSON INTO the current tab (backup and restore).
+// Importing REPLACES the tab's contents, so the dialog leads with a warning before the paste-or-file panel. Errors
+// render inline; on success the dialog closes. Imports from other tools are gone from livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools"), so there is no format to pick.
 export function ImportTabDialog({
   tabName,
   onImportFile,
   onImportText,
   onClose,
-  formats,
 }: ImportTabDialogProps) {
-  const offered = formats ? FORMATS.filter((f) => formats.includes(f.key)) : FORMATS;
-  // One format offered: no list to pick from, so its panel is the dialog.
-  const only = offered.length === 1 ? offered[0]!.key : null;
-  const [active, setActive] = useState<Format | null>(only);
-  // Set once an import that met images, or brought a board across with changes, has landed: the
-  // dialog then shows how it came across instead of closing.
-  const [report, setReport] = useState<DoneOutcome | null>(null);
-  const activeFormat = active ? FORMATS.find((f) => f.key === active) : null;
-
   return (
     <Dialog open onClose={onClose} ariaLabel="Import into tab" size="xl" className="max-h-[90vh]">
-      <DialogHeader
-        title="Import to Tab"
-        subtitle={
-          report
-            ? report.scene
-              ? "Here's how your board came across."
-              : report.images
-                ? "Here's how your images came across."
-                : "Here's how your import came across."
-            : activeFormat
-              ? `Paste your ${activeFormat.title}, or import a file.`
-              : 'Pick a format to import into the current tab.'
-        }
-      >
+      <DialogHeader title="Import to Tab" subtitle="Paste your JSON, or import a file.">
         <HelpArticleLink article="importTabs" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div className="flex-1 overflow-y-auto px-6 py-5">
-        {report ? (
-          <ImportImageReport
-            report={report.images}
-            scene={report.scene}
-            failures={report.failures}
-            documents={report.documents}
-            onDone={onClose}
-          />
-        ) : (
-          <ImportChooser
-            tabName={tabName}
-            activeFormat={activeFormat ?? null}
-            formats={offered}
-            onPick={setActive}
-            single={only !== null}
-            onImportFile={onImportFile}
-            onImportText={onImportText}
-            onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
-          />
-        )}
+        {/* Destructive-action warning: this overwrites the tab. */}
+        <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <span className="mt-0.5 shrink-0">
+            <WarningIcon />
+          </span>
+          <span>
+            This replaces everything on{' '}
+            <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
+            content. Undo
+            {/* The keys only where there is a keyboard to press them. */}
+            <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
+          </span>
+        </div>
+        <TextImportPanel
+          formatTitle="JSON"
+          placeholder={JSON_PLACEHOLDER}
+          onImportText={(text, onProgress) => onImportText(JSON_FORMAT, text, onProgress)}
+          onImportFile={(onProgress) => onImportFile(JSON_FORMAT, onProgress)}
+          onDone={onClose}
+        />
       </div>
     </Dialog>
-  );
-}
-
-// The warning plus either the format grid or the chosen format's panel.
-function ImportChooser({
-  tabName,
-  activeFormat,
-  formats,
-  onPick,
-  onImportFile,
-  onImportText,
-  onDone,
-  single,
-}: {
-  tabName: string;
-  activeFormat: (typeof FORMATS)[number] | null;
-  formats: typeof FORMATS;
-  onPick: (format: Format | null) => void;
-  single: boolean;
-  onImportFile: ImportTabDialogProps['onImportFile'];
-  onImportText: ImportTabDialogProps['onImportText'];
-  onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
-}) {
-  return (
-    <>
-      {/* Destructive-action warning — this overwrites the tab. */}
-      <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-        <span className="mt-0.5 shrink-0">
-          <WarningIcon />
-        </span>
-        <span>
-          This replaces everything on{' '}
-          <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-          content. Undo
-          {/* The keys only where there is a keyboard to press them. */}
-          <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
-        </span>
-      </div>
-      {activeFormat ? (
-        <TextImportPanel
-          formatTitle={activeFormat.title}
-          placeholder={activeFormat.placeholder}
-          onImportText={(text, onProgress) => onImportText(activeFormat.key, text, onProgress)}
-          onImportFile={(onProgress) => onImportFile(activeFormat.key, onProgress)}
-          onDone={onDone}
-          onBack={single ? undefined : () => onPick(null)}
-        />
-      ) : (
-        <div
-          // Its two formats side by side, a phone too.
-          className="grid grid-cols-2 gap-3"
-        >
-          {formats.map((f) => (
-            <FormatCard
-              key={f.key}
-              title={f.title}
-              description={f.description}
-              onClick={() => onPick(f.key)}
-            >
-              <FormatIcon kind={f.key} />
-            </FormatCard>
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-
-function FormatIcon({ kind }: { kind: Format }) {
-  const label = kind === 'excalidraw' ? 'excali' : 'json';
-  return (
-    <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
-      <rect
-        x="1"
-        y="1"
-        width="34"
-        height="18"
-        rx="2"
-        fill="none"
-        stroke="rgb(148 163 184)"
-        strokeWidth="1.25"
-      />
-      <text
-        x="18"
-        y="14"
-        textAnchor="middle"
-        fontFamily="system-ui, sans-serif"
-        fontSize="9"
-        fontWeight="600"
-        fill="rgb(71 85 105)"
-      >
-        {label}
-      </text>
-    </svg>
   );
 }
 

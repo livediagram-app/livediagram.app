@@ -14,6 +14,8 @@ export function failureText(error: unknown, fallback: string): string {
         return 'A folder with that name is already here.';
       case 'cycle':
         return 'A folder can’t go inside itself.';
+      case 'level_not_offered':
+        return 'This app doesn’t offer that kind of pass. Pick another role.';
       case 'share_link_limit':
         return 'This has as many passes as it can hold. Delete an old one first.';
       case 'password_too_short':

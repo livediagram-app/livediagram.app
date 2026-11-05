@@ -4,7 +4,7 @@
 // - Content a board may draw as soon as it opens (the Draw dock, tables,
 //   facilitation panels): fetched as the editor mounts, alongside the document request, so a board that has
 //   one finds its code already in. A board without one pays nothing on the critical path.
-// - Surfaces someone opens (the Explorer, search, layers, the style panel, tool panels): fetched
+// - Surfaces someone opens (the Explorer, search, layers, tool panels): fetched
 //   once the opened document has rendered and the page is idle, so a first open does not wait.
 
 // Speech bubbles and the composer (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): fetched once someone who
@@ -17,10 +17,6 @@ export const loadTableView = () => import('@/components/canvas/TableView').then(
 export const loadExplorerPanel = () => import('@/components/panels/Explorer');
 export const loadEditorSearchPanel = () =>
   import('@/components/panels/EditorSearchPanel').then((m) => m.EditorSearchPanel);
-export const loadLayersPanel = () =>
-  import('@/components/panels/LayersPanel').then((m) => m.LayersPanel);
-export const loadQuickStylePanel = () =>
-  import('@/components/canvas/QuickStylePanel').then((m) => m.QuickStylePanel);
 export const loadToolPanels = () => import('@/components/canvas/tool-panels');
 
 export const DOCUMENT_CONTENT_CODE = [loadTableView] as const;
@@ -28,7 +24,5 @@ export const DOCUMENT_CONTENT_CODE = [loadTableView] as const;
 export const EDITOR_SURFACE_CODE = [
   loadExplorerPanel,
   loadEditorSearchPanel,
-  loadLayersPanel,
-  loadQuickStylePanel,
   loadToolPanels,
 ] as const;

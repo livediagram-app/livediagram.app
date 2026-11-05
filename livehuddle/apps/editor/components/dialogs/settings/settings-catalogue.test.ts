@@ -98,12 +98,13 @@ describe('settings catalogue', () => {
     );
   });
 
-  // A phone has no hover and no middle button: the Mouse section's rows are inert there, as the Map's are.
+  // A phone has no middle button: the Mouse section's row is inert there, as the Map's are.
   it('makes the Mouse section desktop only', () => {
     const rows = SETTINGS_CATEGORIES.flatMap((c) => c.rows).filter(
       (r) => 'section' in r && r.section === 'Mouse',
     );
-    expect(rows.map((r) => r.key)).toEqual(['quickAddOnHover', 'middleMousePan']);
+    // Quick-Add on Hover left with Quick Connect (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect).
+    expect(rows.map((r) => r.key)).toEqual(['middleMousePan']);
     for (const row of rows) expect(row.desktopOnly).toMatch(/A mouse setting/);
   });
 
@@ -307,18 +308,13 @@ describe('settings sub-categories', () => {
 
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual([
-      'alignmentGuides',
-      'elementIndicatorStyle',
-      'quickAddOnHover',
-      'middleMousePan',
-    ]);
+    expect(keys).toEqual(['alignmentGuides', 'elementIndicatorStyle', 'middleMousePan']);
   });
 
   it('nests one sub-category per panel under Panels, directly after it and in order', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['layers', 'map', 'collaborate', 'quickStyle']);
+    expect(children).toEqual(['map', 'collaborate']);
     const at = ids.indexOf('panels');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
@@ -333,10 +329,8 @@ describe('settings sub-categories', () => {
   it('opens every panel sub-category with its Enable switch, on by default', () => {
     const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
     const switches: Record<string, [string, string]> = {
-      layers: ['layersPanelEnabled', 'Enable Layers Panel'],
       map: ['showMinimap', 'Enable Map'],
       collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
-      quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
     };
     for (const [id, [key, label]] of Object.entries(switches)) {
       const row = first(id);
@@ -352,13 +346,6 @@ describe('settings sub-categories', () => {
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
         .find((c) => c.id === id)!
         .rows.map((r) => r.key);
-    expect(rows('layers', {})).toEqual([
-      'layersPanelEnabled',
-      'layersShowPreview',
-      'layersShowCount',
-      'layerHoverPreview',
-    ]);
-    expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
     expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
     expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });

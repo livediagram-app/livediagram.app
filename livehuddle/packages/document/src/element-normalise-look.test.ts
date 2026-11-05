@@ -35,7 +35,16 @@ describe('raw box text size by count', () => {
     expect(sizes(given).at(-1)).toBe('lg');
     const framed = normaliseElements([
       ...boxes(LOOK_MD_MAX_NODES),
-      { id: 'f', type: 'shape', shape: 'frame', x: 0, y: 0, width: 999, height: 999, label: 'VPC' },
+      {
+        id: 'f',
+        type: 'shape',
+        shape: 'boundary',
+        x: 0,
+        y: 0,
+        width: 999,
+        height: 999,
+        label: 'VPC',
+      },
       { id: 'u', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 },
     ]);
     expect(

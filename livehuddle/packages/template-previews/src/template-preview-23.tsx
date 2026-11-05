@@ -8,15 +8,16 @@ import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 // walks in from the corridor.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
-const WALL = 'rgb(148 163 184)';
+// The palette and the room and plant the other Spaces' group (template-preview-24.tsx) draws with too.
+export const WALL = 'rgb(148 163 184)';
 const FLOOR = 'rgb(245 240 230)';
-const FURNITURE = 'rgb(203 213 225)';
-const LEAF = 'rgb(74 222 128)';
+export const FURNITURE = 'rgb(203 213 225)';
+export const LEAF = 'rgb(74 222 128)';
 const POT = 'rgb(234 88 12)';
-const SHIRT = 'rgb(20 184 166)';
+export const SHIRT = 'rgb(20 184 166)';
 
-// A room's walls, broken by a doorway on the corridor side (top or bottom).
-function Room({
+// A room's walls, broken by a doorway in the middle of one side.
+export function Room({
   x,
   y,
   w,
@@ -27,7 +28,7 @@ function Room({
   y: number;
   w: number;
   h: number;
-  door: 'top' | 'bottom' | 'left';
+  door: 'top' | 'bottom' | 'left' | 'right';
 }) {
   const mid = x + w / 2;
   const doorY = door === 'top' ? y : y + h;
@@ -37,7 +38,9 @@ function Room({
   const walls =
     door === 'left'
       ? `M${x} ${midY - 3}L${x} ${y}L${x + w} ${y}L${x + w} ${y + h}L${x} ${y + h}L${x} ${midY + 3}`
-      : `M${mid - 3} ${doorY}L${x} ${doorY}L${x} ${otherY}L${x + w} ${otherY}L${x + w} ${doorY}L${mid + 3} ${doorY}`;
+      : door === 'right'
+        ? `M${x + w} ${midY - 3}L${x + w} ${y}L${x} ${y}L${x} ${y + h}L${x + w} ${y + h}L${x + w} ${midY + 3}`
+        : `M${mid - 3} ${doorY}L${x} ${doorY}L${x} ${otherY}L${x + w} ${otherY}L${x + w} ${doorY}L${mid + 3} ${doorY}`;
   return (
     <>
       <rect x={x} y={y} width={w} height={h} fill={FLOOR} />
@@ -46,7 +49,7 @@ function Room({
   );
 }
 
-const Plant = ({ x, y }: { x: number; y: number }) => (
+export const Plant = ({ x, y }: { x: number; y: number }) => (
   <>
     <circle cx={x} cy={y} r="1.6" fill={LEAF} />
     <rect x={x - 1} y={y + 1.2} width="2" height="1.6" fill={POT} />

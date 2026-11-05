@@ -12,7 +12,7 @@ the registry from selection/document verbs to the whole app surface.
 
 - **Cmd/Ctrl+K opens the Search panel**, identically to Cmd/Ctrl+. (both
   stay; `K` is the convention users arrive with, `.` is grandfathered).
-  Works in zen mode and read-only views, like the existing binding.
+  Works in read-only views, like the existing binding.
 - **The Explorer page binds the same two chords** to its own Search panel (`useSearchShortcut` in
   `@liveworkspace/explorer`), standing aside while the person is typing in a field and while a dialog
   is open, as the editor's chords do.
@@ -24,7 +24,7 @@ editor handler (the non-negotiable rule of that registry: no behaviour
 forks, no drifted telemetry):
 
 - **History:** Undo, Redo, offered only when `canUndo` / `canRedo`.
-- **View:** Toggle zen mode, Fit to screen.
+- **View:** Fit to screen.
 - **Cleanup:** Auto-align (Auto Layout's commands left livehuddle in Work Tracker #423 part 4): its home
   beside the Tidy Up button, as the tab menu has no Cleanup category ([Layout cleanup](../008-canvas/layout-cleanup.md)); Renumber Steps, while the tab
   holds a step number ([The step number](../009-elements/step-number.md)).
@@ -34,7 +34,7 @@ forks, no drifted telemetry):
 ## Read-only visitors
 
 The registry previously returned nothing for read-only views. Now it returns
-the **view-safe subset** (zen mode, fit to screen, export, Collaborators, and
+the **view-safe subset** (fit to screen, export, Collaborators, and
 the canvas tool switches that do not write to the document); mutating
 commands and the Eraser and Format painter tools stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
 in the pure builder where it's unit-tested.

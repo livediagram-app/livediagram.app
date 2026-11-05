@@ -1,5 +1,7 @@
 # Board scene: blueprint
 
+> **Gone from livehuddle** (imports from other tools, [Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)): livediagram keeps it, and [its blueprint there](../../../../../livediagram/docs/specs/020-import-export/blueprints/board-scene.md) is the one to read and change. livehuddle's code for it and its tests are deleted, so the files this page names live on in livediagram only. The rest of this page records what livehuddle had.
+
 Derived from [Board scene](../board-scene.md), with the element-model delta livediagram's Draw mode
 "Imported and pasted content" brought (marker ink, stock colours, hugging text). The spec's mapping
 table is not restated; this file fixes the modules, types, constants, algorithms, wiring and tests.
@@ -9,31 +11,31 @@ Scope, by file:
 
 | File                                                                      | Role                                                                                              |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/board-scene/scene.ts`                                    | The contract: scene types only                                                                    |
-| `apps/editor/lib/board-scene/colour.ts`                                   | `createColourResolver`, fields per role, `resolveFill`, `resolveStickyFill`, the colour constants |
-| `apps/editor/lib/board-scene/context.ts`                                  | `LandContext`: the memoised resolver and the landing's own rules (`LANDING_RULES`)                |
-| `apps/editor/lib/board-scene/common.ts`                                   | rotation, lock, safe link, opacity; `limitPoints`, `turnPoints`, `endsMeet`                       |
-| `apps/editor/lib/board-scene/test-scenes.ts`                              | Typed scene builders for tests (synthesised content)                                              |
-| `apps/editor/lib/board-scene/width.ts`                                    | `markerWidthPx`, `borderStrokeOf`, `arrowWidthPx`                                                 |
-| `apps/editor/lib/board-scene/text.ts`                                     | `textBoxFields`, `labelFields`, the font table                                                    |
-| `apps/editor/lib/board-scene/land-marks.ts`                               | ink, polyline (whiteboard profile)                                                                |
-| `apps/editor/lib/board-scene/land-boxes.ts`                               | shape, text, sticky, image, frame (whiteboard profile)                                            |
-| `apps/editor/lib/board-scene/land-connectors.ts`                          | connector and headed polyline to an arrow (both profiles)                                         |
-| `apps/editor/lib/board-scene/land-diagram.ts`                             | the diagram profile's per-kind mapping                                                            |
-| `apps/editor/lib/board-scene/placement.ts`                                | `sceneBounds`, `placementOffset`                                                                  |
-| `apps/editor/lib/board-scene/report.ts`                                   | `BoardSceneReport`, `mergeNotes`, the copy per landed kind                                        |
-| `apps/editor/lib/board-scene/land.ts`                                     | `landBoardScene`: validation, limits, ordering, ids, tab patch, logging                           |
-| `apps/editor/lib/board-scene/attach.ts`                                   | `sceneImageSource`: a `SceneAsset` as an `ImportImageSource`                                      |
-| `apps/editor/hooks/canvas/useBoardSceneInsert.ts`                         | Paste / drop: land at a point, images, one commit, select, notice state                           |
-| `apps/editor/lib/board-scene-import.ts`                                   | `importBoardsAsDocuments`, `finishLanding`: the new-document target, editor-free                  |
-| `apps/editor/hooks/persistence/useBoardSceneImport.ts`                    | Import commit paths: replace-tab, new-document                                                    |
-| `apps/editor/lib/board-scene-hug.ts`                                      | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
-| `apps/editor/lib/board-scene-browser.ts`                                  | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
-| `apps/editor/components/dialogs/ImportImageReport.tsx`                    | The dialog's result view: scene report, board failures, images                                    |
+| `../livediagram/apps/editor/lib/board-scene/scene.ts`                     | The contract: scene types only                                                                    |
+| `../livediagram/apps/editor/lib/board-scene/colour.ts`                    | `createColourResolver`, fields per role, `resolveFill`, `resolveStickyFill`, the colour constants |
+| `../livediagram/apps/editor/lib/board-scene/context.ts`                   | `LandContext`: the memoised resolver and the landing's own rules (`LANDING_RULES`)                |
+| `../livediagram/apps/editor/lib/board-scene/common.ts`                    | rotation, lock, safe link, opacity; `limitPoints`, `turnPoints`, `endsMeet`                       |
+| `../livediagram/apps/editor/lib/board-scene/test-scenes.ts`               | Typed scene builders for tests (synthesised content)                                              |
+| `../livediagram/apps/editor/lib/board-scene/width.ts`                     | `markerWidthPx`, `borderStrokeOf`, `arrowWidthPx`                                                 |
+| `../livediagram/apps/editor/lib/board-scene/text.ts`                      | `textBoxFields`, `labelFields`, the font table                                                    |
+| `../livediagram/apps/editor/lib/board-scene/land-marks.ts`                | ink, polyline (whiteboard profile)                                                                |
+| `../livediagram/apps/editor/lib/board-scene/land-boxes.ts`                | shape, text, sticky, image, frame as a boundary (whiteboard profile)                              |
+| `../livediagram/apps/editor/lib/board-scene/land-connectors.ts`           | connector and headed polyline to an arrow (both profiles)                                         |
+| `../livediagram/apps/editor/lib/board-scene/land-diagram.ts`              | the diagram profile's per-kind mapping                                                            |
+| `../livediagram/apps/editor/lib/board-scene/placement.ts`                 | `sceneBounds`, `placementOffset`                                                                  |
+| `../livediagram/apps/editor/lib/board-scene/report.ts`                    | `BoardSceneReport`, `mergeNotes`, the copy per landed kind                                        |
+| `../livediagram/apps/editor/lib/board-scene/land.ts`                      | `landBoardScene`: validation, limits, ordering, ids, tab patch, logging                           |
+| `../livediagram/apps/editor/lib/board-scene/attach.ts`                    | `sceneImageSource`: a `SceneAsset` as an `ImportImageSource`                                      |
+| `../livediagram/apps/editor/hooks/canvas/useBoardSceneInsert.ts`          | Paste / drop: land at a point, images, one commit, select, notice state                           |
+| `../livediagram/apps/editor/lib/board-scene-import.ts`                    | `importBoardsAsDocuments`, `finishLanding`: the new-document target, editor-free                  |
+| `../livediagram/apps/editor/hooks/persistence/useBoardSceneImport.ts`     | Import commit paths: replace-tab, new-document                                                    |
+| `../livediagram/apps/editor/lib/board-scene-hug.ts`                       | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
+| `../livediagram/apps/editor/lib/board-scene-browser.ts`                   | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
+| `../livediagram/apps/editor/components/dialogs/ImportImageReport.tsx`     | The dialog's result view: scene report, board failures, images                                    |
 | `apps/editor/lib/quick-style-applicability.ts`                            | `quickStyleApplicability`, `quickStyleCaption`                                                    |
 | `apps/editor/lib/reset-colours.ts`                                        | "Reset to Theme" per element, named colours included                                              |
-| `apps/editor/components/canvas/BoardSceneNotice.tsx`                      | The paste notice                                                                                  |
-| `apps/editor/components/dialogs/BoardSceneReportList.tsx`                 | The report's rows, shared by the notice and the Import dialog                                     |
+| `../livediagram/apps/editor/components/canvas/BoardSceneNotice.tsx`       | The paste notice                                                                                  |
+| `../livediagram/apps/editor/components/dialogs/BoardSceneReportList.tsx`  | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
 | `packages/document/src/pen-colours.ts`                                    | `hexOklch` for the colour rules                                                                   |
 | `packages/document/src/stock-colours.ts`                                  | `resolveStockColours` draws `penTextColour`                                                       |
@@ -243,8 +245,8 @@ borderStrokeOf`, `strokeStyle` from `dash`. A duplicated closing point is droppe
 - **image** → `ImageElement` `imageId: null`, box, `objectFit: 'cover'` when `crop`; one
   `ImportImageRequest` `{ elementId, key: asset, source: sceneImageSource(asset) or null, hint:
 { width, height } }`.
-- **frame** → `createShape('frame', x, y)` (its title look: `textAlignX: 'right'`, `textAlignY: 'top'`,
-  `padding: 'lg'`, `textSize: 'md'`) with the box, `label: name` when non-empty, else the factory's "Frame".
+- **frame** → `createShape('boundary', x, y)` in Inset style (`boundaryStyle: 'inset'`; livehuddle has no Frame) with
+  the box, `label: name` when non-empty (else the boundary's own "Region").
 
 Boxed elements land before connectors resolve their ends: a first pass lands every item except
 connectors and headed polylines into a `Map<key, landedElement>` while reserving their index; the
@@ -287,7 +289,7 @@ hold." }` (the number is `MAX_ELEMENTS_PER_TAB`), logged `[board-scene] rejected
 2. Drop unusable items into the skipped rule "Elements without a size were skipped": a non-finite
    coordinate anywhere, a point item with no points (a connector or polyline with fewer than two),
    a boxed item with width or height `<= 0`. Then drop the rest that fail `withinImportReach`
-   (`apps/editor/lib/import-coords.ts`: every point, or x, y, width and height, within
+   (`../livediagram/apps/editor/lib/import-coords.ts`: every point, or x, y, width and height, within
    `IMPORT_COORD_MAX` of zero) into the skipped rule "Elements too far off the board were skipped".
 3. Placement offset; land per profile; merge notes (parser notes then landing notes, by rule and
    kind); count `landed` per scene kind of the items that produced an element.
@@ -334,9 +336,9 @@ Returns `{ insertScene(scene, at?), notice, dismissNotice }`; composed in `useEd
 - `importScenesAsNewDocuments(scenes, onProgress)`: `importBoardsAsDocuments` with the open
   document deciding `offline` (`isOfflineId`).
 - `importBoardsAsDocuments(scenes, { ownerId, offline, folderId?, onProgress?, onDocumentsCreated?,
-createDocument?, createImageSession?, hugText? })` (`apps/editor/lib/board-scene-import.ts`, no editor
+createDocument?, createImageSession?, hugText? })` (`../livediagram/apps/editor/lib/board-scene-import.ts`, no editor
   state, so the Explorer page calls it directly): per scene, `boardDocumentDates(scene, now)` and
-  `boardDocumentName(scene, createdAt)` (`lib/board-scene/board-document.ts`), the landing
+  `boardDocumentName(scene, createdAt)` (`../livediagram/apps/editor/lib/board-scene/board-document.ts`), the landing
   (`whiteboard` / `origin`), `finishLanding` (images through a session made with `{ ownerId,
 documentId: null, offline }`, progress per board: `BoardImportProgress` `{ board, boards, done,
 total }`; the text hug), then `createDocument({ id, name, tabs: [tab], folderId?, createdAt?,
@@ -374,10 +376,10 @@ and `savedAt` (integers). `apiCreateDocument` sends `savedAt` when given.
 ### `BoardSceneNotice`
 
 A `role="status"` `aria-live="polite"` panel, fixed, bottom centre (`z-[var(--z-overlay)]`), 360 px
-max wide. Its `bottom` comes from `useNoticeSlot` (`components/canvas/useNoticeSlot.ts`): the
+max wide. Its `bottom` comes from `useNoticeSlot` (`../livediagram/apps/editor/components/canvas/useNoticeSlot.ts`): the
 `[data-whiteboard-dock]` top plus `NOTICE_GAP_PX` (8), or, with no dock, the canvas bottom less
 `DOCKLESS_LIFT_PX` (68; `DOCKLESS_WIDE_LIFT_PX` 16 from `DOCKLESS_WIDE_MIN_PX` 1760, mirroring the
-dock), via the pure `noticeBottom` (`lib/board-scene-notice-slot.ts`); measured in a layout effect
+dock), via the pure `noticeBottom` (`../livediagram/apps/editor/lib/board-scene-notice-slot.ts`); measured in a layout effect
 and on resize (ResizeObserver on the dock and canvas), hidden until measured. The panel dress (border, radius, shadow, light and dark);
 heading per the spec, `BoardSceneReportList` rows, the image placeholder sentences, a Close button
 (Escape when focus is inside). Never steals focus; reduced motion removes its fade.
@@ -394,7 +396,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
   to every element it returns, for every source and profile; a freehand is returned as packed.
 - Defaults are not written at the source: `streamline` only when above 0 (`freehandPenStroke` reads
   absent as 0), `opacity` only under 1 (`commonFields`), a medium border and a solid line omitted.
-- New-document target (`lib/board-scene-import.ts`): a cloud board whose tab serialises to more
+- New-document target (`../livediagram/apps/editor/lib/board-scene-import.ts`): a cloud board whose tab serialises to more
   than `MAX_TAB_BYTES` (`@livehuddle/api-schema`, the worker's own cap, [Tab size](../../015-api/api.md#tab-size))
   fails before any request, and an `ApiError` with status 413 from the create fails the same way: the
   failure `BOARD_TOO_BIG` "This board is too big for one canvas", logged
@@ -481,17 +483,17 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 | `hexOklch`                                                                       | `packages/document/src/pen-colours.test.ts`                                                                                                    |
 | reset to theme drops named colours                                               | `apps/editor/lib/reset-colours.test.ts`                                                                                                        |
 | rotation, links, point helpers                                                   | `common.test.ts`                                                                                                                               |
-| text hug of landed boxes                                                         | `apps/editor/lib/board-scene-hug.test.ts`                                                                                                      |
+| text hug of landed boxes                                                         | `../livediagram/apps/editor/lib/board-scene-hug.test.ts`                                                                                       |
 | quick style on a mixed whiteboard selection, dark mode                           | `apps/editor/e2e/quick-style-mixed.spec.ts`                                                                                                    |
-| insert: one commit, selection, images, notice, point                             | `apps/editor/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                                                                 |
-| board document name and dates                                                    | `apps/editor/lib/board-scene/board-document.test.ts`                                                                                           |
+| insert: one commit, selection, images, notice, point                             | `../livediagram/apps/editor/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                                                  |
+| board document name and dates                                                    | `../livediagram/apps/editor/lib/board-scene/board-document.test.ts`                                                                            |
 | document dates rule; the worker's create with dates (real schema)                | `packages/api-schema/src/document-dates.test.ts`, `apps/api/src/routes/document-create-dates.test.ts`, `apps/api/src/routes/documents.test.ts` |
-| result view lists new documents and failures                                     | `apps/editor/components/dialogs/ImportImageReport.test.tsx`                                                                                    |
+| result view lists new documents and failures                                     | `../livediagram/apps/editor/components/dialogs/ImportImageReport.test.tsx`                                                                     |
 | landed ink within the codec's guarantee, points and pressures                    | `land-marks.test.ts` "landed ink precision"                                                                                                    |
-| compact output: boxes, arrow ends and bends, a stroke left as packed             | `apps/editor/lib/board-scene/compact.test.ts`                                                                                                  |
-| a large synthetic board lands packed, under 8 bytes a point                      | `apps/editor/lib/board-scene/land.test.ts` "a large board"                                                                                     |
-| a 413 on create is "This board is too big for one canvas", logged, the rest land | `apps/editor/lib/board-scene-import.test.ts`                                                                                                   |
-| new documents outside the editor: folder, offline, own maker                     | `apps/editor/lib/board-scene-import.test.ts`                                                                                                   |
-| import: replace-tab, new documents (cloud and offline), failures                 | `apps/editor/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                                                                            |
-| notice slot above the dock at every width                                        | `apps/editor/lib/board-scene-notice-slot.test.ts`                                                                                              |
-| notice copy and role                                                             | `apps/editor/components/canvas/BoardSceneNotice.test.tsx`                                                                                      |
+| compact output: boxes, arrow ends and bends, a stroke left as packed             | `../livediagram/apps/editor/lib/board-scene/compact.test.ts`                                                                                   |
+| a large synthetic board lands packed, under 8 bytes a point                      | `../livediagram/apps/editor/lib/board-scene/land.test.ts` "a large board"                                                                      |
+| a 413 on create is "This board is too big for one canvas", logged, the rest land | `../livediagram/apps/editor/lib/board-scene-import.test.ts`                                                                                    |
+| new documents outside the editor: folder, offline, own maker                     | `../livediagram/apps/editor/lib/board-scene-import.test.ts`                                                                                    |
+| import: replace-tab, new documents (cloud and offline), failures                 | `../livediagram/apps/editor/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                                                             |
+| notice slot above the dock at every width                                        | `../livediagram/apps/editor/lib/board-scene-notice-slot.test.ts`                                                                               |
+| notice copy and role                                                             | `../livediagram/apps/editor/components/canvas/BoardSceneNotice.test.tsx`                                                                       |

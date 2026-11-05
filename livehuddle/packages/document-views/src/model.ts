@@ -12,7 +12,7 @@ import {
 import { edgesOf, type Edges } from './edges';
 import { countElements, threadCounts, type HeaderFacts } from './header';
 import { buildViewTree, type ViewTree } from './tree';
-import { partitionVisible, pinnedIds } from './visibility';
+import { pinnedIds } from './visibility';
 
 // What the caller knows beyond the tab: its revision, and the document's tab ids in order (VW4).
 // `selected`: the owner's live selection for `show selected`; null or absent when it was not read (VW68).
@@ -25,7 +25,6 @@ export type ViewContext = {
 export type ViewModel = {
   tab: Tab;
   printed: Element[];
-  hidden: Element[];
   refs: RefTable;
   tabRefOf: (tabId: string) => string;
   kindOf: (el: Element) => string;
@@ -45,7 +44,6 @@ function tabRefsFor(tabId: string, tabIds: readonly string[] | undefined): (id: 
 function headerFacts(
   tab: Tab,
   printed: readonly Element[],
-  hidden: number,
   tabRefOf: (id: string) => string,
   rev: number | undefined,
 ): HeaderFacts {
@@ -53,7 +51,6 @@ function headerFacts(
     tab: { id: tab.id, ref: tabRefOf(tab.id), name: tab.name, kind: tabKindOf(tab) },
     elements: printed.length,
     counts: countElements(printed),
-    hidden,
     unknown: printed.filter((el) => !isKnownElement(el)).length,
     threads: threadCounts(printed),
     rev: rev ?? null,
@@ -63,12 +60,11 @@ function headerFacts(
 
 // A tab's header facts alone, without its tree: what `overview` keeps of each tab body it reads.
 export function headerFactsOf(tab: Tab, context: ViewContext = {}): HeaderFacts {
-  const { printed, hidden } = partitionVisible(tab);
-  return headerFacts(tab, printed, hidden.length, tabRefsFor(tab.id, context.tabIds), context.rev);
+  return headerFacts(tab, tab.elements, tabRefsFor(tab.id, context.tabIds), context.rev);
 }
 
 export function buildViewModel(tab: Tab, context: ViewContext = {}): ViewModel {
-  const { printed, hidden } = partitionVisible(tab);
+  const printed = tab.elements;
   const refs = computeRefs(tab.elements.map((el) => el.id));
   const tabRefOf = tabRefsFor(tab.id, context.tabIds);
   const kinds = new Map<Element, string>();
@@ -81,6 +77,6 @@ export function buildViewModel(tab: Tab, context: ViewContext = {}): ViewModel {
   };
   const tree = buildViewTree(printed, new Set(printed.flatMap(pinnedIds)));
   const edges = edgesOf(printed, refs, new Set(tree.nodes.keys()));
-  const facts = headerFacts(tab, printed, hidden.length, tabRefOf, context.rev);
-  return { tab, printed, hidden, refs, tabRefOf, kindOf, tree, edges, facts };
+  const facts = headerFacts(tab, printed, tabRefOf, context.rev);
+  return { tab, printed, refs, tabRefOf, kindOf, tree, edges, facts };
 }

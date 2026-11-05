@@ -160,10 +160,9 @@ export function editsBase(current: Tab & { rev: number }, rev?: number) {
   return { rev: rev ?? current.rev, elements };
 }
 
-// A whole-tab body from the tool's graph, Mermaid, template or elements input.
+// A whole-tab body from the tool's graph, template or elements input.
 export function replaceBodyFrom(args: {
   graph?: unknown;
-  mermaid?: string;
   template?: string;
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
@@ -173,11 +172,9 @@ export function replaceBodyFrom(args: {
 }): ChangesetReplaceBody {
   const source = args.graph
     ? { graph: args.graph }
-    : args.mermaid
-      ? { mermaid: args.mermaid }
-      : args.template
-        ? { template: args.template }
-        : { elements: args.elements ?? [] };
+    : args.template
+      ? { template: args.template }
+      : { elements: args.elements ?? [] };
   return {
     ...source,
     ...(args.layout ? { layout: args.layout } : {}),

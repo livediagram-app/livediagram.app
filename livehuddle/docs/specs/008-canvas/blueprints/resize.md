@@ -22,7 +22,7 @@ top").
 - **Grip**: anything drawn to operate a selection rather than to show content: corner and edge
   handles (`ResizeHandles`, `EdgeResizeHandle`), union handles and their dashed border, a free
   arrow's frame (`FreeArrowSelection`), an arrow's end, curve and elbow grips
-  (`SelectedArrowHandles`), and the quick-connect pluses (`QuickConnectPluses`).
+  (`SelectedArrowHandles`). (livehuddle has no quick-connect pluses, ../../002-project-scope/not-in-livehuddle.md#quick-connect.)
 - **Grips layer**: `SelectionGripsLayer`, the one `[data-selection-grips]` layer that holds every grip.
 - **Grips frame**: `[data-grips-for="<id>"]`, an element's own handles standing on its box.
 
@@ -70,9 +70,9 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
 
 - Grips layer: `CanvasElementsLayer` draws it last in the transformed world, after every element,
   the remote cursors and the laser, at `z-index: SELECTION_GRIPS_Z_INDEX`, `pointer-events: none`,
-  `inset: 0` (canvas coordinates). Inside it, in paint order: the canvas's own grips (quick-connect pluses, union border, union handles), an `<svg>` whose `<g>` hosts SVG
+  `inset: 0` (canvas coordinates). Inside it, in paint order: the canvas's own grips (union border, union handles), an `<svg>` whose `<g>` hosts SVG
   grips, then a `<div>` host for HTML grips. Every pressable thing in the layer re-enables pointer
-  events on itself (`pointer-events-auto`): the pluses, every handle.
+  events on itself (`pointer-events-auto`): every handle.
 - The layer hands its two hosts to `SelectionGripsContext` from a layout effect, so the first commit
   re-renders synchronously and the grips fill before the first paint; on unmount the hosts go null.
 - An element view renders its grips where it always did, wrapped in `BoxGripsPortal` (HTML) or
@@ -84,7 +84,7 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
   the element's resting box, turned and shifted as the wrapper is. The frame is
   `pointer-events: none`; each grip re-enables them, so the body beneath stays draggable.
 - The element's own content keeps its paint order; nothing about selection raises it.
-- A grip is not affected by the element's opacity, a layer's opacity, a vote's dimming or a looping
+- A grip is not affected by the element's opacity or a looping
   animation's motion: it draws opaque on the resting box.
 
 ## Interfaces and contracts
@@ -116,11 +116,6 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
 - A tie between `|dx|` and `|dy|` on a corner leads with `x`.
 - No grips layer mounted (a portal rendered outside `CanvasElementsLayer`): the portal renders
   nothing. `CanvasElementsLayer` is the only renderer of element views, and it always mounts one.
-- An element on a hidden layer is not drawn, so its grips are not either; a layer-preview solo draws
-  only that band's elements and so only their grips.
-- Isometric view: painting goes by depth, not z-index, so `[data-iso] [data-selection-grips]` takes
-  `translate: 0 0 calc(2px + var(--iso-z) * 0.01px)` with `--iso-z` one past the top element's
-  paint index (above the arrows' `1px` nudge).
 - A later element that forms its own stacking context, or a descendant with its own z-index (a
   lane's gutter and a face's settings button, both `z-10`), stays under the layer.
 - Remote cursors (`z-index: 40`) stay above the grips.

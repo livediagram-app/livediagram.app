@@ -6,7 +6,7 @@ import { isPlacementRejection, type PlacementRejection } from '@livehuddle/api-s
 import { ApiError } from '@/lib/api-client';
 
 export type CreateFailure = {
-  // `retry` re-runs the same create; `choose` reopens /new without the refused placement.
+  // `retry` re-runs the same create; `choose` reopens /new without the refused placement, so it goes where new Spaces go by default.
   action: 'retry' | 'choose';
   eyebrow: string;
   title: string;
@@ -38,7 +38,7 @@ export function createFailureCopy(error: unknown): CreateFailure {
     eyebrow: 'Placement refused',
     title: 'Couldn’t file the space there',
     message: PLACEMENT_MESSAGES[code],
-    actionLabel: 'Choose another place',
+    actionLabel: 'Use Default Place',
   };
 }
 

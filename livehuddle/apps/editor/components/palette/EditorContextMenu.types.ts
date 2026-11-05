@@ -19,7 +19,6 @@ import type {
   CodeThemeId,
   ElementShadow,
   Finish,
-  Layer,
   LegendItem,
   AnimationSetId,
   IconAnimation,
@@ -86,13 +85,6 @@ export type EditorContextMenuProps = {
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
-  // Layers (docs/specs/006-document/layers.md): the tab's normalised stack (bottom -> top) for the
-  // Layer section's move-to dropdown, the selection's resolved layer
-  // (null when members span layers), and the selection-wide move. The move
-  // is absent while the Layers panel is off in Settings, and its tiles with it.
-  layers: Layer[];
-  selectionLayerId: string | null;
-  onMoveSelectionToLayer?: (layerId: string) => void;
   // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;
@@ -195,21 +187,22 @@ export type EditorContextMenuProps = {
   // caption card on or off.
   onSetWebRows: (rows: import('@livehuddle/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
-  onSetButtonMode: (mode: import('@livehuddle/document').SelectionMode) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
   // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
   // "create the far end for me" for the common case where it doesn't exist yet.
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
-  onSetReaction: (reaction: import('@livehuddle/document').Reaction) => void;
   onSetChairFacing: (facing: ChairFacing) => void;
   // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
   onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
+  // Screen (docs/specs/009-elements/screen-and-room-sign.md): its Video Link, undefined to clear it.
+  onSetScreenUrl?: (url: string | undefined) => void;
+  // The social pieces (docs/specs/009-elements/social-pieces.md): a World Clock's zones, a Jukebox's source.
+  onSetClockZones?: (zones: import('@livehuddle/document').ClockZone[] | undefined) => void;
+  onSetJukeboxSource?: (source: string | undefined) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livehuddle/document').Tab[];

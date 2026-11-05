@@ -3,6 +3,9 @@
 // is in. Pure geometry over a tab's visible elements, read by the editor's call (apps/editor/lib/calls) and by the
 // api's room when it checks who may hear whom (apps/api/src/calls/call-hearing.ts), so both answer the same.
 import { roomInterior } from '@liveworkspace/avatar/office-geometry';
+import { pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
+import { isRoomOutline } from './room-outline-field';
+import { podInterior } from '@liveworkspace/avatar/pod';
 import { DEFAULT_STAGE_SPEAKERS, isStageSpeakers, stageTop, type StageSpeakers } from './office';
 
 /**
@@ -25,6 +28,9 @@ export type CallZone = {
   readonly x1: number;
   readonly y1: number;
   readonly area: number;
+  // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md): its outline in canvas px, which
+  // the point must be inside as well as inside the box.
+  readonly polygon?: readonly CallPoint[];
 };
 
 /** A stage's top as the call reads it, the room it stands in (null: the open), and its two settings. */
@@ -43,6 +49,7 @@ export type CallElementSource = {
   readonly y?: number;
   readonly width?: number;
   readonly height?: number;
+  readonly roomOutline?: unknown;
   readonly stageSpeakers?: unknown;
   readonly stageCameras?: unknown;
 };
@@ -64,13 +71,38 @@ function boxOf(el: CallElementSource, shape: string): Box | null {
   return { x, y, width, height };
 }
 
-/** Every Office room among `elements` as a zone. The caller passes only what is on visible layers. */
+/**
+ * Every Office room among `elements` as a zone, and every Office Pod (docs/specs/009-elements/office.md "Office Pod"):
+ * the floor inside its walls is a call too. The caller passes only what is on visible layers.
+ */
 export function roomZones(elements: readonly CallElementSource[]): CallZone[] {
   const zones: CallZone[] = [];
   for (const el of elements) {
-    const box = boxOf(el, 'room');
+    const room = boxOf(el, 'room');
+    const box = room ?? boxOf(el, 'office-pod');
     if (!box) continue;
-    const inside = roomInterior(box);
+    // A room drawn with the Room Builder (room-builder.md): its floor is its outline.
+    if (room && isRoomOutline(el.roomOutline)) {
+      const polygon = el.roomOutline.map((p) => ({
+        x: room.x + p.x * room.width,
+        y: room.y + p.y * room.height,
+      }));
+      const area = polygonArea(polygon);
+      if (area <= 0) continue;
+      const xs = polygon.map((p) => p.x);
+      const ys = polygon.map((p) => p.y);
+      zones.push({
+        id: el.id,
+        x0: Math.min(...xs),
+        y0: Math.min(...ys),
+        x1: Math.max(...xs),
+        y1: Math.max(...ys),
+        area,
+        polygon,
+      });
+      continue;
+    }
+    const inside = room ? roomInterior(room) : podInterior(box);
     if (inside.width <= 0 || inside.height <= 0) continue;
     zones.push({
       id: el.id,
@@ -89,6 +121,7 @@ function innermost<T extends CallZone>(at: CallPoint, boxes: readonly T[]): T | 
   let best: T | null = null;
   for (const z of boxes) {
     if (at.x <= z.x0 || at.x >= z.x1 || at.y <= z.y0 || at.y >= z.y1) continue;
+    if (z.polygon && !pointInPolygon(at, z.polygon)) continue;
     if (!best || z.area < best.area || (z.area === best.area && z.id < best.id)) best = z;
   }
   return best;

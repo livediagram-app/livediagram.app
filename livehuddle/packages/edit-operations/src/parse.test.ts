@@ -168,11 +168,15 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
   });
 
   it('keeps members that name one element apart, and takes the rest together', () => {
-    expect(one('wrap n3 n4 in frame')).toEqual({ op: 'wrap', targets: ['n3', 'n4'], in: 'frame' });
-    expect(one('wrap selected label~"to do" in frame')).toEqual({
+    expect(one('wrap n3 n4 in boundary')).toEqual({
+      op: 'wrap',
+      targets: ['n3', 'n4'],
+      in: 'boundary',
+    });
+    expect(one('wrap selected label~"to do" in boundary')).toEqual({
       op: 'wrap',
       targets: ['selected label~"to do"'],
-      in: 'frame',
+      in: 'boundary',
     });
   });
 
@@ -237,10 +241,10 @@ describe('parseEditOperations: refusals', () => {
   it('names the placements for a word that is not one', () => {
     const [error] = errorsOf('add square label=x right:n3');
     expect(error!.details[0]).toBe(
-      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>',
+      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<container>',
     );
     expect(error!.hint).toBe(
-      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>',
+      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<container>',
     );
   });
 
@@ -259,15 +263,15 @@ describe('parseEditOperations: refusals', () => {
         'connect -> n4',
         'connect n3 ->',
         'wrap n3 n4',
-        'wrap in frame',
-        'wrap n3 in frame label=x n4',
+        'wrap in boundary',
+        'wrap n3 in boundary label=x n4',
         'set',
         'set n3',
         'rm n3 label=x',
         'move n3 by=1',
         'move n3 by=a,1',
         'connect n3 -> n4 tags=[1,',
-        'wrap n3 in frame tags=[1,',
+        'wrap n3 in boundary tags=[1,',
         'set n3 tags=[1,',
       ].map(detail),
     ).toEqual([
@@ -282,16 +286,16 @@ describe('parseEditOperations: refusals', () => {
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 12: expected a selector after ->',
-      'line 1, column 9: expected in frame or in lane',
+      'line 1, column 9: expected in boundary or in lane',
       'line 1, column 6: expected the members to wrap',
-      'line 1, column 26: expected key=value or tidy, absorb, make-room',
+      'line 1, column 29: expected key=value or tidy, absorb, make-room',
       'line 1, column 4: expected a selector: a ref, a "label" or key:value terms',
       'line 1, column 7: expected key=value',
       'line 1, column 7: expected no key=value on rm',
       'line 1, column 9: expected by=dx,dy with two numbers',
       'line 1, column 9: expected by=dx,dy with two numbers',
       'line 1, column 18: expected a JSON value after tags=',
-      'line 1, column 18: expected a JSON value after tags=',
+      'line 1, column 21: expected a JSON value after tags=',
       'line 1, column 8: expected a JSON value after tags=',
     ]);
   });
@@ -343,7 +347,7 @@ describe('formatOperation round trip', () => {
     'rewire a3 to="Orders DB"',
     'rewire a3 from=n1 to="Orders DB"',
     'insert diamond label=Valid? between n3 "Orders DB"',
-    'wrap n3 type:sticky in frame label=Services absorb',
+    'wrap n3 type:sticky in boundary label=Services absorb',
     'unwrap f2',
     'order n3 back',
     'order n3 above=n4',
@@ -374,7 +378,7 @@ describe('formatOperation round trip', () => {
       'rewire a3 to="Orders DB"',
       'rewire a3 from=n1 to="Orders DB"',
       'insert diamond label=Valid? between n3 "Orders DB"',
-      'wrap n3 type:sticky in frame label=Services absorb',
+      'wrap n3 type:sticky in boundary label=Services absorb',
       'unwrap f2',
       'order n3 back',
       'order n3 above=n4',
@@ -390,7 +394,7 @@ describe('formatOperation round trip', () => {
     const wrap: EditOperation = {
       op: 'wrap',
       targets: ['n3', 'type:sticky', 'type:square in:f2'],
-      in: 'frame',
+      in: 'boundary',
     };
     const printed = formatOperation(wrap);
     expect(printed.startsWith('{')).toBe(true);

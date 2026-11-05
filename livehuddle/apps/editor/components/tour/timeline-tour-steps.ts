@@ -1,6 +1,5 @@
 import type { ElementTourApi } from './element-tour-api';
 import {
-  addRowStep,
   conceptOutro,
   inTheMenu,
   onGraphic,
@@ -32,12 +31,6 @@ export function timelineTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
       'And When',
       `${click} its when to change it: a date, a quarter, a sprint.`,
       elementSelector(id, '[data-concept-note="0"]'),
-    ),
-    addRowStep(
-      'add',
-      'Add a Milestone',
-      'Add Milestone adds one at the end, up to eight.',
-      'Add Milestone',
     ),
     ...(ctx.hasMore
       ? [

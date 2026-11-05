@@ -3,7 +3,7 @@
 // livediagram's Share dialog's from before the Explorer split (share-dialog-parts.tsx), the look every app keeps.
 
 import type { ReactNode } from 'react';
-import type { Level, ShareLinkExpiry } from '@liveworkspace/index-client';
+import type { App, Level, ShareLinkExpiry } from '@liveworkspace/index-client';
 import { EyeIcon, PencilLineIcon, VoteIcon } from '../../ui/icons';
 
 export type PassStyle = {
@@ -39,7 +39,8 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
     blurb: 'Comments, votes and works items. Can’t reshape it.',
     Icon: () => <VoteIcon />,
     solid: 'bg-teal-700 text-white dark:bg-teal-600/60',
-    button: 'bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-700',
+    // Dark mode keeps teal-700 under the white label: teal-600 read 3.67:1, under WCAG AA's 4.5.
+    button: 'bg-teal-700 hover:bg-teal-800 dark:bg-teal-700 dark:hover:bg-teal-800',
     selected: 'border-teal-600 bg-teal-50/70 dark:border-teal-400 dark:bg-teal-500/10',
     text: 'text-teal-800 dark:text-teal-300',
     hover: 'hover:bg-teal-50 dark:hover:bg-teal-500/10',
@@ -57,6 +58,17 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
     chosen: 'bg-violet-50 ring-1 ring-violet-300 dark:bg-violet-500/15 dark:ring-violet-500/50',
   },
 };
+
+// An app's own words for a level's blurb, where the shared one would mislead (liveworkspace/docs/specs/004-index/
+// one-explorer-contracts.md): livehuddle's Participant walks and adds nothing.
+export const APP_LEVEL_BLURBS: Partial<Record<App, Partial<Record<Level, string>>>> = {
+  livehuddle: { participate: 'Walks, talks and uses the pieces; adds nothing.' },
+};
+
+/** A level's blurb for an app: its own words, or the shared one. */
+export function levelBlurb(level: Level, app?: App): string {
+  return (app && APP_LEVEL_BLURBS[app]?.[level]) ?? LEVEL_PASS[level].blurb;
+}
 
 // The cards' order: the most a link can do first, since Editor is what a new pass starts as.
 export const LEVEL_ORDER: Level[] = ['edit', 'participate', 'view'];

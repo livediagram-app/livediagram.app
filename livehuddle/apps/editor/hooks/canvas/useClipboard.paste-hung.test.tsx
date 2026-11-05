@@ -32,7 +32,6 @@ function paste(source: Element[], tab: Element[]): Element[] {
   const { result } = renderHook(() =>
     useClipboard({
       isReadOnly: false,
-      embedMode: false,
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }),
       editingId: null,
       setEditingId: () => {},
@@ -42,8 +41,6 @@ function paste(source: Element[], tab: Element[]): Element[] {
       },
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
-      ownerId: 'me',
-      documentId: 'd',
       toast: { error: vi.fn(), info: vi.fn() } as never,
     }),
   );

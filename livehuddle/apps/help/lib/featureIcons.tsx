@@ -8,7 +8,6 @@ import {
   lucideHeadphones,
   lucideLayoutGrid,
   lucideLink,
-  lucideLocateFixed,
   lucideMagnet,
   lucidePanelLeft,
   lucidePanelsTopLeft,
@@ -18,7 +17,6 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVideo,
-  lucideVote,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livehuddle/ui';
 import type { ReactNode } from 'react';
@@ -117,23 +115,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17 6h2a1 1 0 011 1v3a1 1 0 01-1 1h-6a1 1 0 00-1 1v2M11 15h2v6h-2z" />
     </Glyph>
   ),
-  laser: (
-    <Glyph>
-      <circle cx="12" cy="12" r="2.5" />
-      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
-    </Glyph>
-  ),
-  spotlight: (
-    <Glyph>
-      <Prims prims={lucideLocateFixed} />
-    </Glyph>
-  ),
-  'isometric-mode': (
-    <Glyph>
-      <path d="M12 3l9 5v8l-9 5-9-5V8l9-5z" />
-      <path d="M12 12l9-4M12 12v9M12 12L3 8" />
-    </Glyph>
-  ),
   // Palette → Elements.
   // The element families the Build / Write / Collaborate / Behaviour tabs
   // hold. Each one draws the thing it makes, so the tab reads before the label
@@ -142,13 +123,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M4 20l1-4 9.5-9.5a2 2 0 012.8 2.8L8 18.8z" />
       <path d="M13 7.5l3.5 3.5" />
-    </Glyph>
-  ),
-  build: (
-    <Glyph>
-      <rect x="3" y="13" width="8" height="7" rx="1" />
-      <rect x="13" y="13" width="8" height="7" rx="1" />
-      <rect x="8" y="4" width="8" height="7" rx="1" />
     </Glyph>
   ),
   // A chair in profile: back, seat, two legs. Drawn side-on because a front-on
@@ -176,12 +150,41 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 14.5V3" />
     </Glyph>
   ),
+  // A stand with a sign across its head and rows of rooms: the lobby board.
+  directory: (
+    <Glyph>
+      <rect x="4" y="2" width="16" height="14" rx="2" />
+      <path d="M4 6h16M7.5 9.5h1M11 9.5h5.5M7.5 12.5h1M11 12.5h4M12 16v4M8 21.5h8" />
+    </Glyph>
+  ),
+  // Two doors meeting in the middle under an up and a down arrow: a lift.
+  elevator: (
+    <Glyph>
+      <rect x="3.5" y="7" width="17" height="15" rx="1.5" />
+      <path d="M12 7v15M9 4.5l1.5-2 1.5 2M12 2.5l1.5 2 1.5-2" />
+    </Glyph>
+  ),
   // A room's walls with a doorway, a little table and a plant: an office floor plan.
   'virtual-office': (
     <Glyph>
       <path d="M10 21H3V3h18v18h-7" />
       <rect x="7" y="8" width="7" height="4" rx="1" />
       <path d="M17.5 13v-3M16 10h3" />
+    </Glyph>
+  ),
+  // A wall screen on its stand, as the Screen's palette tile.
+  screen: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="13" rx="2" />
+      <path d="M9 20.5h6M12 17v3.5" />
+    </Glyph>
+  ),
+  // A plaque with a status stripe, a name line and a status dot: a Room Sign.
+  'room-sign': (
+    <Glyph>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M6.5 6v12M10 10.5h7.5" />
+      <circle cx="11" cy="14" r="1" />
     </Glyph>
   ),
   // The Stage: a platform's top and the front face you see, with a microphone on a stand, as its palette tile.
@@ -333,11 +336,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
     </Glyph>
   ),
-  'zen-mode': (
-    <Glyph>
-      <path d="M3 12h4l2 5 4-12 2 7h6" />
-    </Glyph>
-  ),
   history: (
     <Glyph>
       <path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8" />
@@ -346,7 +344,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // Collaboration guides — the six that finish the Collaboration category. Every
   // one of them had an obvious drawing already spoken for: a clock is on `agendas`
-  // and `share-link-expiry`, dots are `casting-dots`, people-in-a-folder is
+  // and `share-link-expiry`, people-in-a-folder is
   // `search-teams`, a tick with people is `done-checks`. So each takes the next
   // detail down.
   //
@@ -358,16 +356,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 10v3.5l2.5 1.5" />
       <path d="M10 3h4M12 3v3" />
       <path d="M18.5 6.5l1.5-1.5" />
-    </Glyph>
-  ),
-  // Dots landing ON something — the sub-article `casting-dots` draws the dots
-  // themselves, so the parent draws what they are spent on.
-  voting: (
-    <Glyph>
-      <rect x="3" y="14" width="18" height="6.5" rx="1.5" />
-      <circle cx="7.5" cy="8" r="2.5" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="8" r="2.5" fill="currentColor" stroke="none" />
-      <circle cx="19" cy="5.5" r="2" />
     </Glyph>
   ),
   // An envelope with the invitee on it, which is how a role reaches someone.
@@ -467,57 +455,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21.5 11.5V14h-2.5" />
     </Glyph>
   ),
-  // Collaboration → Voting. Five articles about one feature, so the collisions
-  // here are internal: every one of them could have been "some dots". Each draws
-  // its own subject instead — spending a dot, restricting to a layer, hiding the
-  // count, tracking the room, and what won.
-  //
-  // `casting-dots` deliberately has no enclosing square: dots inside a box is the
-  // die that `pickers` already draws.
-  'casting-dots': (
-    <Glyph>
-      <Prims prims={lucideVote} />
-    </Glyph>
-  ),
-  // The stack, with the dots landing on one sheet of it.
-  'vote-layers': (
-    <Glyph>
-      <path d="M12 3l7.5 4.2-7.5 4.2-7.5-4.2z" />
-      <path d="M4.5 12l7.5 4.2 7.5-4.2" />
-      <path d="M4.5 16.5L12 20.7l7.5-4.2" />
-      <circle cx="9.5" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="13" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
-    </Glyph>
-  ),
-  // A struck-through eye: the counts and the cursors are what stay hidden. The
-  // open eye belongs to layer visibility, which is a different question.
-  'vote-privacy': (
-    <Glyph>
-      <path d="M3 12s3.5-5.5 9-5.5 9 5.5 9 5.5-3.5 5.5-9 5.5S3 12 3 12z" />
-      <circle cx="12" cy="12" r="2.5" />
-      <path d="M4 20L20 4" />
-    </Glyph>
-  ),
-  // A panel tracking the room: who has voted, and how far along it is.
-  'vote-panel': (
-    <Glyph>
-      <rect x="3" y="3.5" width="18" height="17" rx="2" />
-      <path d="M3 8h18" />
-      <path d="M6 11.5h7M6 15h5" />
-      <rect x="6" y="17.5" width="12" height="1.5" rx="0.75" />
-      <path d="M6 18.25h5" />
-    </Glyph>
-  ),
-  // A podium: the tallest in the middle, which is what a ranked result looks
-  // like. No axes, so it cannot be read as the bar chart.
-  'vote-results': (
-    <Glyph>
-      <rect x="9" y="5.5" width="6" height="15" rx="1" />
-      <rect x="2.5" y="11" width="6" height="9.5" rx="1" />
-      <rect x="15.5" y="14" width="6" height="6.5" rx="1" />
-      <path d="M11.5 9h1v4" />
-    </Glyph>
-  ),
   // Palette → Behaviour elements. Every one of these is, physically, a button
   // someone presses, and the `behaviour` family glyph above already draws that.
   // So none of them draws a button being pressed: each draws what pressing it
@@ -534,14 +471,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'mode-buttons': (
     <Glyph>
       <Prims prims={lucideToggleRight} />
-    </Glyph>
-  ),
-  // A pad, and the burst it throws over the canvas.
-  'reaction-pads': (
-    <Glyph>
-      <rect x="4" y="12" width="12" height="8" rx="2" />
-      <path d="M8 16h4" />
-      <path d="M17.5 8.5l3-3M15 6V3M19.5 11.5h3M13.5 8.5l-1.5-1.5" />
     </Glyph>
   ),
   // Tilted, because a sticky note on a board never is not.
@@ -562,14 +491,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <ellipse cx="14" cy="12" rx="2" ry="4" />
       <path d="M2 12h7.5" />
       <path d="M7.5 9.8l2.2 2.2-2.2 2.2" />
-    </Glyph>
-  ),
-  frames: (
-    <Glyph>
-      <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" />
-      <rect x="3.5" y="7.5" width="17" height="12.5" rx="1.5" />
-      <rect x="6.5" y="10.5" width="5" height="4" rx="1" />
-      <circle cx="16" cy="15.5" r="2" />
     </Glyph>
   ),
   // The last cards: Locking a Tab, the two Tools cleanups, and the three
@@ -596,7 +517,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // An element snapped onto the grid, with the nudge that put it there. Drawn as
-  // bars on a baseline it was a bar chart — which is `vote-results` and
+  // bars on a baseline it was a bar chart, which is
   // `bar-and-line-charts` — and drawn as a guide line with two boxes it was
   // `alignment-guides`. The grid of dots is what is left, and it is the right
   // subject anyway: this is the action that snaps to it.
@@ -740,14 +661,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 12.5h6M9 15.5h6" />
     </Glyph>
   ),
-  // A plus appearing beside an element, which is the gesture itself.
-  'quick-add-on-hover': (
-    <Glyph>
-      <rect x="3" y="7" width="10" height="10" rx="1.5" />
-      <circle cx="18" cy="6" r="3.5" />
-      <path d="M18 4.5v3M16.5 6h3" />
-    </Glyph>
-  ),
   'alignment-guides': (
     <Glyph>
       <path d="M12 3v18" />
@@ -764,10 +677,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M5.5 7.5h1.5M5.5 9.5h1.5" />
     </Glyph>
   ),
-  // Canvas guides. The four layer entries are deliberately NOT four variations
-  // on a stack of sheets: three of them would be indistinguishable at 24px, so
-  // each draws the thing its article is about instead — the stack itself, then
-  // an eye, a merge, and a reorder.
   'follow-along': (
     <Glyph>
       <path d="M8 4l6.5 15 1.4-6 6-1.6z" />
@@ -780,36 +689,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 8h5M6 11h3" />
       <rect x="11" y="12" width="10" height="8" rx="1.5" />
       <path d="M14 15.5h4M14 18h2.5" />
-    </Glyph>
-  ),
-  layers: (
-    <Glyph>
-      <path d="M12 3l8 4.5-8 4.5-8-4.5z" />
-      <path d="M4 12.5l8 4.5 8-4.5" />
-      <path d="M4 17l8 4.5 8-4.5" />
-    </Glyph>
-  ),
-  'layers-visibility-and-locking': (
-    <Glyph>
-      <path d="M2.5 11.5S5.5 6 11 6s8.5 5.5 8.5 5.5S16.5 17 11 17s-8.5-5.5-8.5-5.5z" />
-      <circle cx="11" cy="11.5" r="2.5" />
-      <rect x="16" y="16.5" width="6" height="5" rx="1" />
-      <path d="M17.5 16.5v-1.2a1.5 1.5 0 013 0v1.2" />
-    </Glyph>
-  ),
-  'layers-organising': (
-    <Glyph>
-      <rect x="4" y="3.5" width="11" height="6" rx="1.5" />
-      <rect x="9" y="14.5" width="11" height="6" rx="1.5" />
-      <path d="M12 10.5v3M10.5 12l1.5 1.5L13.5 12" />
-    </Glyph>
-  ),
-  'layer-order': (
-    <Glyph>
-      <rect x="4" y="4" width="12" height="6" rx="1.5" />
-      <rect x="4" y="14" width="12" height="6" rx="1.5" />
-      <path d="M20 8V3.5M18 5.5l2-2 2 2" />
-      <path d="M20 16v4.5M18 18.5l2 2 2-2" />
     </Glyph>
   ),
   size: (
@@ -859,17 +738,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 4H5.5a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 5.5 20H12" />
       <path d="M11 3.6q5 -.6 9.2 .6M19.6 3.4q.8 8.4 -.2 17M20.4 19.6q-4.4 .8 -9.2 .2" />
       <path d="M12.4 4.6q4 -.2 7 .4M18.8 5.2q.4 7 -.2 13.6" opacity="0.6" />
-    </Glyph>
-  ),
-  // A selected box with a slim panel of swatches beside it: the panel is what
-  // the article is about, so it carries the dots and the selection stays plain.
-  'quick-style-panel': (
-    <Glyph>
-      <rect x="2.5" y="8" width="9" height="8" rx="1.5" strokeDasharray="2 1.5" />
-      <rect x="14.5" y="3.5" width="7" height="17" rx="1.5" />
-      <circle cx="18" cy="7.5" r="1.2" fill="currentColor" stroke="none" />
-      <circle cx="18" cy="11.5" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M16.5 15.5h3M16.5 17.5h3" />
     </Glyph>
   ),
   locking: (
@@ -1130,7 +998,7 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideAppWindow} />
     </Glyph>
   ),
-  // A frame with shapes drawn inside it.
+  // A canvas with shapes drawn on it.
   canvas: (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />

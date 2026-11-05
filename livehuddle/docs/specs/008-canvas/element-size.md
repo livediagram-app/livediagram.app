@@ -6,10 +6,10 @@ lock, and the reset-to-default-proportion action.
 
 ## Why a category
 
-The three were scattered. The **lock** lived at the bottom of Layer, under the
+The three were scattered. The **lock** lived at the bottom of the old Layer section, under the
 opacity slider, next to send-to-back, filed by "it is a property of the
 element" rather than by what it does. The **reset** lived in Shape, which meant
-it only appeared for morphable kinds, so an image or a frame could be locked
+it only appeared for morphable kinds, so an image or a room could be locked
 but never un-warped. And there was no way to state a size at all: every
 dimension came from a drag handle.
 

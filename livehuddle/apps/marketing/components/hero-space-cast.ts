@@ -151,21 +151,9 @@ export const BOARD = {
   size: 146,
 } as const;
 
-// A teammate on the board from their laptop: their cursor writes a note into Wins, then the room votes.
+// A teammate on the board from their laptop: their cursor writes a note into Wins.
 export const REMOTE = { name: 'Kit', colour: '#14b8a6' } as const;
 export const NOTE = { text: 'Beta shipped', at: 8.0 } as const;
-export const VOTES: readonly {
-  sticky: keyof typeof BOARD;
-  dx: number;
-  colour: string;
-  at: number;
-}[] = [
-  { sticky: 'wins', dx: 0, colour: '#10b981', at: 9.8 },
-  { sticky: 'wins', dx: 1, colour: '#ec4899', at: 10.1 },
-  { sticky: 'wins', dx: 2, colour: '#f59e0b', at: 10.4 },
-  { sticky: 'thisWeek', dx: 0, colour: '#0ea5e9', at: 10.7 },
-  { sticky: 'questions', dx: 0, colour: '#8b5cf6', at: 11.0 },
-];
 
 /** The straight legs of a walk: each waypoint's offset from the last, its duration and the way it faces. */
 export function legsOf(member: CastMember): {

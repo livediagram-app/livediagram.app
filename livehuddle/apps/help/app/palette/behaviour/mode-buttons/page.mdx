@@ -6,54 +6,52 @@ import { ModeButtonBar } from '@/components/illustrations/palette-behaviour';
 export const metadata = helpMetadata({
   title: 'Selection Mode Buttons',
   description:
-    'Drop a button on the canvas that hands whoever presses it a selection mode: Avatar, Select, Hand, Laser, Spotlight, Eraser, Format or Isometric.',
+    'Drop an Avatar button on the canvas: whoever presses it starts walking in Avatar mode, and pressing it again walks them back out.',
   path: '/help/palette/behaviour/mode-buttons/',
 });
 
 <ArticleLayout
   title="Selection Mode Buttons"
-  description="A button on the canvas that switches whoever presses it into a selection mode."
+  description="A button on the canvas that walks whoever presses it into Avatar mode."
   categoryTitle="Palette"
   categorySlug="palette"
   parentArticle={{ title: 'Meeting Elements', slug: 'behaviour' }}
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'mode-buttons')}
 >
 
-A Selection Mode button is an element that hands out a [selection mode](/help/selection-modes/). Put one on the canvas and anybody can press it, without ever having opened the mode picker.
+A Selection Mode button is an element that hands out [Avatar mode](/help/selection-modes/avatar-mode/). Put one on the canvas and anybody can press it to start walking, without ever having opened the mode picker. Avatar is the one mode a button hands out in livehuddle, so it is called the **Avatar Button** in the palette.
 
-An **Avatar** button is the board's own way into [Avatar mode](/help/selection-modes/avatar-mode/), beside **Avatar** in the Selection Mode menu, and a space with one opens walking, just below the first, once each visit. To make a board somewhere people walk round, put an Avatar button on it, and an [Avatar Pad](/help/palette/avatar-pads/) where you want them to arrive.
+It is the board's own way into Avatar mode, beside **Avatar** in the Selection Mode menu, and a space with one opens walking, just below the first, once each visit. To make a board somewhere people walk round, put an Avatar button on it, and an [Avatar Pad](/help/palette/avatar-pads/) where you want them to arrive.
 
-## Adding one
+## Adding One
 
-The palette's **Selection Mode** category, one of the [meeting elements](/help/palette/behaviour/), holds eight buttons, one per mode: **Avatar**, **Select**, **Hand**, **Laser**, **Spotlight**, **Eraser**, **Format** and **Isometric**.
+The palette's **Travel** category, one of the [meeting elements](/help/palette/behaviour/), holds the **Avatar Button**, beside the Portal, Bring Focus and the Avatar Pad. Search adds one too: type "avatar".
 
-Pick the mode you want and it drops ready to press, reading "Switch to Avatar" and switching whoever presses it into that mode. To point an existing button at another mode, right-click it and open **Button**; the face relabels itself to match. You can also type your own label over the derived one ("Walk with me"), and clearing it brings the derived text back.
+It drops ready to press, reading "Switch to Avatar". You can type your own label over the derived one ("Walk with me"), and clearing it brings the derived text back.
 
-Selection Mode buttons are in the palette's **Selection Mode** category, and search adds one too.
-
-<Figure caption="A row of Selection Mode buttons: two offering a mode, one offering the way back out.">
+<Figure caption="An Avatar button before and after it is pressed: it offers Avatar mode, then the way back out.">
   <ModeButtonBar />
 </Figure>
 
-## What pressing it does
+## What Pressing It Does
 
 Pressing it changes the mode for **the person who pressed it** and nobody else. Everyone else carries on in whatever tool they were already using.
 
-Pressing it again while you are in that mode hands you back your previous one, so a button is never a one-way door: a button for the mode you are already in reads "Leave Avatar" rather than offering it again.
+Pressing it again while you are walking hands you back your previous tool, so the button is never a one-way door: while you are in Avatar mode it reads "Leave Avatar" rather than offering it again.
 
-A click on the round icon presses the button; a click anywhere else on the card selects it, and a drag moves it, so you can arrange a bar of them without setting one off.
+A click on the round icon presses the button; a click anywhere else on the card selects it, and a drag moves it, so you can move it without setting it off.
 
-An **Avatar** button drops your character just below the button, rather than in the middle of the screen, so it appears where you pressed.
+Your character appears just below the button, rather than in the middle of the screen, so it shows up where you pressed. An Avatar Pad on the tab wins: everyone starts on the pad.
 
-## Why a bar of them works
+## Where It Works
 
-A Selection Mode button keeps working while you are in a mode that makes the rest of the canvas read-only (Avatar, Spotlight or Isometric), so a row of them makes a usable little control bar. It also works for somebody on a view-only link, since switching your own tool changes nothing for anyone else. The exceptions are **Eraser** and **Format** buttons: they change the canvas, so for anyone without edit access they show but do nothing. That is what makes it useful on a walkthrough: the viewer has the controls they need in front of them, on the canvas, rather than in a panel they were never told about.
+The button keeps working while you walk, even though Avatar mode makes the rest of the canvas read-only, which is what makes it the way back out. It also works for somebody on a view-only link, since switching your own tool changes nothing for anyone else. That is what makes it useful on a walkthrough: the viewer has the way in right there on the canvas, rather than in a menu they were never told about.
 
 In a read-only embed there is no tool to switch, so the button shows but does nothing.
 
 <Tip>
-  Pair an **Eraser** button with a **Select** button so a reviewer can tidy up what they see and put
-  the eraser down again without leaving the canvas.
+  Older boards may still have Select, Hand, Eraser or Format buttons on them. They open as Avatar
+  buttons now, keeping their place, label and colours.
 </Tip>
 
 </ArticleLayout>

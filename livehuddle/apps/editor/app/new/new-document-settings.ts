@@ -1,6 +1,6 @@
 import type { SaveLocationId } from '@/lib/save-locations';
 
-// Where a document made from /new goes (docs/specs/007-editor/new-document-route.md "One-step wizard"), decided by
+// Where a document made from /new goes (docs/specs/007-editor/new-document-route.md "No welcome screen"), decided by
 // default at commit: nobody is asked.
 export type NewDocumentSettings = {
   // Where the document is stored (docs/specs/006-document/save-locations.md): the api, or this browser only.

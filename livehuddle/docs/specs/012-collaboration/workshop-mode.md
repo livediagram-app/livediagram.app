@@ -1,7 +1,7 @@
 # The meeting board (Workshop mode in the code)
 
 Status: **approved, being built** (Work Tracker #423, owner, 2026-11-04). Parts 2, 3 and 4 are done: the palette,
-the Session strip, the templates and the help are the meeting board's, and the leaving code is deleted
+the templates and the help are the meeting board's (the Session strip has since left), and the leaving code is deleted
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
 Every tab of a Space is a **meeting board**: a floor to walk round, meet on and leave a few notes on. It is
@@ -12,8 +12,8 @@ tools. There is no other mode and no switch, and the interface never names a mod
 ## Why
 
 livehuddle is about meeting in Spaces ([Purpose](../001-project-vision/purpose.md)): Spaces, avatars, rooms and calls
-are the product. A meeting needs a place, a few notes and pictures on its walls, and three light tools (a timer, a
-quick vote, Bring Focus). Running a workshop on a board, with polls, quizzes, Q&A, agendas and reveals, is
+are the product. A meeting needs a place, a few notes and pictures on its walls, and two light tools (a clock on the wall and
+Bring Focus). Running a workshop on a board, with polls, quizzes, Q&A, agendas and reveals, is
 livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode](../../../../livediagram/docs/specs/012-collaboration/workshop-mode.md)).
 
 ## Domain language
@@ -23,8 +23,8 @@ livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode
 | **meeting board** | A tab of a Space, in livehuddle's one mode (`EditorMode` `'workshop'` in the code)    | Workshop (livediagram's mode); a liveplanner board     |
 | **session**       | The meeting a group holds on a board (a stand-up, an all-hands); never a stored thing | a tab kind, a document type, a call                    |
 | **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to the mode   | whoever opened the Space first                         |
-| **meeting tools** | The Timer, the quick vote (Vote), Bring Focus and the Reaction Pads                   | the Collaborate elements, which livehuddle has none of |
-| **light content** | Sticky notes, text, images, stickers, icons, link cards and frames                    | shapes, arrows, drawings, containers, charts           |
+| **meeting tools** | The Timer and Stopwatch pieces and Bring Focus                                        | the Collaborate elements, which livehuddle has none of |
+| **light content** | Sticky notes, text and stickers                                                       | shapes, arrows, drawings, containers, charts           |
 
 - The interface says neither **Workshop** nor **mode**: a person opens a Space, never a mode. Specs say **meeting
   board**; the code keeps `'workshop'` (no stored value changes).
@@ -34,15 +34,15 @@ livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode
 
 - **The canvas, the palette and the Toolbar strip** ([Canvas and palette](../008-canvas/canvas-and-palette.md),
   [Toolbar layout](../007-editor/toolbar-layout.md)), with **the meeting palette** (below), landing on its Popular.
-- **The Session strip with two tools**, Timer and Vote, with their set-up panes
-  ([Session tools](session-tools.md#the-session-strip)).
+- **The Timer and Stopwatch pieces** in the palette's Meeting category
+  ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md)); there is no Session strip.
 - **A Spaces board opens walking** ([v1 scope](../002-project-scope/v1-scope.md) section 1); any other starts on
   Select (Hand on a phone).
 
 ## What every tab offers
 
 - comments, comment threads, mentions and reactions;
-- presence, cursors, follow-me, Bring Focus, the laser and the spotlight;
+- presence, cursors, follow-me and Bring Focus;
 - Avatar mode, speech bubbles, proximity audio and calls;
 - assigned actions from any element's menu, and the Collaborate Panel;
 - the facilitator baton in the Collaborators dialog.
@@ -54,54 +54,55 @@ them out, and a document's stored deck is kept untouched.
 
 The meeting palette is livehuddle's one palette, in order:
 
-| Band     | Categories                      |
-| -------- | ------------------------------- |
-| _(none)_ | Popular                         |
-| Common   | Write, Frame                    |
-| Meet     | Navigate, React, Selection Mode |
-| Decorate | Icons, Stickers, Media          |
+| Band     | Categories                                                  |
+| -------- | ----------------------------------------------------------- |
+| _(none)_ | Popular                                                     |
+| Common   | Write                                                       |
+| Meet     | Rooms, Seating, Amenities, Bar, Recreation, Garden, Meeting |
+| Travel   | Travel                                                      |
+| Decorate | Stickers                                                    |
 
-- **Popular** (the landing category), fixed: Sticky note, Text, Frame, Image, Link card, then behind a divider Room,
+- **Popular** (the landing category), fixed: Sticky note and Text, then behind a divider Room,
   Meeting Table, Chair, Bring Focus and Avatar Pad. No openers: every category is one level deep.
 - **Write**: Text and Sticky note. No Pointer note, Table, Checklist, Page or Annotation.
-- **Frame**: the frame alone, to group a room's notes; no lane, stack, boundary, timeline, key, card, badge or step
-  number.
-- **Navigate**: Portal, Bring Focus, Chair, Desk, Sofa, Fence, Avatar Pad and Link card, then the
-  [office pieces](../009-elements/office.md): Room, Stage, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee
-  Machine and Rug.
-- **React**: the five [Reaction Pads](../009-elements/reaction-pad.md), Confetti, Sparkles, Hearts, Applause and
-  Fireworks (owner, 2026-11-04: they stay as a light meeting tool).
-- **Selection Mode**: one [Selection Mode button](../009-elements/mode-button.md) per selection mode (the Spaces'
-  **Walk In** is the Avatar one).
-- **Icons** and **Stickers**, for decoration, as livediagram has them.
-- **Media**: Image (upload, the gallery, [image search](../009-elements/image-search.md)) and Link card. No video or
-  website embeds.
-- **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Layout, Data, Components, Ask, Tools or Record. A connector or a flowchart shape is a diagram tool: livediagram's.
+- **The Space categories** ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)),
+  one per question somebody building a Space asks (owner, 2026-11-05: one Navigate category would only grow):
+  - **Rooms**: a **Build** group first (Room, Room Builder, Door), then **Floor** (Fence, Stage, Office Pod, Rug).
+  - **Seating**: Chair, Desk, Sofa and Meeting Table.
+  - **Amenities**: Plant, Bookshelf, Water Cooler and Coffee Machine.
+  - **Bar**, **Recreation**, **Garden** and **Meeting**, as
+    [The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories) lists them.
+  - **Travel**, in a band of its own: Portal, Bring Focus, Avatar Pad, Directory, Elevator and the Avatar Button.
+- **No Selection Mode category.** The Avatar [Selection Mode button](../009-elements/mode-button.md) (the Spaces'
+  **Walk In**) is in Travel; the Select, Hand, Eraser and Format buttons are gone, and so are Reaction Pads and the
+  Laser, Spotlight and Isometric buttons (owner, 2026-11-05).
+- **Stickers**, for decoration, as livediagram has them. No Icons category (owner, 2026-11-05:
+  [Icons](../002-project-scope/not-in-livehuddle.md#icons)); a stored icon still draws and edits.
+- **No Media** (owner, 2026-11-05: [Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): no Image or Link card anywhere in the palette, and a picture pasted
+  or dropped on the canvas is refused. A stored image or link card still draws, moves and deletes.
+- **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Frame, Layout, Data, Components, Ask, Tools, Record or React (owner, 2026-11-05: no frames in livehuddle). A connector or a flowchart shape is a diagram tool: livediagram's.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows
-  **Write, Frame · Navigate, React, Modes · Icons, Stickers, Media**: no Popular, no Session category. Selection
-  Mode reads **Modes** on the bar, since a bar name is one word (`barLabel`); its flyout and the palette keep the full
-  name. Navigate's flyout heads its two groups **Around the Space** (from Portal) and **Office Pieces** (from Room).
+  **Write | Rooms, Seating, Amenities, Bar, Recreation, Garden, Meeting | Travel | Stickers**, a divider
+  between each band ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)): no
+  Popular, no Session category, no Selection Mode category. Each Space category's flyout is one block of its tiles,
+  with no group headings, but Rooms, which opens on its Build group.
 - The Toolbar strip's **Search** finds only what the palette offers: an element livehuddle no longer offers is not
   placed from anywhere ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)).
-- A **Participant** gets sticky notes, text and an image, as before ([Share roles](#share-roles)).
+- A **Participant** gets no palette at all, and is always walking ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks), owner 2026-11-05).
 
 ## The Session strip
 
-`sessionStripTools(mode)` gives **Timer** and **Vote** on every tab ([Session tools](session-tools.md)). Poll left
-with the other Collaborate tools: its button shows only while a stored Poll card's poll is running, so whoever
-started it can end it, and offers no new poll.
-
-- The quick vote is the dot vote: dots on the sticky notes, images and link cards in a room, with
-  [vote privacy](session-tools.md#vote-privacy) and [layer scope](vote-layer-scope.md) as they are.
-- A popover whose button leaves (the tool ending) closes.
-- No Session button element: the strip starts both tools.
+There is none. Its last tool, the Timer, left for the [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md)
+pieces ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)); Poll and the quick
+vote had left before it ([Vote](../002-project-scope/not-in-livehuddle.md#the-vote)). A tab's stored `timer` and
+`vote` are dropped on read.
 
 ## Templates
 
-The catalogue is **Blank Space** and the four Spaces, `virtual-office`, `coworking-space`, `team-pod` and
-`all-hands-hall` ([Virtual Office template](virtual-office-template.md), [Templates by
-mode](../007-editor/templates-by-mode.md)). Every template opens on a meeting board. The Spaces use only what stays:
-the office pieces, furniture, a Walk In button, Bring Focus, sticky notes, text and a sticker.
+The catalogue is **Blank Space** and eighteen Spaces in the Campus, Office, Events, Outdoor and Recreation categories
+([Virtual Office template](virtual-office-template.md), [Templates by mode](../007-editor/templates-by-mode.md)).
+Every template opens on a meeting board. The Spaces use only what stays: the office, bar and garden pieces,
+furniture, a Walk In button, Bring Focus, sticky notes, text and a sticker.
 
 The retrospectives, the workshop boards, the planning and strategy boards and the quizzes and games leave
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)); a link, an agent or a seed naming one is answered
@@ -114,11 +115,11 @@ with Blank Space, as any unknown kind is.
 
 Following [Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md):
 
-| Role            | On a meeting board                                                                                       |
-| --------------- | -------------------------------------------------------------------------------------------------------- |
-| **Editor**      | The full meeting palette and the Session strip's set-up; builds and furnishes rooms; presses Bring Focus |
-| **Participant** | Walks, sits, talks and hears; sticky notes, text and an image; casts dots in a running vote              |
-| **Viewer**      | Walks, sits, talks and hears; no palette; sees a running timer and vote read-only                        |
+| Role            | On a meeting board                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------ |
+| **Editor**      | The full meeting palette; builds and furnishes rooms; runs Timers and Stopwatches; presses Bring Focus |
+| **Participant** | Always walks; sits, talks and hears; comments and reacts; pins notes, swings doors, runs Timers        |
+| **Viewer**      | Walks, sits, talks and hears; no palette; sees a running Timer or Stopwatch read-only                  |
 
 Every gate reads the session's `can`, never `isReadOnly` alone. A locked tab behaves for an editor as for a viewer.
 
@@ -145,7 +146,7 @@ Every gate reads the session's `can`, never `isReadOnly` alone. A locked tab beh
 
 ## Help
 
-- No Workshop mode article and no Workshop tour. The Session tools article covers the Timer and the quick vote; the
+- No Workshop mode article and no Workshop tour. The Session tools article covers the Timer and Stopwatch pieces; the
   Avatar tour is the one guided tour of a Space.
 - Help articles for what leaves are removed in the part that removes it, with redirects to the nearest article that
   stays ([Help app](../018-help/help-app.md)).

@@ -211,8 +211,8 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Commit types        | `apps/editor/components/canvas/Canvas.types.ts`                                  | `PenInk` owns `pressures`                                                           |
 | Pen commit          | `apps/editor/hooks/canvas/commit-freehand.ts`                                    | pressures to `createFreehand`                                                       |
 | Style presets       | `apps/editor/lib/style-presets.ts`                                               | re-pack without pressures                                                           |
-| Excalidraw export   | `apps/editor/lib/excalidraw-export.ts`                                           | decode                                                                              |
-| Board-scene imports | `apps/editor/lib/board-scene/land-marks.ts`, `land-diagram.ts`                   | `packFreehandPoints`                                                                |
+| Excalidraw export   | `../livediagram/apps/editor/lib/excalidraw-export.ts`                            | decode                                                                              |
+| Board-scene imports | `../livediagram/apps/editor/lib/board-scene/land-marks.ts`, `land-diagram.ts`    | `packFreehandPoints`                                                                |
 | Realtime            | `apps/editor/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`       | `migrateRoomOp` on receipt                                                          |
 | Clipboard           | `apps/editor/lib/clipboard-payload.ts`                                           | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
 | Tab file import     | `apps/editor/lib/import-tab.ts`, `export-tab-text.ts`                            | migrate; `TAB_SCHEMA_VERSION` 2                                                     |

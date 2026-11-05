@@ -3,8 +3,11 @@
 import {
   isParticipationOp,
   isPresenceOpKind,
+  isRetiredOpKind,
   isSystemOpKind,
   parseAvatarHand,
+  parseAvatarKnock,
+  parseAvatarKnockAnswer,
   parseAvatarLetSpeak,
   parseAvatarSay,
   parseAvatarVoice,
@@ -49,11 +52,13 @@ function keepsToItsTab(op: unknown): boolean {
   return true;
 }
 
-/** The sender as the gate needs it: its server-verified role, tab scope and published key. */
+/** The sender as the gate needs it: its server-verified role, tab scope, published key and adder key. */
 export type GateSender = {
   role: unknown;
   tabScope: string | null;
   key: string | undefined;
+  // A Participant's server-verified adder key (X-Verified-Adder): what signs its notice board notes.
+  adderKey?: string | null;
 };
 
 export function gateClientOp(op: unknown, sender: GateSender): OpGate {
@@ -72,6 +77,10 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // could forge `share-revoked` with the code from their own URL
   // and force-redirect every collaborator out of the session.
   if (isSystemOpKind(opKind)) return DROP;
+  // An op of a feature livehuddle no longer has, from an older client (the Vote's `vote`,
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote"): dropped from every session, so it is never
+  // sequenced, relayed, logged for catch-up or noted in the ledger.
+  if (isRetiredOpKind(opKind)) return DROP;
   // A tab-scoped session acts on its own tab only, and never on the
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
@@ -79,13 +88,10 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (scopedRenames(op, sender.tabScope)) return DROP;
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
-  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots and
-  // comment reactions relay like an Editor's; its `el` op goes through the participant content rule and
+  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's comment
+  // reactions relay like an Editor's; its `el` op goes through the participant content rule and
   // never relays as sent; everything else needs an Editor.
   const level = parseStoredLevel(sender.role);
-  // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a reaction is taking
-  // part, so it needs a Participant.
-  if (level === 'view' && opKind === 'reaction') return DROP;
   // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
   // the limits here as every receiver holds it, so a malformed one reaches nobody.
   if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
@@ -105,6 +111,10 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // (video-and-screen-bubbles.md "Share roles", #469).
   if (opKind === 'call-session' && !parseCallSession(op)) return DROP;
   if (opKind === 'call-stop-share' && (level !== 'edit' || !parseCallStopShare(op))) return DROP;
+  // A knock and its answer (docs/specs/012-collaboration/knock.md): presence from any level, a Viewer walks too; a
+  // malformed one reaches nobody. The room throttles knocks next.
+  if (opKind === 'avatar-knock' && !parseAvatarKnock(op)) return DROP;
+  if (opKind === 'avatar-knock-answer' && !parseAvatarKnockAnswer(op)) return DROP;
   if (opKind === 'call-track') {
     const track = level === 'view' ? null : parseCallTrack(op);
     if (!track) return DROP;
@@ -118,7 +128,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (!presence && level !== 'edit') {
     if (level !== 'participate') return DROP;
     if (opKind === 'el') return { kind: 'participant-content' };
-    if (!isParticipationOp(op) || !answersAsSelf(op, sender.key)) return DROP;
+    if (!isParticipationOp(op) || !answersAsSelf(op, sender.key, sender.adderKey ?? null))
+      return DROP;
     participantAnswers = true;
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only

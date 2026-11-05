@@ -1,11 +1,6 @@
 # Mermaid import & export
 
-> **Mermaid import is gone from livehuddle's editor** (Work Tracker #423, part 4): not part of livehuddle's meeting
-> product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Import to Tab has no Mermaid card, and the
-> editor's import code for it is deleted; livediagram keeps it ([its spec there](../../../../livediagram/docs/specs/020-import-export/mermaid.md)).
-> What stays in livehuddle: the **export** (Export Tab's Mermaid card), and the parser in `packages/document`, which
-> the API's and MCP's `mermaid` input still read. What a Mermaid import already drew stays and draws as before. Where
-> this page describes the editor's import (the Import dialog, its telemetry), it records what livehuddle had.
+> **Gone from livehuddle** (imports from other tools, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)): livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/020-import-export/mermaid.md) is the one to read and change. livehuddle offers no Mermaid import or export anywhere: not in the editor, not as the api's, MCP's or CLI's `mermaid` input, not as the CLI's `export --format mermaid`; the parser and serialiser in `packages/document` are deleted. What a Mermaid import already drew stays and draws as before. The rest of this page records what livehuddle had.
 
 Import and export [Mermaid](https://mermaid.js.org/) **flowchart** text: the
 lingua franca of diagram-as-code, sitting in countless READMEs, issues, and AI
@@ -26,7 +21,7 @@ arrows.
   labels, subgraphs, click links, layout direction.
 - **State diagrams** (`stateDiagram` / `stateDiagram-v2`): **import only**.
   States and transitions are nodes and edges; composite states reuse the
-  cluster/frame machinery.
+  cluster/boundary machinery.
 
 Import is per-dialect; **export always emits flowchart text**. The canvas has
 no semantic layer (a state and a flowchart node are both just shapes once
@@ -86,23 +81,23 @@ only the sweep direction differs).
   `#35;`, a backtick `#96;` (a label wrapped in backticks would read back as a
   markdown string, its marks stripped) and the `<` of a `<br>` typed as text
   `#60;` (it would read back as a line break), so every label round-trips losslessly.
-- **Subgraphs → frames**: a top-level `subgraph id[Title] … end` block imports
-  as a **frame** shape ([Canvas and palette](../008-canvas/canvas-and-palette.md)) drawn around its member nodes, laid out as a
+- **Subgraphs → boundaries**: a top-level `subgraph id[Title] … end` block imports
+  as a **boundary** shape in Inset style ([The boundary](../009-elements/boundary.md); livehuddle has no Frame, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)) drawn around its member nodes, laid out as a
   cluster: members are laid out among themselves, the cluster participates in
-  the top-level flow as one block, and the frame is sized around the result.
+  the top-level flow as one block, and the boundary is sized around the result.
   A node belongs to the **first subgraph that mentions it** (matching
   Mermaid), wherever it was first written: `A --> C` above a `subgraph Kitchen` whose block uses `C` still puts
-  `C` in Kitchen; mentions outside every subgraph claim nothing. Edges may reference a subgraph id: the arrow pins to the frame.
-  An empty subgraph draws no frame; an edge to it keeps a box of its own, labelled with the subgraph's title.
-  A subgraph opened again by the same id carries on the first one (one frame, the members of both). A node written
+  `C` in Kitchen; mentions outside every subgraph claim nothing. Edges may reference a subgraph id: the arrow pins to the boundary.
+  An empty subgraph draws no boundary; an edge to it keeps a box of its own, labelled with the subgraph's title.
+  A subgraph opened again by the same id carries on the first one (one boundary, the members of both). A node written
   out with a subgraph's id (`a[Real node]` beside `subgraph a`) keeps the id, so edges naming it reach the node, and
-  the frame takes a fresh one (`a_subgraph`): neither is lost under the other's element id.
-  Nested subgraphs fold into their top-level ancestor (frames import one
+  the boundary takes a fresh one (`a_subgraph`): neither is lost under the other's element id.
+  Nested subgraphs fold into their top-level ancestor (boundaries import one
   level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
   groups draw one level deep"), rather than dropping the nesting silently. An edge naming a folded subgraph's id
-  points at the frame it folded into, rather than a stray box of the id (a node written out under that id stays a
-  node, as does the box when the outer subgraph holds nothing else). On export, each frame becomes a `subgraph` block containing
-  the boxed nodes whose centre sits inside it (a node inside several frames
+  points at the boundary it folded into, rather than a stray box of the id (a node written out under that id stays a
+  node, as does the box when the outer subgraph holds nothing else). On export, each boundary becomes a `subgraph` block containing
+  the boxed nodes whose centre sits inside it (a node inside several boundaries
   belongs to the smallest).
 - **Click links**: `click A "https://…"` (and the `click A href "https://…"`
   form) imports as the node's element link (`{ kind: 'url' }`), and a node
@@ -132,18 +127,18 @@ LR` line sets the layout direction (TB default).
   transition source, a small solid dot (a circle); an end node when it's a target, a bullseye (`final-state`, a ring
   round the dot, one element), as UML draws them (one of each per diagram, matching Mermaid's semantics).
 - **Transitions**: `A --> B` with an optional `: label`.
-- **Composite states**: `state Name { … }` becomes a cluster → frame, same
+- **Composite states**: `state Name { … }` becomes a cluster → boundary, same
   as a flowchart subgraph; nested composites fold into their top-level
-  ancestor. Transitions may reference a composite's id (pins to the frame); one naming a folded composite points at
-  the frame it folded into, rather than a stray box of the id (a state written out under that id stays a state, and
-  so does the box when the outer composite holds nothing else, since no frame is drawn). Flowcharts share the rule
+  ancestor. Transitions may reference a composite's id (pins to the boundary); one naming a folded composite points at
+  the boundary it folded into, rather than a stray box of the id (a state written out under that id stays a state, and
+  so does the box when the outer composite holds nothing else, since no boundary is drawn). Flowcharts share the rule
   (`foldedEdgeEnds` in `mermaid-shared.ts`).
 - Notes, concurrency separators (`--`), and history states are skipped.
 
 ## Layout
 
 The editor's import lays a graph out exactly as an agent's Mermaid is laid out ([MCP server](../015-api/mcp-server.md)
-§4.7, `graphFromMermaid` then `layoutGraph`): the flowchart direction, subgraphs as frames, the template look, and
+§4.7, `graphFromMermaid` then `layoutGraph`): the flowchart direction, subgraphs as boundaries, the template look, and
 lines that bend round the boxes, a line back to an earlier step going round the outside rather than straight behind
 the boxes between. One difference: an import keeps every label **as written** (`layoutGraph`'s `wholeLabels`),
 where an agent's long label is cut to a heading with its full text in the node's note. A front-matter `title:`
@@ -178,13 +173,13 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL:
   block-sized node, lays out the contracted graph (via a new
   `autoLayoutElements` option `fixedSizeIds` that exempts the block nodes
   from peer-size normalisation), then expands: members shift into place and
-  the frame element is emitted around them. Edgeless nodes (in a cluster or
+  the boundary element is emitted around them. Edgeless nodes (in a cluster or
   at top level) are swept into rows below the laid-out graph instead of
   piling at the origin.
 - **`mermaidFromTab(tab)`** → a `flowchart TD` string. Boxed nodes become
   `id["label"]` with the bracket for their shape; a document or a triangle, which have no bracket, is written in the
   attribute form the import reads (`id@{ shape: doc, label: "…" }`, `tri`), a `}` in its label as `#125;`, so the
-  shape survives a round trip; frames become `subgraph`
+  shape survives a round trip; boundaries become `subgraph`
   blocks; arrows become `from --> to` with `|label|`, choosing the operator
   from the arrow's real stroke/ends/head fields (dashed → `-.->`, thick →
   `==>`, no head → `---`, both heads → `<-->`, head-at-from exports with the
@@ -197,7 +192,7 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL:
     and any other boxed element an arrow is pinned at both ends to (a text,
     a table, an image) becomes a node for that arrow's sake, so the line is
     never dropped. Each is a square box, labelled with its label or text.
-  - **No label stays no label.** An unlabelled node or frame is written with
+  - **No label stays no label.** An unlabelled node or boundary is written with
     a blank quoted label (`n1[" "]`, `subgraph s1[" "]`), never its id: the id
     came back as a label on import, so a 28 px dot returned as a 96 px circle
     reading "n18". On import a blank label (only spaces) is no label.
@@ -241,8 +236,8 @@ text format** in both dialogs, not just Mermaid:
   copying, not a round-trip editor. Shared component: `TextExportPanel`.
 
 The **image formats** (PNG / SVG / PDF) get their own second screen too
-(`ImageExportPanel`): the **Isometric view** and **Background pattern** toggles
-live behind the format card, not on the export grid, since they only affect image output, so the main grid is just the six
+(`ImageExportPanel`): the **Background pattern** toggle
+lives behind the format card, not on the export grid, since it only affects image output, so the main grid is just the six
 format cards, nothing format-specific bleeding onto it.
 
 Naming: the JSON export/import card is titled **"JSON"** (was "File" /
@@ -286,11 +281,11 @@ outside the group ended up, so arrows from outside reach each member without
 crossing another. A node outside every group that members link to then sits by
 those members rather than by the middle of the whole group (a database under the
 service that owns it), its rank kept in order with its gaps; an edge to or from a
-subgraph itself leaves the frame facing its other end; and a frame whose first
+subgraph itself leaves the boundary facing its other end; and a boundary whose first
 member a line enters from above, down the page, is padded both sides so that line
 clears the header ([MCP server](../015-api/mcp-server.md) §4.7 "Groups keep their
 lines clear", the same layout).
 
-A subgraph's frame carries its title as a **header**: top-left, bold, at the
-nodes' size, in the band the clustered layout reserves above the members (never centred and scaled to fill the frame, a giant word across the nodes
+A subgraph's boundary carries its title as a **header**: top-left, bold, at the
+nodes' size, in the band the clustered layout reserves above the members (never centred and scaled to fill the boundary, a giant word across the nodes
 inside).

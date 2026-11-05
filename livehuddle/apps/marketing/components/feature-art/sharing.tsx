@@ -1,5 +1,5 @@
 // Feature illustrations for sharing and access (docs/specs/019-marketing/marketing-site.md "Feature
-// category pages"), the Collaborate category's last cards: editor, participant and view-only links,
+// category pages"), the Collaborate category's last cards: editor and participant links,
 // teams, a link's expiry and revoking one. Same stage and 6s timeline as ./together, from which it was
 // split; every piece settles to its finished frame under reduced motion.
 
@@ -27,7 +27,7 @@ import {
 
 /* ───────────────────────── Sharing and access ───────────────────────── */
 
-/** Editor, participant or view-only links: three passes side by side, one copied to send. */
+/** Editor and participant links: two passes, one copied to send. */
 export function ShareLinksArt() {
   // One row per pass: its role, its link and what it lets the holder do, on a single line.
   const row = (
@@ -64,7 +64,7 @@ export function ShareLinksArt() {
   );
   return (
     <Scene>
-      <Panel x={40} y={6} w={220} h={84} />
+      <Panel x={40} y={6} w={220} h={64} />
       <Glyph x={50} y={13} className="stroke-sky-600 dark:stroke-sky-300">
         {LINK_PATHS}
       </Glyph>
@@ -79,7 +79,6 @@ export function ShareLinksArt() {
       </g>
       {row(28, 'Editors', 'livehuddle.app/d/9fk2', 'Can edit', 'sky')}
       {row(48, 'Participants', 'livehuddle.app/d/m3wd', 'Can add', 'amber')}
-      {row(68, 'Viewers', 'livehuddle.app/d/qp7x', 'Can view', 'slate')}
       <Pointer x={232} y={19} color={YOU} className="fa-a-move" style={from(24, 46, 0)} />
     </Scene>
   );

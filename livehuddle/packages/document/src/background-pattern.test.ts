@@ -4,8 +4,8 @@ import { isBackgroundPattern } from './background-pattern';
 import { migrateStoredTab } from './stored-tab';
 import type { Tab } from './index';
 
-// Isometric is livehuddle's alone (docs/specs/008-canvas/canvas-and-palette.md): the shared union left it out when
-// the other products retired it, and livehuddle's own pattern type adds it back.
+// Isometric is livehuddle's alone: the shared union left it out when the other products retired it, and livehuddle's
+// own pattern type adds it back, with the floors, so a tab saved with it still reads (and opens on its floor).
 describe("livehuddle's background patterns", () => {
   it('takes Isometric, which the shared patterns no longer hold', () => {
     expect(isSharedBackgroundPattern('isometric')).toBe(false);
@@ -20,7 +20,7 @@ describe("livehuddle's background patterns", () => {
     expect(isBackgroundPattern('toString')).toBe(false);
   });
 
-  it('opens a stored tab saved with Isometric as Isometric', () => {
+  it('opens a stored tab saved with Isometric on its floor (docs/specs/011-theme/floors.md)', () => {
     const saved = {
       id: 't',
       name: 'T',
@@ -29,7 +29,7 @@ describe("livehuddle's background patterns", () => {
       elements: [],
     } as unknown as Tab;
     const tab = migrateStoredTab(saved);
-    expect(tab.backgroundPattern).toBe('isometric');
+    expect(tab.backgroundPattern).toBe('tiles');
     expect(tab.patternColor).toBe('#cbd5e1');
   });
 });

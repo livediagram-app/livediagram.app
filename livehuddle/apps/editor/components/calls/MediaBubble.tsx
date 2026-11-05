@@ -2,9 +2,11 @@
 
 // The one bubble a camera and a shared screen share (docs/specs/012-collaboration/video-and-screen-bubbles.md "The
 // bubble"): a rounded 16:9 tile ringed in its person's colour, the stream inside, and a press that maximises it. The
-// bubble layer places it above a character; the maximised panel draws the same stream large.
+// bubble layer places it above a character; the maximised panel draws the same stream large. A local preview's bubble
+// carries an Only You tag (the same spec's "Local preview").
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
+  lucideEyeOff,
   lucideMaximize2,
   lucideScreenShare,
   lucideScreenShareOff,
@@ -15,6 +17,32 @@ import type { CallMedia } from '@/lib/calls/calls-store';
 const MaximiseIcon = lucideGlyph(lucideMaximize2, 12);
 const ScreenIcon = lucideGlyph(lucideScreenShare, 10);
 const StopIcon = lucideGlyph(lucideScreenShareOff, 12);
+const OnlyYouIcon = lucideGlyph(lucideEyeOff, 10);
+const OnlyYouPanelIcon = lucideGlyph(lucideEyeOff, 14);
+
+/** A local preview's hover card line (video-and-screen-bubbles.md "Local preview"). */
+export const ONLY_YOU_DESCRIPTION = 'Only you see this. Nothing is sent.';
+
+/** The Only You tag: on a preview bubble, small; in the maximised panel's bar, its larger size. */
+export function OnlyYouTag({ size = 'bubble' }: { size?: 'bubble' | 'panel' }) {
+  return size === 'bubble' ? (
+    <span
+      data-call-only-you
+      className="absolute right-1 bottom-1 flex items-center gap-0.5 rounded-md bg-slate-950/75 px-1 py-0.5 text-[9px] leading-none font-semibold text-white"
+    >
+      <OnlyYouIcon />
+      Only You
+    </span>
+  ) : (
+    <span
+      data-call-only-you
+      className="flex h-6 shrink-0 items-center gap-1 rounded-md bg-white/10 px-2 text-xs font-semibold text-white ring-1 ring-white/15"
+    >
+      <OnlyYouPanelIcon />
+      Only You
+    </span>
+  );
+}
 
 /** A bubble's width in canvas px: readable at 100%, small beside a character. */
 export const BUBBLE_WIDTH_PX = 120;
@@ -73,6 +101,7 @@ export function MediaBubble({
   name,
   color,
   mirrored,
+  localOnly = false,
   onMaximise,
   onStopShare,
 }: {
@@ -82,6 +111,8 @@ export function MediaBubble({
   name: string | null;
   color: string;
   mirrored?: boolean;
+  // Your own local preview: nobody else sees it (the Only You tag).
+  localOnly?: boolean;
   onMaximise: () => void;
   // An Editor stopping someone else's share (video-and-screen-bubbles.md "Share roles"); absent for anyone else.
   onStopShare?: () => void;
@@ -103,10 +134,14 @@ export function MediaBubble({
       style={style}
       className="group pointer-events-auto relative aspect-video overflow-hidden rounded-xl transition-transform duration-150 hover:scale-[1.04] has-[button:active]:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:scale-100"
     >
-      <HoverCard title={label} className="absolute inset-0">
+      <HoverCard
+        title={label}
+        description={localOnly ? ONLY_YOU_DESCRIPTION : undefined}
+        className="absolute inset-0"
+      >
         <button
           type="button"
-          aria-label={label}
+          aria-label={localOnly ? `${label}, Only You` : label}
           data-call-bubble={media}
           onPointerDown={(e) => e.stopPropagation()}
           onClick={onMaximise}
@@ -125,6 +160,7 @@ export function MediaBubble({
               <ScreenIcon />
             </span>
           ) : null}
+          {localOnly ? <OnlyYouTag /> : null}
           <span
             aria-hidden
             className="absolute top-1 right-1 flex size-5 items-center justify-center rounded-md bg-slate-950/65 text-white opacity-0 transition-opacity group-hover:opacity-100 group-has-[button:focus-visible]:opacity-100"

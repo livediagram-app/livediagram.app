@@ -77,19 +77,7 @@ function resolveElement(
       },
     };
   }
-  const el = byId.get(resolution.id)!;
-  if (!model.tree.nodes.has(el.id) && !model.edges.byArrow.has(el.id)) {
-    return {
-      refusal: {
-        error: TARGET_NOT_FOUND_ERROR,
-        message: `"${input}" is on a hidden layer`,
-        input,
-        candidates: [],
-        stale: false,
-      },
-    };
-  }
-  return { el };
+  return { el: byId.get(resolution.id)! };
 }
 
 // The selection could not be read, or names nothing printed here: refused as edit operations word it (EO16).

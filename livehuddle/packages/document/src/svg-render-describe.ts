@@ -94,7 +94,7 @@ export type ExportStickerArt = { viewBox: string; markup: string };
 export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
 
 // An emoji's own drawing, by its glyph, for a render with no emoji font (a Worker's preview): a face that writes an
-// emoji (a reaction pad's) draws it from this instead of as text. Absent, or answering nothing, the glyph is text.
+// emoji draws it from this instead of as text (none does in livehuddle since the Reaction Pad left). Absent, or answering nothing, the glyph is text.
 export type ResolveEmojiArt = (glyph: string) => { viewBox: string; markup: string } | undefined;
 
 type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };

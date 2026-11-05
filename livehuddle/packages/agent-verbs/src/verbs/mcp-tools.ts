@@ -65,7 +65,7 @@ export const mcpListTemplates = mcpTool('list_templates', {
   title: 'List templates',
   description:
     'Browse the template library: the same Spaces the editor\u2019s Start a Space offers (blank-session, ' +
-    'virtual-office, coworking-space, team-pod, all-hands-hall). Returns categories ' +
+    'virtual-office, team-pod, all-hands-hall, rooftop-bar, garden-retreat and more). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
     'on create_document / add_tab to start from it, then personalise the labels with ' +
     'update_document.',
@@ -92,7 +92,7 @@ export const mcpCreateDocument = mcpTool('create_document', {
     'Create a new livehuddle Space: a place a team meets in (an office, a team pod, a stand-up, ' +
     'an all-hands). Each tab takes a "template" (a kind from list_templates, a ready-furnished ' +
     'Space), a "graph" (nodes and edges, laid out in the template look: sizes, elbows, side ' +
-    'exits, loops round the outside, title and key), "mermaid" or raw "elements" (the full format is ' +
+    'exits, loops round the outside, title and key) or raw "elements" (the full format is ' +
     'documented inline on the "tabs" argument below). One tab, or several for a multi-tab Space in ' +
     'one call (a welcome tab plus a tab per breakout). The server validates, lays ' +
     "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
@@ -123,7 +123,7 @@ export const mcpUpdateDocument = mcpTool('update_document', {
     'auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); ' +
     'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
     'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
-    'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
+    'takes "edits": edit operations as text (insert between, wrap in a boundary, connect, layout a selection, ' +
     'place beside another element), the form each lint finding\u2019s fix is written in. Returns an ' +
     'inline PNG.',
   inputSchema: updateDocumentShape,
@@ -135,8 +135,8 @@ export const mcpShareDocument = mcpTool('share_document', {
   title: 'Share a Space',
   description:
     'Create a shareable link to a Space so anyone with the URL can join it, with no ' +
-    'sign-in: "participate" (the default: comment, add stickies and vote), ' +
-    '"view" (read-only) or "edit". Returns the link URL, ready to hand to the people ' +
+    'sign-in: "participate" (the default: talk, comment and add stickies) or ' +
+    '"edit". Returns the link URL, ready to hand to the people ' +
     'in the meeting.',
   inputSchema: shareDocumentShape,
   outputSchema: shareDocumentOutput,

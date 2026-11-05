@@ -23,6 +23,11 @@ export const RETIRED_SHAPE_NAMES: Readonly<Record<string, string>> = {
   decision: 'Decision Record',
   'roll-call': 'Roll Call',
   quiz: 'Quiz',
+  // The Reaction Pad left with the presenting tools (docs/specs/002-project-scope/not-in-livehuddle.md "The presenting
+  // tools, Isometric and Zen").
+  'reaction-pad': 'Reaction Pad',
+  // The Frame left on its own (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame").
+  frame: 'Frame',
 };
 
 // A session button was named after the tool it started.
@@ -39,6 +44,12 @@ export const UNKNOWN_ELEMENT_NAME = 'Unknown Element';
 export const RETIRED_ELEMENT_NOTE = 'Not in livehuddle';
 
 type MaybeShape = { type: string; shape?: unknown };
+
+// A stored Frame (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame") was a backdrop: what sat on it was
+// drawn above it. Its placeholder keeps that place at the back, so it never covers what sat on it.
+export function isRetiredBackdrop(el: MaybeShape): boolean {
+  return el.type === 'shape' && el.shape === 'frame';
+}
 
 // Is this a shape whose kind livehuddle cannot draw: one part 4 deleted, or one it never had?
 export function isRetiredElement(el: MaybeShape): boolean {

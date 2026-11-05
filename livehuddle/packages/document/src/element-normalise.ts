@@ -214,7 +214,6 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 // gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
 // names mid-word.
 const PLAIN_BOX_EXCLUDED = new Set([
-  'frame',
   'lane',
   'boundary',
   'code-block',

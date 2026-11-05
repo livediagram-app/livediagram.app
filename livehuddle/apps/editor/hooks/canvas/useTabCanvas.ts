@@ -79,7 +79,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // (lib/tidy-engine.ts): already there after the popover opens, fetched at the press otherwise.
   const refused = (engine: TidyEngine, judged: boolean | undefined): boolean => {
     if (judged) return false;
-    const verdict = engine.assessCleanup(activeTab.elements, activeTab.layers);
+    const verdict = engine.assessCleanup(activeTab.elements);
     const notice = engine.verdictNotice('Auto-align', verdict);
     if (notice) notify?.(notice);
     return notice !== null;
@@ -91,7 +91,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     withTidyEngine((engine) => {
       if (refused(engine, opts.judged)) return;
       // `commit` snapshots the pre-align state, so undo restores it.
-      commit((els) => engine.cleanupElements(els, activeTab.layers));
+      commit((els) => engine.cleanupElements(els));
       track('Tab', 'Aligned');
     });
   };
@@ -183,19 +183,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     scheduleCanvasTelemetry('backgroundPatternScale', 'BackgroundPatternScale');
   };
 
-  // Motion rate for an animated background pattern (docs/specs/008-canvas/canvas-and-palette.md): 1 = the
-  // pattern's own tuned pace, 2 = twice as fast. Only offered while an
-  // animated pattern is active (the Speed slider is gated in
-  // CanvasStyleControls); a static pattern simply ignores the field.
-  const setBackgroundAnimationSpeed = (speed: number) => {
-    if (editsBlocked) return;
-    patchActiveTabDebounced('backgroundAnimationSpeed', (t) => ({
-      ...t,
-      backgroundAnimationSpeed: speed,
-    }));
-    scheduleCanvasTelemetry('backgroundAnimationSpeed', 'BackgroundAnimationSpeed');
-  };
-
   return {
     autoAlignTab,
     setTabFont,
@@ -208,6 +195,5 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     setBackgroundOpacity,
     setPatternColor,
     setBackgroundPatternScale,
-    setBackgroundAnimationSpeed,
   };
 }

@@ -13,13 +13,14 @@ import {
 // tests can't reach. Every test also fails on any uncaught page error
 // (the `pageErrors` fixture).
 
-test('the new-document wizard renders', async ({ page, pageErrors }) => {
+test('/new opens a new Space on Start a Space', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Space', { exact: false })).toBeVisible();
-  // Every board is Workshop (docs/specs/007-editor/editor-modes.md), so the wizard asks no question: its one
-  // Create button proves the client-rendered wizard mounted, not just the shell.
-  await expect(page.locator('[data-new-mode]')).toHaveCount(1);
-  await expect(page.locator('[data-new-mode="workshop"]')).toBeVisible();
+  // No screen of its own (docs/specs/007-editor/new-document-route.md "No welcome screen"): the Space is made and the
+  // client-rendered editor mounts with its start, not just the shell.
+  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
+  await expect(page.getByRole('region', { name: /^Start a Space$/ })).toBeVisible({
+    timeout: 30_000,
+  });
   expectNoPageErrors(pageErrors);
 });
 
@@ -29,7 +30,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
 test.describe('a first visit', () => {
   test.use({ freshVisitor: true });
 
-  test('goes through the guest handoff and comes back to the wizard with a guest token', async ({
+  test('goes through the guest handoff, comes back with a guest token, and makes one Space', async ({
     page,
     pageErrors,
   }) => {
@@ -43,8 +44,10 @@ test.describe('a first visit', () => {
       return at >= 0 && at < visited.length - 1;
     };
     await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
-    await expect(page.locator('[data-new-mode="workshop"]')).toBeVisible();
-    expect(visited.at(-1)).toMatch(/^\/new\/?$/);
+    // The Space is made after the round trip, never before it (new-document-route.md "No welcome screen").
+    await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
+    const back = visited.findIndex((path) => path.startsWith('/auth/guest'));
+    expect(visited.slice(0, back).some((path) => path.startsWith('/document/'))).toBe(false);
     expect(
       await page.evaluate(() => localStorage.getItem('livehuddle:v2:guest-token')),
     ).toBeTruthy();
@@ -52,14 +55,13 @@ test.describe('a first visit', () => {
   });
 });
 
-// The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
-// panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
-test('the new-document wizard shows with no apps menu in the header', async ({
-  page,
-  pageErrors,
-}) => {
+// The editor header carries no apps menu over a new Space: the product's links live in the Explorer panel's footer
+// (docs/specs/013-workspace/explorer-structure.md "Layout").
+test('a new Space shows with no apps menu in the header', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.locator('[data-new-mode="workshop"]')).toBeVisible();
+  await expect(page.getByRole('region', { name: /^Start a Space$/ })).toBeVisible({
+    timeout: 30_000,
+  });
   await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
@@ -78,7 +80,7 @@ test('create a blank document, add a shape, and it survives a reload', async ({
   pageErrors,
 }) => {
   await startBlankDocument(page);
-  // The wizard created a real document and routed to it.
+  // /new created a real document and routed to it.
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/);
   // The tour offer opens 800 ms after the editor is ready and its backdrop takes every click
   // (TourHost): answer it first, or a slow runner's canvas click lands on the backdrop.
@@ -110,12 +112,11 @@ test('create a blank document, add a shape, and it survives a reload', async ({
 // a popover that only OVERLAPS its host when the viewport is too narrow to
 // put it alongside, and so only then has to win the stacking contest.
 //
-// The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
-// phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
-// was pushed off the left edge. On a phone the cluster's buttons now share the row's width, so the
-// strip fits beside Undo (docs/specs/012-collaboration/session-tools.md "The Session strip"), and the
-// empty-canvas hint rides just above that one row, clear of the strip's popovers. A desktop run is
-// blind to both.
+// The bug it guards: the bottom-right cluster once gained a Session strip (since retired,
+// docs/specs/012-collaboration/session-tools.md), and at phone width one row could no longer hold it beside Undo,
+// Redo, Layers, the brush and Fit, so Undo was pushed off the left edge. On a phone the cluster's buttons share the
+// row's width (docs/specs/007-editor/editor-app.md), so a cluster that grows keeps Undo on screen. A desktop run is
+// blind to it.
 test.describe('mobile', () => {
   // Only the properties that create the condition — a narrow viewport and a
   // real touch pointer. Spreading a whole `devices[...]` entry would also set
@@ -127,11 +128,7 @@ test.describe('mobile', () => {
     deviceScaleFactor: 3,
   });
 
-  test('the Session strip keeps Undo on screen and opens its tools on top', async ({
-    page,
-    pageErrors,
-  }) => {
-    // The strip is Workshop's (docs/specs/012-collaboration/workshop-mode.md), so a Blank Space.
+  test('the bottom-right cluster keeps Undo on screen in one row', async ({ page, pageErrors }) => {
     await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.
@@ -139,8 +136,7 @@ test.describe('mobile', () => {
     await expect(undo).toBeVisible();
     const undoBox = await undo.boundingBox();
     expect(undoBox && undoBox.x >= 0).toBe(true);
-    // And the whole cluster is one row at phone width, the Session strip beside Undo
-    // (docs/specs/012-collaboration/session-tools.md "The Session strip").
+    // And the whole cluster is one row at phone width.
     const rows = await page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
       ...new Set(
         buttons
@@ -150,24 +146,6 @@ test.describe('mobile', () => {
       ),
     ]);
     expect(rows).toHaveLength(1);
-
-    // The Timer opens its set-up as a popover that is genuinely on top, not just present.
-    await page.getByRole('button', { name: 'Open Timer' }).tap();
-    const start = page.getByRole('button', { name: /Start 5 min countdown/ });
-    await expect(start).toBeVisible();
-    const onTop = await start.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      const hit = document.elementFromPoint(
-        Math.round(r.x + r.width / 2),
-        Math.round(r.y + r.height / 2),
-      );
-      return !!hit && el.contains(hit);
-    });
-    expect(onTop).toBe(true);
-
-    // Starting it puts the clock on the button.
-    await start.tap();
-    await expect(page.getByRole('button', { name: /^Timer \d+:\d\d$/ })).toBeVisible();
 
     expectNoPageErrors(pageErrors);
   });

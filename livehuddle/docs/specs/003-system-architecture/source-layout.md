@@ -9,14 +9,14 @@ three-line leaves with thousand-line screens.
 `apps/editor/components/`
 
 - `canvas/`: the canvas, element views and faces (`BoxedElementView`, `ArrowView`, `LinkCardView`, ...), overlays,
-  marquee, layers.
+  marquee.
 - `chrome/`: header, toolbars, docks, tab bar, badges and bars.
 - `colour/`: colour pickers and swatches.
 - `dialogs/`: modal surfaces (`ImportTabDialog`, `ExportTabDialog`, Settings, the Community dialogs, ...).
 - `flowchart/`: the flowchart builder's pieces.
 - `notes/`: sticky-note pieces.
 - `palette/`: palette and context-menu tiles and rows.
-- `panels/`: side and floating panels (`CollaboratePanel`, `LayersPanel`, `SearchPanel`, the Explorer host).
+- `panels/`: side and floating panels (`CollaboratePanel`, `SearchPanel`, the Explorer host).
 - `placement/`: placing elements onto the canvas.
 - `primitives/`: local leaves (`MovablePanel`, `ChipField`, `HelpArticleLink`, chart leaves) not promoted to `@livehuddle/ui` or
   `@liveworkspace/ui` (which holds `Portal`).

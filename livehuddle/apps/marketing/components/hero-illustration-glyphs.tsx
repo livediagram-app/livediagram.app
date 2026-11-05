@@ -83,12 +83,6 @@ export function Shape({ kind }: { kind: string }) {
           <path d="M3 8h9M9 4.5 12.5 8 9 11.5" />
         </svg>
       );
-    case 'frame':
-      return (
-        <svg {...common} strokeLinejoin="round">
-          <path d="M3 5.5V13h10V5.5M3 5.5V3h4l1 2.5h5" />
-        </svg>
-      );
     case 'note':
       return (
         <svg {...common} strokeLinejoin="round">

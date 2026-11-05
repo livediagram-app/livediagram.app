@@ -51,9 +51,6 @@ type CanvasA11yDeps = {
   editingId: string | null;
   selectElement: (id: string) => void;
   lockedByOther: (id: string) => boolean;
-  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): skipped by the
-  // traversal exactly like remotely-locked ones.
-  layerInertIds: Set<string>;
   scrollIntoView: (x: number, y: number, w: number, h: number) => void;
 };
 
@@ -78,12 +75,7 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       const { selectedId } = live.selection.get();
       const els = live.elements;
       const dir = e.shiftKey ? -1 : 1;
-      const i = nextTraversalIndex(
-        els,
-        selectedId,
-        dir,
-        (id) => live.lockedByOther(id) || live.layerInertIds.has(id),
-      );
+      const i = nextTraversalIndex(els, selectedId, dir, (id) => live.lockedByOther(id));
       // Past either end: leave the event to the browser so focus moves
       // on to the next control — deliberately no wrap.
       if (i === null) return;
@@ -117,9 +109,8 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       if (key === prevKey) return;
       const hadSelection = prevKey !== '';
       prevKey = key;
-      // A verb spoken since the change said what happened, and is not spoken over: a vote key pressed straight
-      // after Tab ("Dot added to 'Idea'") names the element itself, and "Selected 'Idea'" a frame later would be
-      // all the reader heard. Clearing has always followed this rule.
+      // A verb spoken since the change said what happened, and is not spoken over: "Selected 'Idea'" a frame
+      // later would be all the reader heard. Clearing has always followed this rule.
       const spokenSince = getAnnouncementSnapshot().nonce !== heardAtChange;
       if (spokenSince) return;
       const { elements } = ref.current;

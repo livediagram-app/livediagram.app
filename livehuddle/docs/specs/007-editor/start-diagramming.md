@@ -10,11 +10,11 @@ a step before it. livediagram's Start Diagramming and Start Drawing went with Di
 One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`), draws the start; the start says what its groups and cards are, the panel
 draws them.
 
-- **Header:** the title ("Start a Space"), one line under it ("Walk into an office or a hall, or pick a session
-  to run. Close this to start from a blank space."), the search box, and in the top right corner the
+- **Header:** the title ("Start a Space"), one line under it ("Walk into an office, a hall, a bar or a garden.
+  Close this to start from a blank space."), the search box, and in the top right corner the
   **Help** link and (where the start can be closed) **Close** (×). On a phone the search takes its own row under the
   title, the help and × staying beside the title.
-- **Rail:** **Virtual Spaces** first, then **Recommended** and the other groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
+- **Rail:** **Recommended** first, then the other groups (Campus, Events, Office, Outdoor, Recreation), each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
   count sits on a pill tinted with the accent, in the panel's ink: the accent on its own tint fell to 4.2:1 in dark
   and 2.7:1 in light. The chosen group's name is the accent leaned toward the ink just far enough to read at 4.5:1 on
   its tint and its hover's (`chosenLabel`): light's brand accent on its tint read 3.3:1, so light wears a darker
@@ -51,19 +51,21 @@ draws them.
   Excalidraw scene) pasted on a new tab land on the canvas, closing the start, rather than their JSON landing in the
   search. Pasted text still searches.
 
-### The Spaces lead
+### Recommended leads
 
-livehuddle is a place to meet, so the start **leads with the Spaces** ([v1 scope](../002-project-scope/v1-scope.md)
-feature 3): the rail's first group is **Virtual Spaces** (Virtual Office, Coworking Space, Team Pod, All-Hands Hall),
-and the start opens on it, so the first thing a new person sees is a place to walk into. A Spaces template opens
-walking once it lands ([Avatar mode](../008-canvas/avatar-mode.md#opening-walking)). The start lifts the leading
-group (`LEADING_START_GROUP`, `spaces`) ahead of Recommended; the rest keep the catalogue's alphabetical order
-([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
+The start **leads with Recommended**: it is the rail's first group and the group the start opens on, so the first
+thing a new person sees is the quickest ways to meet, the blank first, then the picks most teams start from. The
+catalogue's categories follow in its alphabetical order
+([Template categories](../008-canvas/canvas-and-palette.md#template-categories)). Every template in a category is a
+Space and opens walking once it lands ([Avatar mode](../008-canvas/avatar-mode.md#opening-walking)).
+
+Why: Recommended already holds Spaces to walk into, and it is the one group that crosses categories (an Office
+Space and an Events hall side by side) with the blank beside them, so it is the better first answer than one category.
 
 ### Recommended and groups
 
 Recommended is the Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **the blank
-first**, straight after Virtual Spaces in the rail. The other groups (`components/start/start-template-items.ts`,
+first**, first in the rail. The other groups (`components/start/start-template-items.ts`,
 `TEMPLATE_STARTS`) are the catalogue's categories
 ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Template categories"): in the catalogue's order, each
 holding the templates listed in it (primary or cross-listed), alphabetical by label. A new template joins the rail
@@ -76,7 +78,7 @@ Recommended. Choosing the blank closes the panel, as the × does, since it leave
 
 `EditorStartPanels` (`components/start/EditorStartPanels.tsx`) decides, from the editor's state:
 
-- To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with
+- To someone who can edit (an **Editor**), after hydration, outside an embed, with
   no draw tool armed.
 - While the tab is empty: no elements.
 

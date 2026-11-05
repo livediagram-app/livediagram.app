@@ -60,22 +60,6 @@ describe('add with an element', () => {
     );
   });
 
-  it('refuses an element on a locked layer', () => {
-    const tab: Tab = {
-      ...checkoutFlow(),
-      layers: [
-        { id: 'base', name: 'Base', locked: true },
-        { id: 'top', name: 'Top' },
-      ],
-    };
-    expect(
-      refused(run([{ op: 'add', element: { ...sticky, layerId: 'base' } }], tab)),
-    ).toMatchObject({
-      code: 'element_locked',
-      details: ['locked:', '  id-1  sticky "Idea" (layer "Base")'],
-    });
-  });
-
   it('leaves no trace of an element added and removed again (E2)', () => {
     const outcome = run([
       { op: 'add', element: { id: 'idea', ...sticky } },

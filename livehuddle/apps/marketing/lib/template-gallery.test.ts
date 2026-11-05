@@ -5,6 +5,7 @@ import {
   galleryShelves,
   galleryTemplates,
   groupGallery,
+  LEAD_CATEGORY,
   popularTemplates,
 } from './template-gallery';
 
@@ -43,11 +44,11 @@ describe('filterGallery', () => {
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'virtual spaces').map((t) => t.kind)).toContain('coworking-space');
+    expect(filterGallery(all, 'recreation').map((t) => t.kind)).toContain('rooftop-bar');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'pod office').map((t) => t.kind);
+    const kinds = filterGallery(all, 'pod stand-up').map((t) => t.kind);
     expect(kinds).toEqual(['team-pod']);
     expect(filterGallery(all, 'office zebra')).toEqual([]);
   });
@@ -56,15 +57,17 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'team pod'));
-    expect(groups.map((g) => g.label)).toEqual(['Virtual Spaces']);
+    expect(groups.map((g) => g.label)).toEqual(['Office']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['team-pod']);
     expect(groupGallery(filterGallery(galleryTemplates(), 'zebra'))).toEqual([]);
   });
 
-  it('runs the categories alphabetically by name, Blank Slate first', () => {
+  it('leads with Office, runs the rest alphabetically by name, Blank Slate last', () => {
     const shelves = galleryShelves();
-    expect(shelves[0]!.label).toBe('Blank Slate');
-    const names = shelves.slice(1).map((g) => g.label);
+    expect(LEAD_CATEGORY).toBe('office');
+    expect(shelves[0]!.label).toBe('Office');
+    expect(shelves.at(-1)!.label).toBe('Blank Slate');
+    const names = shelves.slice(1, -1).map((g) => g.label);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
@@ -73,15 +76,24 @@ describe('groupGallery', () => {
   });
 });
 
-// docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
-// structure, Popular first.
-describe('the shelves, as the template step lays them out', () => {
-  it('opens on Blank Slate, only the blank, then every category in catalogue order', () => {
+// docs/specs/019-marketing/marketing-site.md "Template gallery": led by Office, never a blank.
+describe('the shelves, led by Office', () => {
+  it('opens on Office, its offices first, with no blank on it', () => {
     const shelves = galleryShelves();
-    expect(shelves[0]?.id).toBe('popular');
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual(['blank-session']);
+    expect(shelves[0]?.id).toBe(LEAD_CATEGORY);
+    const office = shelves[0]!.templates.map((t) => t.kind);
+    for (const kind of ['virtual-office', 'coworking-space', 'team-pod']) {
+      expect(office).toContain(kind);
+    }
+    for (const kind of office) expect(isBlankTemplate(kind), kind).toBe(false);
+  });
+
+  it('ends on Blank Slate, only the blank, after every category', () => {
+    const shelves = galleryShelves();
+    expect(shelves.at(-1)?.id).toBe('popular');
+    expect(shelves.at(-1)?.templates.map((t) => t.kind)).toEqual(['blank-session']);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
-    expect(shelves.slice(1).map((s) => s.id)).toEqual(
+    expect(shelves.slice(0, -1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),
     );
   });

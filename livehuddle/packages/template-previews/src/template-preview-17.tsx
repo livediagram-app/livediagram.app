@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livehuddle/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
-import { PopDot } from '@liveworkspace/template-previews/story-parts';
 
 // Group 17: Workshop mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks").
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
@@ -10,14 +9,12 @@ const FRAME = 'rgb(148 163 184)';
 const STICKY = 'rgb(254 240 138)';
 const STICKY_EDGE = 'rgb(234 179 8)';
 const TIMER = 'rgb(14 165 233)';
-const DOT = 'rgb(139 92 246)';
 
 export function templatePreviewGroup17(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'blank-session':
       // Blank Space: an empty canvas framed like the other blanks, a timer ring at the top right
-      // and two sticky notes waiting for the room. Hover story: the timer runs down and the room's
-      // dot votes land on the notes.
+      // and two sticky notes waiting for the room. Hover story: the timer runs down.
       return (
         <svg width="72" height="40" viewBox="0 0 80 44" aria-hidden>
           <rect
@@ -66,10 +63,6 @@ export function templatePreviewGroup17(kind: TemplateKind): ReactElement | null 
             style={pv({ '--pv-at': '200ms', '--pv-dur': '1400ms' })}
           />
           <path d="M63 17 L63 13 M63 17 L66 17" stroke="rgb(15 23 42)" strokeWidth="1" />
-          {/* The room's votes. */}
-          <PopDot at={700} cx="17" cy="27" r="1.6" fill={DOT} />
-          <PopDot at={900} cx="22" cy="27" r="1.6" fill={DOT} />
-          <PopDot at={1100} cx="38" cy="27" r="1.6" fill={DOT} />
         </svg>
       );
     default:

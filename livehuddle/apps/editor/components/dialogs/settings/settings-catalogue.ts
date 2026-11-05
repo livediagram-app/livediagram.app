@@ -441,20 +441,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       {
         kind: 'toggle',
-        key: 'quickAddOnHover',
-        keywords: 'plus menu hover add shortcut',
-        section: 'Mouse',
-        desktopOnly: MOUSE_DESKTOP_ONLY,
-        label: 'Quick-Add on Hover',
-        description:
-          "Opens the selected element's “+” menu as soon as you hover it, instead of on click.",
-        helpArticle: 'quickAddOnHover',
-        read: (p) => p.quickAddOnHover === true,
-        write: (p, v) => ({ ...p, quickAddOnHover: v }),
-        event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
-      },
-      {
-        kind: 'toggle',
         key: 'middleMousePan',
         keywords: 'scroll wheel drag pan navigate mouse',
         section: 'Mouse',
@@ -489,11 +475,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'dockButtonNames',
         keywords:
-          'button labels names text captions bottom bar corner buttons zoom layers style tidy up icons only',
+          'button labels names text captions bottom bar corner buttons zoom style tidy up icons only',
         section: 'Interface',
         label: 'Button Labels',
         description:
-          'Names the buttons along the bottom (Search, Settings, the theme, Layers, Style) beside their icons.',
+          'Names the buttons along the bottom (Search, Settings, the theme, Style) beside their icons.',
         desktopOnly:
           'Phones always show these buttons as icons. Your choice still applies on a larger screen.',
         read: (p) => p.dockButtonNames !== false,
@@ -519,7 +505,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       uiScalePartRow('panels', {
         label: 'Panel Scale',
-        keywords: 'panels explorer palette layers popover size bigger smaller zoom panel scale',
+        keywords: 'panels explorer palette popover size bigger smaller zoom panel scale',
         description: 'Every panel, docked or opened from a button.',
         changed: 'UiScalePanels',
       }),
@@ -531,8 +517,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       }),
       uiScalePartRow('cornerButtons', {
         label: 'Corner Buttons Scale',
-        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller scale',
-        description: 'Undo and Redo, Layers, Style and zoom.',
+        keywords: 'undo redo zoom controls theme corner buttons size bigger smaller scale',
+        description: 'Undo and Redo, Style and zoom.',
         changed: 'UiScaleCornerButtons',
       }),
     ],
@@ -582,54 +568,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.panelOpacity ?? 1,
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
-      },
-    ],
-  },
-  {
-    id: 'layers',
-    label: 'Layers',
-    parent: 'panels',
-    rows: [
-      panelSwitch('layersPanelEnabled', {
-        label: 'Enable Layers Panel',
-        keywords: 'layers panel enable hide show turn off remove move to layer',
-        description:
-          'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
-        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
-      }),
-      {
-        kind: 'toggle',
-        key: 'layersShowPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'thumbnail preview layer picture',
-        illustration: 'layerThumbnails',
-        label: 'Layer Thumbnails',
-        description: 'A small preview of what each layer holds.',
-        read: (p) => p.layersShowPreview !== false,
-        write: (p, v) => ({ ...p, layersShowPreview: v }),
-        event: { category: 'UI', on: 'LayerPreviewOn', off: 'LayerPreviewOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layersShowCount',
-        parent: 'layersPanelEnabled',
-        keywords: 'number badge count layer element counts',
-        label: 'Layer Element Counts',
-        description: 'How many elements each layer holds, beside its name.',
-        read: (p) => p.layersShowCount !== false,
-        write: (p, v) => ({ ...p, layersShowCount: v }),
-        event: { category: 'UI', on: 'LayerCountOn', off: 'LayerCountOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layerHoverPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'highlight hover layer preview solo',
-        label: 'Preview Layer on Hover',
-        description: 'Shows only that layer on the canvas while you rest on its row.',
-        read: (p) => p.layerHoverPreview !== false,
-        write: (p, v) => ({ ...p, layerHoverPreview: v }),
-        event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
       },
     ],
   },
@@ -707,21 +645,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'cursors pointers names pills participants collaborators hide show busy session distracting',
         description: HIDE_CURSORS_HINT,
       },
-    ],
-  },
-  {
-    id: 'quickStyle',
-    label: 'Quick Style',
-    parent: 'panels',
-    rows: [
-      panelSwitch('quickStylePanelEnabled', {
-        label: 'Enable Quick Style Panel',
-        keywords:
-          'quick style colour color stroke fill width panel selection enable hide show turn off',
-        description:
-          "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
-        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
-      }),
     ],
   },
   {

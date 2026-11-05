@@ -1,9 +1,10 @@
 import type { Browser, Page } from '@playwright/test';
 import { adoptGuest, documentHeaders, expect, mintGuest, seedDocumentItem, test } from './fixtures';
+import { legacyViewerLink } from './legacy-viewer';
 
 // The Viewer's Walk button (docs/specs/008-canvas/avatar-mode.md "The Walk button", Work Tracker #486): a Viewer has
 // no palette strip and so no picker, so the bottom-right cluster gives them Walk. On a plain board (no Walk In, no
-// pad, so nothing opens walking) it takes them into Avatar mode and back out; an Editor, who has the picker, has none.
+// pad, so nothing opens walking) it takes them into Avatar mode and back out; an Editor has it too (avatar-mode.md "The Walk button").
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
@@ -39,7 +40,7 @@ async function joinIfAsked(page: Page): Promise<void> {
 const walk = (page: Page) => page.getByRole('button', { name: 'Walk', exact: true });
 const self = (page: Page) => page.locator('[data-avatar="self"]');
 
-test('a Viewer walks in and out from the Walk button; an Editor has none', async ({
+test('a Viewer walks in and out from the Walk button; an Editor has one too', async ({
   page,
   browser,
   baseURL,
@@ -64,18 +65,14 @@ test('a Viewer walks in and out from the Walk button; an Editor has none', async
   const headers = await documentHeaders(page.request, owner, id, {
     Origin: new URL(baseURL!).origin,
   });
-  const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
-    headers,
-    data: { role: 'view' },
-  });
-  expect(share.ok(), `share: ${share.status()}`).toBe(true);
-  const code = ((await share.json()) as { link: { code: string } }).link.code;
+  // livehuddle makes no new Viewer link: a legacy one, as stored before.
+  const code = await legacyViewerLink(page.request, apiBase, id, headers);
 
-  // The Editor: the picker is their way in, so the cluster has no Walk.
+  // The Editor: every role has the Walk button.
   const editor = await openAs(browser, baseURL!, `/document/${id}`, owner);
   await editor.locator(CANVAS).waitFor();
   await expect(editor.locator('[data-element-id="note"]')).toBeVisible();
-  await expect(walk(editor)).toHaveCount(0);
+  await expect(walk(editor)).toHaveCount(1);
 
   // The Viewer: the board opens on the plain view, Walk off.
   const viewer = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);

@@ -97,8 +97,7 @@ type IconButtonProps = {
   // Override the caption text (default is derived from `label`). Used where
   // the derived name is too long for the tile, e.g. "Bubble".
   caption?: string;
-  // The tile's creation-time choice (which session tool, which reaction,
-  // which mode, which estimate scale), carried alongside the kind so a drag
+  // The tile's creation-time choice (which mode, which estimate scale), carried alongside the kind so a drag
   // places what the tile says it places.
   dragChoice?: string;
   // Makes the tile draggable to place this shape kind on the canvas (drag

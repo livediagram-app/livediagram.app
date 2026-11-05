@@ -1,6 +1,6 @@
-// `wrap <selector…> in frame|lane [id=] key=value… [tidy] [absorb | make-room]`
-// (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO34, EO35): a frame or lane drawn
-// around the members, `FRAME_PAD` clear of them (a frame `FRAME_TOP` at the top, a lane its gutter on
+// `wrap <selector…> in boundary|lane [id=] key=value… [tidy] [absorb | make-room]`
+// (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO34, EO35): a boundary or lane drawn
+// around the members, `FRAME_PAD` clear of them (a boundary `FRAME_TOP` at the top, a lane its gutter on
 // its title edge). It never silently takes in what is not a member: such bystanders refuse the
 // changeset unless `absorb` makes them members or `make-room` moves them out.
 
@@ -36,7 +36,6 @@ import {
 } from '../state';
 import type { WrapOperation } from '../types';
 import { PLACEMENT_GAP } from '../vocabulary';
-import { layerFor } from './add-kind';
 import { layOut, lockedAmong } from './layout';
 
 // The boxed members, in element order, or why not.
@@ -53,13 +52,13 @@ function membersOf(
     rejection: {
       code: 'invalid_value',
       operation,
-      details: [`${targets.join(' ')}: only arrows; a frame or lane holds boxes`],
+      details: [`${targets.join(' ')}: only arrows; a boundary or lane holds boxes`],
       hint: 'name the boxes the arrows join',
     },
   };
 }
 
-// The members' bounding box grown by the padding: a frame's title room at the top, a lane's gutter
+// The members' bounding box grown by the padding: a boundary's title room at the top, a lane's gutter
 // on its title edge (EO34).
 export function wrapBox(members: readonly Box[], container: ShapeElement): Box {
   const left = Math.min(...members.map((m) => m.x));
@@ -67,7 +66,7 @@ export function wrapBox(members: readonly Box[], container: ShapeElement): Box {
   const right = Math.max(...members.map((m) => m.x + m.width));
   const bottom = Math.max(...members.map((m) => m.y + m.height));
   const pad = { left: FRAME_PAD, top: FRAME_PAD, right: FRAME_PAD, bottom: FRAME_PAD };
-  if (container.shape === 'frame') pad.top = FRAME_TOP;
+  if (container.shape === 'boundary') pad.top = FRAME_TOP;
   else {
     const edge = laneEdgeOfElement(container);
     if (edge !== 'centre-x') pad[edge] += laneSizeOfElement(container);
@@ -203,11 +202,7 @@ export function applyWrap(
     }
   }
   const earliest = members[0]!;
-  const layerId = layerFor(state, earliest);
-  const placed = recolourElementForTheme(
-    layerId === undefined ? container : { ...container, layerId },
-    state.theme,
-  );
+  const placed = recolourElementForTheme(container, state.theme);
   state.warnings.push(...written.warnings);
   insertElement(state, placed, index, { before: earliest.id });
   state.created.push(id);

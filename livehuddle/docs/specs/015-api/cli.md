@@ -33,7 +33,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `document ls [query]`                                                         | Documents in the personal library and joined teams, newest first                                                                                                |
 | `folder ls [--json]` / `folder create <name> [--in <f>]`                      | The person's folders as paths with their ids; a new folder, at the top of My Work or inside another                                                             |
 | `document view <doc>`                                                         | The overview view                                                                                                                                               |
-| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`        | A new document from a graph, Mermaid or template, compiled by the api                                                                                           |
+| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`        | A new document from a graph or template, compiled by the api                                                                                                    |
 | `document rename\|share\|rm\|restore <doc>`                                   | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                       |
 | `tab ls <doc>`                                                                | The document's tabs                                                                                                                                             |
 | `tab view <doc> [--tab <t>] [--view <name>] [--budget <n>]`                   | A view; the outline by default; `show` takes `--ref`, `find` `--text`                                                                                           |
@@ -48,9 +48,9 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `presence set\|clear <doc> [--tab <t>] [--status ..] [--focus ..]`            | The agent's presence                                                                                                                                            |
 | `wait <doc> --for comment\|change [--timeout <s>]`                            | Blocks until it happens, prints it, exits                                                                                                                       |
 | `watch <doc>`                                                                 | Streams changes, one line each, until interrupted                                                                                                               |
-| `graph lint\|render <file>`                                                   | Lint or preview a graph or Mermaid file locally, before writing anything                                                                                        |
+| `graph lint\|render <file>`                                                   | Lint or preview a graph file locally, before writing anything                                                                                                   |
 | `pull <doc> [--to <dir>] [--force]` / `push <file>`                           | Sync one document to a file and back                                                                                                                            |
-| `export --all --to <dir> [--format json,svg,png,mermaid,md]`                  | Every document to files                                                                                                                                         |
+| `export --all --to <dir> [--format json,svg,png,md]`                          | Every document to files                                                                                                                                         |
 | `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`   | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                            |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`              | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                      |
 | `template ls\|view`, `icon search <text>`, `image ls [name]`, `schema [kind]` | The catalogues, the image gallery an image element's `imageId=` takes ([Image element](../009-elements/images.md#agents)), and the element format, from the api |
@@ -65,7 +65,7 @@ pulled file's path reads its views offline. `--tab` takes a tab name or id prefi
 Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); the comment verbs take the ref of the
 element whose thread they act on.
 
-**Files.** `-f <file>` holds edit operations, a graph, Mermaid, or elements, told apart by their content; a file
+**Files.** `-f <file>` holds edit operations, a graph, or elements, told apart by their content; a file
 that is none of them is refused.
 
 **Changeset writes** (`element`, `changeset apply`, `tab add`, `push`) accept `--dry-run` (the plan, nothing

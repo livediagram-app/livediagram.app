@@ -13,7 +13,6 @@ import {
   expect,
   expectNoPageErrors,
   test,
-  untilHydrated,
   mintGuest,
 } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
@@ -57,13 +56,13 @@ async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
 
 test.describe('Optical alignment audit', () => {
   // A visitor with no identity leaves /new for the guest handoff the moment the page hydrates (fixtures.ts
-  // serverNewUrl), which destroyed the page mid-audit: the wizard is audited as a minted guest, who stays.
-  test('the New Space wizard', async ({ page, pageErrors }) => {
+  // serverNewUrl), which destroyed the page mid-audit: a new Space is audited as a minted guest, who stays.
+  // /new has no screen of its own: it opens the new Space on Start a Space (new-document-route.md "No welcome screen").
+  test('Start a Space on a new Space', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintGuest(page.request));
     await page.goto('/new');
-    await page.getByText('New Space', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expectCentred(page, 'wizard');
+    await page.getByRole('region', { name: /^Start a Space$/ }).waitFor({ timeout: 30_000 });
+    await expectCentred(page, 'Start a Space');
     expectNoPageErrors(pageErrors);
   });
 
@@ -129,7 +128,7 @@ test('initials with a tailed capital centre on their cap band', async ({ page })
   // A minted guest, so /new stays put rather than leaving for the guest handoff mid-audit.
   await adoptGuest(page, await mintGuest(page.request));
   await page.goto('/new');
-  await page.getByText('New Space', { exact: false }).first().waitFor();
+  await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await page.evaluate(() => {
     const disc = document.createElement('span');
     disc.setAttribute('aria-label', 'Tailed initials');

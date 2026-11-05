@@ -147,7 +147,12 @@ describe('facing bends', () => {
 
   it("keeps the cross run off a frame's heading band and border, nearest half way", () => {
     // p's bottom (50, 60) to c's top (350, 300): half way is 180, inside the frame's heading band (170..202).
-    const frame = { ...createShape('frame', 0, 170), id: 'f', width: 500, height: 200 } as Element;
+    const frame = {
+      ...createShape('boundary', 0, 170),
+      id: 'f',
+      width: 500,
+      height: 200,
+    } as Element;
     const els = [box('p', 0, 0), { ...box('c', 300, 300) }, frame, pinned('a', 'p', 's', 'c', 'n')];
     const a = withFacingBends(els)[3] as ArrowElement;
     expect(curveAnchorPoints({ x: 50, y: 60 }, { x: 350, y: 300 }, a.curvePoints!)[0]!.y).toBe(162);

@@ -21,9 +21,12 @@ describe('the whiteboard shape catalogue', () => {
     expect(draw).toEqual(['line', 'arrow']);
   });
 
-  it('keys each creation choice apart, so hearts are not confetti', () => {
-    expect(whiteboardShapeEntry('reaction-pad:hearts')?.label).toBe('Hearts');
-    expect(whiteboardShapeEntry('reaction-pad:confetti')?.label).toBe('Confetti');
+  // docs/specs/009-elements/mode-button.md "Only Avatar": the one mode button, keyed by its choice, filed in Travel.
+  it('keys the Avatar mode button by its choice, under Travel', () => {
+    const avatar = whiteboardShapeEntry('mode-button:avatar');
+    expect(avatar?.label).toBeTruthy();
+    expect(avatar?.group).toBe('collab-travel');
+    expect(whiteboardShapeEntry('mode-button:eraser')).toBeUndefined();
   });
 
   it('holds the sticky note as a shape, armed as a plain note', () => {
@@ -47,9 +50,14 @@ describe('the whiteboard shape catalogue', () => {
       'draw',
       'build',
       'data',
-      'collab-react',
-      'collab-mode',
-      'collab-navigate',
+      'collab-rooms',
+      'collab-seating',
+      'collab-amenities',
+      'collab-bar',
+      'collab-recreation',
+      'collab-garden',
+      'collab-meeting',
+      'collab-travel',
     ]);
   });
 
@@ -62,10 +70,10 @@ describe('the whiteboard shape catalogue', () => {
       kind: 'triangle',
       board: true,
     });
-    expect(whiteboardShapeEntry('reaction-pad:hearts')?.intent).toEqual({
+    expect(whiteboardShapeEntry('mode-button:avatar')?.intent).toEqual({
       type: 'shape',
-      kind: 'reaction-pad',
-      reaction: 'hearts',
+      kind: 'mode-button',
+      mode: 'avatar',
       board: true,
     });
   });

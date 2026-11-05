@@ -37,8 +37,6 @@ export const SHAPE_KINDS = new Set<string>([
   'mode-button',
   // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
   'portal',
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md).
-  'reaction-pad',
   // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
   'chair',
   // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
@@ -57,6 +55,42 @@ export const SHAPE_KINDS = new Set<string>([
   'coffee-machine',
   'rug',
   'stage',
+  // The Office Pod, the bar and the garden (docs/specs/009-elements/office.md "Office Pod" to "Garden Fence").
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  // The social pieces (docs/specs/009-elements/social-pieces.md).
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
+  // Door (docs/specs/009-elements/room-builder.md "Door").
+  'door',
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
+  'directory',
+  'elevator',
+  // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
+  'screen',
+  'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
   'stadium',
   'actor',
   'final-state',
@@ -65,7 +99,6 @@ export const SHAPE_KINDS = new Set<string>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'frame',
   'progress-bar',
   'progress-ring',
   'timeline-rail',

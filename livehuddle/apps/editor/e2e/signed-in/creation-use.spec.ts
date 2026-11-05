@@ -1,12 +1,10 @@
 import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
-import { importExcalidrawBoards } from '../excalidraw-boards';
 import { freshUserId, installSession, type StubUser } from './session';
 
-// Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md
-// "Making a document"; docs/specs/015-api/api.md "Marking a document used"), signed in, against the
-// signed-in export: a board imported on its own and a document an API client makes are in Jump
-// back in unopened; one the API client makes with markUsed: false is not, nor a two-board import.
+// Making a document is a use (docs/specs/013-workspace/explorer-home.md "Making a document";
+// docs/specs/015-api/api.md "Marking a document used"), signed in, against the signed-in export: a document an
+// API client makes is in Jump Back In unopened; one the API client makes with markUsed: false is not.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 
@@ -60,25 +58,5 @@ test('an API client’s document is in Jump Back In unless it says markUsed: fal
     timeout: 30_000,
   });
   await expect(jumpBackIn(page).getByRole('link', { name: 'One of a batch' })).toHaveCount(0);
-  expectNoPageErrors(pageErrors);
-});
-
-test('signed in, a single imported board is in Jump Back In; a two-board import is not', async ({
-  page,
-  pageErrors,
-}) => {
-  await signedIn(page, freshUserId('importer'));
-  await importExcalidrawBoards(page, 2);
-  await page.goto('/explorer/home');
-  await expect(page.getByRole('region', { name: 'Jump Back In' })).toContainText(
-    /will gather here\./,
-    { timeout: 30_000 },
-  );
-
-  await importExcalidrawBoards(page, 1);
-  await page.goto('/explorer/home');
-  await expect(jumpBackIn(page).getByRole('link')).toHaveCount(1);
-  await expect(jumpBackIn(page).getByRole('link', { name: 'Sprint board' })).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath('signed-in-import-home.png') });
   expectNoPageErrors(pageErrors);
 });

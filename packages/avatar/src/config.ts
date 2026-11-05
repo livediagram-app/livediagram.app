@@ -126,7 +126,8 @@ const SIZE_SCALE: Record<AvatarSize, number> = {
 };
 
 export function avatarScale(size: AvatarSize): number {
-  return SIZE_SCALE[size];
+  // A product without the Size choice (AvatarBindings.sizes) draws everyone at Regular.
+  return SIZE_SCALE[avatarBindings.sizes ? size : 'regular'];
 }
 
 // A random character for a first-time visitor: gender, clothing, and hair are

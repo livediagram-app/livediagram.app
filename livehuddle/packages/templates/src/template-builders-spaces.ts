@@ -37,16 +37,16 @@ function plan(
 function deskCluster(x: number, y: number): OfficePiece[] {
   return [
     { kind: 'desk', x, y, facing: 'n' },
-    { kind: 'desk', x: x + 140, y, facing: 'n' },
+    { kind: 'desk', x: x + 130, y, facing: 'n' },
     { kind: 'desk', x, y: y + 112, facing: 's' },
-    { kind: 'desk', x: x + 140, y: y + 112, facing: 's' },
+    { kind: 'desk', x: x + 130, y: y + 112, facing: 's' },
   ];
 }
 
 // --- Coworking Space -----------------------------------------------------------
 
 const COWORK_W = 1100;
-const COWORK_H = 560;
+const COWORK_H = 680;
 
 export function buildCoworkingSpace(cx: number, cy: number): Element[] {
   const width = COWORK_W;
@@ -62,19 +62,20 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       h: COWORK_H,
       door: 's',
       pieces: [
+        // Two clusters an aisle apart, the lounge an aisle below them.
         ...deskCluster(50, 56),
-        ...deskCluster(380, 56),
+        ...deskCluster(440, 56),
         // The coffee bar.
         { kind: 'coffee-machine', x: 50, y: 390 },
         { kind: 'water-cooler', x: 140, y: 376 },
         { kind: 'plant', x: 220, y: 410 },
         // The lounge.
-        { kind: 'rug', x: 420, y: 390 },
-        { kind: 'sofa', x: 454, y: 310, facing: 'n' },
-        { kind: 'chair', x: 330, y: 400, facing: 'w' },
-        { kind: 'chair', x: 660, y: 400, facing: 'e' },
-        { kind: 'plant', x: 740, y: 440 },
-        { kind: 'bookshelf', x: 690, y: 46 },
+        { kind: 'rug', x: 420, y: 480 },
+        { kind: 'sofa', x: 454, y: 400, facing: 'n' },
+        { kind: 'chair', x: 330, y: 490, facing: 'w' },
+        { kind: 'chair', x: 660, y: 490, facing: 'e' },
+        { kind: 'plant', x: 760, y: 560 },
+        { kind: 'bookshelf', x: 720, y: 46 },
       ],
     },
     // Two phone booths along the right, for a call without the room. Their doors face the open floor: a door in a
@@ -86,7 +87,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
+      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
     },
     {
       name: 'Booth 2',
@@ -95,7 +96,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
+      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
     },
   ];
   return plan(
@@ -190,9 +191,11 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
 // --- All-Hands Hall ----------------------------------------------------------------
 
 const HALL_W = 1000;
-const HALL_H = 730;
+const HALL_H = 1100;
 const SEAT_XS = [90, 175, 260, 345, 580, 665, 750, 835];
-const ROW_YS = [290, 390, 490, 590];
+// A row's chairs side by side, an aisle (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy") between
+// rows: a chair's 84 px and 120 px of floor, so walking along a row to a seat never brushes the row in front.
+const ROW_YS = [290, 494, 698, 902];
 // The stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in"): a real Stage, centred
 // across the hall, its front edge well clear of the first row.
 const STAGE_W = 400;
@@ -221,7 +224,7 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
         ),
         { kind: 'plant', x: 24, y: 60 },
         { kind: 'plant', x: 920, y: 60 },
-        { kind: 'water-cooler', x: 24, y: 540 },
+        { kind: 'water-cooler', x: 24, y: HALL_H - 220 },
       ],
     },
   ];

@@ -7,6 +7,18 @@
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
 import { isRoomDoor, isStageSpeakers } from './office';
+import {
+  CLOCK_LABEL_MAX,
+  CLOCK_ZONES_MAX,
+  isClockZones,
+  isJukeboxSource,
+  isNoticeNotes,
+  NOTE_TEXT_MAX,
+  NOTES_MAX,
+} from './office-social';
+import { isScreenUrl, SCREEN_URL_MAX } from './meeting-pieces';
+import { isPieceTimer, TIMER_MINUTES_MAX } from './timer-pieces';
+import { isRoomOutline, ROOM_OUTLINE_MAX, ROOM_OUTLINE_MIN } from './room-outline-field';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isSelectionMode } from './selection-mode';
@@ -245,11 +257,41 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'chairFacing', valid: isChairFacing, rule: 'a chair facing' },
   { field: 'roomDoor', valid: isRoomDoor, rule: 'a room doorway (n, e, s, w or none)' },
   {
+    field: 'roomOutline',
+    valid: isRoomOutline,
+    rule: `a room outline (${ROOM_OUTLINE_MIN} to ${ROOM_OUTLINE_MAX} corners, each x and y from 0 to 1)`,
+  },
+  {
     field: 'stageSpeakers',
     valid: isStageSpeakers,
     rule: 'who may speak from a stage (edit or take-part)',
   },
   flag('stageCameras'),
+  flag('doorClosed'),
+  // The social pieces (docs/specs/009-elements/social-pieces.md).
+  {
+    field: 'noticeNotes',
+    valid: isNoticeNotes,
+    rule: `at most ${NOTES_MAX} notes { id, title?, text (1 to ${NOTE_TEXT_MAX} characters), author, by, at, color? }`,
+  },
+  {
+    field: 'clockZones',
+    valid: isClockZones,
+    rule: `at most ${CLOCK_ZONES_MAX} { zone (an IANA time zone), label (${CLOCK_LABEL_MAX} characters) } rows`,
+  },
+  { field: 'jukeboxSource', valid: isJukeboxSource, rule: 'an https audio address' },
+  // A Timer's or Stopwatch's clock (docs/specs/009-elements/timer-and-stopwatch.md "The state").
+  {
+    field: 'pieceTimer',
+    valid: (v: unknown) => isPieceTimer(v, 'timer') || isPieceTimer(v, 'stopwatch'),
+    rule: `a clock { running, startedAt, accumulatedMs, durationMs (0, or 1 to ${TIMER_MINUTES_MAX} minutes) }`,
+  },
+  // A Screen's Video Link (docs/specs/009-elements/screen-and-room-sign.md "Screen").
+  {
+    field: 'screenUrl',
+    valid: isScreenUrl,
+    rule: `an http(s) address of at most ${SCREEN_URL_MAX} characters`,
+  },
   {
     field: 'checklistItems',
     valid: rowsOf(CHECKLIST_MAX_ITEMS, isChecklistItem),

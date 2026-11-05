@@ -27,8 +27,6 @@ claim about those surfaces.
 | `editor_2_animation.png`  | The same mind map with an element's menu open on its Animation choices.                                                      |
 | `editor_dark.png`         | A "Growth flywheel" cycle in a dark theme.                                                                                   |
 | `editor_dark_context.png` | The dark flywheel with a selected square's menu open, and the old Tab Activity panel.                                        |
-| `spotlight.png`           | Spotlight mode on the dark flywheel: the canvas dimmed round the element under the cursor.                                   |
-| `isometric.png`           | The flowchart in the Isometric view, raised into 3D blocks.                                                                  |
 | `search.png`              | The search panel over the dark flywheel, searching "tab": tabs, actions, elements to add and help articles.                  |
 | `share.png`               | The **Share this diagram** dialog: Edit or View only links, expiry, an active link with Embed and Live image, a password.    |
 | `editor_new_template.png` | The **New Diagram** wizard's template step: Blank, Mind maps, Flowcharts, Hierarchies, Agile and more.                       |

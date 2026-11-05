@@ -43,7 +43,8 @@ export function useTemplateFlow(opts: {
   // The template landed on this tab: its first content, judged afresh for opening walking (useOpenWalking), so a
   // Spaces template opens walking as it lands. Optional for hosts with no walk.
   onLanded?: (tabId: string) => void;
-  // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
+  // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded): a building's other floors.
+  markTabLoaded?: (tabId: string) => void;
 }) {
   const {
     activeId,
@@ -61,6 +62,7 @@ export function useTemplateFlow(opts: {
     requestFit,
     putToolDown,
     onLanded,
+    markTabLoaded,
   } = opts;
 
   // The visitor name prompt: Join keeps the name typed (or the one they had), Cancel the one they had.
@@ -87,6 +89,7 @@ export function useTemplateFlow(opts: {
     // existing document never download it.
     const {
       buildTemplate,
+      buildTemplatedFloorTabs,
       templateCanvasOverrides,
       isDefaultDocumentName,
       untitledNameForTemplate,
@@ -107,10 +110,16 @@ export function useTemplateFlow(opts: {
     const elements = recolourElementsForTheme(rawElements, theme);
     const overrides = templateCanvasOverrides(kind);
     const opensIn = templateOpensIn(overrides);
+    // A building's other floors (docs/specs/007-editor/templates-by-mode.md "A template with floors"): new tabs straight
+    // after this one, in its theme, landed in the same commit so one undo takes the whole pick back.
+    const activeTab = tabs.find((t) => t.id === activeId);
+    const floors = buildTemplatedFloorTabs(kind, activeTab?.theme ?? theme.id);
+    // Marked loaded before the commit: an id that never lands (the tab had gained work) is never fetched either way.
+    for (const floor of floors) markTabLoaded?.(floor.id);
     // Re-checked inside the commit (landTemplateOnTab): the tab may have gained a collaborator's
     // element while the builders loaded, and the scaffold must never replace it.
-    commitTabs((ts) =>
-      landTemplateOnTab(ts, activeId, (active) => {
+    commitTabs((ts) => {
+      const next = landTemplateOnTab(ts, activeId, (active) => {
         // Any template but a blank one names the tab after itself (docs/specs/007-editor/templates-by-mode.md "The
         // tab's name"); a blank one leaves the name as it was.
         const name = templateTabName(kind);
@@ -122,8 +131,12 @@ export function useTemplateFlow(opts: {
           ...overrides,
           ...(opensIn ? { opensIn } : {}),
         };
-      }),
-    );
+      });
+      const landed = next.some((t) => t.id === activeId && t.elements === elements);
+      if (!landed || floors.length === 0) return next;
+      const at = next.findIndex((t) => t.id === activeId);
+      return [...next.slice(0, at + 1), ...floors, ...next.slice(at + 1)];
+    });
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
     // put down, so its style panel doesn't sit over the board and the first click selects.

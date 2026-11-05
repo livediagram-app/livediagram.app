@@ -37,7 +37,7 @@ is in a team the person has left, is skipped; with none left the canvas lands at
 folder drops the defaults that point at it.
 
 - `/new` sends no place unless a `?folder=` / `?team=` context names one, so its creates are filed by default. The
-  wizard never asks where a canvas goes ([New document route](../007-editor/new-document-route.md#one-step-wizard)).
+  `/new` never asks where a canvas goes ([New document route](../007-editor/new-document-route.md#no-welcome-screen)).
 - A template link (`/new?template=`) is filed by its template's family at creation.
 - An API or MCP create that names no place is filed by the template family of its first seeded tab
   (`apps/api/src/routes/document-seed.ts`).
@@ -47,13 +47,13 @@ folder drops the defaults that point at it.
 
 ### A template picked after creation
 
-The wizard makes the chosen mode's blank, and the template is picked afterwards on the new canvas's start screen
+`/new` makes a Blank Space, and the template is picked afterwards on the new canvas's start screen
 ([Template starts](../007-editor/start-diagramming.md)), so a template family's default can only answer then
 (`apps/editor/components/start/useTemplatePickMove.ts`, over the shared Explorer's `template-pick`).
 
-- **The wizard leaves a note** (this browser tab only): the canvas it made, its first tab, and whether the person
-  chose the folder themselves (a `/new?folder=` / `?team=` context). It is written for a cloud canvas made from a
-  mode's blank, never for This Browser or a template link.
+- **`/new` leaves a note** (this browser tab only): the canvas it made, its first tab, and whether the person
+  chose the folder themselves (a `/new?folder=` / `?team=` context). It is written for a cloud canvas made as a
+  Blank Space, never for This Browser or a template link.
 - **The first template picked from a start screen** on that first tab takes the note. When the person did not
   choose the folder, the index's defaults are read again for the template's family, then the app's, and the canvas
   goes to the default that answers when it is somewhere else. A toast says so: "Moved to **Retros**, your default

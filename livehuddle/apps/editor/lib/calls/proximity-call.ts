@@ -33,6 +33,8 @@ import {
   onLetSpeak,
   onStopShare,
   resetCallMedia,
+  SELF_MEDIA_ID,
+  setCallMedia,
   setCallSelf,
   setCallsMode,
 } from './calls-store';
@@ -132,6 +134,8 @@ export class ProximityCall {
       onCallHands(() => this.update(this.scene)),
       onLetSpeak((from, on) => this.onLetSpeak(from, on)),
       onStopShare((from) => this.onStopShare(from)),
+      // A preview turned on while the call runs (or joins) is sent the moment the call may send it.
+      ...(input.preview ? [input.preview.subscribe(() => this.adoptPreview())] : []),
     ];
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', this.onVisibility);
@@ -175,6 +179,7 @@ export class ProximityCall {
       if (this.stopped) return;
       setCallSelf({ phase: 'live' });
       this.hear();
+      this.adoptPreview();
     } catch (error) {
       if (error instanceof CallsApiError && error.paused) {
         this.pause();
@@ -194,6 +199,32 @@ export class ProximityCall {
     if (!callsModeAllows(mode, 'video')) this.video.stopCamera();
     if (!callsModeAllows(mode, 'screen')) this.video.stopScreen();
     this.hear();
+    this.adoptPreview();
+  }
+
+  /**
+   * A live call takes the local preview's streams it may send (video-and-screen-bubbles.md "Local preview"): no second
+   * prompt, the same bubble. What the mode forbids stops, as a sent one would (the strip reads Video Paused); what
+   * your level forbids (a Participant's screen) stays a preview.
+   */
+  private adoptPreview(): void {
+    const preview = this.input.preview;
+    if (!preview || this.stopped || !this.sfu || callSelf().phase !== 'live') return;
+    const mode = callSelf().mode;
+    for (const [kind, media] of [
+      ['camera', 'video'],
+      ['screen', 'screen'],
+    ] as const) {
+      const stream = preview.stream(kind);
+      if (!stream) continue;
+      if (!callsModeAllows(mode, media)) {
+        preview.stop(kind);
+        continue;
+      }
+      const adopted =
+        kind === 'camera' ? this.video.adoptCamera(stream) : this.video.adoptScreen(stream);
+      if (adopted) preview.take(kind);
+    }
   }
 
   /** The kill switch paused calls: end as Leave Audio does, into Calls Paused. Never an error. */
@@ -359,13 +390,17 @@ export class ProximityCall {
         ...(this.video.screenAnnounced ? { screen: null } : {}),
       });
     }
-    for (const stream of [this.mic.release(), ...this.video.release()]) {
+    const [camera, screen] = this.video.release();
+    for (const stream of [this.mic.release(), camera, screen]) {
       for (const t of stream?.getTracks() ?? []) t.stop();
     }
+    // Your own bubbles go with what the call sent; a local preview it never took stays (a Participant's screen).
+    if (camera) setCallMedia(SELF_MEDIA_ID, 'video', null);
+    if (screen) setCallMedia(SELF_MEDIA_ID, 'screen', null);
     this.sfu?.close();
     this.sfu = null;
     this.receiver.clear();
-    resetCallMedia();
+    resetCallMedia(SELF_MEDIA_ID);
     this.graph.close();
   }
 

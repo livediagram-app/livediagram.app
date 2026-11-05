@@ -42,7 +42,7 @@ const diagram = {
             {
               id: 'g',
               type: 'shape',
-              shape: 'frame',
+              shape: 'boundary',
               label: 'Notifications',
               x: 0,
               y: 200,

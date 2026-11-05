@@ -67,7 +67,7 @@ a wrong obstacle **erases a line that should be visible**:
   Whatever we would cut is exactly what must not contain an endpoint.
 
 Everything else opaque (shapes, stickies, images, tables, link cards) cuts,
-**provided it is being drawn**: a box on a hidden layer, or one a thumbnail or
+**provided it is being drawn**: a box that a thumbnail or
 export leaves out, never cuts (a gap around nothing reads as a broken line).
 The canvas hands each arrow the elements it paints; each export and thumbnail
 hands it the ones it draws.

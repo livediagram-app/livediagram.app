@@ -37,7 +37,7 @@ describe('placement combinations', () => {
     const outer: Element = {
       id: 'outer',
       type: 'shape',
-      shape: 'frame',
+      shape: 'boundary',
       label: 'Checkout',
       x: -80,
       y: 240,

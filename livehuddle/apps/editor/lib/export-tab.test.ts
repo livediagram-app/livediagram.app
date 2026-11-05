@@ -297,13 +297,13 @@ describe('exportTabAsSvg', () => {
     expect(without).not.toContain('lvd-export-bg');
   });
 
-  it('omits the pattern for blank / unset backdrops', async () => {
+  it('omits the floor for None, and draws the theme’s floor for an unset one, as the canvas does', async () => {
     const blank = await text(
       exportTabAsSvg(tab({ elements: [shape('s')], backgroundPattern: 'blank' })),
     );
     expect(blank).not.toContain('lvd-export-bg');
     const unset = await text(exportTabAsSvg(tab({ elements: [shape('s')] })));
-    expect(unset).not.toContain('lvd-export-bg');
+    expect(unset).toContain('lvd-export-bg');
   });
 
   it('renders a colour-deferring shape with the canvas defaults, not flat white', async () => {
@@ -363,26 +363,18 @@ describe('exportScale', () => {
 
 // The SVG draws arrows as the PNG / PDF do (docs/specs/020-import-export/export-fidelity.md).
 describe('renderTabToSvg arrows match the canvas', () => {
-  const crossing = (visible: boolean) =>
+  const crossing = () =>
     tab({
-      layers: [
-        { id: 'base', name: 'Layer 1' },
-        { id: 'secret', name: 'Hidden', visible },
-      ],
       elements: [
-        shape('a', { layerId: 'base' }),
-        shape('b', { x: 400, layerId: 'base' }),
-        shape('c', { x: 200, layerId: 'secret' }),
-        pinnedArrow('arr', 'a', 'b', undefined, { layerId: 'base' }),
+        shape('a'),
+        shape('b', { x: 400 }),
+        shape('c', { x: 200 }),
+        pinnedArrow('arr', 'a', 'b'),
       ],
     });
 
   it('breaks an arrow behind a box it draws', () => {
-    expect(renderTabToSvg(crossing(true))).toContain('<mask');
-  });
-
-  it('never breaks an arrow behind a box on a hidden layer', () => {
-    expect(renderTabToSvg(crossing(false))).not.toContain('<mask');
+    expect(renderTabToSvg(crossing())).toContain('<mask');
   });
 
   it('fills a hollow head with the tab background, not the default canvas colour', () => {

@@ -5,7 +5,7 @@
 // Collaborate elements' sections (the estimate card's scale, the agenda's segments, the decision record) left with
 // those elements (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
 //
-// Their own file for the same reason BehaviourMenuSections has one: each is a small form, and none of it belongs in
+// Their own file for the same reason PortalMenuSection has one: each is a small form, and none of it belongs in
 // the data-shape sections beside charts and rails.
 
 import {

@@ -267,17 +267,18 @@ describe('RoomCalls stopped shares (#469)', () => {
 });
 
 describe('tabCallsOf', () => {
-  it('reads the rooms and stages on visible layers, and nothing from a tab that does not parse', () => {
+  it('reads the rooms and stages, and nothing from a tab that does not parse', () => {
     expect(tabCallsOf(TAB).zones.map((z) => z.id)).toEqual(['room']);
     expect(tabCallsOf(TAB).stages.map((z) => z.id)).toEqual(['stage']);
-    const hidden = JSON.stringify({
+    // A tab saved while livehuddle had layers: a room on a hidden layer counts (docs/specs/006-document/layers.md).
+    const saved = JSON.stringify({
       elements: [{ ...room, layerId: 'l2' }],
       layers: [
         { id: 'l1', name: 'One' },
         { id: 'l2', name: 'Two', visible: false },
       ],
     });
-    expect(tabCallsOf(hidden).zones).toEqual([]);
+    expect(tabCallsOf(saved).zones.map((z) => z.id)).toEqual(['room']);
     for (const bad of ['{', 'null', '{"elements":3}']) {
       expect(tabCallsOf(bad)).toEqual({ zones: [], stages: [] });
     }

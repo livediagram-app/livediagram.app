@@ -20,7 +20,8 @@ import type { TidyUpActions } from './tidy-up-actions';
 
 export const ALIGN_NAME = 'Auto-align';
 const ALIGN_LINE = 'Snap to the grid. Nothing moves far.';
-export const TIDY_EMPTY_NOTE = 'Nothing to tidy yet. Add some notes or frames to this Space first.';
+export const TIDY_EMPTY_NOTE =
+  'Nothing to tidy yet. Add some notes or pictures to this Space first.';
 export const TIDY_LOCKED_NOTE = 'This tab is locked. Unlock it to tidy its layout.';
 
 const NO_MOVE = () => {};

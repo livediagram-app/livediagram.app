@@ -14,6 +14,7 @@ import {
 } from '@/lib/tab-looks';
 import { track } from '@/lib/telemetry';
 import { LooksCarousel } from './LooksCarousel';
+import { acrossPages } from '@liveworkspace/workbench/components/primitives/paged-carousel-testing';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -22,7 +23,8 @@ afterEach(() => cleanup());
 const MASHUP = 'Mashup: a random look, press for another';
 const UNTOUCHED: LookSettings = { theme: undefined, finish: undefined, font: undefined };
 
-const cards = () =>
+// The cards on the pages mounted now (the page on show and its neighbours).
+const cardsMounted = () =>
   screen
     .getAllByRole('button')
     .filter((b) => b.hasAttribute('aria-pressed') && b.textContent !== 'Seasonal')
@@ -32,6 +34,8 @@ const cards = () =>
         [...b.querySelectorAll('span > span')].find((s) => !s.className.includes('uppercase'))
           ?.textContent,
     );
+// Every card, page by page (the carousel mounts only the page on show and its neighbours).
+const cards = () => acrossPages('Looks', cardsMounted, fireEvent.click);
 const seasonsShown = () =>
   screen
     .getAllByRole('button')

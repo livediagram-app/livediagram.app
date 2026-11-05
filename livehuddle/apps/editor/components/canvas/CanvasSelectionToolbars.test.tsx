@@ -47,11 +47,7 @@ function renderToolbars(multi: boolean) {
   return render(
     <SelectionStoreProvider store={store}>
       <ViewportStoreProvider store={createViewportStore(1)}>
-        <CanvasSelectionToolbars
-          props={props}
-          selectionInput={selectionInput}
-          quickRingOpen={false}
-        />
+        <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
       </ViewportStoreProvider>
     </SelectionStoreProvider>,
   );

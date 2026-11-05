@@ -17,11 +17,12 @@ import { applyParticipantOp, participantTabChange } from './participant-content'
 import { createShape } from './shape-factory';
 import { ELEMENT_TYPES, isValidElement } from './validate';
 
-// The participant content rule never leaks (docs/specs/013-workspace/share-roles.md "What a Participant changes").
+// The participant content rule never leaks (docs/specs/013-workspace/share-roles.md "A Participant walks").
 // For one valid element of every type (and the kinds the rule treats apart), every stored field is offered several
-// new values by a Participant who did not add the element. Whatever the room does, no field outside the spec's list
-// for that element may change. The list below IS the spec's table: widening what a Participant may do means editing
-// it here, on purpose, in the same change as the spec.
+// new values by a Participant, whether or not it added the element. Whatever the room does, no field outside the
+// spec's list for that element may change, and a Participant changes content through no field at all: only a piece
+// (a Door's `doorClosed`) has a list. The list below IS the spec's table: widening what a Participant may do means
+// editing it here, on purpose, in the same change as the spec.
 
 const ME = 'a'.repeat(32);
 const THEM = 'b'.repeat(32);
@@ -29,33 +30,30 @@ const THEM = 'b'.repeat(32);
 type Bag = Record<string, unknown>;
 type Sample = { name: string; el: Element; allowed: readonly string[] };
 
-const TEXT = ['label', 'richText'];
-const PLACE = ['x', 'y', 'width', 'height'];
-const STICKY_COLOURS = ['fillColor', 'strokeColor', 'textColor', 'penTextColour'];
-const IMAGE = ['imageId', 'naturalWidth', 'naturalHeight', 'alt', 'credit'];
-
 const theirs = (el: Element, id: string): Element => ({ ...el, id, addedBy: THEM }) as Element;
+// Its own earlier element: no different from anyone's.
+const mine = (el: Element, id: string): Element => ({ ...el, id, addedBy: ME }) as Element;
 
 const SAMPLES: Sample[] = [
-  { name: 'shape (square)', el: theirs(createShape('square', 0, 0), 'sq'), allowed: TEXT },
+  { name: 'shape (square)', el: theirs(createShape('square', 0, 0), 'sq'), allowed: [] },
   {
     name: 'shape (Behaviour: mode button)',
     el: theirs(createShape('mode-button', 0, 0), 'sb'),
     allowed: [],
   },
-  { name: 'text', el: theirs(createText(0, 0), 'tx'), allowed: TEXT },
+  { name: 'text', el: theirs(createText(0, 0), 'tx'), allowed: [] },
   {
     name: 'text (sizes to its words)',
     el: theirs({ ...createText(0, 0), sizing: 'fit' }, 'tf'),
-    allowed: [...TEXT, 'width', 'height'],
+    allowed: [],
   },
-  { name: 'table', el: theirs(createTable(0, 0), 'tb'), allowed: [...TEXT, 'cells'] },
+  { name: 'table', el: theirs(createTable(0, 0), 'tb'), allowed: [] },
   {
     name: 'sticky',
     el: theirs(createSticky(0, 0), 'st'),
-    allowed: [...TEXT, ...PLACE, ...STICKY_COLOURS],
+    allowed: [],
   },
-  { name: 'image', el: theirs(createImage(0, 0), 'im'), allowed: [...TEXT, ...PLACE, ...IMAGE] },
+  { name: 'image', el: theirs(createImage(0, 0), 'im'), allowed: [] },
   {
     name: 'freehand',
     el: theirs(
@@ -68,7 +66,7 @@ const SAMPLES: Sample[] = [
       ),
       'fh',
     ),
-    allowed: TEXT,
+    allowed: [],
   },
   {
     name: 'path',
@@ -82,12 +80,19 @@ const SAMPLES: Sample[] = [
       ),
       'pa',
     ),
-    allowed: TEXT,
+    allowed: [],
   },
-  { name: 'annotation', el: theirs(createAnnotation(0, 0), 'an'), allowed: TEXT },
-  { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: TEXT },
-  { name: 'video', el: theirs(createVideo(0, 0), 'vi'), allowed: TEXT },
-  { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: TEXT },
+  { name: 'annotation', el: theirs(createAnnotation(0, 0), 'an'), allowed: [] },
+  { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: [] },
+  { name: 'video', el: theirs(createVideo(0, 0), 'vi'), allowed: [] },
+  { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: [] },
+  { name: 'its own earlier sticky', el: mine(createSticky(0, 0), 'ms'), allowed: [] },
+  { name: 'its own earlier text', el: mine(createText(0, 0), 'mt'), allowed: [] },
+  {
+    name: 'shape (a Door: its swing alone)',
+    el: theirs(createShape('door', 0, 0), 'dr'),
+    allowed: ['doorClosed'],
+  },
   {
     // A stage's settings and name are an Editor's (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share
     // roles"): a Participant's change to Who Can Speak or Show Cameras stays as stored.
@@ -153,7 +158,7 @@ describe('the participant content rule never leaks', () => {
     });
   }
 
-  it('lets no add through but a sticky, text or image', () => {
+  it('lets no add through at all, a sticky, text or image included', () => {
     const tab = { id: 't', name: 't', elements: [] } as Tab;
     const verdict = (el: Element) =>
       applyParticipantOp(tab, { kind: 'add', element: el, at: 1 }, ME).result;
@@ -161,12 +166,11 @@ describe('the participant content rule never leaks', () => {
       const fresh = { ...(s.el as Bag) };
       delete fresh.addedBy;
       fresh.id = `new-${s.el.id}`;
-      const ok = ['sticky', 'text', 'image'].includes(s.el.type);
-      expect(verdict(fresh as Element), s.name).toBe(ok ? 'applied' : 'refused');
+      expect(verdict(fresh as Element), s.name).toBe('refused');
     }
   });
 
-  it("removes nothing of someone else's", () => {
+  it("removes nothing, someone else's or its own", () => {
     for (const s of SAMPLES) {
       const tab = tabFor(s);
       const r = applyParticipantOp(tab, { kind: 'remove', id: s.el.id }, ME);

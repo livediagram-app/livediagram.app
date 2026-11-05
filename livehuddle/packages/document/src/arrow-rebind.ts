@@ -177,7 +177,7 @@ export function rebindArrowAnchorsAfterMove(
 // True when either of the arrow's endpoints is attached to one of the given
 // element ids — pinned to a box, or connected to another arrow's line
 // (docs/specs/008-canvas/arrow-to-arrow.md). Used by the deletion / cascading-update paths (the editor's
-// delete-selected, the eraser, and layer deletion, docs/specs/006-document/layers.md) so arrows
+// delete-selected and the eraser) so arrows
 // attached to a removed box (or a removed arrow) are cleaned up alongside it.
 export function arrowReferencesAny(arrow: ArrowElement, ids: ReadonlySet<string>): boolean {
   return (
@@ -192,7 +192,7 @@ export function arrowReferencesAny(arrow: ArrowElement, ids: ReadonlySet<string>
 // to one of THOSE, and so on (docs/specs/008-canvas/arrow-to-arrow.md "deleting a target arrow cascade-deletes the
 // arrows attached to it"). One pass of arrowReferencesAny stopped a level short: deleting a box took its connector
 // but left an arrow hung off that connector, its end naming an arrow that was gone (drawn at the canvas origin and
-// saved). A protected arrow (locked, or on a locked layer) is never taken, nor what hangs off it. Linear in the
+// saved). A protected arrow (a locked one) is never taken, nor what hangs off it. Linear in the
 // elements: each arrow is indexed under what it attaches to and visited once.
 export function withAttachedArrows(
   elements: readonly Element[],

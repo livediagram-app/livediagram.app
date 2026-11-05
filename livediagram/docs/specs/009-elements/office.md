@@ -62,8 +62,9 @@ Scenery that **blocks**: a character walks round them, not through.
   drawing) blocks.
 - **Bookshelf**: shelves of coloured book spines. Default 120 × 132. Its footprint (the bottom quarter, full width)
   blocks, so it stands against a wall and you walk along in front of it.
-- A footprint blocks as a fence round its edge does (same reach, same slide). The upper part of the drawing never
-  blocks: it is what stands up from the floor, and a character in front of it is drawn in front of it.
+- A footprint blocks as a fence round its edge does (same reach, same slide). It is solid: a character inside one
+  walks out of it and never deeper in ([Fence](fence.md#blocking)). The upper part of the drawing never blocks: it is
+  what stands up from the floor, and a character in front of it is drawn in front of it.
 - Neither is a destination: walking up to one does not ring it.
 
 ## Water Cooler, Coffee Machine

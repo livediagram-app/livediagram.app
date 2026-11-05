@@ -1,21 +1,17 @@
-// Outbound realtime traffic: throttled cursor + laser + avatar broadcasters
-// and the local laser-trail buffer that feeds the on-screen overlay.
+// Outbound realtime traffic: throttled cursor + avatar broadcasters.
 // Lifted out of editor-page.tsx so the page file stays focused on
 // orchestration; the inbound side (the connectRoom + handlers
 // effect) stays in editor-page for now because its handlers touch
 // many setters scattered across the page (next slice on deck).
 //
 // Throttle: both broadcasters cap at ~30 Hz (33 ms between sends).
-// That matches the cursor / laser packet rates the document-room
+// That matches the cursor packet rates the document-room
 // Durable Object expects per docs/specs/015-api/api.md; faster sends would just be
 // dropped on the wire.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { AvatarPresence, RoomOutgoing } from '@livehuddle/api-schema';
 import { avatarSendIntervalMs } from '@liveworkspace/avatar/relay';
-import type { CanvasTool } from '@/components/palette/palette.types';
-import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
-import type { LaserConfig } from '@/lib/laser-config';
 import type { CallSignal } from '@/lib/calls/proximity-call';
 
 export const BROADCAST_THROTTLE_MS = 33;
@@ -42,22 +38,11 @@ type EditorBroadcastDeps = {
   documentShareable: boolean;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
-  // so cursor / laser ops broadcast for it too.
+  // so cursor ops broadcast for it too.
   documentTeamId: string | null;
-  // Which tab is currently active. Stamped on every cursor / laser
-  // op so peers can filter trails by tab (a laser drawn on Tab 1
-  // doesn't show on Tab 2).
+  // Which tab is currently active. Stamped on every cursor op so peers can
+  // filter by tab.
   activeId: string;
-  // Current canvas tool. The laser-trail buffer clears when the tool
-  // switches away from 'laser' so a fresh laser session doesn't
-  // start from a previous run's tail.
-  canvasTool: CanvasTool;
-  // Vote privacy (docs/specs/012-collaboration/session-tools.md): true while a hide-cursors vote is open on the
-  // active tab. Cursor + laser ops stop going out entirely, so a peer
-  // can't read positions off the socket even with devtools open — a
-  // render-only gate would leave the coordinates on the wire. The
-  // matching render gate lives in usePresenceRows.
-  cursorsHidden: boolean;
   // How many people are in the room, us included. A busy room paces the character more slowly
   // (docs/specs/008-canvas/avatar-mode.md "A busy room").
   roomSize: number;
@@ -68,13 +53,6 @@ type EditorBroadcastApi = {
   // Pass `null` when the pointer leaves the canvas so peers can
   // hide the indicator.
   broadcastCursor: (pos: { x: number; y: number } | null) => void;
-  // Append a laser point to the local trail AND broadcast it. The
-  // local append happens unconditionally; the broadcast respects
-  // the gate state + throttle. The overlay's RAF loop is what
-  // makes trails visibly decay over the lifetime window.
-  // `look` is the sender's pen (docs/specs/008-canvas/laser-panel.md); omitted by callers that have no
-  // panel behind them, which draws the original laser.
-  broadcastLaser: (x: number, y: number, look?: LaserConfig) => void;
   // Publish the local Avatar-mode character (docs/specs/008-canvas/avatar-mode.md) to the room, or
   // `null` to tell peers to drop it. Throttled like the cursor.
   broadcastAvatar: (avatar: AvatarPresence | null) => void;
@@ -84,9 +62,6 @@ type EditorBroadcastApi = {
   // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): one message, rising from `x, y`.
   // Never throttled (an event), held by the same gates as the push.
   broadcastAvatarSay: (say: { id: string; text: string; x: number; y: number }) => void;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): tell the room a pad went off, so the burst plays
-  // for everyone rather than only the person who pressed it.
-  broadcastReaction: (elementId: string, reaction: string) => void;
   // Publish where we are looking (docs/specs/012-collaboration/follow-me-viewport.md), for anyone following us.
   broadcastViewport: (
     pan: { x: number; y: number },
@@ -98,25 +73,18 @@ type EditorBroadcastApi = {
   // than watching a button do nothing.
   broadcastFocusHere: (at: { x: number; y: number }, zoom: number) => boolean;
   // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The wire"): a talking level or this
-  // browser's microphone locator, stamped with the active tab. A vote does not hold it back.
+  // browser's microphone locator, stamped with the active tab.
   broadcastCallSignal: (signal: CallSignal) => void;
   // Whether the room is open for this document, so a call has somebody to talk to.
   callsRoom: boolean;
-  // The local trail buffer (canvas-coords + timestamps), consumed
-  // by the LaserOverlay via the laserTrailRows aggregator in
-  // editor-page.
-  localLaserTrail: LaserPoint[];
 };
 
 export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastApi {
-  const { roomRef, cursorsHidden, activeId, canvasTool } = deps;
-  const [localLaserTrail, setLocalLaserTrail] = useState<LaserPoint[]>([]);
   const lastCursorSentRef = useRef(0);
   // The cursor position a throttle window held back, sent when the window ends: the last move of a quick drag or
   // flick lands inside one, and dropping it left peers seeing the cursor parked short of where it stopped.
   const pendingCursorRef = useRef<{ x: number; y: number } | null>(null);
   const cursorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastLaserSentRef = useRef(0);
   const lastAvatarSentRef = useRef(0);
   // The packet a throttle window held back, sent when the window ends, so the last thing said (a status picked, the
   // step a walk ends on) is never the one dropped.
@@ -131,44 +99,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   );
   const lastViewportSentRef = useRef(0);
 
-  // Clear the local trail when leaving laser mode (or switching tabs)
-  // so a partial path doesn't persist past the tool / tab change.
-  // The overlay would eventually hide stale points via its LIFETIME
-  // filter, but a fresh laser session shouldn't start from the prior
-  // session's tail. Cleared during render, so the stale trail never
-  // paints a frame. Unconditional: a tab switch with the laser tool
-  // still active must clear too — the local trail carries no tabId, so
-  // the overlay would ghost the old tab's path onto the new one for the
-  // buffer TTL.
-  const [trailFor, setTrailFor] = useState({ tool: canvasTool, tab: activeId });
-  if (trailFor.tool !== canvasTool || trailFor.tab !== activeId) {
-    setTrailFor({ tool: canvasTool, tab: activeId });
-    setLocalLaserTrail([]);
-  }
-
-  // Entering a hide-cursors vote, retract our indicator once. Without
-  // this, every peer keeps the LAST position we sent in their map: it's
-  // suppressed while the vote runs, but the moment casting closes and the
-  // render gate lifts, that frozen arrow re-appears pointing at whatever
-  // we were looking at mid-vote — exactly the leak the mode exists to
-  // prevent. A null cursor is the room's "pointer left the canvas" signal,
-  // so peers drop the entry outright. Sent before the gate below applies.
-  useEffect(() => {
-    if (!cursorsHidden) return;
-    // A position held back for the end of a throttle window must not follow the retraction.
-    pendingCursorRef.current = null;
-    if (cursorTimerRef.current) {
-      clearTimeout(cursorTimerRef.current);
-      cursorTimerRef.current = null;
-    }
-    roomRef.current?.send({
-      kind: 'op',
-      op: { kind: 'cursor', tabId: activeId, x: null, y: null },
-    });
-  }, [cursorsHidden, roomRef, activeId]);
-
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
-    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const send = (at: { x: number; y: number } | null) => {
@@ -198,37 +129,11 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     send(pos);
   };
 
-  const broadcastLaser = (x: number, y: number, look?: LaserConfig) => {
-    const now = performance.now();
-    // Throttle the LOCAL trail append (the setState) as well as the
-    // network send — both at ~30 Hz. Beyond matching the wire rate, this
-    // is the safety rail against a setState storm / render loop: if
-    // broadcastLaser is somehow re-entered before the clock advances
-    // (Maximum update depth), the throttle short-circuits every call
-    // after the first in that window, so no further re-render is queued.
-    // 30 Hz is plenty of resolution for a laser trail.
-    if (now - lastLaserSentRef.current < BROADCAST_THROTTLE_MS) return;
-    lastLaserSentRef.current = now;
-    setLocalLaserTrail((prev) => trimLaserBuffer([...prev, { x, y, t: now }]));
-    // Your own trail still draws locally (it's your own pointer); only the
-    // outbound half is withheld while a hide-cursors vote is open.
-    if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
-      return;
-    deps.roomRef.current?.send({
-      kind: 'op',
-      // The pen rides the sample (docs/specs/008-canvas/laser-panel.md) so peers draw MY laser, not
-      // their own default.
-      op: { kind: 'laser', tabId: deps.activeId, x, y, ...(look ? { look } : {}) },
-    });
-  };
-
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): publish the local character so peers can see it
   // walking. Same gate + throttle as the cursor, because it IS a cursor as far
   // as the wire is concerned. `null` (leaving the mode) always goes out
   // un-throttled, otherwise a peer keeps a ghost standing on their canvas.
   const broadcastAvatar = (avatar: AvatarPresence | null) => {
-    // Not held by a hide-cursors vote: it hides cursors only (docs/specs/008-canvas/avatar-mode.md "Realtime").
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
@@ -267,7 +172,6 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     zoom: number,
     size: { width: number; height: number },
   ) => {
-    if (deps.cursorsHidden) return;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     const now = performance.now();
@@ -286,7 +190,6 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   // Returns whether it went out, so the presser can be told when they are the
   // only one here rather than watching a button do nothing.
   const broadcastFocusHere = (at: { x: number; y: number }, zoom: number): boolean => {
-    if (deps.cursorsHidden) return false;
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return false;
     const room = deps.roomRef.current;
@@ -308,25 +211,13 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
   };
 
   // A speech bubble (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"). Discrete like the shove above:
-  // never throttled, same presence gate. Like the character, a hide-cursors vote leaves it alone.
+  // never throttled, same presence gate.
   const broadcastAvatarSay = (say: { id: string; text: string; x: number; y: number }) => {
     if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
       return;
     deps.roomRef.current?.send({
       kind: 'op',
       op: { kind: 'avatar-say', tabId: deps.activeId, ...say },
-    });
-  };
-
-  // A reaction burst (docs/specs/009-elements/reaction-pad.md). Discrete like the shove above: never
-  // throttled, never dropped, same presence gate.
-  const broadcastReaction = (elementId: string, reaction: string) => {
-    if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
-      return;
-    deps.roomRef.current?.send({
-      kind: 'op',
-      op: { kind: 'reaction', tabId: deps.activeId, elementId, reaction },
     });
   };
 
@@ -343,13 +234,10 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
     broadcastCallSignal,
     callsRoom,
     broadcastCursor,
-    broadcastReaction,
-    broadcastLaser,
     broadcastAvatar,
     broadcastAvatarPush,
     broadcastAvatarSay,
     broadcastViewport,
     broadcastFocusHere,
-    localLaserTrail,
   };
 }

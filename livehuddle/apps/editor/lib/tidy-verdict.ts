@@ -3,7 +3,7 @@
 // shape it did not cover before, or pulls a shape out of the lane or frame that held it, it is greyed out in
 // the Tidy Up popover with the reason, and refused with a notice from the command palette. Pure.
 
-import { isBoxed, type BoxedElement, type Element, type Layer } from '@livehuddle/document';
+import { isBoxed, type BoxedElement, type Element } from '@livehuddle/document';
 import { cleanupElements } from '@/lib/tab-cleanup';
 
 export type CleanupVerdict =
@@ -101,9 +101,9 @@ export function cleanupVerdict(before: Element[], after: Element[]): CleanupVerd
 }
 
 /** Run Auto-align and judge it, without applying anything. */
-export function assessCleanup(elements: Element[], layers?: Layer[]): CleanupVerdict {
+export function assessCleanup(elements: Element[]): CleanupVerdict {
   if (elements.length === 0) return { kind: 'unchanged' };
-  return cleanupVerdict(elements, cleanupElements(elements, layers));
+  return cleanupVerdict(elements, cleanupElements(elements));
 }
 
 /** The short reason a tile shows under its name when it is greyed out; null when it is offered. */

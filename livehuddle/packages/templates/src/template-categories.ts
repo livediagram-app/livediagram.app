@@ -1,14 +1,15 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): one,
-// Virtual Spaces, since the catalogue is the four Spaces and the blank (docs/specs/007-editor/templates-by-mode.md "The
-// catalogue"). Every template but the blank has exactly one primary category and may be cross-listed in others where
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): the kind of
+// place a Space is, Campus, Office, Events, Outdoor and Recreation, each holding two to seven of the eighteen Spaces
+// (docs/specs/007-editor/templates-by-mode.md "The catalogue"). Every template but the blank has exactly one primary category and may be cross-listed in others where
 // people would genuinely look for it. Read by Start a Space, the marketing gallery and the agents' catalogue. Pure
 // data plus three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
 // The Meetings & Workshops, Retrospectives, Brainstorming, Decisions, Goals & Metrics, People & Teams, Planning,
 // Product & UX, Quizzes & Games, Strategy and Teaching & Learning categories left with their templates
-// (docs/specs/002-project-scope/not-in-livehuddle.md).
-export type TemplateCategory = 'spaces';
+// (docs/specs/002-project-scope/not-in-livehuddle.md). The one Virtual Spaces category the first four Spaces shared
+// split into four, and Campus (whole sites joined by gardens) came after.
+export type TemplateCategory = 'campus' | 'office' | 'events' | 'outdoor' | 'recreation';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set. No id is stored
@@ -23,10 +24,34 @@ type CategoryInfo = {
 
 const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
-    id: 'spaces',
-    label: 'Virtual Spaces',
-    searchWords: 'office avatar walk room',
-    description: 'Offices and halls to walk round as an avatar.',
+    id: 'campus',
+    label: 'Campus',
+    searchWords: 'campus site whole building buildings combined grounds avatar walk room',
+    description: 'Whole sites: offices, halls and bars in a garden.',
+  },
+  {
+    id: 'office',
+    label: 'Office',
+    searchWords: 'office work desk desks avatar walk room',
+    description: 'Desks, pods and meeting rooms for the workday.',
+  },
+  {
+    id: 'events',
+    label: 'Events',
+    searchWords: 'event events stage talk demo hall avatar walk room',
+    description: 'Halls and rooms for talks, demos and training.',
+  },
+  {
+    id: 'outdoor',
+    label: 'Outdoor',
+    searchWords: 'outdoors outside garden park nature avatar walk',
+    description: 'Gardens and parks to meet in under an open sky.',
+  },
+  {
+    id: 'recreation',
+    label: 'Recreation',
+    searchWords: 'social fun drinks bar cafe lounge avatar walk',
+    description: 'Bars and cafes to unwind in together after work.',
   },
 ];
 
@@ -42,11 +67,25 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // Every template but the blank's primary category: the job it is for. Blank Space is in none, reached from
 // Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blank"); isBlankTemplate names it.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, TemplateCategory> = {
-  // Virtual Spaces: the spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  'virtual-office': 'spaces',
-  'coworking-space': 'spaces',
-  'team-pod': 'spaces',
-  'all-hands-hall': 'spaces',
+  // Every one a Space to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
+  'virtual-office': 'office',
+  'coworking-space': 'office',
+  'team-pod': 'office',
+  'focus-library': 'office',
+  'all-hands-hall': 'events',
+  'training-room': 'events',
+  'rooftop-bar': 'recreation',
+  cafe: 'recreation',
+  'garden-retreat': 'outdoor',
+  'city-park': 'outdoor',
+  'company-campus': 'campus',
+  'conference-venue': 'campus',
+  'startup-hq': 'campus',
+  'school-quad': 'campus',
+  'hotel-and-suites': 'campus',
+  'coworking-tower': 'campus',
+  'expo-hall': 'events',
+  'beach-offsite': 'outdoor',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -54,7 +93,8 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, Template
 export const TEMPLATE_ALSO_IN: Readonly<
   Partial<Record<TemplateKind, readonly TemplateCategory[]>>
 > = {
-  // None: with one category there is nowhere else to list a template.
+  // A beach offsite is a whole site for a team's day away, so it is looked for among the Campus sites too.
+  'beach-offsite': ['campus'],
 };
 
 /** A template's primary category; null for the blank, which is in none. */

@@ -38,7 +38,7 @@ export function UserInterfaceArt() {
           className="fill-white stroke-slate-200"
           strokeWidth={1.2}
         />
-        {['Shapes', 'Draw', 'Build', 'Icons'].map((t, i) => (
+        {['Shapes', 'Draw', 'Build', 'Stickers'].map((t, i) => (
           <Label
             key={t}
             x={138 + i * 38}

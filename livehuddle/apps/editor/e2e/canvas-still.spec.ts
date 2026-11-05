@@ -9,7 +9,7 @@ import {
 } from './fixtures';
 
 // docs/specs/008-canvas/canvas-performance.md "A still canvas does nothing": with a board open and a
-// selection showing its toolbar and the Quick Style panel, a still second asks
+// selection showing its toolbar, a still second asks
 // for no animation frames. Counted, not timed, so it is deterministic. Dark mode; synthesised board.
 
 const square = (i: number) => ({

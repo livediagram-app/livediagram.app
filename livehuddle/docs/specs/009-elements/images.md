@@ -1,5 +1,9 @@
 # Image element + per-owner gallery
 
+> **Gone from livehuddle** ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): nothing in livehuddle adds one now (no palette tile,
+> no `9` key, no picture pasted or dropped on the canvas). A stored one still loads, draws, moves, edits and deletes as
+> below. livediagram keeps the feature, and [its spec](../../../../livediagram/docs/specs/009-elements/images.md) is the one to change.
+
 Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in liveworkspace's media service ([liveworkspace/docs/specs/006-media/media.md](../../../../liveworkspace/docs/specs/006-media/media.md)), which keeps every app's uploads, so a person's gallery follows them across the suite; this api keeps who may see what and serves the bytes. See [Document structure](../006-document/document-structure.md) for the broader element model and [API app](../015-api/api.md) for the API conventions this spec extends.
 
 ## Element model
@@ -151,7 +155,7 @@ there leaves placeholders and a count, never a failed import.
 
 ### Resize behaviour
 
-`naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them, but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove Icon / layer order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
+`naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them, but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove Icon / stacking order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
 
 ### Visual export (PNG / SVG / PDF)
 

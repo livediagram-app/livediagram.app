@@ -37,7 +37,6 @@ describe('pickedByOutline', () => {
     'star',
     'cloud',
     'speech-bubble',
-    'frame',
     'actor',
   ])('picks a %s by its drawn outline', (kind) => {
     expect(pickedByOutline(shape(kind))).toBe(true);
@@ -66,8 +65,8 @@ describe('hasVisibleFill', () => {
     expect(hasVisibleFill(shape('square', { fillColor: undefined }))).toBe(true);
   });
 
-  it('reads a frame with no fill of its own as see-through', () => {
-    expect(hasVisibleFill(shape('frame', { fillColor: undefined }))).toBe(false);
+  it('reads a boundary with no fill of its own as see-through', () => {
+    expect(hasVisibleFill(shape('boundary', { fillColor: undefined }))).toBe(false);
   });
 });
 

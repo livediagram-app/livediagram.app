@@ -24,13 +24,10 @@ export function EmptyCanvasBanner({
   tabId,
   tabName,
   readOnly,
-  participant = false,
 }: {
   tabId: string;
   tabName: string;
   readOnly: boolean;
-  // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it adds stickies, text and images.
-  participant?: boolean;
 }) {
   // Read once: the card is keyed by its tab, so another tab reads afresh.
   const [closed, setClosed] = useState(() => emptyCardDismissed(tabId));
@@ -67,11 +64,9 @@ export function EmptyCanvasBanner({
             {tabName} is empty
           </p>
           <p className="text-[13px] leading-snug text-slate-500 dark:text-slate-400">
-            {participant
-              ? 'Nothing here yet. Add a sticky, text or an image from the Palette to get it going.'
-              : readOnly
-                ? 'Nothing here yet. The owner can build it out, and your view updates live.'
-                : 'Add an element from the Palette to get it going.'}
+            {readOnly
+              ? 'Nothing here yet. The owner can build it out, and your view updates live.'
+              : 'Add an element from the Palette to get it going.'}
           </p>
         </div>
         {readOnly ? null : (

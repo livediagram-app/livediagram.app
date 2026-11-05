@@ -1,7 +1,7 @@
-import { isUntitledName, titleCase } from '@livehuddle/api-schema';
+import { headlineCase, isUntitledName, titleCase } from '@livehuddle/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the four Spaces, every
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the eighteen Spaces, every
 // one opening on a meeting board. livehuddle is for meeting in Spaces; the retrospectives, workshops, planning and
 // strategy boards and the quizzes and games are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
 export type TemplateKind =
@@ -11,7 +11,24 @@ export type TemplateKind =
   | 'virtual-office'
   | 'coworking-space'
   | 'team-pod'
-  | 'all-hands-hall';
+  | 'focus-library'
+  | 'all-hands-hall'
+  | 'training-room'
+  | 'rooftop-bar'
+  | 'cafe'
+  | 'garden-retreat'
+  | 'city-park'
+  // The Campus Spaces: whole sites of rooms joined by a garden (virtual-office-template.md "Campus Spaces").
+  | 'company-campus'
+  | 'conference-venue'
+  | 'startup-hq'
+  | 'school-quad'
+  // Buildings with floors, one tab each (virtual-office-template.md "Spaces with floors").
+  | 'hotel-and-suites'
+  | 'coworking-tower'
+  // More Spaces (virtual-office-template.md "More Spaces").
+  | 'expo-hall'
+  | 'beach-offsite';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -38,7 +55,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-session',
     title: 'Blank Space',
-    description: 'An empty space to meet in: build a room, leave a note, run a timer or a vote.',
+    description: 'An empty space to meet in: build a room, leave a note, or run a timer.',
     extra: true,
   },
   {
@@ -67,6 +84,104 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'All-Hands Hall',
     description:
       'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
+    extra: true,
+  },
+  {
+    kind: 'focus-library',
+    title: 'Focus Library',
+    description:
+      'A quiet room to work in Avatar mode: bookshelves, study desks, two Office Pods for calls and a reading nook.',
+    extra: true,
+  },
+  {
+    kind: 'training-room',
+    title: 'Training Room',
+    description:
+      'A room for training and group work in Avatar mode: a small stage, four tables to work round and Bring Focus.',
+    extra: true,
+  },
+  {
+    kind: 'rooftop-bar',
+    title: 'Rooftop Bar',
+    description:
+      'A terrace for after-work drinks in Avatar mode: a long bar with stools, a drinks cabinet and fridge, and two lounges.',
+    extra: true,
+  },
+  {
+    kind: 'cafe',
+    title: 'Cafe',
+    description:
+      'A corner cafe for a catch-up in Avatar mode: a counter with stools and coffee, tables to share and a sofa nook.',
+    extra: true,
+  },
+  {
+    kind: 'garden-retreat',
+    title: 'Garden Retreat',
+    description:
+      'A fenced garden in Avatar mode: a lawn, paths and trees, a summer house to meet in and places to sit outside.',
+    extra: true,
+  },
+  {
+    kind: 'city-park',
+    title: 'City Park',
+    description:
+      'A park to stroll round in Avatar mode: paths across a lawn, benches, a picnic table, a fountain and a bandstand.',
+    extra: true,
+  },
+  {
+    kind: 'company-campus',
+    title: 'Company Campus',
+    description:
+      'A whole company to walk round in Avatar mode: offices, an auditorium with a stage, a bar and a games room, joined by a garden.',
+    extra: true,
+  },
+  {
+    kind: 'conference-venue',
+    title: 'Conference Venue',
+    description:
+      'A venue for a day of talks in Avatar mode: a main hall with a stage, breakout rooms, a foyer bar and a courtyard garden.',
+    extra: true,
+  },
+  {
+    kind: 'startup-hq',
+    title: 'Startup HQ',
+    description:
+      'A small company’s home in Avatar mode: a studio of desks, a town hall, a kitchen bar, a games room and a garden with pods.',
+    extra: true,
+  },
+  {
+    kind: 'school-quad',
+    title: 'School Quad',
+    description:
+      'A school to learn in together in Avatar mode: a lecture hall, two classrooms, a library and a canteen round a grassy quad.',
+    extra: true,
+  },
+  {
+    kind: 'hotel-and-suites',
+    title: 'Hotel and Suites',
+    description:
+      'A hotel on three floors in Avatar mode: a lobby with a bar and a ballroom, a floor of suites and a rooftop terrace, joined by lifts.',
+    extra: true,
+  },
+  {
+    kind: 'coworking-tower',
+    title: 'Co-working Tower',
+    description:
+      'A co-working building on three floors in Avatar mode: hot desks and a cafe, phone booths, and an event floor, joined by lifts.',
+    extra: true,
+  },
+  {
+    kind: 'expo-hall',
+    title: 'Expo Hall',
+    description:
+      'A trade show in Avatar mode: rows of sponsor booths round a keynote stage, a food court, a speaker lounge and a meeting room.',
+    extra: true,
+  },
+  {
+    kind: 'beach-offsite',
+    title: 'Beach Offsite',
+    description:
+      'A team offsite on the sand in Avatar mode: a beach hut to meet in, a tiki bar, a campfire circle, hammocks and a lagoon.',
     extra: true,
   },
 ];
@@ -135,7 +250,7 @@ export function templateCreateHref(kind: TemplateKind): string {
 }
 
 // Default name for a freshly-created document: "Untitled <Template Title>" in
-// title case so a templated document is recognisable in the Explorer (e.g.
+// Title Case, small words kept low ("Untitled Hotel and Suites"), so a templated document is recognisable in the Explorer (e.g.
 // "Untitled Tree Mind Map"), while a blank one (or no template) keeps the plain
 // "Untitled Space" (UNTITLED_DOCUMENT_NAME, legacy-untitled.ts).
 
@@ -143,7 +258,7 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
   if (!kind) return UNTITLED_DOCUMENT_NAME;
   // A blank names what it makes ("Untitled Whiteboard"), not the card ("Blank Whiteboard").
   const title = TEMPLATES.find((t) => t.kind === kind)?.title.replace(/^Blank /, '');
-  return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
+  return title ? `Untitled ${headlineCase(title)}` : UNTITLED_DOCUMENT_NAME;
 }
 
 // Every name a document is given before anyone names it: each template's untitled name, plus "Untitled Space" and
@@ -157,6 +272,8 @@ let DEFAULT_NAMES: ReadonlySet<string> | null = null;
 export function isDefaultDocumentName(name: string): boolean {
   DEFAULT_NAMES ??= new Set([
     ...TEMPLATES.map((t) => untitledNameForTemplate(t.kind)),
+    // The spelling before small words stayed low ("Untitled Hotel And Suites"), on documents made with it.
+    ...TEMPLATES.map((t) => `Untitled ${titleCase(t.title.replace(/^Blank /, ''))}`),
     ...RETIRED_TEMPLATE_TITLES.map((title) => `Untitled ${titleCase(title)}`),
   ]);
   return isUntitledDocumentName(name) || isUntitledName(name) || DEFAULT_NAMES.has(name);

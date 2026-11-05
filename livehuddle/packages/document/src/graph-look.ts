@@ -226,7 +226,7 @@ export function routeLoops(
   // A group's frame is a wall to a route between two nodes outside it: threaded through the gaps between its
   // members, the line read as one of the group's own (docs/specs/015-api/mcp-server.md "Groups keep their lines
   // clear").
-  const frames = [...boxes.values()].filter((b) => b.type === 'shape' && b.shape === 'frame');
+  const frames = [...boxes.values()].filter((b) => b.type === 'shape' && b.shape === 'boundary');
   const holds = (f: BoxedElement, b: BoxedElement) =>
     f.id === b.id ||
     (b.x >= f.x &&

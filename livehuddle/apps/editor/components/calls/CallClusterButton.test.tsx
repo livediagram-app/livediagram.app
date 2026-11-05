@@ -42,19 +42,18 @@ describe('CallClusterButton', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  // docs/specs/018-help/contextual-help-links.md: the strip ends in the calls article's `?`, whatever its state.
-  it('links the calls article from the strip before joining, once in, and while paused', () => {
+  // docs/specs/018-help/contextual-help-links.md: the strip carries no help link, whatever its state.
+  it('carries no calls help link before joining, once in, or while paused', () => {
     render(<CallClusterButton />);
-    const help = () => screen.getByRole<HTMLAnchorElement>('link', { name: 'Learn about calls' });
-    show({});
-    expect(help().getAttribute('href')).toBe('/help/collaboration/proximity-audio/');
-    expect(help().target).toBe('_blank');
-    show({ phase: 'live', mic: 'open', someoneNear: true });
-    expect(help()).toBeTruthy();
-    show({ canSpeak: false, phase: 'live' });
-    expect(help()).toBeTruthy();
-    show({ mode: 'off' });
-    expect(help()).toBeTruthy();
+    for (const state of [
+      {},
+      { phase: 'live', mic: 'open', someoneNear: true },
+      { canSpeak: false, phase: 'live' },
+      { mode: 'off' },
+    ]) {
+      show(state as Parameters<typeof show>[0]);
+      expect(screen.queryByRole('link', { name: 'Learn about calls' })).toBeNull();
+    }
   });
 
   it('offers Join Audio to a speaker and Listen In to a Viewer', () => {
@@ -183,6 +182,53 @@ describe('CallClusterButton', () => {
       expect(button('Share Screen')).toBeNull();
       // The microphone carries on.
       expect(button('Mute')).not.toBeNull();
+    });
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Local preview".
+  describe('a local preview', () => {
+    const button = (name: string) => screen.queryByRole<HTMLButtonElement>('button', { name });
+    const preview = { canPreviewCamera: true, canPreviewScreen: true };
+
+    it('offers the camera and screen with no call, alone with the help link', () => {
+      render(<CallClusterButton />);
+      show({ available: false, ...preview });
+      expect(button('Join Audio')).toBeNull();
+      fireEvent.click(button('Turn On Camera')!);
+      fireEvent.click(button('Share Screen')!);
+      expect(actions.toggleCamera).toHaveBeenCalledTimes(1);
+      expect(actions.toggleScreen).toHaveBeenCalledTimes(1);
+      // A Viewer has none; nor does a browser that cannot capture.
+      show({ available: false, canSpeak: false });
+      expect(button('Turn On Camera')).toBeNull();
+      show({ available: false, canSpeak: true, canPreviewCamera: false, canPreviewScreen: false });
+      expect(button('Turn On Camera')).toBeNull();
+    });
+
+    it('says only you see a preview, in the strip and the sharing bar', () => {
+      render(<CallClusterButton />);
+      show({ available: false, ...preview, previewCamera: 'on', previewScreen: 'on' });
+      expect(button('Turn Off Camera')!.getAttribute('aria-pressed')).toBe('true');
+      expect(screen.getByRole('status').textContent).toContain('Only you see your screen');
+      expect(screen.getByRole('status').textContent).not.toContain('You are sharing');
+      show({ previewCamera: 'starting', previewScreen: 'starting' });
+      expect(button('Turn On Camera')!.disabled).toBe(true);
+      expect(button('Share Screen')!.disabled).toBe(true);
+    });
+
+    it('sits beside Join Audio and Calls Paused, and a Participant previews a screen in a call', () => {
+      render(<CallClusterButton />);
+      show({ ...preview });
+      expect(button('Join Audio')).not.toBeNull();
+      expect(button('Turn On Camera')).not.toBeNull();
+      show({ ...preview, mode: 'off' });
+      expect(button('Calls Paused')).not.toBeNull();
+      expect(button('Turn On Camera')).not.toBeNull();
+      // In a call, a Participant (no canShare) is offered the screen as a preview.
+      show({ ...preview, mode: 'on', phase: 'live', canShare: false, previewScreen: 'on' });
+      // The strip's own and the bar's.
+      expect(screen.getAllByRole('button', { name: 'Stop Sharing' })).toHaveLength(2);
+      expect(screen.getByRole('status').textContent).toContain('Only you see your screen');
     });
   });
 

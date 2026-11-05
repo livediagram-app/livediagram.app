@@ -56,8 +56,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // nothing.
     kind !== 'focus-button' &&
     kind !== 'portal' &&
-    // A reaction pad (docs/specs/009-elements/reaction-pad.md) is a filled rounded box with a glyph on top.
-    kind !== 'reaction-pad' &&
     // This predicate is allow-BY-DEFAULT, so a new CSS-drawn kind that isn't listed here renders as a
     // transparent nothing.
     // A lane (docs/specs/009-elements/lane.md) is a filled band with a gutter drawn on top — CSS box

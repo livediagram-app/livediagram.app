@@ -161,7 +161,7 @@ export function AvatarWalker({
       >
         {name ? (
           <div
-            className={`absolute left-1/2 z-10 flex max-w-[120px] -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${IDENTITY_FILL}`}
+            className={`absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${status ? 'max-w-[180px]' : 'max-w-[120px]'} ${IDENTITY_FILL}`}
             // Pinned just above the HEAD, not the (headroom-extended) box, and
             // tracking the size choice so it hugs a small character too.
             style={{
@@ -172,14 +172,22 @@ export function AvatarWalker({
             {status ? <StatusDot status={status} /> : null}
             {/* Its own box, so a long name ends in an ellipsis: a flex item's bare text cannot. */}
             <span className="min-w-0 truncate">{name}</span>
+            {status ? (
+              // The dot's label ("Status": every dot is labelled): whole, the name gives way first.
+              <span aria-hidden className="shrink-0 whitespace-nowrap font-medium opacity-90">
+                · {avatarStatusLabel(status)}
+              </span>
+            ) : null}
           </div>
         ) : status ? (
-          // Your own character has no name chip: its status sits alone where the chip would be.
+          // Your own character has no name chip: its labelled status sits where the chip would be, on a quiet chip.
           <div
-            className="absolute left-1/2 z-10 -translate-x-1/2"
+            data-own-status
+            className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
             style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 }}
           >
             <StatusDot status={status} />
+            <span aria-hidden>{avatarStatusLabel(status)}</span>
           </div>
         ) : null}
         {status === 'away' ? (

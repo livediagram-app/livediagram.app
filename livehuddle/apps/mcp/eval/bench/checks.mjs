@@ -2,8 +2,8 @@
 // tools) and its transcript (what was said). A check states one requirement of the prompt and answers yes or no, so
 // a round's score is a count, never an opinion. Pure: no server, no clock.
 
-// Shapes that hold a node's words; frames, key swatches and the like are containers or decoration.
-const DECOR_SHAPES = new Set(['frame', 'lane', 'pool']);
+// Shapes that hold a node's words; boundaries, key swatches and the like are containers or decoration.
+const DECOR_SHAPES = new Set(['boundary', 'lane', 'pool']);
 
 export const lc = (s) => (s ?? '').toString().toLowerCase();
 

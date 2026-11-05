@@ -17,7 +17,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `../livediagram/apps/editor/lib/drawio/envelope.ts`                                             | `readDrawioSource`, `sniffDrawio`: content sniffing; `mxfile` / `mxGraphModel` / SVG / PNG to page sources and the file's `meta`                                  |
 | `../livediagram/apps/editor/lib/drawio/style.ts`                                                | `parseStyle`, `DrawioStyle`: style string plus the built-in named styles                                                                                          |
 | `../livediagram/apps/editor/lib/drawio/colour.ts`                                               | `readColour`: `#hex` / `none` / `default` / `light-dark()`                                                                                                        |
-| `../livediagram/apps/editor/lib/drawio/cells.ts`                                                | `readGraph`: the cell tree, layers, absolute geometry                                                                                                             |
+| `../livediagram/apps/editor/lib/drawio/cells.ts`                                                | `readGraph`: the cell tree, absolute geometry                                                                                                                     |
 | `../livediagram/apps/editor/lib/drawio/label.ts`                                                | `readLabel`: plain and HTML labels to text and `TextRun[]`                                                                                                        |
 | `../livediagram/apps/editor/lib/drawio/stencils.ts`                                             | Pure data: stencil and library-image names to icon ids                                                                                                            |
 | `../livediagram/apps/editor/lib/drawio/shapes.ts`                                               | `classifyVertex`: the shape mapping table                                                                                                                         |
@@ -32,7 +32,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `../livediagram/apps/editor/lib/drawio/arrow-route.ts`                                          | `nearestAnchor`, `exitSide`, `simplifyRoute`, `snapRouteEnds`, `routeShape`, `curveThrough`                                                                       |
 | `lib/drawio/route/`                                                                             | draw.io's view geometry, ported: `../livediagram/apps/editor/lib/drawio/route/page.ts` `createPageRouter`, `view.ts` `routeEdge`, routers, perimeters, `label.ts` |
 | `scripts/drawio-route-goldens.mts`                                                              | Golden routes from draw.io's CLI for the fixtures (`__fixtures__/routes/*.json`)                                                                                  |
-| `../livediagram/apps/editor/lib/drawio/convert-page.ts`                                         | `convertPage`: one page's graph to elements, layers, background                                                                                                   |
+| `../livediagram/apps/editor/lib/drawio/convert-page.ts`                                         | `convertPage`: one page's graph to elements, background                                                                                                           |
 | `../livediagram/apps/editor/lib/drawio/import.ts`                                               | `importDrawio`: the entry point                                                                                                                                   |
 | `../livediagram/apps/editor/lib/drawio/json-export.ts`                                          | `readJsonExport`, `jsonLabelText`, `jsonPageElements`: draw.io's JSON export, its `data` file or its graph laid out                                               |
 | `../livediagram/apps/editor/lib/drawio/library.ts`                                              | `importDrawioLibrary`: an `<mxlibrary>` decoded into items (read, then left out until shape libraries exist)                                                      |
@@ -40,7 +40,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `../livediagram/apps/editor/lib/drawio/notes.ts`                                                | `DrawioReport`, `ImportNoteKind`, `ImportNote`, `ReportTally`: what changed, tallied by kind                                                                      |
 | `../livediagram/apps/editor/lib/drawio/report.ts`                                               | `DRAWIO_RULES`, `drawioSceneReport`, `drawioOutcome`: the notes as the one shared import report                                                                   |
 | `../livediagram/apps/editor/lib/drawio/new-document.ts`                                         | `drawioDocumentSource`: a file's pages as the ready tabs of its own document                                                                                      |
-| `lib/board-scene-import.ts`                                                                     | `importDocuments`: the foundation's new-document target, taking ready tabs (each source prepared, oversized tabs named)                                           |
+| `../livediagram/apps/editor/lib/board-scene-import.ts`                                          | `importDocuments`: the foundation's new-document target, taking ready tabs (each source prepared, oversized tabs named)                                           |
 | `../livediagram/apps/editor/lib/drawio/images.ts`                                               | `attachDrawioImages`: every page's image requests through one pipeline pass                                                                                       |
 | `lib/import-tab.ts`                                                                             | `pickTabFile` also returns the picked `File`; the shared `ImportOutcome` (`images`, `scene`, `failures`, `documents`)                                             |
 | `hooks/persistence/useTabImport.ts`                                                             | The `drawio` format: multi-page apply, one undo step, telemetry, log                                                                                              |
@@ -52,7 +52,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `../packages/workbench/src/components/dialogs/ImportChecklist.tsx`                              | The list step every many-file import shares                                                                                                                       |
 | `components/dialogs/ImportDropZone.tsx`                                                         | The drop area every file import's pick step shares                                                                                                                |
 | `../livediagram/apps/editor/lib/import-selection.ts`                                            | `toggled`, `toggledAll`: what a list has ticked                                                                                                                   |
-| `app/import/import-sources.tsx`                                                                 | The `drawio` source in the Explorer's Import from group                                                                                                           |
+| `../livediagram/apps/editor/app/import/import-sources.tsx`                                      | The `drawio` source in the Explorer's Import from group                                                                                                           |
 | `scripts/drawio-verify.mts`                                                                     | Real files through the importer, aggregates only (never content)                                                                                                  |
 | `scripts/drawio-compare.mts`                                                                    | Real files beside draw.io's own render, page by page, written outside the repo                                                                                    |
 | `components/dialogs/ImportTabDialog.tsx`                                                        | The draw.io card; routes a reported outcome to the summary                                                                                                        |
@@ -70,10 +70,10 @@ Scope, by file (all under `apps/editor/` unless stated):
 | Style         | `DrawioStyle`          | Named styles plus key/value pairs of one cell, built-ins merged under                    |
 | Cell          | `DrawioCell`           | One `mxCell` (unwrapped from `UserObject` / `object`) with resolved facts                |
 | Graph         | `DrawioGraph`          | A page's cells by id, the root, the layers, the background                               |
-| Layer cell    | `DrawioGraph.layerIds` | The root's children, bottom to top                                                       |
+| Layer cell    | `DrawioGraph.layerIds` | The root's children, bottom to top (draw.io's layers, read only for their order)         |
 | Vertex class  | `VertexClass`          | What `classifyVertex` decided a vertex becomes                                           |
 | Consumed cell | `ConvertState.forward` | A cell whose element is another cell's (table cell, group)                               |
-| Imported page | `ImportedPage`         | `{ tabId, name, elements, layers?, backgroundColor? }`                                   |
+| Imported page | `ImportedPage`         | `{ tabId, name, elements, backgroundColor? }`                                            |
 | Report        | `DrawioReport`         | `{ pages, elements, notes: ImportNote[] }`, shown through the shared `BoardSceneReport`  |
 | Note          | `ImportNote`           | `{ kind: ImportNoteKind, count, names? }`                                                |
 | Image request | `ImportImageRequest`   | The import image pipeline's `{ elementId, key, source, hint }`                           |
@@ -480,10 +480,8 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
 1. State: `cellToElement` (cell id → the boxed element it became), `forward` (consumed cell id →
    the cell that owns its element, `''` for none), `visited`, `slots` (elements and queued edges in
    paint order), the import's `tally`, `images` and `imageKeys` from `ctx`.
-2. Layers: `layerIds.length >= 2` → `Tab.layers` = one per layer cell: first `DEFAULT_LAYER_ID`, the
-   rest `layer:<uuid>`; `name` = plain label, else `DEFAULT_LAYER_NAME` for the first and
-   `Layer n` after (D28); `visible: false` when the layer cell is invisible; `locked: true` when its
-   style has `locked=1`. A single layer → no `layers`, no `layerId`s.
+2. Layers: livehuddle has no layers, so no layer is emitted: each layer cell's children are walked in turn,
+   bottom layer first, into the one `elements` list, and a layer's name, visibility and `locked=1` are not kept.
 3. Walk each layer's children depth-first (pre-order). Per cell: invisible → skip the subtree,
    `hidden-skipped` += 1 + descendants; edge → queue in paint order (built in pass 2), its children
    marked visited; vertex without geometry → skipped like a hidden one (D20); vertex → classify and
@@ -497,7 +495,7 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
    every descendant to it.
 5. `group` class: no element; `forward[group] = ''` (connections loosen), children walked,
    `group-flattened` += 1.
-6. Elements carry `layerId` of their layer cell when layers were emitted.
+6. Elements carry no layer: a layer cell only fixes the order its children are walked in.
 7. Pass 2 (`createEdgeBuilder`): arrows, built in their queued paint positions, then any shapes riding
    on them (12.14); then `finish` places the ends on arrows (12.7).
 8. Truncation: output beyond `MAX_ELEMENTS_PER_TAB` dropped, `content-truncated` += dropped.
@@ -510,14 +508,14 @@ HELVETICA_EM_ADVANCE)`, the line ratio `rh = L · LABEL_LINE_HEIGHT / (px · DRA
    `height`, lane `headerSize`, table `rowHeights` / `colWidths`, arrow `curvePoints`, `curveOffset`, free
    endpoints and `labelOffset.offset`; `labelMaxWidth` is already in livehuddle px. Stroke widths,
    presets and font sizes are untouched. Skipped at scale 1.
-10. Result `{ elements, layers?, backgroundColor? }`: `backgroundColor` is the page background unless
+10. Result `{ elements, backgroundColor? }`: `backgroundColor` is the page background unless
     white (`#fff`, `#ffffff`, `#ffffffff`), which stays unset. Pending images carry `ctx.tabId`.
 
 ### 16. Apply (`applyDrawioPages(tabs, activeId, pages, createTab)` and the hook)
 
 Pure `Tab[] => Tab[]`; the input returned as it is when the active tab is missing or no page came:
 
-1. Page 0 merges into the active tab through `mergeImportedTab` with `elements`, `layers` and
+1. Page 0 merges into the active tab through `mergeImportedTab` with `elements` and
    `backgroundColor` when present; name: single page → the active tab's name; multi-page → the page
    name (trimmed), else `Page 1` (D27).
 2. Pages 1..n → new tabs: `createTab(name)` with `id: page.tabId`, the active tab's `theme`, `font`,
@@ -615,7 +613,7 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
   `importDrawioLibrary` → `{ name, items, images, report }` (`drawioLibraryTitle`: the file name,
   or "draw.io library" when `DRAWIO_GENERIC_LIBRARY_NAME` matches) or failure. A failure's title is
   the file name without its extension (the whole name for a file that is not draw.io's).
-- The commit: diagrams through `importDocuments` (`lib/board-scene-import.ts`, the foundation's
+- The commit: diagrams through `importDocuments` (`../livediagram/apps/editor/lib/board-scene-import.ts`, the foundation's
   new-document target for ready tabs) with `drawioDocumentSource` (`new-document.ts`: each page a diagram tab named after its page, oversized pages
   left out and named, images through one pipeline pass per document). Libraries, after the diagrams, through
   the host's `importLibraries` ([Shape libraries blueprint](../../013-workspace/blueprints/shape-libraries.md)
@@ -625,7 +623,7 @@ pageIdToTab })`): nodes (`type: 'node'`) to a graph (`id` minted, `label` from `
 ### 21. The Explorer source (`useDrawioFileImport`, `DrawioImportPanel`, `DrawioImportDialog`)
 
 - `IMPORT_SOURCES` gains `{ id: 'drawio', name: 'draw.io', icon: <DrawioSourceIcon /> }` after
-  Excalidraw; `useImportDialogs` (`app/import/useImportDialogs.tsx`) maps it to `useDrawioImportLauncher`.
+  Excalidraw; `useImportDialogs` (`../livediagram/apps/editor/app/import/useImportDialogs.tsx`) maps it to `useDrawioImportLauncher`.
 - The flow mirrors the Microsoft Whiteboard panel, on the same shared `ImportDropZone` and
   `ImportChecklist`: pick (files: `multiple`, no `accept` filter, as Drive saves have no
   extension; a folder: `pickExport('folder')`; drop: files and folders through `readDrop`, each
@@ -706,7 +704,6 @@ export type ImportedPage = {
   tabId: string;
   name: string;
   elements: Element[];
-  layers?: Layer[];
   backgroundColor?: string;
 };
 export type DrawioImportResult =
@@ -836,7 +833,7 @@ Refusals (the `error` string, final copy):
 
 ## Data and persistence
 
-- Nothing new is persisted: the output is ordinary `Element`s, `Layer`s and `Tab`s, each passing
+- Nothing new is persisted: the output is ordinary `Element`s and `Tab`s, each passing
   `isValidElement` / `isValidTab`, saved by the existing per-tab storage.
 - Image bytes are never written into elements (a data URL in a tab would breach `MAX_TAB_BYTES`);
   they live only in the in-memory pending list for the seam.
@@ -967,7 +964,7 @@ Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-
 | Images, groups, hidden, collapsed, truncation, auto-sized text, report                                                       | `convert-page.test.ts`                                                                                                                                        |
 | Pages to tabs, page links, refusals, size limit                                                                              | `fixtures.test.ts` (via `importDrawio`)                                                                                                                       |
 | Every fixture valid + expected report                                                                                        | `fixtures.test.ts`                                                                                                                                            |
-| Apply to tabs: names, folder, look, layers                                                                                   | `drawio-apply.test.ts`                                                                                                                                        |
+| Apply to tabs: names, folder, look                                                                                           | `drawio-apply.test.ts`                                                                                                                                        |
 | Page images through one pipeline pass, split back per page                                                                   | `images.test.ts`                                                                                                                                              |
 | One commit, new tabs marked loaded, telemetry, refusal and lock, embedded images stored (pipeline faked at its browser seam) | `useTabImport.drawio.test.ts`                                                                                                                                 |
 | Report tally                                                                                                                 | `notes.test.ts`                                                                                                                                               |
@@ -1000,7 +997,7 @@ End to end: `../livediagram/apps/editor/e2e/drawio-import.spec.ts` on the produc
 | `DRAWIO_MAX_FILE_BYTES`                         | 50 MiB                                                                                                                                                      | Spec; 10 to 200 MiB                                                                                                                           |
 | `DRAWIO_MAX_INFLATED_BYTES`                     | 100 MiB                                                                                                                                                     | Spec; at least the file limit                                                                                                                 |
 | `DRAWIO_MAX_PAGES`                              | 100                                                                                                                                                         | Spec; 1 to 500                                                                                                                                |
-| `IMPORT_COORD_MAX`                              | 1e7 px either side of zero, `apps/editor/lib/import-coords.ts`; a geometry number past it reads as 0                                                        | Shared with the board scene landing; 1e6 to 1e12. A finite 1e308 plus a parent offset overflowed to Infinity                                  |
+| `IMPORT_COORD_MAX`                              | 1e7 px either side of zero, `../livediagram/apps/editor/lib/import-coords.ts`; a geometry number past it reads as 0                                         | Shared with the board scene landing; 1e6 to 1e12. A finite 1e308 plus a parent offset overflowed to Infinity                                  |
 | `MAX_ELEMENTS_PER_TAB`                          | 10 000                                                                                                                                                      | `@livehuddle/document` validate.ts                                                                                                            |
 | `DRAWIO_DEFAULT_ARC_SIZE`                       | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`                                                                                             |
 | `DRAWIO_SHADOW`                                 | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D22                                                                                               |
@@ -1021,7 +1018,7 @@ End to end: `../livediagram/apps/editor/e2e/drawio-import.spec.ts` on the produc
 | `DRAWIO_TAB_FILE_ACCEPT`                        | `.drawio,.xml,.json,.svg,.png` and their MIME types                                                                                                         | The spec (the Import dialog card); the Explorer picker sets no filter, Drive saves have no extension                                          |
 | `DRAWIO_MARKERS`                                | the table in step 12.4                                                                                                                                      | draw.io's marker names                                                                                                                        |
 | `DRAWIO_PROVENANCE_ATTRIBUTES`                  | `lucidchartObjectId`, `visioObjectId`, `gliffyId`                                                                                                           | Ids other tools write when converting into draw.io (seen: Lucidchart); extend as met                                                          |
-| `INK_MAX_LIGHTNESS`, `INK_MAX_CHROMA`           | 0.35, 0.04 (OKLCH)                                                                                                                                          | `lib/board-scene/colour.ts`, the board scene ink rule (shared, not copied)                                                                    |
+| `INK_MAX_LIGHTNESS`, `INK_MAX_CHROMA`           | 0.35, 0.04 (OKLCH)                                                                                                                                          | `../livediagram/apps/editor/lib/board-scene/colour.ts`, the board scene ink rule (shared, not copied)                                         |
 | `PAPER_MIN_LIGHTNESS`, `PAPER_MAX_CHROMA`       | 0.93, 0.02 (OKLCH)                                                                                                                                          | D39: `#eeeeee` (L 0.95) and `#f5f5f5` are paper, `#e0e0e0` (L 0.91) a grey; 0.9 to 0.97, 0.01 to 0.04                                         |
 | `DRAWIO_DOT_MAX_STROKES`                        | 2                                                                                                                                                           | D38: a dash at most twice the stroke width reads as a dot; 1 to 3                                                                             |
 | `DRAWIO_MAX_PAGE_SCALE`                         | 1.6                                                                                                                                                         | D40: the largest scale a page of tiny draw.io text gets; 1.3 to 2                                                                             |

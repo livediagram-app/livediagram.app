@@ -104,6 +104,33 @@ describe('ShareDialog', () => {
     expect(screen.getByRole('status').textContent).toContain('anyone holding the pass');
   });
 
+  it('offers a livehuddle space Editor and Participant only, Participant to start, and marks a legacy Viewer pass', async () => {
+    const { calls } = renderDialog(
+      { item: { id: 'p1', app: 'livehuddle', kind: 'space', sharedVia: null, title: 'Standup' } },
+      { links: [link('old1', { level: 'view' }), link('pub1', { level: 'view', public: true })] },
+    );
+    const levels = [...document.querySelectorAll('[role="radio"][data-level]')];
+    expect(levels.map((r) => r.getAttribute('data-level'))).toEqual(['edit', 'participate']);
+    expect(
+      screen.getByRole('radio', { name: /Participant/, hidden: true }).getAttribute('aria-checked'),
+    ).toBe('true');
+    // The Viewer pass made before still lists, its band saying Legacy; a Community post's public link does not.
+    const old = await waitFor(() => {
+      const found = document.querySelector('[data-share-link="old1"]');
+      if (!found) throw new Error('no legacy pass yet');
+      return found;
+    });
+    expect(old.textContent).toContain('Viewer (Legacy)');
+    expect(document.querySelector('[data-share-link="pub1"]')!.textContent).not.toContain('Legacy');
+    fireEvent.click(screen.getByRole('button', { name: 'Create Pass' }));
+    await waitFor(() =>
+      expect(calls[0]).toEqual({
+        method: 'createShareLink',
+        args: [{ level: 'participate', tabId: null, expiry: 'never' }],
+      }),
+    );
+  });
+
   it('says when the clipboard refused, rather than failing quietly', async () => {
     writeText.mockRejectedValue(new Error('denied'));
     const { notify } = renderDialog({}, { links: [link('a1')] });
@@ -387,6 +414,9 @@ describe('share helpers', () => {
     );
     expect(failureText(new IndexError(429, 'rate_limited'), 'x')).toBe(
       'Too many tries just now. Wait a minute and try again.',
+    );
+    expect(failureText(new IndexError(400, 'level_not_offered'), 'x')).toBe(
+      'This app doesn’t offer that kind of pass. Pick another role.',
     );
   });
   it('builds the hand-over snippets, escaping the address', () => {

@@ -10,8 +10,6 @@ import {
   DataTabIcon,
   DrawTabIcon,
   EDITOR_MODE_ICONS,
-  IconsTabIcon,
-  MediaTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   WriteTabIcon,
@@ -42,11 +40,7 @@ export const MODE_BAR: Record<HeroMode, readonly (readonly BarCategory[])[]> = {
       { key: 'ask', label: 'Ask', Icon: AskGroupIcon },
       { key: 'session', label: 'Session', Icon: BehaviourTabIcon },
     ],
-    [
-      { key: 'icons', label: 'Icons', Icon: IconsTabIcon },
-      { key: 'stickers', label: 'Stickers', Icon: StickersTabIcon },
-      { key: 'media', label: 'Media', Icon: MediaTabIcon },
-    ],
+    [{ key: 'stickers', label: 'Stickers', Icon: StickersTabIcon }],
     [{ key: 'data', label: 'Data', Icon: DataTabIcon }],
   ],
 };

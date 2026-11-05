@@ -129,15 +129,13 @@ export function registerTools(server: McpServer, env: Env): void {
     if (single && !single.success)
       return errorResult(
         `"tab": ${single.error.issues.map((i) => `${i.path.join('.') || 'tab'}: ${i.message}`).join('; ')}. ` +
-          'Pass "tabs": [{ name, graph | mermaid | elements | template }].',
+          'Pass "tabs": [{ name, graph | elements | template }].',
       );
     const inputTabs = args.tabs ?? (single ? [single.data] : undefined);
     if (!inputTabs || inputTabs.length === 0) {
       return errorResult('Provide "tabs": an array of { name, elements } (or a single "tab").');
     }
     const tabs: Tab[] = [];
-    // What a graph tab could not keep of what it asked (a Mermaid subgraph nested in another), said back.
-    const graphNotes: string[] = [];
     // The template the first tab is made from, for the creation intent.
     let firstTemplate: TemplateKind | null = null;
     // The tabs a template made, whose colours are its own.
@@ -166,10 +164,9 @@ export function registerTools(server: McpServer, env: Env): void {
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
-      // and arrows from a node/edge graph, or the same graph as Mermaid.
+      // and arrows from a node/edge graph.
       const input = resolveGraphInput(t);
       if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
-      for (const note of input.notes ?? []) graphNotes.push(`Tab "${t.name}": ${note}`);
       const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
       if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
       if (input.graph) {
@@ -234,7 +231,6 @@ export function registerTools(server: McpServer, env: Env): void {
         folder: await createdFolderLabel(env, token, created),
         url: deepLink(env, id),
         lint,
-        ...(graphNotes.length ? { notes: graphNotes } : {}),
       },
       tabs[0]!,
       { env, token },
@@ -259,7 +255,7 @@ export function registerTools(server: McpServer, env: Env): void {
     if (input.error) return errorResult(input.error);
     if (!args.template && !input.graph && !args.elements) {
       return errorResult(
-        'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
+        'Invalid input. Provide a "graph" (nodes + edges), "elements", or a "template" kind ' +
           'from list_templates. Check the livehuddle://schema/elements resource.',
       );
     }
@@ -315,7 +311,6 @@ export function registerTools(server: McpServer, env: Env): void {
         rev: tab.rev,
         text: mcpResultText(answer.text),
         lint: lintLineOf(answer.lint),
-        ...(input.notes ? { notes: input.notes } : {}),
       },
       tab,
       { env, token },
@@ -336,13 +331,11 @@ export function registerTools(server: McpServer, env: Env): void {
     // relayed by the api, kept through anyone's next save. ops mode is based on what the model
     // read, so nothing a person saved in between is overwritten.
     let body: ChangesetRequest;
-    let graphNotes: string[] | undefined;
     if (args.mode === 'replace') {
       const input = resolveGraphInput(args);
       if (input.error) return errorResult(input.error);
-      graphNotes = input.notes;
       if (!input.graph && !args.elements) {
-        return errorResult('replace mode requires "graph", "mermaid" or "elements".');
+        return errorResult('replace mode requires "graph" or "elements".');
       } else {
         const drawn = args.elements ? packFreehandPoints(args.elements) : null;
         if (drawn && 'error' in drawn) return errorResult(drawn.error);
@@ -397,7 +390,6 @@ export function registerTools(server: McpServer, env: Env): void {
         rev: next.rev,
         text: mcpResultText(answer.text, contentOrigin(tab.elements)),
         lint: lintLineOf(lint),
-        ...(graphNotes ? { notes: graphNotes } : {}),
       },
       next,
       { env, token },

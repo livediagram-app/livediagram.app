@@ -1,13 +1,15 @@
 # Facilitator
 
-Status: shipped. In livehuddle (Work Tracker #423) the baton governs the light meeting tools that stay, the Timer, the
-quick vote and Bring Focus; the polls, reveals, picker and Q&A it names below leave with the Collaborate elements
-([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
+Status: shipped. In livehuddle (Work Tracker #423) the baton governs the light meeting tool that stays, Bring Focus (the Session strip's Timer left for the
+[Timer and Stopwatch](../009-elements/timer-and-stopwatch.md) pieces, which the baton does not gate,
+[Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)); the polls, reveals, picker and Q&A it names below leave with the Collaborate elements
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), and the dot vote left after them
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-vote)).
 
 ## What
 
 One person in a live session holds the **facilitator** baton, and the tools that
-run the room answer to them: the timer, the votes, the polls, the reveals. The
+run the room answer to them: the timer, the polls, the reveals. The
 owner hands it out, anybody can be given it, and the owner can always take it
 back.
 
@@ -124,21 +126,19 @@ the room's own storage is the natural home for something that means "right now".
 When somebody holds the baton, these answer to them alone. When nobody does,
 every one of them behaves exactly as it does today.
 
-| Gated                                                                 | Where it lives today      |
-| --------------------------------------------------------------------- | ------------------------- |
-| Timer: start, pause, resume, set duration, reset, clear               | `useTabSession.ts`        |
-| Dot vote: start, end, reveal, clear, and stepping through the results | `useTabSession.ts`        |
-| Poll: start, end                                                      | `useLivePoll.ts`          |
-| Session button: pressing it **and configuring it**                    | `useBehaviourElements.ts` |
-| Agenda item press (it starts that item's countdown)                   | `useCollabElements.ts`    |
-| Estimate / Temperature: reveal responses, clear for a new round       | `useCollabElements.ts`    |
-| Idea box: reveal, clear, scatter to the canvas                        | `useCollabElements.ts`    |
-| Done check: "Reset Everyone"                                          | `DoneCheckFace.tsx`       |
-| Quiz: edit the question, start, lock, reveal, run again               | `useQuizElements.ts`      |
-| Picker: the roll everyone watches                                     | `useBehaviourElements.ts` |
-| Roll call: take the roll                                              | `useCollabElements.ts`    |
-| Reveal zone: lifting a cover                                          | `useBehaviourElements.ts` |
-| Bring Focus: pressing it                                              | `useEditorState.ts`       |
+| Gated                                                           | Where it lives today      |
+| --------------------------------------------------------------- | ------------------------- |
+| Poll: start, end                                                | `useLivePoll.ts`          |
+| Session button: pressing it **and configuring it**              | `useBehaviourElements.ts` |
+| Agenda item press (it starts that item's countdown)             | `useCollabElements.ts`    |
+| Estimate / Temperature: reveal responses, clear for a new round | `useCollabElements.ts`    |
+| Idea box: reveal, clear, scatter to the canvas                  | `useCollabElements.ts`    |
+| Done check: "Reset Everyone"                                    | `DoneCheckFace.tsx`       |
+| Quiz: edit the question, start, lock, reveal, run again         | `useQuizElements.ts`      |
+| Picker: the roll everyone watches                               | `useBehaviourElements.ts` |
+| Roll call: take the roll                                        | `useCollabElements.ts`    |
+| Reveal zone: lifting a cover                                    | `useBehaviourElements.ts` |
+| Bring Focus: pressing it                                        | `useEditorState.ts`       |
 
 The session button is the one that reads oddly against "authoring is not
 running", and it earns its place: its configuration IS the timer's length and
@@ -148,14 +148,14 @@ one click.
 
 ### What stays everyone's
 
-| Open                                                                                                                                                     | Why                                                                                                                |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Every personal response: casting and retracting a dot, answering a poll, responding to an estimate or temperature, adding an idea, marking yourself done | This is what the room is FOR. A tool only the facilitator can answer is not a tool                                 |
-| Mode button press                                                                                                                                        | It switches YOUR canvas tool and touches nothing shared                                                            |
-| Follow Me, the laser, the spotlight, reactions, cursors                                                                                                  | Pointing at things is everybody's job                                                                              |
-| Running a slide deck                                                                                                                                     | `presentingAt` is local state: it is your own screen                                                               |
-| Comments, assigned actions                                                                                                                               | They are a conversation, not a pace                                                                                |
-| All ordinary editing, import, export, themes, layout cleanup                                                                                             | Nothing to collide over that the selection lock ([Editor app](../007-editor/editor-app.md)) doesn't already handle |
+| Open                                                                                                                       | Why                                                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Every personal response: answering a poll, responding to an estimate or temperature, adding an idea, marking yourself done | This is what the room is FOR. A tool only the facilitator can answer is not a tool                                 |
+| Mode button press                                                                                                          | It switches YOUR canvas tool and touches nothing shared                                                            |
+| Follow Me, reactions, cursors                                                                                              | Pointing at things is everybody's job                                                                              |
+| Running a slide deck                                                                                                       | `presentingAt` is local state: it is your own screen                                                               |
+| Comments, assigned actions                                                                                                 | They are a conversation, not a pace                                                                                |
+| All ordinary editing, import, export, themes, layout cleanup                                                               | Nothing to collide over that the selection lock ([Editor app](../007-editor/editor-app.md)) doesn't already handle |
 
 ### Two elements this changes
 
@@ -190,9 +190,8 @@ Enforcement is therefore uneven, and deliberately so:
   somebody's poll. The facilitator may end a poll they did not start, so a
   baton taken mid-poll hands them its End control (`pollHostFor`) rather than
   leaving the poll with none; the starter's falls away, as the room would
-  refuse it. A vote's starter likewise loses its host controls while somebody
-  else holds the baton.
-- **Not room-side for the timer and the vote.** They are plain tab state riding
+  refuse it.
+- **Not room-side for the timer.** It is plain tab state riding
   the same `tab` / `tab-meta` ops that carry every shape move, so the room
   cannot tell "started a timer" from "dragged a box" without inspecting
   payloads. Adding that inspection would buy nothing against an actor who can
@@ -347,14 +346,14 @@ everywhere it matters.
 
 A gated control that is not yours is **disabled with the reason on it** where
 the control has a home of its own: the Session strip's set-up popovers name the facilitator at
-the top ("Alex is facilitating this session. Ask them to start the timer, the
-vote or a poll.") and wrap their pane in a disabled `fieldset`, which disables
+the top ("Alex is facilitating this session. Ask them to start the timer or
+a poll.") and wrap their pane in a disabled `fieldset`, which disables
 every control inside it natively, including ones added later. Hiding the panel
 would teach a different editor to every participant, and somebody who had never
 seen the timer would not know there was one.
 
 A **session button** on the canvas has no popover, so its face carries the reason: while somebody else
-facilitates, an Editor's Vote or Poll button is drawn disabled and reads "{name} is facilitating this session;
+facilitates, an Editor's Poll button is drawn disabled and reads "{name} is facilitating this session;
 ask them to start it.", and a Timer element shows its clock without its controls and reads "{name} is
 facilitating this session; ask them to run the timer." (screen-reader text, as the button's label is). The
 name is the roster's, else the holder's as last seen, so the 90 seconds an absent holder keeps the baton

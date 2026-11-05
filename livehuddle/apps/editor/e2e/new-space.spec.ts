@@ -1,21 +1,19 @@
 import type { Page } from '@playwright/test';
-import { adoptGuest, expect, expectNoPageErrors, mintGuest, test, untilHydrated } from './fixtures';
+import { adoptGuest, expect, expectNoPageErrors, mintGuest, serverNewUrl, test } from './fixtures';
 
-// The New Space wizard (docs/specs/007-editor/new-document-route.md "One-step wizard"), as a guest: its body always says
-// what Create makes and where it will be saved, every way out of it makes a real Space, and the create's error card
-// shows only when the api really fails (issue #330).
+// /new as a guest (docs/specs/007-editor/new-document-route.md "No welcome screen"): it has no screen of its own, it
+// makes a Blank Space at once and opens it on Start a Space, on Recommended. Start Blank opens with the start closed,
+// and the create's error card shows only when the api really fails (issue #330).
 
 const CREATE_FAILED = /Couldn.t create the space/;
+const startPanel = (page: Page) => page.getByRole('region', { name: /^Start a Space$/ });
 
 // The page opens as a guest that already holds its token, as a returning guest does. A fresh browser first leaves
 // /new for the guest hand-off and comes back, and a check that lands during that round trip loses its page.
-async function openWizard(page: Page): Promise<void> {
+async function openNew(page: Page, url = '/new'): Promise<void> {
   await adoptGuest(page, await mintGuest(page.request));
-  await page.goto('/new');
-  await untilHydrated(page.getByRole('button', { name: 'Create', exact: true }));
+  await page.goto(url);
 }
-
-const syncSwitch = (page: Page) => page.getByRole('switch', { name: /Sync Space to Server/ });
 
 async function expectCanvas(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
@@ -23,47 +21,27 @@ async function expectCanvas(page: Page): Promise<void> {
   await expect(page.getByText(CREATE_FAILED)).toHaveCount(0);
 }
 
-test('the wizard body names the Blank Space and offers the Sync switch', async ({
+test('/new makes a Space at once and opens it on Start a Space, on Recommended', async ({
   page,
   pageErrors,
 }) => {
-  await openWizard(page);
-  const body = page.locator('[data-new-space-body]');
-  await expect(body.getByRole('region', { name: 'Blank Space' })).toBeVisible();
-  await expect(body.getByRole('listitem')).not.toHaveCount(0);
-  // A guest's default is This Browser, so the switch starts off.
-  await expect(body.getByRole('switch', { name: /Sync Space to Server/ })).toHaveAttribute(
-    'aria-checked',
-    'false',
+  await openNew(page);
+  await expectCanvas(page);
+  await expect(startPanel(page)).toBeVisible();
+  await expect(startPanel(page).getByRole('button', { name: /^Recommended/ })).toHaveAttribute(
+    'aria-current',
+    'true',
   );
+  await expect(startPanel(page).locator('[data-start-card="blank-session"]')).toBeVisible();
+  // The handoff takes /new's history entry: there is no page to come back to that would make another Space.
+  expect(await page.evaluate(() => location.pathname.startsWith('/document/'))).toBe(true);
   expectNoPageErrors(pageErrors);
 });
 
-test('Create makes a Space in this browser', async ({ page, pageErrors }) => {
-  await openWizard(page);
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
+test('Start Blank makes a Space with its start closed', async ({ page, pageErrors }) => {
+  await openNew(page, '/new?start=blank');
   await expectCanvas(page);
-  expectNoPageErrors(pageErrors);
-});
-
-test('Skip makes a Space with its start closed', async ({ page, pageErrors }) => {
-  await openWizard(page);
-  await page.getByRole('button', { name: 'Skip', exact: true }).click();
-  await expectCanvas(page);
-  await expect(page.getByRole('region', { name: /^Start a Space$/ })).toHaveCount(0);
-  expectNoPageErrors(pageErrors);
-});
-
-test('with Sync on, Create makes the Space on the server', async ({ page, pageErrors }) => {
-  await openWizard(page);
-  await syncSwitch(page).click();
-  await expect(syncSwitch(page)).toHaveAttribute('aria-checked', 'true');
-  const created = page.waitForResponse(
-    (r) => r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/documents',
-  );
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
-  expect((await created).ok()).toBe(true);
-  await expectCanvas(page);
+  await expect(startPanel(page)).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
@@ -77,28 +55,11 @@ test('the create error shows only when the api fails, and Try again recovers', a
       ? route.fulfill({ status: 503, body: '{}' })
       : route.fallback(),
   );
-  await openWizard(page);
-  await syncSwitch(page).click();
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  // A folder context makes the create a server one, so the api answers it (serverNewUrl).
+  await page.goto(await serverNewUrl(page));
   await expect(page.getByText(CREATE_FAILED)).toBeVisible({ timeout: 30_000 });
   fail = false;
   await page.getByRole('button', { name: 'Try again' }).click();
   await expectCanvas(page);
   expectNoPageErrors(pageErrors);
-});
-
-test.describe('phone', () => {
-  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
-
-  test('the wizard fills the screen with its footer at the bottom', async ({
-    page,
-    pageErrors,
-  }) => {
-    await openWizard(page);
-    await expect(page.getByRole('region', { name: 'Blank Space' })).toBeVisible();
-    const create = await page.getByRole('button', { name: 'Create', exact: true }).boundingBox();
-    // The footer is pinned to the bottom of the full-screen card, not left mid-screen under an empty body.
-    expect(create && create.y + create.height).toBeGreaterThan(844 - 80);
-    expectNoPageErrors(pageErrors);
-  });
 });

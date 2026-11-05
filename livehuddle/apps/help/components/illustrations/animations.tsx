@@ -1,14 +1,14 @@
 // Animating Elements in a Space (docs/specs/028-animation/element-animations.md, docs/specs/018-help/help-app.md):
-// what a meeting board animates, a sticky note fluttering and a frame pulsing, drawn from the shared primitives.
+// what a meeting board animates, a sticky note fluttering and a link card pulsing, drawn from the shared primitives.
 // livediagram's figure (@liveworkspace/help-site's ElementAnimation) shows an arrow's flow, which a Space has no
 // tools to draw.
 import { Label, Scene, TextBar } from '@liveworkspace/help-site/art/primitives';
 
-/** A sticky note with Flutter (its bottom edge lifting, motion ticks beside it) and a frame with Pulse (rings
+/** A sticky note with Flutter (its bottom edge lifting, motion ticks beside it) and a link card with Pulse (rings
  *  following its outline). */
 export function SpaceAnimation() {
   const note = { x: 58, y: 64, w: 96, h: 84 };
-  const frame = { x: 236, y: 70, w: 116, h: 72 };
+  const card = { x: 236, y: 70, w: 116, h: 72 };
   return (
     <Scene w={400} h={240}>
       {/* Flutter: the note's bottom edge curls up as if in a breeze, and its shadow follows. */}
@@ -36,40 +36,40 @@ export function SpaceAnimation() {
         Sticky: Flutter
       </Label>
 
-      {/* Pulse: rings the shape of the frame's outline, spreading out. */}
+      {/* Pulse: rings the shape of the card's outline, spreading out. */}
       <rect
-        x={frame.x - 14}
-        y={frame.y - 14}
-        width={frame.w + 28}
-        height={frame.h + 28}
+        x={card.x - 14}
+        y={card.y - 14}
+        width={card.w + 28}
+        height={card.h + 28}
         rx={18}
         className="fill-none stroke-brand-100"
         strokeWidth={2}
       />
       <rect
-        x={frame.x - 7}
-        y={frame.y - 7}
-        width={frame.w + 14}
-        height={frame.h + 14}
+        x={card.x - 7}
+        y={card.y - 7}
+        width={card.w + 14}
+        height={card.h + 14}
         rx={13}
         className="fill-none stroke-brand-200"
         strokeWidth={2}
       />
       <rect
-        x={frame.x}
-        y={frame.y}
-        width={frame.w}
-        height={frame.h}
+        x={card.x}
+        y={card.y}
+        width={card.w}
+        height={card.h}
         rx={8}
         className="fill-white stroke-brand-400"
         strokeWidth={2}
       />
-      <Label x={frame.x + 12} y={frame.y + 20} size={11} weight={700} tone="strong">
+      <Label x={card.x + 12} y={card.y + 20} size={11} weight={700} tone="strong">
         Agenda
       </Label>
-      <TextBar x={frame.x + 12} y={frame.y + 36} w={70} tone="faint" />
-      <TextBar x={frame.x + 12} y={frame.y + 48} w={54} tone="faint" />
-      <Label x={frame.x + frame.w / 2} y={186} anchor="middle" size={11} tone="muted">
+      <TextBar x={card.x + 12} y={card.y + 36} w={70} tone="faint" />
+      <TextBar x={card.x + 12} y={card.y + 48} w={54} tone="faint" />
+      <Label x={card.x + card.w / 2} y={186} anchor="middle" size={11} tone="muted">
         Shape: Pulse
       </Label>
     </Scene>

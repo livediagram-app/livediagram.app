@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livehuddle/document';
-import { paletteDragSnapAt } from './palette-drag-snap';
+import { createShape, ROOM_WALL, SHAPE_DEFAULT_SIZE, type Element } from '@livehuddle/document';
+import { armedRoomSnap, paletteDragSnapAt } from './palette-drag-snap';
 
 // Alignment help BEFORE the drop (docs/specs/008-canvas/canvas-and-palette.md): while a palette tile is dragged
 // over the canvas, the ghost snaps to its neighbours' edges / centres and the
@@ -100,5 +100,40 @@ describe('paletteDragSnapAt', () => {
       elements: [neighbour],
     });
     expect(guides.some((g) => g.axis === 'x')).toBe(true);
+  });
+});
+
+// docs/specs/009-elements/office.md "Rooms line up": a Room placed beside a room shares its wall.
+describe('a Room placed beside a room', () => {
+  const left = {
+    ...createShape('room', 0, 0),
+    id: 'a',
+    width: 480,
+    height: 320,
+    roomDoor: 'none',
+  } as Element;
+  const { width, height } = SHAPE_DEFAULT_SIZE.room;
+
+  it('lands on the shared wall line, not box edge to box edge, with the wall guide', () => {
+    // Its box 4px right of where the two share the right wall (x 470).
+    const at = { x: 480 - ROOM_WALL + 4 + width / 2, y: height / 2 };
+    const boxed = paletteDragSnapAt({
+      canvasX: at.x,
+      canvasY: at.y,
+      width,
+      height,
+      elements: [left],
+    });
+    expect(boxed.dx).toBe(-4 + ROOM_WALL); // the box edge (480) was nearer without the room rule
+    const shared = armedRoomSnap(at, [left]);
+    expect(shared.dx).toBe(-4);
+    expect(shared.guides.some((g) => g.axis === 'x' && g.position === 480 - ROOM_WALL / 2)).toBe(
+      true,
+    );
+  });
+
+  it('keeps the edge snap when no wall line is near', () => {
+    const at = { x: 480 + 2 + width / 2, y: height / 2 };
+    expect(armedRoomSnap(at, [left]).dx).toBe(-2);
   });
 });

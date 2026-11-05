@@ -8,10 +8,16 @@
 // page by definition.
 
 import { type Tab } from '@livehuddle/document';
-import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@livehuddle/templates';
+import {
+  buildTemplate,
+  templateCanvasOverrides,
+  templateFloors,
+  type TemplateKind,
+} from '@livehuddle/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
 export {
+  templateFloors,
   buildTemplate,
   isDefaultDocumentName,
   templateCanvasOverrides,
@@ -41,4 +47,25 @@ export function buildTemplatedTab(
     templateChosen: true,
     ...templateCanvasOverrides(kind),
   };
+}
+
+/**
+ * A building's other floors as tabs (docs/specs/007-editor/templates-by-mode.md "A template with floors"), after its
+ * first: each named after its floor, on its own floor pattern, in the theme, with a fresh id. Empty for a template on
+ * one tab.
+ */
+export function buildTemplatedFloorTabs(kind: TemplateKind, themeId: string): Tab[] {
+  const theme = getTheme(themeId);
+  return templateFloors(kind).map((floor) => ({
+    id: crypto.randomUUID(),
+    name: floor.name,
+    elements: recolourElementsForTheme(floor.build(0, 0), theme),
+    theme: themeId,
+    backgroundColor: theme.backgroundColor,
+    patternColor: theme.patternColor,
+    ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
+    templateChosen: true,
+    ...templateCanvasOverrides(kind),
+    backgroundPattern: floor.floor,
+  }));
 }

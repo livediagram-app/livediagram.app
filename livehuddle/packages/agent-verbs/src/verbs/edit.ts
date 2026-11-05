@@ -39,7 +39,7 @@ export const changesetApply = defineVerb({
   id: 'changeset.apply',
   summary: 'Apply edit operations, or a graph, from a file',
   description:
-    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or a graph, Mermaid or elements that replace the tab. All or nothing; prints one result line per element, then the revision, the lint verdict and the revert command.',
+    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or a graph or elements that replace the tab. All or nothing; prints one result line per element, then the revision, the lint verdict and the revert command.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -57,7 +57,7 @@ export const changesetApply = defineVerb({
         status: 400,
         code: 'unknown_source',
         message: `can't tell what ${input.file === '-' ? 'stdin' : input.file} holds`,
-        hint: 'expected edit operations, a graph, Mermaid or elements: livehuddle guide edit',
+        hint: 'expected edit operations, a graph or elements: livehuddle guide edit',
       });
     const target = await targetOf(ctx, input.doc, input.tab);
     return outputOf(await submitChangeset(ctx, target, source.body, input));
@@ -103,9 +103,9 @@ const ELEMENT_OPERATIONS = {
     example: 'square label=Verify between n3 n4',
   },
   wrap: {
-    summary: 'Put elements in a new frame or lane',
-    words: '<selector…> in frame|lane key=value…',
-    example: 'n3 n4 in frame label=Auth',
+    summary: 'Put elements in a new boundary or lane',
+    words: '<selector…> in boundary|lane key=value…',
+    example: 'n3 n4 in boundary label=Auth',
   },
 } as const;
 

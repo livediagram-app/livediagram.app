@@ -3,15 +3,18 @@ import {
   applyElementDelta,
   applyElementOp,
   applyRoomElementOp,
-  applyVoteDelta,
+  dropRetiredTimer,
+  dropRetiredVote,
   mergeIncomingElement,
-  voteDeltaApplies,
   type ElementDelta,
   type ElementOp,
   type Tab,
 } from '@livehuddle/document';
 import type { RoomOp } from '@livehuddle/api-schema';
-import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops';
+
+// The retired tab fields an old client may still send: the dot vote and the Session strip's timer.
+const dropRetired = <T extends object>(tab: T): T => dropRetiredTimer(dropRetiredVote(tab));
+import { META_SKIP, mergeRemoteTab } from './tab-broadcast-ops';
 
 // The document-changing room ops, as a pure function over a tab list.
 //
@@ -29,11 +32,16 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
   switch (op.kind) {
     case 'tab': {
       // A peer's whole tab. A tab we don't have yet (they just added it) is
-      // appended; otherwise merged, keeping our folder and our dots.
+      // appended; otherwise merged, keeping our folder. An old client's retired `vote` and Session strip `timer`
+      // are dropped (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote", "The Session strip's Timer").
       // The tab keeps the id the op names: a payload naming another would renumber it here, and the next save
       // would write it over that other tab (the room drops such an op too, room-op-gate.ts).
-      if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, { ...op.tab, id: op.tabId }];
-      return updateTab(tabs, op.tabId, (tab) => ({ ...mergeRemoteTab(tab, op.tab), id: tab.id }));
+      if (!tabs.some((t) => t.id === op.tabId))
+        return [...tabs, dropRetired({ ...op.tab, id: op.tabId })];
+      return updateTab(tabs, op.tabId, (tab) => ({
+        ...mergeRemoteTab(tab, dropRetired(op.tab)),
+        id: tab.id,
+      }));
     }
     case 'el':
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
@@ -73,35 +81,21 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         return elements === tab.elements ? tab : { ...tab, elements };
       });
     }
-    case 'vote':
-      // ONE dot, as a delta, so concurrent dots commute (docs/specs/012-collaboration/session-tools.md). Dropped
-      // unless casting is open for the round it was cast in (docs/specs/012-collaboration/collab-race-hardening.md).
-      return updateTab(tabs, op.tabId, (tab) => {
-        if (!tab.vote || !voteDeltaApplies(tab.vote, op.round)) return tab;
-        const vote = applyVoteDelta(tab.vote, op.elementId, op.voter, op.delta);
-        return vote === tab.vote ? tab : { ...tab, vote };
-      });
     case 'tab-meta':
       // Non-element fields (docs/specs/012-collaboration/realtime-conflict-resolution.md). `folder` stays owned by document-meta
-      // (docs/specs/006-document/tab-folders.md); a `vote` in the patch follows the round rule, so an End or
-      // a Reveal can't erase dots still in flight.
+      // (docs/specs/006-document/tab-folders.md); an old client's retired `vote` in the patch is dropped.
       return updateTab(tabs, op.tabId, (tab) => {
         // Only non-element fields: never the id or elements (META_SKIP), whatever the patch carries.
         const patch = Object.fromEntries(
           Object.entries(op.patch ?? {}).filter(([key]) => !META_SKIP.has(key)),
         ) as Partial<Omit<Tab, 'elements'>>;
         const merged: Tab = { ...tab, ...patch, id: tab.id, folder: tab.folder };
-        if ('vote' in patch) {
-          const vote = mergeRemoteVote(tab.vote, patch.vote);
-          if (vote === undefined) delete merged.vote;
-          else merged.vote = vote;
-        }
         // Fields the sender removed (docs/specs/012-collaboration/collab-race-hardening.md); never one a patch can't touch.
         for (const key of Array.isArray(op.clear) ? op.clear : []) {
           if (!META_SKIP.has(key)) delete (merged as Record<string, unknown>)[key];
         }
         // A peer's patch is untrusted like any incoming tab: its raw-read fields are settled.
-        return settleTabFields(merged);
+        return settleTabFields(dropRetired(merged));
       });
     case 'document-meta': {
       // Rename / reorder / add / delete. Reorder to match; a new id lands as a

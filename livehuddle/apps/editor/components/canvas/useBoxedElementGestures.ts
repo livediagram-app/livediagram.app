@@ -11,7 +11,7 @@ import type { BoxedElementViewProps } from './BoxedElementView.types';
 
 // The boxed element's press / double-click / context-menu routing,
 // lifted out of BoxedElementView: which gesture wins for this element
-// kind and session state (dot-vote cast, shift multi-select toggle,
+// kind and session state (shift multi-select toggle,
 // drag, the plain click on a selected element, per-kind double-click actions, the beside-the-element context
 // menu and its touch long-press twin). The view owns the wrapper node
 // and mounts the returned handlers; every callback comes from its
@@ -25,9 +25,6 @@ export function useBoxedElementGestures({
   isMultiSelected,
   isSelected,
   isPaintMode,
-  vote,
-  votableInVote,
-  onCastVote,
   onShiftSelect,
   onPlainClick,
   onPressArmedAction,
@@ -42,9 +39,6 @@ export function useBoxedElementGestures({
   BoxedElementViewProps,
   | 'element'
   | 'isEditing'
-  | 'vote'
-  | 'votableInVote'
-  | 'onCastVote'
   | 'onShiftSelect'
   | 'onPlainClick'
   | 'onPressArmedAction'
@@ -94,18 +88,8 @@ export function useBoxedElementGestures({
     }
     heldRef.current = false;
     // Every press below is the element's, so it stops here, except one that pans through to the canvas.
-    // Dot-voting (docs/specs/012-collaboration/session-tools.md): while a vote is open, pressing a votable
-    // element casts one of your dots instead of selecting / dragging it.
-    // Non-votable elements (text / frame / arrow / …) still select, so
-    // the facilitator can keep arranging the canvas.
-    if (vote?.active && onCastVote && votableInVote) {
-      e.stopPropagation();
-      onCastVote(element.id);
-      return;
-    }
     // The double-press rule (docs/specs/008-canvas/arrow-bending.md): the second press of a
-    // double-click never drags; the dblclick that follows edits. After the
-    // vote branch, so two quick presses during a vote still cast two dots.
+    // double-click never drags; the dblclick that follows edits.
     const verdict = pressLedger.press({
       id: element.id,
       t: e.timeStamp,

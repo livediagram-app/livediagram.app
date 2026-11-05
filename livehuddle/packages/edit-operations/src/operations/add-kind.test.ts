@@ -4,7 +4,6 @@ import { applyEditOperations } from '../apply';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import { parseEditOperations } from '../parse';
-import type { EditOperation } from '../types';
 import { PLACEMENT_GAP } from '../vocabulary';
 
 const run = (text: string, tab: Tab = checkoutFlow()) => {
@@ -109,23 +108,7 @@ describe('add <kind>', () => {
     expect(two!.x).toBe(one!.x + 140 + PLACEMENT_GAP);
   });
 
-  it('takes the layer of its placement reference, or the active one when that is locked', () => {
-    const layered = (locked: boolean): Tab => ({
-      ...checkoutFlow(),
-      layers: [
-        { id: 'base', name: 'Base' },
-        { id: 'notes', name: 'Notes', ...(locked ? { locked: true } : {}) },
-      ],
-      elements: checkoutFlow().elements.map((el) =>
-        el.id === 'n3' ? { ...el, layerId: 'notes' } : el,
-      ),
-    });
-    expect(added('add sticky below:n3', layered(false)).layerId).toBe('notes');
-    expect(added('add sticky below:n3', layered(true)).layerId).toBe('base');
-    expect(added('add sticky')).not.toHaveProperty('layerId');
-  });
-
-  it('takes inside:<frame> with a side, either order: beside the reference, in that frame', () => {
+  it('takes inside:<container> with a side, either order: beside the reference, in that frame', () => {
     for (const text of [
       'add square label="Gift wrap" inside:f2 right-of:n4',
       'add square label="Gift wrap" right-of:n4 inside:f2',
@@ -139,12 +122,12 @@ describe('add <kind>', () => {
     });
   });
 
-  it('refuses inside:<frame> with a side whose reference is not in that frame, or a non-frame', () => {
+  it('refuses inside:<container> with a side whose reference is not in that frame, or a non-frame', () => {
     expect(refused(run('add square inside:f2 right-of:n3')).details?.[0]).toMatch(
       /is not inside f2/,
     );
     expect(refused(run('add square inside:n1 right-of:n4')).details?.[0]).toMatch(
-      /not a frame or lane/,
+      /not a boundary or lane/,
     );
     const parseError = (text: string) => {
       const out = parseEditOperations(text);
@@ -201,14 +184,6 @@ describe('add <kind>', () => {
       (e) => e.id === 'f2',
     ) as Element & { height: number };
     expect(f2.height).toBe(200);
-  });
-
-  it('refuses a kind on a locked layer it would land on', () => {
-    const op: EditOperation = { op: 'add', kind: 'square', fields: { layerId: 'shut' } };
-    const tab: Tab = { ...checkoutFlow(), layers: [{ id: 'shut', name: 'Shut', locked: true }] };
-    expect(refused(applyEditOperations(tab, [op], { makeId: fixedIds() })).code).toBe(
-      'element_locked',
-    );
   });
 
   it('keeps a given md text size on a tab with no sibling, and reads a size the template sizes for', () => {
@@ -291,7 +266,7 @@ describe('add <kind>', () => {
     const empty: Tab = {
       id: 't',
       name: 'T',
-      elements: [{ ...createShape('frame', 0, 0), id: 'f', width: 200, height: 40 }],
+      elements: [{ ...createShape('boundary', 0, 0), id: 'f', width: 200, height: 40 }],
     };
     const f = applied(run('add square label=One inside:f', empty)).tab.elements.find(
       (e) => e.id === 'f',
@@ -409,8 +384,8 @@ describe('a frame grown to hold a new box', () => {
       id: 't',
       name: 't',
       elements: [
-        { ...createShape('frame', 0, 0), id: 'outer', width: 400, height: 300, label: '' },
-        { ...createShape('frame', 40, 40), id: 'inner', width: 220, height: 160, label: '' },
+        { ...createShape('boundary', 0, 0), id: 'outer', width: 400, height: 300, label: '' },
+        { ...createShape('boundary', 40, 40), id: 'inner', width: 220, height: 160, label: '' },
         { ...createShape('square', 60, 80), id: 'm', width: 140, height: 60, label: 'M' },
       ] as Element[],
     };
@@ -431,7 +406,7 @@ describe('a frame grown to hold a new box', () => {
   it('keeps a locked element where it is when what holds it moves on', () => {
     const tab = checkoutFlow();
     const below: Element[] = [
-      { ...createShape('frame', 0, 900), id: 'g', width: 400, height: 200, label: '' },
+      { ...createShape('boundary', 0, 900), id: 'g', width: 400, height: 200, label: '' },
       {
         id: 'pinned-note',
         type: 'shape',

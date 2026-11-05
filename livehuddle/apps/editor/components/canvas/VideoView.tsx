@@ -154,6 +154,7 @@ export function VideoView({ element }: { element: VideoElement }) {
             track('Element', 'Used', 'Video');
           }}
           aria-label="Play video"
+          data-piece-main=""
           // Sized against the CARD (the wrapper is inset-0), not its own
           // contents: the glyph inside is percentage-height, which needs a
           // parent with a height to resolve against.
@@ -223,6 +224,7 @@ function LoadCard({ target, onLoad }: { target: EmbedTarget; onLoad: () => void 
       </span>
       <button
         type="button"
+        data-piece-main=""
         onClick={(e) => {
           e.stopPropagation();
           onLoad();

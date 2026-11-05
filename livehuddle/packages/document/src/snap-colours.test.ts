@@ -149,12 +149,10 @@ describe('snapTabColours', () => {
     );
   });
 
-  it('protects locked elements and the ids it is told to skip (hidden or locked layers)', () => {
+  it('protects locked elements', () => {
     const locked = stroke({ id: 'locked', locked: true, strokeColor: '#e03131' });
-    const layered = stroke({ id: 'layered', strokeColor: '#e03131' });
-    const out = snapTabColours([locked, layered], new Set(['layered']));
+    const out = snapTabColours([locked]);
     expect(out.elements[0]).toBe(locked);
-    expect(out.elements[1]).toBe(layered);
     expect(out.changed).toBe(0);
   });
 
@@ -212,9 +210,9 @@ describe('snappableCustomColours', () => {
       stroke({ id: '4', penColour: 'blue' }),
       stroke({ id: '5', pen: 'highlighter', strokeColor: '#ffd43b' }),
       stroke({ id: '6', locked: true, strokeColor: '#00ff00' }),
-      arrow({ id: '7', strokeColor: '#0000ff' }),
+      arrow({ id: '7', locked: true, strokeColor: '#0000ff' }),
     ];
-    expect(snappableCustomColours(els, new Set(['7']))).toEqual(['#e03131', '#1971c2']);
+    expect(snappableCustomColours(els)).toEqual(['#e03131', '#1971c2']);
     expect(snappableCustomColours([])).toEqual([]);
   });
 });

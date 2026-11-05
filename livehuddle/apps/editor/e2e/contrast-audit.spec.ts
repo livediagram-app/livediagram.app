@@ -7,14 +7,7 @@ import {
   seedDocument,
   shareLink,
 } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  untilHydrated,
-  mintGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
@@ -38,14 +31,14 @@ function expectAA(report: ContrastReport, screen: string): void {
 
 test.describe('Contrast audit, dark mode', () => {
   // A visitor with no identity leaves /new for the guest handoff the moment the page hydrates (fixtures.ts
-  // serverNewUrl), which destroyed the page mid-audit: the wizard is audited as a minted guest, who stays.
-  test('the New Space wizard', async ({ page, pageErrors }) => {
+  // serverNewUrl), which destroyed the page mid-audit: a new Space is audited as a minted guest, who stays.
+  // /new has no screen of its own: it opens the new Space on Start a Space (new-document-route.md "No welcome screen").
+  test('Start a Space on a new Space', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintGuest(page.request));
     await page.goto('/new');
-    await page.getByText('New Space', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
+    await page.getByRole('region', { name: /^Start a Space$/ }).waitFor({ timeout: 30_000 });
     await expect(page.locator('html')).toHaveClass(/dark/);
-    expectAA(await auditContrast(page), 'wizard');
+    expectAA(await auditContrast(page), 'Start a Space');
     expectNoPageErrors(pageErrors);
   });
 

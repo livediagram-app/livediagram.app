@@ -58,6 +58,10 @@ fence**, from either side.
   reach is 9.2 px), so only one put there walks through.
   A step along the fence, the same distance off it, is never read as closing in for rounding (a millionth of a px
   either way).
+- **A footprint is solid** ([Office](office.md)): a character inside one (sat on a seat tucked into it, such as
+  livehuddle's Bar Stool under a Bar's counter, or with scenery dropped on it) is never held there. Its edges refuse
+  only a step that goes deeper in, measured from its nearest side, so the character walks along it and out of its
+  nearest side, never further in and never stuck. Outside it, its edges block as any fence does.
 - **A hidden layer's fences block nothing**, as its portals and chairs do nothing: a character walks
   among what is drawn.
 - **What does not walk is not blocked.** A portal still carries a character through a fence (a
@@ -66,7 +70,8 @@ fence**, from either side.
   to the side its feet were on, so it never opens held where a click past the wall does nothing; put down in the
   wall itself, it stays there, free to walk off either side. The same nudge follows a fence or room moved,
   pasted or resized onto a standing character, once the change settles (never on each frame of a drag), and a seat
-  snap or a step aside that lands inside a wall's reach. A character that starts inside a fenced area stays
+  snap or a step aside that lands inside a wall's reach. One put down inside a footprint is not nudged (a nudge to
+  the side its feet were on would push it deeper in): it walks out. A character that starts inside a fenced area stays
   inside until it takes a portal out.
 - **A fence is not a destination.** Standing beside one does not ring it as "the element you are
   on".

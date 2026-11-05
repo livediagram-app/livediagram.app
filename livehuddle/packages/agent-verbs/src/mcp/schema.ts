@@ -180,8 +180,8 @@ Boxed elements (shape, text, sticky, table, image, annotation) carry:
     ${shapeKinds}. The default box / process step is "square" (a rounded
     rectangle that fills its width × height) — there is NO "rectangle" kind.
     Use "diamond" for a decision, "cylinder" for a datastore, "stadium" for a
-    start/end, "circle", "hexagon", "parallelogram" for I/O, and "frame" for a
-    section container. An unknown kind is coerced to "square".
+    start/end, "circle", "hexagon", "parallelogram" for I/O. An unknown kind is
+    coerced to "square".
   - "text" is BARE text with no box, fill, or border. Use it ONLY for a
     free-standing title, caption, legend, or note — NEVER for a node. A node
     that has a label is a "shape" with a "label" (shape: "square"), not a
@@ -254,10 +254,11 @@ A Space is a shared place a team meets in (an office, a team pod, a stand-up, an
 The calling model produces the elements AND decides their layout; this server validates, persists and renders them,
 and only auto-arranges a graph when asked to (or when nodes are left unplaced). The full element format is
 documented inline on each tool's element argument, so the tool definitions are the complete reference for it.
-list_templates has Blank Space and four ready-furnished Spaces (virtual-office, coworking-space, team-pod,
-all-hands-hall): its kind passed as "template" on create_document / add_tab starts a tab from one, and
+list_templates has Blank Space and thirteen ready-furnished Spaces (virtual-office, team-pod, all-hands-hall,
+rooftop-bar, garden-retreat, company-campus, ...) in five categories: its kind passed as "template" on create_document / add_tab
+starts a tab from one, and
 update_document fills in real labels.
-The "graph" argument (nodes + edges by id, or the same as Mermaid text in "mermaid") builds a boxes-and-arrows board
+The "graph" argument (nodes + edges by id) builds a boxes-and-arrows board
 (a process, a flow, a hierarchy, swimlanes, a cycle) with no coordinates: template-sized boxes, elbow lines, a
 decision's side exit level beside it, loops routed round the boxes, flowchart steps toned by their "shape" (a stadium
 starts or ends, a diamond decides), node tones and icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy), lanes (each group a swimlane) and cycle (a ring).
@@ -408,7 +409,7 @@ const graphField = z
       .array(
         z.object({
           id: z.string().describe("Unique id, never also a node's (an edge may point at a group)."),
-          label: z.string().optional().describe("The group's heading, drawn on its frame."),
+          label: z.string().optional().describe("The group's heading, drawn on its boundary."),
           members: z
             .array(z.string())
             .optional()
@@ -417,7 +418,7 @@ const graphField = z
       )
       .optional()
       .describe(
-        'Named clusters (e.g. "Frontend", "Backend"): each is drawn as a frame around its ' +
+        'Named clusters (e.g. "Frontend", "Backend"): each is drawn as a boundary around its ' +
           'members and laid out as one block.',
       ),
     direction: z
@@ -466,19 +467,7 @@ const graphField = z
   .optional()
   .describe(
     'A node/edge graph the server turns into laid-out boxes + arrows — the ' +
-      'easiest way to author. Provide one of graph, mermaid, elements or template.',
-  );
-
-// The same graph as Mermaid (docs/specs/015-api/mcp-server.md §4.7): parsed by the editor's own
-// importer, so a model can write the notation it already knows.
-const mermaidField = z
-  .string()
-  .optional()
-  .describe(
-    'The same graph as Mermaid text: a flowchart (graph / flowchart, with subgraphs) or a state ' +
-      'diagram (stateDiagram). Parsed into the same graph as the "graph" input: subgraphs become ' +
-      'groups, the direction is kept, and the same label limit applies. Front matter (---, title: Text, ---) ' +
-      'titles either. Provide one of graph, mermaid, elements or template.',
+      'easiest way to author. Provide one of graph, elements or template.',
   );
 
 // Icon search (docs/specs/015-api/mcp-server.md §4.5a): the ids "iconId" takes, found by what they show.
@@ -511,7 +500,7 @@ export const readDocumentShape = {
     .optional()
     .describe(
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
-        'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
+        'nested by container. graph: what connects to what. layout: where things sit. comments: open threads ' +
         'in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
     ),
   budget: z
@@ -541,7 +530,7 @@ export const readDocumentShape = {
     .max(FIND_QUERY_MAX_LENGTH)
     .optional()
     .describe('find: the text to look for, case-insensitive.'),
-  coarse: z.boolean().optional().describe('layout: rows per frame instead of coordinates.'),
+  coarse: z.boolean().optional().describe('layout: rows per container instead of coordinates.'),
   all: z.boolean().optional().describe('comments: include resolved threads.'),
   style: z
     .boolean()
@@ -573,7 +562,6 @@ export const createDocumentTab = z.object({
     'Name of the tab. Optional with a template (its own first tab name is used); otherwise "Tab n".',
   ).optional(),
   graph: graphField,
-  mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
   theme: z
@@ -622,7 +610,6 @@ export const addTabShape = {
     .describe('The Space to add a tab to (from find_documents / read_document).'),
   name: nameField('Name of the new tab.'),
   graph: graphField,
-  mermaid: mermaidField,
   elements: elementArray.optional(),
   template: templateField,
   layout: layoutField,
@@ -649,7 +636,6 @@ export const updateDocumentShape = {
         'conflict, never silently overwritten; read again and redo the edit.',
     ),
   graph: graphField,
-  mermaid: mermaidField,
   elements: elementArray
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),
@@ -686,13 +672,14 @@ export const updateDocumentShape = {
         'fixes are written in. Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
         '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
         '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
-        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +
-        '<frame>; order <sel> front|back; layout <sel> [style=flow|tree] [direction=down|right]. ' +
-        'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
+        '(puts a node on the a→b arrow and makes room); wrap <sel…> in boundary|lane [label=…] [tidy]; unwrap ' +
+        '<container>; order <sel> front|back; layout <sel> [style=flow|tree] [direction=down|right]. ' +
+        'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<container>, a->b, from:<x>, to:<x>, ' +
         'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
-        'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +
-        'beside one inside a frame or lane joins it (the container grows); to stay outside, place it against the ' +
-        'frame itself (below:<frame>), with align:<x> to line it up with a member (below:<frame> align:<x>). ' +
+        'inside:<container>, align:<x>, at:x,y; inside:<container> right-of:<x> places beside x in it. A box ' +
+        'placed beside one inside a boundary or lane joins it (the container grows); to stay outside, place it ' +
+        'against the container itself (below:<container>), with align:<x> to line it up with a member ' +
+        '(below:<container> align:<x>). ' +
         'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
         'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +
         'dotted line=…, or any stored field by name. Values with spaces are quoted: label="Sign in". ' +
@@ -702,13 +689,14 @@ export const updateDocumentShape = {
 
 export const shareDocumentShape = {
   documentId: z.string().describe('The Space to share (from find_documents / read_document).'),
+  // livehuddle offers no new Viewer link (docs/specs/013-workspace/share-roles.md "What a new share offers").
   role: z
-    .enum(['view', 'participate', 'edit'])
+    .enum(['participate', 'edit'])
     .optional()
     .describe(
-      'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
-        'but cannot reshape it; right for a meeting. "view": they only look, ' +
-        'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any.',
+      'What the link grants. "participate" (default): recipients talk, add stickies, write and comment ' +
+        'but cannot reshape it; right for a meeting. "edit": they can change anything. There is no ' +
+        'look-only link. No sign-in is needed to open either.',
     ),
   expiry: z
     .enum(['never', 'week', 'month', 'sixMonths'])

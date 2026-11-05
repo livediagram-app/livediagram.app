@@ -145,6 +145,7 @@ export function LinkCardView({
         <button
           type="button"
           aria-label="Open link"
+          data-piece-main=""
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();

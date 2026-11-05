@@ -19,33 +19,14 @@ const svgOf = (el: ShapeElement, background?: string) =>
 
 describe('Behaviour face export', () => {
   it('names an unlabelled Mode button by its destination', () => {
-    const svg = svgOf(shape('mode-button', { mode: 'laser', label: '' }));
+    const svg = svgOf(shape('mode-button', { mode: 'avatar', label: '' }));
     expect(svg).toContain('>SWITCH TO<');
-    expect(svg).toContain('>Laser<');
+    expect(svg).toContain('>Avatar<');
   });
 
   it('draws a portal as its lit ring when paired, and dim when not', () => {
     expect(svgOf(shape('portal', { portalTarget: 'x' }))).toContain('stop-opacity="0.95"');
     expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
-  });
-
-  it("draws a Reaction pad's emoji from its art when the caller has it, else as text", () => {
-    const pad = shape('reaction-pad', { reaction: 'applause', label: 'Applause' });
-    expect(svgOf(pad)).toMatch(/dominant-baseline="central"[^>]*>👏</);
-    const art = { viewBox: '0 0 36 36', markup: '<path d="M1 1"/>' };
-    const drawn = renderElementsToSvg(
-      { id: 't', name: 'T', elements: [pad] },
-      {
-        resolveEmojiArt: (g) => (g === '👏' ? art : undefined),
-      },
-    );
-    expect(drawn).toContain('viewBox="0 0 36 36"><path d="M1 1"/></svg>');
-    expect(drawn).not.toContain('>👏<');
-  });
-
-  it('draws a Reaction pad whose stored reaction this build does not know as the default one', () => {
-    const pad = shape('reaction-pad', { reaction: 'stardust' as never, label: 'Pad' });
-    expect(svgOf(pad)).toMatch(/>🎉</);
   });
 
   it('draws an arrow whose stored head shape this build does not know with the default head', () => {
@@ -69,11 +50,6 @@ describe('Behaviour face export', () => {
       ],
     });
     expect(svg).toContain('<polygon');
-  });
-
-  it('puts a Reaction pad label in its chip', () => {
-    const svg = svgOf(shape('reaction-pad', { label: 'Applause' }));
-    expect(svg).toMatch(/fill-opacity="0.07"\/><text[^>]*font-size="10.5"[^>]*>Applause</);
   });
 
   it('prints a chair label under the seat', () => {
@@ -113,10 +89,10 @@ describe('wrapLabel', () => {
 describe('Mode button glyph (docs/specs/020-import-export/export-fidelity.md)', () => {
   it('draws the mode’s own glyph from the shared data, not a placeholder ring', () => {
     for (const mode of SELECTION_MODES) expect(MODE_GLYPHS[mode], mode).toBeDefined();
-    const el = { ...createShape('mode-button', 0, 0), mode: 'eraser' as const };
+    const el = { ...createShape('mode-button', 0, 0), mode: 'avatar' as const };
     const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [el] });
-    const eraser = MODE_GLYPHS.eraser!.prims[0] as { d: string };
-    expect(svg).toContain(eraser.d);
+    const footprint = MODE_GLYPHS.avatar!.prims[0] as { d: string };
+    expect(svg).toContain(footprint.d);
   });
 });
 

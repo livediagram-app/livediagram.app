@@ -64,12 +64,19 @@ export function onCallMaximised(listener: () => void): () => void {
   return maximisedListeners.subscribe(listener);
 }
 
-/** Every bubble goes: the call ended. */
-export function resetCallMedia(): void {
-  maximised = null;
-  maximisedListeners.notify();
-  if (media.size === 0) return;
-  media = new Map();
+/**
+ * Every bubble goes: the call ended. `keep` names one id whose streams stay (the call's teardown keeps your own local
+ * preview, video-and-screen-bubbles.md "Local preview"), maximised still if it was.
+ */
+export function resetCallMedia(keep?: string): void {
+  const kept = keep === undefined ? undefined : media.get(keep);
+  const keepsMaximised = !!kept && !!maximised && maximised.id === keep && !!kept[maximised.media];
+  if (!keepsMaximised) {
+    maximised = null;
+    maximisedListeners.notify();
+  }
+  if (media.size === (kept ? 1 : 0)) return;
+  media = kept && keep !== undefined ? new Map([[keep, kept]]) : new Map();
   mediaListeners.notify();
 }
 

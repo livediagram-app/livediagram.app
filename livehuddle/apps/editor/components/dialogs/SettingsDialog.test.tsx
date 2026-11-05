@@ -104,7 +104,7 @@ describe('SettingsDialog', () => {
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
     expect(screen.getByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Middle-Mouse Pan' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
   });
 
@@ -112,7 +112,7 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Middle-Mouse Pan' })).toBeNull();
   });
 
   it('opens on a named category when one is asked for', () => {
@@ -133,13 +133,13 @@ describe('SettingsDialog', () => {
     setViewport(true);
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    expect(screen.getByRole('switch', { name: 'Quick-Add on Hover' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Middle-Mouse Pan' })).toBeTruthy();
     // The rail is gone: a phone shows one screen at a time.
     expect(screen.queryByRole('button', { name: 'Privacy' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Quick-Add on Hover' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Middle-Mouse Pan' })).toBeNull();
   });
 
   it('reaches the Panels sub-categories on a phone through the Panels pane', () => {
@@ -150,14 +150,12 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
     const links = screen.getByRole('navigation', { name: 'Panels sub-categories' });
     expect(Array.from(links.querySelectorAll('button')).map((b) => b.textContent)).toEqual([
-      'Layers',
       'Map',
       'Collaborate',
-      'Quick Style',
     ]);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Layers' }));
-    expect(screen.getByRole('heading', { name: 'Layers' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Map' }));
+    expect(screen.getByRole('heading', { name: 'Map' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /^Panels./ }));
@@ -170,8 +168,8 @@ describe('SettingsDialog', () => {
     setViewport(false);
     const { onChange } = renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Quick-Add on Hover' }));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: true }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Middle-Mouse Pan' }));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ middleMousePan: false }));
   });
 
   describe('reopening where it was left', () => {
@@ -197,7 +195,7 @@ describe('SettingsDialog', () => {
           initialCategoryId="editor"
         />,
       );
-      expect(screen.getByRole('switch', { name: 'Quick-Add on Hover' })).toBeTruthy();
+      expect(screen.getByRole('switch', { name: 'Middle-Mouse Pan' })).toBeTruthy();
     });
 
     it('reopens a phone on the pushed pane it was closed on', () => {

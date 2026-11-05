@@ -12,19 +12,15 @@ const { useDockPopovers } = await import('./useDockPopovers');
 
 const button = () => document.createElement('button');
 
-// docs/specs/017-telemetry/telemetry.md: the popover layouts open Layers and Activity here rather
+// docs/specs/017-telemetry/telemetry.md: the popover layouts open Collaborate and Tidy Up here rather
 // than through the desktop un-minimise toggle, so they count here.
 describe('useDockPopovers panel-open telemetry', () => {
   beforeEach(() => trackMock.mockReset());
 
-  it('counts a Layers and a Collaborate open through the popover path', () => {
+  it('counts a Collaborate open through the popover path', () => {
     const { result } = renderHook(() => useDockPopovers({ current: null }));
-    act(() => result.current.handleDockButtonClick('layers', button()));
     act(() => result.current.handleDockButtonClick('collaborate', button()));
-    expect(trackMock.mock.calls).toEqual([
-      ['Layer', 'Opened', 'Panel'],
-      ['UI', 'Opened', 'Collaborate'],
-    ]);
+    expect(trackMock.mock.calls).toEqual([['UI', 'Opened', 'Collaborate']]);
   });
 
   it('counts a Tidy Up open (docs/specs/008-canvas/layout-cleanup.md "Telemetry")', () => {
@@ -35,8 +31,8 @@ describe('useDockPopovers panel-open telemetry', () => {
 
   it('does not count a close', () => {
     const { result } = renderHook(() => useDockPopovers({ current: null }));
-    act(() => result.current.handleDockButtonClick('layers', button()));
-    act(() => result.current.handleDockButtonClick('layers', button()));
+    act(() => result.current.handleDockButtonClick('collaborate', button()));
+    act(() => result.current.handleDockButtonClick('collaborate', button()));
     expect(trackMock).toHaveBeenCalledOnce();
     expect(result.current.activeDockPanel).toBeNull();
   });

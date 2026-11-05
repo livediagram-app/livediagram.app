@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
+import { PALETTE_DND_MIME, STICKER_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { tileDragStart } from './palette-tile-drag';
 
@@ -39,28 +39,18 @@ describe('tileDragStart', () => {
   });
 
   it('carries a shape’s creation-time choice alongside its kind', () => {
-    const { data } = drag({ type: 'shape', kind: 'reaction-pad', reaction: 'hearts' });
-    expect(data.get(PALETTE_DND_MIME)).toBe('reaction-pad|hearts');
+    const { data } = drag({ type: 'shape', kind: 'mode-button', mode: 'avatar' });
+    expect(data.get(PALETTE_DND_MIME)).toBe('mode-button|avatar');
   });
 
   it('carries a sticky note', () => {
     expect(drag({ type: 'sticky' }).data.get(PALETTE_DND_MIME)).toBe('sticky');
   });
 
-  it('carries a line icon on the icon mime', () => {
-    const { data } = drag({ type: 'icon', iconId: 'message' });
-    expect(data.get(ICON_DND_MIME)).toBe('message');
-    expect(data.has(PALETTE_DND_MIME)).toBe(false);
-  });
-
-  it('carries a technology icon on the tech-icon mime', () => {
-    expect(drag({ type: 'tech-icon', iconId: 'react' }).data.get(TECH_ICON_DND_MIME)).toBe('react');
-  });
-
-  it('carries a sticker on its own mime, never the icon one', () => {
+  it('carries a sticker on its own mime, never the shape one', () => {
     const { data } = drag({ type: 'sticker', stickerId: 'speech-balloon' });
     expect(data.get(STICKER_DND_MIME)).toBe('speech-balloon');
-    expect(data.has(ICON_DND_MIME)).toBe(false);
+    expect(data.has(PALETTE_DND_MIME)).toBe(false);
   });
 
   it('offers no drag for tools that arm a gesture rather than place an element', () => {

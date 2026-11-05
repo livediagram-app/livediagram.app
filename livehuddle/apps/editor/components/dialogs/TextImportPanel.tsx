@@ -6,12 +6,11 @@ import type { ImportImageProgress } from '@/lib/import-images';
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 type ProgressListener = (progress: ImportImageProgress) => void;
 
-// The paste-or-file sub-view for a text import format (the Import to Tab dialog's JSON and Excalidraw).
+// The paste-or-file sub-view for a text import format (the Import to Tab dialog's JSON).
 // A textarea to paste/write the content, an Import button, and a "pick a
-// file instead" escape hatch. Format-agnostic — the parent supplies the
+// file instead" escape hatch. Format-agnostic: the parent supplies the
 // placeholder example and the two runners (text vs file). Owns its own
-// text / busy / error so the format grid stays simple. Shared by JSON and
-// Excalidraw.
+// text / busy / error.
 export function TextImportPanel({
   formatTitle,
   placeholder,

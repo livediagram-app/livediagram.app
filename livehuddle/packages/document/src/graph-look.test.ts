@@ -231,7 +231,8 @@ describe('title, subtitle and key', () => {
     expect(labels).not.toContain('Data store');
     // A frame titled Key holding its rows, so it moves as one.
     const key = els.find(
-      (e) => e.type === 'shape' && e.shape === 'frame' && (e as { label?: string }).label === 'Key',
+      (e) =>
+        e.type === 'shape' && e.shape === 'boundary' && (e as { label?: string }).label === 'Key',
     ) as BoxedElement;
     expect(key).toBeDefined();
     const step = els.find(
@@ -742,7 +743,7 @@ describe('frames as walls', () => {
   it('routes a line between two nodes outside a group round it, though it touches no member', () => {
     // a over b, a group between them whose one member stands clear of the line: the straight line runs through the
     // frame's empty side.
-    const frame = box('g', -60, 150, { shape: 'frame', width: 420, height: 160 });
+    const frame = box('g', -60, 150, { shape: 'boundary', width: 420, height: 160 });
     const member = box('m', 140, 200);
     const line = {
       id: 'x',

@@ -1,15 +1,13 @@
 // The Toolbar strip's Search over the open-ended catalogues (docs/specs/007-editor/toolbar-layout.md
-// "Search: every element type"): Icons, Stickers and Technology, each entry a dynamic tile
-// (palette-dynamic-tiles) so it places as its category's own tile does. Split like the element
-// tiles: a catalogue the mode's palette offers is this mode's, the rest another mode's.
+// "Search: every element type"): Stickers, each entry a dynamic tile (palette-dynamic-tiles) so it places as its
+// category's own tile does. Split like the element tiles: a catalogue the mode's palette offers is this mode's, the
+// rest another mode's. No line-art icons and no Technology marks: livehuddle offers neither
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
 import type { EditorMode, Element } from '@livehuddle/document';
-import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@liveworkspace/icons';
-import { getLineArtIconCatalog } from '@/lib/icons';
+import { paletteRank, type StickerDef } from '@liveworkspace/icons';
 import { getStickerCatalog } from '@liveworkspace/workbench/lib/stickers';
-import { getLoadedTechIconCatalog } from '@liveworkspace/workbench/lib/icon-registry';
-import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { paletteCategoryOffered } from './palette-layouts';
-import { iconTileDef, stickerTileDef, techTileDef } from './palette-dynamic-tiles';
+import { stickerTileDef } from './palette-dynamic-tiles';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { ElementTileSearch } from './palette-tile-search';
 
@@ -19,7 +17,7 @@ export const CATALOGUE_MATCH_LIMIT = 15;
 
 type Catalogue<T> = {
   // The PALETTE_CATEGORIES id: whether the mode offers it decides its section.
-  category: 'icons' | 'stickers' | 'technology';
+  category: 'stickers';
   entries: () => readonly T[];
   id: (entry: T) => string;
   name: (entry: T) => string;
@@ -27,14 +25,6 @@ type Catalogue<T> = {
   tile: (entry: T) => PaletteTileDef;
 };
 
-const ICONS: Catalogue<IconDef> = {
-  category: 'icons',
-  entries: getLineArtIconCatalog,
-  id: (i) => i.id,
-  name: (i) => i.label,
-  keywords: (i) => `${i.keywords} ${i.id}`,
-  tile: iconTileDef,
-};
 const STICKERS: Catalogue<StickerDef> = {
   category: 'stickers',
   entries: getStickerCatalog,
@@ -44,15 +34,6 @@ const STICKERS: Catalogue<StickerDef> = {
   keywords: (s) => `${s.keywords} ${s.id} ${s.kind === 'badge' ? s.text : ''}`,
   tile: stickerTileDef,
 };
-const TECH: Catalogue<TechIconDef> = {
-  category: 'technology',
-  entries: getLoadedTechIconCatalog,
-  id: (t) => t.id,
-  name: (t) => t.label,
-  keywords: (t) => `${t.keywords} ${t.id} ${t.provider}`,
-  tile: techTileDef,
-};
-
 /** A catalogue's best matches for a non-empty query, ranked as the element tiles are, capped. */
 function matchesIn<T>(cat: Catalogue<T>, query: string): PaletteTileDef[] {
   const q = query.trim();
@@ -67,19 +48,12 @@ function matchesIn<T>(cat: Catalogue<T>, query: string): PaletteTileDef[] {
     .map((r) => cat.tile(r.entry));
 }
 
-/** The catalogue entries on the tab, by catalogue: an icon or a technology mark is an icon shape
- *  carrying its id, a sticker a shape carrying its sticker id. */
-function idsOnTab(elements: readonly Element[]) {
-  const icons = new Set<string>();
-  const tech = new Set<string>();
+/** The stickers on the tab: a shape carrying its sticker id. A stored icon lists nothing: livehuddle offers no icon
+ *  to add more of. */
+function stickerIdsOnTab(elements: readonly Element[]) {
   const stickers = new Set<string>();
-  for (const el of elements) {
-    if (el.type !== 'shape') continue;
-    if (el.stickerId) stickers.add(el.stickerId);
-    else if (el.shape === 'icon' && el.iconId)
-      (isTechIconId(el.iconId) ? tech : icons).add(el.iconId);
-  }
-  return { icons, tech, stickers };
+  for (const el of elements) if (el.type === 'shape' && el.stickerId) stickers.add(el.stickerId);
+  return stickers;
 }
 
 function onTab<T>(cat: Catalogue<T>, ids: Set<string>): PaletteTileDef[] {
@@ -107,14 +81,9 @@ export function searchCatalogueTiles({
 }): ElementTileSearch {
   if (!loaded) return { here: [], elsewhere: [] };
   const browsing = !query.trim();
-  const ids = browsing ? idsOnTab(tabElements) : null;
+  const ids = browsing ? stickerIdsOnTab(tabElements) : null;
   const out: ElementTileSearch = { here: [], elsewhere: [] };
-  const add = <T>(cat: Catalogue<T>, onTabIds: Set<string> | undefined) => {
-    const tiles = ids ? onTab(cat, onTabIds!) : matchesIn(cat, query);
-    (paletteCategoryOffered(mode, cat.category) ? out.here : out.elsewhere).push(...tiles);
-  };
-  add(ICONS, ids?.icons);
-  add(STICKERS, ids?.stickers);
-  add(TECH, ids?.tech);
+  const tiles = ids ? onTab(STICKERS, ids) : matchesIn(STICKERS, query);
+  (paletteCategoryOffered(mode, STICKERS.category) ? out.here : out.elsewhere).push(...tiles);
   return out;
 }

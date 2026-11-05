@@ -11,11 +11,12 @@
 // Realtime), which the room relays like a cursor.
 
 import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useState } from 'react';
-import { drinkFrom, DRINK_HOLD_MS, isSeatingShape, type DrinkKind } from '../office-geometry';
-import { isSceneShape, type AvatarSceneElement, type SceneShapeOf } from '../scene';
+import { drinkFrom, DRINK_HOLD_MS, seatsACharacter, type DrinkKind } from '../office-geometry';
+import { hasSceneBox, isSceneShape, type AvatarSceneElement, type SceneShapeOf } from '../scene';
 import {
   clearOfFences,
   fenceReachFor,
+  shutDoorLines,
   fenceSegments,
   fenceStalled,
   fenceStep,
@@ -28,9 +29,12 @@ import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKey
 import { padEntry } from '../pad';
 import { newSeatClaim, type SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
+import { buildNavGrid, findWalkPath, type NavGrid } from '../pathing';
 import {
   arrowDirection,
+  centredCamera,
   elementUnderFeet,
+  sitsOnEntry,
   facingFromDelta,
   followCorrection,
   hitTestAvatar,
@@ -100,12 +104,14 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   viewportZoom,
   setViewportOffset,
   spawnAtRef,
+  spawnPadRef,
   onPresence,
   peers,
   onWalkIntoPortal,
   onWalkIntoChair,
   onWalkIntoReactionPad,
   onWalkIntoDrink,
+  camera = 'edge',
 }: {
   // True while the Avatar canvas tool is the active tool.
   active: boolean;
@@ -130,6 +136,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // the entry effect below — which then clears it, so the palette's own way in
   // still spawns centre-screen.
   spawnAtRef?: React.MutableRefObject<AvatarPoint | null>;
+  // A one-shot pad for the NEXT entry: pressing an Avatar Pad (docs/specs/009-elements/avatar-pad.md "Pressing it")
+  // starts the walk on that pad rather than the one nearest the view's centre. Cleared once used, like spawnAtRef.
+  spawnPadRef?: React.MutableRefObject<string | null>;
   // Publishes the local character to the room so peers can see it, and
   // `null` on exit so they drop it. Throttling lives in the broadcaster.
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
@@ -151,6 +160,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // The office's machines (docs/specs/009-elements/office.md "Using it"): the character walked onto a water
   // cooler or a coffee machine. Fired once on ARRIVAL, like the portal and the chair.
   onWalkIntoDrink?: (element: SceneShapeOf<E>) => void;
+  // How the view follows a walk (docs/specs/008-canvas/avatar-mode.md "The camera"): 'edge' pans only when the
+  // character nears an edge; 'centred' keeps it in the middle and gravitates back after a hand pan.
+  camera?: 'edge' | 'centred';
 }) {
   // Rendered state. `pos` survives a detour to another tool (Canvas stays
   // mounted), so coming back finds the avatar where you left it; null until
@@ -187,7 +199,38 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // change to the elements rather than per frame.
   // Only while the mode is on: a scan of the whole tab on every edit is wasted when nobody is walking.
   const fences = useMemo(() => (active ? fenceSegments(elements) : NO_FENCES), [active, elements]);
+  // Shut Doors, which a walk into the room behind one heads for (pathing.ts shutDoorCell).
+  const shutDoors = useMemo(
+    () => (active ? shutDoorLines(elements) : NO_FENCES),
+    [active, elements],
+  );
   const targetRef = useRef<AvatarPoint | null>(null);
+  // Finding the way (docs/specs/008-canvas/avatar-mode.md "Finding the way"): the route's legs still to walk after
+  // the one `targetRef` holds, and where the walk is going in the end (the click), which sitting and arriving ask.
+  const legsRef = useRef<AvatarPoint[]>([]);
+  const destRef = useRef<AvatarPoint | null>(null);
+  // The route grid, built when someone walks after the walls changed (never per frame, never while nobody walks).
+  const navRef = useRef<{
+    fences: readonly FenceSegment[];
+    reach: number;
+    grid: NavGrid | null;
+  } | null>(null);
+  // The route grid for the walls as they are now: the one already built, else built here (useAvatarWalk builds it
+  // ahead in idle time, below, so a click seldom pays for it).
+  const navGrid = (): NavGrid | null => {
+    if (fences.length === 0) return null;
+    const reach = fenceReachFor(avatarScale(config.size));
+    const nav = navRef.current;
+    if (nav && nav.fences === fences && nav.reach === reach) return nav.grid;
+    const grid = buildNavGrid(fences, reach, shutDoors);
+    navRef.current = { fences, reach, grid };
+    return grid;
+  };
+  const stopWalk = () => {
+    targetRef.current = null;
+    legsRef.current = [];
+    destRef.current = null;
+  };
   const heldRef = useRef<AvatarHeldKeys>({ ...NO_KEYS_HELD });
   const travelledRef = useRef(0);
   // Jump physics + when the current wave started (null = not waving).
@@ -266,6 +309,26 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setViewportOffset(nextOffset);
   };
 
+  // The centred camera (docs/specs/008-canvas/avatar-mode.md "The camera"): one step of the view after a move.
+  const centreStep = (
+    from: AvatarPoint,
+    to: AvatarPoint,
+    r: NonNullable<ReturnType<typeof rects>>,
+  ) => {
+    const prev = offsetRef.current;
+    const nextOffset = centredCamera(
+      prev,
+      from,
+      to,
+      { width: r.main.width, height: r.main.height },
+      viewportZoom,
+    );
+    if (nextOffset.x === prev.x && nextOffset.y === prev.y) return;
+    offsetRef.current = nextOffset;
+    offsetWrittenRef.current = nextOffset;
+    setViewportOffset(nextOffset);
+  };
+
   // Where the avatar should appear when the mode is entered: the centre of
   // the visible viewport, in canvas coords.
   const viewportCentre = (): AvatarPoint | null => {
@@ -303,7 +366,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   }
   const enterOrLeave = useEffectEvent((isActive: boolean) => {
     if (!isActive) {
-      targetRef.current = null;
+      stopWalk();
       heldRef.current = { ...NO_KEYS_HELD };
       liftRef.current = 0;
       jumpVyRef.current = 0;
@@ -337,7 +400,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     };
     // An Avatar Pad on the tab (docs/specs/009-elements/avatar-pad.md "Starting on the pad") is the board's
     // entrance: it wins over the button and the remembered spot, and the view comes to it when it is off screen.
-    const entry = padEntry(elements, centre, onScreen);
+    const pressedPad = spawnPadRef?.current ?? null;
+    if (spawnPadRef) spawnPadRef.current = null;
+    const pressed = pressedPad ? elements.filter((el) => el.id === pressedPad) : [];
+    const entry = padEntry(pressed.length > 0 ? pressed : elements, centre, onScreen);
     if (entry) {
       if (spawnAtRef) spawnAtRef.current = null;
       place(entry.feet);
@@ -374,6 +440,21 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   useEffect(() => {
     enterOrLeave(active);
   }, [active]);
+  // Build the route grid while the browser is idle after the walls change (docs/specs/008-canvas/avatar-mode.md
+  // "Finding the way"), so the next click routes at once: ~13 ms on a 100-room board, once per change, never per frame.
+  const prebuild = useEffectEvent(() => {
+    navGrid();
+  });
+  useEffect(() => {
+    if (!active || fences.length === 0) return;
+    const idle = globalThis.requestIdleCallback;
+    if (idle) {
+      const handle = idle(() => prebuild(), { timeout: 1000 });
+      return () => globalThis.cancelIdleCallback(handle);
+    }
+    const handle = setTimeout(() => prebuild(), 200);
+    return () => clearTimeout(handle);
+  }, [active, fences, config.size]);
 
   // Click / tap anywhere on the canvas: walk there. Arrow-key steering wins
   // while keys are held (the walk target would fight it). `onArrive` fires once
@@ -385,7 +466,12 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     // character out of its chair by accident. Standing up is a deliberate act
     // — an arrow key, or the seat's own Stand press.
     if (seatedRef.current) return;
-    targetRef.current = point;
+    // Routed round the walls in the way (findWalkPath); with nothing in the way, the straight line it always was.
+    const from = posRef.current;
+    const route = from ? findWalkPath(navGrid(), from, point) : [point];
+    targetRef.current = route[0]!;
+    legsRef.current = route.slice(1);
+    destRef.current = point;
     arriveRef.current = onArrive ?? null;
   };
 
@@ -399,6 +485,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     const len = Math.hypot(dx, dy) || 1;
     heldRef.current = { ...NO_KEYS_HELD };
     arriveRef.current = null;
+    // Direct, never routed: a push is a stumble, not a walk somewhere.
+    stopWalk();
     targetRef.current = {
       x: from.x + (dx / len) * AVATAR_SHOVE_DISTANCE,
       y: from.y + (dy / len) * AVATAR_SHOVE_DISTANCE,
@@ -409,7 +497,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // any walk in progress is dropped — sliding through a routine looks like a
   // bug — and re-clicking restarts it rather than queueing.
   const playReaction = (kind: AvatarReactionKind) => {
-    targetRef.current = null;
+    stopWalk();
     heldRef.current = { ...NO_KEYS_HELD };
     reactionRef.current = { kind, startedAt: performance.now() };
   };
@@ -425,7 +513,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // the character able to step only away from it.
   const sitOn = (chairId: string, at: AvatarPoint, seatFacing: AvatarFacing, index = 0) => {
     const seat = clearOfFences(at, fences, fenceReachFor(avatarScale(config.size)));
-    targetRef.current = null;
+    stopWalk();
     arriveRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
     posRef.current = seat;
@@ -462,7 +550,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // The spot is put clear of any wall it lands beside (Work Tracker #493), as an entry is.
   const stepAside = (to: AvatarPoint) => {
     const point = clearOfFences(to, fences, fenceReachFor(avatarScale(config.size)));
-    targetRef.current = null;
+    stopWalk();
     arriveRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
     if (seatedRef.current) unseat();
@@ -476,7 +564,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // without walking there. `arrivedPortalId` is remembered so standing in the exit
   // portal doesn't immediately trigger it again.
   const teleportTo = (point: AvatarPoint, arrivedPortalId?: string) => {
-    targetRef.current = null;
+    stopWalk();
     heldRef.current = { ...NO_KEYS_HELD };
     posRef.current = point;
     setPos(point);
@@ -510,7 +598,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     // Steering cancels a click-walk so the two never pull in opposite
     // directions.
     onSteer: () => {
-      targetRef.current = null;
+      stopWalk();
       // An arrow key is how you stand up (docs/specs/009-elements/chair.md): a deliberate act, and one
       // that leaves the character where the chair put it, free to walk off.
       if (seatedRef.current) unseat();
@@ -549,11 +637,11 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       ) {
         // Stopped by a wall: close enough to where it was going (a peer standing by a fence) is arriving there, so
         // what was waiting on the arrival (the shove) still happens; further off, the walk just ends.
-        const target = targetRef.current;
+        const target = destRef.current ?? targetRef.current;
         const near =
           Math.hypot(target.x - next.x, target.y - next.y) <=
           2 * fenceReachFor(avatarScale(config.size));
-        targetRef.current = null;
+        stopWalk();
         const arrived = near ? arriveRef.current : null;
         arriveRef.current = null;
         arrived?.();
@@ -564,10 +652,23 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       // this, including the within-a-hair case; re-deriving it here from the
       // coordinates was a second, subtly different definition of "arrived".
       if (!held && !fenced.blocked && targetRef.current && step?.arrived) {
-        targetRef.current = null;
-        const arrived = arriveRef.current;
-        arriveRef.current = null;
-        arrived?.();
+        // A corner of the route: on to its next leg, nothing has arrived yet.
+        const leg = legsRef.current.shift();
+        if (leg) targetRef.current = leg;
+        else {
+          // The route's end: where it was going, or, when that could not be reached, the nearest point that could,
+          // which counts as arriving only when it is near (a push lands on a peer beside a shut door).
+          const dest = destRef.current;
+          const end = targetRef.current;
+          const near =
+            !dest ||
+            Math.hypot(dest.x - end.x, dest.y - end.y) <=
+              2 * fenceReachFor(avatarScale(config.size));
+          stopWalk();
+          const arrived = near ? arriveRef.current : null;
+          arriveRef.current = null;
+          arrived?.();
+        }
       }
       const dx = next.x - from.x;
       const dy = next.y - from.y;
@@ -617,9 +718,12 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
         setWalking(true);
         const nextFacing = facingFromDelta(dx, dy);
         if (nextFacing) setFacing(nextFacing);
-        // Camera follow: keep the avatar clear of the viewport edges.
+        // Camera: keep the avatar centred, or clear of the viewport edges.
         const r = rects();
-        if (r) follow(next, r);
+        if (r) {
+          if (camera === 'centred') centreStep(from, next, r);
+          else follow(next, r);
+        }
       } else {
         setWalking(false);
       }
@@ -827,12 +931,16 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     // Chair (docs/specs/009-elements/chair.md): the same arrival hook, so sitting down costs no second
     // mechanism. Skipped while already seated somewhere.
     // A desk and a sofa seat a character the same way (docs/specs/009-elements/chair.md "Desk and sofa").
+    // Only the chair a click-walk is going to (docs/specs/009-elements/chair.md "Only the chair you are going to"):
+    // one crossed on the way somewhere else is walked through.
     if (
       el &&
       isSceneShape(el) &&
-      isSeatingShape(el.shape) &&
+      seatsACharacter(el.shape) &&
       !seatedRef.current &&
-      posRef.current
+      posRef.current &&
+      hasSceneBox(el) &&
+      sitsOnEntry(el, destRef.current ?? targetRef.current)
     ) {
       onWalkIntoChair?.(el, posRef.current);
     }
@@ -856,6 +964,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
 
   return {
     pos: active ? pos : null,
+    // The live position between renders (the loop owns it), for the editor's Fit and zoom anchor; null outside the mode.
+    readPos: () => (active ? posRef.current : null),
     facing,
     walking,
     lift,

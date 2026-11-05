@@ -4,11 +4,12 @@
 // layout only arranges them.
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so the layout spells out only where it
-// differs. The catalogue categories (Icons, Stickers) are bodies with their own content and take no tile list. The
+// differs. The catalogue category (Stickers) is a body with their own content and take no tile list. The
 // palette lands on Popular, a fixed pick of tiles from across its categories.
 import type { EditorMode } from '@livehuddle/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
+import { SPACE_CATEGORIES } from './space-categories';
 
 type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
@@ -32,44 +33,40 @@ type PaletteLayout = {
 };
 
 // The categories whose body is its own content rather than a list of tiles.
-export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['icons', 'stickers']);
+export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set(['stickers']);
 
 // The tiles no strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every element
 // type"). The meeting palette has none: the Search finds only what the palette offers
 // (docs/specs/012-collaboration/workshop-mode.md "The palette").
 export const SEARCH_ONLY_TILE_IDS: readonly string[] = [];
 
-// The pieces a meeting place is built from (docs/specs/009-elements/office.md), after a divider wherever they follow
-// the furniture.
-const OFFICE_TILES = [
-  'tools:room',
-  'tools:stage',
-  'tools:meeting-table',
-  'tools:plant',
-  'tools:bookshelf',
-  'tools:water-cooler',
-  'tools:coffee-machine',
-  'tools:rug',
-];
-
 // The meeting palette (docs/specs/012-collaboration/workshop-mode.md "The palette"): livehuddle's one palette, for
-// meeting in a Space. Light content to write on and group a room's notes with, the places and furniture a Space is
-// built from, the Reaction Pads and the Selection Mode buttons, then the decorations. No diagram tools and no
-// Collaborate elements: those are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
+// meeting in a Space. Light content to write with, the Space categories a Space is built from (one per question,
+// from their one list in space-categories.tsx; the Avatar button is in Travel), then the decorations. No diagram tools,
+// no frame and no Collaborate elements: those are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
+// Rooms opens on its Build group (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): the
+// Room, the Room Builder and the Door, then behind a divider the rest of the rooms pieces in catalogue order (Floor),
+// so a new rooms piece still joins by its tileGroup alone.
+export const ROOMS_BUILD = ['tools:room', 'tools:room-builder', 'tools:wall-door'] as const;
+function roomsTiles(): string[] {
+  const build: readonly string[] = ROOMS_BUILD;
+  const rest = tilesForCategory('collab-rooms')
+    .map((t) => t.id)
+    .filter((id) => !build.includes(id));
+  return [...ROOMS_BUILD, DIVIDE, ...rest];
+}
+
 const MEETING: PaletteLayout = {
   landing: 'popular',
   categories: [
     {
-      // What a Space is most often furnished with: a note, words, a frame round a room's notes, a picture and a
-      // link, then, behind a divider, the pieces a meeting place is built from.
+      // What a Space is most often furnished with: a note and words, then, behind a divider, the pieces a meeting
+      // place is built from. No Image or Link card (docs/specs/002-project-scope/not-in-livehuddle.md "Media").
       id: 'popular',
       description: 'What a Space is most often furnished with, from across the palette.',
       tiles: [
         'tools:sticky',
         'tools:text',
-        'tools:frame',
-        'tools:image',
-        'tools:link-card',
         DIVIDE,
         'tools:room',
         'tools:meeting-table',
@@ -80,34 +77,15 @@ const MEETING: PaletteLayout = {
     },
     // Words and notes. No Pointer note, Table, Checklist, Page or Annotation.
     { id: 'write', description: 'Text and sticky notes.', tiles: ['tools:text', 'tools:sticky'] },
-    // The frame alone, to group a room's notes. No lane, stack, boundary, timeline, key, card, badge or step.
-    { id: 'frame', tiles: ['tools:frame'] },
-    // Places to go and things to sit at, then the office pieces.
-    {
-      id: 'collab-navigate',
-      tiles: [
-        'tools:door',
-        'tools:focus-button',
-        'tools:chair',
-        'tools:desk',
-        'tools:sofa',
-        'tools:fence',
-        'tools:avatar-pad',
-        'tools:link-card',
-        DIVIDE,
-        ...OFFICE_TILES,
-      ],
-    },
-    { id: 'collab-react' },
-    { id: 'collab-mode' },
-    { id: 'icons' },
+    // Each Space category holds its group's tiles, in catalogue order; one with none yet is left off. Rooms leads
+    // with its Build group. Their order, and Travel's band of its own, are SPACE_CATEGORIES'
+    // (docs/specs/010-palette/palette-top-level-categories.md "The strip's order").
+    ...SPACE_CATEGORIES.map((c) =>
+      c.id === 'collab-rooms' ? { id: c.id, tiles: roomsTiles() } : { id: c.id },
+    ),
+    // Decoration: Stickers, last. No Icons and no Media (docs/specs/002-project-scope/not-in-livehuddle.md "Icons",
+    // "Media: Image and Link card").
     { id: 'stickers' },
-    // A picture (upload, the gallery, image search) and a link card. No avatar, no video or website embeds.
-    {
-      id: 'media',
-      description: 'A picture, uploaded or found, and a link card.',
-      tiles: ['tools:image', 'tools:link-card'],
-    },
   ],
 };
 
@@ -158,14 +136,17 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   };
 }
 
-/** The categories a mode's palette offers, in order, with their tiles. */
+/** The categories a mode's palette offers, in order, with their tiles. A tile category with no tiles (a Space
+ *  category whose pieces have not landed yet) is left off rather than opening onto nothing. */
 export function paletteCategoriesFor(mode: EditorMode): ResolvedPaletteCategory[] {
-  return paletteLayoutFor(mode).categories.map(resolve);
+  return paletteLayoutFor(mode)
+    .categories.map(resolve)
+    .filter((c) => c.tiles === null || c.tiles.length > 0);
 }
 
 /** Whether a mode's palette offers category `id`. */
 export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
-  return paletteLayoutFor(mode).categories.some((e) => e.id === id);
+  return paletteCategoriesFor(mode).some((c) => c.id === id);
 }
 
 /** The category the palette opens on: the mode's own. */
@@ -173,32 +154,13 @@ export function paletteLandingCategory(mode: EditorMode): string {
   return paletteLayoutFor(mode).landing;
 }
 
-// A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
-// Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles (whatever a
-// mode's Popular holds), then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
-const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
-const PARTICIPANT_IMAGE_TILE = 'tools:image';
+// A Participant has no palette (docs/specs/013-workspace/share-roles.md "A Participant walks").
 
-export function participantTiles(): PaletteTileDef[] {
-  const base = PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
-  const image = tileById(PARTICIPANT_IMAGE_TILE);
-  return image ? [...base, image] : base;
-}
-
-export function participantPaletteCategories(): ResolvedPaletteCategory[] {
-  const identity = IDENTITY.get('participate')!;
-  return [{ ...identity, tiles: participantTiles() }];
-}
-
-// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format
-// Painter, Slide Deck).
+// The selection modes a read-only session (a Viewer) presses on a Selection Mode button: look and walk around
+// (Build's Select and Hand, Interact's Avatar), never Edit's Eraser or Format Painter.
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',
   'pan',
-  'laser',
-  'spotlight',
   // Avatar is every role's (docs/specs/013-workspace/share-roles.md): walking writes nothing.
   'avatar',
-  'isometric',
-  'zen',
 ];

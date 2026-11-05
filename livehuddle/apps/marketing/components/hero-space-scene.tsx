@@ -19,7 +19,6 @@ import {
   SPACE_STAGE,
   SPEECH,
   STRIDE_S,
-  VOTES,
   arrivalOf,
   legsOf,
   restOf,
@@ -246,7 +245,7 @@ function RemoteCursor() {
   );
 }
 
-/** The Team Board coming alive: Kit's note in Wins, then the room's dot votes. */
+/** The Team Board coming alive: Kit's note in Wins. */
 function BoardActivity() {
   const wins = BOARD.wins;
   return (
@@ -262,22 +261,6 @@ function BoardActivity() {
       >
         {NOTE.text}
       </text>
-      {VOTES.map((vote) => {
-        const sticky = BOARD[vote.sticky] as { x: number; y: number };
-        return (
-          <circle
-            key={`${vote.sticky}-${vote.dx}`}
-            cx={sticky.x + 22 + vote.dx * 26}
-            cy={sticky.y + BOARD.size - 22}
-            r={9}
-            fill={vote.colour}
-            stroke="#ffffff"
-            strokeWidth={2}
-            className="hs-vote"
-            style={vars({ '--d': s(vote.at) })}
-          />
-        );
-      })}
       <RemoteCursor />
     </g>
   );

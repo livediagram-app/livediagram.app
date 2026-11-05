@@ -236,7 +236,7 @@ SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
 
 then read one at a time with `getTab`, each passed to `threadsOfTab(tab, status, viewerId)` (in
 `apps/api/src/comments.ts`), which applies `redactCommentAuthorIds`, orders by `commentHosts` (the comments view's
-own order, so a thread on a hidden layer is left out as the views leave its element out) and drops threads with
+own order) and drops threads with
 no comments. A grant confined to one tab passes `gateRead` on that tab only, so it lists that tab alone.
 
 ### Comment stamping

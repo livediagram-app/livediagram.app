@@ -6,7 +6,7 @@ import { SearchInput } from '@liveworkspace/workbench/components/primitives/Sear
 import type { BrowserCategory } from './PaletteCategoryBrowser';
 
 // The category browse as a two-pane picker (docs/specs/007-editor/toolbar-layout.md "The category bar"), for the
-// category bar's flyouts (Icons, Stickers, Technology, Session): the groups down a rail on the left, each its glyph,
+// category bar's flyouts (Stickers): the groups down a rail on the left, each its glyph,
 // name and count, and the open group's entries on the right under its name. One search across the top cuts across
 // every group, as the drill-in browse's does. Nothing to drill into or back out of: every group is one press away,
 // and the one open is always in view. The panes keep one height, so switching group never moves the flyout.

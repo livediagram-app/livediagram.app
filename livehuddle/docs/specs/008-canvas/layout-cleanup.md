@@ -15,8 +15,7 @@ undoable operation.
 
 ## Locked elements stay put
 
-Neither tidier moves or resizes a **locked element** or anything on a **locked layer**
-([Layers](../006-document/layers.md)): a lock means "protected from moves and resizes",
+Neither tidier moves or resizes a **locked element**: a lock means "protected from moves and resizes",
 and a cleanup is a bulk move. `cleanupElements` (`lib/tab-cleanup.ts`) collects those ids
 (`lockedElementIds`) and hands them to both passes. Auto-align leaves them unsnapped.
 Auto Layout treats a locked box as scenery rather than a graph node, so arrows to it are
@@ -48,7 +47,7 @@ off", not "this diagram has no layout".
   key's rows), stay an even step apart; the step rounds to the grid only when that moves the last
   box no further than the tolerance.
 - **Nothing breaks.** A snap that would make two boxes overlap that did not, or nudge a box part-way
-  out of a lane or frame that held it, is undone for both.
+  out of a lane or boundary that held it, is undone for both.
 - **Settled.** Passes repeat (at most 4) until one moves nothing, so running it twice changes
   nothing: the second press finds the tab already tidy.
 - Free arrow endpoints snap to the grid; pinned ones follow their boxes.
@@ -282,9 +281,8 @@ a component's nodes are positioned:
 ## The Tidy Up button
 
 The editor has a **Tidy Up** button in the bottom-right cluster, the segment immediately
-**left of Layers** in the Layers and Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up,
-Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
-than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
+**left of the Theme & Canvas brush** in the Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up
+and the brush, both about how the tab is arranged and how it looks rather than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
 strip's other buttons (one open at a time, a second press or a press outside closes it).
 
 ### Where it shows
@@ -293,9 +291,9 @@ strip's other buttons (one open at a time, a second press or a press outside clo
   and a Viewer are read-only for structure and an embed has no cluster. The command palette reaches the
   tidiers too.
 - **On a phone too.** The phone cluster is one row with room for it: Undo and Redo, the
-  Tidy Up, Layers and Theme strip, then Fit. There is no hover on touch, so a tap on the row is the
+  Tidy Up and Theme strip, then Fit. There is no hover on touch, so a tap on the row is the
   press; the popover fits the screen's width.
-- **Not in Zen**, not during the welcome flow: the strip itself is hidden there.
+- **Not during the welcome flow**: the strip itself is hidden there.
 - **A locked tab** shows the button, with Auto-align inert under a "This tab is locked" note, since
   unlocking it is the one step that makes it work.
 
@@ -307,7 +305,7 @@ strip's other buttons (one open at a time, a second press or a press outside clo
 | Participant | No button. A tidy moves every element on the tab, and a Participant never reshapes the board. |
 | Viewer      | No button.                                                                                    |
 
-The gate is the structural one Layers uses (a Participant is read-only for structure,
+The gate is the structural one (a Participant is read-only for structure,
 [Share roles](../013-workspace/share-roles.md)).
 
 ### The popover
@@ -319,7 +317,7 @@ livehuddle in Work Tracker #423 part 4.)
 
 Pressing the row runs Auto-align on the active tab (one undoable step, the same command the palette
 runs) and closes the popover. A tab with nothing on it shows the row inert under "Nothing to tidy yet.
-Add some notes or frames to this Space first." The row is a button, reached with Tab and pressed with
+Add some notes or pictures to this Space first." The row is a button, reached with Tab and pressed with
 Enter or Space; Escape closes the popover.
 
 **Greyed out with the reason.** Auto-align is [judged](#a-tidy-never-trashes-the-work) once, in a task

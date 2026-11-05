@@ -3,10 +3,10 @@ import { Card, Sparkle } from '@liveworkspace/help-site/art/parts';
 import { ToolsArt as Scene } from '@liveworkspace/help-site/art/scenes/tools';
 
 // Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livehuddle's helper: Auto-align
-// snapping a meeting's notes into line, beside the shared appearance switch and Zen mode.
+// snapping a meeting's notes into line, beside the shared appearance switch (livehuddle has no Zen mode).
 export function ToolsArt() {
   return (
-    <Scene>
+    <Scene zen={false}>
       {/* Auto-align. */}
       <Card x={22} y={22} w={200} h={78} r={12}>
         <Sparkle cx={38} cy={40} r={7} className="fill-violet-500" />

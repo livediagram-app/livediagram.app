@@ -1,7 +1,6 @@
 // Feature illustrations for the breadth of the canvas: notes, borders, arrows, shape recognition,
 // alignment guides and backdrops (the shape library lives in ./versatility-shapes, and
-// rotation and sizing, Zen mode, fonts, and Markdown and Mermaid in ./diagram-text,
-// both re-exported here). Each is a small
+// rotation and sizing and fonts in ./versatility-more, both re-exported here). Each is a small
 // mock of the editor surface its card describes, drawn on the full-width 300 by 96 card stage from
 // the parts in ./versatility-parts with a light and a dark half, and moving with the shared fa-*
 // loops plus the fa-c-* ones (app/feature-art/versatility.css), which settle to the finished frame
@@ -29,8 +28,7 @@ import {
 } from '@liveworkspace/marketing-site/components/feature-art/versatility-parts';
 
 export { ShapesArt } from './versatility-shapes';
-export { FontsArt, RotateArt, ZenModeArt } from './versatility-more';
-export { MarkdownImportArt, MermaidArt } from './diagram-text';
+export { FontsArt, RotateArt } from './versatility-more';
 
 /* ──────────────── Shapes, notes, borders, arrows ──────────────── */
 
@@ -130,7 +128,7 @@ export function NotesArt() {
   );
 }
 
-// Border styling: the Quick Style strip's border row (solid, dashed, dotted), the chosen option
+// Border styling: a border style row (solid, dashed, dotted), the chosen option
 // lighting in turn, and the selected shape below wearing each: a heavier line and rounder corners
 // as it goes.
 export function BorderStyleArt() {

@@ -1,5 +1,10 @@
 # CLI: blueprint
 
+> **No Mermaid** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)): the
+> `mermaid` source kind, `graph lint` / `render` of a Mermaid file and `export --format mermaid` are gone; a `-f`
+> file is edit operations, a graph, elements or a whole `replace`. Where a row below names Mermaid, it records what
+> livehuddle had.
+
 Derived from [CLI](../cli.md), with the OAuth server of [MCP server](../mcp-server.md) §3 and its tool contracts
 (§4), the token surface of [Public API and API tokens](../public-api-and-tokens.md) §3.4 to §3.7, the room and
 routes of [API](../api.md), the token roles of [Share roles](../../013-workspace/share-roles.md), the

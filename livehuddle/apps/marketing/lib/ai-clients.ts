@@ -35,7 +35,7 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Plan a workshop',
     prompt:
-      'Create a livehuddle Space for a two-hour planning workshop: an agenda with times, a brainstorm board, a dot vote on the ideas and a decision record.',
+      'Create a livehuddle Space for a two-hour planning workshop: an agenda with times, a brainstorm board, a poll on the ideas and a decision record.',
   },
   {
     title: 'Brainstorm an offsite',

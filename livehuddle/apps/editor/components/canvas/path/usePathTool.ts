@@ -47,7 +47,6 @@ export function usePathTool({
   pendingDraw,
   canvasTool,
   elements,
-  inertIds,
   wrapperRef,
   viewportZoom,
   activeTabId,
@@ -64,7 +63,6 @@ export function usePathTool({
   pendingDraw: PendingDraw | null;
   canvasTool: CanvasTool;
   elements: Element[];
-  inertIds?: ReadonlySet<string>;
   wrapperRef: RefObject<HTMLDivElement | null>;
   viewportZoom: number;
   activeTabId?: string;
@@ -90,7 +88,6 @@ export function usePathTool({
   const draw = usePathDrawGesture({
     pendingDraw,
     elements,
-    inertIds,
     wrapperRef,
     viewportZoom,
     activeTabId,
@@ -105,9 +102,7 @@ export function usePathTool({
   // Edit mode: the path being edited, while Select is in hand and it can be edited at all.
   const pathOf = (id: string | null): PathElement | null => {
     const el = id ? elements.find((e) => e.id === id) : undefined;
-    return el?.type === 'path' && el.locked !== true && !inertIds?.has(el.id) && !isCompoundPath(el)
-      ? el
-      : null;
+    return el?.type === 'path' && el.locked !== true && !isCompoundPath(el) ? el : null;
   };
   const editable = canvasTool === 'select' && pendingDraw === null;
   const edited = pathOf(editingId);

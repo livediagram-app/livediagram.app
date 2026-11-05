@@ -15,8 +15,8 @@ way round the outside; they cannot come in.
 
 ## The element
 
-A **shape kind**, `fence`, in the palette's **Collaborate** category under **Navigate**, beside
-the portal, the bring focus button, the chair and the link card.
+A **shape kind**, `fence`, in the palette's **Rooms** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside
+the room, the stage and the rug: the pieces a floor is laid out with.
 
 - **Drawn as a fence**: square posts at both ends and at even spacing between, with two rails
   running the full length. It reads as a barrier, not as a box with a border.
@@ -58,15 +58,18 @@ fence**, from either side.
   reach is 9.2 px), so only one put there walks through.
   A step along the fence, the same distance off it, is never read as closing in for rounding (a millionth of a px
   either way).
-- **A hidden layer's fences block nothing**, as its portals and chairs do nothing: a character walks
-  among what is drawn.
+- **A footprint is solid** ([Office](office.md)): a character inside one (sat on a seat tucked into it, such as a
+  Bar Stool tucked under a Bar's counter, or with scenery dropped on it) is never held there. Its edges refuse
+  only a step that goes deeper in, measured from its nearest side, so the character walks along it and out of its
+  nearest side, never further in and never stuck. Outside it, its edges block as any fence does.
 - **What does not walk is not blocked.** A portal still carries a character through a fence (a
   portal is a gate), sitting snaps a character onto its chair, and a new character appears where
   the mode puts it. Put down beside a fence or wall, inside its reach but not in it, it is nudged just clear of it
   to the side its feet were on, so it never opens held where a click past the wall does nothing; put down in the
   wall itself, it stays there, free to walk off either side. The same nudge follows a fence or room moved,
   pasted or resized onto a standing character, once the change settles (never on each frame of a drag), and a seat
-  snap or a step aside that lands inside a wall's reach. A character that starts inside a fenced area stays
+  snap or a step aside that lands inside a wall's reach. One put down inside a footprint is not nudged (a nudge to
+  the side its feet were on would push it deeper in): it walks out. A character that starts inside a fenced area stays
   inside until it takes a portal out.
 - **A fence is not a destination.** Standing beside one does not ring it as "the element you are
   on".
@@ -81,7 +84,7 @@ simply never see a character on the far side of a fence because its owner's walk
 ## Share roles
 
 - **Editor**: places, moves, resizes, turns, recolours and deletes fences, like any element.
-- **Participant**: the participant palette does not offer the fence; a Participant's character is
+- **Participant**: has no palette, so it places no fence; a Participant's character is
   blocked like everyone's.
 - **Viewer**: cannot change a fence; a Viewer's character is blocked like everyone's.
 

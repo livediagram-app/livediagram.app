@@ -65,7 +65,7 @@ export type GraphEdge = {
 };
 
 // A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a
-// `frame` shape drawn around its members and laid out as one block — see
+// `boundary` shape (Inset style) drawn around its members and laid out as one block — see
 // layoutClusteredGraph (auto-layout-clusters.ts). Optional and additive:
 // callers that don't speak clusters (the MCP today) ignore it.
 export type GraphCluster = {

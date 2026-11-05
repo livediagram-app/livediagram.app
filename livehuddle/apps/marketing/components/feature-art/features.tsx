@@ -1,5 +1,5 @@
 // Feature illustrations for the editor's own surfaces: the tab bar, copying a tab, undo, locking,
-// shift-drag and layers (images, keyboard shortcuts and the session tools are in ./features-more). Each is a small,
+// and shift-drag (images, keyboard shortcuts and the session tools are in ./features-more). Each is a small,
 // faithful mock of what the editor draws, on the Default scheme's canvas (--art-*) with panel
 // chrome that has a light and a dark half, moving on a shared 6s loop (fa-b-* in
 // app/feature-art/features.css). Under reduced motion every scene shows its finished state.
@@ -9,8 +9,6 @@
 
 import {
   Arrow,
-  Eye,
-  Plane,
   RoadmapBars,
   TabPill,
   UndoCluster,
@@ -18,10 +16,8 @@ import {
   KeyCap,
   MiniWindow,
   Node,
-  PANEL,
   PanelShadow,
   Pointer,
-  STRONG,
   SUBTLE,
   to,
   VIEW,
@@ -239,7 +235,7 @@ export function UndoRedoArt() {
   );
 }
 
-/** Lock: a finished frame stays put. A drag on it only shakes it, and a tip says why. */
+/** Lock: finished work stays put. A drag on it only shakes it, and a tip says why. */
 export function LockArt() {
   return (
     <Frame canvas>
@@ -251,7 +247,7 @@ export function LockArt() {
           <rect x="31" y="44" width="20" height="2.4" rx="1.2" fill="#92400e" fillOpacity="0.45" />
         </g>
 
-        {/* The locked frame and its contents, which a drag only nudges. */}
+        {/* The locked group and its contents, which a drag only nudges. */}
         <g className="fa-b-shake">
           <rect
             className="stroke-(--art-ink-stroke)"
@@ -358,118 +354,6 @@ export function DragDuplicateArt() {
 
         {/* Shift, held for the length of the drag. */}
         <KeyCap x={14} y={68} w={34} label="⇧ Shift" pressed />
-      </svg>
-    </Frame>
-  );
-}
-
-/** Layers: a stack of planes and the panel that runs it; hiding Notes lifts its plane away. */
-export function LayersArt() {
-  const rows = [
-    { name: 'Notes', swatch: AMBER, hides: true },
-    { name: 'Flow', swatch: SKY, selected: true },
-    { name: 'Background', swatch: '#94a3b8', locked: true },
-  ];
-  return (
-    <Frame canvas>
-      <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
-        <Plane
-          y={66}
-          fill="fill-slate-100 dark:fill-slate-800"
-          stroke="stroke-slate-300 dark:stroke-slate-600"
-        >
-          <rect
-            className="fill-slate-300 dark:fill-slate-600"
-            x="-10"
-            y="-4"
-            width="20"
-            height="8"
-            rx="1.5"
-            transform="skewY(0)"
-          />
-        </Plane>
-        <Plane y={48} fill="fill-sky-50/90 dark:fill-sky-950/80" stroke="stroke-sky-400">
-          <rect x="-24" y="-4" width="16" height="8" rx="1.5" fill={SKY} />
-          <rect x="6" y="-4" width="16" height="8" rx="1.5" fill={SKY} fillOpacity="0.55" />
-          <path d="M-8 0 H6" stroke={SKY} strokeWidth="1.2" />
-        </Plane>
-        <Plane
-          y={30}
-          fill="fill-amber-50/90 dark:fill-amber-950/70"
-          stroke="stroke-amber-400"
-          className="fa-b-early"
-        >
-          <rect x="-8" y="-5" width="14" height="10" rx="1" fill="#fcd34d" />
-        </Plane>
-
-        {/* The Layers panel. */}
-        <PanelShadow x={166} y={10} w={118} h={76} r={5} />
-        <rect className={PANEL} x="166" y="10" width="118" height="76" rx="5" strokeWidth="1" />
-        <text className={STRONG} x="174" y="22.5" fontSize="6.5" fontWeight="700">
-          Layers
-        </text>
-        <path
-          className="stroke-slate-400"
-          d="M273 19.5 H279 M276 16.5 V22.5"
-          strokeWidth="1.1"
-          strokeLinecap="round"
-        />
-        {rows.map((row, i) => {
-          const y = 30 + i * 18;
-          return (
-            <g key={row.name}>
-              {row.selected ? (
-                <rect
-                  x="169"
-                  y={y - 1}
-                  width="112"
-                  height="16"
-                  rx="3"
-                  fill={SKY}
-                  fillOpacity="0.12"
-                />
-              ) : null}
-              <rect
-                className="fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-600"
-                x="174"
-                y={y + 1.5}
-                width="18"
-                height="11"
-                rx="1.5"
-                strokeWidth="0.8"
-              />
-              <rect x="178" y={y + 4.5} width="10" height="5" rx="1" fill={row.swatch} />
-              <text
-                className={row.selected ? undefined : STRONG}
-                x="198"
-                y={y + 9.4}
-                fontSize="6"
-                fontWeight={row.selected ? 700 : 500}
-                fill={row.selected ? SKY : undefined}
-              >
-                {row.name}
-              </text>
-              {row.locked ? (
-                <g
-                  transform={`translate(262 ${y + 7})`}
-                  className="stroke-slate-500 dark:stroke-slate-400"
-                  fill="none"
-                  strokeWidth="0.9"
-                >
-                  <rect x="-2.6" y="-0.8" width="5.2" height="4" rx="0.8" />
-                  <path d="M-1.6 -0.8 V-2 a1.6 1.6 0 0 1 3.2 0 V-0.8" />
-                </g>
-              ) : null}
-              <Eye x={274} y={y + 7} hides={row.hides} />
-            </g>
-          );
-        })}
-        <circle className="fa-b-press" cx="274" cy="37" r="5.5" fill={SKY} fillOpacity="0.2" />
-        <g className="fa-b-go" style={to(49, -19)}>
-          <g transform="translate(228 60)">
-            <Pointer color={SKY} />
-          </g>
-        </g>
       </svg>
     </Frame>
   );

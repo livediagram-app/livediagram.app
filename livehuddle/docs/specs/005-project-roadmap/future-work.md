@@ -73,3 +73,11 @@ In the [Share roles](../013-workspace/share-roles.md) ladder; the audio rows are
 - Presence carries position, tab and status already; nothing in v1 assumes a meeting has no sound.
 - Avatar Status keeps **In a Meeting**, which a call can later set for you.
 - No v1 data model holds a call; a call is never stored, so adding one needs no migration.
+
+## Social pieces
+
+From [Social pieces](../009-elements/social-pieces.md):
+
+- **A built-in jukebox list.** v1 is link only. A short list of always-on streams, each checked to be CC0 or licensed
+  royalty-free for any use (and its licence linked from the menu), becomes the Jukebox section's first choice.
+- **Mini-games.** A playable rally at the Ping-Pong Table and a game on the Arcade Machine, each for the people at it.

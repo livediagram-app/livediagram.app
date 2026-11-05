@@ -9,7 +9,6 @@ describe('new element articles are searchable from the editor', () => {
   it('finds them by the words a user would type', () => {
     for (const [q, want] of [
       ['post-it', 'Write Elements'],
-      ['confetti', 'Reaction Pads'],
       ['coffee machine', 'Virtual Office'],
     ] as const) {
       expect(find(q), q).toContain(want);

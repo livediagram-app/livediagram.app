@@ -11,7 +11,7 @@ a chevron button or a chain of crumbs. With nowhere to go back to, it stands as 
 
 - The Import and Export format panels, the Microsoft Whiteboard import among them: **All formats** then the format.
 - The Tab Style panels: **Tab Style** then **Colours**.
-- The palette's category browse: **Icons** then **People**.
+- The palette's category browse: **Stickers** then **Reactions**.
 - Folder placement (Save to, Move): **Choose a Space** as the heading of the spaces; inside one, **Choose a Space**
   then **My Work**; inside a folder, the level above then the folder.
 - The Explorer: the side panel's folders, the full Explorer's breadcrumb (**My Work** then the folder, **Home** then

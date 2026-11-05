@@ -8,7 +8,7 @@ export const EDITOR_MODE_CATALOGUE = [
   {
     id: 'workshop',
     label: 'Meeting Board',
-    description: 'Hold a meeting on one board: a timer, a dot vote, reactions and comments.',
+    description: 'Hold a meeting on one board: a timer, reactions and comments.',
   },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 

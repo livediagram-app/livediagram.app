@@ -3,20 +3,11 @@
 // lives in the editor app; this is the DATA half — what a saved element may carry
 // — so it belongs with the model, where validation can reach it.
 //
-// Kept deliberately as the full set: a button that hands someone the Eraser is
-// odd but not our call to forbid, and the author picks from a menu that names
-// each one.
+// In livehuddle Avatar is the one mode a button hands out (docs/specs/009-elements/mode-button.md "Only Avatar"): the
+// Select, Hand, Eraser and Format buttons left with the palette's Selection Mode category. A stored button carrying
+// one of them loads with the field dropped (./legacy-mode-buttons), so it reads as an Avatar button.
 
-export const SELECTION_MODES = [
-  'select',
-  'pan',
-  'laser',
-  'spotlight',
-  'avatar',
-  'eraser',
-  'format',
-  'isometric',
-] as const;
+export const SELECTION_MODES = ['avatar'] as const;
 
 export type SelectionMode = (typeof SELECTION_MODES)[number];
 
@@ -28,14 +19,7 @@ export const DEFAULT_BUTTON_MODE: SelectionMode = 'avatar';
 // What each mode is called on a Mode Button's face ("Switch to Avatar"): the
 // canvas face and the export both name the destination from here.
 export const SELECTION_MODE_LABEL: Record<SelectionMode, string> = {
-  select: 'Select',
-  pan: 'Hand',
-  laser: 'Laser',
-  spotlight: 'Spotlight',
   avatar: 'Avatar',
-  eraser: 'Eraser',
-  format: 'Format',
-  isometric: 'Isometric',
 };
 
 export function isSelectionMode(value: unknown): value is SelectionMode {
@@ -54,18 +38,6 @@ const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
 
 export function isFixedSizeShape(kind: string): boolean {
   return FIXED_SIZE_SHAPES.has(kind);
-}
-
-// The element-level answer to "can this be resized?": true for the
-// fixed-size shape KINDS above, and for any shape stamped `fixedSize`.
-// Structural param so leaf callers don't need the full Element union.
-export function isFixedSizeElement(el: {
-  type: string;
-  shape?: string;
-  fixedSize?: boolean;
-}): boolean {
-  if (el.fixedSize === true) return true;
-  return el.type === 'shape' && el.shape != null && isFixedSizeShape(el.shape);
 }
 
 // The Selection Mode button's original default skin (docs/specs/009-elements/mode-button.md): a solid brand
@@ -96,16 +68,3 @@ export function isLegacyModeButtonSkin(el: {
 
 // Today's default skin, for the elements above.
 export const MODE_BUTTON_SKIN = { fill: '#ffffff', stroke: '#cbd5e1', text: '#0f172a' } as const;
-
-// --- The Session strip's tools (docs/specs/012-collaboration/session-tools.md) ------------------------------------
-
-// The tools the Session strip starts for the room: the Timer (a countdown, or a stopwatch when it counts up) and the
-// dot Vote. The live poll and the Session button that once started these from the canvas are gone from livehuddle
-// (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
-export const SESSION_TOOLS = ['timer', 'stopwatch', 'vote'] as const;
-export type SessionTool = (typeof SESSION_TOOLS)[number];
-
-// Bounds, applied wherever a value is read rather than only where it is typed.
-export const TIMER_MINUTES_RANGE = { min: 1, max: 120 } as const;
-
-export const VOTE_DOTS_RANGE = { min: 1, max: 10 } as const;

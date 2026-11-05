@@ -74,11 +74,10 @@ card is kept **only where it says something the face cannot**:
 - **a person** (an avatar's name card);
 - something the face deliberately **does not draw** (where a Portal leads, since
   the ring carries no caption);
-- a control whose press is **not what it looks like** (a dot-vote tally, where a
-  click takes your dot back).
+- a control whose press is **not what it looks like**.
 
 Never on a **labelled button** (Reveal, New round, Open the box, Take roll,
-I'm done, Pick, Hide: the label is the whole story), never on a vote arrow or a
+I'm done, Pick, Hide: the label is the whole story), never on a
 chip, and never over a **whole element** (the Reaction pad's card covered the
 pad, so it opened every time the pointer crossed it). Anything worth saying
 about a removed one lives in the element's help article and its accessible

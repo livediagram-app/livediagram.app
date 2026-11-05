@@ -4,7 +4,7 @@
 // same document.
 import type { Tab } from '@livehuddle/document';
 import type { TemplateKind } from '@livehuddle/templates';
-import { buildTemplatedTab } from '@/lib/template-builders';
+import { buildTemplatedFloorTabs, buildTemplatedTab } from '@/lib/template-builders';
 import { templateTabName } from '@/lib/template-tab-name';
 import { getTheme } from '@/lib/themes';
 
@@ -37,4 +37,15 @@ export function newDocumentTab(input: {
     ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
     ...(templateChosen ? { templateChosen: true } : {}),
   };
+}
+
+/**
+ * Every tab a new document starts with: newDocumentTab's, then a building template's other floors, one tab each
+ * (docs/specs/007-editor/templates-by-mode.md "A template with floors").
+ */
+export function newDocumentTabs(input: Parameters<typeof newDocumentTab>[0]): Tab[] {
+  const first = newDocumentTab(input);
+  return input.templateKind
+    ? [first, ...buildTemplatedFloorTabs(input.templateKind, input.themeId)]
+    : [first];
 }

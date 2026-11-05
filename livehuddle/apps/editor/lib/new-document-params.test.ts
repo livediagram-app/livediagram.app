@@ -2,48 +2,59 @@ import { describe, expect, it } from 'vitest';
 import { templateCreateHref } from '@livehuddle/templates';
 import {
   choosePlacementAgainUrl,
+  linkedTemplateKind,
+  newSpaceKind,
   placementParamsFromSearch,
-  wizardBypassKind,
   SEARCH_PRESET_MAX,
-  wizardPresetQuery,
-  wizardStartsBlank,
+  startPresetQuery,
+  startsBlank,
 } from './new-document-params';
 
-describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
+describe('linkedTemplateKind (docs/specs/007-editor/new-document-route.md "What a /new link can ask for")', () => {
   it('reads ?blank as the Blank Space template, whatever its value', () => {
-    expect(wizardBypassKind('?blank=1')).toBe('blank-session');
-    expect(wizardBypassKind('?blank')).toBe('blank-session');
-    expect(wizardBypassKind('?folder=f1&blank=true')).toBe('blank-session');
+    expect(linkedTemplateKind('?blank=1')).toBe('blank-session');
+    expect(linkedTemplateKind('?blank')).toBe('blank-session');
+    expect(linkedTemplateKind('?folder=f1&blank=true')).toBe('blank-session');
   });
 
   it('reads ?template=<kind> for a catalogue kind', () => {
-    expect(wizardBypassKind('?template=virtual-office')).toBe('virtual-office');
+    expect(linkedTemplateKind('?template=virtual-office')).toBe('virtual-office');
     // A template that left (Work Tracker #423) reads as no kind: /new opens Blank Space.
-    expect(wizardBypassKind('?template=sailboat')).toBeNull();
-    expect(wizardBypassKind('?team=t1&template=team-pod')).toBe('team-pod');
+    expect(linkedTemplateKind('?template=sailboat')).toBeNull();
+    expect(linkedTemplateKind('?team=t1&template=team-pod')).toBe('team-pod');
   });
 
-  it('falls back to the wizard for an unknown kind or no bypass', () => {
-    expect(wizardBypassKind('?template=not-a-template')).toBeNull();
-    expect(wizardBypassKind('?template=')).toBeNull();
-    expect(wizardBypassKind('?folder=f1')).toBeNull();
-    expect(wizardBypassKind('')).toBeNull();
+  it('names none for an unknown kind or no template', () => {
+    expect(linkedTemplateKind('?template=not-a-template')).toBeNull();
+    expect(linkedTemplateKind('?template=')).toBeNull();
+    expect(linkedTemplateKind('?folder=f1')).toBeNull();
+    expect(linkedTemplateKind('')).toBeNull();
   });
 
   it('lets blank win when both are present', () => {
-    expect(wizardBypassKind('?template=kanban&blank=1')).toBe('blank-session');
+    expect(linkedTemplateKind('?template=kanban&blank=1')).toBe('blank-session');
   });
 
   it('reads back the link the templates package builds for the gallery', () => {
-    expect(wizardBypassKind(templateCreateHref('all-hands-hall').slice('/new'.length))).toBe(
+    expect(linkedTemplateKind(templateCreateHref('all-hands-hall').slice('/new'.length))).toBe(
       'all-hands-hall',
     );
   });
 });
 
+describe('newSpaceKind', () => {
+  it('makes the named template, else the Blank Space, so every /new makes a Space', () => {
+    expect(newSpaceKind('?template=team-pod')).toBe('team-pod');
+    expect(newSpaceKind('')).toBe('blank-session');
+    expect(newSpaceKind('?template=kanban')).toBe('blank-session');
+    expect(newSpaceKind('?q=bar&folder=f1')).toBe('blank-session');
+  });
+});
+
 describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)', () => {
-  it('drops the refused placement and the bypass, so the wizard starts from the root of My Work', () => {
-    expect(choosePlacementAgainUrl('?blank=1&team=t1&folder=f1')).toBe('/new');
+  it('drops the refused placement and the template, so the next create goes where new Spaces go', () => {
+    expect(choosePlacementAgainUrl('?template=team-pod&team=t1&folder=f1')).toBe('/new');
+    expect(choosePlacementAgainUrl('?blank=1&team=t1')).toBe('/new?blank=1');
   });
 
   it('keeps every other param', () => {
@@ -57,14 +68,14 @@ describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)'
   });
 });
 
-// docs/specs/007-editor/new-document-route.md "?mode= and ?q=": the template step's presets.
-describe('wizardPresetMode / wizardPresetQuery', () => {
+// docs/specs/007-editor/new-document-route.md "What a /new link can ask for": `?q=` searches the new Space's start.
+describe('startPresetQuery', () => {
   it('reads the words, trimmed and capped, and ignores none', () => {
-    expect(wizardPresetQuery('?q=mind%20map')).toBe('mind map');
-    expect(wizardPresetQuery('?q=%20%20article%20')).toBe('article');
-    expect(wizardPresetQuery(`?q=${'x'.repeat(80)}`)).toHaveLength(SEARCH_PRESET_MAX);
-    expect(wizardPresetQuery('?q=%20')).toBeNull();
-    expect(wizardPresetQuery('?mode=draw')).toBeNull();
+    expect(startPresetQuery('?q=mind%20map')).toBe('mind map');
+    expect(startPresetQuery('?q=%20%20article%20')).toBe('article');
+    expect(startPresetQuery(`?q=${'x'.repeat(80)}`)).toHaveLength(SEARCH_PRESET_MAX);
+    expect(startPresetQuery('?q=%20')).toBeNull();
+    expect(startPresetQuery('?mode=draw')).toBeNull();
   });
 });
 
@@ -85,19 +96,17 @@ describe('placementParamsFromSearch', () => {
   });
 });
 
-describe('wizardStartsBlank (docs/specs/007-editor/new-document-route.md "Start Blank after a mode")', () => {
-  it('reads ?start=blank, beside any other param', () => {
-    expect(wizardStartsBlank('?start=blank')).toBe(true);
-    expect(wizardStartsBlank('?start=blank&via=Home.HeaderBlank')).toBe(true);
+describe('startsBlank (docs/specs/007-editor/new-document-route.md "What a /new link can ask for")', () => {
+  it('reads ?blank and ?start=blank, beside any other param', () => {
+    expect(startsBlank('?blank=1')).toBe(true);
+    expect(startsBlank('?start=blank')).toBe(true);
+    expect(startsBlank('?start=blank&via=Home.HeaderBlank')).toBe(true);
   });
 
-  it('is off without it or for any other value', () => {
-    expect(wizardStartsBlank('')).toBe(false);
-    expect(wizardStartsBlank('?start')).toBe(false);
-    expect(wizardStartsBlank('?start=templates')).toBe(false);
-  });
-
-  it('is not a bypass: the wizard still asks for a mode', () => {
-    expect(wizardBypassKind('?start=blank')).toBeNull();
+  it('is off without them or for any other start value', () => {
+    expect(startsBlank('')).toBe(false);
+    expect(startsBlank('?start')).toBe(false);
+    expect(startsBlank('?start=templates')).toBe(false);
+    expect(startsBlank('?template=team-pod')).toBe(false);
   });
 });

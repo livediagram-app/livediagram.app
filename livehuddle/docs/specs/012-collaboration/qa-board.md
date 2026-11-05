@@ -256,8 +256,8 @@ Both boards start **empty**. A session template is used live, and example
 questions would be the first thing a facilitator had to delete in front of the
 room; the board's own empty state already says what to do. The scaffolding
 around each board (the steps, the panel, the agenda) carries the worked
-example instead. Neither ships layers: everything on a session board is used
-live, so there is no scaffold to lock.
+example instead. Neither ships locked scaffolding: everything on a session board is used
+live, so there is nothing to lock.
 
 ## Export and render
 

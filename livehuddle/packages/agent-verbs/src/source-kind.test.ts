@@ -26,10 +26,11 @@ describe('classifySource', () => {
     expect(classifySource('[]')).toMatchObject({ kind: 'elements' });
   });
 
-  it('reads Mermaid by its header, and anything else as edit operations', () => {
+  // Mermaid is gone from livehuddle (not-in-livehuddle.md "Imports from other tools"): it is not a source kind.
+  it('reads anything that is not whole JSON as edit operations, Mermaid included', () => {
     expect(classifySource('flowchart LR\n  a --> b\n')).toEqual({
-      kind: 'mermaid',
-      body: { replace: { mermaid: 'flowchart LR\n  a --> b\n' } },
+      kind: 'operations',
+      body: { operations: 'flowchart LR\n  a --> b\n' },
     });
     const ops = 'add square id=web label=Web\nconnect web -> api\n';
     expect(classifySource(ops)).toEqual({ kind: 'operations', body: { operations: ops } });

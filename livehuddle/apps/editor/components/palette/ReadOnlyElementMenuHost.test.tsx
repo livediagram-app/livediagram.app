@@ -48,7 +48,8 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('ReadOnlyElementMenuHost', () => {
-  it('gives a Participant comments, its words and what the element carries', () => {
+  // A Participant writes on nothing (docs/specs/013-workspace/share-roles.md "A Participant walks").
+  it('gives a Participant comments and what the element carries, and no Edit Text', () => {
     open(
       'participate',
       square({
@@ -58,7 +59,7 @@ describe('ReadOnlyElementMenuHost', () => {
       }),
     );
     expect(screen.getByText('Square')).toBeTruthy();
-    expect(rows()).toEqual(['Add Comment', 'Edit Text', 'Open Link', 'View Note', 'Copy Text']);
+    expect(rows()).toEqual(['Add Comment', 'Open Link', 'View Note', 'Copy Text']);
   });
 
   it('gives a Viewer no comment to start, no writing, and comments only where there are some', () => {
@@ -91,7 +92,8 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(ctx.openComments).toHaveBeenCalledWith('sq');
     expect(ctx.closeContextMenu).toHaveBeenCalled();
     cleanup();
-    open('participate', el);
+    // Edit Text is an Editor's row now: run it with an Editor's `can`.
+    open('view', el, { can: resolveEditorCapabilities({ level: 'edit', adderKey: null }) });
     fireEvent.click(screen.getByRole('button', { name: 'Edit Text' }));
     expect(ctx.beginEdit).toHaveBeenCalledWith('sq');
     cleanup();

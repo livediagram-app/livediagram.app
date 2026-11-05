@@ -5,14 +5,7 @@ import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCa
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
-import {
-  isLayerVisible,
-  tabLayers,
-  mermaidFromTab,
-  type Tab,
-  tabToJsonText,
-  tabToMarkdownText,
-} from '@livehuddle/document';
+import { type Tab, tabToJsonText, tabToMarkdownText } from '@livehuddle/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -21,7 +14,6 @@ import {
   renderTabToSvg,
 } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
-import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -39,9 +31,7 @@ export function sanitizeFilename(name: string): string {
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
-  mermaid: 'Mermaid',
   markdown: 'Markdown',
-  excalidraw: 'Excalidraw',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
@@ -67,21 +57,17 @@ type ExportTabDialogProps = {
   // authenticated endpoint). Absent (e.g. no document id) → images export as
   // their placeholder, same as before.
   imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
-  // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the
-  // image options then leave out "Hidden layers", and hidden layers stay out
-  // of the export as they stay off the canvas.
-  offerHiddenLayers?: boolean;
 };
 
-// The format keys the dialog offers.
-export type Format = 'file' | 'mermaid' | 'markdown' | 'excalidraw' | 'png' | 'svg' | 'pdf';
+// The format keys the dialog offers. Mermaid and Excalidraw are gone from livehuddle
+// (docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools").
+export type Format = 'file' | 'markdown' | 'png' | 'svg' | 'pdf';
 
-// The four text formats each open a view/edit/copy panel; the three image
+// The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
-type TextFormat = 'file' | 'mermaid' | 'markdown' | 'excalidraw';
+type TextFormat = 'file' | 'markdown';
 type ImageFormat = 'png' | 'svg' | 'pdf';
-const isTextFormat = (f: Format): f is TextFormat =>
-  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'excalidraw';
+const isTextFormat = (f: Format): f is TextFormat => f === 'file' || f === 'markdown';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -91,21 +77,9 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     description: 'A livehuddle file. Copy it or save a .json to import back with full fidelity.',
   },
   {
-    kind: 'mermaid',
-    title: 'Mermaid',
-    description:
-      'This tab as Mermaid flowchart text. Keeps every connection. Copy it or save a .mmd.',
-  },
-  {
     kind: 'markdown',
     title: 'Markdown',
     description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
-  },
-  {
-    kind: 'excalidraw',
-    title: 'Excalidraw',
-    description:
-      'An .excalidraw scene to open at excalidraw.com. Rich shapes simplify to labelled boxes.',
   },
   {
     kind: 'png',
@@ -144,14 +118,6 @@ const TEXT_PANELS: Record<
     mime: 'application/json',
     getText: tabToJsonText,
   },
-  mermaid: {
-    blurb:
-      "This tab as a Mermaid flowchart. Edit it here to copy a variant; your edits don't change the tab.",
-    downloadLabel: 'Download .mmd',
-    ext: 'mmd',
-    mime: 'text/plain',
-    getText: (tab) => mermaidFromTab(tab),
-  },
   markdown: {
     blurb:
       "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
@@ -160,19 +126,11 @@ const TEXT_PANELS: Record<
     mime: 'text/markdown',
     getText: tabToMarkdownText,
   },
-  excalidraw: {
-    blurb:
-      'This tab as an Excalidraw scene: shapes Excalidraw lacks become labelled boxes. Edit it here to copy a variant.',
-    downloadLabel: 'Download .excalidraw',
-    ext: 'excalidraw',
-    mime: 'application/json',
-    getText: tabToExcalidrawText,
-  },
 };
 
 // Welcome-style overlay: export options as a card grid. Text formats (JSON /
-// Mermaid / Markdown) open an editable view/copy panel; image formats
-// (PNG / SVG / PDF) open an options-and-download panel with the isometric +
+// Markdown) open an editable view/copy panel; image formats
+// (PNG / SVG / PDF) open an options-and-download panel with the
 // background-pattern toggles. The main grid stays clean — no format-specific
 // options bleed onto it.
 export function ExportTabDialog({
@@ -181,7 +139,6 @@ export function ExportTabDialog({
   onClose,
   scope = 'tab',
   imageContext,
-  offerHiddenLayers = true,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
@@ -242,16 +199,12 @@ export function ExportTabDialog({
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
   const renderPreview = useCallback(
-    (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
-      renderTabToSvg(tab, { ...opts, images: previewImages }),
+    (opts: { pattern: boolean }) => renderTabToSvg(tab, { ...opts, images: previewImages }),
     [tab, previewImages],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
-  const runImageExport = async (
-    format: ImageFormat,
-    opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean },
-  ) => {
+  const runImageExport = async (format: ImageFormat, opts: { pattern: boolean }) => {
     if (busy) return;
     setBusy(true);
     setError(null);
@@ -321,9 +274,6 @@ export function ExportTabDialog({
             label={activeCard!.title}
             busy={busy}
             error={error}
-            hasHiddenLayers={
-              offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
-            }
             renderPreview={renderPreview}
             previewReady={previewReady}
             onExport={(opts) => void runImageExport(active, opts)}

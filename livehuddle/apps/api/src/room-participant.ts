@@ -10,8 +10,9 @@
 //   - refused: the correction to the sender alone; an element not saved yet, or no write at all (a failure, a
 //     flood past PARTICIPANT_PENDING_MAX), and the sender re-hydrates (`catchup { resync: true }`).
 //
-// Answers: a Participant's dot or comment reaction relays and enters the ledger like an Editor's, and the room
-// writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab for a burst.
+// Answers: a Participant's dot, comment reaction or notice board pin and unpin relays and enters the ledger like an
+// Editor's, and the room writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab
+// for a burst.
 
 import { isRoomOpRef, type ServerMessage } from '@livehuddle/api-schema';
 import type { ElementOp, TabLedger } from '@livehuddle/document';
@@ -55,10 +56,6 @@ function isElFrame(op: unknown): op is ElFrame {
   if (frame.kind !== 'el' || typeof frame.tabId !== 'string') return false;
   const inner = frame.op as { kind?: unknown } | null;
   return typeof inner === 'object' && inner !== null && typeof inner.kind === 'string';
-}
-
-function sameOp(a: unknown, b: unknown): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
 }
 
 export class RoomParticipantWrites {
@@ -119,14 +116,8 @@ export class RoomParticipantWrites {
     }
     if (!outcome.changed) return;
     const wire = { kind: 'el', tabId, op: outcome.op };
-    if (outcome.op.kind === 'add' && !sameOp(outcome.op, op)) {
-      // An add whose adder the rule stamped (an editor bundle that did not): everyone, the sender included,
-      // takes the stamped element.
-      this.hooks.sequence('system', wire);
-      return;
-    }
-    // As sent (an add, a remove), or the fields it changed (a patch, which the sender already shows): from the
-    // sender to everyone else, and its cursor back to it.
+    // The fields it changed (a patch: a piece's own field, which the sender already shows; the rule applies no add or
+    // remove from a Participant): from the sender to everyone else, and its cursor back to it.
     const seq = this.hooks.sequence(sender.presenceId, wire, sender.ws);
     this.hooks.sendTo(sender.ws, {
       kind: 'cursor',

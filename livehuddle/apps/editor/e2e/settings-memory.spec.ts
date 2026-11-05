@@ -75,7 +75,8 @@ test('Settings reopens on the last category and row, across a resize', async ({
   await dismissQuickTour(page);
 
   await openSettings(page);
-  await dialog(page).getByRole('button', { name: 'Editor', exact: true }).click();
+  // Appearance: livehuddle's Editor category is three short rows, too few to scroll past its first.
+  await dialog(page).getByRole('button', { name: 'Appearance', exact: true }).click();
   const scroller = dialog(page)
     .locator('[data-settings-row]')
     .first()
@@ -102,7 +103,7 @@ test('Settings reopens on the last category and row, across a resize', async ({
   // range to put the row back where it was rather than clamping at the end.
   await page.setViewportSize({ width: 390, height: 560 });
   await openSettings(page);
-  await expect(dialog(page).getByRole('switch', { name: 'Middle-Mouse Pan' })).toBeVisible();
+  await expect(dialog(page).getByRole('switch', { name: 'Button Labels' })).toBeVisible();
   await expect(async () => {
     const back = await topRow(scroller);
     expect(back.key).toBe(leftAt.key);

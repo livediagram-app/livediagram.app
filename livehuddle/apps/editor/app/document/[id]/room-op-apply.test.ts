@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab, TabVote } from '@livehuddle/document';
+import type { Element, Tab } from '@livehuddle/document';
 import { applyElementDelta, checklistDeltaFor, type ShapeElement } from '@livehuddle/document';
 import type { RoomOp } from '@livehuddle/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
@@ -12,15 +12,6 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
   id: 't1',
   name: 'Tab 1',
   elements: [el('a'), el('b')],
-  ...over,
-});
-
-const vote = (over: Partial<TabVote> = {}): TabVote => ({
-  active: true,
-  revealed: false,
-  votesPerPerson: 3,
-  votes: {},
-  round: 'r1',
   ...over,
 });
 
@@ -50,59 +41,60 @@ describe('applyRoomOpToTabs', () => {
     ).toBe(tabs);
   });
 
-  it('adds a dot for the open round', () => {
-    const tabs = [tab({ vote: vote() })];
-    const next = applyRoomOpToTabs(tabs, {
-      kind: 'vote',
-      tabId: 't1',
-      elementId: 'a',
-      voter: 'pete',
-      delta: 1,
-      round: 'r1',
-    });
-    expect(next[0]!.vote?.votes).toEqual({ a: ['pete'] });
-  });
-
-  it('drops a dot from another round or for a closed vote (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
-    const open = [tab({ vote: vote() })];
-    const dot = { kind: 'vote', tabId: 't1', elementId: 'a', voter: 'pete', delta: 1 } as const;
-    expect(applyRoomOpToTabs(open, { ...dot, round: 'r0' })).toBe(open);
-    const closed = [tab({ vote: vote({ active: false }) })];
-    expect(applyRoomOpToTabs(closed, { ...dot, round: 'r1' })).toBe(closed);
-  });
-
-  // THE bug: the host's End carried their map as of their save, so a dot
-  // still in flight vanished for everybody else.
-  it('an End for the same round keeps our dots', () => {
-    const tabs = [tab({ vote: vote({ votes: { a: ['ariel', 'pete'] } }) })];
-    const next = applyRoomOpToTabs(tabs, {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's vote changes nothing.
+  it("ignores an old client's dot, and drops the vote a tab or a patch still carries", () => {
+    const tabs = [tab()];
+    const dot = { kind: 'vote', tabId: 't1', elementId: 'a', voter: 'pete', delta: 1 };
+    expect(applyRoomOpToTabs(tabs, dot as unknown as RoomOp)).toBe(tabs);
+    const oldVote = { active: true, revealed: false, votesPerPerson: 3, votes: { a: ['pete'] } };
+    const patched = applyRoomOpToTabs(tabs, {
       kind: 'tab-meta',
       tabId: 't1',
-      patch: { vote: vote({ active: false, votes: { a: ['ariel'] } }) },
+      patch: { name: 'Renamed', vote: oldVote } as never,
     });
-    expect(next[0]!.vote?.active).toBe(false);
-    expect(next[0]!.vote?.votes).toEqual({ a: ['ariel', 'pete'] });
+    expect(patched[0]!.name).toBe('Renamed');
+    expect('vote' in patched[0]!).toBe(false);
+    const whole = applyRoomOpToTabs(tabs, {
+      kind: 'tab',
+      tabId: 't1',
+      tab: { ...tab(), vote: oldVote } as never,
+    });
+    expect('vote' in whole[0]!).toBe(false);
+    const added = applyRoomOpToTabs(tabs, {
+      kind: 'tab',
+      tabId: 't2',
+      tab: { ...tab({ id: 't2' }), vote: oldVote } as never,
+    });
+    expect('vote' in added[1]!).toBe(false);
   });
 
-  it('a new round replaces the map', () => {
-    const tabs = [tab({ vote: vote({ votes: { a: ['ariel'] } }) })];
-    const next = applyRoomOpToTabs(tabs, {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Session strip's Timer": an old client's tab timer is dropped.
+  it('drops the Session strip timer a tab or a patch still carries', () => {
+    const oldTimer = { mode: 'stopwatch', running: true, anchorAt: 1 };
+    const patched = applyRoomOpToTabs([tab()], {
       kind: 'tab-meta',
       tabId: 't1',
-      patch: { vote: vote({ round: 'r2' }) },
+      patch: { name: 'Renamed', timer: oldTimer } as never,
     });
-    expect(next[0]!.vote?.votes).toEqual({});
+    expect(patched[0]!.name).toBe('Renamed');
+    expect('timer' in patched[0]!).toBe(false);
+    const whole = applyRoomOpToTabs([tab()], {
+      kind: 'tab',
+      tabId: 't1',
+      tab: { ...tab(), timer: oldTimer } as never,
+    });
+    expect('timer' in whole[0]!).toBe(false);
   });
 
   it("a clear removes the field and keeps everybody's elements (docs/specs/012-collaboration/collab-race-hardening.md)", () => {
-    const mine = tab({ timer: { mode: 'stopwatch', running: true, anchorAt: 1 } });
+    const mine = tab({ backgroundOpacity: 0.5 });
     const next = applyRoomOpToTabs([mine], {
       kind: 'tab-meta',
       tabId: 't1',
       patch: {},
-      clear: ['timer', 'elements', 'id'],
+      clear: ['backgroundOpacity', 'elements', 'id'],
     });
-    expect('timer' in next[0]!).toBe(false);
+    expect('backgroundOpacity' in next[0]!).toBe(false);
     expect(next[0]!.elements).toBe(mine.elements);
     expect(next[0]!.id).toBe('t1');
   });

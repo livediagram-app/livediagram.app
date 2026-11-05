@@ -39,7 +39,6 @@ export function EditorModals() {
     setPatternColor,
     setBackgroundOpacity,
     setBackgroundPatternScale,
-    setBackgroundAnimationSpeed,
     setTheme,
     setTabFont,
     setTabDefaultTextSize,
@@ -83,13 +82,11 @@ export function EditorModals() {
           patternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}
           backgroundOpacity={activeTab.backgroundOpacity ?? 1}
           backgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
-          backgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
           onSetBackgroundPattern={setBackgroundPattern}
           onSetBackgroundColor={setBackgroundColor}
           onSetPatternColor={setPatternColor}
           onSetBackgroundOpacity={setBackgroundOpacity}
           onSetBackgroundPatternScale={setBackgroundPatternScale}
-          onSetBackgroundAnimationSpeed={setBackgroundAnimationSpeed}
           themeId={activeTab.theme ?? 'brand'}
           onSetTheme={setTheme}
           font={activeTab.font ?? null}

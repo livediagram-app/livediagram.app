@@ -148,14 +148,13 @@ describe('open path ends and continuing', () => {
   );
   const closed: PathElement = { ...open, id: 'c', closed: true };
 
-  it('offers the two ends of every open, unlocked, reachable path', () => {
-    const ends = openPathEnds([open, closed, { ...open, id: 'l', locked: true }], new Set());
+  it('offers the two ends of every open, unlocked path', () => {
+    const ends = openPathEnds([open, closed, { ...open, id: 'l', locked: true }]);
     expect(ends.map((e) => [e.id, e.end])).toEqual([
       [open.id, 'start'],
       [open.id, 'end'],
     ]);
     expect(ends[1]!.point.x).toBeCloseTo(100);
-    expect(openPathEnds([open], new Set([open.id]))).toEqual([]);
   });
 
   it('resumes from the end pressed, so new nodes always append', () => {
@@ -200,7 +199,7 @@ describe('openPathEnds and paths of several lines', () => {
         ],
       ],
     };
-    expect(openPathEnds([compound], new Set())).toEqual([]);
-    expect(openPathEnds([line], new Set())).toHaveLength(2);
+    expect(openPathEnds([compound])).toEqual([]);
+    expect(openPathEnds([line])).toHaveLength(2);
   });
 });

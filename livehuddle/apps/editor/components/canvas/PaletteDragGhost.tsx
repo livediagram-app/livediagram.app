@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { previewsItself } from '@/components/canvas/collab/PlacementPreview';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import { usePaletteDragPreview, usePaletteDragSnap } from '@/lib/palette-drag-preview';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
@@ -38,6 +39,9 @@ export function PaletteDragGhost({ zoom }: { zoom: number }) {
   }, [preview]);
 
   if (!preview || !cursor || !cursor.over) return null;
+  // A placed piece, or a sized one with art (a Room), previews itself (PlacementPreview,
+  // docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview themselves").
+  if (previewsItself(preview.kind)) return null;
 
   const w = preview.width * zoom;
   const h = preview.height * zoom;

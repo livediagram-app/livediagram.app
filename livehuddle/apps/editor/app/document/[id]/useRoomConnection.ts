@@ -6,6 +6,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
+import { receiveKnockOp } from '@/lib/office/knock-inbox';
 import {
   setRemoteBesideTab,
   syncRemoteBesideTabs,
@@ -27,11 +28,9 @@ import {
   type RoomHandlers,
 } from '@/lib/api-client';
 import { keepDocumentGrantFresh, documentGrant } from '@/lib/api/document-grants';
-import { parseLaserConfig } from '@/lib/laser-config';
 import {
   createPresenceCoalescer,
   type CursorPos,
-  type LaserTrail,
   type PresenceCoalescer,
 } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
@@ -67,7 +66,7 @@ import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 // the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal documents"). Lifted out of editor-page.tsx verbatim — the
 // presence reconciliation (unique-colour, idle seeding, leaver cleanup)
 // and the onOp application (tab / document-meta / select / cursor /
-// laser / tab-focus / log / share-revoked) are unchanged. All the state
+// tab-focus / log / share-revoked) are unchanged. All the state
 // it drives lives in the page and is passed in; the deps array stays
 // [hydrated, documentId, documentServerStored] (a name/colour change must not
 // reconnect), so the exhaustive-deps disable rides along.
@@ -122,7 +121,6 @@ export function useRoomConnection(opts: {
   setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
   setRemoteTabFocus: Dispatch<SetStateAction<Map<string, string>>>;
-  setRemoteLaserTrails: Dispatch<SetStateAction<Map<string, LaserTrail>>>;
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): peers' walking characters, latest snapshot each.
   setRemoteAvatars: Dispatch<
     SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
@@ -136,9 +134,6 @@ export function useRoomConnection(opts: {
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): somebody pushed our character. Stable
   // (useCallback with no changing deps), so it can't reopen the socket.
   receiveAvatarPush: (dx: number, dy: number) => void;
-  // A peer set off a reaction pad (docs/specs/009-elements/reaction-pad.md). Purely visual: nothing is
-  // written, so there is nothing here to persist, order, or undo.
-  receiveReaction: (elementId: string, reaction: string) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): somebody is asking the room to come and look.
   // The op also carries the presser's zoom, which is not used: taking it keeps your own.
   receiveFocusHere: (from: string, tabId: string, at: { x: number; y: number }) => void;
@@ -202,13 +197,11 @@ export function useRoomConnection(opts: {
     setRemoteSelections,
     setRemoteCursors,
     setRemoteTabFocus,
-    setRemoteLaserTrails,
     setRemoteAvatars,
     setRemoteViewports,
     setDocumentName,
     setSelfParticipant,
     receiveAvatarPush,
-    receiveReaction,
     receiveFocusHere,
     receiveFacilitator,
     receiveSelectionReleased,
@@ -352,9 +345,8 @@ export function useRoomConnection(opts: {
       syncRemoteBesideTabs(participants, selfId);
       setRemoteSelections((prev) => pruneMapToPresent(prev, present));
       setRemoteCursors((prev) => pruneMapToPresent(prev, present));
-      // A departed peer's laser trail and camera go with them too: a follower or a "focus here"
+      // A departed peer's camera goes with them too: a follower or a "focus here"
       // must not read the view of someone no longer in the room.
-      setRemoteLaserTrails((prev) => pruneMapToPresent(prev, present));
       setRemoteViewports((prev) => pruneMapToPresent(prev, present));
       // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
       // so a closed tab can't leave someone standing on the canvas forever.
@@ -384,13 +376,12 @@ export function useRoomConnection(opts: {
       if (
         op.kind === 'tab' ||
         op.kind === 'el' ||
-        op.kind === 'vote' ||
         op.kind === 'el-delta' ||
         op.kind === 'tab-meta' ||
         op.kind === 'document-meta'
       ) {
         // A document change from a peer: a whole tab, one element (docs/specs/012-collaboration/realtime-conflict-resolution.md),
-        // one dot (docs/specs/012-collaboration/session-tools.md), one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
+        // one answer / idea / tick / comment (docs/specs/012-collaboration/collab-race-hardening.md),
         // non-element tab fields, or the document's name
         // and tab list. One pure function applies each (room-op-apply.ts),
         // to the tabs on screen AND to the autosave's baseline, so the
@@ -439,21 +430,11 @@ export function useRoomConnection(opts: {
           from,
           op.x !== null && op.y !== null ? { tabId: op.tabId, x: op.x, y: op.y } : null,
         );
-      } else if (op.kind === 'laser') {
-        // Same coalescing as cursors; points accumulate in the buffer
-        // and land in one Map commit per frame.
-        presence.laser(from, {
-          tabId: op.tabId,
-          point: { x: op.x, y: op.y, t: performance.now() },
-          // The sender's pen (docs/specs/008-canvas/laser-panel.md), parsed field by field so a token
-          // from a newer client costs that field and not the trail.
-          config: op.look ? parseLaserConfig(op.look) : undefined,
-        });
       } else if (op.kind === 'drag-preview') {
         // A collaborator mid-drag (docs/specs/008-canvas/drag-preview.md): drawn, never written.
         receivePeerDragPreview(from, op, (id) => roleByPresenceRef.current.get(id));
       } else if (op.kind === 'avatar') {
-        // Latest-wins per peer (no accumulation, unlike laser points): the
+        // Latest-wins per peer (no accumulation): the
         // character has one position at a time.
         presence.avatar(from, op.avatar ? { tabId: op.tabId, avatar: op.avatar } : null);
         // Leaving the mode takes the character's voice with it (docs/specs/012-collaboration/proximity-audio.md).
@@ -468,6 +449,10 @@ export function useRoomConnection(opts: {
           next.set(from, { tabId: op.tabId, pan: op.pan, zoom: op.zoom, size: op.size });
           return next;
         });
+      } else if (op.kind === 'avatar-knock' || op.kind === 'avatar-knock-answer') {
+        // A knock on a room, or the answer to ours (docs/specs/012-collaboration/knock.md): parsed, handed to the
+        // canvas, which knows whether we stand inside; never written.
+        receiveKnockOp(from, op);
       } else if (op.kind === 'avatar-push') {
         // A shove is ADDRESSED: the room delivers it to the named session and
         // nobody else, so anything that arrives here was aimed at us. We
@@ -497,12 +482,6 @@ export function useRoomConnection(opts: {
         // A peer said something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): parsed, deduped and
         // drawn by the speech layer, never written.
         receivePeerSay(from, op);
-      } else if (op.kind === 'reaction') {
-        // No tab check here, unlike the laser: a burst is keyed to the
-        // ELEMENT, and only the active tab's elements are rendered, so a
-        // burst for a pad on another tab has nothing to draw itself on and
-        // expires quietly.
-        receiveReaction(op.elementId, op.reaction);
       } else if (op.kind === 'focus-here') {
         // No tab check: the invitation names its own tab and taking it is
         // what switches you, so one sent from another tab is exactly the
@@ -605,12 +584,11 @@ export function useRoomConnection(opts: {
       return;
     }
     joinedRef.current = false;
-    // Batched cursor / laser / avatar presence, committed one Map update
+    // Batched cursor / avatar presence, committed one Map update
     // per animation frame instead of one per packet — see the coalescer.
     // Created per effect run, so a reconnect starts with empty buffers.
     const presence = createPresenceCoalescer({
       setRemoteCursors,
-      setRemoteLaserTrails,
       setRemoteAvatars,
     });
 
@@ -699,7 +677,6 @@ export function useRoomConnection(opts: {
     setLiveAgents,
     setRemoteSelections,
     setRemoteCursors,
-    setRemoteLaserTrails,
     setRemoteAvatars,
   ]);
 }

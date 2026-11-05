@@ -17,7 +17,7 @@ help once; a stack keeps the arrangement as the content changes.
 ## The element
 
 - **What it holds**: the elements whose centre is inside it, the containers' rule ([The boundary](boundary.md) "A
-  container"): a stack carries them when it is dragged and paints behind them. A stack nested in a frame, a boundary
+  container"): a stack carries them when it is dragged and paints behind them. A stack nested in a boundary
   or another stack works as any nested container.
 - **Order** is position: in a row, left to right by each child's centre; in a column, top to bottom; in a grid,
   reading order (top to bottom in rows, then left to right). Dragging a child past a sibling moves it to that slot.
