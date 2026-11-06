@@ -118,7 +118,7 @@ Every owner is a liveworkspace identity sent as `Authorization: Bearer`: a guest
 
 ## Deployment
 
-livediagram deploys from the monorepo's root `.github/workflows/` to the liveworkspace Cloudflare account ([docs/ci.md](../../../docs/ci.md) "Deploys"). One reusable workflow (`deploy.yml`, each group of Workers through `deploy-group.yml`) deploys an environment, so the two cannot drift: its plan diffs the commit against the environment's `deployed/<environment>` tag, asks Turborepo which workspaces that reaches, and deploys only those Workers, in three tiers, each waiting for the one before: the api, then marketing, editor, help, community and mcp (bound to the api), then the router, whose service bindings need the others to exist.
+livediagram deploys from the monorepo's root `.github/workflows/` to the liveworkspace Cloudflare account ([docs/ci.md](../../../docs/ci.md) "Deploys"). One reusable workflow (`deploy.yml`, each group of Workers through `deploy-group.yml`) deploys an environment, so the two cannot drift: its plan diffs the commit against the environment's deploy record (a GitHub deployment), asks Turborepo which workspaces that reaches, and deploys only those Workers, in three tiers, each waiting for the one before: the api, then marketing, editor, help, community and mcp (bound to the api), then the router, whose service bindings need the others to exist.
 
 |         | Production                                                    | Staging                                                           |
 | ------- | ------------------------------------------------------------- | ----------------------------------------------------------------- |

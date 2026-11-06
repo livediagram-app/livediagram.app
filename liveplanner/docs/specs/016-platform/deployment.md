@@ -95,11 +95,11 @@ Until 2026-11-06 every commit on `main` ran to the end in a group of its own. On
 
 - `deploy-staging.yml`, a `workflow_run` after CI passes for a push to `main`, deploys that commit to every
   Worker's `[env.staging]`.
-- `deploy-production.yml` (**Deploy Production**, `workflow_dispatch`) ships exactly what staging runs (the
-  `deployed/staging` tag) by default; a `ref` ships another commit.
+- `deploy-production.yml` (**Deploy Production**, `workflow_dispatch`) ships exactly what staging runs (its
+  deploy record) by default; a `ref` ships another commit.
 
-**Only what changed.** Each environment remembers the commit it last deployed in full as the tag
-`deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since then, with
+**Only what changed.** Each environment remembers the commit it last deployed in full as a GitHub
+deployment to its environment with the task `record` ([docs/ci.md](../../../../docs/ci.md) "Deploys"). A deploy asks Turborepo which workspaces changed since then, with
 everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and deploys the Workers among them.
 **all** redeploys every Worker (a first deploy, or a rollback).
 
