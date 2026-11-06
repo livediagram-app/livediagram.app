@@ -299,7 +299,8 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
   close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
-- **Clean up:** remove your build output and stop only the PIDs you started.
+- **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
+  say) and remove your build output. Your port block must be empty when you report.
 - **Report:** `DONE <PR url>`, `BUILT <PR url>` (with the Verify section) or `FAILED`, then each answer and how
   it was built, a few lines on what was built, the decisions, the PR's Owner checklist (or "none"), and a
   **Follow-ups** list: every risk to address,
@@ -331,6 +332,8 @@ port block and scratch folder):
 - Push the shots to the `pr-assets/<PR#>` branch and add them to the description (as the builder brief says),
   remove "Verifying in the browser", and remove `not-ready` unless the description gives a high-risk or Owner
   reason to keep it.
+- **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
+  say). Your port block must be empty when you report.
 - Report `DONE <PR url>` (with what you checked, any fix you pushed, and any follow-ups) or `REWORK`, as above.
 
 Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
@@ -343,6 +346,10 @@ screenshots.
 - NEVER pkill, killall or kill by name; stop only PIDs you started. Don't stop, restart or bind the dev servers
   already running (ports 3000 to 3499), or Wrangler workers named liveworkspace-\*, live\*-api, live\*-mcp or
   live\*-router-local. Wrangler's registry is machine-wide.
+- Background processes outlive you: a server you start keeps running after you report unless you stop it. Record
+  each one's PID (`$!`) when you start it, `kill` those PIDs before you report, then check your port block is
+  empty (`lsof -nP -iTCP:<first>-<last> -sTCP:LISTEN`). If anything is still listening, end your report with
+  `Left running: <pid> <port> <command>` for each.
 - `pnpm install` rewrites the shared git `core.hooksPath`. Read it (`git config --get core.hooksPath`) before
   installing and set it back to that value straight after.
 - Don't touch .dev.vars or .env files. Don't touch the main checkout's working tree: other sessions keep
@@ -381,7 +388,11 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
   add it to the PR's checklist yourself (`gh pr edit`) and set the label when needed.
 - **FAILED:** move the card to **Development Failure** and start one thread on it, in review-loop's format: what blocked it, what was tried, and lettered options for how to unblock it, with a recommendation.
 
-Then remove that agent's worktree (`git worktree remove`), and its local branch on FAILED.
+Then stop anything still listening in that agent's port block, before removing its worktree: list it with
+`lsof -nP -iTCP:<first>-<last> -sTCP:LISTEN` (and any `Left running` PIDs from its report), check each PID's working
+folder is inside that agent's worktree or scratch folder (`lsof -a -d cwd -p <pid>`), and `kill` only those. Never
+stop anything on 3000 to 3499 or with a working folder elsewhere; report it instead. A port block goes to the next
+agent only once it is empty. Then remove the worktree (`git worktree remove`), and its local branch on FAILED.
 
 If the MCP refuses a change, report it and carry on with the other cards.
 
@@ -396,7 +407,8 @@ If the MCP refuses a change, report it and carry on with the other cards.
 - One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.
-- Remove every worktree this pass made before it ends. At the end of a pass with no agents running, prune the
+- Remove every worktree this pass made before it ends, and leave nothing listening on 3600 to 3719 that this
+  pass started (step 4's port-block check, for every agent of the pass). At the end of a pass with no agents running, prune the
   shared turbo cache: delete its entries untouched for 7 days
   (`find <repo>/.turbo/shared-cache -type f -mtime +7 -delete`), so it stays bounded.
 
