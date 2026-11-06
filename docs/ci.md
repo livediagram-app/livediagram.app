@@ -64,14 +64,17 @@ code.
 
 ## Runs on main
 
-CI, E2E and CodeQL keep one run per branch: a newer push to a pull request, or to `main`, cancels the
-older run. A run started by hand is never cancelled. So that a cancelled run's commits are still
-checked, a push to `main` plans against the newest commit that workflow last passed on `main`
-(`.github/scripts/main-base.mjs`), not the commit just before it, and with no such commit everything
-runs. A failure on `main` is therefore pinned on the commits since the last green one. Until
-2026-11-06 every commit on `main` ran to the end, and a burst of merges kept jobs waiting a median 16
-minutes for one of the free plan's 20 runners (each product's `docs/specs/016-platform/deployment.md`
-"Runs on main cancel older ones").
+CI, E2E and CodeQL keep one run per branch. On a pull request, a newer push cancels the older run. On
+`main`, a run that has started always finishes: a newer push waits behind it, and a still newer one
+replaces the one waiting, so at most one run runs and one waits. A run started by hand is never
+cancelled. So that the commits a replaced run skipped are still checked, a push to `main` plans against
+the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit
+just before it, and with no such commit everything runs. A failure on `main` is therefore pinned on the
+commits since the last green one. Until 2026-11-06 every commit on `main` ran to the end, and a burst of
+merges kept jobs waiting a median 16 minutes for one of the free plan's 20 runners. For an hour after
+that, a push to `main` cancelled the run in progress, and with merges landing faster than a run takes
+no run on `main` finished, so staging never deployed; letting the running one finish ends that (each
+product's `docs/specs/016-platform/deployment.md` "Runs on main cancel older ones").
 
 ## Workflows
 

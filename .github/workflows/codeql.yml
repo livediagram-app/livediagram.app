@@ -19,7 +19,7 @@ permissions:
 # started by hand gets a group of its own (docs/ci.md "Runs on main").
 concurrency:
   group: codeql-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze:
