@@ -48,37 +48,6 @@ async function open(page: Page, url: string, build: string): Promise<void> {
   );
 }
 
-
-// DIAGNOSTIC (temporary): which font and metrics the feature page's CTA label gets in CI.
-async function diag(page: Page, label: string): Promise<void> {
-  const out = await page.evaluate(() => {
-    const fams = ['Liberation Sans', 'DejaVu Sans', 'FreeSans', 'Arial', 'Helvetica', 'Noto Sans', 'sans-serif'];
-    const ctx = document.createElement('canvas').getContext('2d')!;
-    return Array.from(document.querySelectorAll('a > span.text-optical-line, a > span.text-optical-centre')).map((s) => {
-      const a = s.parentElement!;
-      const cs = getComputedStyle(s);
-      const r = document.createRange();
-      r.selectNodeContents(s);
-      const rr = r.getClientRects()[0];
-      const text = s.textContent ?? '';
-      const own = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-      const m = (f: string) => {
-        ctx.font = f;
-        const t = ctx.measureText(text);
-        const h = ctx.measureText('H');
-        return { font: ctx.font.slice(0, 40), w: +t.width.toFixed(3), fA: h.fontBoundingBoxAscent, fD: h.fontBoundingBoxDescent, hA: h.actualBoundingBoxAscent };
-      };
-      return {
-        text, a: a.getBoundingClientRect().toJSON(), span: s.getBoundingClientRect().toJSON(),
-        range: rr && { top: rr.top, h: rr.height, w: rr.width }, pad: cs.paddingTop, lh: cs.lineHeight, fs: cs.fontSize, fw: cs.fontWeight,
-        cssText: [cs.fontSynthesis, cs.fontKerning, cs.textRendering, cs.fontOpticalSizing, cs.fontFeatureSettings, cs.fontVariationSettings].join('|'),
-        own: m(own), cands: fams.map((f) => ({ f, ...m(`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} "${f}"`.replace('"sans-serif"', 'sans-serif')) })),
-      };
-    });
-  });
-  console.log(`DIAG ${label} ${JSON.stringify(out)}`);
-}
-
 async function expectCentred(page: Page, screen: string): Promise<void> {
   const report = await auditOptical(page);
   test.info().annotations.push({
@@ -135,10 +104,8 @@ test.describe('Optical alignment audit, other sites', () => {
   test('the marketing site', async ({ page, pageErrors, baseURL }) => {
     const marketing = site('marketing', baseURL!);
     await open(page, `${marketing}/`, 'marketing');
-    await diag(page, 'home');
     await expectCentred(page, 'marketing home');
     await open(page, `${marketing}/features/collaboration/`, 'marketing');
-    await diag(page, 'feature');
     await expectCentred(page, 'marketing feature page');
     expectNoPageErrors(pageErrors);
   });
