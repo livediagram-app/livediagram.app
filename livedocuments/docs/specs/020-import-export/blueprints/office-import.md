@@ -150,7 +150,10 @@ Follows the spec's table. Precisely:
   `title`) its alt text; `pic:pic` with `a:blip r:embed` is a picture (the paragraph splits round it), `r:link`
   is `linkedImages`; a chart `charts`, a diagram `diagrams`, a `wps`/`wpg` shape `textBoxes`. `w:pict`'s
   `v:imagedata r:id` is a picture, a `v:textbox` `textBoxes`. `w:object` is `embedded`.
-- Counted: `w:footnoteReference` / `w:endnoteReference` (`footnotes`), `w:commentReference` (`comments`),
+- Footnotes: `readFootnotes` reads `word/footnotes.xml` (by the document's footnotes relationship) into a map of
+  id to text, leaving out the separator notes (any with a `w:type`), each note's paragraphs joined by a space and
+  passed through `cleanFootnoteText`; a `w:footnoteReference` whose id is in the map is a run `{ text: '*', fn }`.
+- Counted: a `w:footnoteReference` with no note, `w:endnoteReference` (`footnotes`), `w:commentReference` (`comments`),
   `m:oMath` / `m:oMathPara` (`equations`), `w:altChunk` (`embedded`), a header or footer reference in any
   `w:sectPr` (`headersFooters`, once), each `w:tbl` (`tables`).
 - A table: each `w:tr` a bulleted item (level 0) whose runs are its cells' runs, the cells joined by `" · "`;

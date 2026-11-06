@@ -118,9 +118,13 @@ Writes an article's text from **Markdown**.
 - **`mode`**: `replace` (default) writes the article's text anew; `append` adds the blocks after its last block.
 - **The Markdown** (the editor's paste reading, `parseMarkdownBlocks`, shared): `#`, `##`, `###` headings (h1 to
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced
-  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). A paragraph line
-  ending in two or more spaces or in a backslash (CommonMark's hard breaks) breaks the line there, so an address
-  block keeps its lines; a paragraph's line break is written back as a backslash at the line's end. Inline code reads and
+  code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). A paragraph's, a
+  quote's or a list item's line ending in two or more spaces or in a backslash (CommonMark's hard breaks) breaks the
+  line there, so an address block keeps its lines: a quote goes on into the `>` line after it (a `>` line with no
+  break is a quote of its own), a list item into the line after it unless that line opens a block of its own (a
+  heading, a list item, a quote, a fence, a divider, a table, a blank line). A line break is written back as a
+  backslash at the line's end, a quote's next line opening `> `, a list item's indented under its text; a heading
+  stays one line (its break written as a space), as CommonMark has it. Inline code reads and
   is written as CommonMark has it: a fence of any number of backticks, escapes literal inside it, one edge space
   stripped, so code holding a backtick survives the round trip; it keeps its link, bold, italic and strikethrough
   around it. A code block's fence is three or more backticks and only a line of backticks alone, at least as many,

@@ -10,6 +10,7 @@ import {
   lucideChartColumn,
   lucideCode,
   lucideFileText,
+  lucideHash,
   lucideImage,
   lucideIndentDecrease,
   lucideIndentIncrease,
@@ -63,6 +64,7 @@ const PanelIcons = {
   image: I(lucideImage),
   table: I(lucideTable),
   toc: I(lucideListTree),
+  footnote: I(lucideHash),
   chart: I(lucideChartColumn),
 };
 
@@ -394,7 +396,7 @@ export function MorePanel({
   );
 }
 
-export type BlockInsert = 'table' | 'toc' | 'divider' | 'pageBreak' | 'quote' | 'code';
+export type BlockInsert = 'table' | 'toc' | 'footnote' | 'divider' | 'pageBreak' | 'quote' | 'code';
 export type ObjectInsert = 'image' | 'chart' | 'drawing';
 
 // The Insert menu, dressed as the palette's rows (a glyph chip, the name, a line on what it is,
@@ -426,6 +428,12 @@ const INSERT_BLOCKS: readonly { id: BlockInsert; label: string; blurb: string; i
       label: 'Table of Contents',
       blurb: 'The headings, with their pages',
       icon: <PanelIcons.toc />,
+    },
+    {
+      id: 'footnote',
+      label: 'Footnote',
+      blurb: 'A numbered note at the foot of the page',
+      icon: <PanelIcons.footnote />,
     },
     {
       id: 'divider',

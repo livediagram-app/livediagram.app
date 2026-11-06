@@ -53,17 +53,24 @@ describe('the pod, bar and garden views', () => {
     });
   });
 
-  it('rings a bar stool’s sitter but never a pod’s', () => {
-    const ring = (kind: 'bar-stool' | 'office-pod') => {
+  it('rings a bar stool’s sitter, and on a pod only the bench seat its sitter holds', () => {
+    const rings = (kind: 'bar-stool' | 'office-pod', seat?: number) => {
       const { container, unmount } = render(
-        <FurnitureView element={shape(kind)} stroke="#94a3b8" sitters={[sitter('Ada')]} />,
+        <FurnitureView
+          element={shape(kind)}
+          stroke="#94a3b8"
+          sitters={[{ ...sitter('Ada'), ...(seat === undefined ? {} : { seat }) }]}
+        />,
       );
-      const found = container.querySelector('ellipse[stroke="#0ea5e9"]') !== null;
+      const found = [...container.querySelectorAll('ellipse[stroke="#0ea5e9"]')].map((e) =>
+        Number(e.getAttribute('cx')),
+      );
       unmount();
       return found;
     };
-    expect(ring('bar-stool')).toBe(true);
-    expect(ring('office-pod')).toBe(false);
+    expect(rings('bar-stool')).toHaveLength(1);
+    expect(rings('office-pod')).toEqual([]);
+    expect(rings('office-pod', 1)).toEqual([146]);
   });
 
   it('draws a garden path in its fill and a garden fence in white pickets', () => {

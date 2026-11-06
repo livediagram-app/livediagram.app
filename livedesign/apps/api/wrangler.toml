@@ -156,11 +156,9 @@ simple = { limit = 120, period = 60 }
 #   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
 #     AUTH_ORIGIN=http://localhost:3400 so the callback comes back
 #     through the router. Wrangler reads it on the next `wrangler dev`.
-#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
-#     each from the GitHub repo secret of the same name and pipes it into
-#     `wrangler secret put` on every deploy, so a value rotates by
-#     editing the GitHub secret. Secrets persist across deploys
-#     independently of this file.
+#   - Production: Cloudflare Worker secrets, set once with `wrangler secret put <NAME>` (docs/ci.md). No
+#     workflow sets them: the deploy only carries CLOUDFLARE_API_TOKEN, so a value rotates by putting it again.
+#     Secrets persist across deploys independently of this file.
 #
 # ACCOUNTS_URL, ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET and API_RESOURCE name livedesign's client at the
 # liveworkspace accounts Worker (liveworkspace/docs/specs/002-architecture/integrating-an-app.md): every caller, a guest included, is a
@@ -193,8 +191,7 @@ simple = { limit = 120, period = 60 }
 #
 #   - Local dev: `MEDIA_KEY=dev-livedesign-media-key` and
 #     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
-#   - Production and staging: the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the
-#     deploy workflow. MEDIA_URL comes from hosted-vars.json.
+#   - Production and staging: `wrangler secret put MEDIA_KEY` (and `--env staging`). MEDIA_URL comes from hosted-vars.json.
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
@@ -326,8 +323,8 @@ tag = "v2"
 deleted_classes = ["WorkbenchStore"]
 
 # The four ACCOUNTS_* / API_RESOURCE values, INDEX_KEY and
-# TELEMETRY_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. Worker secrets are
+# TELEMETRY_KEY are set once on the staging Worker with
+# `wrangler secret put <NAME> --env staging` (docs/ci.md), not by CI. Worker secrets are
 # per-environment, so staging's never collide with production's.
 
 # The daily announce runs on staging too, against staging's media service. Restated rather than inherited so

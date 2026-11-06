@@ -324,3 +324,14 @@ describe('OpenAPI teams surface', () => {
     expect(usable).toEqual(['GET /teams', 'GET /teams/{id}/library']);
   });
 });
+
+// An empty closed list (TemplateFamily since Work Tracker #507) generates `{}`, any value; the summaries and the
+// create body must reference what the API really takes instead (EMPTY_LIST_SCHEMAS in the generator).
+describe('a type with an empty closed list', () => {
+  it('is published as a described schema, never an empty one', () => {
+    for (const [name, schema] of Object.entries(COMPONENT_SCHEMAS)) {
+      expect(Object.keys(schema as object), name).not.toHaveLength(0);
+    }
+    expect(COMPONENT_SCHEMAS.TemplateFamily).toMatchObject({ type: 'string', deprecated: true });
+  });
+});

@@ -128,6 +128,8 @@ export function articleKeymap(host: {
   onLink: () => void;
   // ⌘⌥M: a comment on the selected text.
   onComment: () => void;
+  // ⌘⌥F: a footnote at the caret (false where none may go: a card, a code block, a Participant).
+  onFootnote?: Command;
   onEscape: () => void;
 }): Plugin[] {
   const run =
@@ -151,6 +153,7 @@ export function articleKeymap(host: {
       'Mod-e': toggleCode,
       'Mod-k': run(host.onLink),
       'Mod-Alt-m': run(host.onComment),
+      'Mod-Alt-f': (state, dispatch, view) => host.onFootnote?.(state, dispatch, view) ?? false,
       'Mod-Alt-0': setBlockStyle('body'),
       'Mod-Alt-1': setBlockStyle('h1'),
       'Mod-Alt-2': setBlockStyle('h2'),

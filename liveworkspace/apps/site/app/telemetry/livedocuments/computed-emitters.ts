@@ -55,6 +55,7 @@ const ARTICLE_BLOCK_INSERTS = [
   'ArticleCode',
   'ArticleTable',
   'ArticleContents',
+  'ArticleFootnote',
 ];
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 

@@ -85,6 +85,21 @@ export const PUBLIC_NAMES = { LiveDoc: 'Document' };
 
 const publicName = (name) => PUBLIC_NAMES[name] ?? name;
 
+// Types whose closed list is empty today, so the generator renders them as `{}` (any value). Each is published as
+// what the API still accepts and returns instead. TemplateFamily: livehuddle has no template family since the
+// Retrospective family left (Work Tracker #507); summaries keep the field, always null, and a create naming the
+// retired `retrospective` reads as none (docs/specs/013-workspace/default-folders.md "Retired entries"). Generation
+// fails once a type here generates a real schema again, so its entry is removed with the change that fills the list.
+export const EMPTY_LIST_SCHEMAS = {
+  TemplateFamily: {
+    type: 'string',
+    deprecated: true,
+    description:
+      'No template family is offered today: summaries carry null, and a create naming the retired ' +
+      '`retrospective` reads as none (any other value is intent_invalid).',
+  },
+};
+
 // Recursively rewrite the generator's draft-07 `#/definitions/<Name>` refs to
 // OpenAPI's `#/components/schemas/<Name>`, and drop the per-schema `$schema`
 // dialect marker (the document declares the dialect once at the top level).
@@ -145,6 +160,14 @@ export function generateComponentSchemas() {
     for (const [name, schema] of Object.entries(definitions)) {
       schemas[publicName(name)] = schema;
     }
+  }
+  for (const [name, schema] of Object.entries(EMPTY_LIST_SCHEMAS)) {
+    if (!(name in schemas))
+      throw new Error(`EMPTY_LIST_SCHEMAS names ${name}, which no root type reaches`);
+    if (Object.keys(schemas[name]).length > 0) {
+      throw new Error(`${name} generates a schema again: drop it from EMPTY_LIST_SCHEMAS`);
+    }
+    schemas[name] = schema;
   }
   return sortObject(toOpenApiRefs(schemas));
 }

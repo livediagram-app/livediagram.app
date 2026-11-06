@@ -146,7 +146,7 @@ switch ([Meeting rooms and the stage blueprint](../../012-collaboration/blueprin
 ## Accessibility
 
 `FurnitureView` and `RoomView` SVGs are `role="img"` with the piece's name ("Water cooler", "Room, Kitchen"); a
-meeting table names its sitters. Reduced motion stops the answer, the sip and the steam.
+meeting table names its sitters and rings the chair each holds. Reduced motion stops the answer, the sip and the steam.
 
 ## Observability
 

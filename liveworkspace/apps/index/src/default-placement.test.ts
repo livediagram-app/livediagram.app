@@ -56,6 +56,23 @@ describe('filing on create', () => {
     expect(await filed('draw:event-storming:retrospective')).toBe(storms);
   });
 
+  // RETIRED_PLACEMENT_KEYS (one-explorer-contracts.md "Retired default keys"): livehuddle's Workshop mode entry
+  // and Retrospective family are read as its own key, after it, and never dropped.
+  it('files by an app’s retired keys after its own key', async () => {
+    const ada = await person('user_a');
+    const retros = await folder(ada.auth, { name: 'Retros' });
+    const sessions = await folder(ada.auth, { name: 'Sessions' });
+    const spaces = await folder(ada.auth, { name: 'Spaces' });
+    const filed = async () =>
+      (await makeItem(ada.auth, { app: 'livehuddle', intent: 'workshop:diagram' })).folderId;
+    await setDefault(ada.auth, 'livehuddle:template:retrospective', retros);
+    expect(await filed()).toBe(retros);
+    await setDefault(ada.auth, 'livehuddle:mode:workshop', sessions);
+    expect(await filed()).toBe(sessions);
+    await setDefault(ada.auth, 'livehuddle', spaces);
+    expect(await filed()).toBe(spaces);
+  });
+
   it('never overrides a place the create names, the root chosen on purpose included', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const plans = await folder(ada.auth);

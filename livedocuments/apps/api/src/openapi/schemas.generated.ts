@@ -731,6 +731,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
+      "fn": {
+        "type": "string"
+      },
       "hl": {
         "type": "string"
       },

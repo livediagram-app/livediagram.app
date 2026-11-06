@@ -46,7 +46,7 @@ design decision. The page model, the row, page kinds and page actions are
 | Blocks ↔ editor          | `blockToNode`, `blocksToDoc`, `nodeToBlock`, `docToBlocks`, `lib/article/article-convert.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Commands                 | `lib/article/article-commands.ts` (`setBlockStyle`, `toggleList`, `shiftLevel`, `setAlign`, `toggle*`, `setLink`, `setTextColor`, `setHighlight`, `clearFormatting`, `insertBlocksAfterCaret`, `enter`, `backspaceAtStart`, `deleteAtEnd`, `tab`, `shiftTab`, `lineBreak`, `selectAll`, `selectionStateOf`, `ArticleSelectionState`)                                                                                                                                                                                                                                                                                                                                                       |
 | Keys, Markdown as typed  | `articleKeymap(host)`, `articleInputRules()`, `lib/article/article-keys.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Pasted Markdown          | `looksLikeMarkdown`, `parseInline`, `parseMarkdownBlocks`, `plainTextBlocks`, `packages/document/src/article-markdown.ts` (shared with agents' Markdown, `article-markdown-io.ts`; backslash escapes read as the character; a paragraph line's trailing two spaces or backslash, found by a scan from the line's end, is a line break)                                                                                                                                                                                                                                                                                                                                                     |
+| Pasted Markdown          | `looksLikeMarkdown`, `parseInline`, `parseMarkdownBlocks`, `plainTextBlocks`, `packages/document/src/article-markdown.ts` (shared with agents' Markdown, `article-markdown-io.ts`; backslash escapes read as the character; a paragraph's, quote's or list item's line's trailing two spaces or backslash, found by a scan from the line's end, is a line break, a quote going on into the next `>` line and an item into the next line that opens no block, `opensBlock`)                                                                                                                                                                                                                 |
 | Editor plugins           | `blockIdsPlugin`, `decorationsPlugin`, `todoTogglePlugin`, `FIRST_BODY_PLACEHOLDER` (`article-plugins.ts`); `slashPlugin`, `slashKey`, `removeSlashQuery` (`article-slash.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Slash menu               | `SLASH_ITEMS`, `SlashItem`, `SlashAction`, `filterSlashItems` (`article-slash-items.ts`); `SlashMenu` (`components/canvas/article/SlashMenu.tsx`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Active article           | `ArticleEditorHandle`, `ActiveArticle`, `registerArticleHandle`, `articleHandleOf`, `setActiveArticle`, `blurActiveArticle`, `clearActiveArticle`, `useActiveArticle`, request signals, `markZoneReleased` / `takeZoneReleased` / `forgetZonesReleased`, `noteArticleLaidOut` / `useArticleLaidOutSeq`, `lib/article/article-editor-store.ts`                                                                                                                                                                                                                                                                                                                                              |
@@ -119,6 +119,11 @@ is `break-after: column` (`article-pages.css`).
 | `ARTICLE_FRAME_CHARS`                   | 200,000 characters per `article` frame | `packages/api-schema/src/article-frames.ts`; D42, under the room's `MAX_MESSAGE_CHARS` (256K) |
 | `MAX_PAGES`                             | 100                                    | `page.ts`; spec "Limit"                                                                       |
 | Page number                             | 12 px, half the bottom margin          | `CanvasPages.tsx`, `pageWriting`; D46                                                         |
+| `MAX_ARTICLE_FOOTNOTE_TEXT`             | 1000 characters, plain, one line       | `article-footnotes.ts` (document); D106                                                       |
+| `ARTICLE_FOOTNOTE_REF`                  | `*`, one per reference                 | `article-footnotes.ts` (document); D107                                                       |
+| `FOOTNOTE_MAX_SHARE`                    | 2/3 of the text height                 | `article-footnote-layout.ts`; spec "Footnotes"                                                |
+| Footnote break `SETTLE_SLACK`           | 2 px                                   | `article-footnote-layout.ts`; D108                                                            |
+| Notes' type                             | 13/16 of the body size, muted ink      | `article-pages.css` (`.article-footnotes`); spec "Footnotes"                                  |
 
 ## Data and persistence
 
@@ -440,6 +445,51 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
   underline, `.article-note-action` emerald-400 at 22% with a 2 px dashed emerald-500 at 70%.
 - Presenting: `html[data-presenting] [data-article-note]` is `visibility: hidden` and
   `html[data-presenting] .article-flow .article-note` loses its background and underline.
+
+### Footnotes
+
+- **Stored**: a run's `fn` is its note's text (`cleanFootnoteText`: line breaks and tabs a space, capped at
+  `MAX_ARTICLE_FOOTNOTE_TEXT` without splitting a surrogate pair); each character of the run's text
+  (`ARTICLE_FOOTNOTE_REF`) is one reference. `sameFormat` compares `fn`, so references with one note merge. Numbers
+  are never stored: `articleFootnotes(blocks)` numbers them in order, a table's cells row by row. `articleRunsText`
+  (titles, names, contents entries, a cell's text, word counts) leaves references out.
+- **In the editor**: an inline atom `footnote` (`attrs.text`, `leafText` empty; `sup[data-footnote]` both ways, so
+  a copy within livedocuments pastes with its note). `inlineOf` makes one per character of an `fn` run; `runsOf`
+  reads one back as `{ text: '*', fn }`, and a line break after one never takes its `fn`.
+- **Numbers** (`footnotesPlugin`, `article-footnotes.ts`): state `{ refs, breaks, pending, decorations }`. `refs`
+  (each reference's position) is mapped through a change, and counted again only when `touchesRefs` (a step's slice
+  holds a reference, or one mapped away): typing never walks the writing. A node decoration gives each its number
+  (`data-n`); `FootnoteRefView` draws it as a text node, so an export draws it, after a hidden "Footnote "
+  (`article-chrome article-sr-only`) a screen reader reads. A press on a reference calls `onRef(n)`, which puts the
+  caret in its note when the person may write.
+- **Putting one in** (`insertFootnote`): at `selection.$to`, in a block that takes inline content and is not code;
+  the caret after it and `pending` set to it. From the slash menu (`block: 'footnote'`), the toolbar's Insert
+  (`handle.run`) and ⌘⌥F (`onFootnote`, refused on a card, for a Participant or read-only); each counts
+  `Element·Added·ArticleFootnote`. A paste onto a card drops references (`cardPasteSlice`).
+- **Layout** (`layoutFootnotes`, called by `ArticleEditor.measure` after the repeated header rows settle, again a
+  frame later while the breaks move, up to `REPEAT_SETTLE_TRIES`): page by page from the first, a page's references
+  are those whose line (`lineAt`: the text beside a reference, never its raised box; a place between blocks reads
+  as the next line) is in its column. `footCut` keeps the most notes whose last reference ends above the text foot
+  with them (the notes' height capped at `FOOTNOTE_MAX_SHARE`); a reference left over goes on with its line. The
+  first place past that foot (`firstPast`, a binary search over the writing's positions) is where the page ends:
+  `breakAt` makes it a widget `span.article-foot-break` (`display: block; break-before: column`) inside a block's
+  lines, or a node decoration `.article-foot-break-before` on the block, row, or table at its first row. A page's
+  break is found by where the text before it landed (breaks move with the writing); a spare one goes; one whose next
+  line (with that line's references' notes, and the margin a block break cuts, `gapBefore`) fits within
+  `SETTLE_SLACK` goes. Each change is one meta-only dispatch and a synchronous relayout, at most `2 x pages + 4` a
+  pass. `mapBreaks` drops a break inside a block's lines when that block changed (its lines wrap anew). The pages'
+  text feet (`limits`) feed `measureRepeats`, so a table's header row repeats above a page's notes.
+- **Notes** (`FootnoteNotes`, `article-footnote-notes.ts`): a host beside the writing carrying its CSS variables;
+  one `aside.article-footnotes` per page with notes, absolute at the text area's foot (`translateY(-100%)`), at most
+  `FOOTNOTE_MAX_SHARE` tall, overflow hidden: an `hr` a third wide, an `ol` of `li[data-n]` (number, then a
+  `contenteditable` `plaintext-only` text; for a writer `role="textbox"` and `aria-label` "Footnote n", the number hidden; placeholder "Footnote").
+  Heights are measured in a hidden probe once per text, width and look. Boxes and items are reused; the note being
+  typed in is never rewritten. Focus leaving commits (`setNodeAttribute(pos, 'text')` then a flush); Enter or Escape
+  commits and puts the caret after the reference; a line break is never typed; input past the cap is cut; a key or
+  press in a note never reaches the canvas.
+- **Exports**: `handle.snapshot` adds each box's `snapshotWriting` (text cut at the box's foot), so PDF, PNG and SVG
+  draw the notes; Word writes `w:footnoteReference` and `word/footnotes.xml` (office-export blueprint); Markdown
+  writes `[^n]` and the notes after the last block (pages-for-agents blueprint).
 
 ### Style
 

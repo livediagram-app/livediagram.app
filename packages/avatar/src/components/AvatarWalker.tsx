@@ -15,7 +15,13 @@ import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { avatarBindings } from '../bindings';
 import { AVATAR_FALLBACK_COLOUR, avatarScale, type AvatarConfig } from '../config';
 import type { AvatarFacing } from '../walk';
-import { AVATAR_HEIGHT, avatarBox } from '../walk';
+import {
+  AVATAR_HEIGHT,
+  AVATAR_NAME_CHIP_RISE,
+  AVATAR_STATUS_CHIP_RISE,
+  AVATAR_ZZ_RISE,
+  avatarBox,
+} from '../walk';
 import { AvatarSprite } from './avatar-sprite';
 
 // An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
@@ -166,7 +172,7 @@ export function AvatarWalker({
             // tracking the size choice so it hugs a small character too.
             style={{
               ...avatarBindings.identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
-              top: box.offsetY - AVATAR_HEIGHT * scale - 16,
+              top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_NAME_CHIP_RISE,
             }}
           >
             {status ? <StatusDot status={status} /> : null}
@@ -184,7 +190,7 @@ export function AvatarWalker({
           <div
             data-own-status
             className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
-            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 }}
+            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_STATUS_CHIP_RISE }}
           >
             <StatusDot status={status} />
             <span aria-hidden>{avatarStatusLabel(status)}</span>
@@ -197,7 +203,7 @@ export function AvatarWalker({
             className="animate-avatar-zz pointer-events-none absolute z-10 text-[11px] font-bold italic text-slate-500 dark:text-slate-400"
             style={{
               left: box.offsetX + 8 * scale,
-              top: box.offsetY - AVATAR_HEIGHT * scale - 24,
+              top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_ZZ_RISE,
             }}
           >
             Zz

@@ -404,3 +404,103 @@ html[data-presenting] .article-flow .article-note {
   background-color: rgb(148 163 184 / 0.35);
   border-radius: 2px;
 }
+
+/* Footnotes (docs/specs/007-editor/article-pages.md "Footnotes"): a reference's raised number, the break that ends
+   a page's text above its notes, and the notes at the page's foot (article-footnote-notes.ts), laid beside the
+   writing in canvas space with its variables. */
+.article-flow .article-footnote-ref {
+  font-size: 0.68em;
+  font-weight: 600;
+  line-height: 0;
+  vertical-align: super;
+  padding: 0 0.06em;
+  color: var(--article-accent);
+  cursor: pointer;
+}
+/* ProseMirror puts a zero-width image after an uneditable inline (a reference) that ends a block; preflight makes
+   every img a block, which opened an empty line under a paragraph ending in a footnote. */
+.article-flow img.ProseMirror-separator {
+  display: inline;
+}
+.article-flow .article-footnote-ref.ProseMirror-selectednode {
+  border-radius: 2px;
+  outline: 2px solid color-mix(in srgb, var(--article-accent) 45%, transparent);
+}
+.article-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.article-flow .article-foot-break {
+  display: block;
+  height: 0;
+  break-before: column;
+}
+.article-flow .article-foot-break-before {
+  break-before: column;
+}
+.article-footnotes-host {
+  display: contents;
+  --article-line: calc(var(--article-size) * var(--article-leading));
+}
+.article-footnotes {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-top: calc(0.5 * var(--article-line));
+  transform: translateY(-100%);
+  font-family: var(--article-body-font);
+  font-size: calc(var(--article-size) * 13 / 16);
+  line-height: var(--article-leading);
+  color: var(--article-muted);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.article-footnotes-probe {
+  left: -100000px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.article-footnotes-rule {
+  width: 33.333%;
+  margin: 0 0 0.4em;
+  border: 0;
+  border-top: 1px solid var(--article-rule);
+}
+.article-footnotes-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.article-footnote {
+  display: flex;
+  gap: 0.45em;
+  padding-bottom: 0.2em;
+}
+.article-footnote-n {
+  flex: none;
+  min-width: 1.1em;
+  font-weight: 600;
+}
+.article-footnote-text {
+  flex: 1;
+  min-width: 0;
+  border-radius: 2px;
+  outline: none;
+  cursor: text;
+}
+.article-footnote-text[contenteditable='false'] {
+  cursor: default;
+}
+.article-footnote-text:not([contenteditable='false']):empty::before {
+  content: attr(data-placeholder);
+  opacity: 0.6;
+}
+.article-footnote-text:focus {
+  background: color-mix(in srgb, var(--article-accent) 8%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--article-accent) 8%, transparent);
+}

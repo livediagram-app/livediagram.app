@@ -1776,14 +1776,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ]
       },
       "templateFamily": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/TemplateFamily"
-          },
-          {
-            "type": "null"
-          }
-        ]
+        "$ref": "#/components/schemas/TemplateFamilyOrNone"
       }
     },
     "required": [
@@ -2009,14 +2002,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ]
       },
       "templateFamily": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/TemplateFamily"
-          },
-          {
-            "type": "null"
-          }
-        ]
+        "$ref": "#/components/schemas/TemplateFamilyOrNone"
       }
     },
     "required": [
@@ -6763,8 +6749,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "TemplateFamily": {
-    "const": "retrospective",
+    "deprecated": true,
+    "description": "No template family is offered today: summaries carry null, and a create naming the retired `retrospective` reads as none (any other value is intent_invalid).",
     "type": "string"
+  },
+  "TemplateFamilyOrNone": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/TemplateFamily"
+      },
+      {
+        "type": "null"
+      }
+    ],
+    "description": "A family, or null for none (only null while there is no family)."
   },
   "TextAlignX": {
     "enum": [

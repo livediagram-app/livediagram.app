@@ -57,8 +57,8 @@ Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcad
 | Reading Nook    | 160 × 112    | One seat in its armchair, the sitter facing down the canvas (chair rules)        |
 
 - **Seats** follow the [Chair](chair.md) rules exactly: walk onto the piece to sit on the free seat nearest where you
-  arrived, one sitter a seat, a full piece stops you beside it; who sits is presence, never stored, and the piece names
-  its sitters in a pill above it. None of them turns.
+  arrived, one sitter a seat, a full piece stops you beside it; who sits is presence, never stored, a piece with more than
+  one seat rings each taken seat in its sitter's colour, and the piece names its sitters in a pill above their heads. None of them turns.
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
   front of it.

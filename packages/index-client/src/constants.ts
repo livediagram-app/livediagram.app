@@ -325,18 +325,51 @@ export const placementDimensionKey = (app: App, dimension: PlacementDimension, v
 
 const INTENT_PART = /^[A-Za-z0-9_.-]+$/;
 
-/** The keys a create of this app with this creation intent tries, most specific first: kind, template, mode, app. */
+/** Default keys an app no longer offers an entry for, in the order they are read. Never dropped: each reads as the
+ *  app's own key, after it (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Retired default keys").
+ *  livehuddle's Workshop mode entry repeated its app entry, and its retrospective templates left (Work Tracker #507). */
+export const RETIRED_PLACEMENT_KEYS: Partial<Record<App, readonly string[]>> = {
+  livehuddle: ['livehuddle:mode:workshop', 'livehuddle:template:retrospective'],
+};
+
+const NO_KEYS: readonly string[] = [];
+const retiredKeysOf = (app: App): readonly string[] => RETIRED_PLACEMENT_KEYS[app] ?? NO_KEYS;
+
+/** The keys a create of this app with this creation intent tries, most specific first: kind, template, mode, app,
+ *  then the app's retired keys. */
 export function placementDefaultKeysFor(app: App, intent: string | null | undefined): string[] {
   const parts = intent ? intent.split(':') : [];
   const [mode, kind, family] =
     parts.length === 1 ? [null, null, parts[0]] : [parts[0], parts[1], parts[2] ?? null];
+  const retired = retiredKeysOf(app);
   const keys: string[] = [];
   const add = (dimension: PlacementDimension, value: string | null | undefined) => {
-    if (value && INTENT_PART.test(value)) keys.push(placementDimensionKey(app, dimension, value));
+    if (!value || !INTENT_PART.test(value)) return;
+    const key = placementDimensionKey(app, dimension, value);
+    if (!retired.includes(key)) keys.push(key);
   };
   add('kind', kind);
   add('template', family);
   add('mode', mode);
-  keys.push(placementDefaultKey(app));
+  keys.push(placementDefaultKey(app), ...retired);
   return keys;
+}
+
+/** A person's defaults as every surface reads them: an app's own key, when it holds none, takes its first retired
+ *  key's folder. The retired keys stay in the map, so clearing the app's entry can clear them too. */
+export function foldRetiredDefaults(
+  rows: readonly { key: string; folderId: string }[],
+): Map<string, string> {
+  const map = new Map(rows.map((d) => [d.key, d.folderId]));
+  for (const [app, retired = NO_KEYS] of Object.entries(RETIRED_PLACEMENT_KEYS)) {
+    if (map.has(app)) continue;
+    const folderId = retired.map((key) => map.get(key)).find((id) => id !== undefined);
+    if (folderId) map.set(app, folderId);
+  }
+  return map;
+}
+
+/** The retired keys this key's entry clears with it: an app's own key's, else none. */
+export function retiredKeysClearedWith(key: string): readonly string[] {
+  return (APPS as readonly string[]).includes(key) ? retiredKeysOf(key as App) : NO_KEYS;
 }

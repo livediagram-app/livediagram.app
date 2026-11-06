@@ -60,6 +60,17 @@ export const AVATAR_SPEED = 260;
 // Avatar Panel (docs/specs/008-canvas/avatar-mode.md) scales these via avatarBox(scale).
 export const AVATAR_WIDTH = 40;
 export const AVATAR_HEIGHT = 56;
+// What a character carries over its head (AvatarWalker), as rises in canvas px above the top of its head
+// (AVATAR_HEIGHT * scale up from the feet): a peer's name chip, your own status chip and the away Zz. The highest,
+// AVATAR_HEAD_CHROME, is how far above a head anything else must stay to be seen (a seat's name pill, chair-sitters.ts).
+export const AVATAR_NAME_CHIP_RISE = 16;
+export const AVATAR_STATUS_CHIP_RISE = 22;
+export const AVATAR_ZZ_RISE = 24;
+export const AVATAR_HEAD_CHROME = Math.max(
+  AVATAR_NAME_CHIP_RISE,
+  AVATAR_STATUS_CHIP_RISE,
+  AVATAR_ZZ_RISE,
+);
 // Empty space reserved ABOVE the standing sprite so a jump has somewhere to go.
 // The sprite's SVG clips at its viewBox, so without headroom a hop chopped the
 // character off at the shoulders — the box has to cover the peak of the hop,

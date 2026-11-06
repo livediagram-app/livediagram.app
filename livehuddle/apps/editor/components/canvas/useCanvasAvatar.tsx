@@ -4,7 +4,12 @@ import { answerMachine } from '@/lib/machine-answer';
 import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
 import { useAvatarStatus } from '@liveworkspace/avatar/hooks/useAvatarStatus';
 import { useByValue } from '@/hooks/ui/useByValue';
-import { sameSitters, sittersByChair } from '@liveworkspace/avatar/chair-sitters';
+import {
+  sameSitters,
+  seatedPeer,
+  seatsOnBoard,
+  sittersByChair,
+} from '@liveworkspace/avatar/chair-sitters';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
@@ -242,16 +247,22 @@ export function useCanvasAvatar({
   // who is on it"): merged in under the stage's id. Worked out on every step, but kept by value, so a stage re-renders
   // only when who is on it changes.
   const stages = useMemo(() => callStages(elements, roomZones(elements)), [elements]);
+  // Each sitter on the seat they hold (docs/specs/009-elements/chair.md "Occupancy is presence"), so a sofa or a
+  // table rings the exact seat, and at their drawn size, so the name pill clears the highest head.
+  const seatsOf = useMemo(() => seatsOnBoard(walkElements), [walkElements]);
+  const selfScale = avatarScale(avatarLook.config.size);
   const chairSitters = useByValue(
     useMemo(() => {
       const byChair = sittersByChair(
-        avatar.seatedOn,
-        props.selfParticipant.color,
-        props.remoteAvatars.map((peer) => ({
-          name: peer.name,
-          color: peer.color,
-          seatedOn: peer.avatar.seatedOn,
-        })),
+        {
+          name: 'You',
+          color: props.selfParticipant.color,
+          seatedOn: avatar.seatedOn,
+          seat: avatar.seatClaim,
+          scale: selfScale,
+        },
+        props.remoteAvatars.map((peer) => seatedPeer(peer)),
+        seatsOf,
       );
       const onStage = stageStanders(
         stages,
@@ -264,7 +275,16 @@ export function useCanvasAvatar({
       );
       for (const [id, standers] of onStage) byChair.set(id, standers);
       return byChair;
-    }, [avatar.seatedOn, avatar.pos, stages, props.remoteAvatars, props.selfParticipant.color]),
+    }, [
+      avatar.seatedOn,
+      avatar.seatClaim,
+      selfScale,
+      seatsOf,
+      avatar.pos,
+      stages,
+      props.remoteAvatars,
+      props.selfParticipant.color,
+    ]),
     sameSitters,
   );
   // Stable while nobody sits or stands, so the element views' memo holds

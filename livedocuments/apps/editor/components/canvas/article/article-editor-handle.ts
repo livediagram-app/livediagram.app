@@ -106,6 +106,7 @@ export function createArticleHandle({
   barsCache,
   flush,
   undoRedo,
+  noteRoots,
 }: {
   view: EditorView;
   latest: MutableRefObject<WritingLayout>;
@@ -116,6 +117,8 @@ export function createArticleHandle({
   flush: () => void;
   // An undo or redo asked for from the writing.
   undoRedo: (which: 'undo' | 'redo') => void;
+  // The boxes of notes at the pages' feet (footnotes), drawn with the writing.
+  noteRoots?: () => readonly HTMLElement[];
 }): ArticleEditorHandle {
   const scale = () => writingScale(view, latest.current);
   // A screen point, as a canvas point, by one read of the writing's scale.
@@ -352,7 +355,14 @@ export function createArticleHandle({
     },
     snapshot: () => {
       const s = scale();
-      return snapshotWriting(view.dom, toCanvas(s), s.z);
+      const ops = snapshotWriting(view.dom, toCanvas(s), s.z);
+      // Each page's notes as drawn, a note cut short at the box's foot cut there too.
+      for (const box of noteRoots?.() ?? []) {
+        const foot = toCanvas(s)(0, box.getBoundingClientRect().bottom).y;
+        for (const op of snapshotWriting(box, toCanvas(s), s.z))
+          if (op.k !== 'text' || op.y <= foot) ops.push(op);
+      }
+      return ops;
     },
     bars: (ink: string) => {
       // One walk of the writing per layout, whoever asks (the Map, every slide thumbnail).
