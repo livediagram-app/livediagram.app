@@ -7,12 +7,31 @@ import {
   PLAN_TEXT_SCALE_MIN,
   PLAN_UI_FONT,
   planBoardFontStyle,
+  planChartFontStyle,
   planTextPx,
   planTextScale,
 } from './plan-font';
 
 const stackOf = (id: string) => FONTS.find((f) => f.id === id)!.stack;
 const LIFT = `ex-height ${PLAN_HANDWRITING_EX}`;
+
+// A chart's axis, values and legend (fonts.md "On Sheet tabs and charts").
+describe('planChartFontStyle', () => {
+  it('letters a chart in the UI face, never the tab face', () => {
+    expect(planChartFontStyle(undefined)).toEqual({
+      fontFamily: PLAN_UI_FONT,
+      fontSizeAdjust: 'none',
+    });
+    expect(planChartFontStyle('no-such-face')).toEqual({
+      fontFamily: PLAN_UI_FONT,
+      fontSizeAdjust: 'none',
+    });
+  });
+
+  it('keeps a chart’s own Font', () => {
+    expect(planChartFontStyle('lora')).toEqual({ fontFamily: stackOf('lora') });
+  });
+});
 
 describe('planBoardFontStyle', () => {
   it('draws a board in the UI face when the tab has none, handing nothing to its headings', () => {

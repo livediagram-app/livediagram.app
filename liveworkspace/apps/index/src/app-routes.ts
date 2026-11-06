@@ -4,6 +4,7 @@
 
 import { SUMMARY_MAX_BYTES, type App } from '@liveworkspace/index-client';
 import { callerApp } from './auth';
+import { handleAppConnection } from './connection-doors';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
 import { isId, isPartId } from './codec';
 import { handleDriveFlag, sendDriveSignals } from './drive';
@@ -57,6 +58,10 @@ export async function handleApp(
   // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/card-moves,
   // /app/items/:id/forms/:tabId
   if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
+  // /app/items/:id/connections/:connectionId?tab=: a connected tab in its host, or gone from it (connection-doors.ts).
+  if (segments.length === 5 && segments[3] === 'connections') {
+    return handleAppConnection(request, env, app, segments[2], segments[4]!, waitUntil);
+  }
   if (request.method !== 'PUT' && !seenRead) return notFound();
   const itemId = segments[2];
   const item = await env.INDEX_DB.prepare(

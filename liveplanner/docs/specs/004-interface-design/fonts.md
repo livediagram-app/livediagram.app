@@ -149,6 +149,21 @@ The same three details hold: a heading is drawn at its face's own weights, Cavea
 and a face liveplanner does not offer letters no heading. A view on a canvas tab takes its font from its element and
 tab (`element.font → tab.font`) as any element does; in a Dashboard slot it takes the Dashboard tab's.
 
+### On Sheet tabs and charts
+
+A Sheet and a data chart read the same wherever they are drawn, so a Sheet tab and the same Sheet in a Dashboard slot
+letter alike:
+
+- **A Sheet** (`PlanSheetView`) follows the board's rule on its own tab as in a slot: its root takes
+  `planBoardFontStyle`, so its title is a heading in the tab's font and its cells, column and row headers, formula bar,
+  toolbar and status bar are in the UI face. A cell's own Font still wins.
+- **A data chart** (a Column, Bar, Pie or Line chart drawn from a sheet range) on a Plan canvas tab, on a Sheet or in a
+  Dashboard slot letters its axis numbers, its Show Values numbers and its legend in the UI face (`planChartFontStyle`).
+  A chart's own Font still wins. A chart carries no title of its own (it is a self-drawing kind with no label), so
+  there is no chart heading on a canvas tab; in a Dashboard slot the slot's name is its heading, in the tab's font.
+
+A Sankey has no Plan canvas path (the element routers carry only Plan's kinds), so its labels are unchanged.
+
 ### Text size on boards and cards
 
 The tab's **Text Size** (Tab Style > Text) scales a board's and a Plan card element's text up and down, all of it

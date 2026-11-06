@@ -47,3 +47,12 @@ export const PASSWORD_MEMORY_MAX = 1_000;
 // How long a visitor refused for guessing a share password too often is told to wait (Retry-After): the period of
 // SHARE_GUESS_VISITOR_LIMITER and SHARE_GUESS_ITEM_LIMITER (wrangler.toml), whose own limits are 10 and 30 a minute.
 export const SHARE_GUESS_RETRY_AFTER_S = 60;
+
+// Connected tabs (liveworkspace/docs/specs/004-index/blueprints/connected-tabs.md): how long the reverse write waits for
+// the target app (IDX24), how long a connection may stay unconfirmed before the sweep takes it and its pass back
+// (IDX27), how many the sweep takes a run, and how long a caller over CONNECTION_OPEN_LIMITER is told to wait (its
+// period).
+export const CONNECTION_REVERSE_TIMEOUT_MS = 5_000;
+export const CONNECTION_CONFIRM_GRACE_MS = 60 * 60 * 1000;
+export const CONNECTION_SWEEP_MAX = 200;
+export const CONNECTION_OPEN_RETRY_AFTER_S = 60;

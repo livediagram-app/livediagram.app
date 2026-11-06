@@ -45,6 +45,7 @@ import { clearPointingTarget, setPointingTarget } from './sheet-pointing';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import { useSheetZoom } from '@/hooks/sheets/sheet-zoom';
+import { planBoardFontStyle } from '@/lib/plan-font';
 
 const RADIUS = 12;
 
@@ -145,7 +146,9 @@ function SheetBody({
         borderColor: palette.border,
         color: palette.text,
         borderRadius: RADIUS,
-        ...(fontFamily ? { fontFamily } : {}),
+        // The board's rule, on its own tab as in a Dashboard slot (fonts.md "On Sheet tabs and charts"): the title
+        // takes the tab's face, the cells and the rest of the Sheet the UI face, a cell's own Font still winning.
+        ...planBoardFontStyle(fontFamily),
       }}
     >
       <SheetWorkspace
@@ -155,7 +158,6 @@ function SheetBody({
         interactive={interactive}
         canEdit={interactive && bridge.canEdit}
         maximised={maximised}
-        fontFamily={fontFamily}
       />
     </div>
   );
@@ -168,7 +170,6 @@ function SheetWorkspace({
   interactive,
   canEdit,
   maximised,
-  fontFamily,
 }: {
   element: ShapeElement;
   model: ReturnType<typeof useSheetModel>;
@@ -176,7 +177,6 @@ function SheetWorkspace({
   interactive: boolean;
   canEdit: boolean;
   maximised: boolean;
-  fontFamily?: string;
 }) {
   const bridge = useSheetsBridgeContext()!;
   const plan = usePlan();
@@ -224,7 +224,6 @@ function SheetWorkspace({
           element={element}
           canEdit={canEdit}
           interactive={interactive}
-          fontFamily={fontFamily}
         />
       </SheetCellThreadsProvider>
     </SheetControllerProvider>
@@ -236,13 +235,11 @@ function SheetParts({
   element,
   canEdit,
   interactive,
-  fontFamily,
 }: {
   setCardPush: (push: CardTablePush | null) => void;
   element: ShapeElement;
   canEdit: boolean;
   interactive: boolean;
-  fontFamily?: string;
 }) {
   const bridge = useSheetsBridgeContext()!;
   const actions = useSheetActions();
@@ -383,7 +380,6 @@ function SheetParts({
             input={input}
             pointRef={pointRef}
             peers={bridge.peers}
-            fontFamily={fontFamily}
             zoom={zoom}
           />
           {interactive ? <SheetStatusBar /> : null}

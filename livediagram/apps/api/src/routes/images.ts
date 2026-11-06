@@ -4,7 +4,13 @@
 
 import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, ORIGINAL_NAME_MAX } from '@liveworkspace/media';
 import { reportImagesUploaded } from '@liveworkspace/index-app';
-import { galleryUsage, type ImageUsage, type MediaClient } from '@liveworkspace/media';
+import {
+  galleryUsage,
+  IMAGE_GRANT_IDS_MAX,
+  parseImageGrantIds,
+  type ImageUsage,
+  type MediaClient,
+} from '@liveworkspace/media';
 import { documentRoom } from '../document-client';
 import { indexAppClient, indexFor } from '../index-service';
 import {
@@ -14,7 +20,14 @@ import {
   mediaOwner,
   rememberMediaOwner,
 } from '../media';
-import { badRequest, CORS_HEADERS, imagesUnavailable, json, notFound } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  forbidden,
+  imagesUnavailable,
+  json,
+  notFound,
+} from '../responses';
 import { grantCallerOf, requireOwner, type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 
@@ -105,6 +118,28 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     return json({ usage: await usageOf(ctx, media, owner) });
+  }
+
+  // POST /api/images/grants?d=<documentId>: a Participant's placement claim (docs/specs/009-elements/images.md
+  // "Placement grants"). Body `{ ids }`. Their placement reaches the canvas through its room, which knows no person,
+  // so it leaves no edit key to grant on; the editor claims the images before it sends the ops. The canvas grants
+  // each of `ids` the caller uploaded, while the index lets the caller add to it (Participant or Editor). Anyone
+  // else's image, or an unknown id, is left alone, so a claim can only share the caller's own pictures.
+  if (segments.length === 3 && segments[2] === 'grants' && request.method === 'POST') {
+    const owner = requireOwner(ctx);
+    if (owner instanceof Response) return owner;
+    // A workbench session is its owner's, on their own canvas: their images serve there without a grant.
+    if (ctx.workbench) return notFound();
+    const d = url.searchParams.get('d');
+    if (!d) return badRequest('missing d');
+    const ids = parseImageGrantIds(await request.json().catch(() => null));
+    if (!ids) return badRequest(`ids must be 1 to ${IMAGE_GRANT_IDS_MAX} image ids`);
+    const grant = await resolveDocumentGrant(ctx, d);
+    if (grant instanceof Response) return grant;
+    if (!grant) return notFound();
+    if (grant.level === 'view' || grant.trashed) return forbidden();
+    const granted = await documentRoom(env, d).grantOwnImages(ids, owner);
+    return json({ granted });
   }
 
   // GET /api/images/:id: byte read. Auth: owner of the

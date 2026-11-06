@@ -150,3 +150,58 @@ describe('createPresenceCoalescer', () => {
     expect(h.cursors().get('peer')).toEqual({ tabId: 't1', x: 2, y: 0 });
   });
 });
+
+// docs/specs/008-canvas/avatar-mode.md "A busy room", "The costume rides only when it is needed".
+describe('createPresenceCoalescer with lean avatar packets', () => {
+  const costume = { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' } as const;
+  const lean = (x: number, withCostume = false) => ({
+    x,
+    y: 0,
+    facing: 'down' as const,
+    walking: true,
+    ...(withCostume ? { config: costume } : null),
+  });
+
+  it('keeps the last costume seen from a peer, and fills the resting values back in', () => {
+    const h = setup();
+    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1, true) });
+    runFrame();
+    h.presence.avatar('peer', { tabId: 't1', avatar: lean(2) });
+    runFrame();
+    expect(h.avatars().get('peer')).toEqual({
+      tabId: 't1',
+      avatar: { ...lean(2), config: costume, stepFrame: 0, lift: 0, wave: null },
+    });
+  });
+
+  it('keeps a costume a packet held back in the same frame carried', () => {
+    const h = setup();
+    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1, true) });
+    h.presence.avatar('peer', { tabId: 't1', avatar: lean(2) });
+    runFrame();
+    expect(h.avatars().get('peer')?.avatar.config).toEqual(costume);
+    expect(h.avatars().get('peer')?.avatar.x).toBe(2);
+  });
+
+  it('draws a peer whose costume it was never sent without one, until one arrives', () => {
+    const h = setup();
+    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1) });
+    runFrame();
+    expect(h.avatars().get('peer')?.avatar.config).toBeUndefined();
+    const other = { ...costume, hair: 'afro' } as const;
+    h.presence.avatar('peer', { tabId: 't1', avatar: { ...lean(2), config: other } });
+    runFrame();
+    expect(h.avatars().get('peer')?.avatar.config).toEqual(other);
+  });
+
+  it('forgets the costume once the peer has left the mode', () => {
+    const h = setup();
+    h.presence.avatar('peer', { tabId: 't1', avatar: lean(1, true) });
+    runFrame();
+    h.presence.avatar('peer', null);
+    runFrame();
+    h.presence.avatar('peer', { tabId: 't1', avatar: lean(3) });
+    runFrame();
+    expect(h.avatars().get('peer')?.avatar.config).toBeUndefined();
+  });
+});

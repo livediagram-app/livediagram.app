@@ -117,8 +117,8 @@ export type AvatarPresence = {
   y: number;
   facing: 'down' | 'up' | 'left' | 'right';
   // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size / hair colour, each a
-  // preset token from a closed set. Optional so a packet from an older client
-  // still parses — the receiver falls back to the default character. Purely
+  // preset token from a closed set. Optional: a lean packet leaves it out (AvatarPacket below) and the receiver keeps
+  // the last one it saw from that peer, falling back to the default character for one it never saw. Purely
   // cosmetic, and never an identity claim.
   config?: AvatarConfig;
   // A reaction in progress (docs/specs/008-canvas/avatar-mode.md): which one, and how far into it the
@@ -158,11 +158,80 @@ export type AvatarPresence = {
   status?: AvatarStatus | null;
 };
 
+// A character as it travels (docs/specs/008-canvas/avatar-mode.md "A busy room", "The costume rides only when it is
+// needed"): a full `AvatarPresence`, or a lean one that leaves out the costume and each field at its resting value.
+// A receiver turns either back into an `AvatarPresence` with `expandAvatarPacket`, filling in the costume it last saw.
+export type AvatarPacket = Omit<AvatarPresence, 'stepFrame' | 'lift' | 'wave'> & {
+  stepFrame?: number;
+  lift?: number;
+  wave?: number | null;
+};
+
+// How often (ms) a walking character's packet carries its costume even when nothing asked for it: the net for a
+// receiver that missed the one that did (a reconnect, a room that hibernated and forgot it).
+export const AVATAR_COSTUME_REFRESH_MS = 2000;
+
+// A position rounded to a hundredth of a canvas px: invisible at any zoom, and a walk's float noise
+// (512.3456789012345) costs 17 characters a coordinate on the wire.
+const roundPx = (v: number): number => Math.round(v * 100) / 100;
+
+/**
+ * The lean form of `full`: the position rounded, the costume only `withCostume`, and every field at its resting
+ * value (step frame 0, no hop, no wave, no seat, no drink, no status, no reaction) left out.
+ */
+export function leanAvatarPacket(full: AvatarPacket, withCostume: boolean): AvatarPacket {
+  const out: AvatarPacket = {
+    x: roundPx(full.x),
+    y: roundPx(full.y),
+    facing: full.facing,
+    walking: full.walking,
+  };
+  if (full.stepFrame) out.stepFrame = full.stepFrame;
+  if (full.lift) out.lift = full.lift;
+  if (full.wave !== undefined && full.wave !== null) out.wave = full.wave;
+  if (withCostume && full.config) out.config = full.config;
+  if (full.reaction) out.reaction = full.reaction;
+  if (full.seatedOn) out.seatedOn = full.seatedOn;
+  if (full.seat) out.seat = full.seat;
+  if (full.holding) out.holding = full.holding;
+  if (full.status) out.status = full.status;
+  return out;
+}
+
+/** Whether `packet` leaves anything out that an older receiver reads as required (the costume or a resting value). */
+export function isLeanAvatarPacket(packet: AvatarPacket): boolean {
+  return (
+    packet.config === undefined ||
+    packet.stepFrame === undefined ||
+    packet.lift === undefined ||
+    packet.wave === undefined
+  );
+}
+
+/**
+ * `packet` filled back out: the resting values it left out, and `costume` (the last one seen from this peer) when it
+ * carries none. A packet that carries its own costume keeps it. Unvalidated, like the packet: a receiver still parses
+ * the costume field by field (`parseAvatarConfig`).
+ */
+export function expandAvatarPacket(
+  packet: AvatarPacket,
+  costume: AvatarConfig | undefined,
+): AvatarPresence {
+  const config = packet.config ?? costume;
+  return {
+    ...packet,
+    stepFrame: packet.stepFrame ?? 0,
+    lift: packet.lift ?? 0,
+    wave: packet.wave ?? null,
+    ...(config ? { config } : null),
+  };
+}
+
 // The sender's Avatar-mode character, so everyone in the room sees everyone else walking around. Ephemeral presence
 // exactly like cursor / laser: throttled to ~30 Hz, never logged, never replayed to a reconnecting client, and
 // `avatar: null` means "I left the mode, drop my character". The tab id scopes rendering to peers looking at the
-// same tab.
-export type AvatarOp = { kind: 'avatar'; tabId: string; avatar: AvatarPresence | null };
+// same tab. Full or lean (AvatarPacket): an editor sends lean packets only to a room that said it takes them.
+export type AvatarOp = { kind: 'avatar'; tabId: string; avatar: AvatarPacket | null };
 
 // One character SHOVES another. Sent by the pusher when their character reaches the person they clicked; only the
 // participant named in `targetId` acts on it, by sliding their own character a short way along (`dx`, `dy`), a unit

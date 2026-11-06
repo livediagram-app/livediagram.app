@@ -92,7 +92,12 @@ export type ShareLink = {
   // A public link (a Community post's): it never asks for the item's share password; while one is set it opens
   // nothing (404), as if the post were closed. Absent from an older index: false.
   public?: boolean;
+  // A connected tab's pass (connected-tabs.md): the item whose tab it was made for, for the Share dialog's
+  // "Connected from <host>". Only on the item's own share list; absent for any other link.
+  connection?: ShareLinkConnection;
 };
+
+export type ShareLinkConnection = { hostItemId: string; hostApp: App; hostTitle: string };
 
 // An item shared with me through a link I opened.
 export type SharedWithItem = {

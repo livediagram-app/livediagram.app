@@ -18,7 +18,7 @@ function show(h: SheetHarness, at = 'B2') {
     h,
     (p) => {
       actions = p.actions;
-      return <SheetCellEditor input={p.input} fontFamily="Inter" />;
+      return <SheetCellEditor input={p.input} />;
     },
     { at },
   );
@@ -62,7 +62,8 @@ describe('the cell editor', () => {
     );
     expect(document.activeElement).toBe(editor());
     expect(editor().selectionStart).toBe(5);
-    expect(editor().style.fontFamily).toBe('Inter');
+    // In the face the Sheet's root hands down, as the cell is (fonts.md "On Sheet tabs and charts").
+    expect(editor().style.fontFamily).toBe('');
   });
 
   it('covers a merged cell whole', () => {

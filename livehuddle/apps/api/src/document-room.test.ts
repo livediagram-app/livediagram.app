@@ -369,7 +369,8 @@ describe('DocumentRoom hello frame role forcing', () => {
     room.acceptSession(asWs(ws), 'edit');
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
     const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
-    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT });
+    // `leanAvatars`: docs/specs/015-api/api.md "A busy room bounds its presence fan-out".
+    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT, leanAvatars: true });
   });
 
   it('adds the live build id when the deploy set one', () => {
@@ -382,7 +383,12 @@ describe('DocumentRoom hello frame role forcing', () => {
     room.acceptSession(asWs(ws), 'edit');
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
     const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
-    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT, build: 'abc123' });
+    expect(sent).toContainEqual({
+      kind: 'format',
+      format: DOCUMENT_FORMAT,
+      build: 'abc123',
+      leanAvatars: true,
+    });
   });
 
   it('replaces the client participant id with a server-assigned ephemeral id', () => {

@@ -44,6 +44,9 @@ export interface Env {
   // (tests, local), not limited.
   SHARE_GUESS_VISITOR_LIMITER?: RateLimit;
   SHARE_GUESS_ITEM_LIMITER?: RateLimit;
+  // Opening a connected tab (connections.ts), 60 a minute per person, else per network. Absent (tests, local), not
+  // limited.
+  CONNECTION_OPEN_LIMITER?: RateLimit;
   // Where each app's internal routes live (copy, purge, revoke).
   APP_ORIGIN_LIVEDIAGRAM?: string;
   APP_ORIGIN_LIVEPLANNER?: string;

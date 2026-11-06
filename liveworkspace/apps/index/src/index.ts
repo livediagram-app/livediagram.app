@@ -8,6 +8,8 @@ import { handleApp } from './app-routes';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
+import { sweepUnconfirmedConnections } from './connection-doors';
+import { handleConnection, makeConnection } from './connections';
 import type { PersonContext, RouteContext } from './context';
 import { indexEnabled, type Env } from './env';
 import { handleFolders } from './folders';
@@ -67,6 +69,10 @@ async function route(ctx: RouteContext): Promise<Response> {
     return json(keys, { headers: { 'Cache-Control': `public, max-age=${JWKS_MAX_AGE_S}` } });
   }
   if (head === 'share' && segments.length >= 2) return handleShareCode(ctx);
+  // A connected tab, with its host's grant (connections.ts).
+  if (head === 'connections') {
+    return segments.length === 2 ? handleConnection(ctx, segments[1]!) : notFound();
+  }
 
   if (head === 'items') {
     const id = segments[1];
@@ -79,6 +85,9 @@ async function route(ctx: RouteContext): Promise<Response> {
     }
     if (segments[2] === 'share' || segments[2] === 'share-password') {
       return segments.length === 3 ? handleItemShare(ctx, id) : notFound();
+    }
+    if (segments[2] === 'connections') {
+      return segments.length === 3 ? makeConnection(ctx, id) : notFound();
     }
     return handleItem(ctx, id);
   }
@@ -137,6 +146,7 @@ const routeLabel = createApiRouteLabel(
     'test',
     'deliveries',
     'card-moves',
+    'connections',
   ]),
 );
 
@@ -212,6 +222,13 @@ const worker = {
     if (event.cron === FREQUENT_CRON) {
       await step('purges', async () => {
         console.log('[index] purges', JSON.stringify(await continuePurges(env)));
+      });
+      // Connected tabs whose tab never reached their host (connection-doors.ts).
+      await step('connections', async () => {
+        console.log(
+          '[index] unconfirmed connections swept',
+          await sweepUnconfirmedConnections(env),
+        );
       });
       await step('person merges', async () => {
         console.log('[index] person merges', await drainPersonMerges(env));

@@ -49,7 +49,7 @@ const CHART_KEYS_HELP =
 
 type Drag = { id: string; kind: 'move' | 'resize'; dx: number; dy: number };
 
-export function SheetChartsLayer({ fontFamily }: { fontFamily?: string | undefined }) {
+export function SheetChartsLayer() {
   const ctx = useSheetCharts();
   const c = useSheetController();
   const bridge = useSheetsBridgeContext();
@@ -245,7 +245,6 @@ export function SheetChartsLayer({ fontFamily }: { fontFamily?: string | undefin
                     ) : (
                       <DataChartView
                         element={live}
-                        fontFamily={fontFamily}
                         textColor={c.palette.text}
                         palette={ctx?.chartPalette}
                       />

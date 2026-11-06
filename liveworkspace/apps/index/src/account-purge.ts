@@ -23,6 +23,7 @@
 import { isMergeCaller } from './auth';
 import { isId } from './codec';
 import { PURGE_NOW_MAX } from './config';
+import { hostedPassStatements } from './connection-rows';
 import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
 import { drainPersonNotices, recordPersonNotices } from './person-notices';
@@ -120,6 +121,8 @@ async function purgeOwnItems(
     if (results.length === 0) return { done: true, purged };
     const ids = JSON.stringify(results.map((r) => r.id));
     await db.batch([
+      // Passes their connected tabs made on other items (connection-rows.ts); the connections cascade.
+      ...hostedPassStatements(db, ids),
       db
         .prepare(
           `INSERT INTO purge_tombstones (item_id, app, created_at)

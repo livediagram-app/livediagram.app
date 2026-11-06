@@ -79,7 +79,7 @@ import { CHANGESET_RETENTION_MS, type CommunityAuthor } from '@livediagram/api-s
 import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
-import { documentMayServeImage } from '../db/image-grants';
+import { documentMayServeImage, grantOwnImages } from '../db/image-grants';
 import { indexService } from '../index-service';
 import { notifyDocumentJoin, notifyMentioned } from '../email/notifications';
 import { actionNotices, type NoticeDocument } from '../liveworkspace/action-notices';
@@ -774,6 +774,13 @@ export class DocumentRoom extends DurableObject<Env> {
     return documentMayServeImage(env, documentId, imageId);
   }
 
+  // A Participant's placement claim (routes/images.ts checked the caller may add to the canvas): the images of `ids`
+  // that `personId` uploaded are granted here (db/image-grants.ts grantOwnImages). Answers how many.
+  async grantOwnImages(documentId: string, ids: string[], personId: string): Promise<number> {
+    this.bindDocument(documentId);
+    return grantOwnImages(this.requireEnv(), ids, personId, Date.now());
+  }
+
   // The source side of a copy, for whoever copies (the index names them and the link they came through): anyone
   // but the owner takes the comments as the tab read serves them to them; a copy through the canvas's open
   // Community post's link takes it without its comments or the people on its actions (docs/specs/025-community/
@@ -1443,7 +1450,8 @@ export class DocumentRoom extends DurableObject<Env> {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       const batches = (msg as { batches?: unknown }).batches === true;
-      const hello = { ...session, presence, batches } satisfies SessionAttachment;
+      const leanAvatars = (msg as { leanAvatars?: unknown }).leanAvatars === true;
+      const hello = { ...session, presence, batches, leanAvatars } satisfies SessionAttachment;
       ws.serializeAttachment(hello);
       this.presenceRelay.noteSession(ws, relaySessionOf(hello));
       // Where the ordered stream stands as this session joins, so a later
@@ -1452,7 +1460,13 @@ export class DocumentRoom extends DurableObject<Env> {
       // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
       // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
       const build = parseBuildId(this.roomEnv?.BUILD_ID);
-      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
+      // `leanAvatars`: this room fills lean avatar packets back out for an older editor, so a new one may send them.
+      this.sendTo(ws, {
+        kind: 'format',
+        format: DOCUMENT_FORMAT,
+        ...(build ? { build } : {}),
+        leanAvatars: true,
+      });
       // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
       for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       this.broadcastPresence();
@@ -1892,7 +1906,8 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 }
 
-// What the presence relay reads of a session: its tab, the other pane of a split, and whether it batches.
+// What the presence relay reads of a session: its tab, the other pane of a split, whether it batches, and whether it
+// reads lean avatar packets.
 function relaySessionOf(session: SessionAttachment | null): RelaySession | null {
   const presence = session?.presence;
   if (!presence) return null;
@@ -1900,5 +1915,6 @@ function relaySessionOf(session: SessionAttachment | null): RelaySession | null 
     ...(presence.tabId ? { tabId: presence.tabId } : {}),
     ...(presence.besideTabId ? { besideTabId: presence.besideTabId } : {}),
     batches: session.batches === true,
+    leanAvatars: session.leanAvatars === true,
   };
 }

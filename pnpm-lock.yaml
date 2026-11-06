@@ -6704,6 +6704,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@liveworkspace/media':
+        specifier: workspace:*
+        version: link:../media
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites

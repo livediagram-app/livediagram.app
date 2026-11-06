@@ -31,3 +31,4 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX24 | connected-tabs  | the reverse write waits at most 5 seconds for the target app before taking the reverse back.                                                 |
 | IDX25 | connected-tabs  | Connect Again on a tab that still has a connection replaces it, deleting the old pass.                                                       |
 | IDX26 | connected-tabs  | a connected tab's name follows the target's title on open; it is not renamed by hand.                                                        |
+| IDX27 | connected-tabs  | a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.                                     |

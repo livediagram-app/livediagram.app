@@ -6,21 +6,11 @@
 // holds the two to one corpus, because a reference either one misses is an
 // image the retention sweep would reap.
 
-// Gallery ids are 36-character UUIDs; the cap keeps a data URI or any other
-// stray string from becoming an index key.
-export const IMAGE_REF_ID_MAX_LENGTH = 128;
+import { isGalleryImageId } from '@liveworkspace/media';
 
-// Offline Mode embeds bytes in the element as a data URI, which names no row.
-const DATA_URI_PREFIX = 'data:';
-
-export function isGalleryImageId(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= IMAGE_REF_ID_MAX_LENGTH &&
-    !value.startsWith(DATA_URI_PREFIX)
-  );
-}
+// What a gallery id is lives with the media contract (@liveworkspace/media gallery-id.ts), so an editor's placement
+// claims read ids by the same rule; still importable from here for the apps' reference index.
+export { IMAGE_REF_ID_MAX_LENGTH, isGalleryImageId } from '@liveworkspace/media';
 
 // A page's picture id, when its background is one.
 function pageImageId(page: unknown): unknown {
