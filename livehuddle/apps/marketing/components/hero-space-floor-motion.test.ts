@@ -38,6 +38,8 @@ import {
 // The floor under the calls to action (Hero.tsx FLOOR_ROOM) and the copy's height from lg, badges to calls to action.
 const FLOOR_ROOM = 316;
 const LG_COPY = 352;
+// The narrowest window that shows the wide stage's floor (Tailwind's sm); below it the phone's stage takes over.
+const SM = 640;
 
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
@@ -57,6 +59,12 @@ function furnitureRects(stage: FloorStage): Rect[] {
   });
 }
 
+/** The name chip under a character's feet: about 7 px a letter, its dot and padding. */
+function chipRect(walker: Walker, at: { x: number; y: number }): Rect {
+  const width = walker.name.length * 7 + 28;
+  return { x: at.x - width / 2, y: at.y + 4, width, height: 18 };
+}
+
 /** Every box a character covers over the loop: its figure along each stretch, and its name chip under it. */
 function walkerRects(walker: Walker): Rect[] {
   return timelineOf(walker).flatMap((seg) => {
@@ -70,13 +78,13 @@ function walkerRects(walker: Walker): Rect[] {
       width: Math.max(a.x, b.x) + a.width - x,
       height: Math.max(a.y, b.y) + a.height - y,
     };
-    // The name chip: about 7 px a letter, its dot and padding.
-    const chipWidth = walker.name.length * 7 + 28;
+    const from = chipRect(walker, seg.from);
+    const to = chipRect(walker, seg.to);
     const chip = {
-      x: Math.min(seg.from.x, seg.to.x) - chipWidth / 2,
-      y: Math.max(seg.from.y, seg.to.y) + 4,
-      width: Math.abs(seg.to.x - seg.from.x) + chipWidth,
-      height: 18,
+      x: Math.min(from.x, to.x),
+      y: Math.max(from.y, to.y),
+      width: Math.abs(seg.to.x - seg.from.x) + from.width,
+      height: from.height,
     };
     return [swept, chip];
   });
@@ -147,6 +155,66 @@ describe('the hero floor keeps the copy clear', () => {
   );
 });
 
+// Every bubble stands on clear floor (Work Tracker #587): never over a piece of furniture (a rug lies flat under it, so
+// it may), another character or their name chip, at any moment it shows; and nobody walking past covers someone
+// else's chip. Checked on each set of walkers a window shows together: the wide stage from lg, its floor paths below
+// lg (over the same furniture) and the phone's stage.
+describe('the hero floor’s bubbles stand clear', () => {
+  const wide = FLOOR_STAGES.find((s) => s.key === 'wide')!;
+  const phone = FLOOR_STAGES.find((s) => s.key === 'phone')!;
+  const twin = (walker: Walker) => FLOOR_ONLY.cast.find((w) => w.name === walker.name);
+  const scenes = [
+    { name: 'wide', furniture: wide, cast: wide.cast.map((w) => ({ stage: wide, walker: w })) },
+    {
+      name: 'below lg',
+      furniture: wide,
+      cast: wide.cast.map((w) =>
+        twin(w) ? { stage: FLOOR_ONLY, walker: twin(w)! } : { stage: wide, walker: w },
+      ),
+    },
+    { name: 'phone', furniture: phone, cast: phone.cast.map((w) => ({ stage: phone, walker: w })) },
+  ];
+  const STEP = 0.1;
+
+  it.each(scenes)('keeps every $name bubble off furniture, people and chips', (scene) => {
+    const rects = furnitureRects(scene.furniture);
+    const pieces = scene.furniture.furniture
+      .map((piece, i) => ({ kind: piece.kind, rect: rects[i]! }))
+      .filter((piece) => piece.kind !== 'rug');
+    expect(pieces.length).toBeGreaterThan(2);
+    const wrong = new Set<string>();
+    for (const { stage, walker } of scene.cast) {
+      for (const { seg, rect } of bubbleRects(stage, walker)) {
+        for (const piece of pieces)
+          if (overlaps(rect, piece.rect))
+            wrong.add(`${walker.name}’s “${seg.say}” over the ${piece.kind}`);
+        for (let t = seg.start; t <= seg.end; t += STEP)
+          for (const other of scene.cast) {
+            if (other.walker.name === walker.name) continue;
+            const at = positionAt(other.walker, t);
+            if (overlaps(rect, figureRect(other.walker, at)))
+              wrong.add(`${walker.name}’s “${seg.say}” over ${other.walker.name}`);
+            if (overlaps(rect, chipRect(other.walker, at)))
+              wrong.add(`${walker.name}’s “${seg.say}” over ${other.walker.name}’s chip`);
+          }
+      }
+    }
+    for (let t = 0; t <= LOOP_S; t += STEP)
+      for (const a of scene.cast)
+        for (const b of scene.cast) {
+          if (a === b) continue;
+          if (
+            overlaps(
+              figureRect(a.walker, positionAt(a.walker, t)),
+              chipRect(b.walker, positionAt(b.walker, t)),
+            )
+          )
+            wrong.add(`${a.walker.name} over ${b.walker.name}’s chip at ${t.toFixed(1)}s`);
+        }
+    expect([...wrong]).toEqual([]);
+  });
+});
+
 // Between sm and lg the wide stage shows its floor alone, clipped above FLOOR_CLIP_Y (Work Tracker #440): a walker
 // who crossed that line would vanish mid-walk, so each one shown there stays wholly on one side of it all loop, and a
 // walker whose own path crosses it walks its floor path instead (FLOOR_ONLY). The back row's players are on a layer
@@ -167,10 +235,18 @@ describe('the hero floor between sm and lg', () => {
       const sides = new Set(moments.map((t) => side(figureRect(walker, positionAt(walker, t)))));
       expect([...sides]).not.toContain('cut');
       expect(sides.size, `${walker.name} crosses the clip line`).toBe(1);
-      // A line said on the floor is said wholly on it, never cut by the clip.
+      // A line said on the floor is said wholly on it, never cut by the clip, and inside the middle of the stage the
+      // narrowest of these windows (sm, 640px) shows, so no line runs off the window's edge.
       const stage = FLOOR_ONLY.cast.includes(walker) ? FLOOR_ONLY : wide;
+      const shown = { x: (wide.width - SM) / 2, y: 0, width: SM, height: wide.height };
       if (sides.has('floor'))
-        for (const { rect } of bubbleRects(stage, walker)) expect(side(rect)).toBe('floor');
+        for (const { seg, rect } of bubbleRects(stage, walker)) {
+          expect(side(rect)).toBe('floor');
+          expect(
+            inside(rect, shown),
+            `${walker.name}’s “${seg.say}” runs off a ${SM}px window`,
+          ).toBe(true);
+        }
     },
   );
 
@@ -441,6 +517,16 @@ describe('the hero floor’s keyframes', () => {
     const box = bubbleBox(stage, walker, segments[0]!);
     expect(500 + box.left).toBeGreaterThanOrEqual(540);
     expect(box.tail).toBe(18);
+    // A walker leaning its bubbles stands it off its head to that side, the tail at the near edge.
+    const leaning = (lean: 'left' | 'right') =>
+      bubbleBox(
+        { ...stage, clear: { x: 0, y: 0, width: 0, height: 0 } },
+        { ...walker, lean },
+        segments[0]!,
+      );
+    const width = bubbleWidth('Hello there');
+    expect(leaning('left')).toMatchObject({ left: 18 - width, tail: width - 18 });
+    expect(leaning('right')).toMatchObject({ left: -18, tail: 18 });
     const css = floorCss([stage]);
     // Said from the loop's start: it rises in from 0%, with no hidden stop before it.
     expect(css).toContain('@keyframes hsf-wide-test-say-0 {\n  0% {\n    opacity: 0;');

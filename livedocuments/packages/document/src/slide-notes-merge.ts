@@ -52,6 +52,20 @@ const slideIn = (deck: Deck | undefined, id: string): Slide | undefined =>
   deck?.slides.find((s) => s.id === id);
 
 /**
+ * `slide` (the saving editor's) with its note cards merged against the cards it was built on and the stored slide's;
+ * everything else is `slide`'s, and `slide` itself comes back when the merged cards are its own.
+ */
+export function slideWithMergedNoteCards(
+  slide: Slide,
+  baseCards: readonly NoteCard[],
+  stored: Slide,
+): Slide {
+  const own = slideNoteCards(slide);
+  const merged = mergeNoteCards(baseCards, own, slideNoteCards(stored));
+  return sameCards(merged, own) ? slide : withNoteCards(slide, merged);
+}
+
+/**
  * The deck `mine` with each slide's note cards merged against `base` and `theirs` (decks by index, slides by id).
  * Everything else in the deck is `mine`'s; a slide whose merged cards are `mine`'s own is left as it is.
  */
@@ -67,13 +81,7 @@ export function mergePresentationNoteCards(
         const stored = slideIn(theirs.decks[d], slide.id);
         if (!stored) return slide;
         const before = slideIn(base?.decks[d], slide.id);
-        const own = slideNoteCards(slide);
-        const merged = mergeNoteCards(
-          before ? slideNoteCards(before) : [],
-          own,
-          slideNoteCards(stored),
-        );
-        return sameCards(merged, own) ? slide : withNoteCards(slide, merged);
+        return slideWithMergedNoteCards(slide, before ? slideNoteCards(before) : [], stored);
       }),
     })),
   };

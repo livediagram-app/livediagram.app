@@ -3,6 +3,8 @@
 // `beforeunload` handler cannot await the async token provider (apiHeaders), and `keepalive`, so the request outlives
 // the page, while it fits the browser's budget. Shared by the tab beacon (tabs.ts) and the deck's unload save.
 import { INDEX_GRANT_HEADER } from '@livedocuments/api-schema';
+import { deckSlidePatch, parseStoredPresentation } from '@livedocuments/document';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isOfflineIdSync, offlineSaveDocumentMeta } from '../offline/offline-store';
 import { heldDocumentGrant } from './document-grants';
 import {
@@ -74,8 +76,26 @@ export function unloadHeaders(
 }
 
 /**
+ * The changed slides alone, as a body kept alive (speaker-note-cards.md "Saving"), when there is a patch that says
+ * them and it fits what is left of the budget; else null. The decks are parsed only here, on a deck too large to go
+ * whole as the page goes.
+ */
+function keptAlivePatchBody(presentation: string | null, base: string | null | undefined) {
+  if (presentation === null || typeof base !== 'string') return null;
+  const patch = deckSlidePatch(
+    parseStoredPresentation(presentation),
+    parseStoredPresentation(base),
+  );
+  if (!patch) return null;
+  const body = JSON.stringify({ presentationPatch: patch });
+  return takeKeepalive(bodyBytes(body)) ? body : null;
+}
+
+/**
  * The deck's save as the page goes (speaker-note-cards.md "Saving"): synchronous, like the tab beacon. Offline Mode
- * writes it to IndexedDB (best effort: the page may go first); otherwise one PUT, kept alive while it fits.
+ * writes it to IndexedDB (best effort: the page may go first); otherwise one PUT, kept alive while it fits. A deck
+ * too large for what is left of the keepalive budget sends only the slides it changed, kept alive, when it can; else
+ * the whole deck as a plain request, which lands only if the page lives on long enough.
  */
 export function saveDocumentMetaOnUnload(
   ownerId: string,
@@ -88,17 +108,20 @@ export function saveDocumentMetaOnUnload(
   }
   const headers = unloadHeaders(ownerId, d.id, shareCode);
   if (!headers) return;
-  const body = JSON.stringify({
+  const whole = JSON.stringify({
     presentation: d.presentation,
     presentationBase: d.presentationBase,
   });
+  const keepalive = takeKeepalive(bodyBytes(whole));
+  const patch = keepalive ? null : keptAlivePatchBody(d.presentation, d.presentationBase);
+  if (!keepalive) debugLog('[save] large deck on unload', { patched: patch !== null });
   void apiFetch(
     `${API_BASE}/documents/${d.id}`,
     {
       method: 'PUT',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body,
-      keepalive: takeKeepalive(bodyBytes(body)),
+      body: patch ?? whole,
+      keepalive: keepalive || patch !== null,
     },
     NO_GRANT_WAIT,
   ).catch(() => {});

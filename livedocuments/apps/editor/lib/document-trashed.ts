@@ -4,7 +4,7 @@
 // isDocumentTrashedError and never care which store said it.
 
 import { DOCUMENT_TRASHED_ERROR } from '@livedocuments/api-schema';
-import { ApiError } from './api/core';
+import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 
 export class DocumentTrashedError extends Error {
   readonly documentId: string;

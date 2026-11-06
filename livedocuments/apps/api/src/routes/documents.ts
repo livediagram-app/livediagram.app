@@ -45,6 +45,7 @@ import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
+import { readDeckWrite } from './deck-write';
 import type { DocumentDTO } from '../types';
 import { notifyMilestone } from '../email/notifications';
 import { reportOwnerActivity } from '../person/account-app';
@@ -54,6 +55,7 @@ import {
   readDocumentTabs,
   renameDocument,
   mergeDocumentPresentation,
+  patchDocumentPresentation,
   setDocumentPresentation,
 } from '../document-room/document-content';
 import { identityOf } from '../document-room/document-route';
@@ -432,6 +434,9 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         // The deck the editor built `presentation` on (docs/specs/012-collaboration/speaker-note-cards.md "Two people
         // writing at once"): sent with it, the note cards are merged by card id with the stored deck.
         presentationBase?: string | null;
+        // Only the slides the editor changed, in place of `presentation` (speaker-note-cards.md "Saving"): the
+        // unload save of a deck too large to outlive the page.
+        presentationPatch?: unknown;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -451,28 +456,21 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
           ? capStoredName(body.name, existing.name, 'document')
           : existing.name;
       if (!name) return badRequest('missing name');
-      if (
-        body.presentation !== undefined &&
-        body.presentation !== null &&
-        (typeof body.presentation !== 'string' || body.presentation.length > MAX_DECK_LEN)
-      ) {
-        return badRequest('presentation too large');
-      }
-      const base = body.presentationBase;
-      if (
-        base !== undefined &&
-        base !== null &&
-        (typeof base !== 'string' || base.length > MAX_DECK_LEN)
-      ) {
-        return badRequest('presentation too large');
-      }
-      await renameDocument(env, id, name, Date.now());
+      const deck = readDeckWrite(body);
+      if (deck instanceof Response) return deck;
+      // The deck first: one refused (past the deck cap, as sent or as merged) changes nothing, not even the name.
       // Only when the caller actually sent the field: `undefined` means "not my business", which is what every
       // existing client sends. A deck sent with what it was built on is merged card by card; without, as sent.
-      if (typeof body.presentation === 'string' && base !== undefined)
-        await mergeDocumentPresentation(env, id, body.presentation, base);
-      else if (body.presentation !== undefined)
-        await setDocumentPresentation(env, id, body.presentation);
+      if (deck.kind === 'patch') {
+        if ((await patchDocumentPresentation(env, id, deck.patch)) === 'too_large')
+          return payloadTooLarge();
+      } else if (deck.kind === 'merge') {
+        if (
+          (await mergeDocumentPresentation(env, id, deck.presentation, deck.base)) === 'too_large'
+        )
+          return payloadTooLarge();
+      } else if (deck.kind === 'set') await setDocumentPresentation(env, id, deck.presentation);
+      await renameDocument(env, id, name, Date.now());
       if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDocument(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab

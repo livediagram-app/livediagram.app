@@ -68,6 +68,9 @@ export type Walker = {
   holding?: 'coffee';
   // Sitting on the sofa the whole loop (the sprite's seated pose).
   seated?: true;
+  // Which way the bubbles lean off the head, for a walker standing at a table's end: to the side away from it, so a
+  // line never covers the furniture (bubbleBox).
+  lean?: 'left' | 'right';
   // Below lg, where the wide stage shows its floor alone (FLOOR_CLIP_Y), the path walked instead, for a walker whose
   // own path crosses the clip line: so nobody vanishes mid-walk at tablet widths (FLOOR_ONLY).
   floorBeats?: Beat[];
@@ -109,9 +112,9 @@ const WIDE: FloorStage = {
     { kind: 'bookshelf', x: 104, y: 174 },
     { kind: 'jukebox', x: 226, y: 190 },
     { kind: 'arcade-machine', x: 300, y: 190 },
-    { kind: 'notice-board', x: 470, y: 178 },
+    { kind: 'notice-board', x: 440, y: 178 },
     { kind: 'ping-pong-table', x: 727, y: 190 },
-    { kind: 'fireplace', x: 1010, y: 184 },
+    { kind: 'fireplace', x: 1060, y: 184 },
     { kind: 'office-pod', x: 1236, y: 165 },
     { kind: 'drinks-fridge', x: 1404, y: 178 },
     { kind: 'plant', x: 1470, y: 210 },
@@ -132,8 +135,8 @@ const WIDE: FloorStage = {
     { kind: 'desk', x: 130, y: 942, facing: 'n' },
     { kind: 'desk', x: 234, y: 942, facing: 'n' },
     { kind: 'plant', x: 516, y: 964 },
-    { kind: 'rug', x: 640, y: 892, width: 320 },
-    { kind: 'meeting-table', x: 707, y: 916 },
+    { kind: 'rug', x: 650, y: 848, width: 300 },
+    { kind: 'meeting-table', x: 707, y: 862 },
     { kind: 'plant', x: 1020, y: 964 },
     { kind: 'water-cooler', x: 1140, y: 938 },
     { kind: 'bookshelf', x: 1290, y: 912 },
@@ -144,7 +147,8 @@ const WIDE: FloorStage = {
       name: 'Maya',
       colour: '#10b981',
       config: tee('female', 'ponytail', 'tee'),
-      from: { x: 676, y: 1044 },
+      from: { x: 676, y: 990 },
+      lean: 'left',
       beats: [
         { stay: 0.5, face: 'right' },
         { stay: 3, face: 'right', say: 'Got a minute?' },
@@ -159,7 +163,8 @@ const WIDE: FloorStage = {
       name: 'Sam',
       colour: '#0ea5e9',
       config: tee('male', 'short', 'hoodie'),
-      from: { x: 924, y: 1044 },
+      from: { x: 924, y: 990 },
+      lean: 'right',
       beats: [
         { stay: 3.9, face: 'left' },
         { stay: 3, face: 'left', say: 'Sure, pull up a chair' },
@@ -168,13 +173,14 @@ const WIDE: FloorStage = {
         { stay: 6.6, face: 'left' },
       ],
     },
-    // The coffee corner: Ana by the machine with her cup; Leo comes up from his desk for one and goes back.
+    // The coffee corner: Ana on its rug with her cup; Leo comes up from his desk for one and goes back. They stand
+    // in front of the machines, far enough down that their bubbles show under them.
     {
       name: 'Ana',
       colour: '#8b5cf6',
       config: tee('female', 'long', 'suit'),
       holding: 'coffee',
-      from: { x: 290, y: 630 },
+      from: { x: 290, y: 684 },
       beats: [
         { stay: 7.6, face: 'right' },
         { stay: 3, face: 'right', say: 'Coffee?' },
@@ -191,8 +197,8 @@ const WIDE: FloorStage = {
       beats: [
         { stay: 1.9, face: 'up' },
         { to: { x: 355, y: 1072 } },
-        { to: { x: 355, y: 630 } },
-        { stay: 3.7, face: 'left' },
+        { to: { x: 355, y: 684 } },
+        { stay: 4.3, face: 'left' },
         { stay: 3, face: 'left', say: 'Always ☕' },
         { stay: 3.4, face: 'left' },
         { stay: 3, face: 'left', say: 'Sounds good' },
@@ -200,13 +206,14 @@ const WIDE: FloorStage = {
         { to: { x: 282, y: 1072 } },
         { stay: 3, face: 'up' },
       ],
-      // Below lg the coffee corner is clipped away, so Leo stays on the floor: he joins the table as Sam heads off
-      // to stand-up, and goes back to his desk.
+      // Below lg the coffee corner is clipped away, so Leo stays on the floor: he steps out from his desks towards
+      // the table as Sam heads off to stand-up, and goes back to his desk. He stops between the plant and Maya, inside
+      // the narrowest (sm) window, with a line short enough to fit between them.
       floorBeats: [
-        { stay: 14.5, face: 'up' },
-        { to: { x: 590, y: 1072 } },
-        { stay: 5.5, face: 'right' },
-        { stay: 3, face: 'right', say: 'Right behind you' },
+        { stay: 14.3, face: 'up' },
+        { to: { x: 602, y: 1072 } },
+        { stay: 5.4, face: 'right' },
+        { stay: 3, face: 'right', say: 'Coming!' },
         { to: { x: 282, y: 1072 } },
         { stay: 0.1, face: 'up' },
       ],
@@ -218,6 +225,7 @@ const WIDE: FloorStage = {
       colour: '#6366f1',
       config: tee('female', 'bun', 'varsity'),
       from: { x: 700, y: 276 },
+      lean: 'left',
       beats: [
         { stay: 2, face: 'right' },
         { stay: 3, face: 'right', say: 'Your serve!' },
@@ -231,6 +239,7 @@ const WIDE: FloorStage = {
       colour: '#f97316',
       config: tee('male', 'buzz', 'turtleneck'),
       from: { x: 900, y: 276 },
+      lean: 'right',
       beats: [
         { stay: 6, face: 'left' },
         { stay: 3, face: 'left', say: 'Ready? Here it comes' },
@@ -276,11 +285,11 @@ const WIDE: FloorStage = {
       from: { x: 1220, y: 1052 },
       beats: [
         { stay: 4, face: 'left' },
-        { to: { x: 1220, y: 1124 } },
-        { to: { x: 800, y: 1124 } },
+        { to: { x: 1220, y: 1128 } },
+        { to: { x: 800, y: 1128 } },
         { stay: 3, face: 'down', say: 'Morning all!', wave: true },
         { stay: 3, face: 'up' },
-        { to: { x: 1220, y: 1124 } },
+        { to: { x: 1220, y: 1128 } },
         { to: { x: 1220, y: 1052 } },
         { stay: 2, face: 'left' },
       ],
@@ -288,29 +297,31 @@ const WIDE: FloorStage = {
   ],
 };
 
-// The phone's stage: 640 by 280, in the flow under the calls to action, centred, so a 390px phone sees its middle
-// x 125..515. Three characters round the table, a plant and the coffee machine; nothing beside the copy.
+// The phone's stage: 640 by 300, in the flow under the calls to action, centred, so a 375px phone sees its middle
+// x 132..508. Three characters round the table, a plant and the coffee machine; nothing beside the copy. The pair at
+// the table lean their bubbles off its ends, short enough to stay in that middle.
 const PHONE: FloorStage = {
   key: 'phone',
   width: 640,
-  height: 280,
+  height: 300,
   clear: { x: 0, y: -400, width: 640, height: 400 },
   furniture: [
-    { kind: 'rug', x: 196, y: 40, width: 248 },
-    { kind: 'meeting-table', x: 227, y: 50 },
-    { kind: 'plant', x: 146, y: 64 },
-    { kind: 'coffee-machine', x: 446, y: 52 },
+    { kind: 'rug', x: 210, y: 18, width: 220 },
+    { kind: 'meeting-table', x: 245, y: 30, width: 150 },
+    { kind: 'plant', x: 138, y: 82 },
+    { kind: 'coffee-machine', x: 448, y: 80 },
   ],
   cast: [
     {
       name: 'Maya',
       colour: '#10b981',
       config: tee('female', 'ponytail', 'tee'),
-      from: { x: 206, y: 178 },
+      from: { x: 222, y: 148 },
+      lean: 'left',
       beats: [
-        { stay: 3, face: 'right', say: 'Got a minute?' },
+        { stay: 3, face: 'right', say: 'Got a sec?' },
         { stay: 9, face: 'right' },
-        { stay: 3, face: 'right', say: 'Stand-up in 5' },
+        { stay: 3, face: 'right', say: 'Stand-up?' },
         { stay: 15, face: 'right' },
       ],
     },
@@ -318,7 +329,8 @@ const PHONE: FloorStage = {
       name: 'Sam',
       colour: '#0ea5e9',
       config: tee('male', 'short', 'hoodie'),
-      from: { x: 434, y: 178 },
+      from: { x: 418, y: 148 },
+      lean: 'right',
       beats: [
         { stay: 3.4, face: 'left' },
         { stay: 3, face: 'left', say: 'Sure thing' },
@@ -331,12 +343,12 @@ const PHONE: FloorStage = {
       name: 'Jo',
       colour: '#ef4444',
       config: tee('female', 'afro', 'stripes'),
-      from: { x: 480, y: 254 },
+      from: { x: 480, y: 274 },
       beats: [
         { stay: 5, face: 'left' },
-        { to: { x: 320, y: 254 } },
+        { to: { x: 320, y: 274 } },
         { stay: 3, face: 'down', say: 'Morning all!', wave: true },
-        { to: { x: 480, y: 254 } },
+        { to: { x: 480, y: 274 } },
         { stay: 2, face: 'left' },
       ],
     },
