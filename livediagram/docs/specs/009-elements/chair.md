@@ -122,8 +122,16 @@ chair's occupancy cannot conflict between two clients, and no seating state
 reaches the stored document or undo.
 
 - The chair renders **occupied**: a soft ring in the sitter's presence colour
-  and their name under it, derived from the peer presence the canvas already
+  and their name in a pill above it, derived from the peer presence the canvas already
   receives.
+- **The exact seat is ringed.** A piece with more than one seat (a sofa, a meeting table) rings **each taken
+  seat on its own**, in that sitter's colour, at the seat they hold (their presence's `seat.index`; a packet
+  without one, the seat nearest their feet). Two people on a sofa show two rings, one per cushion. A one-seat
+  piece rings its seat as before.
+- **The name pill clears the sitter's head.** The pill names the sitters in seat order and sits above the
+  highest head among them, measured from each sitter's seat and drawn size (Small, Regular or Tall), with room
+  for the name chip and status over that head, so a sprite never covers it, on a tall chair or a short bean bag
+  alike. It never sits lower than the piece's top edge.
 - **One sitter per seat, with no lock.** A seat is taken while somebody's presence says they sit in
   it; nothing else holds it, so it cannot get stuck. Two people who arrive at the same seat at once
   (each seated before the other's presence arrived) settle it the same way on every machine: the
@@ -149,8 +157,8 @@ Two more pieces of furniture seat a character exactly as a chair does, beside it
 
 Both share the chair's rules unchanged: the same `chairFacing` field and **Desk** / **Sofa**
 menu section (the Chair section, titled for the furniture it is on), arrival seating through the
-same walk hook, the same seated guards and ways of standing, and occupancy as presence (one ring in
-the first sitter's colour, names above). A cushion takes one sitter, as a chair does; a sofa takes two.
+same walk hook, the same seated guards and ways of standing, and occupancy as presence (a ring on each
+taken cushion in its sitter's colour, names above). A cushion takes one sitter, as a chair does; a sofa takes two.
 
 Where they differ from the chair:
 

@@ -5,6 +5,9 @@ import { createShape, type ShapeElement } from '@livehuddle/document';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
 import { hasSocialArt } from './SocialArt';
+import { seatPillBottom } from '@liveworkspace/avatar/chair-sitters';
+import { BEAN_BAG_SEATS, READING_NOOK_SEATS } from '@liveworkspace/avatar/seats';
+import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
 
 afterEach(cleanup);
 
@@ -73,6 +76,12 @@ describe('the second set of social pieces', () => {
       );
       expect(container.querySelector('ellipse[stroke="#0ea5e9"]'), kind).not.toBeNull();
       expect(container.textContent).toContain('Ada');
+      // Work Tracker #582: the pill sits above the sitter's head, not over it at the piece's top edge.
+      const pill = [...container.querySelectorAll('span')].find((s) => s.textContent === 'Ada')!;
+      const grid = kind === 'bean-bag' ? BEAN_BAG_SEATS : READING_NOOK_SEATS;
+      const feet = grid.seats[0]!.v * grid.height;
+      expect(pill.style.top, kind).toBe(`${seatPillBottom(shape(kind), grid, [{ seat: 0 }])}px`);
+      expect(parseFloat(pill.style.top), kind).toBeLessThan(feet - AVATAR_HEIGHT * 1.5);
       unmount();
     }
   });
