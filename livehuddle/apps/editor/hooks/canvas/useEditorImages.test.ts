@@ -2,22 +2,20 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// The recent-images read (docs/specs/009-elements/images.md), and the workbench that never makes it
-// (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table: upload only).
+// The recent-images read (docs/specs/009-elements/images.md).
 
 const { apiListImages } = vi.hoisted(() => ({ apiListImages: vi.fn(async () => []) }));
 vi.mock('@/lib/api-client', () => ({ apiListImages, apiFetchImageDataUrl: vi.fn() }));
 
 const { useEditorImages } = await import('./useEditorImages');
 
-function mount(galleryHidden?: boolean, ownerId = 'user_1', editsBlocked = false) {
+function mount(ownerId = 'user_1', editsBlocked = false) {
   return renderHook(
     ({ owner }: { owner: string }) =>
       useEditorImages({
         editsBlocked,
         isReadOnly: false,
         embedMode: false,
-        galleryHidden,
         commit: vi.fn(),
         documentId: 'doc-1',
         ownerId: owner,
@@ -35,15 +33,10 @@ describe('useEditorImages', () => {
     expect(apiListImages).toHaveBeenCalledWith('user_1');
   });
 
-  it('never reads the gallery in a workbench', () => {
-    mount(true);
-    expect(apiListImages).not.toHaveBeenCalled();
-  });
-
   // docs/specs/006-document/offline-mode.md "Instant open": the placeholder reader has no gallery, and
   // the read follows once the reader is known.
   it("waits for the reader when the document opened under the 'self' placeholder", () => {
-    const hook = mount(false, 'self');
+    const hook = mount('self');
     expect(apiListImages).not.toHaveBeenCalled();
     hook.rerender({ owner: 'guest-1' });
     expect(apiListImages).toHaveBeenCalledExactlyOnceWith('guest-1');
@@ -53,6 +46,6 @@ describe('useEditorImages', () => {
   // where the picker opens, so a locked tab's empty image shows none.
   it('offers the picker only while edits can land', () => {
     expect(mount().result.current.imageContext?.onOpenPicker).toBeTypeOf('function');
-    expect(mount(false, 'user_1', true).result.current.imageContext?.onOpenPicker).toBeUndefined();
+    expect(mount('user_1', true).result.current.imageContext?.onOpenPicker).toBeUndefined();
   });
 });

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { layoutGraph } from './graph-input';
 import { isBoxed, type Element } from './index';
 
-// docs/specs/015-api/mcp-server.md §4.7 "Self-edges": a mind map and a ring have no place for an edge from a node to
+// livediagram/docs/specs/015-api/mcp-server.md §4.7 "Self-edges": a mind map and a ring have no place for an edge from a node to
 // itself. The node shows; the self-edge is dropped, as if never given. The flow style draws it as a loop.
 type Pinned = { kind: 'pinned'; elementId: string };
 const arrows = (els: Element[]) =>

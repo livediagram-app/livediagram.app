@@ -15,7 +15,6 @@ import {
   ROOM_FULL_RETRY_MS,
   ROOM_PING,
   ROOM_PONG,
-  WORKBENCH_ENDED_CLOSE,
   type AgentPresence,
   type ParticipantPresence,
   type FacilitatorReason,
@@ -59,9 +58,6 @@ export type RoomHandlers = {
   // closed it with ACCESS_CHANGED_CLOSE; the connector stops, and the caller reloads into the
   // ordinary access path (a password prompt, a refusal page, or the editor again).
   onAccessChanged?: () => void;
-  // A workbench session's pairing or token ended (docs/specs/013-workspace/workbench-embeds.md): the
-  // room closed it with WORKBENCH_ENDED_CLOSE; the connector stops and the page turns read-only.
-  onWorkbenchEnded?: () => void;
   // The room is full (docs/specs/015-api/api.md "A room holds at most 100 connections"): it closed this socket with
   // ROOM_FULL_CLOSE. Called once per streak of refusals; the connector tries again every ROOM_FULL_RETRY_MS and
   // whenever the tab is shown again, and a join that gets in ends the streak.
@@ -402,12 +398,6 @@ export function connectRoom(
         closed = true;
         settleTimings(false);
         handlers.onAccessChanged?.();
-        return;
-      }
-      if (event?.code === WORKBENCH_ENDED_CLOSE) {
-        closed = true;
-        settleTimings(false);
-        handlers.onWorkbenchEnded?.();
         return;
       }
       // A full room: say so once, then wait parked for the tab to be shown again or the minute's retry, whichever

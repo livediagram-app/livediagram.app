@@ -37,6 +37,11 @@ length), so one build of the site serves production and staging. Both ask for an
 6-digit code. Registration also asks for a **first and last name**, stored as `givenName` and
 `familyName` on the account (with `name` the two joined). Someone who signs in with a code to an
 address that has no name yet is asked for one after the code, before going back to the app.
+The card's line under the heading reads "One free account that works for every app in liveworkspace."
+
+**Turnstile** checks once per code sent. A token goes with each send and is spent by it; the widget resets only
+when the next send needs a fresh token (Resend, or a new address), so the code step doesn't show the widget again
+straight after the email step's check.
 
 **Continue with Google** sits above the email form on both pages when the Worker has a Google
 OAuth client (`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`; without them the button isn't shown).

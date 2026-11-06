@@ -3,7 +3,7 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { layoutGraph, type GraphInput } from './graph-input';
 import { GRAPH_LAYOUT_MAX_EDGES, GRAPH_LAYOUT_MAX_NODES } from './graph-limits';
 
-// docs/specs/015-api/mcp-server.md §4.7 "The graph look": the look's passes (side steps, the spine, loops and
+// livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look": the look's passes (side steps, the spine, loops and
 // detours, the title and key) on top of the layered layout keep the largest graph allowed inside the one-second
 // budget graph-limits.ts sets for the worst shape. Measured 2026-10-13: 500 nodes / 998 edges laid out in 314 ms
 // (the layout alone 187 ms), and a 150-node graph laid out both ways for auto direction in 31 ms. Indexing the

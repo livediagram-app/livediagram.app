@@ -11,7 +11,7 @@ import { FAQ_CATEGORIES } from '@/lib/faq-content';
 
 const FAQ_TITLE = 'FAQ · livehuddle';
 const FAQ_DESCRIPTION =
-  'Answers to common questions about livehuddle: getting started, collaboration, sharing, AI and MCP, import and export, and privacy.';
+  'Answers to common questions about livehuddle: getting started, collaboration, sharing, the API, import and export, and privacy.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,

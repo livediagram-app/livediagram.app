@@ -24,7 +24,7 @@ says not to claim: that means no `video-chat`, `voice-chat` or
 
 **Tier 3, context-dependent (when a directory wants more, or is dev-focused)**
 
-`pixel-art` · `teamwork` · `mcp` · `mit` · `nextjs` · `cloudflare` ·
+`pixel-art` · `teamwork` · `mit` · `nextjs` · `cloudflare` ·
 `typescript`
 
 ## Judgment calls
@@ -34,7 +34,7 @@ says not to claim: that means no `video-chat`, `voice-chat` or
   only once calls are on at livehuddle.app.
 - **`pixel-art`** describes the characters honestly and finds the right
   crowd, but it isn't the product; keep it to directories that want more.
-- Reserve the tech tags (`mcp`, `nextjs`, `cloudflare`, `typescript`) for
+- Reserve the tech tags (`nextjs`, `cloudflare`, `typescript`) for
   developer surfaces (GitHub, dev directories). They mean nothing to a general
   audience.
 
@@ -45,7 +45,7 @@ tags belong here):
 
 ```
 virtual-office remote-work meetings avatars collaboration multiplayer
-realtime presence open-source mcp nextjs cloudflare typescript
+realtime presence open-source nextjs cloudflare typescript
 durable-objects
 ```
 

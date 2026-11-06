@@ -127,7 +127,7 @@ pick by angle (`reanchorArrow`'s `axis`).
 
 An angled arrow on its own is an L: from a parent's bottom to a child's top it
 runs down to the child's level and meets the child's top edge sideways. Laid-out
-graph input (the MCP's `graph` / `mermaid`, [MCP server](../015-api/mcp-server.md))
+graph input (the MCP's `graph` / `mermaid`, [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md))
 gives each angled arrow two bends through `curvePoints` (down to half height,
 across, down into the child), the shape an org chart is read in; one whose ends
 already line up runs straight rather than drawing a zero-length elbow with a

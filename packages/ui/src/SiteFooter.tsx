@@ -20,7 +20,8 @@ const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
 //
 // Each product binds it (its SiteFooter): its app, its tagline, its first link's label and glyph, and what only
 // some products carry: livediagram's Community link (`community`, drawn with SITE_FOOTER_LINK), the GitHub link
-// (`repoUrl`) and the contributors' credits (`credits`), which liveplanner leaves out.
+// (`repoUrl`), the contributors' credits (`credits`), which liveplanner leaves out, and the AI & MCP link to the
+// Build with AI page (`buildWithAi`), which livehuddle leaves out (it has no MCP server).
 export const SITE_FOOTER_LINK =
   'inline-flex items-center gap-2 hover:text-slate-900 pointer-coarse:py-3 dark:hover:text-slate-100';
 const ICON_SIZE = 16;
@@ -43,12 +44,16 @@ const columns = ({
   newIcon,
   community,
   repoUrl,
-}: Pick<SiteFooterProps, 'app' | 'newLabel' | 'newIcon' | 'community' | 'repoUrl'>): Column[] => [
+  buildWithAi,
+}: Pick<
+  SiteFooterProps,
+  'app' | 'newLabel' | 'newIcon' | 'community' | 'repoUrl' | 'buildWithAi'
+>): Column[] => [
   {
     title: 'Product',
     links: [
       { href: '/new', label: newLabel, icon: newIcon },
-      { href: '/ai', label: 'AI & MCP', icon: AiIcon },
+      ...(buildWithAi ? [{ href: '/ai', label: 'AI & MCP', icon: AiIcon }] : []),
       // This app's own comparisons (packages/comparisons/README.md).
       { href: '/alternatives', label: 'Comparison' },
       // The public gallery of shared documents (livediagram's docs/specs/025-community/community.md), unless
@@ -98,6 +103,8 @@ export type SiteFooterProps = {
   repoUrl?: string;
   // The contributors' credits beside the copyright.
   credits?: boolean;
+  // The AI & MCP link to the Build with AI page, for a product with an MCP server.
+  buildWithAi?: boolean;
 };
 
 export function SiteFooter({
@@ -108,8 +115,9 @@ export function SiteFooter({
   community,
   repoUrl,
   credits = true,
+  buildWithAi = true,
 }: SiteFooterProps) {
-  const COLUMNS = columns({ app, newLabel, newIcon, community, repoUrl });
+  const COLUMNS = columns({ app, newLabel, newIcon, community, repoUrl, buildWithAi });
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-10">

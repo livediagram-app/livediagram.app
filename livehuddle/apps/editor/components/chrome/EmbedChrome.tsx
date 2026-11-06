@@ -17,7 +17,7 @@ import { useRef, type ReactNode } from 'react';
 import { MenuIcon, useClickOutside, Glyph, useMenu, useMenuButton } from '@livehuddle/ui';
 import type { Tab } from '@livehuddle/document';
 
-// The external-link glyph, shared with the workbench chrome.
+// The external-link glyph.
 export function OpenExternalIcon() {
   return (
     <Glyph size={12} units={12}>

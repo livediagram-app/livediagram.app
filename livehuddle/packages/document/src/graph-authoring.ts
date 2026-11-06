@@ -1,4 +1,4 @@
-// Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): turn a plain node/edge graph into
+// Graph-first authoring (livediagram/docs/specs/015-api/mcp-server.md §4.7): turn a plain node/edge graph into
 // canvas Element[] so a caller can express only the CONNECTION GRAPH —
 // which nodes exist and what points at what — and let the layout engine
 // (autoLayoutElements, run by the caller after this) do all positioning.
@@ -37,7 +37,7 @@ export type GraphNode = {
   // Mermaid `click A "https://…"`).
   link?: string;
   // Optional detail behind the heading: becomes the element's note, which the
-  // editor shows on the element (docs/specs/015-api/mcp-server.md §4.7).
+  // editor shows on the element (livediagram/docs/specs/015-api/mcp-server.md §4.7).
   note?: string;
   // A person's role: the node draws as the org-chart template's person card, the label (the name) in bold over it,
   // with a person glyph unless the node names its own icon.
@@ -108,7 +108,7 @@ export function edgeToArrow(e: GraphEdge, id: string): ArrowElement {
 // `makeEdgeId` mints each arrow's id (defaults to crypto.randomUUID, which
 // exists in both the Worker and Node runtimes); injectable for
 // deterministic tests.
-// A box that fits its label (docs/specs/015-api/mcp-server.md §4.7 "Boxes fit their labels"): the
+// A box that fits its label (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Boxes fit their labels"): the
 // shape's default size at least, widened to the label's estimated one-line
 // width up to a cap, then taller by a line for each wrap past it. An estimate
 // (no DOM here), tuned to the default label face at its default size; the
@@ -130,7 +130,7 @@ const LINE_PX = 19;
 const PAD_PX = 40;
 const MAX_BOX_W = 240;
 
-// The template look graph input wears (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): boxes at the
+// The template look graph input wears (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"): boxes at the
 // flowchart template's proportions, never the palette's 120×120 square, and one text size for every node, picked by
 // the caller from how many nodes there are. The editor's own Mermaid import keeps the plain sizing.
 // `fontPx` measures at a box's own label size in place of the look's (a box an edit adds at its own text size).

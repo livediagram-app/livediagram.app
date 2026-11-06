@@ -2,8 +2,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// The image picker in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface
-// table): upload only, and the person's gallery is never read.
+// The image picker: upload, the person's gallery and search.
 
 const { apiListImages } = vi.hoisted(() => ({ apiListImages: vi.fn(async () => []) }));
 vi.mock('@/lib/api-client', async (importOriginal) => ({
@@ -13,7 +12,7 @@ vi.mock('@/lib/api-client', async (importOriginal) => ({
 
 const { ImagePicker } = await import('./ImagePicker');
 
-function show(uploadOnly?: boolean) {
+function show() {
   render(
     <ImagePicker
       ownerId="user_1"
@@ -21,7 +20,6 @@ function show(uploadOnly?: boolean) {
       forElementId={null}
       onSelect={vi.fn()}
       onClose={vi.fn()}
-      uploadOnly={uploadOnly}
     />,
   );
 }
@@ -40,13 +38,5 @@ describe('ImagePicker', () => {
     show();
     fireEvent.click(screen.getByRole('button', { name: /Gallery/ }));
     expect((await screen.findByText('No images yet')).closest('[data-empty-state]')).toBeTruthy();
-  });
-
-  it('offers upload only in a workbench, and never reads the gallery', () => {
-    show(true);
-    expect(screen.queryByRole('button', { name: /Gallery/ })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
-    expect(screen.getByText('Drop, paste, or click to choose an image')).toBeTruthy();
-    expect(apiListImages).not.toHaveBeenCalled();
   });
 });

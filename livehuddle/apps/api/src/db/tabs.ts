@@ -437,8 +437,7 @@ export async function swapTabData(
   return true;
 }
 
-// Does the document hold this tab? A workbench ticket naming a tab the document lacks is refused
-// (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint").
+// Does the document hold this tab? (a changeset or view naming a tab the document lacks is refused).
 export async function documentHasTab(
   env: DocumentEnv,
   documentId: string,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { armRoomAlarm, ROOM_ALARM_FLOOR_MS, roomAlarmAt } from './room-alarm';
+import { armRoomAlarm, disarmRoomAlarm, ROOM_ALARM_FLOOR_MS, roomAlarmAt } from './room-alarm';
 
 const NOW = 1_800_000_000_000;
 
@@ -72,5 +72,23 @@ describe('armRoomAlarm', () => {
     armRoomAlarm(b, [NOW + 30_000], NOW);
     expect(a.calls).toEqual([NOW + 30_000]);
     expect(b.calls).toEqual([NOW + 30_000]);
+  });
+});
+
+describe('disarmRoomAlarm', () => {
+  it('deletes the alarm, and arming after it sets the same time again', async () => {
+    const s = storage();
+    armRoomAlarm(s, [NOW + 30_000], NOW);
+    await disarmRoomAlarm(s);
+    // A purge deleted the alarm the room remembered: the same time, still ahead, is set again rather than skipped.
+    expect(armRoomAlarm(s, [NOW + 30_000], NOW + 5_000)).toBe(NOW + 30_000);
+    expect(s.calls).toEqual([NOW + 30_000, 'delete', NOW + 30_000]);
+  });
+
+  it('deletes even an alarm never armed in memory, and a later "nothing due" deletes again', async () => {
+    const s = storage();
+    await disarmRoomAlarm(s);
+    armRoomAlarm(s, [], NOW);
+    expect(s.calls).toEqual(['delete', 'delete']);
   });
 });

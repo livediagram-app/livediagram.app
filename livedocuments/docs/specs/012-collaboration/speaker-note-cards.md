@@ -129,6 +129,21 @@ The deck is saved whole, so the server merges the slide's cards **card by card**
 The merge is the server's: the other person's cards reach an open editor on its next load, not live (the deck has no
 room op, [Presentation mode](presentation-mode.md)). A presenter who reloads sees everyone's cards.
 
+### Saving
+
+The cards save on their own, with nothing to press. Typing saves the deck a moment after the last key (under a
+second), so a sentence is one save, not one a key. What is still waiting goes **at once** when the writing stops being
+on screen, so nothing typed is lost to the wait:
+
+- A card closes (Done, Escape, a press outside it, or another card opened).
+- The Notes popover (or the phone's sheet) closes, or it moves to another slide's notes.
+- The page goes: closed, reloaded, sent to another site or put away by the browser (`pagehide`), or the editor left
+  for another page of the app.
+
+Each save carries the deck and the deck it was built on (above), so a save is up to twice the deck. The api bounds
+each of the two by the deck cap (256 KB) on its own, never their sum, so a deck at the cap still saves with its base
+and is merged; the whole request stays far under the api's 8 MB body cap.
+
 ## PowerPoint
 
 - **Export** ([Office export](../020-import-export/office-export.md)): a slide's cards (not blank) become its notes

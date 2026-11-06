@@ -16,7 +16,6 @@ import { fileURLToPath } from 'node:url';
 export const AREAS = [
   { name: 'Editor', paths: ['apps/editor'] },
   { name: 'API', paths: ['apps/api'] },
-  { name: 'MCP', paths: ['apps/mcp'] },
   { name: 'Help and marketing', paths: ['apps/help', 'apps/marketing'] },
   { name: 'Packages', paths: ['packages'] },
 ];

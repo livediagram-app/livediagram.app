@@ -12,7 +12,6 @@ const base = {
   documentId: 'here',
   documentList: docs,
   isOffline: false,
-  workbench: false,
   isOwner: true,
 };
 
@@ -25,8 +24,7 @@ describe('addToDocumentTargets', () => {
     expect(addToDocumentTargets({ ...base, isOwner: false })).toEqual([]);
   });
 
-  it('offers nothing in an offline document or a workbench', () => {
+  it('offers nothing in an offline document', () => {
     expect(addToDocumentTargets({ ...base, isOffline: true })).toEqual([]);
-    expect(addToDocumentTargets({ ...base, workbench: true })).toEqual([]);
   });
 });

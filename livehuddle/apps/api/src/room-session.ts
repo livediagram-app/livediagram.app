@@ -58,7 +58,7 @@ export type SessionAttachment = {
   //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
   //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
   following?: string;
-  //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
+  //   - `workbenchPairing`: the workbench pairing that opened this session (livediagram/docs/specs/013-workspace/workbench-embeds.md),
   //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
   workbenchPairing?: string | null;
   //   - `adderKey`: a Participant's adder key, from X-Verified-Adder (docs/specs/013-workspace/share-roles.md

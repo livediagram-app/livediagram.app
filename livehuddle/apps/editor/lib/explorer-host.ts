@@ -2,7 +2,7 @@
 
 // What the shared Explorer (@liveworkspace/explorer) needs from livehuddle to be its host: an item's address in
 // its own app, a share link's, where New goes, and the person's teams from their token
-// (liveworkspace/docs/specs/004-index/one-explorer.md). The editor's panel and the workbench's workspace frame both use these.
+// (liveworkspace/docs/specs/004-index/one-explorer.md). The editor's panel uses these.
 
 import { useEffect, useState } from 'react';
 import { teamsOfToken } from '@liveworkspace/index-client/browser';

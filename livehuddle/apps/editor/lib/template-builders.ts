@@ -1,5 +1,5 @@
 // The editor-side seam over @livehuddle/templates: the pure builders
-// live in the package (shared with the MCP worker, docs/specs/015-api/mcp-server.md); this
+// live in the package (shared with the api's seeded tabs); this
 // wrapper adds what only the app can — resolving the theme id in the
 // viewer's appearance and the graph-aware theme recolour — to land a picked template as a fully styled tab.
 // editor-page dynamic-imports this module inside the onChooseTemplate

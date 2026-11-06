@@ -106,10 +106,11 @@ type ModEvent = {
   prevented?: boolean;
 };
 
-function modLive(isReadOnly = false) {
+function modLive(isReadOnly = false, canvasTool = 'select') {
   const calls: string[] = [];
   const live = {
     isReadOnly,
+    canvasTool,
     onZoomIn: () => calls.push('zoom-in'),
     onZoomOut: () => calls.push('zoom-out'),
     onZoomReset: () => calls.push('zoom-reset'),
@@ -127,8 +128,12 @@ function modLive(isReadOnly = false) {
   return { live, calls };
 }
 
-function chord(ev: ModEvent, isReadOnly = false): { hit: string | null; prevented: boolean } {
-  const { live, calls } = modLive(isReadOnly);
+function chord(
+  ev: ModEvent,
+  isReadOnly = false,
+  canvasTool = 'select',
+): { hit: string | null; prevented: boolean } {
+  const { live, calls } = modLive(isReadOnly, canvasTool);
   let prevented = false;
   const e = {
     key: ev.key,
@@ -167,6 +172,17 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
   // neither gets the Editor's chords.
   // A Participant is read-only to the keyboard, as a Viewer (docs/specs/013-workspace/share-roles.md "A Participant
   // walks"): no undo, redo or duplicate.
+  // docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking": an Editor walking has no undo or redo
+  // either, and the key is not dispatched, so the browser's own undo is swallowed by the caller too.
+  it('gives an Editor walking no undo or redo, and still zooms and searches', () => {
+    expect(chord({ key: 'z' }, false, 'avatar')).toEqual({ hit: null, prevented: false });
+    expect(chord({ key: 'z', shiftKey: true }, false, 'avatar').hit).toBeNull();
+    expect(chord({ key: 'y' }, false, 'avatar').hit).toBeNull();
+    expect(chord({ key: '=' }, false, 'avatar').hit).toBe('zoom-in');
+    expect(chord({ key: 'k' }, false, 'avatar').hit).toBe('search');
+    expect(chord({ key: 'z' }, false, 'pan').hit).toBe('undo');
+  });
+
   it('gives a read-only session, a Participant included, no undo, redo or duplicate', () => {
     expect(chord({ key: 'z' }, true).hit).toBeNull();
     expect(chord({ key: 'z', shiftKey: true }, true).hit).toBeNull();
