@@ -159,7 +159,7 @@ const respondsTo = z
       .optional()
       .describe(
         'The card type each response becomes, by name. A name the plan lacks brings in the ready-made type of ' +
-          'that name (Bug, Idea, Candidate, Request...) or makes a new one. Absent: the form’s own, the board’s ' +
+          'that name (Bug, Idea, Candidate, Milestone, Request...) or makes a new one. Absent: the form’s own, the board’s ' +
           'first, or a new type named after the form.',
       ),
     column: z

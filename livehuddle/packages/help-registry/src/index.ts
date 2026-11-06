@@ -1205,9 +1205,9 @@ export const articles: Article[] = [
   {
     slug: 'default-folders',
     title: 'Default Folders',
-    description: 'Choose the folder new spaces and sessions land in automatically.',
+    description: 'Choose the folder new spaces land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives diagrams use as default settings documents new document wizard sessions canvas space spaces',
+      'default folder where new documents go automatic placement file use as default settings documents new space wizard canvas space spaces',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -1218,7 +1218,7 @@ export const articles: Article[] = [
     description:
       'Narrow any canvas list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in kind template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages document',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in kind template edited date last week recent people me others owner space team shared unfiled root lens results pages document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

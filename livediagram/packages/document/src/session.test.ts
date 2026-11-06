@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement } from './index';
+import type { Element, ShapeElement } from './index';
 import {
   canCastVote,
   isVotable,
@@ -266,6 +266,69 @@ describe('vote layer scoping (docs/specs/012-collaboration/vote-layer-scope.md)'
   it('with no vote, only the kind rule applies (there is no scope to fail)', () => {
     expect(isVotableInVote(shape('a'), null, layers)).toBe(true);
     expect(isVotableInVote(shape('f', { shape: 'frame' }), null, layers)).toBe(false);
+  });
+});
+
+describe('a text-only vote (docs/specs/012-collaboration/session-tools.md "Only items with text")', () => {
+  const vote = (over: Partial<TabVote> = {}): TabVote => ({
+    active: true,
+    revealed: false,
+    votesPerPerson: 3,
+    votes: {},
+    onlyWithText: true,
+    ...over,
+  });
+  const sticky = (id: string, label?: string) =>
+    ({ id, type: 'sticky', x: 0, y: 0, width: 1, height: 1, label }) as Element;
+
+  it('takes dots only on elements whose text has a non-blank character', () => {
+    expect(isVotableInVote(sticky('a', 'Ship it'), vote(), undefined)).toBe(true);
+    expect(isVotableInVote(sticky('b'), vote(), undefined)).toBe(false);
+    expect(isVotableInVote(sticky('c', ''), vote(), undefined)).toBe(false);
+    expect(isVotableInVote(sticky('d', '  \n\t '), vote(), undefined)).toBe(false);
+    expect(isVotableInVote(shape('e', { label: 'Idea' }), vote(), undefined)).toBe(true);
+    expect(isVotableInVote(shape('f'), vote(), undefined)).toBe(false);
+  });
+
+  it('reads the text live, so a note typed into mid-vote becomes votable', () => {
+    const v = vote();
+    expect(isVotableInVote(sticky('a'), v, undefined)).toBe(false);
+    expect(isVotableInVote(sticky('a', 'Typed later'), v, undefined)).toBe(true);
+  });
+
+  it('keeps a blank element that already holds dots, so they can be taken back', () => {
+    const v = vote({ votes: { a: ['me'], b: [] } });
+    expect(isVotableInVote(sticky('a', ''), v, undefined)).toBe(true);
+    expect(isVotableInVote(sticky('b', ''), v, undefined)).toBe(false);
+  });
+
+  it('leaves images out, since they carry no text label', () => {
+    const img = { id: 'i', type: 'image', x: 0, y: 0, width: 1, height: 1 } as Element;
+    expect(isVotableInVote(img, vote(), undefined)).toBe(false);
+    expect(isVotableInVote(img, vote({ onlyWithText: undefined }), undefined)).toBe(true);
+  });
+
+  it('refuses a new dot on a blank element, so cleared text keeps its dots but cannot grow', () => {
+    const v = vote({ votes: { a: ['me'] } });
+    expect(canCastVote(v, 'me', 'a', false)).toBe(false);
+    expect(canCastVote(v, 'me', 'a', true)).toBe(true);
+    expect(canCastVote(v, 'me', 'a')).toBe(true);
+    expect(canCastVote(vote({ onlyWithText: undefined }), 'me', 'a', false)).toBe(true);
+  });
+
+  it('leaves blank elements votable when the switch is off', () => {
+    expect(isVotableInVote(sticky('a'), vote({ onlyWithText: undefined }), undefined)).toBe(true);
+  });
+
+  it('still applies the kind rule and the layer scope', () => {
+    const layers = [
+      { id: 'layer:default', name: 'Layer 1' },
+      { id: 'l2', name: 'Layer 2' },
+    ];
+    const frame = shape('f', { shape: 'frame', label: 'Section' });
+    expect(isVotableInVote(frame, vote(), layers)).toBe(false);
+    const offLayer = shape('o', { label: 'Idea', layerId: 'layer:default' });
+    expect(isVotableInVote(offLayer, vote({ voteLayerId: 'l2' }), layers)).toBe(false);
   });
 });
 

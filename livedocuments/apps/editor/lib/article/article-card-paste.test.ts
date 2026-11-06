@@ -41,6 +41,21 @@ describe('cardPasteSlice', () => {
     expect(kinds(slice)).toEqual(['paragraph:Heading', 'list_item:a · b', 'paragraph:after']);
   });
 
+  it('leaves a footnote out (a card never reflows), its text kept, and says so', () => {
+    const { slice, cut } = cardPasteSlice(
+      pasted(
+        '<p>one<sup data-footnote="a note">1</sup> two</p><ul><li>x<sup data-footnote="b"></sup></li></ul>',
+      ),
+    );
+    expect(cut).toBe(true);
+    expect(kinds(slice)).toEqual(['paragraph:one two', 'list_item:x']);
+    let notes = 0;
+    slice.content.descendants((n) => {
+      if (n.type.name === 'footnote') notes++;
+    });
+    expect(notes).toBe(0);
+  });
+
   it('hands back text alone untouched', () => {
     const s = pasted('<p>one</p><ul><li>two</li></ul>');
     expect(cardPasteSlice(s)).toEqual({ slice: s, cut: false });

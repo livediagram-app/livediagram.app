@@ -10,22 +10,27 @@ sets, shows and clears them.
 
 ## Entries
 
-The list a person sets defaults from is titled **New canvases that open as**, and holds, in this order:
+The list a person sets defaults from is titled **New spaces that open as**, and holds one entry:
 
-| Entry                  | Key                                 |
-| ---------------------- | ----------------------------------- |
-| Canvases               | `livehuddle`                        |
-| Retrospective canvases | `livehuddle:template:retrospective` |
+| Entry  | Key          |
+| ------ | ------------ |
+| Spaces | `livehuddle` |
 
-The app's own entry holds every new canvas; the mode's entry (Sessions, `mode:workshop`) the canvases that
-open in Workshop, which is every one (the `mode:diagram` and `mode:draw` entries went with Diagram and Draw,
-[Editor modes](../007-editor/editor-modes.md)) (livehuddle has no specific tab kind, so no kind entries); a
-template family's entry the canvases made from that family (`defaultEntries('livehuddle', …,
-CANVAS_TEMPLATE_FAMILIES, DEFAULT_FOLDER_OPTIONS)`, `apps/editor/lib/canvas-template-families.ts`,
-`DEFAULT_FOLDER_OPTIONS` in `@livehuddle/api-schema`). The
-families are livehuddle's `TEMPLATE_FAMILIES`: every retrospective format (Retrospective, Start / Stop / Continue,
-Mad / Sad / Glad, 4Ls, Sailboat) is `retrospective`, every other template none (Kanban boards left with Plan mode)
-(`templateFamilyOf` in `@livehuddle/templates`). A new template is not complete until it is mapped.
+Every new space opens in Workshop and livehuddle has no specific tab kind and no template family, so the app's own
+entry holds every new space (`defaultEntries('livehuddle', …, CANVAS_TEMPLATE_FAMILIES, DEFAULT_FOLDER_OPTIONS)`,
+`apps/editor/lib/canvas-template-families.ts`, `DEFAULT_FOLDER_OPTIONS` in `@livehuddle/api-schema`, both empty).
+A specific tab kind or a template family added later brings its own entry (`KIND_WORDS`, `TEMPLATE_FAMILIES`), and a
+new template is not complete until `templateFamilyOf` in `@livehuddle/templates` maps it.
+
+### Retired entries
+
+Two entries left (Work Tracker #507): the Workshop mode's entry (Sessions, later Spaces, `livehuddle:mode:workshop`),
+which repeated the app's own, and Retrospective spaces (`livehuddle:template:retrospective`), whose templates left
+with [Not in livehuddle](../002-project-scope/not-in-livehuddle.md). A default a person stored under either is kept
+and reads as **Spaces** (`RETIRED_PLACEMENT_KEYS` in `@liveworkspace/index-client`): while Spaces holds no default of
+its own, Default Folders shows that folder for it and a create files there, the mode's before the retrospective's.
+Clear on Spaces clears them with it; Change sets Spaces, which wins over them from then on. A create or a recorded
+intent naming the retired `retrospective` family reads as no family, never a refusal.
 
 ## Filing on create
 
@@ -56,8 +61,8 @@ folder drops the defaults that point at it.
   Blank Space, never for This Browser or a template link.
 - **The first template picked from a start screen** on that first tab takes the note. When the person did not
   choose the folder, the index's defaults are read again for the template's family, then the app's, and the canvas
-  goes to the default that answers when it is somewhere else. A toast says so: "Moved to **Retros**, your default
-  folder for retrospective canvases."
+  goes to the default that answers when it is somewhere else. A toast says so: "Moved to **Meetings**, your default
+  folder for spaces."
 - **Once per canvas:** the note is taken at the first pick, and dropped when the tab gains content any other way
   first. Only an Editor picks from a start screen, so only an Editor's pick files a canvas.
 - A failure (a list that cannot be read, a refused move) leaves the canvas where it is.

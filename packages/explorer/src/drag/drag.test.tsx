@@ -69,6 +69,10 @@ const itemRow = async (id: string) => {
   return document.querySelector(`[data-item-row="${id}"]`)!;
 };
 
+// The last move sent: a settled move reads the folder cards' previews again, so it need not be the last call.
+const lastUpdate = (index: ReturnType<typeof createFakeIndex>) =>
+  index.calls.filter((c) => c.method === 'updateItem').at(-1)?.args;
+
 describe('drag and drop on the Explorer page', () => {
   beforeEach(() => localStorage.setItem('liveworkspace:explorer-view-mode', 'list'));
   afterEach(() => vi.useRealTimers());
@@ -89,7 +93,7 @@ describe('drag and drop on the Explorer page', () => {
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(index.count('updateItem')).toBe(2));
-    expect(index.calls.at(-1)!.args).toEqual(['item-1', { folderId: null }]);
+    expect(lastUpdate(index)).toEqual(['item-1', { folderId: null }]);
   });
 
   it('moves into a team, and onto a folder row in the list', async () => {
@@ -104,7 +108,7 @@ describe('drag and drop on the Explorer page', () => {
     );
     dragOnto(await itemRow('item-2'), document.querySelector('[data-folder-row="f1"]')!);
     await waitFor(() => expect(index.count('updateItem')).toBe(2));
-    expect(index.calls.at(-1)!.args).toEqual(['item-2', { folderId: 'f1' }]);
+    expect(lastUpdate(index)).toEqual(['item-2', { folderId: 'f1' }]);
   });
 
   it('highlights a target while an item is over it, and not after', async () => {

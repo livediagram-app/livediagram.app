@@ -65,8 +65,8 @@ export function FacilitatorButton({
     ? iHoldIt
       ? 'Hand the session tools back to everyone.'
       : batonFree
-        ? 'Run the timer for this session.'
-        : 'Take the session back from whoever is running it.'
+        ? 'Run the timer for this meeting.'
+        : 'Take the meeting back from whoever is running it.'
     : `Let ${name} run the timer.`;
 
   // Disabled rather than hidden for a Participant or Viewer, so the rule is
@@ -76,7 +76,7 @@ export function FacilitatorButton({
     <HoverCard
       title={label}
       description={
-        blocked ? 'Only Editors can run a session: the tools write to the canvas.' : description
+        blocked ? 'Only Editors can run a meeting: the tools write to the canvas.' : description
       }
     >
       <span>

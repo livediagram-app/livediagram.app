@@ -59,9 +59,6 @@ export type CommandContext = {
   // content, so they disable on an empty canvas exactly as the palette's
   // tool dropdown disables them.
   canvasEmpty: boolean;
-  // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
-  // search does not offer it either.
-  whiteboard?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
   tabLocked?: boolean;
@@ -152,16 +149,13 @@ export const CANVAS_TOOLS: {
 // the view-safe commands because most of them only change how you LOOK at the
 // canvas; the two that change it (eraser, format painter) opt in via
 // `mutates` and drop out for a read-only visitor.
-const WHITEBOARD_ABSENT_TOOLS = new Set(['format']);
-
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
     (t) =>
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && ctx.tabLocked) &&
-      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
+      !(t.editsElements && ctx.tabLocked),
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,

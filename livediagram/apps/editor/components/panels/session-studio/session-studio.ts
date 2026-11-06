@@ -85,6 +85,7 @@ export function voteRules(
   return [
     `${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} each`,
     vote.onePerElement ? 'One per item' : null,
+    vote.onlyWithText ? 'With text only' : null,
     vote.voteLayerId
       ? `${layers.find((l) => l.id === vote.voteLayerId)?.name ?? 'One layer'} only`
       : null,

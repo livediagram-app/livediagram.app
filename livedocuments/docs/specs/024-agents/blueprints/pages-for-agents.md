@@ -125,7 +125,10 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
   divider `---`, page break `\pagebreak`, zone `[zone <id>]`; runs: `**b**`, `*i*`, `~~s~~`, `` `code` ``,
   `[text](href)`, emphasis kept inside a run's own spaces; Markdown's characters escaped with a backslash, and a
   block's text that would open a heading, quote, list or divider escaped at the line start; a line break inside a
-  block prints as a space; underline, colour, highlight, sup and sub print as plain text (lossy). A numbered
+  body paragraph, a quote or a list item prints as a backslash hard break (`brokenMarkdown`: the quote's next line
+  led by `> `, the item's by its indent and as many spaces as its marker and space), inside a heading or code as a
+  space; the reader (`parseMarkdownBlocks`) carries a quote or item on past a hard break (`hardBreakOf`) into the next
+  `>` line, or the next line that does not open a block (`opensBlock`); underline, colour, highlight, sup and sub print as plain text (lossy). A numbered
   list counts as the editor does: a bullet or to-do at a level restarts that level.
 - Round trip: `articleFromMarkdown(articleToMarkdown(f))` keeps every block's type, style, list, level, checked
   and text for an article without the lossy marks.

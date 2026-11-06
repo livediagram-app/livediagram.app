@@ -67,12 +67,6 @@ describe('settings catalogue', () => {
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
-      ['elementTour-timeline', 'toggle', 'Timeline', 'timelineRail'],
-      ['elementTour-chart', 'toggle', 'Chart', 'dataElements'],
-      ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
-      ['elementTour-lane', 'toggle', 'Lane', 'lanes'],
-      ['elementTour-boundary', 'toggle', 'Boundary', 'boundaries'],
-      ['elementTour-diagram-key', 'toggle', 'Diagram Key', 'diagramKeys'],
       ['elementTour-portal', 'toggle', 'Portal', 'portals'],
     ]);
     // One shared explanation under the section heading, not one per row.
@@ -87,12 +81,6 @@ describe('settings catalogue', () => {
       [
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
-        ['TimelineTourSeenOff', 'TimelineTourSeenOn'],
-        ['ChartTourSeenOff', 'ChartTourSeenOn'],
-        ['StackTourSeenOff', 'StackTourSeenOn'],
-        ['LaneTourSeenOff', 'LaneTourSeenOn'],
-        ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
-        ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
         ['PortalTourSeenOff', 'PortalTourSeenOn'],
       ],
     );
@@ -147,19 +135,6 @@ describe('settings catalogue', () => {
       'elementTour-funnel': ['elementTourKinds'],
       'elementTour-cycle': ['elementTourKinds'],
       'elementTour-hub': ['elementTourKinds'],
-      'elementTour-onion': ['elementTourKinds'],
-      'elementTour-timeline': ['elementTourKinds'],
-      'elementTour-chevrons': ['elementTourKinds'],
-      'elementTour-mind-node': ['elementTourKinds'],
-      'elementTour-flowchart': ['elementTourKinds'],
-      'elementTour-org-chart': ['elementTourKinds'],
-      'elementTour-sequence': ['elementTourKinds'],
-      'elementTour-chart': ['elementTourKinds'],
-      'elementTour-stack': ['elementTourKinds'],
-      'elementTour-entity': ['elementTourKinds'],
-      'elementTour-lane': ['elementTourKinds'],
-      'elementTour-boundary': ['elementTourKinds'],
-      'elementTour-diagram-key': ['elementTourKinds'],
       'elementTour-portal': ['elementTourKinds'],
     };
     for (const row of TOGGLES) {

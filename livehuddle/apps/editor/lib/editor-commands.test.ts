@@ -343,10 +343,8 @@ describe('canvas tool commands', () => {
   });
 });
 
-describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)', () => {
-  it('offers no format painter', () => {
-    const onBoard = ids({ ...base, whiteboard: true });
-    expect(onBoard).not.toContain('tool:format');
+describe('tool commands', () => {
+  it('offers the format painter', () => {
     expect(ids(base)).toContain('tool:format');
   });
 

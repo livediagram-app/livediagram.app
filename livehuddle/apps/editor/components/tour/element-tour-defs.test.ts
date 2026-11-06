@@ -1,19 +1,12 @@
 // The element tour registry (docs/specs/007-editor/element-tours.md "Adding an element tour"): every toured kind has
 // a definition, a token of its own, and steps that end on a closing card.
 
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createShape, type Element } from '@livehuddle/document';
 import { ELEMENT_TOUR_KINDS } from '@/lib/element-tours';
 import { ELEMENT_TOUR_DEFS } from './element-tour-defs';
-import type { ElementTourApi } from './element-tour-api';
 
 const SAMPLE: Record<(typeof ELEMENT_TOUR_KINDS)[number], Element> = {
-  timeline: createShape('timeline-rail', 0, 0),
-  chart: createShape('line-chart', 0, 0),
-  stack: createShape('stack', 0, 0),
-  lane: createShape('lane', 0, 0),
-  boundary: createShape('boundary', 0, 0),
-  'diagram-key': createShape('diagram-key', 0, 0),
   portal: createShape('portal', 0, 0),
 };
 
@@ -39,33 +32,7 @@ describe('ELEMENT_TOUR_DEFS', () => {
     },
   );
 
-  it('puts away the Chart Data dialog on Done', () => {
-    const api = { closeChartData: vi.fn() } as unknown as ElementTourApi;
-    ELEMENT_TOUR_DEFS.chart.onDone?.(api);
-    expect(api.closeChartData).toHaveBeenCalled();
-  });
-
-  it('reads past its element where a tour needs to: a stack its first child', () => {
-    const stack = { ...createShape('stack', 0, 0), width: 400, height: 200 } as Element;
-    const kid = { ...createShape('square', 40, 40), width: 80, height: 80 } as Element;
-    const steps = ELEMENT_TOUR_DEFS.stack.steps(stack, {
-      hasMore: true,
-      touch: false,
-      elements: [stack, kid],
-    });
-    expect(steps.map((s) => s.id)).toContain('child');
-    expect(
-      ELEMENT_TOUR_DEFS.stack
-        .steps(stack, { hasMore: true, touch: false, elements: [stack] })
-        .map((s) => s.id),
-    ).toContain('drop');
-  });
-
-  it('reads a chart as its own type', () => {
-    const pie = createShape('pie-chart', 0, 0) as Element;
-    const env = { hasMore: true, touch: false, elements: [pie] };
-    expect(ELEMENT_TOUR_DEFS.chart.steps(pie, env)[0]!.body).toContain('Pie chart');
-    const line = createShape('line-chart', 0, 0);
-    expect(ELEMENT_TOUR_DEFS.chart.steps(line, env).map((s) => s.id)).toContain('data');
+  it('tours no diagram element (Work Tracker #514)', () => {
+    expect(Object.keys(ELEMENT_TOUR_DEFS)).toEqual(['portal']);
   });
 });

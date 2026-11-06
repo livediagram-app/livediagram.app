@@ -174,9 +174,8 @@ export function useBoxedElementGestures({
       onOpenNote?.(element.id);
       return;
     }
-    // A code block, a Sankey and a sequence diagram have no inline label — double-click opens their edit
-    // dialog (docs/specs/009-elements/code-block.md, sankey.md, sequence-diagram.md), the way a link
-    // card opens the link picker.
+    // A code block has no inline label: double-click opens its edit dialog (docs/specs/009-elements/code-block.md),
+    // the way a link card opens the link picker.
     if (element.type === 'shape' && element.shape === 'code-block') {
       onOpenEditDialog?.(element.id);
       return;

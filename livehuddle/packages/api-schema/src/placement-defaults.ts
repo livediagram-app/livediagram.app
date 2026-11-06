@@ -3,12 +3,14 @@
 // editor and the MCP server send the creation intent, which the api hands the index as `indexIntentOf`.
 //
 // Three honest dimensions, most specific first: the first tab's kind (a specific kind, of which
-// livehuddle has none today), the template family it was made from (a retrospective), and the editor mode it opens in.
-// Each comes from one closed list, so a new editor mode adds its Default Folders entry here unasked.
+// livehuddle has none today), the template family it was made from (none today: the retrospectives left, Work Tracker
+// #423), and the editor mode it opens in (Workshop, every space's). Each comes from one closed list. Default Folders
+// shows the app's own entry, Spaces, and one per specific kind and family; Workshop has none, since every space opens
+// in it and the app's entry already holds them (Work Tracker #507). A default stored for the retired mode or family
+// entry reads as Spaces (RETIRED_PLACEMENT_KEYS in @liveworkspace/index-client).
 
 import {
   DEFAULT_TAB_KIND,
-  EDITOR_MODES,
   tabKindOf,
   parseEditorMode,
   type EditorMode,
@@ -28,9 +30,15 @@ export const SPECIFIC_TAB_KINDS: readonly SpecificTabKind[] =
   CREATION_TAB_KINDS.filter(isSpecificTabKind);
 
 /** The template families: ordinary diagram tabs made from a family of templates. The map from each
- *  template to its family is `templateFamilyOf` in `@livehuddle/templates`. */
-export const TEMPLATE_FAMILIES = ['retrospective'] as const;
+ *  template to its family is `templateFamilyOf` in `@livehuddle/templates`. None today. */
+export const TEMPLATE_FAMILIES = [] as const satisfies readonly string[];
 export type TemplateFamily = (typeof TEMPLATE_FAMILIES)[number];
+type OrNone<T> = T | null;
+/** A family, or null for none (only null while there is no family). */
+export type TemplateFamilyOrNone = OrNone<TemplateFamily>;
+
+/** Families that left: a create naming one (an older client, an API caller) reads as made from no family. */
+const RETIRED_TEMPLATE_FAMILIES: readonly string[] = ['retrospective'];
 
 /** What a new document is made as, captured once when it is created: the create body's `intent`. */
 export type CreationIntent = {
@@ -40,22 +48,18 @@ export type CreationIntent = {
 };
 
 type EntryWords = { label: string; noun: string };
-const MODE_WORDS: Record<EditorMode, EntryWords> = {
-  // The meeting board's entry (docs/specs/012-collaboration/workshop-mode.md "Workspace").
-  workshop: { label: 'Spaces', noun: 'spaces' },
-};
 const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {};
 
-/** Default Folders' entries for each editor mode and specific tab kind, as the shared Explorer takes them
- *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families. Typed per
- *  dimension, so a new mode or kind does not compile until it is named here. */
+/** Default Folders' entries for each specific tab kind, as the shared Explorer takes them
+ *  (@liveworkspace/explorer DefaultFolderOption), between "Spaces" and the template families. Typed per kind, so a
+ *  new kind does not compile until it is named here. No mode entries: every space opens in Workshop, so the app's
+ *  own entry is the mode's. */
 export const DEFAULT_FOLDER_OPTIONS: readonly {
   dimension: 'mode' | 'kind';
   value: string;
   label: string;
   noun: string;
 }[] = [
-  ...EDITOR_MODES.map((mode) => ({ dimension: 'mode' as const, value: mode, ...MODE_WORDS[mode] })),
   ...SPECIFIC_TAB_KINDS.map((kind) => {
     const words: EntryWords = KIND_WORDS[kind];
     return { dimension: 'kind' as const, value: kind, ...words };
@@ -82,7 +86,7 @@ export function isTemplateFamily(value: unknown): value is TemplateFamily {
  */
 export function creationIntentOf(
   tab: { kind?: string; opensIn?: string } | undefined,
-  templateFamily: TemplateFamily | null = null,
+  templateFamily: TemplateFamilyOrNone = null,
 ): CreationIntent {
   const intent: CreationIntent = {
     mode: 'workshop',
@@ -111,6 +115,7 @@ export function readCreationIntent(
   if (!isCreationTabKind(kind)) return { ok: false };
   const intent: CreationIntent = { mode: parsedMode, tabKind: kind };
   if (templateFamily === undefined || templateFamily === null) return { ok: true, intent };
+  if (isMember(RETIRED_TEMPLATE_FAMILIES, templateFamily)) return { ok: true, intent };
   if (!isTemplateFamily(templateFamily)) return { ok: false };
   return { ok: true, intent: { ...intent, templateFamily } };
 }

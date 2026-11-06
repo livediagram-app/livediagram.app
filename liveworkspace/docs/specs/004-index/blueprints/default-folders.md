@@ -6,11 +6,12 @@ Paths are relative to the repository root.
 
 Scope, by file:
 
-| File                                                | Role                                                                      |
-| --------------------------------------------------- | ------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/personal.ts`          | `GET /placement-defaults`, `PUT`/`DELETE /placement-defaults/:key`        |
-| `liveworkspace/apps/index/src/default-placement.ts` | `defaultPlacement`: where a create with no place lands                    |
-| `packages/index-client/src/constants.ts`            | `placementDefaultKey`, `placementDimensionKey`, `placementDefaultKeysFor` |
+| File                                                     | Role                                                                                                                       |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/personal.ts`               | `GET /placement-defaults`, `PUT`/`DELETE /placement-defaults/:key`                                                         |
+| `liveworkspace/apps/index/src/default-placement.ts`      | `defaultPlacement`: where a create with no place lands                                                                     |
+| `packages/index-client/src/constants.ts`                 | `placementDefaultKey`, `placementDimensionKey`, `placementDefaultKeysFor`, `RETIRED_PLACEMENT_KEYS`, `foldRetiredDefaults` |
+| `packages/explorer/src/defaults/usePlacementDefaults.ts` | the Explorer's one copy of the defaults: retired keys folded in, cleared with the app's                                    |
 
 ## Domain and naming
 
@@ -38,7 +39,8 @@ Consulted by `POST /items` only when the body has no `folderId` key at all, no `
 `folderId: null` is the root on purpose.
 
 1. `placementDefaultKeysFor(app, intent)`: split on `:`; one part is a family, else mode, kind, family. Each part
-   matching `^[A-Za-z0-9_.-]+$` gives a key, in order kind, template, mode; then the app's own key.
+   matching `^[A-Za-z0-9_.-]+$` gives a key, in order kind, template, mode; then the app's own key, then the app's
+   retired keys (`RETIRED_PLACEMENT_KEYS`) in their order. A retired key an intent names is tried only there.
 2. One read: the person's defaults among those keys joined to their folders (a folder deleted takes its default with
    it through the cascade).
 3. The first key, in order, whose folder's scope the person reaches now wins: `{ folderId, teamId, scope }`. A team
@@ -60,14 +62,17 @@ Consulted by `POST /items` only when the body has no `folderId` key at all, no `
 | The default's folder deleted         | the default goes with it                                                |
 | A team the person has left           | that default skipped; the next key tried                                |
 | An intent part with other characters | that part has no key                                                    |
+| A retired key held, the app's not    | files and shows as the app's entry; Clear on that entry deletes it too  |
 | A guest merged into an account       | defaults the account already has win ([guest-merge.md](guest-merge.md)) |
 
 ## Testing
 
-| Test                                                         | Pins                                                       |
-| ------------------------------------------------------------ | ---------------------------------------------------------- |
-| `liveworkspace/apps/index/src/default-placement.test.ts` (5) | the key order, a gone or unreachable folder, explicit root |
-| `liveworkspace/apps/index/src/personal.test.ts` (9)          | the placement defaults routes among folders and favourites |
+| Test                                                         | Pins                                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `liveworkspace/apps/index/src/default-placement.test.ts` (6) | the key order, retired keys, a gone or unreachable folder, explicit root |
+| `packages/index-client/src/constants.test.ts`                | the key order with retired keys, `foldRetiredDefaults`                   |
+| `packages/explorer/src/defaults/defaults.test.tsx`           | a retired key shown as the app's entry, cleared with it                  |
+| `liveworkspace/apps/index/src/personal.test.ts` (9)          | the placement defaults routes among folders and favourites               |
 
 ## Constants and configuration
 

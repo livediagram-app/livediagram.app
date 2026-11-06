@@ -90,7 +90,10 @@ Styles carry the look (Title, Subtitle, Heading 1 to 3 with outline levels, Quot
 styles, List Paragraph, Hyperlink). Lists use two abstract numberings, bullets (•, ◦, ▪ in the accent) and numbers
 (1, a, i); each numbered run gets its own `w:num` restarting at 1 (D74). To-dos are list paragraphs led by ☐ or ☒
 (D75). Empty headings and empty non-body paragraphs are left out (D73). A wrapped zone is a `wp:anchor` with
-`wrapSquare`; an inline one an inline picture in its own aligned paragraph.
+`wrapSquare`; an inline one an inline picture in its own aligned paragraph. A footnote run (`fn`) is one
+`w:footnoteReference` per reference in the FootnoteReference style, its id the note's place in `word/footnotes.xml`
+(ids from 1, after the separator notes -1 and 0), the note one FootnoteText paragraph; the part, its relationship and
+the settings' `w:footnotePr` are written only when the article has a footnote.
 
 ### `exportOfficeFile(input, progress)` → `OfficeExportResult`
 

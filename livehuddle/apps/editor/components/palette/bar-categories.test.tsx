@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { barCategoriesFor } from './bar-categories';
-import { paletteCategoriesFor } from './palette-layouts';
+import { paletteCategories } from './palette-layouts';
 
 // What the category bar offers (docs/specs/007-editor/toolbar-layout.md "The category bar",
 // docs/specs/012-collaboration/workshop-mode.md "The palette").
 
-const bar = () =>
-  barCategoriesFor(paletteCategoriesFor('workshop').map((c) => ({ ...c, content: null })));
+const bar = () => barCategoriesFor(paletteCategories().map((c) => ({ ...c, content: null })));
 
 describe('the category bar’s categories', () => {
   it('shows the meeting palette less Popular, with no Session category', () => {

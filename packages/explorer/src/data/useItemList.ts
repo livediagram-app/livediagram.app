@@ -4,7 +4,8 @@
 // (LIST_PAGE a page, the index's maximum), a superseded request cancelled rather than left to land late, and
 // the optimistic overlay laid over what came back. `belongs` says whether an item still belongs in the view
 // once patched (a folder's list drops an item moved out; the Trash drops one restored), so a change shows at
-// once and its rollback brings the row back.
+// once and its rollback brings the row back. A read that raced a move (overlay.raced) reads again, quietly: its rows
+// stay on screen until the new read lands.
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Item } from '@liveworkspace/index-client';
@@ -36,6 +37,8 @@ export type ItemListState = {
 
 type Loaded = {
   key: string;
+  // When its first page's read started (overlay.stamp), for overlay.raced.
+  startedAt: number;
   items: Item[];
   cursor: string | null;
   error: boolean;
@@ -69,6 +72,8 @@ export function useItemList({
   // again until the new one lands.
   const fullKey = `${key}#${epoch}@${attempt}`;
   const [loaded, setLoaded] = useState<Loaded | null>(null);
+  // Bumped when the read on screen raced a move: the same list, read again without showing it as loading.
+  const [quiet, setQuiet] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const loadRef = useRef(load);
   loadRef.current = load;
@@ -88,6 +93,7 @@ export function useItemList({
         overlayRef.current.observe(page.items, startedAt);
         setLoaded({
           key: fullKey,
+          startedAt,
           items: page.items,
           cursor: page.nextCursor,
           error: false,
@@ -100,6 +106,7 @@ export function useItemList({
         if (isAbort(error)) return;
         setLoaded({
           key: fullKey,
+          startedAt,
           items: [],
           cursor: null,
           error: true,
@@ -109,7 +116,7 @@ export function useItemList({
         });
       });
     return () => controller.abort();
-  }, [fullKey, enabled]);
+  }, [fullKey, enabled, quiet]);
 
   useEffect(() => () => more.current?.abort(), []);
 
@@ -164,6 +171,15 @@ export function useItemList({
   }, [current, fetchMore]);
 
   const version = useSyncExternalStore(overlay.subscribe, overlay.version, overlay.version);
+  // A move settled after this list's read went out and was laid before it: the read may lack the moved item.
+  const racedAt = current && !current.error ? current.startedAt : null;
+  // Once per read: a second change landing while the new read is out doesn't start it over.
+  const reread = useRef<number | null>(null);
+  useEffect(() => {
+    if (racedAt === null || reread.current === racedAt || !overlay.raced(racedAt)) return;
+    reread.current = racedAt;
+    setQuiet((n) => n + 1);
+  }, [racedAt, version, overlay]);
   const raw = current?.items;
   const items = useMemo(() => {
     if (!raw) return EMPTY;

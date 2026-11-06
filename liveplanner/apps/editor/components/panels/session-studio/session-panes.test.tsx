@@ -96,7 +96,10 @@ describe('session panes', () => {
     render(<Vote {...p} />);
     fireEvent.click(screen.getByRole('radio', { name: '5 dots each' }));
     fireEvent.click(screen.getByRole('radio', { name: 'One each' }));
-    fireEvent.click(screen.getByRole('button', { name: /Hide running counts/ }));
+    const counts = screen.getByRole('switch', { name: /Hide running counts/ });
+    expect(counts.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(counts);
+    expect(counts.getAttribute('aria-checked')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
     expect(p.onStartVote).toHaveBeenCalledWith(5, {
       hideCursors: true,

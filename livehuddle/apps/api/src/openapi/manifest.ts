@@ -327,9 +327,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: ['object', 'null'],
           description:
             'What the new Space is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
-            "With no choice of place, the Space lands in the caller's default folder for it: " +
-            'the tab kind default, else the template family default, else the mode default, else ' +
-            'the root of My Work. Malformed: intent_invalid (400).',
+            "With no choice of place, the Space lands in the caller's default folder for new " +
+            'Spaces, else the root of My Work. Malformed: intent_invalid (400).',
           properties: {
             mode: ref('EditorMode'),
             tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },

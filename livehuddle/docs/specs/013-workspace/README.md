@@ -7,7 +7,7 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./share-roles.md - when gating any livehuddle feature by share role: what an Editor, a Participant and a Viewer may do in a space, feature by feature
 - ./explorer-structure.md - when working on the Explorer at `/explorer` or the editor's Explorer panel: the shared `@liveworkspace/explorer` served at livehuddle's address, its views, what livehuddle lends it (addresses, New, the Library, Take Offline and Sync Space, Share, Help), and This Browser at `/offline` (index)
 - ./folders.md - when working on folders (index)
-- ./default-folders.md - when working on where a new canvas is filed by default: the app's entry and the template families' (Retrospective, Kanban), filing on create, a template picked after creation (index)
+- ./default-folders.md - when working on where a new canvas is filed by default: the app's one entry (Spaces), the retired entries that read as it, filing on create, a template picked after creation (index)
 - ./share-password.md - when working on a link visitor's password gate and its cache; a listed Community post locks Password Protection; the password itself is the index's (index)
 - ./tab-scoped-share-links.md - when working on a share link confined to one tab: the grant's `tab`, redaction, the room's filtering, the visitor's "Not shared" tabs (index)
 - ./share-link-expiry.md - when working on how long a share link lasts (index)

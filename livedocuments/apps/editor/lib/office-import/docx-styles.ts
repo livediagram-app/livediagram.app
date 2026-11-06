@@ -176,7 +176,7 @@ function on(el: XmlElement | undefined): boolean {
   return v === undefined || !['0', 'false', 'off', 'none'].includes(v.toLowerCase());
 }
 
-type RunMarks = Omit<ArticleRun, 'text' | 'href' | 'color' | 'hl' | 'note' | 'nk'>;
+type RunMarks = Omit<ArticleRun, 'text' | 'href' | 'color' | 'hl' | 'note' | 'nk' | 'fn'>;
 
 /** The marks run properties carry, their character style's first (the run's own win). */
 export function runMarks(rPr: XmlElement | undefined, styles: DocxStyles): RunMarks {

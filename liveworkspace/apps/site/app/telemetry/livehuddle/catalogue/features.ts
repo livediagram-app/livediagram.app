@@ -95,20 +95,6 @@ export const MODE_OPTIONS = chart(
   { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
 );
 
-export const WHITEBOARD_PENS = chart(
-  'Draw',
-  'Selected',
-  'Pens Picked',
-  'A whiteboard pen picked up: the main, second or third pen.',
-);
-
-export const WHITEBOARD_SETTINGS = chart(
-  'Draw',
-  'Changed',
-  'Pens, Eraser and Background',
-  "A whiteboard pen's colour or width, the eraser mode or the board background changed.",
-);
-
 export const WHITEBOARD_RECOGNITION = chart(
   'Draw',
   'Toggled',
@@ -128,9 +114,8 @@ export const TAB_OPENS_IN = chart(
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
-  blurb:
-    'Tabs opened in Draw, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
-  members: [TAB_OPENS_IN, WHITEBOARD_PENS, WHITEBOARD_SETTINGS, WHITEBOARD_RECOGNITION],
+  blurb: 'Tabs opened in Draw, and the shape recognition people use in Draw mode.',
+  members: [TAB_OPENS_IN, WHITEBOARD_RECOGNITION],
 };
 
 // ---- Editing tab -------------------------------------------------------------

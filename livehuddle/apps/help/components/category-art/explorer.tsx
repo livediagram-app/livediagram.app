@@ -79,7 +79,7 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
 const DOCS: { title: string; kind: 'flow' | 'board' | 'room' | 'sticky' | 'tree' | 'sheet' }[] = [
   { title: 'Roadmap', kind: 'board' },
   { title: 'Team Pod', kind: 'flow' },
-  { title: 'Team retro', kind: 'sticky' },
+  { title: 'Team stand-up', kind: 'sticky' },
   { title: 'All-Hands', kind: 'room' },
   { title: 'Brainstorm', kind: 'tree' },
   { title: 'Agenda', kind: 'sheet' },

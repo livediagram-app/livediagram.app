@@ -24,7 +24,6 @@ export function drawnArrowAsShown(
   board: {
     elements: Element[];
     theme: ThemeDefinition;
-    whiteboard: boolean;
     styleNewElement: <T extends Element>(el: T) => T;
     surface: CanvasSurface;
   },

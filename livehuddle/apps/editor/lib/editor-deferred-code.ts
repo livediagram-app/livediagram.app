@@ -1,7 +1,7 @@
 // The editor's code that loads on demand (docs/specs/016-platform/web-performance.md), in one place so each
 // surface's dynamic import and the prefetch below name the same module.
 //
-// - Content a board may draw as soon as it opens (the Draw dock, tables,
+// - Content a board may draw as soon as it opens (tables,
 //   facilitation panels): fetched as the editor mounts, alongside the document request, so a board that has
 //   one finds its code already in. A board without one pays nothing on the critical path.
 // - Surfaces someone opens (the Explorer, search, layers, tool panels): fetched

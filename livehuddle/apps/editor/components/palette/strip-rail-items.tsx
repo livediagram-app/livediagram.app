@@ -3,7 +3,7 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
-import { CatalogueGroupTile, type StripGroup, type StripOpen } from './catalogue-strip-groups';
+import { CatalogueGroupTile, type StripOpen } from './catalogue-strip-groups';
 import { BrowseStartGroup } from './PaletteCategoryBrowser';
 import { PaletteTile, type PaletteTileActions } from './PaletteTileGrid';
 import type { PaletteTileDef } from './palette-tile-defs';
@@ -55,27 +55,6 @@ export function useStripOpeners(more: ReturnType<typeof useStripPopover>) {
 
 type Openers = ReturnType<typeof useStripOpeners>;
 
-/** A catalogue's groups, each opening its entries. `openers` absent draws them inert (a category leaving). */
-export function groupItems(
-  categoryId: string,
-  groups: StripGroup[],
-  openers?: Openers,
-): ReactNode[] {
-  return groups.map((g) => (
-    <CatalogueGroupTile
-      key={g.id}
-      group={g}
-      open={openers?.isOpen(g.id) ?? false}
-      onToggle={(anchor) =>
-        openers?.toggleOpen(
-          { key: g.id, category: categoryId, group: g.id, label: g.label },
-          anchor,
-        )
-      }
-    />
-  ));
-}
-
 /** A category's tiles, an opener drawn as one and a fixed divider riding with the tile it follows. `openers` absent
  *  draws them inert (a category leaving). */
 export function tileItems(
@@ -113,7 +92,7 @@ export function tileItems(
           open={openers?.isOpen(def.id) ?? false}
           onToggle={(anchor) =>
             openers?.toggleOpen(
-              { key: def.id, category: a.category, group: a.group ?? null, label: def.label },
+              { key: def.id, category: a.category, group: null, label: def.label },
               anchor,
             )
           }

@@ -11,11 +11,9 @@ import type { StripBox } from '@liveworkspace/workbench/components/chrome/Palett
 
 const bars = vi.hoisted(() => ({
   strip: null as StripBox | null,
-  dock: null as StripBox | null,
 }));
 vi.mock('@liveworkspace/workbench/components/chrome/PaletteTray', () => ({
   usePaletteStripBox: () => bars.strip,
-  useToolbarBox: () => bars.dock,
 }));
 
 import { usePopoverTopClearance } from './usePopoverTopClearance';
@@ -54,7 +52,6 @@ function measure(active = true): number {
 afterEach(() => {
   cleanup();
   bars.strip = null;
-  bars.dock = null;
 });
 
 describe('usePopoverTopClearance', () => {
@@ -68,14 +65,10 @@ describe('usePopoverTopClearance', () => {
     expect(measure()).toBe(66);
   });
 
-  it("stops under Draw's dock at the top too", () => {
-    bars.dock = { left: 66, width: 312, top: 68, bottom: 114 };
-    expect(measure()).toBe(66);
-  });
-
-  it('ignores a toolbar beside its column, and a dock at the bottom', () => {
+  it('ignores a strip beside its column, and one in the bottom half', () => {
     bars.strip = { left: 400, width: 300, top: 68, bottom: 114 };
-    bars.dock = { left: 12, width: 366, top: 540, bottom: 586 };
+    expect(measure()).toBe(12);
+    bars.strip = { left: 12, width: 366, top: 540, bottom: 586 };
     expect(measure()).toBe(12);
   });
 

@@ -252,7 +252,7 @@ export const ARTICLE_INSERTS = chart(
   'Element',
   'Added',
   'Article Inserts',
-  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote, code block or table of contents.',
+  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote, code block, table of contents or footnote.',
   {
     types: [
       'ArticleImage',
@@ -267,6 +267,7 @@ export const ARTICLE_INSERTS = chart(
       'ArticleQuote',
       'ArticleCode',
       'ArticleContents',
+      'ArticleFootnote',
       'ArticleComment',
       'ArticleAction',
     ],

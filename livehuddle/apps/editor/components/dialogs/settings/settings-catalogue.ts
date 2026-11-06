@@ -705,54 +705,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         {
           label: 'Show Me on Every Element',
           event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element timeline chart how to use learn replay',
+          keywords: 'tour walkthrough tutorial element portal how to use learn replay',
           description: 'Every element’s Show Me at once.',
         },
         ELEMENT_TOURS_SECTION,
       ),
-      elementTourSwitch('timeline', {
-        label: 'Timeline',
-        event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
-        description: 'With a timeline selected.',
-        helpArticle: 'timelineRail',
-      }),
-      elementTourSwitch('chart', {
-        label: 'Chart',
-        event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
-        keywords: 'chart pie bar column line area scatter doughnut data graph tour',
-        description: 'With a chart selected.',
-        helpArticle: 'dataElements',
-      }),
-      elementTourSwitch('stack', {
-        label: 'Stack',
-        event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
-        keywords: 'stack row column grid layout container reflow tour',
-        description: 'With a stack selected.',
-        helpArticle: 'stacks',
-      }),
-      elementTourSwitch('lane', {
-        label: 'Lane',
-        event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
-        keywords: 'lane swimlane band gutter seam column tour',
-        description: 'With a lane selected.',
-        helpArticle: 'lanes',
-      }),
-      elementTourSwitch('boundary', {
-        label: 'Boundary',
-        event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
-        keywords: 'boundary zone region vpc cluster c4 container tour',
-        description: 'With a boundary selected.',
-        helpArticle: 'boundaries',
-      }),
-      elementTourSwitch('diagram-key', {
-        label: 'Diagram Key',
-        event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
-        keywords: 'diagram key legend line styles tag colours meanings tour',
-        description: 'With a diagram key selected.',
-        helpArticle: 'diagramKeys',
-      }),
       elementTourSwitch('portal', {
         label: 'Portal',
         event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
@@ -792,9 +749,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Default Folders',
         label: 'Where New Spaces Go',
         keywords:
-          'default folder where new spaces canvases documents go save location place file automatically always save placement template retrospective kanban',
-        description:
-          'New spaces you make without choosing a place are saved in these folders: one for every space, and one for each template family.',
+          'default folder where new spaces canvases documents go save location place file automatically always save placement',
+        description: 'New spaces you make without choosing a place are saved in this folder.',
       },
     ],
   },

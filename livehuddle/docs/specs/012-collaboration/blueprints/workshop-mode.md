@@ -17,7 +17,7 @@ livehuddle's one editor mode, every tab is in it, and there is no switch.
 | Its palette layout     | `MEETING: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`                                          |
 | The strip's tools      | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
 | Its blank              | template kind `'blank-session'`, label "Blank Space", document name "Untitled Space"                                     |
-| Its default folder key | `'mode:workshop'`, words `{ label: 'Spaces', noun: 'spaces' }` (`MODE_WORDS`)                                            |
+| Its default folder key | none: the app's own entry, Spaces, holds every space; a stored `'mode:workshop'` reads as it                             |
 
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
 name "Facilitate", which survives only where something stored is read: `LEGACY_EDITOR_MODES`
@@ -73,8 +73,9 @@ export function parseEditorMode(v: unknown): EditorMode | undefined; // 'worksho
 
 - `opensIn` is stored as `'workshop'`. Any other stored value (`'diagram'`, `'draw'`, `'facilitate'`, `'pages'`,
   `'plan'`, `'illustrate'`, `'infographic'`, an unknown string) reads as Workshop and is never rewritten on read.
-- Creation intent (`readCreationIntent`) and tab stats record `workshop`; Default Folders' Spaces entry
-  (`mode:workshop`) is the one mode entry.
+- Creation intent (`readCreationIntent`) and tab stats record `workshop`. Default Folders has no mode entry: its
+  one entry, Spaces, is the app's own, and a default stored under `mode:workshop` reads as it
+  (`RETIRED_PLACEMENT_KEYS`, [Default folders](../../013-workspace/default-folders.md#retired-entries)).
 - No migration: livehuddle had no stored spaces when Diagram and Draw were cut.
 
 ## Errors and edge cases

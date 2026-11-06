@@ -15,7 +15,7 @@
 import type { ShareLinkExpiry, ShareRole } from '@liveworkspace/api-schema/share-links';
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
 import type { EditorMode, Tab } from '@livehuddle/document';
-import type { CreationTabKind, TemplateFamily } from './placement-defaults';
+import type { CreationTabKind, TemplateFamilyOrNone } from './placement-defaults';
 import type { CallsMode } from './calls-mode';
 
 export type {
@@ -85,7 +85,7 @@ export type LiveDoc = {
 export type RecordedIntent = {
   opensIn: EditorMode | null;
   tabKind: CreationTabKind | null;
-  templateFamily: TemplateFamily | null;
+  templateFamily: TemplateFamilyOrNone;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents

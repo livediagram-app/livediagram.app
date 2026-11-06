@@ -1,13 +1,14 @@
 // Teams run in the Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Teams are run in the Explorer"): New Team from the
 // sidebar and the panel's rail, the team card (its members, roles, removals, Invite, Invite by Link, Edit, Leave and
 // Delete), the last-admin rule, and what loads when.
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TeamDetails, TeamsHost } from '../data/teams';
 import { applyTeamChanges, teamChanges } from '../data/teamChanges';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { Explorer } from '../explorer/Explorer';
+import { landOnMyWork } from '../explorer/TeamPane';
 import { ExplorerPanel } from '../panel/ExplorerPanel';
 import { lastAdmin, memberName, orderMembers, removalCopy } from './rules';
 
@@ -290,6 +291,80 @@ describe('a team’s view', () => {
     await waitFor(() => expect(host.remove).toHaveBeenCalledWith('t1'));
     await waitFor(() => expect(onNavigate).toHaveBeenCalledWith({ kind: 'all' }, '/explorer/all'));
     expect(await screen.findByText('Design was deleted.')).toBeTruthy();
+    // The card and its ⋯ are going: the keyboard lands on My Work's row, where the person now is, not the body.
+    expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'My Work' }));
+  });
+
+  it('lands on Browse Sections when the sidebar is out of reach (a phone, its drawer shut)', () => {
+    render(
+      <div data-explorer="">
+        <button type="button" aria-label="Browse sections" />
+      </div>,
+    );
+    landOnMyWork();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Browse sections' }));
+  });
+
+  it('drops a team the person was removed from elsewhere when its view finds them gone', async () => {
+    const host = fakeHost(null, {
+      myTeams: vi
+        .fn()
+        .mockResolvedValueOnce({
+          teams: [{ id: 't1', name: 'Design', memberCount: 2 }],
+          invitations: [],
+        })
+        .mockResolvedValue({ teams: [], invitations: [] }),
+    });
+    page({ kind: 'team', id: 't1' }, host);
+    expect(await screen.findByText('Team not found')).toBeTruthy();
+    await waitFor(() => expect(host.myTeams).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole('treeitem', { name: /^Design/ })).toBeNull());
+  });
+
+  it('brings back a team left here once the person is added back elsewhere', async () => {
+    const host = fakeHost();
+    const now = vi.spyOn(Date, 'now');
+    try {
+      now.mockReturnValue(2_000_000);
+      page({ kind: 'all' }, host);
+      await screen.findByRole('treeitem', { name: 'Design (2 members)' });
+      act(() => teamChanges.gone('t1'));
+      await waitFor(() => expect(screen.queryByRole('treeitem', { name: /^Design/ })).toBeNull());
+      // Back at the tab, accounts lists the team again.
+      now.mockReturnValue(2_031_000);
+      fireEvent.focus(window);
+      expect(await screen.findByRole('treeitem', { name: 'Design (2 members)' })).toBeTruthy();
+    } finally {
+      now.mockRestore();
+    }
+  });
+
+  it('reads the teams again on coming back to the tab, so a removal elsewhere leaves the sidebar', async () => {
+    const host = fakeHost(details(), {
+      myTeams: vi
+        .fn()
+        .mockResolvedValueOnce({
+          teams: [{ id: 't1', name: 'Design', memberCount: 2 }],
+          invitations: [],
+        })
+        .mockResolvedValue({ teams: [], invitations: [] }),
+    });
+    const now = vi.spyOn(Date, 'now');
+    try {
+      now.mockReturnValue(1_000_000);
+      page({ kind: 'all' }, host);
+      await screen.findByRole('treeitem', { name: 'Design (2 members)' });
+      // Within 30 s of the last read: not asked again.
+      now.mockReturnValue(1_010_000);
+      fireEvent.focus(window);
+      expect(host.myTeams).toHaveBeenCalledTimes(1);
+      now.mockReturnValue(1_031_000);
+      fireEvent.focus(window);
+      await waitFor(() => expect(host.myTeams).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(screen.queryByRole('treeitem', { name: /^Design/ })).toBeNull());
+    } finally {
+      now.mockRestore();
+    }
   });
 
   it('lets a member leave, but not the only admin of a team with others in it', async () => {
@@ -402,6 +477,23 @@ describe('teams in the editor’s panel', () => {
     expect(host.team).toHaveBeenCalledTimes(1);
   });
 
+  it('lands on the rail’s Home after deleting the team from Members', async () => {
+    const host = fakeHost();
+    panel(host);
+    fireEvent.click(rail().getByRole('button', { name: 'Design' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Members' }));
+    await card();
+    fireEvent.click(screen.getByRole('button', { name: 'Design options' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete Team' }));
+    const ask = await screen.findByRole('dialog', { name: 'Delete Team?' });
+    fireEvent.click(within(ask).getByRole('button', { name: 'Delete Team' }));
+    await waitFor(() => expect(host.remove).toHaveBeenCalledWith('t1'));
+    await waitFor(() =>
+      expect(document.activeElement).toBe(rail().getByRole('button', { name: /^Home/ })),
+    );
+    expect(screen.queryByRole('dialog', { name: 'Design members' })).toBeNull();
+  });
+
   it('makes a team from New Team on the rail, and opens it', async () => {
     const host = fakeHost();
     panel(host);
@@ -442,6 +534,24 @@ describe('the team rules', () => {
     expect(memberName({ name: null, email: 'anna.smith@x.test' }, false)).toBe('Anna Smith');
     expect(removalCopy('self', 'You', 'Design', true).confirm).toBe('Leave and Delete');
     expect(removalCopy('declined', 'Kai', 'Design').title).toBe('Remove from List?');
+  });
+
+  it('shows a team left here again only once a later read lists it (added back elsewhere)', () => {
+    const known = [{ id: 't1', name: 'Design' }];
+    const before = teamChanges.stamp();
+    teamChanges.gone('t1');
+    // A read already out when the person left still lists it: it stays gone.
+    teamChanges.listed(['t1'], before);
+    expect(applyTeamChanges(known, teamChanges.snapshot())).toEqual([]);
+    // A read made after the leave lists it: they were added back.
+    const after = teamChanges.stamp();
+    teamChanges.listed(['t1'], after);
+    expect(applyTeamChanges(known, teamChanges.snapshot())).toEqual(known);
+    // Nothing to bring back: the changes stay as they are.
+    const same = teamChanges.snapshot();
+    teamChanges.listed(['t2'], teamChanges.stamp());
+    expect(teamChanges.snapshot()).toBe(same);
+    teamChanges.reset();
   });
 
   it('lays changes made here over the known list', () => {

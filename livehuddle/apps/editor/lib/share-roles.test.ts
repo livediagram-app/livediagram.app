@@ -9,10 +9,7 @@ import {
   roleGates,
   type EditorCapabilities,
 } from '@/lib/editor-capabilities';
-import {
-  PARTICIPANT_CANVAS_TOOLS,
-  paletteCategoriesFor,
-} from '@/components/palette/palette-layouts';
+import { PARTICIPANT_CANVAS_TOOLS, paletteCategories } from '@/components/palette/palette-layouts';
 import { buildCanvasToolOptions } from '@/components/palette/canvas-tool-options';
 import { tilesForCategory } from '@/components/palette/palette-tile-defs';
 import { SPACE_CATEGORIES } from '@/components/palette/space-categories';
@@ -47,7 +44,7 @@ const toolsFor = (level: Level): readonly string[] => {
 // `!readOnly`; share-roles.md "A Participant walks").
 const paletteTileIdsFor = (level: Level): string[] => {
   if (level !== 'edit') return [];
-  return paletteCategoriesFor('workshop').flatMap((c) => (c.tiles ?? []).map((t) => t.id));
+  return paletteCategories().flatMap((c) => (c.tiles ?? []).map((t) => t.id));
 };
 // What the Walk button and the mode buttons can do for each level: EditorCanvasHost draws the Walk button where
 // `!can.alwaysWalks`, and gives the mode buttons a press where `!can.alwaysWalks`; useCanvasTool holds a Participant

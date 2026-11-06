@@ -8,6 +8,7 @@ import {
   ARTICLE_ALIGNS,
   ARTICLE_LIST_KINDS,
   ARTICLE_PARAGRAPH_STYLES,
+  cleanFootnoteText,
   isArticleHex,
   isSafeArticleHref,
   type ArticleAlign,
@@ -341,6 +342,33 @@ export const articleSchema = new Schema({
       selectable: false,
       parseDOM: [{ tag: 'br' }],
       toDOM: () => ['br'],
+    },
+    // A footnote's reference (docs/specs/007-editor/article-pages.md "Footnotes"): one atom in the text holding its
+    // note's text. Its number is the footnotes plugin's (article-footnotes.ts), drawn by its node view; it reads as
+    // no text (find, word counts). Copied within livedocuments it pastes with its note.
+    footnote: {
+      inline: true,
+      group: 'inline',
+      atom: true,
+      selectable: true,
+      draggable: false,
+      attrs: { text: { default: '' } },
+      leafText: () => '',
+      parseDOM: [
+        {
+          tag: 'sup[data-footnote]',
+          priority: 60,
+          getAttrs: (el) => ({ text: cleanFootnoteText(el.getAttribute('data-footnote') ?? '') }),
+        },
+      ],
+      toDOM: (node): DOMOutputSpec => [
+        'sup',
+        {
+          class: 'article-footnote-ref',
+          'data-footnote': textAttr(node.attrs, 'text') ?? '',
+          contenteditable: 'false',
+        },
+      ],
     },
   },
   marks: {

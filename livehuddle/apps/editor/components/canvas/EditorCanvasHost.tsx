@@ -97,7 +97,6 @@ export function EditorCanvasHost() {
     beginErase,
     beginFreehand,
     beginHighlighter,
-    beginMarker,
     beginShapePen,
     beginPolygon,
     beginRoomWalls,
@@ -136,7 +135,6 @@ export function EditorCanvasHost() {
     commitPolygon,
     commitRoomWalls,
     commitPath,
-    paintBucket,
     commitPathEdit,
     styleNewElement,
     commitLabel,
@@ -233,16 +231,12 @@ export function EditorCanvasHost() {
     toggleLockSelected,
     undo,
     userPreferences,
-    whiteboardDock,
     drag,
-    editorMode,
     loadedTabIds,
     applyElementDelta,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  // Draw mode is gone (docs/specs/007-editor/editor-modes.md); the whiteboard tools still take its flag.
-  const drawMode = false;
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&
@@ -316,7 +310,6 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
-    whiteboard: drawMode,
     setContextMenu,
   });
 
@@ -371,14 +364,11 @@ export function EditorCanvasHost() {
           }}
           setViewportOffset={setViewportOffset}
           elements={canvasElements}
-          editorMode={editorMode.mode}
-          whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
           whiteboardInk={PEN_INK[surface]}
           previewDrawnArrow={(intent, startX, startY, endX, endY) =>
             drawnArrowAsShown(intent, startX, startY, endX, endY, {
               elements: activeTab.elements,
               theme: activeTheme,
-              whiteboard: drawMode,
               styleNewElement,
               surface,
             })
@@ -507,7 +497,6 @@ export function EditorCanvasHost() {
           reshapingArrowId={reshapingArrowId}
           onBeginFreehand={beginFreehand}
           onBeginHighlighter={beginHighlighter}
-          onBeginMarker={beginMarker}
           onBeginShapePen={beginShapePen}
           onBeginPolygon={beginPolygon}
           onBeginRoomWalls={beginRoomWalls}
@@ -517,7 +506,6 @@ export function EditorCanvasHost() {
           onCommitPolygon={commitPolygon}
           onCommitRoomWalls={commitRoomWalls}
           onCommitPath={commitPath}
-          onPaintBucket={paintBucket}
           onCommitPathEdit={commitPathEdit}
           onDressPath={styleNewElement}
           settings={userPreferences}

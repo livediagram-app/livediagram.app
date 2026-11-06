@@ -1,21 +1,26 @@
 # Editor modes
 
-livehuddle has **one editor mode**, the meeting board, stored as `'workshop'`
-([The meeting board](../012-collaboration/workshop-mode.md)). Every tab is a meeting board, for everyone, and there is
-**no mode switch**. Since Work Tracker #423 it is no longer livediagram's Workshop: the workshop kit, the Collaborate
+livehuddle has **no editor modes**: every tab is a meeting board
+([The meeting board](../012-collaboration/workshop-mode.md)), for everyone, and there is **no mode switch**. The only
+trace of the concept is a stored value: a tab's `opensIn`, written as `'workshop'` (below). Since Work Tracker #423 it is no longer livediagram's Workshop: the workshop kit, the Collaborate
 elements and the diagram tools leave ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram's Diagram and Draw modes are not part
 of livehuddle: they were cut in step 5.1 of the [Build plan](../005-project-roadmap/build-plan.md) (Work Tracker #182),
 with the elements only they offered ([Purpose](../001-project-vision/purpose.md#boundaries-that-have-moved)).
 
 ## Domain language
 
-| Term              | Means                                                                                                                                 |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**      | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                                              |
-| **editor mode**   | How a tab is worked on. In livehuddle always `workshop` (`EditorMode`), kept as a type so stored tabs and shared code read one value. |
-| **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip.                                              |
+| Term              | Means                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **tab kind**      | What a tab **is** ([Document](../006-document/document.md)). Reserved for specific uses.                           |
+| **editor mode**   | livediagram's word for how a tab is worked on. In livehuddle only a stored value: `EditorMode`, always `workshop`. |
+| **Workshop mode** | Running a session with a team: the Collaborate elements, stickers and the Session strip.                           |
 
 - "Mode" on its own is ambiguous (Avatar mode is not an editor mode); in specs and code say **editor mode**.
+- **The editor has no mode.** Nothing in the editor's state, its palette, its canvas or its tab actions reads or
+  passes a mode (no `editorMode` in the editor context, no mode argument to the palette's layout, no
+  `data-editor-mode` attribute), since Work Tracker #329. `EditorMode`, `parseEditorMode` and `opensInOf` stay in
+  `@livehuddle/document`, and the `opensIn` / `mode` fields in `@livehuddle/api-schema`, because stored tabs, a
+  document's recorded intent and its tab stats carry the value.
 - "Whiteboard" names an activity, never a tab kind, a mode or a type of document.
 
 ## Kinds versus modes
@@ -39,8 +44,9 @@ with the elements only they offered ([Purpose](../001-project-vision/purpose.md#
   imported from livediagram in Diagram or Draw opens in Workshop with every element it still holds.
 - A tab the editor writes carries `opensIn: 'workshop'`; nothing is migrated.
 - A per-browser mode key (`livehuddle:v2:editor-mode:<tab>`) is never read.
-- **A new tab** from the tab bar's **+** or the command palette's **Create New Tab** is a general Workshop tab, opening
-  empty on Start a Space ([Template starts](start-diagramming.md)). **Duplicate** keeps the original's content.
+- **A new tab** from the tab bar's **+** or the command palette's **Create New Tab** is a general tab, written with
+  `opensIn: 'workshop'`, opening empty on Start a Space ([Template starts](start-diagramming.md)). **Duplicate** keeps
+  the original's content.
 
 ## What a tab written elsewhere keeps
 
@@ -75,18 +81,24 @@ pages livedesign's.
 
 ## The palette
 
-There is one palette layout, the meeting palette (`apps/editor/components/palette/palette-layouts.ts`,
-[The meeting board](../012-collaboration/workshop-mode.md#the-palette)), since part 3 of Work Tracker #423.
+There is one palette layout, the meeting palette (`MEETING_PALETTE` in
+`apps/editor/components/palette/palette-layouts.ts`,
+[The meeting board](../012-collaboration/workshop-mode.md#the-palette)), since part 3 of Work Tracker #423. It is not
+keyed by a mode.
 
 - **Identity is shared, arrangement is the layout's.** A category's glyph and its default label, blurb and band live
   in the category catalogue (`PALETTE_CATEGORIES`); a tile's identity in the tile catalogue (`PALETTE_TILES`).
 - **A layout entry** names a category and may override its `label`, `description` and `band`, and list its `tiles` by
   id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
 - **Catalogue categories** (My shapes, Icons, Stickers; in livehuddle, Stickers alone) are bodies with their own content and take no tile list.
-- **Popular** is the landing category: Sticky note, Text, Image, Link card, then behind a divider (`DIVIDE`)
-  Room, Meeting Table, Chair, Bring Focus and Avatar Pad. No category holds an opener (the openers module went with
+- **Popular** is the landing category: Sticky note and Text, then behind a divider (`DIVIDE`) Room, Meeting Table,
+  Chair, Bring Focus and Avatar Pad. No category holds an opener (the openers module went with
   the Collaborate code in part 4).
-- The tool a tab starts with is **Select**; on a phone **Hand**. An embedded viewer always starts on Hand.
+
+## The tool it starts with
+
+The editor starts on **Select**; on a phone **Hand**. An embedded viewer always starts on Hand. It is picked once, as
+the editor opens (`useStartingTool`); any tool can be picked after.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 

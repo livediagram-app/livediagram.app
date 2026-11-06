@@ -19,6 +19,7 @@ import {
 import type { TeamRef } from '../types';
 import { isAbort } from '../data/errors';
 import { applyTeamChanges, teamChanges } from '../data/teamChanges';
+import { useReturnToTab } from '../data/useReturnToTab';
 import type {
   AnsweredInvitation,
   MyTeams,
@@ -75,7 +76,8 @@ export function useTeams(): TeamsContext {
   return useContext(Ctx) ?? QUIET;
 }
 
-/** Accounts' list, read once as the page opens (signed in, with a host) and again after a change. */
+/** Accounts' list, read once as the page opens (signed in, with a host), again after a change, and again when the person
+ *  comes back to the tab (at most once in 30 s), so a team they were removed from elsewhere leaves the sidebar. */
 function useMyTeams(host: TeamsHost | null, read: boolean) {
   const [mine, setMine] = useState<MyTeams | null>(null);
   const [failed, setFailed] = useState(false);
@@ -87,15 +89,27 @@ function useMyTeams(host: TeamsHost | null, read: boolean) {
       return;
     }
     const controller = new AbortController();
-    host.myTeams(controller.signal).then(setMine, (e: unknown) => {
-      // Without it the badges stay away and the token's teams show; Invites says it couldn't load.
-      if (isAbort(e)) return;
-      setMine(null);
-      setFailed(true);
-    });
+    const startedAt = teamChanges.stamp();
+    host.myTeams(controller.signal).then(
+      (read) => {
+        // A team left here and listed again by a read made after it: added back elsewhere.
+        teamChanges.listed(
+          read.teams.map((t) => t.id),
+          startedAt,
+        );
+        setMine(read);
+      },
+      (e: unknown) => {
+        // Without it the badges stay away and the token's teams show; Invites says it couldn't load.
+        if (isAbort(e)) return;
+        setMine(null);
+        setFailed(true);
+      },
+    );
     return () => controller.abort();
   }, [host, read, epoch]);
   const refresh = useCallback(() => setEpoch((n) => n + 1), []);
+  useReturnToTab(refresh, 30_000, Boolean(host && read));
   return [mine, setMine, refresh, failed] as const;
 }
 

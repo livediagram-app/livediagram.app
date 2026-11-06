@@ -197,6 +197,65 @@ describe('useItemList with the overlay over time', () => {
     expect(overlay.apply(makeItem(1)).folderId).toBeNull();
   });
 
+  it('reads a folder again, quietly, when its read raced a move into it (Move Here, then open it at once)', async () => {
+    const folder = {
+      id: 'f1',
+      name: 'Folder',
+      parentId: null,
+      teamId: null,
+      ownerId: 'user_me',
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const index = createFakeIndex({
+      items: [makeItem(1), makeItem(2, { folderId: 'f1' })],
+      folders: [folder],
+    });
+    const overlay = createItemOverlay();
+    const actions = createItemActions({
+      client: index.client,
+      overlay,
+      toast: { show: vi.fn(), error: vi.fn() },
+      reloadLists: () => {},
+    });
+    // The move is on its way when the folder is opened: its read goes out before the index took the move.
+    index.hold.add('updateItem');
+    let moved!: Promise<boolean>;
+    act(() => {
+      moved = actions.move(makeItem(1), { folderId: 'f1', teamId: null });
+    });
+    const { result } = renderHook(() => useMyWork(index, overlay, 0, { kind: 'folder', id: 'f1' }));
+    await waitFor(() => expect(result.current.items.map((i) => i.id)).toEqual(['item-2']));
+    const reads = index.count('listItems');
+    await act(async () => {
+      index.release();
+      await moved;
+    });
+    // Read again once, and the moved item is there; the rows never went back to loading.
+    await waitFor(() =>
+      expect(result.current.items.map((i) => i.id).sort()).toEqual(['item-1', 'item-2']),
+    );
+    expect(result.current.loading).toBe(false);
+    expect(index.count('listItems')).toBe(reads + 1);
+  });
+
+  it('does not read a list again for a move that settled before its read went out', async () => {
+    const index = createFakeIndex({ items: [makeItem(1)] });
+    const overlay = createItemOverlay();
+    const actions = createItemActions({
+      client: index.client,
+      overlay,
+      toast: { show: vi.fn(), error: vi.fn() },
+      reloadLists: () => {},
+    });
+    await act(() => actions.move(makeItem(1), { folderId: null, teamId: null }));
+    const { result } = renderHook(() => useMyWork(index, overlay, 0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    // A rename settling later moves nothing: no second read either.
+    await act(() => actions.rename(result.current.items[0]!, 'Renamed'));
+    expect(index.count('listItems')).toBe(1);
+  });
+
   it('lets a list holding an older copy show what a newer read said', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     const overlay = createItemOverlay();

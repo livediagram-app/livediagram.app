@@ -3,9 +3,11 @@
 // A team's view, at its root (liveplanner's TeamPane): the team card (teams/TeamCard.tsx), where the team is run in
 // place, over the team's library, then the team's own feed (TeamActivity.tsx), closed until opened. A team the person is not in (gone, left, never joined) is a not-found card instead.
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { LIST_CARD } from '../ui/classes';
 import { TeamCard, useTeamDetails } from '../teams/TeamCard';
+import { useTeams } from '../teams/context';
+import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from './context';
 import { TeamActivity } from './TeamActivity';
 import { NotFoundCard } from './NotFoundCard';
@@ -17,6 +19,13 @@ export function TeamPage({ teamId, children }: { teamId: string; children: React
   const { teams, viewerId, helpHref, navigate } = useExplorer();
   const member = teams.some((t) => t.id === teamId);
   const [load, reload] = useTeamDetails(teamId);
+  const { retryMyTeams } = useTeams();
+  // The sidebar still lists a team accounts says the person is no longer in (an admin removed them elsewhere): the
+  // list is read again, so the team leaves the sidebar now rather than on the next reload.
+  const removed = member && load.state === 'gone';
+  useEffect(() => {
+    if (removed) retryMyTeams();
+  }, [removed, retryMyTeams]);
   if (!member || load.state === 'gone') return <TeamNotFound />;
   return (
     <div className="flex flex-col gap-4">
@@ -26,7 +35,10 @@ export function TeamPage({ teamId, children }: { teamId: string; children: React
           reload={reload}
           viewerId={viewerId}
           helpHref={helpHref?.({ kind: 'team', id: teamId })}
-          onGone={() => navigate({ kind: 'all' })}
+          onGone={() => {
+            navigate({ kind: 'all' });
+            landOnMyWork();
+          }}
         />
       ) : load.state === 'loading' ? (
         <TeamMembersSkeleton />
@@ -36,6 +48,20 @@ export function TeamPage({ teamId, children }: { teamId: string; children: React
       <TeamActivity key={teamId} teamId={teamId} />
     </div>
   );
+}
+
+/** After leaving or deleting a team its card, and the control that was focused, are gone: the keyboard lands on My
+ *  Work's row in the sidebar, where the person now is, or (on a phone, where the sidebar is in its drawer) on Browse
+ *  Sections, rather than on the page's body. */
+export function landOnMyWork(): void {
+  const row = document.querySelector<HTMLElement>(
+    `[data-explorer] aside [role="treeitem"][data-tree-label="${SIDEBAR_LABELS.myWork}"]`,
+  );
+  row?.focus({ preventScroll: true });
+  if (row && document.activeElement === row) return;
+  document
+    .querySelector<HTMLElement>('[data-explorer] button[aria-label="Browse sections"]')
+    ?.focus({ preventScroll: true });
 }
 
 function TeamMembersSkeleton() {
