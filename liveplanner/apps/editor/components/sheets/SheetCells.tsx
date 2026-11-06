@@ -78,7 +78,6 @@ type CellsProps = {
   scroll: { top: number; left: number };
   palette: PlanPalette;
   locale: string;
-  fontFamily?: string;
   // Columns whose cells keep room at their right for a dropdown arrow (a card table's set-value columns).
   padEnd?: ReadonlySet<string>;
   // The filter's header row and the columns whose header cell carries a filter button (SheetSelectionLayer): those
@@ -332,10 +331,8 @@ function SheetCellsInner(props: CellsProps) {
       clip: { left: 0, top: 0, width: g.frozenWidth, height: g.frozenHeight },
     });
   return (
-    <div
-      className="absolute inset-0"
-      style={props.fontFamily ? { fontFamily: props.fontFamily } : undefined}
-    >
+    // In the face the Sheet's root hands down (fonts.md "On Sheet tabs and charts"); a cell's own Font sets its own.
+    <div className="absolute inset-0">
       {regions.map((region, i) => (
         <RegionCells key={i} {...props} region={region} />
       ))}

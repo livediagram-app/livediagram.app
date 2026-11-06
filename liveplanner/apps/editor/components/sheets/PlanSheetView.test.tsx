@@ -21,6 +21,7 @@ import { forgetSheetStores, sheetStoreOf } from './sheet-store-client';
 import { pointingTargetFor } from './sheet-pointing';
 import { PlanSheetView } from './PlanSheetView';
 import { SheetChartsContext } from './sheet-charts-context';
+import { PLAN_UI_FONT } from '@/lib/plan-font';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Off but for the Setup Sheet phone case below.
@@ -259,6 +260,18 @@ describe('the grid', () => {
     draw(element({ sheetId: 'sheetAAAA' }), bridge({ canEdit: false }));
     await screen.findByText('Budget');
     expect(screen.queryByRole('button', { name: /undo/i })).toBeNull();
+  });
+
+  // The board's rule on its own tab (fonts.md "On Sheet tabs and charts"): the UI face at the root, the tab's face
+  // handed to the title only, so a Sheet tab and the same Sheet in a Dashboard slot letter alike.
+  it('letters its cells in the UI face and its title in the tab face', async () => {
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
+    const { container } = draw(element({ sheetId: 'sheetAAAA' }), bridge());
+    const title = await screen.findByText('Budget');
+    const root = container.querySelector<HTMLElement>('[data-plan-sheet]')!;
+    expect(root.style.fontFamily).toBe(PLAN_UI_FONT);
+    expect(root.style.getPropertyValue('--plan-heading-font')).toBe('Inter');
+    expect(title.style.fontFamily).toBe('var(--plan-heading-font)');
   });
 
   it('tracks focus within the Sheet', async () => {

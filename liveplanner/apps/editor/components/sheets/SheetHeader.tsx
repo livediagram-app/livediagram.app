@@ -18,6 +18,7 @@ import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import { FocusElementButton } from '@/components/plan/FocusElementButton';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '@/components/plan/menu-name-slot';
 import { track } from '@/lib/telemetry';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 import type { SheetActions } from './useSheetActions';
 import {
   BAND_CONTROLS_CLASS,
@@ -156,7 +157,9 @@ export function SheetHeader({
                     ? `${IN_BOX_TITLE_CLASS} ${c.canShape ? 'cursor-text' : ''}`
                     : 'min-w-0 max-w-[var(--plan-band-mid,none)] truncate text-[14px] font-semibold'
                 }
-                style={inBox ? undefined : { color: c.palette.text }}
+                // On the Sheet the title is a heading in the tab's face, as a board's (fonts.md "On Sheet tabs and
+                // charts"); in the menu box it is chrome.
+                style={inBox ? undefined : { ...PLAN_HEADING_STYLE, color: c.palette.text }}
               >
                 {c.sheet.title}
               </div>
