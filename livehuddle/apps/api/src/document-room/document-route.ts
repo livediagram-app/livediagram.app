@@ -1,12 +1,12 @@
 // An API request about one canvas, answered inside the canvas's Durable Object (docs/specs/015-api/api.md
-// "Storage"). The worker resolves who is calling (accounts or guest token, API token, workbench session) and the
+// "Storage"). The worker resolves who is calling (accounts or guest token, API token) and the
 // index's grant on the canvas (routes/document-grant.ts), runs the cross-cutting gates (rate limits, read-only
-// tokens, workbench confinement, body caps), then hands the request and that identity to the canvas's room
+// tokens, body caps), then hands the request and that identity to the canvas's room
 // (`route` RPC). The room rebuilds the RouteContext and runs the handlers against its own SQLite; every access
 // check (gateRead / gateEdit / gateParticipate) reads the grant.
 
 import type { TeamClaim } from '@liveworkspace/auth-client';
-import type { DocumentRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
+import type { DocumentRouteContext, RouteContext } from '../routes/context';
 import { handleDocumentRequest } from '../routes/documents';
 import type { DocumentEnv } from '../types';
 import type { ItemGrant } from '../index-service';
@@ -19,7 +19,6 @@ export type RouteIdentity = {
   // resolveOwner()'s answer.
   owner: string | null;
   token: { id: string; readOnly?: boolean; name?: string | null; expiresAt?: number } | null;
-  workbench: WorkbenchContext | null;
   bearer: string | null;
   teams: TeamClaim[] | null;
   // The index's grant on this canvas, checked by the worker (routes/document-grant.ts).
@@ -33,7 +32,6 @@ export function identityOf(ctx: RouteContext): RouteIdentity {
     accountEmail: ctx.accountEmail,
     owner: ctx.resolveOwner(),
     token: ctx.token ?? null,
-    workbench: ctx.workbench ?? null,
     bearer: ctx.bearer ?? null,
     teams: ctx.teams ?? null,
     grant: ctx.grant ?? null,
@@ -67,7 +65,6 @@ export async function answerDocumentRequest(
     accountEmail: identity.accountEmail,
     resolveOwner: () => identity.owner,
     token: identity.token,
-    workbench: identity.workbench,
     bearer: identity.bearer,
     teams: identity.teams,
     grant: identity.grant,

@@ -34,6 +34,8 @@ export const DEFAULT_SEATING_FACING: Readonly<Record<SitKind, SeatFacing>> = {
   bench: 'n',
   'picnic-table': 'n',
   hammock: 'n',
+  'bean-bag': 'n',
+  'reading-nook': 'n',
 };
 
 export function seatingFacing(el: { shape: SitKind; chairFacing?: SeatFacing }): SeatFacing {
@@ -193,6 +195,20 @@ export const HAMMOCK_SEATS: FixedSeatGrid = {
   seats: [{ u: 0.5, v: 46 / 80, facing: 'down' }],
 };
 
+// The breakout seating (social-pieces.md "Bean Bag, Reading Nook"): one sitter sunk in a bean bag, one in a reading
+// nook's armchair, both facing down the canvas.
+export const BEAN_BAG_SEATS: FixedSeatGrid = {
+  width: 64,
+  height: 56,
+  seats: [{ u: 0.5, v: 36 / 56, facing: 'down' }],
+};
+
+export const READING_NOOK_SEATS: FixedSeatGrid = {
+  width: 160,
+  height: 112,
+  seats: [{ u: 76 / 160, v: 64 / 112, facing: 'down' }],
+};
+
 const FIXED_SEATS: Readonly<Record<FixedSeatKind, FixedSeatGrid>> = {
   'office-pod': POD_SEATS,
   'bar-stool': BAR_STOOL_SEATS,
@@ -200,6 +216,8 @@ const FIXED_SEATS: Readonly<Record<FixedSeatKind, FixedSeatGrid>> = {
   bench: BENCH_SEATS,
   'picnic-table': PICNIC_TABLE_SEATS,
   hammock: HAMMOCK_SEATS,
+  'bean-bag': BEAN_BAG_SEATS,
+  'reading-nook': READING_NOOK_SEATS,
 };
 
 /** A seating piece as the seat geometry reads it: its box, its kind and where its back is. */

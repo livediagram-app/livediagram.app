@@ -1,7 +1,6 @@
 // The shared theme ENGINE (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme data, types, and the
 // pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
-// in the package so both the editor (apps/editor) and the MCP worker (apps/mcp,
-// docs/specs/015-api/mcp-server.md) theme tabs identically. The viewer-appearance wrappers +
+// in the package so anything that themes a tab does it the editor's way. The viewer-appearance wrappers +
 // deriveNewBoxedColours stay in apps/editor/lib/themes.ts, which re-exports this.
 import { themeHalf } from './theme-halves';
 import {

@@ -61,6 +61,7 @@ describe('localOpensOf', () => {
     expect(localOpensOf(undefined)).toBeUndefined();
     expect(localOpensOf({ days: 'x' })).toBeUndefined();
     expect(localOpensOf({ lastOpenDay: '2026-09-29' })).toBeUndefined();
+    expect(localOpensOf({ lastOpenedAt: T0 })).toBeUndefined();
   });
 });
 

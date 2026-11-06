@@ -685,7 +685,7 @@ function CanvasView(props: CanvasProps) {
                 status={avatarStatus}
                 shirt={props.selfParticipant.color}
                 standingOn={avatarStandingOn}
-                onStand={avatar.standUp}
+                self
               />
             ) : null}
             {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}

@@ -9,6 +9,7 @@ Follow the references below only as needed; never upfront.
 - ./sharing.md - when working on share links, share passwords, guesses, Share Link Expiring or Shared with me
 - ./inbox.md - when an app pushes a summary, threads, actions or forms, or when building the Inbox
 - ./timeline.md - when recording or reading Timeline events
+- ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
 - ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
 - ./trash.md - when working on the Trash, purges, the daily sweep or closing an account
 - ./default-folders.md - when working on where a new item lands by default

@@ -11,3 +11,5 @@ One row per default applied where a spec is silent or qualitative.
 | NC3 | speaker-note-cards | What a closed blank card does                            | Removed on close, no undo; a card with words gets a 6 s Undo                                       |
 | NC4 | speaker-note-cards | Whether the presenter's viewer stays open across slides  | Yes, on the next slide's first card; hidden on a slide with no cards                               |
 | NC5 | speaker-note-cards | How cards reach a PowerPoint notes page                  | One paragraph a card, line breaks inside a card as `<a:br/>`; import makes one card                |
+| NC6 | speaker-note-cards | How far past the deck cap a save's base may go           | Four times the deck cap (`MAX_DECK_BASE_LEN`, 1 MB): a deck stored past the cap can save smaller   |
+| NC7 | speaker-note-cards | Where a changed slide goes when the stored deck lost it  | After the slide before it in the editor's deck when the stored deck holds that one, else first     |

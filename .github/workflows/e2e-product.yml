@@ -50,8 +50,10 @@ on:
         type: string
         default: live-signed-in
 
+# actions: write, for each job's fail-fast step (docs/ci.md "Fail fast").
 permissions:
   contents: read
+  actions: write
 
 env:
   BUILD_SKIP_TYPECHECK: '1'
@@ -116,6 +118,11 @@ jobs:
           compression-level: 1
           retention-days: 1
 
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   smoke:
     name: Smoke shard ${{ matrix.shard }}/${{ strategy.job-total }}
     needs: smoke-build
@@ -164,6 +171,11 @@ jobs:
             ${{ inputs.product }}/${{ inputs.editor-dir }}/playwright-report
             ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results
           retention-days: 7
+
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
 
   sites:
     name: Sites audit
@@ -237,6 +249,11 @@ jobs:
             ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results
           retention-days: 7
 
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   signed-in:
     name: Signed-in specs
     runs-on: ubuntu-latest
@@ -290,3 +307,8 @@ jobs:
             ${{ inputs.product }}/${{ inputs.editor-dir }}/playwright-report-signed-in
             ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results-signed-in
           retention-days: 7
+
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure

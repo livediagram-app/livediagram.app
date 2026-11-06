@@ -60,6 +60,12 @@ describe('the office pieces', () => {
       'garden-umbrella',
       'fountain',
       'pond',
+      'pool-table',
+      'foosball-table',
+      'dartboard',
+      'vending-machine',
+      'bean-bag',
+      'reading-nook',
     ]);
     const sized = ['room', 'stage', 'garden-path', 'grass', 'garden-fence', 'door', 'pond'];
     for (const kind of OFFICE_KINDS) {

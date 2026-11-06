@@ -19,8 +19,8 @@
 
 /* The telemetry dashboard shows the apps' own numbers in the apps' own accents: livediagram's sky
  * (the shared tailwind-config's default brand scale, which the platform's slate replaced above) for every app and
- * for livediagram, liveplanner's violet, livedocuments' amber and livedesign's rose inside
- * their own. */
+ * for livediagram, liveplanner's violet, livedocuments' amber, livedesign's rose and livehuddle's emerald
+ * inside their own. */
 [data-app] {
   --color-brand-400: #38bdf8;
   --color-brand-500: #0ea5e9;
@@ -66,6 +66,21 @@
   --color-brand-800: #9f1239;
   --color-brand-900: #881337;
   --color-brand-950: #4c0519;
+}
+
+/* livehuddle's emerald (livehuddle/packages/tailwind-config/theme.css). */
+[data-app='livehuddle.app'] {
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+  --color-brand-950: #022c22;
 }
 
 /* The dim behind an open stack's modal (liveworkspace/docs/specs/008-telemetry/telemetry.md), fading in with it. */

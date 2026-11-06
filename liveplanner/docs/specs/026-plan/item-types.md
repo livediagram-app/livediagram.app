@@ -20,7 +20,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type     | ready-made field, preset    |
 | **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards           | (no other name)             |
 | **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a project made before card types started empty reads as | built-in types              |
-| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the twelve more a template uses               | preset type, built-in type  |
+| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the thirteen more a template uses             | preset type, built-in type  |
 | **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                | parent type, super type     |
 | **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own             | subtype, child type         |
 | **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                  | unknown field, broken field |
@@ -700,7 +700,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **The expression** names fields by the names the card panel gives them, ignoring case. A name of plain words
     (letters, digits and `_`, one space between words: `Budget`, `Story Points`) is written as it is; any name may be
     written in braces (`{Children Done (%)}`), which a name holding other characters, or one that is also `true`,
-    `false` or a function's name, needs. It reads the type's custom fields (all but Image, Comments and Votes), the
+    `false` or a function's name, needs. Inside braces `\}` stands for a `}` and `\\` for a `\`, so a label holding
+    braces (`Cost {est}`) is written `{Cost {est\}}`; the label itself stays as it was typed, and inserting a field
+    from the list escapes it. It reads the type's custom fields (all but Image, Comments and Votes), the
     built-in Title, Estimate (or Points), Start Date (or Start), Due Date (or Due), Priority, Assignee, Labels,
     Colour and Checklist when the type offers them, and every card's **Number** and **Type**. A custom field's name
     wins over a built-in's other name. Status is not read (its names belong to the boards). Text is written in

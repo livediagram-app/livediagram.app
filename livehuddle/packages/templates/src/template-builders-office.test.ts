@@ -204,16 +204,15 @@ describe('the space templates', () => {
 
   it('gives the team pod four desks, a table and a board of four stickies', () => {
     const els = build('team-pod');
-    // The way in waits under the pod, where its door is, not under the board beside it.
-    const pod = els.find((e) => e.type === 'shape' && e.shape === 'room') as Element & {
-      x: number;
-      width: number;
-    };
-    const walk = els.find((e) => e.type === 'shape' && e.shape === 'mode-button') as Element & {
-      x: number;
-      width: number;
-    };
-    expect(walk.x + walk.width).toBeLessThanOrEqual(pod.x + pod.width);
+    // The way in waits beside the pod under the board, level with the pod, never under the plan's bottom edge where
+    // the canvas's bottom-right cluster floats in a view from a desk (Work Tracker #580).
+    type Box = Element & { x: number; y: number; width: number; height: number };
+    const pod = els.find((e) => e.type === 'shape' && e.shape === 'room') as Box;
+    const walk = els.find((e) => e.type === 'shape' && e.shape === 'mode-button') as Box;
+    const stickies = els.filter((e) => e.type === 'sticky') as Box[];
+    expect(walk.x).toBeGreaterThanOrEqual(pod.x + pod.width);
+    expect(walk.y + walk.height).toBeLessThanOrEqual(pod.y + pod.height);
+    expect(walk.y).toBeGreaterThanOrEqual(Math.max(...stickies.map((s) => s.y + s.height)));
     expect(count(els, 'desk')).toBe(4);
     expect(count(els, 'meeting-table')).toBe(1);
     expect(els.filter((e) => e.type === 'sticky')).toHaveLength(4);

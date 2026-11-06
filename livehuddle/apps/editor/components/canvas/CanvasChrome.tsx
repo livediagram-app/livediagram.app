@@ -18,7 +18,6 @@ import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
-import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
@@ -229,6 +228,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // The palette strip: an Editor's alone; a Viewer and a Participant have none
   // (docs/specs/013-workspace/share-roles.md "A Participant walks").
   const paletteShown = !readOnly;
+  // Walking is being in the room, not editing it (docs/specs/008-canvas/avatar-mode.md "No editing chrome while
+  // walking"): Undo, Redo and Tab Style step aside for as long as the mode is on.
+  const walking = canvasTool === 'avatar';
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
@@ -236,15 +238,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, so it keeps the corner there.
   const menuInStrip = isMobile && paletteShown;
-  // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
-  const { workbenchBack } = props;
-  const explorerMenuButton = workbenchBack ? (
-    <WorkbenchBackButton
-      onBack={workbenchBack.back}
-      backTitle={workbenchBack.backTitle}
-      inline={menuInStrip}
-    />
-  ) : props.explorerHidden ? null : (
+  const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
@@ -445,8 +439,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone. */}
-            {!chromeAway && !readOnly ? (
+            {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. */}
+            {!chromeAway && !readOnly && !walking ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}
@@ -497,8 +491,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
-                read-only sessions pass no handler): see ThemeStrip. */}
-            {!chromeAway ? (
+                read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
+            {!chromeAway && !walking ? (
               <ThemeStrip
                 // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
                 tidyUp={

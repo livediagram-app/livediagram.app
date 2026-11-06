@@ -25,7 +25,8 @@ Where a large board spends its time during pan, zoom, drag, marquee and pen stro
 ## Agent CLI
 
 How an AI agent should read, build, edit and comment on documents through a CLI, and work beside a person live.
-The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md.
+The resulting specs live in docs/specs/024-agents/; the CLI it also shaped has since left livehuddle
+(docs/specs/002-project-scope/not-in-livehuddle.md).
 
 - ./agent-cli/agent-cli-ergonomics.md - when shaping CLI help, output, refs, errors or exit codes for agents
 - ./agent-cli/compact-representations.md - when choosing how a tab reads as text: token counts per format, views

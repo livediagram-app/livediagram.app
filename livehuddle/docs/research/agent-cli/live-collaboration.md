@@ -326,7 +326,7 @@ mention rev=e1f3:431 tab=main el-9 "Payments" Webber: "@Claude should this be as
 | Room for every document, personal ones included                                            | `useRoomConnection.ts`, `roomStubFor`                                        | small  |
 | Comments: resolve/reopen endpoint, agent author fields, agent mentions                     | comment routes, `comments.ts`, `comment-mentions.md`                         | medium |
 | `wait` / `watch` over a ticketed socket with `--since`                                     | CLI; room `sync` already exists                                              | small  |
-| Retire whole-tab writes for agents: MCP `update_document` uses changesets too              | `apps/mcp/src/tools.ts`                                                      | small  |
+| Retire whole-tab writes for agents: MCP `update_document` uses changesets too              | `livediagram/apps/mcp/src/tools.ts`                                          | small  |
 | Telemetry: agent changeset applied, reverted, skipped                                      | `TELEMETRY_*` enums                                                          | small  |
 
 The MCP server should move onto the same changeset path in the same change, so the two agent
@@ -378,7 +378,7 @@ Webber decided these four forks; specs should record them when this work is spec
 - livehuddle: `docs/specs/012-collaboration/realtime-conflict-resolution.md`,
   `collab-race-hardening.md`, `resync-without-reload.md`, `comment-mentions.md`,
   `comment-pin.md`; `docs/specs/007-editor/editor-app.md` (concurrent-selection lock);
-  `docs/specs/015-api/mcp-server.md`, `public-api-and-tokens.md`;
+  `livediagram/docs/specs/015-api/mcp-server.md`, `public-api-and-tokens.md`;
   `apps/api/src/document-room/document-room.ts`, `room-client.ts`, `routes/document-room-routes.ts`,
   `routes/document-subresource-routes.ts`; `apps/editor/app/document/[id]/useRoomConnection.ts`;
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `comments.ts`;

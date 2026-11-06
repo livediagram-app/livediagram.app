@@ -72,4 +72,41 @@ describe('TabPresenceStack', () => {
     view.rerender(<TabPresenceStack participants={[me, ada]} selfId="me" selfRole="edit" />);
     expect(view.container.querySelector('[aria-label$="following you"]')).toBeNull();
   });
+
+  // docs/specs/004-interface-design/touch-targets.md "A tab's presence avatars": a 16px face is too small to tap, so on
+  // a touch screen each face and the +N badge is a 24px-wide button padded to 44px tall, the faces apart.
+  it('gives each avatar and the +N badge a touch-sized tap area', () => {
+    const open = vi.fn();
+    const people = ['a', 'b', 'c', 'd', 'e'].map((id) => person(id, id.toUpperCase()));
+    const view = render(
+      <TabPresenceStack
+        participants={people}
+        selfId="me"
+        selfRole="edit"
+        onOpenCollaborators={open}
+      />,
+    );
+    const buttons = [...view.container.querySelectorAll<HTMLButtonElement>('button')];
+    expect(buttons).toHaveLength(4);
+    for (const b of buttons) {
+      expect(b.className).toMatch(/(^|\s)relative(\s|$)/);
+      expect(b.className).toContain('touch-target-y');
+      expect(b.className).toContain('pointer-coarse:px-1');
+    }
+    const overlapped = [...view.container.querySelectorAll<HTMLElement>('.-mr-0\\.5')];
+    expect(overlapped.length).toBeGreaterThan(0);
+    for (const s of overlapped) expect(s.className).toContain('pointer-coarse:mr-0');
+    const more = view.getByRole('button', { name: '2 more participants on this tab' });
+    more.click();
+    expect(open).toHaveBeenCalledWith(null);
+  });
+
+  it('leaves the +N badge inert with no Collaborators modal to open', () => {
+    const people = ['a', 'b', 'c', 'd'].map((id) => person(id, id.toUpperCase()));
+    const view = render(<TabPresenceStack participants={people} selfId="me" selfRole="edit" />);
+    expect(view.getByRole('button', { name: '1 more participant on this tab' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+  });
 });

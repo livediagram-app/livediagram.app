@@ -33,6 +33,8 @@ describe('facings', () => {
       bench: 'n',
       'picnic-table': 'n',
       hammock: 'n',
+      'bean-bag': 'n',
+      'reading-nook': 'n',
     });
     expect(seatingFacing({ shape: 'desk' })).toBe('s');
     expect(seatingFacing({ shape: 'desk', chairFacing: 'e' })).toBe('e');

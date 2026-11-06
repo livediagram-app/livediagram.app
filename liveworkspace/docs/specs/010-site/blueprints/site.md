@@ -478,6 +478,14 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/app/telemetry/livedocuments/page-views.test.ts`
 - `liveworkspace/apps/site/app/telemetry/livedocuments/ranking-rules.test.ts`
 - `liveworkspace/apps/site/app/telemetry/livedocuments/retired-events.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/computed-emitters.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/cta-funnel.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/event-explanation.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/metric-emitters.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/metric-series.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/page-views.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/ranking-rules.test.ts`
+- `liveworkspace/apps/site/app/telemetry/livehuddle/retired-events.test.ts`
 - `liveworkspace/apps/site/app/telemetry/liveplanner/cta-funnel.test.ts`
 - `liveworkspace/apps/site/app/telemetry/liveplanner/event-explanation.test.ts`
 - `liveworkspace/apps/site/app/telemetry/liveplanner/metric-emitters.test.ts`

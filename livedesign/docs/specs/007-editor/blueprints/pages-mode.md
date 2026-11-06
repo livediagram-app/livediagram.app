@@ -1041,7 +1041,8 @@ at most 100 pages: delete one to split this page."
   "Choose a Device" around a `role="group"`; rows are buttons (name and screen size as text), the
   remembered one `aria-current`, arrow keys cycle, Escape returns focus to the button.
 - The first page's card `role="group"` labelled by its title "What Is This Page For?"; the in-page
-  layout card `role="group"` labelled by "Start From a Layout", its Hide named; the navigator
+  layout card `role="group"` labelled by "Start From a Layout", its Hide named, and Escape pressed
+  inside it (its `onKeyDown`, stopped there so the canvas does not deselect too) calls `onHide` as Hide does; the navigator
   `role="group"` named "Page n of m", its arrows named and disabled at the ends.
 - Reduced motion: the sheets' ease and the swatch hover scale are off
   (`motion-reduce:transition-none`, `motion-reduce:hover:scale-100`), the preview's fade off.

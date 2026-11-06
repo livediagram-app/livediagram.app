@@ -16,6 +16,8 @@ describe('the social pieces', () => {
       ['bench', 136, 64, 2],
       ['picnic-table', 200, 152, 6],
       ['hammock', 152, 80, 1],
+      ['bean-bag', 64, 56, 1],
+      ['reading-nook', 160, 112, 1],
     ] as const;
     for (const [shape, width, height, n] of cases) {
       expect(isFixedSeatShape(shape)).toBe(true);
@@ -48,6 +50,9 @@ describe('the social pieces', () => {
       ['fountain', 136, 120],
       ['pond', 240, 152],
       ['campfire', 80, 72],
+      ['pool-table', 200, 128],
+      ['foosball-table', 168, 104],
+      ['vending-machine', 72, 128],
     ] as const;
     for (const [shape, width, height] of cases) {
       expect(isSceneryShape(shape), shape).toBe(true);
@@ -68,11 +73,25 @@ describe('the social pieces', () => {
     expect(umbrella.width).toBeLessThan(30);
   });
 
-  it('hangs the notice board and the world clock on the wall: nothing to walk into or stand on', () => {
+  it('seats the bean bag and the reading nook one each, facing down the canvas', () => {
+    const bag = seatPoints({ x: 0, y: 0, width: 64, height: 56, shape: 'bean-bag' });
+    const nook = seatPoints({ x: 0, y: 0, width: 160, height: 112, shape: 'reading-nook' });
+    expect([...bag, ...nook].map((s) => s.facing)).toEqual(['down', 'down']);
+  });
+
+  it('keeps the games tables visual: they block, and nobody sits at them', () => {
+    for (const shape of ['pool-table', 'foosball-table', 'vending-machine', 'dartboard']) {
+      expect(isFixedSeatShape(shape), shape).toBe(false);
+      expect(seatsACharacter(shape), shape).toBe(false);
+    }
+  });
+
+  it('hangs the notice board, the world clock and the dartboard on the wall: nothing to walk into or stand on', () => {
     expect(isWallPieceShape('notice-board')).toBe(true);
     expect(isWallPieceShape('world-clock')).toBe(true);
+    expect(isWallPieceShape('dartboard')).toBe(true);
     expect(isWallPieceShape('jukebox')).toBe(false);
-    for (const shape of ['notice-board', 'world-clock'])
+    for (const shape of ['notice-board', 'world-clock', 'dartboard'])
       expect(officeFootprint({ x: 0, y: 0, width: 100, height: 60, shape })).toBeNull();
   });
 });

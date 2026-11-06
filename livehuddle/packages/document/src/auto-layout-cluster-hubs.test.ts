@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { layoutGraph, type GraphInput } from './graph-input';
 import type { BoxedElement, Element } from './index';
 
-// A platform of services over their stores (docs/specs/015-api/mcp-server.md "Groups keep their lines clear"): each
+// A platform of services over their stores (livediagram/docs/specs/015-api/mcp-server.md "Groups keep their lines clear"): each
 // store sits under its own service, and a bus every service publishes to goes to the end of its row.
 
 const SERVICES = ['users', 'auth', 'search', 'cart', 'orders', 'payments'];

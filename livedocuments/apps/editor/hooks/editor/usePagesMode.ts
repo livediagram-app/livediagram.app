@@ -113,6 +113,8 @@ export type PageDeckControls = {
   toggleHidden: (slideId: string) => void;
   // The slide's speaker notes as note cards, as the title bar's Notes writes them (none removes them).
   setNoteCards: (slideId: string, cards: readonly NoteCard[]) => void;
+  // Saves the cards' waiting deck now, as the writing leaves the screen (speaker-note-cards.md "Saving").
+  flushNotes: () => void;
   // Presents from this slide (Present From Here, docs/specs/007-editor/pages-mode.md "Slides").
   present: (slideId: string) => void;
 };

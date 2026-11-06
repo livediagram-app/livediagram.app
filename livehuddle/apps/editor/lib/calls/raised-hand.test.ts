@@ -63,7 +63,7 @@ describe('your raised hand', () => {
 
   it('places you towards the stage', () => {
     const none = new Set<string>();
-    const live = { self: false, speakers: new Set(['s']), audience: none, unseen: none };
+    const live = { self: false, speakers: new Set(['s']), unseen: none };
     expect(stagePlace({ ...live, self: true }, true)).toBe('speaker');
     expect(stagePlace(live, true)).toBe('audience');
     expect(stagePlace(undefined, true)).toBe('barred');

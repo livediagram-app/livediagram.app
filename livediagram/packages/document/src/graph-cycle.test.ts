@@ -83,4 +83,27 @@ describe('cycle style', () => {
     // The smallest ring, 200px to the top stop's centre.
     expect(top.y + top.height / 2).toBeCloseTo(-200, 5);
   });
+
+  // docs/specs/015-api/mcp-server.md "Title, subtitle and key": a star's arcs round the outside of the top stop rose
+  // past the boxes, and the heading, placed above the boxes alone, sat across them.
+  it.each([5, 8])('keeps a %i-stop star’s arcs below its title and caption', (stops) => {
+    const ids = Array.from({ length: stops }, (_, i) => `s${i}`);
+    const els = layoutGraph({
+      style: 'cycle',
+      title: 'Flywheel',
+      subtitle: 'Each turn feeds the next',
+      nodes: ids.map((id) => ({ id, label: id })),
+      edges: ids.slice(1).map((from) => ({ from, to: ids[(ids.indexOf(from) + 2) % stops]! })),
+    });
+    const index = elementIndexFor(els);
+    const header = els.filter((e): e is BoxedElement => e.type === 'text');
+    expect(header.map((t) => t.label)).toEqual(['Flywheel', 'Each turn feeds the next']);
+    const headerBottom = Math.max(...header.map((t) => t.y + t.height));
+    const arcTop = Math.min(
+      ...els
+        .filter((e): e is ArrowElement => e.type === 'arrow')
+        .flatMap((a) => arrowPolyline(a, index).map((p) => p.y)),
+    );
+    expect(arcTop).toBeGreaterThan(headerBottom);
+  });
 });

@@ -10,13 +10,12 @@ import type { Point } from './hearing';
 export { callStages, mayTakeStage, stageAt, type CallStage } from '@livehuddle/document';
 
 /**
- * Who is on a live stage, worked out once per scene: whether you speak from one, which walkers do, the rooms that
- * are a live stage's audience (they hear each other by distance), and the speakers whose stage hides their bubbles.
+ * Who is on a live stage, worked out once per scene: whether you speak from one, which walkers do, and the speakers
+ * whose stage hides their bubbles.
  */
 export type CallStaging = {
   readonly self: boolean;
   readonly speakers: ReadonlySet<string>;
-  readonly audience: ReadonlySet<string>;
   readonly unseen: ReadonlySet<string>;
 };
 
@@ -92,13 +91,11 @@ export function staging(
   if (stages.length === 0) return null;
   const speakers = new Set<string>();
   const unseen = new Set<string>();
-  const live: CallStage[] = [];
   let mine = false;
   if (self) {
     const s = stageAt(self, stages);
     if (s && mayTakeStage(selfLevel, s.speakers)) {
       mine = true;
-      live.push(s);
     } else if (hands?.self) {
       mine = true;
     }
@@ -114,12 +111,9 @@ export function staging(
     }
     speakers.add(id);
     if (!s.cameras) unseen.add(id);
-    live.push(s);
   }
   if (!mine && speakers.size === 0) return null;
-  const audience = new Set<string>();
-  for (const s of live) if (s.zone !== null) audience.add(s.zone);
-  return { self: mine, speakers, audience, unseen };
+  return { self: mine, speakers, unseen };
 }
 
 /** The Who Can Speak of a stage you stand on that does not let you speak (the stage line), or null. */

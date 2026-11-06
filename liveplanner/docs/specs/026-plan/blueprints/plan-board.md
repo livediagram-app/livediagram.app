@@ -699,7 +699,13 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   swimlane label (`PlanBoardCells`) and the card title (`PlanCardFace`, a `display: contents` wrapper round
   `titleText`). An unset variable is invalid at computed-value time, so the heading inherits: with no tab font it
   is the UI face. A stack whose id is in `PLANNER_EXCLUDED_FONT_IDS` sets no variable. The Dashboard page root
-  keeps `planFontStyle` (its own text in the tab face) and also sets the variables, so slot boards inherit them.
+  (`DashboardPage`) takes `planBoardFontStyle(stack)` too, so its slots, their boards, views, charts and Sheets
+  inherit the UI face and the variables (spec "On Dashboards and views"). A plan view's own root (`ViewFrame`,
+  `MetricTile`, the metric pill in `MetricView`) takes `planBoardFontStyle(fontFamily)`: on a canvas tab that hands
+  down the element's or tab's face; in a slot, where `fontFamily` is unset, it sets no variable and the page's
+  inherit. The Dashboard headings opting in: `ViewFrame`'s title (on its own header, not in the menu box),
+  `CardHeading` (`card-parts.tsx`: Key Date, Checklist, Links), `DashboardNote`'s heading and `DashboardTitle`'s
+  heading, each as read and as typed into.
 - Font pickers: `PLANNER_FONTS` (`@liveplanner/project` `planner-fonts.ts`, `FONTS` less
   `PLANNER_EXCLUDED_FONT_IDS`) feeds `TextTab`, `TypographySections` and `SheetToolbarMenus`; labels of a stored
   font still read from `FONTS`, so an excluded face already set keeps its name.

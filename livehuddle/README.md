@@ -5,7 +5,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 **Live at [livehuddle.app](https://livehuddle.app).** MIT-licensed.
 
 ```
-apps/        marketing site + editor + help centre + community + api + mcp server + router + cli
+apps/        marketing site + editor + help centre + community + api + router
 packages/    this product's document model, wire-format types, UI, template catalogue + template previews, help-article registry, agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection and its model, telemetry client and licence tables (the api client, icons, configs and the rest are the monorepo's shared @liveworkspace/* packages)
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
@@ -30,9 +30,8 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
-- **MCP** at `mcp.livehuddle.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host rather than a router path.
 - **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
-- **CLI** (`apps/cli`) is `livehuddle`, the command line agents and scripts read, lint and change documents with, published on npm as `@livehuddle/cli`. It also opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
+- livehuddle has no MCP server, CLI or workbenches; scripts use the REST API with an API token ([Not in livehuddle](docs/specs/002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 

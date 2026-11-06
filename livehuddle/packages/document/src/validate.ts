@@ -71,7 +71,7 @@ export const MAX_TABLE_ROWS = 1_000;
 export const MAX_TABLE_COLS = 1_000;
 export const MAX_TABLE_CELLS = 50_000;
 
-// Exported so the MCP schema resource (docs/specs/015-api/mcp-server.md §4.5) lists the real element
+// Exported so the MCP schema resource (livediagram/docs/specs/015-api/mcp-server.md §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.
 export const ELEMENT_TYPES = new Set([
   'shape',

@@ -274,6 +274,77 @@ describe("applyParticipantOp: update someone else's element", () => {
     expect(grown.changed).toBe(false);
   });
 
+  // docs/specs/009-elements/table-rows-fit-text.md: a row grows to fit the words a Participant writes in it.
+  it("grows a table's rows with the words written in them, taller only and bounded", () => {
+    const stored = { ...table('tb'), rowHeights: [30, null] } as Element;
+    const tab = tabOf([stored]);
+    const cells = [
+      ['a long line of words', 'b'],
+      ['c', 'd'],
+    ];
+    const write = (extra: Record<string, unknown>) =>
+      applied(
+        applyParticipantOp(
+          tab,
+          { kind: 'update', element: { ...stored, cells, ...extra } as Element },
+          ME,
+        ),
+      ).tab.elements[0] as unknown as { height: number; rowHeights?: unknown };
+    // Taller, the row pinned higher: kept.
+    expect(write({ height: 120, rowHeights: [70, null] })).toMatchObject({
+      height: 120,
+      rowHeights: [70, null],
+    });
+    // Taller with the rows left as they were: the height alone.
+    expect(write({ height: 100, rowHeights: undefined })).toMatchObject({
+      height: 100,
+      rowHeights: [30, null],
+    });
+    // Shorter, a row shrunk, a row unpinned, a malformed or mis-sized list, or past the bound: the stored shape kept.
+    for (const extra of [
+      { height: 60 },
+      { height: 120, rowHeights: [20, null] },
+      { height: 120, rowHeights: [null, null] },
+      { height: 120, rowHeights: [70, -1] },
+      { height: 120, rowHeights: [70] },
+      { height: 120, rowHeights: 'tall' },
+      { height: 80 + 40 * MIND_GROW_PX_PER_CHAR },
+    ])
+      expect(write(extra), JSON.stringify(extra)).toMatchObject({
+        height: 80,
+        rowHeights: [30, null],
+      });
+    // The same words with a taller table: nothing was written, so nothing grows.
+    const same = applyParticipantOp(
+      tab,
+      { kind: 'update', element: { ...stored, height: 200 } as Element },
+      ME,
+    );
+    expect(same.result === 'applied' && same.changed).toBe(false);
+  });
+
+  it('grows a table with no words left by at most the one-character bound', () => {
+    const tab = tabOf([table('tb')]);
+    const r = applied(
+      applyParticipantOp(
+        tab,
+        {
+          kind: 'update',
+          element: {
+            ...table('tb'),
+            cells: [
+              ['', ''],
+              ['', ''],
+            ],
+            height: 80 + MIND_GROW_PX_PER_CHAR,
+          } as Element,
+        },
+        ME,
+      ),
+    );
+    expect((r.tab.elements[0] as { height: number }).height).toBe(80 + MIND_GROW_PX_PER_CHAR);
+  });
+
   it('lets a text box that hugs its words follow them, and no other, nor a shape', () => {
     const hug = { id: 'tx', type: 'text', ...box, label: 'Hi', sizing: 'fit' } as Element;
     const fixed = { id: 'fx', type: 'text', ...box, label: 'Hi' } as Element;

@@ -23,8 +23,7 @@ origin and other apps' items on their own sites, and the filter shows "this app'
 
 The page at `/explorer` reads livehuddle's entry in the sites registry (`APP_ITEMS.livehuddle` in
 `@liveworkspace/sites`: item, share, new, preview, Library, import and This Browser paths). The editor's Explorer panel
-and the workbench's Explorer (`apps/editor/app/embed/workbench/ExplorerHost.tsx`) get the same from the editor's own
-hosts, named below.
+gets the same from the editor's own hosts, named below.
 
 - **Addresses.** A canvas opens at `/document/<id>` (with `?s=<code>` when it is reached through a link, and the
   editor's deep link `#t=<tab>&el=<element>` when a row pins one); a share link reads `/document/shared?s=<code>`,

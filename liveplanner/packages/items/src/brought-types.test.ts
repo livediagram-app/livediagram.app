@@ -69,6 +69,25 @@ describe('ready-made card types', () => {
     );
   });
 
+  // docs/specs/026-plan/plan-templates.md "Ready-made card types": a Milestone is named, dated and done, on its Goal.
+  it('make a Milestone a dated step towards a goal, with no numbers to keep up', () => {
+    const m = READY_MADE_CARD_TYPES.find((t) => t.id === 'milestone')!;
+    expect(m).toMatchObject({ label: 'Milestone', glyph: 'milestone' });
+    expect(m.fields).toEqual([
+      'title',
+      'description',
+      'status',
+      'f-goal',
+      'due',
+      'checklist',
+      'comments',
+    ]);
+    expect(m.custom).toEqual([
+      { id: 'f-goal', label: 'Goal', kind: 'card', linkType: 'objective' },
+    ]);
+    expect(READY_MADE_DEFAULT_STATE_NAMES.milestone).toBe('Not Started');
+  });
+
   it('name only ready-made types on every preset', () => {
     const known = new Set(ids(READY_MADE_CARD_TYPES));
     for (const id of PLAN_BOARD_PRESET_IDS)

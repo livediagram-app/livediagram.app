@@ -242,11 +242,9 @@ describe('with a Layers row focused', () => {
   it('leaves the list its own keys, and still takes a tool’s letter', () => {
     const { view } = photoView();
     renderHook(() => usePhotoShortcuts(view));
-    const list = document.createElement('div');
-    list.setAttribute('role', 'listbox');
-    list.setAttribute('aria-label', 'Layers');
-    const row = document.createElement('div');
-    row.tabIndex = 0;
+    const list = document.createElement('ul');
+    list.setAttribute('data-photo-layer-list', '');
+    const row = document.createElement('button');
     list.append(row);
     document.body.append(list);
     row.focus();

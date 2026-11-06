@@ -2,9 +2,10 @@
 
 Status: **approved** (owner, 2026-11-05). Pieces that give a Space somewhere to leave a note, see the time where
 colleagues are, and hang out between meetings: a **Notice Board** and a **World Clock** on the wall, a **Jukebox**, a
-**Ping-Pong Table**, an **Arcade Machine** and a **Fireplace** in a new **Recreation** category, and outdoor seating
-(**Bench**, **Picnic Table**, **Hammock**), a **Garden Umbrella**, a **Fountain**, a **Pond** and a **Campfire** in
-**Garden**. They are [Office](office.md) pieces in every way not said here: drawn upright from the room's camera,
+**Ping-Pong Table**, a **Pool Table**, a **Foosball Table**, an **Arcade Machine**, a **Dartboard** and a **Fireplace**
+in a new **Recreation** category, a **Vending Machine** in **Amenities**, **Bean Bags** and a **Reading Nook** in
+**Seating**, and outdoor seating (**Bench**, **Picnic Table**, **Hammock**), a **Garden Umbrella**, a **Fountain**, a
+**Pond** and a **Campfire** in **Garden**. They are [Office](office.md) pieces in every way not said here: drawn upright from the room's camera,
 placed at a fixed size (the Pond alone is resizable), no settings `…`, an Editor's to place, move and delete, and
 walked, sat at and used by everyone in [Avatar mode](../008-canvas/avatar-mode.md).
 
@@ -16,17 +17,20 @@ These pieces give a Space those small, social places, built from the same parts 
 
 ## Where they live
 
-| Category             | Pieces                                                                  |
-| -------------------- | ----------------------------------------------------------------------- |
-| **Meeting**          | Notice Board, World Clock                                               |
-| **Recreation** (new) | Jukebox, Ping-Pong Table, Arcade Machine, Fireplace                     |
-| **Garden**           | Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire |
+| Category             | Pieces                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| **Seating**          | Bean Bag, Reading Nook (after the office's Chair, Desk, Sofa and Meeting Table)            |
+| **Amenities**        | Vending Machine (after the office's Plant, Bookshelf, Water Cooler and Coffee Machine)     |
+| **Meeting**          | Notice Board, World Clock                                                                  |
+| **Recreation** (new) | Jukebox, Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace |
+| **Garden**           | Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire                    |
 
 Recreation (`collab-recreation`, a game controller glyph, "Somewhere to unwind between meetings.") sits after Bar and
 before Garden ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)).
 
 Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcade-machine`, `fireplace`, `bench`,
-`picnic-table`, `hammock`, `garden-umbrella`, `fountain`, `pond`, `campfire`.
+`picnic-table`, `hammock`, `garden-umbrella`, `fountain`, `pond`, `campfire`, and the second set (Work Tracker #549 to
+#552, #535): `pool-table`, `foosball-table`, `dartboard`, `vending-machine`, `bean-bag`, `reading-nook`.
 
 ## How each one walks
 
@@ -45,6 +49,12 @@ Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcad
 | Fountain        | 136 × 120    | Scenery: the basin blocks                                                        |
 | Pond            | 240 × 152    | Scenery drawn to its size: the water blocks, so you walk round it                |
 | Campfire        | 80 × 72      | Scenery: the ring of stones blocks                                               |
+| Pool Table      | 200 × 128    | Scenery: the table blocks, from the middle of its cloth down to its feet         |
+| Foosball Table  | 168 × 104    | Scenery: the table blocks, from the middle of its pitch down to its feet         |
+| Dartboard       | 80 × 96      | Hangs on a wall: never blocks, never a destination                               |
+| Vending Machine | 72 × 128     | Scenery: its base (the bottom quarter) blocks, as the Jukebox's                  |
+| Bean Bag        | 64 × 56      | One seat, the sitter facing down the canvas (chair rules)                        |
+| Reading Nook    | 160 × 112    | One seat in its armchair, the sitter facing down the canvas (chair rules)        |
 
 - **Seats** follow the [Chair](chair.md) rules exactly: walk onto the piece to sit on the free seat nearest where you
   arrived, one sitter a seat, a full piece stops you beside it; who sits is presence, never stored, and the piece names
@@ -52,7 +62,8 @@ Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcad
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
   front of it.
-- **Wall pieces** (Notice Board, World Clock) are walked past, not to: standing in front of one rings nothing.
+- **Wall pieces** (Notice Board, World Clock, Dartboard) are walked past, not to: standing in front of one rings
+  nothing.
 - **Elements paint under avatars**, so nothing here is drawn over a character: the umbrella's canopy is drawn plainly
   as part of the piece, and a sitter at a picnic table under it stands in front of it.
 
@@ -165,6 +176,42 @@ Gathering spots with a fire that flickers.
 - **The flames flicker** (a CSS scale and opacity loop on two flame layers, out of step) and a soft glow breathes on
   the ground. Under reduced motion they hold still, lit.
 
+## Pool Table, Foosball Table, Dartboard
+
+More for the games corner, each a visual only like the Ping-Pong Table: nobody plays, nothing is scored, and nothing
+moves (a game per piece is a follow-up, Work Tracker #528).
+
+- **Pool Table**: a wooden table on turned legs, green cloth inside its cushions, six pockets, a racked triangle of
+  coloured balls with the black, the white cue ball and a cue resting on the cloth.
+- **Foosball Table**: a wooden cabinet round a green pitch with a white halfway line and centre circle, a goal at each
+  end, four rods across it, each with its little players (red and blue, rod by rod) and a handle at the front, and the
+  ball on the centre spot.
+- **Dartboard**: a round board on a wooden backboard, hung from a nail: twenty black and cream segments, the red and
+  green double and treble rings, the bull, and three darts stuck in it. A wall piece: a click on it while walking walks
+  to the floor in front, and standing there rings nothing.
+
+## Vending Machine
+
+A social spot like the Water Cooler, for a break room or the games corner.
+
+- A tall teal cabinet with a lit sign across its top, a glass window of snacks and cans on five spiral shelves, a side
+  panel with a small green display, a keypad and a coin slot, and a pickup flap at the bottom.
+- **Lit**: its sign and window are light colours on every paper. **On dark paper** it glows: a soft light spills from
+  the window onto the floor in front of it and the glass brightens, drawn over the art for dark paper only (static: no
+  loop, so reduced motion changes nothing). An export draws the art, without the glow.
+- Scenery, like the Jukebox: its base blocks and walking up to it rings nothing. It does not give a drink (the Drinks
+  Fridge and the Water Cooler do); a snack in the hand is a follow-up.
+
+## Bean Bag, Reading Nook
+
+Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) rules, as every seat here does.
+
+- **Bean Bag**: a slouchy coral bean bag, one seat, the sitter facing down the canvas. Place several for a corner.
+- **Reading Nook**: a set in one piece: a mustard wingback armchair on a round rug, a side table with a stack of books,
+  and a floor lamp whose shade is lit. One seat, in the armchair, facing down the canvas. **On dark paper** the lamp
+  throws a warm pool of light on the rug and a halo round its shade (drawn as the Vending Machine's glow is).
+- Neither turns; their seat colours are their own (no fill from the theme).
+
 ## Bench, Picnic Table, Hammock
 
 - **Bench**: a wooden garden bench with a back, two seats.
@@ -193,13 +240,14 @@ Gathering spots with a fire that flickers.
 
 - Placing one: `Element · Added · <Kind>` (`Notice-board`, `World-clock`, `Jukebox`, `Ping-pong-table`,
   `Arcade-machine`, `Fireplace`, `Bench`, `Picnic-table`, `Hammock`, `Garden-umbrella`, `Fountain`, `Pond`,
-  `Campfire`).
+  `Campfire`, `Pool-table`, `Foosball-table`, `Dartboard`, `Vending-machine`, `Bean-bag`, `Reading-nook`).
 - A note pinned or unpinned: `Element · Changed · Notice-board`; zones changed: `Element · Changed · World-clock`; a
   source set: `Element · Changed · Jukebox`. Never the note's words, the zones or the address.
 
 ## Not in scope
 
-- Playing ping-pong or an arcade game (follow-ups: a mini-game per piece).
+- Playing ping-pong, pool, foosball, darts or an arcade game (follow-ups: a mini-game per piece).
+- A snack or a can from the Vending Machine.
 - A built-in jukebox playlist, queueing songs, or volume control beyond mute.
 - Replying to, editing or reacting to a note; notes with images or links.
 - Alarms, meeting countdowns or daylight shading on the World Clock.

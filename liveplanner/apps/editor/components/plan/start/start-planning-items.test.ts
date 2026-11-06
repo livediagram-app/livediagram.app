@@ -11,6 +11,8 @@ import {
 import { SHEET_TEMPLATES, TEMPLATE_START_SHEETS } from '@liveplanner/sheets';
 import {
   INSPIRATION_TEMPLATES,
+  KIND_NAMES,
+  START_CATEGORIES,
   itemsIn,
   searchStartItems,
   startItems,
@@ -59,7 +61,20 @@ describe('Start Planning’s choices', () => {
       'dashboard:overview',
       'sheet:blank',
       'form:feedback',
+      'import',
     ]);
+  });
+
+  it('offers Import once, in Recommended and a search only, found by the tools’ names', () => {
+    const imports = items.filter((i) => i.kind === 'import');
+    expect(imports.map((i) => i.id)).toEqual(['import']);
+    expect(START_CATEGORIES.map((c) => c.id)).not.toContain('import');
+    for (const q of ['import', 'trello', 'Asana', 'jira', 'linear', 'csv', 'migrate'])
+      expect(searchStartItems(items, q).find((g) => g.category === 'import')?.items).toEqual(
+        imports,
+      );
+    expect(itemsIn(items, 'import')).toEqual(imports);
+    expect(KIND_NAMES.import).toBe('Import');
   });
 
   it('offers every Dashboard layout', () => {

@@ -53,11 +53,13 @@ The `livedesign/.github/` folder is not used.
 
 **Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files.
 
-### Runs on main are never cancelled
+### Runs on main cancel older ones
 
-CI and E2E cancel a run only on a pull request, where a newer push makes the older run moot. On `main` every commit runs to the end, each in a concurrency group of its own (keyed by the commit), because a shared group keeps only one pending run and a burst of merges would drop the middle ones: a failure could then not be pinned on its commit, and a pull request whose base had no finished run would have no Codecov base to compare against, failing its [Coverage report](../003-system-architecture/testing.md#coverage-report).
+CI, E2E and CodeQL keep one run per branch. On a pull request a newer push cancels the older run, which would otherwise hold runners for a result nobody reads. On `main` a run that has started always finishes: a newer push waits behind it and a still newer one replaces the one waiting, so at most one runs and one waits, and a run on `main` completes however often merges land (cancelling the running one too, as `main` did for an hour on 2026-11-06, meant no run finished while merges came faster than a run takes, and staging never deployed). A run started by hand is never cancelled. So that the commits a replaced run skipped are still checked, a push to `main` is planned against the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit just before it: each run takes in every commit since the last green one, and with none (a first run, or a force-push) everything runs.
 
-The cost is runner time: a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order are handled by the staging deploy, which deploys only `main`'s tip ([Staging environment](staging-environment.md)).
+A failure on `main` is therefore pinned on the commits since the last green one, not on a single commit. The [Coverage report](../003-system-architecture/testing.md#coverage-report) reads its base from the newest run on `main` that still holds each coverage artifact, so a cancelled run leaves it a slightly older base, never none. The staging deploy deploys the newest commit on `main` whose CI passed, whichever run that is ([Staging environment](staging-environment.md)).
+
+Until 2026-11-06 every commit on `main` ran to the end in a group of its own. On the free plan's 20 concurrent jobs, a burst of merges then queued ahead of open pull requests: jobs waited a median 16 minutes for a runner (p90 37) on 2026-11-05 and 06, against 3 to 4 minutes of work.
 
 ## Deploy
 
