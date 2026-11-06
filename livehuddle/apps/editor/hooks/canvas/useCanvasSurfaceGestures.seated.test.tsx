@@ -34,7 +34,7 @@ function seatedSetup() {
       active: true,
       config: DEFAULT_AVATAR_CONFIG,
       onToggleGender: vi.fn(),
-      elements: elements as never,
+      elements,
       mainRef: { current: null },
       wrapperRef: { current: null },
       viewportOffset: { x: 0, y: 0 },
