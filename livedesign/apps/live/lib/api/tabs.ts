@@ -208,7 +208,7 @@ export function unloadHeaders(
   if (shareCode) base['X-Share-Code'] = shareCode;
   const grant = heldDesignGrant(designId, shareCode ? { code: shareCode } : null);
   if (grant) base[INDEX_GRANT_HEADER] = grant;
-  // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
+  // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too:
   // without it an edit-role visitor's flush 403s on a protected
   // design, losing the final debounce window's edits.
   const sharePassword = getSessionSharePassword();
