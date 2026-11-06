@@ -566,7 +566,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   gap between columns (a decision's "Accept" on its point) widens that gap to hold its label, and every later column
   moves along with it, so the label is never cut short ("Accep").
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
-  aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
+  aligned, as every template has. The drawing they clear is its boxes and every line as drawn: a cycle's arcs round
+  the outside of its top stop rose past the boxes and ran through the heading, so the heading sits above the
+  highest line and the key right of the furthest. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
   an edit, as one: one miniature per shape kind the graph uses, with
   what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted;
   those exceptions then get a row of their own, "Exception or optional" (`{"muted": "Error path"}` renames it), so a
