@@ -85,7 +85,7 @@ jobs:
         timeout-minutes: 1
         run: node .github/scripts/drift-report.mjs
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
@@ -143,7 +143,7 @@ jobs:
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
@@ -221,7 +221,7 @@ jobs:
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
@@ -268,7 +268,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
@@ -310,7 +310,7 @@ jobs:
       - name: Staging config check
         run: pnpm turbo run staging:check --continue ${{ matrix.filters }}
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure

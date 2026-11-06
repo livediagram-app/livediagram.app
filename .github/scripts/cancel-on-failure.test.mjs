@@ -141,7 +141,7 @@ const run = (id, extra = {}) => ({
   ...extra,
 });
 
-test('cancels the commit unfinished pull request runs, this run last when asked', () => {
+test("cancels the commit's unfinished pull request runs, never its own", () => {
   const runs = [
     run(1),
     run(2, { status: 'queued' }),
@@ -150,17 +150,11 @@ test('cancels the commit unfinished pull request runs, this run last when asked'
     run(5, { event: 'push' }),
     run(9),
   ];
-  assert.deepEqual(
-    runsToCancel(runs, { headSha: 'abc', ownRunId: '9', cancelOwnRun: true }),
-    [1, 2, 9],
-  );
-  assert.deepEqual(
-    runsToCancel(runs, { headSha: 'abc', ownRunId: '9', cancelOwnRun: false }),
-    [1, 2],
-  );
+  // Cancelling its own run would record the failing job as cancelled (the probe on #1356).
+  assert.deepEqual(runsToCancel(runs, { headSha: 'abc', ownRunId: '9' }), [1, 2]);
 });
 
-test('with nothing else running, only this run (or nothing) is cancelled', () => {
-  assert.deepEqual(runsToCancel([], { headSha: 'abc', ownRunId: '9', cancelOwnRun: true }), [9]);
-  assert.deepEqual(runsToCancel([], { headSha: 'abc', ownRunId: '', cancelOwnRun: true }), []);
+test('with nothing else running, nothing is cancelled', () => {
+  assert.deepEqual(runsToCancel([run(9)], { headSha: 'abc', ownRunId: '9' }), []);
+  assert.deepEqual(runsToCancel([], { headSha: 'abc', ownRunId: '' }), []);
 });

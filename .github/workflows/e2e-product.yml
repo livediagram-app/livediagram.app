@@ -118,7 +118,7 @@ jobs:
           compression-level: 1
           retention-days: 1
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
@@ -172,7 +172,7 @@ jobs:
             ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results
           retention-days: 7
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
@@ -249,7 +249,7 @@ jobs:
             ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results
           retention-days: 7
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
@@ -308,7 +308,7 @@ jobs:
             ${{ inputs.product }}/${{ inputs.editor-dir }}/test-results-signed-in
           retention-days: 7
 
-      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
       - name: Cancel on failure
         if: failure() && github.event_name == 'pull_request'
         uses: ./.github/actions/cancel-on-failure
