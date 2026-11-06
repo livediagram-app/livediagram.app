@@ -176,6 +176,8 @@ export type DocxOptions = {
   store?: boolean;
   /** Overrides the main part's content type. */
   mainType?: string;
+  /** The inside of `w:footnotes`, as a footnotes part. */
+  footnotes?: string;
 };
 
 /** A Word package around a body. */
@@ -199,6 +201,10 @@ export async function makeDocx(opts: DocxOptions): Promise<Uint8Array> {
   if (opts.numbering !== null) {
     files['word/numbering.xml'] = opts.numbering ?? WORD_NUMBERING;
     rels.push({ id: 'rIdNumbering', type: 'numbering', target: 'numbering.xml' });
+  }
+  if (opts.footnotes !== undefined) {
+    files['word/footnotes.xml'] = `${XML}<w:footnotes xmlns:w="${NS_W}">${opts.footnotes}</w:footnotes>`;
+    rels.push({ id: 'rIdFootnotes', type: 'footnotes', target: 'footnotes.xml' });
   }
   files['word/_rels/document.xml.rels'] = relsXml(rels);
   for (const [path, bytes] of Object.entries(opts.media ?? {})) files[path] = bytes;

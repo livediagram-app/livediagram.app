@@ -203,6 +203,48 @@ describe('Word export', () => {
     expect(parts.get('docprops/core.xml')).toContain('<dc:title>Every block</dc:title>');
   });
 
+  // docs/specs/007-editor/article-pages.md "Footnotes" (Work Tracker #219).
+  it('writes footnotes as Word footnotes, read back as footnotes', async () => {
+    const { doc } = await everyBlockFile();
+    const blocks: DocxBlock[] = [
+      {
+        id: 'p',
+        type: 'paragraph',
+        runs: [{ text: 'Sales rose' }, { text: '*', fn: 'Q3 figures & more.' }, { text: '.' }],
+      },
+      {
+        id: 't',
+        type: 'table',
+        header: true,
+        cols: [{ id: 'c', w: 1 }],
+        rows: [{ id: 'r', cells: [[{ text: 'Cell' }, { text: '**', fn: 'Twice' }]] }],
+      },
+    ];
+    const bytes = writeDocx({ ...doc, blocks, bands: undefined }, WHEN);
+    const parts = await partsOf(bytes);
+    for (const [name, xml] of parts) expect(() => parseXml(xml), name).not.toThrow();
+    expect(parts.get('[content_types].xml')).toContain('footnotes+xml');
+    expect(parts.get('word/_rels/document.xml.rels')).toContain('footnotes.xml');
+    expect(parts.get('word/settings.xml')).toContain('<w:footnotePr>');
+    expect(parts.get('word/styles.xml')).toContain('w:styleId="FootnoteText"');
+    const refs = [...parts.get('word/document.xml')!.matchAll(/w:footnoteReference w:id="(\d+)"/g)];
+    expect(refs.map((m) => m[1])).toEqual(['1', '2', '3']);
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    expect(read.blocks[0]).toMatchObject({
+      runs: [{ text: 'Sales rose' }, { text: '*', fn: 'Q3 figures & more.' }, { text: '.' }],
+    });
+    expect(read.blocks[1]).toMatchObject({
+      rows: [{ cells: [[{ text: 'Cell', b: true }, { text: '**', fn: 'Twice' }]] }],
+    });
+    expect(read.tally).toEqual({});
+  });
+
+  it('writes no footnotes part for an article with none', async () => {
+    const parts = await partsOf((await everyBlockFile()).bytes);
+    expect(parts.has('word/footnotes.xml')).toBe(false);
+    expect(parts.get('word/settings.xml')).not.toContain('footnotePr');
+  });
+
   it('stops when cancelled', async () => {
     const { tab, pages } = everyBlockArticle();
     const controller = new AbortController();

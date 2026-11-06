@@ -14,12 +14,12 @@ import {
   type OoxmlPart,
   type OoxmlRel,
 } from './ooxml';
-import { docxBody } from './docx-body';
+import { docxBody, docxFootnotesXml } from './docx-body';
 import {
   bandXml,
   DOCX_TYPES,
   numberingXml,
-  SETTINGS_XML,
+  settingsXml,
   stylesXml,
   TWIPS_PER_PX,
 } from './docx-styles';
@@ -33,6 +33,14 @@ const BODY_NS =
   ' xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"';
 
 const tw = (px: number) => Math.round(px * TWIPS_PER_PX);
+
+/** Whether any block of the document holds a footnote's reference (a table's cells too). */
+const docHasFootnotes = (doc: DocxDocument): boolean =>
+  doc.blocks.some((b) =>
+    'runs' in b
+      ? b.runs.some((r) => r.fn !== undefined)
+      : b.type === 'table' && b.rows.some((row) => row.cells.some((c) => c.some((r) => r.fn !== undefined))),
+  );
 
 // The header and footer parts a document carries, by their relationship ids: the default ones, and the empty first-page
 // ones Different First Page adds.
@@ -97,6 +105,11 @@ export function writeDocx(doc: DocxDocument, when: Date = new Date()): Uint8Arra
     if (header) addBand('firstHeader', 'header', 'header2.xml', undefined);
     if (footer) addBand('firstFooter', 'footer', 'footer2.xml', undefined);
   }
+  // The footnotes part's relationship comes before the body's links and images, so it is known up front: it is added
+  // only when the body has a footnote.
+  const hasFootnotes = docHasFootnotes(doc);
+  if (hasFootnotes)
+    fixed.push({ id: `rId${fixed.length + 1}`, type: REL.footnotes, target: 'footnotes.xml' });
   const body = docxBody(doc.blocks, doc.look, fixed.length + 1, textWidthPx);
   // A body must end on a paragraph before its section, so an empty article is one empty paragraph.
   const content = body.xml || '<w:p/>';
@@ -121,8 +134,14 @@ export function writeDocx(doc: DocxDocument, when: Date = new Date()): Uint8Arra
       xml: numberingXml(doc.look, body.numberedRuns),
       type: DOCX_TYPES.numbering,
     },
-    { path: 'word/settings.xml', xml: SETTINGS_XML, type: DOCX_TYPES.settings },
+    { path: 'word/settings.xml', xml: settingsXml(hasFootnotes), type: DOCX_TYPES.settings },
   ];
+  if (hasFootnotes)
+    parts.push({
+      path: 'word/footnotes.xml',
+      xml: docxFootnotesXml(body.footnotes),
+      type: DOCX_TYPES.footnotes,
+    });
   parts.push(...bandParts);
   for (const m of body.media) parts.push({ path: `word/media/${m.name}`, bytes: m.png });
   return writeOoxmlPackage(parts, when);

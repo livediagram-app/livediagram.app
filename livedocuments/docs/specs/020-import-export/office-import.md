@@ -52,6 +52,7 @@ document's body, in the order it is written. The article flows onto as many page
 | A hyperlink to an http, https or mailto address (relationship or field)     | A link (anything else keeps its text, unlinked)                                                                                     |
 | A page break (a break run, or "page break before" on a paragraph)           | A page break                                                                                                                        |
 | A line break                                                                | A line break in the block; a tab is a space                                                                                         |
+| A footnote                                                                  | A footnote at its reference, its text plain (paragraphs joined by a space)                                                          |
 | A picture, inline or floating                                               | An in-line object zone holding an image, at most the text's width                                                                   |
 | Paragraph alignment (centre, right, justify)                                | The same alignment                                                                                                                  |
 | A table                                                                     | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
@@ -59,7 +60,7 @@ document's body, in the order it is written. The article flows onto as many page
 | Tracked insertions; tracked deletions                                       | Kept as written; left out                                                                                                           |
 | Content controls, smart tags, fields                                        | Their content or result                                                                                                             |
 
-What is **not** brought across, and named in the report when the document had it: footnotes and endnotes,
+What is **not** brought across, and named in the report when the document had it: endnotes,
 comments, headers and footers, text boxes and shapes, charts, diagrams (SmartArt), equations, embedded objects
 and linked pictures. Colours, fonts, highlighting and the document's page setup are not brought across and not
 reported: the article takes the tab's theme and its own style.
