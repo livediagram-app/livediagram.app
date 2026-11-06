@@ -17,6 +17,11 @@ import { createPortal } from 'react-dom';
 // Portalled to document.body so no ancestor's overflow or stacking context
 // can clip it. Centred by a flex container rather than measured, so it needs
 // no layout pass and follows a resize for free.
+//
+// The body sits outside the page's `data-app` scope, where telemetry.css sets
+// each app's brand scale, so the modal copies the head's scope onto its dim:
+// its See also link and cards then wear the current app's accent, not the
+// default sky (Work Tracker #588).
 
 // Roughly one grid column of the dashboard at xl, so a member card in the
 // modal reads the same as a card on the page.
@@ -55,6 +60,7 @@ export function StackModal({
   const ref = useRef<HTMLDivElement>(null);
   const cols = columnsFor(count);
   const width = cols * COLUMN_PX + (cols - 1) * GAP_PX + PADDING_PX * 2;
+  const app = anchor.closest('[data-app]')?.getAttribute('data-app') ?? undefined;
 
   // Focus moves in so Escape works straight away, and back to the head on
   // close so a keyboard user lands where they started.
@@ -79,6 +85,7 @@ export function StackModal({
     // presses whatever sat beneath (a tab, a card). Only a press that starts
     // on the dim itself counts, not one inside the modal.
     <div
+      data-app={app}
       className="stack-dim fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-2"
       onMouseDown={(e) => {
         if (e.target !== e.currentTarget) return;
