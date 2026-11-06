@@ -7,7 +7,7 @@ way in** (its palette tile, its settings, the All-Hands Hall on a real stage, an
 switch, and on wherever calls are ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
 Plain distance ([Proximity audio](proximity-audio.md#hearing)) suits an open floor, but not every gathering. A meeting
-room should be private: whoever is in it hears everyone else in it, and nobody outside hears a word. An all-hands
+room should be private: nobody outside hears a word, while inside it you still hear the people near you. An all-hands
 needs one speaker heard by everyone. And somebody heads-down needs a way to stop voices reaching them at all.
 
 ## Rooms are calls (part 1, built)
@@ -15,9 +15,10 @@ needs one speaker heard by everyone. And somebody heads-down needs a way to stop
 An [Office Room](../009-elements/office.md#room) (the `room` shape) is a **call of its own** (owner, 2026-11-03: rooms
 are the zones, not a separate element). Its walls block sound fully, as they block walking.
 
-- **Inside a room, you hear everyone in the same room**, at full volume, whatever the distance: opposite corners of
-  a long boardroom hear each other as well as two people side by side. Voices still sit left or right of you as
-  they stand (the same pan as in the open), so a group can tell who is talking.
+- **Inside a room, you hear the people near you in the same room, by distance**, exactly as on the open floor (owner,
+  2026-11-06: hearing everyone in a big room at full volume was too much): the same hearing radius, release radius,
+  fade and pan as [Proximity audio](proximity-audio.md#hearing). Opposite corners of a long boardroom do not hear
+  each other; walk over to join a conversation. Earlier, a room was one call at full volume whatever the distance.
 - **Nobody outside the room hears anyone inside it**, however close: a character pressed against the outside of the
   wall, or standing in the corridor by the door, hears nothing. And nobody inside hears anyone outside.
 - **Two rooms side by side do not hear each other** through their shared wall (#436: walls block, they do not damp).
@@ -35,22 +36,19 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
 - A room's rotation is ignored, as the walls ignore it.
 - **Video and screens follow hearing**: a bubble is received only from someone you hear
   ([Who sees what](video-and-screen-bubbles.md#who-sees-what)), so a room's cameras and shared screens stay in it.
-  Within a room, the caps still pick the nearest six cameras and two screens.
+  Within a room, as in the open, that is the people in earshot, and the caps still pick the nearest six cameras and
+  two screens.
 - **The equaliser still shows through walls.** Bars above a talking character carry only that somebody is talking,
   never what is said, so a closed door reads like glass: you can see the meeting is busy. They show brighter for the
   people you hear, as before.
-- **The mic indicator** reads **Live** while anyone in your room hears you (or, in the open, anyone in earshot), and
-  **Nobody Near** otherwise.
-- A **Virtual Office** template's rooms become its calls with no change to the board: the meeting rooms, the phone
-  booths and the kitchen are private, the open floor between them is by distance. The **Coworking Space** and the
-  **All-Hands Hall** are each one big room, so everyone inside either hears everyone else inside it (see
-  [Cost](#cost)) until someone speaks from the hall's [Stage](#the-stage-part-2-built) (part 4).
-- **A big room hears its talkers** (#482). In a room where you would hear more than 8 people, you receive the 3
-  nearest of them and anyone in the room who talked in the last 30 seconds (at most the 8 who talked last), rather
-  than everyone. Somebody quiet who starts talking from across the room is heard within about half a second, so the
-  first word or two may be lost; the people beside you are always heard from the first word. One of the nearest
-  stays received until two others are nearer, so walking past nobody makes them flicker. Rooms of 9 or fewer are
-  unchanged. See [Cost](#cost).
+- **The mic indicator** reads **Live** while anyone in earshot on your side of the walls hears you, and **Nobody
+  Near** otherwise.
+- A **Virtual Office** template's rooms become its private spaces with no change to the board: the meeting rooms,
+  the phone booths and the kitchen are walled off, and inside each, as on the open floor between them, hearing is by
+  distance. The **Coworking Space** and the **All-Hands Hall** are each one big room, so their people hear their
+  neighbours, as on an open floor, until someone speaks from the hall's [Stage](#the-stage-part-2-built) (part 4).
+- **A big room hears its talkers** (#482) is retired with whole-room hearing: a room by distance costs what the same
+  people on the open floor cost, so it needs no cap. See [Cost](#cost).
 
 ## The stage (part 2, built)
 
@@ -66,14 +64,14 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
   outline are off it, as a room's threshold is outside the room. Of two stages overlapping, the smaller holds you.
   A stage's rotation is ignored.
 - **Whoever stands on the stage is heard by everyone on the tab**: every walking character in the Space's tab, in any
-  room or none, at full volume and centred (no pan). On the stage, speakers hear each other as one room does (full
+  room or none, at full volume and centred (no pan). On the stage, speakers hear each other as one call (full
   volume, by side). Several stages on one tab are one stage for hearing: every speaker on any of them reaches the tab
   and hears the others.
 - **The audience is muted to the stage by default.** While anyone stands on a stage, everyone in the stage's room (or,
   for a stage in the open, everyone else on the tab) is its **audience**: the stage does not hear them, and in the
-  stage's room they hear each other only by distance, so neighbours can whisper without the hall hearing. The walls
-  still stand: the hall's audience never hears the corridor, and a stage in the open leaves every meeting room on the
-  tab its own call (its audience on the open floor already hears by distance).
+  stage's room they hear each other by distance, as everywhere, so neighbours can whisper without the hall hearing.
+  The walls still stand: the hall's audience never hears the corridor, and a stage in the open leaves every meeting room on the
+  tab behind its walls.
 - **Only someone the stage lets speak is a speaker.** Standing on a stage you may not speak from (the role gate
   below), you are its audience like anyone in the room.
 - **Seen too, if the stage says so.** A stage's **Show Cameras** setting (`stageCameras`, off by default) lets everyone
@@ -229,13 +227,11 @@ Hearing is decided in each browser, from positions every walker already shares, 
 
 ## Cost
 
-A room is one call, so everyone in it receives everyone else's microphone: a room of `n` people is `n × (n − 1)`
-streams, about 0.018 GB per stream-hour. Four in a meeting room is 12 streams, about 0.2 GB an hour ($0.01). Without a
-cap, the Coworking Space's open floor with 30 people would be 870 streams, about 16 GB an hour, about $0.78 an hour
-once past the free 1,000 GB a month. A big room hears its talkers (#482), so the same 30 with two people talking is
-at most about 150 streams (each listener's 3 nearest and the 2 talkers; 143 measured), about 2.7 GB an hour, about
-$0.14 an hour,
-close to the 30 spread round the floor in the open hearing only their neighbours.
+A room hears by distance, as the open floor does, so a room costs what the same people standing in the open would:
+each listener receives only the people within the hearing radius, about 0.018 GB per stream-hour. Four in a meeting
+room standing together is 12 streams, about 0.2 GB an hour ($0.01). The Coworking Space's floor with 30 people spread
+round it receives only neighbours, not `n × (n − 1)`. Earlier, a room was one call, so the same 30 would have been
+870 streams (about 16 GB an hour) without the big-room cap (#482); hearing by distance retires both.
 
 A stage (part 2) is one speaker to everyone: about 0.018 GB per listener-hour, so a hall of 100 is about $0.09 an
 hour, and its audience whispers by distance, so a big hall costs what a stage costs plus the whispering, not `n²`.

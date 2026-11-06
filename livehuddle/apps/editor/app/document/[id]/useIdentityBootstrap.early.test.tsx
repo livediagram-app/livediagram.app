@@ -54,7 +54,6 @@ function render(initial: Props) {
         accountUserId: null,
         accountDisplayName: null,
         embed: false,
-        workbench: null,
         activeId: 't1',
         selfParticipant: { id: 'self', name: 'x', color: '#000', status: 'online' },
         resetTabs: () => {},

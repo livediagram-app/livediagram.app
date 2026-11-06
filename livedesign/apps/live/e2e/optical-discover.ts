@@ -90,8 +90,40 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   };
   const ctx = document.createElement('canvas').getContext('2d')!;
+  // The face's ascent as layout places it: a hidden line of the same face, its baseline read off a
+  // zero-size marker. The canvas's own fontBoundingBoxAscent is rounded and can split the em box a
+  // pixel differently from layout (Liberation Sans at 16px read 13 over 4 on one page, 14 over 3 on
+  // the next, while layout held 14 over 3), which moved a centred label's band by a whole pixel.
+  const ascents = new Map<string, number>();
+  const layoutAscent = (cs: CSSStyleDeclaration): number => {
+    const key = `${cs.fontStyle}|${cs.fontWeight}|${cs.fontStretch}|${cs.fontSize}|${cs.fontFamily}`;
+    const known = ascents.get(key);
+    if (known !== undefined) return known;
+    const line = document.createElement('div');
+    line.style.cssText =
+      'position:absolute;left:0;top:0;visibility:hidden;white-space:pre;line-height:normal';
+    Object.assign(line.style, {
+      fontStyle: cs.fontStyle,
+      fontWeight: cs.fontWeight,
+      fontStretch: cs.fontStretch,
+      fontSize: cs.fontSize,
+      fontFamily: cs.fontFamily,
+    });
+    const text = document.createTextNode('H');
+    const marker = document.createElement('span');
+    marker.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+    line.append(text, marker);
+    document.body.appendChild(line);
+    const range = document.createRange();
+    range.selectNodeContents(text);
+    const ascent = marker.getBoundingClientRect().bottom - range.getBoundingClientRect().top;
+    line.remove();
+    ascents.set(key, ascent);
+    return ascent;
+  };
   const capBand = (node: Text) => {
-    // The rect is the em box under any `text-box` trim, so this is the layout baseline exactly.
+    // The rect is the em box under any `text-box` trim, so its top plus the face's layout ascent is the
+    // layout baseline exactly.
     const host = node.parentElement!;
     const cs = getComputedStyle(host);
     ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
@@ -100,7 +132,7 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
     range.selectNodeContents(node);
     const rect = range.getClientRects()[0];
     if (!rect) return null;
-    const baseline = rect.top + m.fontBoundingBoxAscent;
+    const baseline = rect.top + layoutAscent(cs);
     return { baseline, mid: baseline - m.actualBoundingBoxAscent / 2 };
   };
   // Text that renders: a node under `display: none` (a label a container query hides) has no boxes, and its empty

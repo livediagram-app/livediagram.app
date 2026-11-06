@@ -1,4 +1,4 @@
-// Template tabs for the authoring paths outside the editor (docs/specs/015-api/mcp-server.md §4.5,
+// Template tabs for the authoring paths outside the editor (livediagram/docs/specs/015-api/mcp-server.md §4.5,
 // docs/specs/024-agents/edit-operations.md): the MCP's `template` argument and a changeset's
 // `replace` body. Here rather than in @livehuddle/document because the catalogue lives here and
 // this package already imports the document one (the reverse would be a cycle).
@@ -29,7 +29,7 @@ export const CLOSEST_TEMPLATES_MAX = 5;
 const wordsOf = (text: string) => text.toLowerCase().match(/[a-z0-9]+/g) ?? [];
 
 /**
- * The kinds an unknown one most likely meant (docs/specs/015-api/mcp-server.md §4.5): those whose kind or title has a
+ * The kinds an unknown one most likely meant (livediagram/docs/specs/015-api/mcp-server.md §4.5): those whose kind or title has a
  * word starting with a word of it (of 3 letters or more), so "retro" offers the three retrospectives named for it.
  */
 export function closestTemplateKinds(given: string): TemplateKind[] {

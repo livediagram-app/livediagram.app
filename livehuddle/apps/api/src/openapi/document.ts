@@ -183,11 +183,7 @@ const TAGS = [
   },
   { name: 'Images', description: 'Upload, list, and reference image assets.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
-  {
-    name: 'Workbench',
-    description:
-      'Open a Space signed in inside a paired developer tool: pairing, tickets and workbench sessions.',
-  },
+
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },

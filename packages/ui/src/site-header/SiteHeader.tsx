@@ -30,6 +30,9 @@ import { BuildWithAiLink } from '../BuildWithAiLink';
 // with no Start Blank and no Open Explorer swap. 'link' on a marketing page, 'current' on /ai itself
 // (docs/specs/019-marketing/build-with-ai.md "Entry points").
 //
+// `marketing` makes it that bar without Build with AI, for a product with nothing to connect an AI tool to
+// (livehuddle, livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md): Choose Template and Explorer.
+//
 // Without it (help, the dashboard, a Community) the bar carries the Explorer link (ExplorerLink) left of the CTA
 // pair, so a new visitor can reach Explorer too; signed in, the primary Open Explorer covers it.
 //
@@ -45,6 +48,7 @@ export type SiteHeaderProps<Surface extends string> = {
   center?: ReactNode;
   actions?: ReactNode;
   buildWithAi?: 'link' | 'current';
+  marketing?: boolean;
   shareRail?: boolean;
   wide?: boolean;
   account?: boolean;
@@ -106,11 +110,17 @@ export function createSiteHeader<Surface extends string, Site extends string>(
   // bar ends on its strongest control rather than breaking in the middle. Below `lg` the two quiet links are their
   // glyphs alone, and below `sm` (a phone) they leave the bar, which keeps the logo, Explorer and the account menu;
   // the page's hero and footer still lead to both. `contents` keeps them flex items of the bar where they show.
-  function MarketingActions({ ctaSurface, current }: { ctaSurface?: Surface; current: boolean }) {
+  function MarketingActions({
+    ctaSurface,
+    buildWithAi,
+  }: {
+    ctaSurface?: Surface;
+    buildWithAi?: 'link' | 'current';
+  }) {
     return (
       <>
         <span className="contents max-sm:hidden">
-          <BuildWithAiLink current={current} />
+          {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
           <HeaderPrimaryCta ctaSurface={ctaSurface} explorerWhenSignedIn={false} quiet />
         </span>
         <ExplorerLink always solid />
@@ -123,6 +133,7 @@ export function createSiteHeader<Surface extends string, Site extends string>(
     center,
     actions,
     buildWithAi,
+    marketing = buildWithAi !== undefined,
     shareRail = true,
     wide = false,
     account = false,
@@ -152,7 +163,7 @@ export function createSiteHeader<Surface extends string, Site extends string>(
                   href="/"
                   size="md"
                   className="relative touch-target-y"
-                  wordmarkClassName={buildWithAi ? 'max-[479px]:hidden' : 'max-[359px]:hidden'}
+                  wordmarkClassName={marketing ? 'max-[479px]:hidden' : 'max-[359px]:hidden'}
                 />
               </SiteSwitcher>
             </div>
@@ -163,10 +174,10 @@ export function createSiteHeader<Surface extends string, Site extends string>(
             ) : null}
             {/* A marketing bar's gaps halve below 360px, so the account menu still fits a 320px phone. */}
             <div
-              className={`flex shrink-0 items-center gap-2 ${buildWithAi ? 'max-[359px]:gap-1' : ''}`}
+              className={`flex shrink-0 items-center gap-2 ${marketing ? 'max-[359px]:gap-1' : ''}`}
             >
-              {buildWithAi ? (
-                <MarketingActions ctaSurface={ctaSurface} current={buildWithAi === 'current'} />
+              {marketing ? (
+                <MarketingActions ctaSurface={ctaSurface} buildWithAi={buildWithAi} />
               ) : (
                 <>
                   <ExplorerLink />

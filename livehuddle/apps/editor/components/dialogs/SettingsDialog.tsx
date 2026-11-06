@@ -31,7 +31,6 @@ import {
   settingsRequest,
 } from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { useRetiredPartsCount } from '@/hooks/persistence/useRetiredPartsCount';
 
 type SettingsDialogProps = {
@@ -74,13 +73,10 @@ export function SettingsDialog({
   const { accountUserId, isSignedIn } = useAccountBootstrap();
   const signedIn = Boolean(isSignedIn && accountUserId);
   const { user } = useDeferredAuth();
-  // A workbench's Settings reach nothing beyond its one document (docs/specs/013-workspace/
-  // blueprints/workbench-embeds.md, Surface table).
-  const workbench = useWorkbenchSession() !== null;
   // Live settings, not a snapshot: a panel's rows follow its Enable switch the moment it flips.
   // Documents in This Browser with parts set aside: Account's way back to the offer
   // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
-  const retiredParts = useRetiredPartsCount(!workbench);
+  const retiredParts = useRetiredPartsCount();
   // The Hide Participant Cursors row only where the tab draws cursors (collaborator-enhancements.md).
   const cursorsDrawn = useCursorsDrawn();
   const categories = useMemo(
@@ -89,11 +85,10 @@ export function SettingsDialog({
         emailEnabled,
         signedIn,
         preferences: settings,
-        workbench,
         cursorsDrawn,
         retiredParts,
       }),
-    [emailEnabled, signedIn, settings, workbench, retiredParts, cursorsDrawn],
+    [emailEnabled, signedIn, settings, retiredParts, cursorsDrawn],
   );
 
   // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
@@ -105,8 +100,8 @@ export function SettingsDialog({
   );
 
   // The header's livehuddle / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
-  // account whose settings liveworkspace keeps, so a guest and a workbench see this app's alone.
-  const allowAll = signedIn && !workbench;
+  // account whose settings liveworkspace keeps, so a guest sees this app's alone.
+  const allowAll = signedIn;
   // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
   const [scope, setScope] = useSettingsScope(
     'livehuddle:settings-scope:v1',
@@ -115,7 +110,7 @@ export function SettingsDialog({
   // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
   // and synced as here). The profile's Name and Colour is edited in place, over the same door as All's settings
   // (`/api/workspace/account/profile` with the person's token); a save is told to the page (onProfileSaved), so this
-  // editor's own presence follows it at once. Only where All is offered: a guest, a workbench and a self-hosted
+  // editor's own presence follows it at once. Only where All is offered: a guest and a self-hosted
   // editor have no liveworkspace account to set it on.
   const identityName = signedIn && user ? (user.fullName ?? user.username ?? user.email ?? '') : '';
   const profile = useMemo(

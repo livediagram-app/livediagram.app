@@ -1,4 +1,4 @@
-// How graph input's lines leave and join their boxes (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): which
+// How graph input's lines leave and join their boxes (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"): which
 // arrows meet in one trunk or bus, and which of a step's exits leave by another side.
 
 import { isBoxed, type Anchor, type ArrowElement, type BoxedElement, type Element } from './index';

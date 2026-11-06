@@ -10,12 +10,10 @@
 // so no state from before signing in survives into the signed-in page.
 
 import dynamic from 'next/dynamic';
-import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { e2eAuthEnabled } from '@liveworkspace/workbench/lib/auth-config';
 import {
   DEFERRED_AUTH_DEFAULT,
-  DEFERRED_AUTH_PENDING,
   DeferredAuthContext,
 } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { bindWorkbench } from '@/lib/workbench-bindings';
@@ -44,21 +42,12 @@ const LazyAccountsBridge = dynamic(() => import('./AccountsBridge').then((m) => 
   loading: () => null,
 });
 
-// The workbench page (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
-// workbench") is signed in by its workbench session, never by the accounts session or the e2e bridge:
-// both stand down there and the state holds DEFERRED_AUTH_PENDING, so nothing above the page reads as
-// a settled guest, sign-in configured or not. WorkbenchAuthBridge publishes the session to the editor
-// beneath.
-const WORKBENCH_ROUTE = '/embed/workbench';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
-  const pathname = usePathname();
-  const workbenchRoute = pathname?.startsWith(WORKBENCH_ROUTE) === true;
   return (
-    <DeferredAuthContext.Provider value={workbenchRoute ? DEFERRED_AUTH_PENDING : authState}>
+    <DeferredAuthContext.Provider value={authState}>
       {children}
-      {workbenchRoute ? null : LazyE2EAuthBridge ? (
+      {LazyE2EAuthBridge ? (
         <LazyE2EAuthBridge sessionKey={E2E_SESSION_KEY} onState={setAuthState} />
       ) : (
         <LazyAccountsBridge onState={setAuthState} />

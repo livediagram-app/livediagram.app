@@ -59,10 +59,8 @@ describe('getPersonIdentity (guest fall-through)', () => {
     expect(verifyMock).not.toHaveBeenCalled();
   });
 
-  it.each([
-    ['an API token', `lwt_${'a'.repeat(43)}`],
-    ['a workbench session', `lvw_${'w'.repeat(43)}.${'0f'.repeat(32)}`],
-  ])('passes %s through to the token paths without verifying', async (_kind, bearer) => {
+  it('passes an API token through to the token path without verifying', async () => {
+    const bearer = `lwt_${'a'.repeat(43)}`;
     expect(await getPersonIdentity(CONFIGURED, request(`Bearer ${bearer}`))).toBeNull();
     expect(verifyMock).not.toHaveBeenCalled();
   });

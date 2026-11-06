@@ -33,6 +33,7 @@ import {
   apiFetch,
   saveTimeoutSignal,
 } from './core';
+import { saveDocumentMetaOnUnload } from './unload-requests';
 import type { RoomTicketResponse } from '@livedocuments/api-schema';
 
 // The document-list row every list surface renders: the Explorer
@@ -130,7 +131,18 @@ export async function apiSaveDocumentMeta(
     presentationBase?: string | null;
   },
   shareCode: string | null = null,
+  // The page is going (docs/specs/012-collaboration/speaker-note-cards.md "Saving"): the deck goes synchronously,
+  // before this function's first await, with headers built without waiting and kept alive past the page.
+  opts: { unload?: boolean } = {},
 ): Promise<void> {
+  if (opts.unload && d.presentation !== undefined) {
+    saveDocumentMetaOnUnload(
+      ownerId,
+      { id: d.id, presentation: d.presentation, presentationBase: d.presentationBase },
+      shareCode,
+    );
+    return;
+  }
   if (await isOfflineId(d.id)) {
     await offlineSaveDocumentMeta(
       d.id,

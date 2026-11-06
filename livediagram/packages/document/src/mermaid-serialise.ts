@@ -9,6 +9,7 @@ import { boxCentre, smallestHolder } from './containment';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import type { ArrowElement, Element, ElementLink } from './index';
 import { visibleLayerElements, type Layer } from './layers';
+import { chartTextLines } from './chart-text';
 
 // Our shape kind -> the Mermaid bracket to emit on export. Kinds without a
 // natural flowchart shape fall back to the square box.
@@ -127,8 +128,13 @@ export function mermaidFromTab(tab: { elements: Element[]; layers?: Layer[] }): 
     const mid = idMap.get(el.id)!;
     // No label is written blank, never as the id: the id came back as the label on import (a dot as a circle
     // reading "n18").
-    const label = (el.label ?? '').trim() || BLANK_LABEL;
-    const shape = el.type === 'shape' ? (el.shape ?? 'square') : 'square';
+    // A chart has no label: it is written as what it shows, its type over its rows (docs/specs/020-import-export/mermaid.md),
+    // in a square box, never a blank one.
+    const chart = chartTextLines(el);
+    const label = chart
+      ? [chart.heading, ...chart.rows].join('\n')
+      : (el.label ?? '').trim() || BLANK_LABEL;
+    const shape = chart ? 'square' : el.type === 'shape' ? (el.shape ?? 'square') : 'square';
     return `${indent}${mermaidNodeText(mid, label, shape)}`;
   };
 

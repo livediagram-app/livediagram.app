@@ -55,7 +55,9 @@ export function useBoxedDragHandlers({
 
   const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
     const d = depsRef.current;
-    if (mode === 'move' && pressArmedAction(elementId)) return;
+    // A hidden / locked layer's element takes no armed action either (docs/specs/006-document/layers.md): the
+    // Format tool neither loads from nor paints onto it, as on an arrow (useSelectionEditing.selectElement).
+    if (mode === 'move' && !d.layerInertIds.has(elementId) && pressArmedAction(elementId)) return;
     if (d.editingId === elementId) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
     if (!element || !isBoxed(element)) return;

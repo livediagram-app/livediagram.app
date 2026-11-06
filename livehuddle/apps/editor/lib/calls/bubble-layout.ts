@@ -137,23 +137,29 @@ function wrap(order: readonly BubbleBox[], width: number): BubbleBox[][] {
   return runs;
 }
 
-// Moves a run's lefts sideways as little as keeps the run inside the view (its left end first, if it cannot fit).
+// Moves each of a run's lefts as little as keeps it inside the view with the rest of the run still fitting beside it
+// (#503): box i is held between the view's left plus the run before it and the view's right less the run from it on.
+// Both bounds move by a box's width and the gap from one box to the next, as the packed lefts do at least, so the
+// clamp keeps the order and the gaps; a box nearer the edge than its share moves, the others stay where they were.
+// A run wider than the view (one box too wide) keeps its left end in view.
 function keepInside(lefts: number[], run: readonly BubbleBox[], view: BubbleView): number[] {
-  const left = lefts[0]!;
-  const right = lefts.at(-1)! + run.at(-1)!.width;
-  const shift =
-    left < view.left
-      ? view.left - left
-      : right > view.left + view.width
-        ? Math.max(view.left - left, view.left + view.width - right)
-        : 0;
-  return lefts.map((l) => l + shift);
+  let low = view.left;
+  let high =
+    view.left + view.width - (groupWidth(run.length, 0) + run.reduce((w, b) => w + b.width, 0));
+  return lefts.map((l, i) => {
+    const kept = Math.max(low, Math.min(high, l));
+    const step = run[i]!.width + BUBBLE_GAP_PX;
+    low += step;
+    high += step;
+    return kept;
+  });
 }
 
 /**
  * Lays out every person's bubbles so none covers another; `prevOrder` is the last layout's `order`. With a `view`, a
  * row wider than it wraps (video-and-screen-bubbles.md "A row wider than the view wraps"): in its order, into runs
- * that fit, each further run BUBBLE_GAP_PX above the one before, and every run of it kept inside the view.
+ * that fit, each further run BUBBLE_GAP_PX above the one before; and every run, wrapped or not, is kept inside the
+ * view (#503), so people standing near its edge still show their bubbles whole.
  */
 export function layoutBubbles(
   boxes: readonly BubbleBox[],
@@ -167,10 +173,11 @@ export function layoutBubbles(
   const order: string[] = [];
   for (const row of rowsOf(boxes)) {
     const ordered = orderOf(row, rank);
-    const runs = view && view.width > 0 ? wrap(ordered, view.width) : [ordered];
+    const inView = view && view.width > 0 ? view : null;
+    const runs = inView ? wrap(ordered, inView.width) : [ordered];
     let lift = 0;
     runs.forEach((run) => {
-      const lefts = runs.length > 1 && view ? keepInside(pack(run), run, view) : pack(run);
+      const lefts = inView ? keepInside(pack(run), run, inView) : pack(run);
       run.forEach((box, i) => {
         const left = lefts[i]!;
         dx.set(box.id, left + box.width / 2 - box.x);

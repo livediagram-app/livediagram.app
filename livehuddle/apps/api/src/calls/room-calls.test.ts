@@ -73,13 +73,14 @@ describe('RoomCalls hearing (#483)', () => {
     s('vw', 'view', 'S-vw'),
   ];
 
-  it('lets everyone in a room hear each other, Editor, Participant and Viewer alike', () => {
+  it('lets a room hear by distance, Editor, Participant and Viewer alike', () => {
     const { calls, walk } = setup(sessions);
     walk('ed', 100, 300);
     walk('pt', 900, 300);
     walk('vw', 500, 500);
     expect(calls.hearing('S-vw', [mic('S-ed'), mic('S-pt')])).toEqual(['heard', 'heard']);
-    expect(calls.hearing('S-pt', [mic('S-ed')])).toEqual(['heard']);
+    // Across the room, out of earshot.
+    expect(calls.hearing('S-pt', [mic('S-ed')])).toEqual(['apart']);
   });
 
   it('refuses a subscriber outside the room, whatever their level', () => {

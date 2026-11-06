@@ -461,7 +461,6 @@
         "@livehuddle/help#build",
         "@livehuddle/community#build",
         "@livehuddle/api#build",
-        "@livehuddle/mcp#build",
         "@livehuddle/router#build"
       ],
       "inputs": [

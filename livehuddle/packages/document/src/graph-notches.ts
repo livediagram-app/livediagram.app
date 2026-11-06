@@ -1,4 +1,4 @@
-// No notch in a straight line (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): an elbow whose ends sit
+// No notch in a straight line (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"): an elbow whose ends sit
 // within NOTCH_MAX of one line, across a middle run shorter than KINK_RUN, is drawn straight. Two boxes of different
 // widths centred a pixel or two apart, or two anchors a pixel off, gave an elbow whose middle run was a 2 px step: a
 // notch a reader sees, where a slant of a few pixels over the edge's length cannot be seen. An elbow whose straight

@@ -68,7 +68,7 @@ export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?
 // The line folder: the panel tree's folders, and every menu's Change Folder / folder chip.
 export const FolderOutlineIcon = lucideGlyph(lucideFolder, 12);
 
-// Sparkle for the synthetic "Generated" folder (AI / MCP-created documents): the one shared sparkle.
+// Sparkle for the synthetic "Generated" folder (AI-created documents): the one shared sparkle.
 export function SparkleIcon({ size = 13 }: IconProps) {
   return <SharedSparkleIcon size={size} />;
 }

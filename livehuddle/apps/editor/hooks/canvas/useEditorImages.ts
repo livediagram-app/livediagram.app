@@ -53,9 +53,6 @@ type EditorImagesDeps = {
   // throwaway per-partition guest — uploads would land in an un-owned
   // gallery nobody can manage. Everything else in the embed stays editable.
   embedMode: boolean;
-  // The editor in a workbench uploads but never reads the person's gallery
-  // (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table): no recent-images fetch.
-  galleryHidden?: boolean;
   // The history-aware element mutator. Snapshots history, same path the
   // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
@@ -75,7 +72,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
   const { editsBlocked, isReadOnly, embedMode, commit } = deps;
   const pictureBlocked = deps.pictureBlocked ?? editsBlocked;
   const commitPicture = deps.commitPicture ?? commit;
-  const { documentId, ownerId, sessionShareCode, galleryHidden = false } = deps;
+  const { documentId, ownerId, sessionShareCode } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
     forElementId: string | null;
@@ -98,9 +95,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // placeholder is nobody's gallery.
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
-    if (!documentId || isReadOnly || embedMode || galleryHidden || ownerId === 'self') return;
+    if (!documentId || isReadOnly || embedMode || ownerId === 'self') return;
     loadRecentImages();
-  }, [documentId, isReadOnly, embedMode, galleryHidden, ownerId]);
+  }, [documentId, isReadOnly, embedMode, ownerId]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
   // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a

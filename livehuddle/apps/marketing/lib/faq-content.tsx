@@ -5,7 +5,7 @@ import {
   lucideShapes,
   lucideShare2,
   lucideShieldCheck,
-  lucideSparkles,
+  lucideCode,
   lucideUsers,
   lucideZap,
 } from '@liveworkspace/icons/lucide';
@@ -333,24 +333,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   },
   {
     id: 'ai-and-integrations',
-    title: 'AI, API and MCP',
-    blurb: 'Connect your assistant and your scripts.',
-    icon: lucideGlyph(lucideSparkles, ICON),
+    title: 'API and Integrations',
+    blurb: 'Read and change your spaces from your own scripts.',
+    icon: lucideGlyph(lucideCode, ICON),
     items: [
-      {
-        q: 'Can I connect my own AI assistant, like Claude?',
-        a: (
-          <>
-            Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool
-            and, after a one-time authorisation, it can find, read, create and edit the spaces in
-            your account. Its changes appear live for anyone on the tab, outlined so you can see
-            them and undo them. <a href="/ai">Build with AI</a> walks you through connecting Claude,
-            ChatGPT, Cursor and more.
-          </>
-        ),
-        aText:
-          'Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the spaces in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
-      },
       {
         q: 'Is there an API?',
         a: (
@@ -362,10 +348,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Once you sign in, create an API token and call the REST API to read and manage your spaces from scripts, CI or anything that can send a header. See the API overview.',
-      },
-      {
-        q: 'Is there a command-line tool?',
-        a: 'Yes. Install it from npm as @livehuddle/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export spaces from your terminal, which makes it handy for scripts and coding agents.',
       },
     ],
   },

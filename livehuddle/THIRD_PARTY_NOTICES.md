@@ -96,57 +96,6 @@ Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 ```
 
-## Twemoji
-
-- Source: <https://github.com/jdecked/twemoji>, release 15.1.0, served by jsDelivr.
-- Used for: the emoji in the MCP server's PNG previews (`apps/mcp/src/preview-emoji.ts`). A Worker has no colour-emoji
-  font, so each emoji sticker, emoji icon and reaction pad a previewed tab draws is fetched as its Twemoji SVG when the
-  preview is made. Nothing is vendored into the repo; the editor itself draws emoji with the viewer's own font.
-- Licence: the graphics are CC-BY 4.0, full text at <https://creativecommons.org/licenses/by/4.0/>.
-
-```text
-Copyright 2019 Twitter, Inc and other contributors
-Copyright 2024 jdecked and other contributors
-Graphics licensed under CC-BY 4.0: https://creativecommons.org/licenses/by/4.0/
-```
-
-## svg-path-bbox
-
-- Source: <https://github.com/mondeja/svg-path-bbox>
-- Used for: measuring glyph geometry (ink insets and centring), bundled with `@liveworkspace/icons`.
-
-```text
-BSD 3-Clause License
-
-Copyright (c) 2020-2024, Álvaro Mondéjar Rubio
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its
-   contributors may be used to endorse or promote products derived from
-   this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-```
-
 ## svgpath
 
 - Source: <https://github.com/fontello/svgpath>

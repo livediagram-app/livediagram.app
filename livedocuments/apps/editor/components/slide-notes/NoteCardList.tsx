@@ -52,10 +52,15 @@ export function noteCardsSummary(cards: readonly NoteCard[]): string | null {
 export function NoteCardList({
   cards,
   onChange,
+  onSettle,
   takeEscape,
 }: {
   cards: readonly NoteCard[];
   onChange: (cards: readonly NoteCard[]) => void;
+  // The writing paused: a card closed, or the list went (its popover closed, or it moved to another slide). The deck
+  // saves what it still holds then (docs/specs/012-collaboration/speaker-note-cards.md "Saving"). After any change the
+  // close made.
+  onSettle?: () => void;
   // Given what Escape does here (null on unmount), for a surface whose own Escape is taken first (a popover, a
   // sheet): it closes the open card and says so, else says it left Escape alone. Keep it stable.
   takeEscape?: (escape: (() => boolean) | null) => void;
@@ -67,7 +72,7 @@ export function NoteCardList({
   const counted = useRef<string | null>(null);
   const list = useRef<HTMLDivElement>(null);
   // The newest cards for the unmount below, which runs after the props it closed over.
-  const latest = useLatest({ cards, openId, onChange });
+  const latest = useLatest({ cards, openId, onChange, onSettle });
 
   const write = (next: readonly NoteCard[], action?: 'add' | 'remove' | 'move' | 'restore') => {
     if (next === cards) return;
@@ -86,6 +91,7 @@ export function NoteCardList({
       // Back on the card it wrote, so the keyboard carries on from there.
       focusCard(current.id);
     }
+    onSettle?.();
   };
 
   const open = (id: string) => {
@@ -95,6 +101,8 @@ export function NoteCardList({
     counted.current = null;
     if (current && isBlankNoteCard(current))
       write(removeNoteCard(cards, current.id).cards, 'remove');
+    // The card it leaves is closed: its words save now.
+    if (current) onSettle?.();
   };
 
   const add = (afterIndex: number | null) => {
@@ -184,12 +192,14 @@ export function NoteCardList({
     return () => window.removeEventListener('pointerdown', onDown, true);
   }, [editing]);
 
-  // Leaving with a blank card open (the popover closed round it) takes the blank card away.
+  // Leaving with a blank card open (the popover closed round it) takes the blank card away; then what the deck still
+  // holds saves.
   useEffect(
     () => () => {
-      const { cards: last, openId: id, onChange: commit } = latest.current;
+      const { cards: last, openId: id, onChange: commit, onSettle: settle } = latest.current;
       const blank = last.find((c) => c.id === id);
       if (blank && isBlankNoteCard(blank)) commit(removeNoteCard(last, blank.id).cards);
+      settle?.();
     },
     [latest],
   );

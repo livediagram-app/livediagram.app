@@ -12,7 +12,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   chrome, [Editor app](../007-editor/editor-app.md)). It opens on its **home**: a grid of **Looks**, then a
   **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category: the dock button is
   the one entry point.
-- A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster in every mode ([Editor app](../007-editor/editor-app.md) "Mobile chrome"), and opens
+- A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster in every mode but Avatar mode, where it steps aside with the command palette's Open Theme and Open Canvas Options while you walk ([Avatar mode](../008-canvas/avatar-mode.md#no-editing-chrome-while-walking), Work Tracker #561) ([Editor app](../007-editor/editor-app.md) "Mobile chrome"), and opens
   the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in
   read-only / embed views.
@@ -230,7 +230,10 @@ Undo puts every tab back."
 Options do not preview on hover (tried and removed: the canvas changing under a passing pointer was distracting); a
 click applies. Each pick **eases** the canvas's colours (background, fill, outline, text) over 250 ms instead of
 snapping (`../packages/workbench/src/lib/tab-style-ease.ts`); the transition is switched on only for the moment of the change (a class on the
-root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps.
+root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps. On a busy Space (more
+than 20 elements, [Canvas performance](../008-canvas/canvas-performance.md) "A Tab Style change on a busy Space eases
+the canvas, not its parts") the parts snap too, the canvas's own colour still easing: easing every node of every
+element held a campus Space in long frames for most of a second a pick.
 
 ### Text panel
 

@@ -1087,7 +1087,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setMultiSelectedIds,
     isReadOnly,
-    saveDeck: (serialised) => {
+    saveDeck: (serialised, opts) => {
       if (!hydrated || !documentId) return;
       // The deck this one was built on goes with it, so the server keeps another person's note cards
       // (speaker-note-cards.md "Two people writing at once"); then this save is the next one's base.
@@ -1098,6 +1098,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         selfParticipant.id,
         { id: documentId, presentation: serialised, presentationBase },
         sessionShareCode,
+        opts,
       ).catch(() => {
         // Best-effort, like every other metadata write: the deck is in
         // state either way and the next edit retries.
@@ -1745,6 +1746,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     newPageSlide,
     toggleSlideHidden,
     setSlideNoteCards,
+    flushDeckSave,
     start: startDeck,
   } = slideDeck;
   const pageDeck = useMemo(
@@ -1753,6 +1755,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         newPageSlide,
         toggleSlideHidden,
         setSlideNoteCards,
+        flushDeckSave,
         start: startDeck,
       }),
     [
@@ -1762,6 +1765,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       newPageSlide,
       toggleSlideHidden,
       setSlideNoteCards,
+      flushDeckSave,
       startDeck,
     ],
   );
@@ -1776,6 +1780,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Selection + placement + format helpers. See useElementHelpers.
   const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
+      layerInertIds,
       readSelection,
       activeId,
       activeTab,

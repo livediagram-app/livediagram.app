@@ -39,15 +39,14 @@ corepack pnpm dev:huddle
 
 Turbo spins up livehuddle's seven dev servers in parallel, in its port block (3500 onward):
 
-| App              | Dev URL                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3500`: **everything on one port**, stitched like production                      |
-| `apps/marketing` | `http://localhost:3501`                                                                            |
-| `apps/editor`    | `http://localhost:3502` (clean routes: /new, /document/<id>, ...)                                  |
-| `apps/help`      | `http://localhost:3504/help`                                                                       |
-| `apps/community` | `http://localhost:3505/community`                                                                  |
-| `apps/api`       | `http://localhost:9087/api`                                                                        |
-| `apps/mcp`       | `http://localhost:9088` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+| App              | Dev URL                                                                       |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `apps/router`    | `http://localhost:3500`: **everything on one port**, stitched like production |
+| `apps/marketing` | `http://localhost:3501`                                                       |
+| `apps/editor`    | `http://localhost:3502` (clean routes: /new, /document/<id>, ...)             |
+| `apps/help`      | `http://localhost:3504/help`                                                  |
+| `apps/community` | `http://localhost:3505/community`                                             |
+| `apps/api`       | `http://localhost:9087/api`                                                   |
 
 The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3500/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
 
@@ -113,7 +112,6 @@ run from `livehuddle/`:
 | `pnpm --filter @livehuddle/editor test:e2e`                               | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev:huddle` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                              |
 | `pnpm --filter @livehuddle/editor test:e2e:signed-in`                     | The signed-in specs (`apps/editor/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @livehuddle/editor build:signed-in` first. Boots its own stack on `:3115` / `:8115` / `:3116`.                                                                                                                                                                                             |
 | `cd apps/editor && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.                                                                                                                                         |
-| `pnpm --filter @livehuddle/cli build`                                     | Bundle the CLI into `apps/cli/dist/livehuddle.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                                   |
 | `pnpm format`                                                             | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                                  |
 | `pnpm format:check`                                                       | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                           |
 | `pnpm staging:check`                                                      | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                                                                                                                                                       |
@@ -162,21 +160,6 @@ Without these set: nobody can sign in, and there are no guests either, because a
 
 The Explorer, sharing, access, the Trash and the Timeline are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/specs/004-index/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/specs/004-index/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-livehuddle-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a document cannot be opened from the server.
 
-## Running the CLI from source (optional)
-
-The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a host with sign-in: enable sign-in as
-above, sign in, and create a token on your local liveworkspace site (Settings › API Tokens links there). Then build the bundle and point it at the local api:
-
-```bash
-pnpm --filter @livehuddle/cli build
-export LIVEHUDDLE_HOST=http://localhost:9087 LIVEHUDDLE_TOKEN=lwt_...
-apps/cli/dist/livehuddle.mjs document ls
-```
-
-`LIVEHUDDLE_DEBUG=1` prints each decision and request as a `[cli]` line on stderr. The CLI keeps its files under
-`$XDG_CONFIG_HOME/livehuddle` and `$XDG_CACHE_HOME/livehuddle` (`~/.config` and `~/.cache` by default); point
-both at a scratch directory to keep a test run apart from your own sign-in.
-
 ## Running tests
 
 ```sh
@@ -186,8 +169,6 @@ pnpm --filter @livehuddle/editor exec vitest   # watch mode while developing
 ```
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@liveworkspace/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
-
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livehuddle/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (editor 3121, api 8121, marketing 3122): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the editor server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does. Since pairing, tickets and sessions moved to liveworkspace's accounts Worker ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../liveworkspace/docs/specs/011-workbench/workbench.md)), the run also needs that Worker and liveworkspace.app's pairing page, which the stack does not start yet: until it does, the run stops at its first mint.
 
 ## Google Drive sync locally (optional)
 

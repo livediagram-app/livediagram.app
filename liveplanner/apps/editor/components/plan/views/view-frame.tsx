@@ -11,6 +11,7 @@ import type { PlanContextValue } from '../PlanContext';
 import { CountBadge, Tooltip } from '@liveplanner/ui';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
 import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from '../band-controls';
+import { PLAN_HEADING_STYLE, planBoardFontStyle } from '@/lib/plan-font';
 
 // The phase colours and the overdue red (phase-colours.ts), shared with the views' still pictures.
 import { OVERDUE_RED, PHASE_COLOURS } from '@liveplanner/plan-art';
@@ -108,7 +109,8 @@ export function ViewFrame({
         borderColor: palette.border,
         backgroundColor: palette.surface,
         color: palette.text,
-        ...(fontFamily ? { fontFamily } : null),
+        // The UI face, with the tab's handed to the title alone (fonts.md "On Dashboards and views").
+        ...planBoardFontStyle(fontFamily),
       }}
     >
       <div
@@ -133,6 +135,8 @@ export function ViewFrame({
               ) : (
                 <span
                   className={`${inBox ? IN_BOX_TITLE_CLASS : 'min-w-0 truncate text-[13px] font-semibold'} ${own?.rename ? 'cursor-text' : ''}`}
+                  // On its own header the title is a heading in the tab's face; in the menu box it is chrome.
+                  style={inBox ? undefined : PLAN_HEADING_STYLE}
                   // In the menu box a click renames; in its own header a double-click (a click there moves the element).
                   {...(own?.rename
                     ? inBox
@@ -289,6 +293,7 @@ function TitleField({
       }}
       onBlur={() => finish(true)}
       onPointerDown={(e) => e.stopPropagation()}
+      style={inBox ? undefined : PLAN_HEADING_STYLE}
       className={`${inBox ? IN_BOX_TITLE_CLASS : 'min-w-0 text-[13px] font-semibold'} w-48 rounded-md border border-brand-400 bg-transparent px-1.5 py-0.5 outline-none`}
     />
   );
