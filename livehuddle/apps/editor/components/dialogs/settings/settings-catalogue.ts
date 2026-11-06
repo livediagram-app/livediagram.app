@@ -792,9 +792,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Default Folders',
         label: 'Where New Spaces Go',
         keywords:
-          'default folder where new spaces canvases documents go save location place file automatically always save placement template retrospective kanban',
-        description:
-          'New spaces you make without choosing a place are saved in these folders: one for every space, and one for each template family.',
+          'default folder where new spaces canvases documents go save location place file automatically always save placement',
+        description: 'New spaces you make without choosing a place are saved in this folder.',
       },
     ],
   },
