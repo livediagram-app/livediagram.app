@@ -6,8 +6,9 @@
   watch-prs.py --status   print each open PR's state now and exit
 
 Run it as a background Bash command, not a Monitor: it wakes the loop once, when it exits.
-It polls once a minute with ONE gh call for all PRs. The first poll is the baseline (the
-pass that started it has already seen those states); after that it prints one line per PR
+It polls once a minute with ONE gh call for all PRs and compares with the state the last
+watcher saved (.git/pr-watch.state.json), so a PR that changed between two watchers is
+still reported; with no saved state the first poll is the baseline. It prints one line per PR
 whose state changed to RED (a check failed or was cancelled), GREEN (every check passed and
 GitHub has worked out mergeability) or CONFLICTING, or that got a new comment or review
 (COMMENTED), and exits. A PR opened later is
@@ -40,6 +41,19 @@ def running_pid(path):
         return pid
     except (OSError, ValueError):
         return None
+
+
+def load_state(path):
+    """What the last watcher saw, so a change while no watcher ran is still reported."""
+    try:
+        saved = json.load(open(path))
+        return ({int(n): v for n, v in saved["states"].items()}, {int(n): v for n, v in saved["talk"].items()})
+    except (OSError, ValueError, KeyError):
+        return None, {}
+
+
+def save_state(path, states, talk):
+    json.dump({"states": states, "talk": talk}, open(path, "w"))
 
 
 def classify(pr):
@@ -97,7 +111,9 @@ def main():
         return
     open(path, "w").write(str(os.getpid()))
     try:
-        seen, start = None, time.monotonic()
+        state_path = path.replace(".pid", ".state.json")
+        seen, said = load_state(state_path)
+        start = time.monotonic()
         while time.monotonic() - start < MAX_SECONDS:
             try:
                 prs = poll(repo, login)
@@ -105,16 +121,19 @@ def main():
                 time.sleep(POLL)  # GitHub unreachable for a moment: try again next round
                 continue
             now = {n: classify(pr) for n, pr in prs.items()}
+            states = {n: c[0] for n, c in now.items()}
             talk = {n: len(pr.get("comments") or []) + len(pr.get("reviews") or []) for n, pr in prs.items()}
             if seen is not None:
                 events = [line(prs[n], *now[n]) for n in sorted(now)
-                          if now[n][0] != "PENDING" and now[n][0] != seen.get(n, ("PENDING",))[0]]
+                          if states[n] != "PENDING" and states[n] != seen.get(n, "PENDING")]
                 events += [f"PR {n}: COMMENTED {talk[n] - said.get(n, 0)} new {prs[n]['title'][:60]}"
                            for n in sorted(talk) if n in said and talk[n] > said[n]]
                 if events:
+                    save_state(state_path, states, talk)
                     print("\n".join(events))
                     return
-            seen, said = now, talk
+            seen, said = states, talk
+            save_state(state_path, states, talk)
             time.sleep(POLL)
         print(f"TIMEOUT after {MAX_SECONDS / 3600:g}h with no change")
     finally:
