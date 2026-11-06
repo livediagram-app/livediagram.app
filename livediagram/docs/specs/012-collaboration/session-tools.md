@@ -192,6 +192,8 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   stacking, or **One each**, which caps each participant at one dot per
   element so the budget becomes "pick your top N"; hidden when the budget
   is one dot, and stored as `TabVote.onePerElement`, absent = stacking),
+  a **Votable items** switch card, **Only items with text** (off by default;
+  see [Only items with text](#only-items-with-text)),
   the privacy switches are cards that say what the room will not see, then
   **Start vote** → **End vote** → **Show results** → **Clear vote**. Running,
   the pane shows a three-step track (Voting · Ended · Results), live counts of
@@ -387,8 +389,37 @@ is this" has one answer rather than three.
 - The host's controls live on the **Vote panel**: **End vote** while
   casting, then **Show results**, then **Clear vote** once results are up.
   The panel also lists the **rules the vote runs under** as chips (`voteRules`:
-  dots each, One per item, the layer, and the privacy in force now), so
-  nobody has to ask.
+  dots each, One per item, With text only, the layer, and the privacy in force
+  now), so nobody has to ask.
+
+### Only items with text
+
+A vote on a wall of stickies usually has a few blank ones: spares, or notes
+someone pulled out and never wrote on. A dot on a blank note means nothing, so
+the set-up offers **Only items with text**.
+
+- Stored as `TabVote.onlyWithText` (absent = off, so an ordinary vote's wire
+  shape is unchanged), chosen before the vote and fixed once it starts, like
+  the other set-up choices.
+- On, an element takes a dot only when its text label (`label`, read by
+  `elementHasText`) has a non-blank character. `isVotableInVote` applies it on
+  top of the kind rule and the layer scope, so the cast handler, the stepper,
+  the vote keys and the canvas highlight all agree.
+- **Checked live**, against the element's text now rather than a list taken at
+  start: a blank note somebody types into mid-vote gains its stepper, and the
+  room can still add an idea while voting.
+- **An element already holding dots stays votable** even if its text is
+  cleared, so those dots can still be taken back and its total still shows at
+  the end. Only a blank element with no dots drops out.
+- Images carry no text label, so they drop out of a text-only vote. That is
+  what the switch says, and a vote that should include pictures leaves it off.
+- While casting is open the canvas shows the votable set the way a
+  [layer-scoped vote](vote-layer-scope.md#showing-the-votable-set) does: blank
+  elements dim and the rest are ringed, so nobody presses a blank note
+  wondering why nothing happened.
+- Roles: the switch is part of the set-up, so it is there for whoever may start
+  a vote (an Editor). Participants and Viewers see its effect, not the switch,
+  and the Vote panel lists **With text only** among the rules.
 
 ## Vote privacy
 
