@@ -62,8 +62,7 @@ The unit of value is the group in the room.
 - Offline Mode (This Browser): a Space kept only in your browser, never on our
   servers. Google Drive sync for signed-in users.
 - The Community: a public gallery of Spaces people share.
-- An MCP server for AI tools, a command line (`@livehuddle/cli`) and a REST API,
-  all free.
+- A REST API with personal API tokens, free.
 - Email notifications (comments, mentions, assigned actions, team invites),
   each with its own switch.
 - Anonymous first-party telemetry with a public dashboard. No third-party

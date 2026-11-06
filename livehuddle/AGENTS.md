@@ -199,18 +199,15 @@ apps/
   help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livehuddle.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
-  cli/          # the livehuddle command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
   document/       # document data model (Tab, Element types + element helpers) over @liveworkspace/model-core
-  templates/      # template catalogue + pure element builders (editor template starts + MCP)
+  templates/      # template catalogue + pure element builders (editor template starts + api)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # this product's wire-format DTOs the api worker emits + the live editor consumes, over @liveworkspace/api-schema
-  agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client

@@ -291,7 +291,7 @@ target.id } })`, announced "Linked #12 as {Field}" and tracked `('Plan', 'Linked
   - The language, `packages/items/src/formula/`: `limits.ts` (`FORMULA_MAX` 1,000, `FORMULA_DEPTH_MAX` 32,
     `FORMULA_STEPS_MAX` 10,000, `FORMULA_ROUND_PLACES_MAX` 10, `FORMULA_CACHE_MAX` 512, the results and their
     labels), `tokens.ts` (`tokenize`: one character loop, no regex over the text; names as runs of words or
-    braces, `""` in text, `==`/`<>` aliases), `parse.ts` (`parseFormula`: recursive descent, comparison < sum <
+    braces, `\}` and `\\` the escapes inside braces (any other `\` kept as it is), `""` in text, `==`/`<>` aliases), `parse.ts` (`parseFormula`: recursive descent, comparison < sum <
     product < unary < primary, depth counted on brackets, calls and signs; arity checked from `FUNCTIONS`;
     `refsOf`), `functions.ts` (`FUNCTIONS` with min/max arity and lazy arguments, `functionNamed` by own key only,
     `arityText`), `values.ts` (`FormulaValue`: number, text, boolean, null, `{ day }`, `{ list, field }`;

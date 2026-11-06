@@ -71,8 +71,8 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
   {
     tone: 'sky',
     icon: SPARKLE,
-    title: 'Connect your AI assistant',
-    line: 'Let it find, read and build your spaces.',
+    title: 'Use the API',
+    line: 'Make a token so your scripts can build your spaces.',
   },
   {
     tone: 'amber',

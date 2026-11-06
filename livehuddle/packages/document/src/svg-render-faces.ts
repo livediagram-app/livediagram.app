@@ -132,6 +132,12 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'garden-umbrella',
   'fountain',
   'pond',
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
   'door',
   'directory',
   'elevator',
@@ -237,6 +243,12 @@ export function svgBehaviourFace(
     case 'hammock':
     case 'garden-umbrella':
     case 'fountain':
+    case 'pool-table':
+    case 'foosball-table':
+    case 'dartboard':
+    case 'vending-machine':
+    case 'bean-bag':
+    case 'reading-nook':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
     // A pond (docs/specs/009-elements/social-pieces.md "Pond"): its water in the fill, drawn to its size.
     case 'pond':

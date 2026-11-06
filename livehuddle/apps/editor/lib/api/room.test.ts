@@ -674,25 +674,6 @@ describe('connectRoom when the document is trashed', () => {
     expect(ClosingSocket.all).toHaveLength(1);
   });
 
-  // A workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
-  // close 4006. The page turns read-only; the connector never reconnects.
-  it('reports a workbench end once and never reconnects', () => {
-    const onWorkbenchEnded = vi.fn();
-    const onAccessChanged = vi.fn();
-    connectRoom(
-      'd1',
-      { id: 'me', name: 'Me', color: '#000' },
-      { onPresence() {}, onOp() {}, onWorkbenchEnded, onAccessChanged },
-    );
-    ClosingSocket.all[0]!.fire('open');
-    ClosingSocket.all[0]!.fire('close', { code: 4006 });
-    vi.runAllTimers();
-
-    expect(onWorkbenchEnded).toHaveBeenCalledTimes(1);
-    expect(onAccessChanged).not.toHaveBeenCalled();
-    expect(ClosingSocket.all).toHaveLength(1);
-  });
-
   // A grant that lapsed with no fresh one (close 4007): reconnect at once, minting a fresh ticket (which asks for a
   // fresh grant), with no backoff wait.
   it('reconnects at once with a fresh ticket when the grant lapsed', async () => {

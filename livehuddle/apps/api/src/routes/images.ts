@@ -64,12 +64,11 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       return json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
     }
     // The hash shortcut answers a bare hash with the gallery row without reading a byte, so only the
-    // owner's own editor sends it: a workbench session or an API token acts for the owner without being
+    // owner's own editor sends it: an API token acts for the owner without being
     // them, and could probe the gallery for any file it can hash. They upload the body, and the service
     // still dedupes on its real hash.
     const headerSha = (request.headers.get('X-Image-Sha256') ?? '').toLowerCase();
-    const sha256 =
-      !ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
+    const sha256 = !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
     // Read whole (at most MAX_IMAGE_BYTES, checked above) so the service gets an exact length.
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength > MAX_IMAGE_BYTES) {
@@ -116,14 +115,10 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const callerOwner = resolveOwner();
     const imageOwner = await mediaImageOwner(media, imageId, callerOwner);
     if (imageOwner === null) return notFound();
-    // A document-scope workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner
-    // shortcut and reads through its own document only, so it cannot walk its owner's gallery by id. A workspace
-    // session reaches the gallery, as the Explorer does, so it reads as its person.
-    const workbench = ctx.workbench?.scope === 'document' ? ctx.workbench : null;
-    let allowed = !workbench && callerOwner === imageOwner;
+    let allowed = callerOwner === imageOwner;
     if (!allowed) {
       const d = url.searchParams.get('d');
-      if (d && (!workbench || d === workbench.documentId)) {
+      if (d) {
         // Reader must be able to read document `d` (owner OR
         // a valid share code that resolves to it), AND that
         // document must place this image AND may serve it: the

@@ -55,6 +55,32 @@ describe('Start Planning', () => {
     expect(card(/^Kanban Board:/)).toBeTruthy();
   });
 
+  it('ends Recommended with Import for an Editor, which opens the Import dialog', () => {
+    const onImport = vi.fn();
+    show({ onImport });
+    const grid = screen.getByRole('region', { name: 'Recommended' });
+    const cards = within(grid).getAllByRole('button');
+    expect(cards.at(-1)!.getAttribute('data-start-card')).toBe('import');
+    // Its own name: no kind badge repeating it.
+    expect(within(cards.at(-1)!).queryByText('Import', { selector: '.uppercase' })).toBeNull();
+    fireEvent.click(card(/^Import:/));
+    expect(onImport).toHaveBeenCalledTimes(1);
+    // A search finds it by a tool's name, under its own heading.
+    fireEvent.change(screen.getByRole('textbox', { name: /^Find a board/ }), {
+      target: { value: 'trello' },
+    });
+    expect(
+      within(screen.getByRole('region', { name: 'Import' })).getByRole('button', {
+        name: /^Import:/,
+      }),
+    ).toBeTruthy();
+  });
+
+  it('has no Import card without onImport', () => {
+    show();
+    expect(screen.queryByRole('button', { name: /^Import:/ })).toBeNull();
+  });
+
   it('places a board picked from Boards, with its card types shown', () => {
     const p = show();
     fireEvent.click(rail(/^Boards/));

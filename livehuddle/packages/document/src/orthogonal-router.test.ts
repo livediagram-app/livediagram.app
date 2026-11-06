@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ROUTER_SHARE_COST, routeOrthogonal, type Run } from './orthogonal-router';
 
-// The router's price for sharing a run (docs/specs/015-api/mcp-server.md §4.7 "Loops and detours go round").
+// The router's price for sharing a run (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Loops and detours go round").
 describe('routeOrthogonal sharing', () => {
   const straight = (runs: Run[]) =>
     routeOrthogonal({ x: 0, y: 0 }, 'e', { x: 200, y: 0 }, 'w', [], runs)!.cost;

@@ -57,6 +57,10 @@ writes (`403 forbidden`) whatever sends them.
 - **Every value is untrusted text.** Nothing is run or parsed as markup: HTML, Markdown and wiki markup stay as the
   characters they are, control characters other than line breaks and tabs are dropped, and every value is cut to its
   field's limit. A link is kept only when it is an `http` or `https` address.
+- **The page stays responsive.** The file is read, and the import planned, in a Web Worker, never on the page's main
+  thread: at the caps (2,000 cards, a 7.7 MB Trello board) each takes hundreds of milliseconds, more on a phone. The
+  worker keeps the board it read; the page holds only the plans. Where a worker can't start, the same work runs on the
+  page.
 
 ## What it makes
 
@@ -131,6 +135,9 @@ Each card keeps, where the source has them:
 - They are posted as the import ("Trello import", "Jira import"): no one's own comment, so they **mention no one**
   (an `@name` stays text), make **no Inbox row**, send **no email** and raise no notice. An Editor may delete them as
   any comment.
+- An Imported comments thread **counts as an ordinary thread**: there is no separate cap and no exemption. Each card
+  takes one at most, so it uses one of the card's 50 ([Card comments](items.md#limits)), leaving 49, and a plan's
+  threads stay capped by its cards as always; with no Inbox row, it takes nothing from anyone's Inbox.
 - A thread holds at most 200 comments within its size budget: past that the newest are kept, and an import holds at
   most 20,000 comments in all; the rest are left out and counted. A comment cut to 2,000 characters is marked "…".
 - Asana's and Linear's CSV exports carry no comments.
@@ -167,7 +174,12 @@ Choosing a file shows what the import will make, before anything is written:
 
 - **Into a new Board tab**: the card type is saved (one undo step), the tab is added and opened (one undo step), then
   every card is made in **one write** with its comments (one undo step); undo takes them back newest first, as a
-  JSON import's. The import waits for the plan's cards to load first, as a JSON import does.
+  JSON import's. The import waits for the plan's cards to load first, as a JSON import does. It imports the
+  preview's own plan when what that plan read of this plan (its card types, the statuses its boards name, its people
+  and team, and how many cards it has room for) is unchanged; when cards, types or people came or went since the
+  preview, the board is planned again first. Should the board have been let go meanwhile (two newer files read), the
+  tab choice is dimmed with "This plan can’t take that file until it is chosen again." and it goes into the new plan
+  already previewed, or, with none, the dialog says "Couldn’t read that file. Check it and try again."
 - **Into a new plan**: one create makes the plan with the tab and the card type, then every card lands with its
   comments in **one write**, so the plan opens whole. It is named after the board, filed where a new plan from New
   would be, and opens in this window once made. A guest's plan is made in This Browser, as a guest's New makes one.

@@ -1,8 +1,8 @@
 # Edit operations
 
 **Status: built.** `@livehuddle/edit-operations` reads both forms and applies every operation below, by ref or
-selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the [lint](diagram-lint.md)
-verdict, and the [CLI](../015-api/cli.md) sends the same operations as changesets.
+selector, through the changeset route. A result's footer names the [lint](diagram-lint.md)
+verdict.
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and
@@ -27,13 +27,13 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 | `test`    | `test <selector> key=value…`                                                         | Fails the changeset unless the element holds these values                                            |
 
 - **`replace`** is the other changeset body: a whole tab from `graph`, `mermaid`, `template` or `elements`, exactly
-  as the MCP takes them ([MCP server](../015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
+  as the MCP takes them ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
   attributed and revertable.
 - **Ids** given with `id=` name the new element, so later operations in the same changeset can refer to it. An id is
   a slug id (`^[a-z][a-z0-9_-]{0,23}$`, as [Document views](document-views.md#refs) defines it). Without one, a new
   element takes the slug of its label, or of its kind when it has none (`arrow`, `arrow-2`).
 - **Fields** are named by the aliases below or by any stored field of the element's type, as the
-  [element format](../015-api/mcp-server.md) names it. Fields that travel live between people (comment threads,
+  [element format](../../../../livediagram/docs/specs/015-api/mcp-server.md) names it. Fields that travel live between people (comment threads,
   responses, ideas) are not changed by edit operations; comments have their own endpoints. A named `x`, `y`,
   `width` or `height` is a stored, absolute coordinate.
 - **Values** use the document's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
@@ -111,7 +111,7 @@ The layout an agent did not ask to change stays put:
   wear the template look, and the label is measured as that look measures, from their size: a short label takes
   their size exactly, never the palette's taller square, and keeps their height while its label holds one line. On
   a tab with no box of that shape, it takes the template's proportions graph input draws
-  ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square). Either way the label is measured at the box's
+  ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.7, 180×64 for a square). Either way the label is measured at the box's
   own text size, and a label written over several lines line by line.
 - **A new box placed beside a member joins its boundary or lane**: `add` with a placement against an element inside a
   container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,

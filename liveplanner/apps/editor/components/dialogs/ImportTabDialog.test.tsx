@@ -86,6 +86,37 @@ describe('ImportTabDialog: the list', () => {
     );
   });
 
+  describe('where focus starts (the format is the first decision)', () => {
+    const pointer = (fine: boolean) =>
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn((q: string) => ({
+          matches: q === '(pointer: fine)' ? fine : q === '(pointer: coarse)' ? !fine : false,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        })),
+      );
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('is the first row on a desktop, never the help link', () => {
+      pointer(true);
+      open({ intoTab: csvTab() });
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: /^CSV: / }));
+    });
+
+    it('skips a dimmed Into This Tab row for the first tool', () => {
+      pointer(true);
+      open({ intoTab: csvTab({ blocked: 'This tab is locked. Unlock it to import into it.' }) });
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: /^Trello: / }));
+    });
+
+    it('stays on the panel on a touch screen', () => {
+      pointer(false);
+      open({ intoTab: csvTab() });
+      expect(document.activeElement).toBe(screen.getByRole('dialog'));
+    });
+  });
+
   it('has one row in the Tab order per section, the arrow keys moving through the tools', () => {
     open();
     const tools = within(

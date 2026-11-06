@@ -19,7 +19,7 @@ export class CallReceiver {
     this.graph = graph;
   }
 
-  /** Place every speaker heard: full volume in a shared room or from a stage, by distance in the open, by side. */
+  /** Place every speaker heard: by distance in your room or the open, full volume from a stage, by side. */
   place(heard: ReadonlySet<string>, scene: CallScene, zoning: CallZoning): void {
     const self = scene.self;
     if (!self) return;

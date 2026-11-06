@@ -287,7 +287,7 @@ it cannot tell the difference from a direct visit.
 - **The editor code is fetched ahead.** `/new` starts loading the editor's
   chunk as soon as it mounts (it is needed within a second), so the chunk downloads in
   parallel with identity and the create request. If it is not ready at
-  handoff, the opening screen holds at the "Opening your canvas" stage
+  handoff, the opening screen holds at the "Opening your space" stage
   until it is.
 - **The opening screen is the editor's outermost Suspense fallback, so no lazy
   piece inside the editor may suspend up to it.** Every `next/dynamic` import
@@ -306,34 +306,60 @@ it cannot tell the difference from a direct visit.
 One screen covers the whole wait from the click to the editor: `/new`'s
 creating stage and the editor's own load (`DocumentLoading`) render the same
 full-screen component, so the handoff above never visibly changes screens.
-Its label moves from **"Creating your canvas"** to **"Opening your
-canvas"**; everything else stays put.
+Its label moves from **"Creating your space"** to **"Opening your
+space"**; everything else stays put.
 
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
   edges and two slowly drifting, blurred brand-tinted glows behind the
   centre. Dark-aware like every screen ([Editor app](editor-app.md)).
-- **Centrepiece:** the shared `DiagramBuildAnimation`, a small live diagram
-  being drawn by a collaborator cursor labelled "You": the cursor places a
-  card, drags a connector that draws under it to the next card, and so on
-  until three cards are wired; a pulse of light then runs along each
-  connector before the whole diagram dissolves and the loop restarts. The
-  cards are white (dark: slate) with a coloured accent each, and the
-  connectors blend from their source colour to their target colour.
+- **Centrepiece:** livehuddle's own `SpaceBuildAnimation`, a Space coming to
+  life, drawn in the house art: the canvas's room and furniture pieces (warm
+  floor, ten-unit walls with a slate outline, slate-tinted furniture, the
+  marketing hero's line weights) and the Avatar's pixel character
+  ([Avatar mode](../008-canvas/avatar-mode.md) "The character"). One loop, in
+  order:
+  1. **The room draws:** the floor fades up, then the walls draw one by one
+     round the room (top, right, the two halves of the bottom wall either side
+     of the doorway, left), and the room's name band, **Huddle Room**, settles in
+     along the top wall.
+  2. **It is furnished:** a rug, a meeting table with two chairs on each long side,
+     a bookshelf, a coffee machine and two plants pop in, one after another.
+  3. **The door opens:** the door leaf swings inward on its hinge, its dashed
+     swing arc fading in behind it, as on the canvas.
+  4. **People arrive:** two characters walk in through the doorway, one a beat
+     behind the other: you (brand-cyan shirt, no name chip, as your own
+     character has none on the canvas) and a teammate, **Sam** (violet shirt,
+     with a name chip in its colour). Each walks up, along, up the side of the table and across
+     to a chair, facing the way it walks (back view going up, profile going
+     sideways) with the house two-frame stride, and sits.
+  5. **They meet:** seated side by side at the table, they are in earshot: a
+     soft pool of brand light settles round the pair and each shows the talking
+     equaliser (three small bars in its shirt colour,
+     [Proximity audio](../012-collaboration/proximity-audio.md)), taking turns.
+  6. **It resets:** the whole Space dissolves and the loop starts again.
 - **Continuity:** the loop's phase is measured from the first time the
   animation mounts in the document, so a remount (the creating stage giving
-  way to the editor's load) continues the drawing where it was instead of
+  way to the editor's load) continues the scene where it was instead of
   restarting it.
 - **Progress:** the label sits under the animation with a slim indeterminate
   bar below it. After 10 seconds in the editor's load the screen adds
   "This is taking longer than usual." with a Refresh button. Past that, the
   load's watchdog takes over: one self-healing reload, then the load-error
   screen with its recovery card ([Load recovery](load-recovery.md)).
-- **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
-  and bar are still.
-- `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
-  so a card can compose it inside its own (the Clerk-era sso-callback card
-  did).
+- **Reduced motion:** a calm still frame: the finished room, the door open,
+  both characters seated at the table in their pool of light, their
+  equalisers at rest. Glows and bar are still.
+- **Accessibility:** the picture is one image named "A Space coming to life";
+  the label and its messages are the live status.
+- **Cost:** pure SVG and CSS keyframes generated once at module load, no
+  canvas code and no avatar sprite module (the characters are drawn from the
+  shared Avatar palette). Every animated property is `transform` or
+  `opacity`, so the loop stays on the compositor
+  ([blueprint](blueprints/opening-screen.md)).
+- `SpaceBuildAnimation` stays a bare illustration (no surface of its own).
+  The shared `DiagramBuildAnimation` is livediagram's; livehuddle no longer
+  uses it.
 
 Every create from `/new` honours the URL placement context (the `?folder` /
 `?team` pre-seed): the document files there, not silently at the personal root.

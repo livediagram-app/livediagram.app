@@ -335,24 +335,29 @@ Six articles about the container moved when it became a document ([Document](../
 
 These features left livehuddle on purpose, and their articles with them; each old address answers a `308` to the nearest live article, so a shared link still lands somewhere useful:
 
-| Old address                                            | New address                              | Why                                                                                 |
-| ------------------------------------------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------- |
-| `/help/canvas/themes/custom-themes/`                   | `/help/canvas/themes/`                   | Custom themes were deleted; the built-in themes stay                                |
-| `/help/explorer/themes-library/`                       | `/help/canvas/themes/`                   | The Explorer's Themes page went with custom themes                                  |
-| `/help/explorer/tags/`                                 | `/help/explorer/folders/`                | Tags were removed; folders are how documents are grouped now                        |
-| `/help/tools/ai/`                                      | `/help/account-and-data/connect-ai-mcp/` | The in-editor AI assistant was removed; connected AI tools stay                     |
-| `/help/tools/ai/ai-tools/`                             | `/help/account-and-data/connect-ai-mcp/` | The same                                                                            |
-| `/help/selection-modes/slide-deck/`                    | `/help/canvas/follow-along/`             | Slide decks and presenting left livehuddle (Work Tracker #423); Follow-me stays     |
-| `/help/selection-modes/slide-deck/building-a-deck/`    | `/help/canvas/follow-along/`             | The same                                                                            |
-| `/help/selection-modes/slide-deck/presenting/`         | `/help/canvas/follow-along/`             | The same                                                                            |
-| `/help/selection-modes/slide-deck/presenter-controls/` | `/help/canvas/follow-along/`             | The same                                                                            |
-| `/help/tips-and-tricks/presenting-well/`               | `/help/canvas/follow-along/`             | The same                                                                            |
-| `/help/palette/tools/pages/`                           | `/help/palette/write/`                   | The Page element left livehuddle (Work Tracker #423); the other Write elements stay |
-| `/help/tools/layout-cleanup/auto-layout/`              | `/help/tools/layout-cleanup/`            | Auto Layout arranges shapes by their arrows, which a Space no longer draws (#494)   |
-| `/help/explorer/shape-libraries/`                      | `/help/explorer/explorer-page/`          | Shape Libraries left livehuddle (Work Tracker #423 part 4)                          |
-| `/help/explorer/drawio-import/`                        | `/help/tabs/import-tabs/`                | The draw.io import left livehuddle (#423 part 4)                                    |
-| `/help/explorer/microsoft-whiteboard-import/`          | `/help/tabs/import-tabs/`                | The Microsoft Whiteboard import left livehuddle (#423 part 4)                       |
-| `/help/tools/markdown-import/`                         | `/help/tabs/import-tabs/`                | The Markdown import left livehuddle (#423 part 4)                                   |
+| Old address                                            | New address                          | Why                                                                                 |
+| ------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------- |
+| `/help/canvas/themes/custom-themes/`                   | `/help/canvas/themes/`               | Custom themes were deleted; the built-in themes stay                                |
+| `/help/explorer/themes-library/`                       | `/help/canvas/themes/`               | The Explorer's Themes page went with custom themes                                  |
+| `/help/explorer/tags/`                                 | `/help/explorer/folders/`            | Tags were removed; folders are how documents are grouped now                        |
+| `/help/tools/ai/`                                      | `/help/account-and-data/api-tokens/` | The in-editor AI assistant was removed, and so was the MCP server                   |
+| `/help/tools/ai/ai-tools/`                             | `/help/account-and-data/api-tokens/` | The same                                                                            |
+| `/help/account-and-data/connect-ai-mcp/`               | `/help/account-and-data/api-tokens/` | The MCP server left livehuddle (Work Tracker #562); API tokens stay                 |
+| `/help/account-and-data/connect-ai-mcp/ai-clients/`    | `/help/account-and-data/api-tokens/` | The same                                                                            |
+| `/help/developers/cli/`                                | `/help/developers/api-overview/`     | The CLI left livehuddle (Work Tracker #563); the REST API stays                     |
+| `/help/developers/workbenches/`                        | `/help/developers/api-overview/`     | Workbenches went with the CLI                                                       |
+| `/help/developers/workbenches/building-a-workbench/`   | `/help/developers/api-overview/`     | The same                                                                            |
+| `/help/selection-modes/slide-deck/`                    | `/help/canvas/follow-along/`         | Slide decks and presenting left livehuddle (Work Tracker #423); Follow-me stays     |
+| `/help/selection-modes/slide-deck/building-a-deck/`    | `/help/canvas/follow-along/`         | The same                                                                            |
+| `/help/selection-modes/slide-deck/presenting/`         | `/help/canvas/follow-along/`         | The same                                                                            |
+| `/help/selection-modes/slide-deck/presenter-controls/` | `/help/canvas/follow-along/`         | The same                                                                            |
+| `/help/tips-and-tricks/presenting-well/`               | `/help/canvas/follow-along/`         | The same                                                                            |
+| `/help/palette/tools/pages/`                           | `/help/palette/write/`               | The Page element left livehuddle (Work Tracker #423); the other Write elements stay |
+| `/help/tools/layout-cleanup/auto-layout/`              | `/help/tools/layout-cleanup/`        | Auto Layout arranges shapes by their arrows, which a Space no longer draws (#494)   |
+| `/help/explorer/shape-libraries/`                      | `/help/explorer/explorer-page/`      | Shape Libraries left livehuddle (Work Tracker #423 part 4)                          |
+| `/help/explorer/drawio-import/`                        | `/help/tabs/import-tabs/`            | The draw.io import left livehuddle (#423 part 4)                                    |
+| `/help/explorer/microsoft-whiteboard-import/`          | `/help/tabs/import-tabs/`            | The Microsoft Whiteboard import left livehuddle (#423 part 4)                       |
+| `/help/tools/markdown-import/`                         | `/help/tabs/import-tabs/`            | The Markdown import left livehuddle (#423 part 4)                                   |
 
 The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`, and so does a bare `/self-hosting/…` that lost its `/help` prefix.
 

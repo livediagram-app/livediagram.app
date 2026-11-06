@@ -44,6 +44,8 @@ export type ProximityCallDeps = {
   stages?: readonly CallStage[];
   // Your status is Do Not Disturb: nobody's voice or bubbles reach you (meeting-rooms-and-stage.md).
   doNotDisturb?: boolean;
+  // An Editor stopped your screen share, by presence id (video-and-screen-bubbles.md "Share roles", #504).
+  onShareStopped?: (by: string) => void;
   // The local preview's capture calls, for tests; the browser's otherwise.
   capture?: PreviewCapture;
 };
@@ -143,6 +145,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
               canShare: canShare === true,
               context,
               send: (signal) => latest.current.send?.(signal),
+              onShareStopped: (by) => latest.current.onShareStopped?.(by),
               preview,
             });
             callRef.current = call;

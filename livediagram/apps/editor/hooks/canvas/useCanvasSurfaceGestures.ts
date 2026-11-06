@@ -264,16 +264,8 @@ export function useCanvasSurfaceGestures({
       // is (male / female), and a right-click anywhere else is swallowed —
       // the context menu stays shut in this mode either way.
       if (e.button === 0) {
-        const detail = e.detail;
+        // Seated, the walk stands you up first (docs/specs/009-elements/chair.md "Any movement stands you up").
         const walk = () => {
-          // Seated (docs/specs/009-elements/chair.md): a double-click is one of the two deliberate ways
-          // out of a chair. A single click deliberately does nothing — walkTo
-          // refuses while seated, so you cannot be dragged out by a stray click
-          // — which left no pointer-only way out at all until this.
-          if (avatar.seatedOn && detail >= 2) {
-            avatar.standUp();
-            return;
-          }
           // Clicking someone ELSE's character walks over and pushes them
           // (docs/specs/008-canvas/avatar-mode.md), rather than walking to the spot they're standing on.
           const peer = peerAvatarAt(point);

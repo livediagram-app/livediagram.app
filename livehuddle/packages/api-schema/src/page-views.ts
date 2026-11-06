@@ -23,6 +23,8 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   'import',
   'join',
   'new',
+  // The retired /oauth pages (the MCP server's sign-in, docs/specs/002-project-scope/not-in-livehuddle.md): the segment
+  // stays so an old address reaches the editor's not-found page and page views recorded for it stay filed under the editor.
   'oauth',
   // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/006-document/offline-mode.md).
   'offline',

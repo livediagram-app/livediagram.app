@@ -225,8 +225,9 @@ person sees lists it.
 No app is held today. **livehuddle** (`livehuddle.app`, port block 3500, its item a **Space**, its index kind
 `space`) was registered this way, by
 [livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md), and
-launched with Work Tracker #189: its row is in `APP_SITES`. Its telemetry stays held until its dashboard is built,
-and the Explorer hero has no pictures of its kinds yet (both follow-ups to #189). It ships every platform-wide
+launched with Work Tracker #189: its row is in `APP_SITES`. Its telemetry was held until its dashboard was built
+(Work Tracker #400), and is now in `TELEMETRY_APPS`; the Explorer hero has no pictures of its kinds yet (a follow-up
+to #189). It ships every platform-wide
 feature, as the other apps do (owner, 2026-11-02): its MCP server, which the status checks look at
 ([status.md](../009-status/status.md#where-the-checks-go)), and a Community, whose service takes its posts under
 `COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with This Browser's

@@ -139,6 +139,8 @@ export function EditorStartPanels() {
           onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
           onVisualisation={ctx.planTabs.startVisualisationTab}
           onForm={ctx.forms.startForm}
+          // The one Import dialog, on its list (plan-tabs.md "The Import dialog"): an Editor's, as its tools are.
+          onImport={ctx.trackerImport.canImport ? () => ctx.setImportOpen(true) : undefined}
         />
       ) : null}
     </>

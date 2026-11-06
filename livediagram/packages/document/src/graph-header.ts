@@ -6,6 +6,8 @@ import { unionRects } from '@liveworkspace/model-core/geometry-primitives';
 import { glyphWidth } from './graph-authoring';
 import { TONE_PRESET } from './graph-look';
 import { isBoxed, type BoxedElement, type Element, type ShapeElement } from './index';
+import { arrowPolyline } from './arrow-path-hits';
+import { elementIndexFor } from './geometry';
 
 // The template's muted caption grey (template-builders-flowchart.ts MUTED).
 export const GRAPH_MUTED = '#64748b';
@@ -64,8 +66,8 @@ export function withHeaderAndKey(
   },
 ): Element[] {
   const boxes = elements.filter(isBoxed);
-  const block = unionRects(boxes);
-  if (!block) return elements;
+  if (boxes.length === 0) return elements;
+  const block = drawingRect(elements, boxes);
   const added: Element[] = [];
   const title = opts.title?.trim();
   const subtitle = opts.subtitle?.trim();
@@ -110,6 +112,23 @@ export function withHeaderAndKey(
       });
   }
   return [...added, ...elements];
+}
+
+// The drawing the header and key clear: its boxes and every line as drawn. A cycle's arcs round the outside of its
+// top stop rose past the boxes, and the heading above the boxes alone sat across them.
+function drawingRect(elements: Element[], boxes: BoxedElement[]) {
+  const index = elementIndexFor(elements);
+  const rects: { x: number; y: number; width: number; height: number }[] = [...boxes];
+  for (const el of elements) {
+    if (el.type !== 'arrow') continue;
+    const pts = arrowPolyline(el, index);
+    const xs = pts.map((p) => p.x);
+    const ys = pts.map((p) => p.y);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    rects.push({ x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y });
+  }
+  return unionRects(rects)!;
 }
 
 // The key: a frame level with the drawing's top, one row per shape kind the drawing uses, each a miniature

@@ -4,7 +4,7 @@ import { labelBoxSize } from './graph-authoring';
 import { routeLoops, segmentHitsBox, sideStepEdges, withTones, type Routes } from './graph-look';
 import type { ArrowElement, BoxedElement, Element } from './index';
 
-// The graph look (docs/specs/015-api/mcp-server.md §4.7 "The graph look").
+// The graph look (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look").
 
 let n = 0;
 const ids = () => `e${n++}`;

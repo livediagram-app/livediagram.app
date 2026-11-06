@@ -162,7 +162,7 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
     if (!documentId || documentId.length > MAX_DOCUMENT_ID) return notFound();
     grant = await resolveDocumentGrant(ctx, documentId);
     // An API client's rename is the index's title too; the editor renames there itself.
-    if (segments.length === 3 && request.method === 'PUT' && (ctx.token || ctx.workbench)) {
+    if (segments.length === 3 && request.method === 'PUT' && ctx.token) {
       const body = await readBody({ ...ctx, request: request.clone() });
       if (!(body instanceof Response) && typeof body.name === 'string') renamedTo = body.name;
     }

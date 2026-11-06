@@ -7,7 +7,8 @@ Fridge**); and a garden (an **Outdoor Plant**, a **Tree**, a **Garden Path**, **
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
 The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Recreation corner (Jukebox, Ping-Pong Table,
-Arcade Machine, Fireplace) and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
+Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace), a Vending Machine, a Bean Bag and a Reading Nook,
+and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
 A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meeting** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
@@ -59,7 +60,7 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
 - **The walls block** walking exactly as a [Fence](fence.md#blocking) does: same reach, same slide along them, from
   either side; a Door (or an older room's built-in doorway) does not. A character inside a room with no door stays
   inside until it takes a portal.
-- **It is a call of its own** while calls are on: everyone inside hears everyone else inside at full volume, and
+- **It is private** while calls are on: everyone inside hears the people near them inside, by distance, and
   nobody outside hears them; the walls block sound as they block walking, and the doorway's threshold is the line
   of the walls ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)).
 - **Any shape, any doors**: the [Room Builder](room-builder.md) draws a room of any outline wall by wall, snapped

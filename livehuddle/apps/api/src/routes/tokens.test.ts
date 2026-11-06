@@ -61,7 +61,7 @@ describe('token management is on liveworkspace.app', () => {
   });
 });
 
-describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-service")', () => {
+describe('/api/tokens/current (docs/specs/015-api/public-api-and-tokens.md "A token’s view of itself")', () => {
   const tokenCtx = (method: string, readOnly = false, waitUntil?: (p: Promise<unknown>) => void) =>
     makeTestRouteContext(method, '/api/tokens/current', {
       accountUserId: null,

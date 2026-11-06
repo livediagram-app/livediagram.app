@@ -80,6 +80,13 @@ export const SHAPE_KINDS = new Set<string>([
   'garden-umbrella',
   'fountain',
   'pond',
+  // The social pieces' second set (docs/specs/009-elements/social-pieces.md).
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
   // Door (docs/specs/009-elements/room-builder.md "Door").
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).

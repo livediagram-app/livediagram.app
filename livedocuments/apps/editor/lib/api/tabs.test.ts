@@ -4,6 +4,7 @@ import type { Tab } from '@livedocuments/document';
 import { apiLoadTabRevisioned, apiSaveTab, flushDocumentSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
 import { SAVE_TIMEOUT_BASE_MS, saveTimeoutMs } from './core';
+import { resetKeepaliveBudget } from './unload-requests';
 
 vi.mock('../offline/offline-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../offline/offline-store')>()),
@@ -40,6 +41,8 @@ describe('flushDocumentSavesBeacon', () => {
   });
   afterEach(() => {
     vi.unstubAllGlobals();
+    // The keepalive budget is the page's, refilled on the next task: each test starts a fresh page.
+    resetKeepaliveBudget();
   });
 
   const base = {

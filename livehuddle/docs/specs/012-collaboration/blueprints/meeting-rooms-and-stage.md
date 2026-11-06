@@ -253,14 +253,13 @@ refused` and nothing is delivered. The browser's own check stays.
   speak, with the staging, is about 30 µs a scene. The canvas's `RaisedHands` draws nothing and costs one empty
   check while no hand is up; the hands store notifies only on a raise, a lower, a let-speak or a prune.
 - A stage is one speaker to everyone: `listeners` streams per speaker (the spec's Cost), subscribed in batches of 16.
-- A room is one call: everyone in it subscribes to everyone else, `n × (n − 1)` streams (the spec's Cost). The SFU
-  session batches subscribes at `MAX_SUBSCRIBE_BATCH` (16) per request, so a crowded room joins in a few requests.
-- **A big room** (#482, `lib/calls/big-room.ts`): when more than `BIG_ROOM_AFTER` (8) of the people heard share your
-  room, `capBigRoom` keeps everyone heard outside it, the `NEAREST_IN_ROOM` (3) nearest (one already received stays
-  within `NEAREST_RELEASE`, 5) and the `MAX_ROOM_TALKERS` (8) who talked last within `RECENT_TALK_MS` (30 s). The
-  store notes `talkedAt` from the relayed `avatar-voice` levels (which reach the whole tab whatever is subscribed) and
-  `onCallTalkStart` re-runs the choice when someone starts. Measured: a 30-person floor with two talkers drops from
-  870 microphone streams to 143; 200 choices in a room of 100 cost 33 ms CPU on a loaded laptop (about 0.17 ms each).
+- A room hears by distance (owner, 2026-11-06): `togetherWith` answers `'open'` for anyone on your side of the walls,
+  room or floor, so `nextHeard` measures them as on the open floor; `'room'` is left for fellow speakers on a stage.
+  The big-room cap (#482, its old `big-room` module) and the store's `talkedAt` and `onCallTalkStart`, which fed it, are
+  removed with whole-room hearing: a room's streams are bounded by the hearing radius like the open floor's, and the
+  per-scene work drops the sort and the talkers' scan. The stage's `audience` set (rooms that heard by distance only
+  under a live stage) went with it. The api's `hearingVerdict` measures distance in a shared room too, with the same
+  `HEARING_MARGIN_PX` past the release radius.
 - **The server check** costs one RPC to the room per subscribe request (already batched at 16) plus one `SELECT rev`
   per tab asked about; the tab's JSON is parsed again only when its revision moved. Measured on a loaded laptop: 1,600
   verdicts 31 ms CPU (about 19 µs each), 100 subscribes of 16 tracks in a room of 100 31 ms (about 0.3 ms each).
@@ -281,7 +280,7 @@ room`; the browser counts `CallNotHeard`.
 | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | A room's interior is inside its wall centre lines, for any size and door                | `../packages/avatar/src/office-geometry.test.ts`                                                                                 |
 | Zones from rooms only; strict edges; innermost wins; ties by id                         | `apps/editor/lib/calls/zones.test.ts`                                                                                            |
-| Same room opposite corners at full gain; next room through a wall silent;               | `apps/editor/lib/calls/hearing.test.ts`                                                                                          |
+| Same room by distance; next room through a wall silent;                                 | `apps/editor/lib/calls/hearing.test.ts`                                                                                          |
 | hallway to room silent; hallway to hallway by distance; 100 × 50 in budget              |                                                                                                                                  |
 | The call subscribes by zone, re-zones on update, bubbles follow, Live                   | `apps/editor/lib/calls/proximity-call.test.ts`                                                                                   |
 | The canvas passes visible rooms only                                                    | `apps/editor/components/calls/useCanvasCall.test.tsx`                                                                            |
@@ -304,7 +303,6 @@ room`; the browser counts `CallNotHeard`.
 | The route answers `not_heard` in place, fails open                                      | `apps/api/src/calls/subscribe-hearing.test.ts`, `routes/calls.test.ts`                                                           |
 | Through the real room: proof kept, hearing, let-speak refused, stop-share               | `apps/api/src/document-room-calls.test.ts`                                                                                       |
 | The shared geometry                                                                     | `packages/document/src/call-geometry.test.ts`                                                                                    |
-| A big room: nearest, talkers, stickiness, 870 to 143 streams, cost                      | `apps/editor/lib/calls/big-room.test.ts`                                                                                         |
 | `not_heard` held back and retried with backoff; the call re-proves                      | `apps/editor/lib/calls/sfu-session.test.ts`, `proximity-call.test.ts`                                                            |
 | Part 4: the tile, its place in Rooms, its search words                                  | `apps/editor/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`, `apps/editor/lib/palette-search.test.ts` |
 | Part 4: the Stage section's tiles, switch and calls                                     | `apps/editor/components/palette/StageMenuSection.test.tsx`                                                                       |

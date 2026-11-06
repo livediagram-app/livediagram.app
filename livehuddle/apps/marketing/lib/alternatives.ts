@@ -45,7 +45,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Programmatic access',
-        us: 'REST API, a command line and an MCP server for AI tools, all free',
+        us: 'A free REST API with personal tokens',
         them: 'Integrations such as calendars',
       },
     ],
@@ -63,7 +63,7 @@ const LIST: Alternative[] = [
       'Your own character with outfits, a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves, and Follow to go wherever a teammate goes.',
       'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
       'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks, comments and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
-      'A free REST API, a command line and an MCP server, so scripts and AI assistants can set up and change your Spaces.',
+      'A free REST API, so your own scripts can set up and change your Spaces.',
       'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
     ],
     sections: [
@@ -146,7 +146,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Programmatic access',
-        us: 'REST API, a command line and an MCP server for AI tools, all free',
+        us: 'A free REST API with personal tokens',
         them: 'Integrations such as calendars',
       },
     ],
@@ -164,7 +164,7 @@ const LIST: Alternative[] = [
       'The walls hold the meeting: sticky notes, text and stickers, and a Timer or a Stopwatch in any room.',
       'Bring Focus and follow-me to walk the room through something, and a burst of confetti, sparkles, hearts, applause or fireworks round your character when it goes well.',
       'Comments with mentions and reactions, and actions assigned to a teammate, so the follow-ups leave with an owner.',
-      'A free REST API, a command line and an MCP server, so scripts and AI assistants can set up and change your Spaces.',
+      'A free REST API, so your own scripts can set up and change your Spaces.',
     ],
     sections: [
       {
@@ -241,7 +241,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Programmatic access',
-        us: 'REST API, a command line and an MCP server for AI tools, all free',
+        us: 'A free REST API with personal tokens',
         them: 'Integrations such as calendars',
       },
     ],
@@ -258,7 +258,7 @@ const LIST: Alternative[] = [
       'Everyone is a character with outfits, a status (Available, Focusing, In a Meeting or Away), speech bubbles and five moves, and Follow takes you wherever a teammate goes.',
       'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
       'Participant links let people walk, talk, comment and react without moving the furniture.',
-      'A free REST API, a command line and an MCP server, so an AI assistant can set up a Space and share it for you.',
+      'A free REST API, so a script can set up a Space and share it for you.',
       'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
     ],
     sections: [
@@ -284,7 +284,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Free, open and yours',
         paragraphs: [
-          'There is no paid tier and no plan to introduce one. The whole codebase is MIT-licensed and public. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. Export a tab as PNG, SVG, PDF or a JSON file that imports back, and script the rest with the free REST API, the command line or the MCP server.',
+          'There is no paid tier and no plan to introduce one. The whole codebase is MIT-licensed and public. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. Export a tab as PNG, SVG, PDF or a JSON file that imports back, and script the rest with the free REST API.',
         ],
       },
     ],

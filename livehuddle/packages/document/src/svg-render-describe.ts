@@ -1,4 +1,4 @@
-// The export descriptor layer of the headless SVG renderer (docs/specs/015-api/mcp-server.md
+// The export descriptor layer of the headless SVG renderer (livediagram/docs/specs/015-api/mcp-server.md
 // §5), split out of svg-render.ts: the export constants, the
 // ExportShape / resolver types, and describeBoxedExport — the pure
 // element -> shape + label descriptor both the per-element emitters and
