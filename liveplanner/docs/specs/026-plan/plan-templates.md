@@ -139,12 +139,12 @@ The catalogue below still lists, per tab, the metrics, charts and rail it brings
   Role), never a type that would always fall in the "No Role" row.
 - **A board of dated cards has a Gantt chart of them under it**: the chart's card types are the board's
   (`types` on the view), not only Projects.
-- **A ready-made type's Default State** is a state name ([Item types](item-types.md#an-item-type)): for the twelve
+- **A ready-made type's Default State** is a state name ([Item types](item-types.md#an-item-type)): for the thirteen
   below, the first column of the board it is made for.
 
 ### Ready-made card types
 
-The five default types (Project, Task, Note, Idea, Action: [Items](items.md#item-types)) and these twelve. Colours from
+The five default types (Project, Task, Note, Idea, Action: [Items](items.md#item-types)) and these thirteen. Colours from
 the Plan palette. Every type also offers Comments, last. Card fields link to the type named. "On the card" is what
 its Detailed cards add Under the Title.
 
@@ -159,12 +159,15 @@ its Detailed cards add Under the Title.
 | Onboarding Task | `onboarding-task` | checklist | green `#16a34a`  | Description, Status, Assignee, Due, Checklist; **New Starter** (Card: Candidate)                                                                                                                                                   |                 | Before Day One |
 | Objective       | `objective`       | target    | amber `#d97706`  | Description, Status, Assignee, Priority, Colour, Start, Due, Labels                                                                                                                                                                |                 | Draft          |
 | Key Result      | `key-result`      | trend     | teal `#0d9488`   | Description, Status, Assignee, Due, Checklist; **Objective** (Card: Objective), **Baseline**, **Target**, **Current** (Numbers)                                                                                                    | Current, Target | Not Started    |
+| Milestone       | `milestone`       | milestone | teal `#0d9488`   | Description, Status, Due (the date to reach it by), Checklist; **Goal** (Card: Objective)                                                                                                                                          |                 |                | Not Started |
 | Launch Check    | `launch-check`    | flag      | green `#16a34a`  | Description, Status, Assignee, Priority; **Workstream** (Card: Project)                                                                                                                                                            | Workstream      | Not Checked    |
 | Deal            | `deal`            | coin      | green `#16a34a`  | Description, Status, Assignee (the deal's owner), Due (the expected close), Checklist, Labels; **Company** (Text), **Value** (Currency, GBP), **Contact** (Text), **Source** (Choice: Inbound, Referral, Outbound, Event, Partner) | Company, Value  | Lead           |
 | Ticket          | `ticket`          | ticket    | blue `#2563eb`   | Description, Status, Assignee, Priority, Due (when it is promised by), Checklist, Labels; **Customer** (Text), **Email** (Email), **Channel** (Choice: Email, Chat, Phone, Form)                                                   | Customer        | New            |
 
 - A Role and an Objective offer Start and Due, so the Gantt chart draws them; a Candidate's Role, a Key Result's
-  Objective and an Onboarding Task's New Starter are what their boards lay their rows by.
+  Objective, a Milestone's Goal and an Onboarding Task's New Starter are what their boards lay their rows by. A
+  Milestone is a step on the way to a personal goal: it is reached when it is in a done column, so it needs no
+  numbers.
 
 ## The templates
 
@@ -271,10 +274,10 @@ Open roles, the candidates for each, and the new starter's first month.
 
 Objectives for the period and the key results that measure them, checked in on each week.
 
-| Tab         | Holds                                                                                                                                                                                                           |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Objectives  | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Objectives; start and due dates. Gantt Chart of the Objectives under it                                                                        |
-| Key Results | Board **Key Results**: Not Started, On Track (green), At Risk (amber), Off Track (red), Done (done); a row per objective (Objective); Key Results; checklist progress. Cards by Field under it. How we check in |
+| Tab        | Holds                                                                                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Objectives | Board **Objectives**: Draft, Committed, Achieved (done), Missed; Objectives; start and due dates. Gantt Chart of the Objectives under it                       |
+| Milestones | Board **Milestones**: Not Started, In Progress (teal), Done (green, done); a row per goal (Goal); Milestones; due dates and checklist progress. How this works |
 
 - How we check in: each week, update every key result's Current, move it to the column it is in and say why in a comment; anything
   At Risk or Off Track gets its next steps on its checklist.
@@ -371,7 +374,8 @@ meetings archived.
 
 ### Personal Goals
 
-A person's goals for the year, the key results that show progress on each, and the daily habits behind them.
+A person's goals for the year, the milestones on the way to each, and the daily habits behind them. It speaks
+plainly, not in OKR terms: its steps are Milestones, never Key Results.
 
 | Tab         | Holds                                                                                                                                                          |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -380,8 +384,8 @@ A person's goals for the year, the key results that show progress on each, and t
 | Habits      | Sheet **Habit Tracker**, filling the tab: the Habit Tracker sheet template (a week of ticks against each habit's goal and a bar chart)                         |
 | Overview    | Dashboard: the chart and note above, beside each tab                                                                                                           |
 
-- How this works: write each goal on Goals, with when you want it by; give it two or three Key Results you can
-  measure; each Sunday, update every key result's Current; tick your habits on Habits each day.
+- How this works: write each goal on Goals, with when you want it by; break it into two or three Milestones, each
+  with a date; each Sunday, move your milestones along; tick your habits on Habits each day.
 
 ### Study Planner
 
