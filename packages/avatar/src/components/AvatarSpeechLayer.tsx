@@ -249,7 +249,12 @@ function Composer({
         style={style}
       >
         <div className="origin-bottom animate-speech-pop">
-          <SpeechCard colour={colour || undefined} tailShift={tailOffset(shift, COMPOSER_WIDTH)}>
+          <SpeechCard
+            colour={colour || undefined}
+            tailShift={tailOffset(shift, COMPOSER_WIDTH)}
+            // Moved down below the head (#501), there is nothing under it to point at.
+            tail={down <= 0}
+          >
             <div className="flex items-end gap-2">
               <SpeechDraftField
                 autoFocus

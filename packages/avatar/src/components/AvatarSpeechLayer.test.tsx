@@ -171,6 +171,9 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     // Its top would be 60px above the view: down by that and SPEECH_TOP_CLEAR (120px).
     expect(panel.style.marginBottom).toBe('-180px');
     expect(panel.style.marginLeft).toBe('');
+    // Below the head it would point at, it has no tail.
+    const tail = () => panel.querySelector('span.rotate-45');
+    expect(tail()).toBeNull();
     // A line more makes it taller, so it comes down further.
     height.mockReturnValue(80);
     fireEvent.change(screen.getByRole('textbox', { name: 'Message' }), {
@@ -180,6 +183,8 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     // A head well down the view leaves it on the head.
     rerender(at({ x: 400, y: 800 }));
     expect(panel.style.marginBottom).toBe('');
+    // On the head again, its tail is back.
+    expect(tail()).not.toBeNull();
     // Without the view's height only the sides hold it in.
     rerender(at(composer.head, VIEW));
     expect(panel.style.marginBottom).toBe('');
