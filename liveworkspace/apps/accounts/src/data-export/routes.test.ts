@@ -110,6 +110,21 @@ function addTeam(
   }
 }
 
+// Ada's place in Design changed while its export ran: demoted to member, removed from the team, or the team deleted.
+type Change = 'demoted' | 'removed' | 'deleted';
+const CHANGES: Change[] = ['demoted', 'removed', 'deleted'];
+function changeAda(change: Change) {
+  if (change === 'deleted')
+    sql.prepare(`UPDATE team SET deletedAt = 2 WHERE id = 'team-design'`).run();
+  else
+    sql
+      .prepare(
+        `UPDATE team_member SET ${change === 'demoted' ? "role = 'member'" : "status = 'removed'"}
+         WHERE teamId = 'team-design' AND userId = 'user_ada'`,
+      )
+      .run();
+}
+
 beforeEach(() => {
   const d1 = testD1();
   sql = d1.sql;
@@ -327,6 +342,42 @@ describe('the emailed link', () => {
     ).toBe('other-account');
   });
 
+  // Work Tracker #283: the admin is checked again at the download, before the link's expiry or the file, so someone
+  // no longer an admin is refused as any non-admin is and never learns whether the export is still there.
+  describe('a team’s, by role at the download', () => {
+    const team = { key: 'team:team-design', exportId: 'ex_t' };
+    const teamService = () => fakeService({ 'team:team-design': view({ id: 'ex_t' }) });
+
+    it('opens for an admin', async () => {
+      expect((await open(await link(team), ADA, teamService())).status).toBe(200);
+    });
+
+    it.each(CHANGES)('refuses an admin %s since, whatever the link’s state', async (change) => {
+      changeAda(change);
+      expect(await refusedFor(await open(await link(team), ADA, teamService()))).toBe(
+        'other-account',
+      );
+      // Lapsed, or gone from the service: still the same answer, saying nothing of the export.
+      expect(
+        await refusedFor(await open(await link({ ...team, expiresAt: NOW }), ADA, teamService())),
+      ).toBe('other-account');
+      expect(await refusedFor(await open(await link(team), ADA, fakeService()))).toBe(
+        'other-account',
+      );
+    });
+
+    it('refuses a member and an outsider, even with a link signed for them', async () => {
+      addUser(sql, { id: 'user_out', email: 'out@example.com', name: 'Out' });
+      const OUT: Signed = { id: 'user_out', name: 'Out', email: 'out@example.com' };
+      for (const who of [BEA, OUT]) {
+        const own = await link({ ...team, forPerson: who.id });
+        expect(await refusedFor(await open(own, who, teamService()))).toBe('other-account');
+        const lapsed = await link({ ...team, forPerson: who.id, expiresAt: NOW });
+        expect(await refusedFor(await open(lapsed, who, teamService()))).toBe('other-account');
+      }
+    });
+  });
+
   it('answers 503 without the service', async () => {
     const res = await handleDataExportDownload(new Request(await link()), env, session(ADA), {
       service: null,
@@ -399,6 +450,60 @@ describe('the service’s call back', () => {
     expect((await handleDataExportReady(new Request(`${BASE}/x`), env)).status).toBe(404);
     env.EXPORT_KEY_ACCOUNTS = undefined;
     expect((await ready(call)).status).toBe(404);
+  });
+});
+
+// Work Tracker #283: a team's email goes only to someone still its admin when the export finishes.
+describe('the service’s call back for a team, by role', () => {
+  const ready = (body: unknown) =>
+    handleDataExportReady(
+      new Request(`${BASE}/api/account/internal/data-export/ready`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer export-key' },
+        body: JSON.stringify(body),
+      }),
+      env,
+    );
+  const call = {
+    key: 'team:team-design',
+    exportId: 'ex_t',
+    requestedBy: 'user_ada',
+    status: 'ready',
+    bytes: 2_400_000,
+    expiresAt: NOW + 3 * DAY,
+    teamName: 'Design',
+  };
+  const failed = { ...call, status: 'failed', expiresAt: null };
+
+  it('emails an admin still, ready or failed', async () => {
+    expect((await ready(call)).status).toBe(204);
+    expect((await ready(failed)).status).toBe(204);
+    expect(sent.map((m) => [m.to, m.subject])).toEqual([
+      ['ada@example.com', 'Design’s liveworkspace data is ready'],
+      ['ada@example.com', 'Design’s liveworkspace data couldn’t be downloaded'],
+    ]);
+  });
+
+  it.each(CHANGES)('emails no one when the admin was %s while it ran', async (change) => {
+    changeAda(change);
+    expect((await ready(call)).status).toBe(204);
+    expect((await ready(failed)).status).toBe(204);
+    expect(sent).toHaveLength(0);
+  });
+
+  it('emails neither a member nor an outsider named as its requester', async () => {
+    addUser(sql, { id: 'user_out', email: 'out@example.com', name: 'Out' });
+    for (const requestedBy of ['user_bea', 'user_out']) {
+      expect((await ready({ ...call, requestedBy })).status).toBe(204);
+      expect((await ready({ ...failed, requestedBy })).status).toBe(204);
+    }
+    expect(sent).toHaveLength(0);
+  });
+
+  it('still emails a personal export’s owner, whatever their teams', async () => {
+    changeAda('removed');
+    await ready({ ...call, key: 'personal:user_ada', teamName: null });
+    expect(sent).toHaveLength(1);
   });
 });
 
