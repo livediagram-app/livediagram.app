@@ -28,7 +28,6 @@ import {
   onCallLevels,
   onCallMaximised,
   onCallsMode,
-  onCallTalkStart,
   onCallTracks,
   onLetSpeak,
   onStopShare,
@@ -125,7 +124,6 @@ export class ProximityCall {
     this.hand = new RaisedHand((signal) => this.beacon.send(signal));
     this.unsubscribe = [
       onCallTracks(() => this.hear()),
-      onCallTalkStart(() => this.hear()),
       onCallsMode(() => this.applyMode()),
       onCallMaximised(() => this.hear()),
       // A peer's level changing may let them speak from the stage they stand on, or stop them.
@@ -359,7 +357,6 @@ export class ProximityCall {
       mode: callSelf().mode,
       maximised: callMaximised(),
       visible: (this.input.pageVisible ?? documentVisible)(),
-      now: performance.now(),
     });
     this.heard = chosen.heard;
     setCallSelf({ heard: this.heard });

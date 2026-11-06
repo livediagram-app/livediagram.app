@@ -47,9 +47,8 @@ Every speaker publishes their microphone once (ingress is free). Each listener s
 earshot, from the positions the room already shares in the `avatar` op.
 
 **Rooms come first** ([Meeting rooms and the stage](meeting-rooms-and-stage.md#rooms-are-calls-part-1-built), Work
-Tracker #319, #436): an [Office Room](../009-elements/office.md#room) is a call of its own. Inside one, you hear
-everyone in the same room at full volume whatever the distance, and nobody outside it; walls block sound fully. The
-rules below are for the open floor, outside every room:
+Tracker #319, #436): an [Office Room](../009-elements/office.md#room) is walled off: nobody outside it hears anyone
+inside, and walls block sound fully. Inside a room, as on the open floor, the rules below apply (owner, 2026-11-06):
 
 - **Hearing radius: 260 canvas px**, feet to feet. A speaker inside it is subscribed.
 - **Release radius: 300 canvas px.** A subscribed speaker is let go only beyond it, so somebody standing on the edge

@@ -59,7 +59,7 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
 - **The walls block** walking exactly as a [Fence](fence.md#blocking) does: same reach, same slide along them, from
   either side; a Door (or an older room's built-in doorway) does not. A character inside a room with no door stays
   inside until it takes a portal.
-- **It is a call of its own** while calls are on: everyone inside hears everyone else inside at full volume, and
+- **It is private** while calls are on: everyone inside hears the people near them inside, by distance, and
   nobody outside hears them; the walls block sound as they block walking, and the doorway's threshold is the line
   of the walls ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)).
 - **Any shape, any doors**: the [Room Builder](room-builder.md) draws a room of any outline wall by wall, snapped
