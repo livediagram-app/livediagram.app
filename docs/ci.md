@@ -62,6 +62,17 @@ ref) replaced. A key without a commit, such as setup-node's pnpm store, is never
 `main`'s own script and checks out nothing else, so its `actions: write` never meets a pull request's
 code.
 
+## Runs on main
+
+CI, E2E and CodeQL keep one run per branch: a newer push to a pull request, or to `main`, cancels the
+older run. A run started by hand is never cancelled. So that a cancelled run's commits are still
+checked, a push to `main` plans against the newest commit that workflow last passed on `main`
+(`.github/scripts/main-base.mjs`), not the commit just before it, and with no such commit everything
+runs. A failure on `main` is therefore pinned on the commits since the last green one. Until
+2026-11-06 every commit on `main` ran to the end, and a burst of merges kept jobs waiting a median 16
+minutes for one of the free plan's 20 runners (each product's `docs/specs/016-platform/deployment.md`
+"Runs on main cancel older ones").
+
 ## Workflows
 
 - **CI** (`ci.yml`), on every pull request and every push to `main`. Its Plan job also writes the

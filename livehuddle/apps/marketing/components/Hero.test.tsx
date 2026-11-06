@@ -72,7 +72,10 @@ describe('the hero', () => {
     const drawings = [...html.matchAll(/<img [^>]*src="\/hero\/floor-[^"]+"[^>]*>/g)].map(
       (m) => m[0],
     );
-    expect(drawings).toHaveLength(FLOOR_STAGES.length * 2);
+    // The back row's layer shows the wide stage's own drawing again, so it adds no fetch of its own.
+    expect(drawings).toHaveLength(FLOOR_STAGES.length * 2 + 2);
+    const srcs = new Set(drawings.map((img) => img.match(/src="([^"]+)"/)![1]));
+    expect(srcs.size).toBe(FLOOR_STAGES.length * 2);
     for (const img of drawings) expect(img).toContain('loading="lazy"');
   });
 });

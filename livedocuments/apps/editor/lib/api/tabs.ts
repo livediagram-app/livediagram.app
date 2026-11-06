@@ -2,7 +2,6 @@
 // cross-document link, and delete.
 import {
   CHANGESET_SEEN_HEADER,
-  INDEX_GRANT_HEADER,
   type TabResponse,
   type TabSummary,
 } from '@livedocuments/api-schema';
@@ -17,7 +16,6 @@ import {
   offlineSaveTab,
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
-import { heldDocumentGrant } from './document-grants';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import {
   API_BASE,
@@ -26,13 +24,12 @@ import {
   expectOk,
   expectOkOrNull,
   expectOkVoid,
-  getLastKnownToken,
   getSessionSharePassword,
-  identityHeaders,
   tabForWire,
   apiFetch,
   saveTimeoutSignal,
 } from './core';
+import { NO_GRANT_WAIT, bodyBytes, takeKeepalive, unloadHeaders } from './unload-requests';
 
 // Full tab payload, including elements + per-tab metadata. Pulled
 // lazily when the user opens a tab; the document-summary fetch only
@@ -183,13 +180,6 @@ async function savedRevOf(res: Response): Promise<number | null> {
 // save carries the freshly-fetched hybrid identity for the common
 // (non-unload) case. Callers pass an already-diffed change set
 // (computeTabSaveDiff); empty sets fire nothing.
-// The keepalive bodies an unload flush sends at most: browsers allow 64 KB in all per page; the rest is
-// headroom for another keepalive request in flight. Safe range: 32 KB to 63 KB.
-const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
-
-// The unload flush's requests go at once, with the grant it holds (apiFetch `documentGrant: false`).
-const NO_GRANT_WAIT = { documentGrant: false } as const;
-
 export function flushDocumentSavesBeacon(args: {
   ownerId: string;
   documentId: string;
@@ -225,43 +215,18 @@ export function flushDocumentSavesBeacon(args: {
     }
     return;
   }
-  // Identity, synchronously (a beforeunload handler can't await):
-  // signed-in sessions ride the token apiHeaders cached on its last
-  // fetch — the autosave loop refreshes it every ~600ms while editing,
-  // so it's seconds old at teardown. Guests ride their guest token (a sync
-  // localStorage read), and the document's grant is the one held (document-grants.ts),
-  // so nothing here waits on the network. The rule is apiHeaders' own
-  // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
-  // skip the flush rather than fire writes that are certain to 401.
-  let base: Record<string, string>;
-  try {
-    base = identityHeaders(args.ownerId, getLastKnownToken());
-  } catch {
-    console.warn('[save] unload flush skipped: no session token for a signed-in owner');
-    return;
-  }
-  if (args.shareCode) base['X-Share-Code'] = args.shareCode;
-  const grant = heldDocumentGrant(
-    args.documentId,
-    args.shareCode ? { code: args.shareCode } : null,
-  );
-  if (grant) base[INDEX_GRANT_HEADER] = grant;
-  // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
-  // without it an edit-role visitor's flush 403s on a protected
-  // document, losing the final debounce window's edits.
-  const sharePassword = getSessionSharePassword();
-  if (sharePassword) base['X-Share-Password'] = sharePassword;
+  // Identity, synchronously (a beforeunload handler can't await): signed-in sessions ride the token apiHeaders
+  // cached on its last fetch (the autosave loop refreshes it every ~600ms while editing, so it's seconds old at
+  // teardown), guests their guest token, and the grant held, so nothing here waits on the network
+  // (unload-requests.ts). A signed-in owner with no cached token has nothing the worker accepts: no flush.
+  const base = unloadHeaders(args.ownerId, args.documentId, args.shareCode);
+  if (!base) return;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
   // Browsers refuse keepalive bodies past 64 KB in all (per page), and the refusal was swallowed below, so a
   // large tab's last edits were lost on close. Keepalive while the bodies fit; past that, a plain request,
   // which still lands when the page lives on (hidden, or left for another page of the app).
-  let keepaliveLeft = KEEPALIVE_BUDGET_BYTES;
-  const keepaliveFor = (body: string | undefined) => {
-    const bytes = body ? new TextEncoder().encode(body).length : 0;
-    if (bytes > keepaliveLeft) return false;
-    keepaliveLeft -= bytes;
-    return true;
-  };
+  // The budget is the page's, shared with the deck's own unload save (unload-requests.ts takeKeepalive).
+  const keepaliveFor = (body: string | undefined) => takeKeepalive(bodyBytes(body));
   for (const t of args.changedTabs) {
     const seen = args.changesetSeen?.get(t.id);
     const headers: Record<string, string> = {

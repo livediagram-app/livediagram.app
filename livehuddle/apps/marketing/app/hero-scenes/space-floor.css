@@ -10,7 +10,7 @@
   --hsf-shadow: rgb(2 44 34 / 0.14);
   /* Off screen, a browser that skips rendering the stage does no work for it. */
   content-visibility: auto;
-  contain-intrinsic-size: auto 800px;
+  contain-intrinsic-size: auto 1152px;
 }
 :where(.dark, .dark *):not(:where(.light, .light *)) .hsf-stage {
   --hsf-card: #0f172a;
@@ -21,11 +21,15 @@
   --hsf-shadow: rgb(0 0 0 / 0.5);
 }
 
-/* Below lg the copy spans the window, so the wings would stand cropped against the headline: the wide stage
-   shows its floor alone (from y 490, FLOOR_CLIP_Y, under the calls to action). */
+/* The stage draws from the back row's foot down (y 324, BACK_ROW_SPAN): the back of the office is its own layer,
+   .hsf-back. Below lg the copy spans the window, so the wings would stand cropped against the headline: the stage
+   shows its floor alone (from y 842, FLOOR_CLIP_Y, under the calls to action). */
+.hsf-floor-only {
+  clip-path: inset(324px 0 0 0);
+}
 @media (max-width: 63.999rem) {
   .hsf-floor-only {
-    clip-path: inset(490px 0 0 0);
+    clip-path: inset(842px 0 0 0);
   }
   /* A walker whose path crosses that line walks its floor path instead (FLOOR_ONLY in hero-space-floor-cast.ts),
      so nobody vanishes at the clip mid-walk. Under the stage, to outweigh a bubble's own display. */
@@ -35,6 +39,19 @@
 }
 @media (min-width: 64rem) {
   .hsf-stage .hsf-below-lg {
+    display: none;
+  }
+}
+
+/* The back of the office (HeroSpaceBackRow, backRowTop in hero-space-floor-cast.ts): the stage's y 144..324, at its
+   place on the stage (the band's foot less 1008px) or, in a shorter band, 6px under the band's top, so a window shows
+   it whole or not at all. Hidden whole in a band under 876px (a window under 948px tall, the band being the window
+   less the 72px header), where it would meet the wings or the copy. */
+.hsf-back {
+  top: max(calc(100% - 1008px), 6px);
+}
+@media (max-height: 947.98px) {
+  .hsf-back {
     display: none;
   }
 }
