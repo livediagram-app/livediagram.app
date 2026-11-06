@@ -310,6 +310,8 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   lists), and the app is told to reload every link's sessions (`revoke`, `reason: "rescoped"`, below), so they meet
   the password; entering it records them again. Saving the same password, or removing it, sends no one away.
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
+- A connected tab's pass is a share link like these, made by `POST /items/:id/connections` and handed out only by
+  `GET /connections/:id` ([connected-tabs.md](connected-tabs.md)).
 
 Who gets what, the rule the grant applies: the owner of a personal item, and every joined member of a team item's
 team, edit everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). A team
