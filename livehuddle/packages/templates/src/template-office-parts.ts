@@ -13,8 +13,8 @@ import {
   type RoomDoor,
   type ShapeKind,
 } from '@livehuddle/document';
-import { avatarScale } from '@liveworkspace/avatar/config';
 import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
+import { AVATAR_SIZE_SCALE } from '@liveworkspace/avatar/size-scale';
 import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import { CANVAS_TONES } from './template-inks';
 import { heading } from './template-session-parts';
@@ -125,7 +125,7 @@ export const WAY_IN_CLEAR = 72;
  */
 export function padCentreClearBelow(above: number, gap = 16): number {
   const feet = avatarPadCore({ x: 0, y: 0, ...AVATAR_PAD_DEFAULT_SIZE }).y;
-  return above + gap + avatarFigureHeight(avatarScale('regular')) - feet + PAD_H / 2;
+  return above + gap + avatarFigureHeight(AVATAR_SIZE_SCALE.regular) - feet + PAD_H / 2;
 }
 
 /**

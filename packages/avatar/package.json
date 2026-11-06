@@ -43,6 +43,7 @@
     "./scene": "./src/scene.ts",
     "./seat-claims": "./src/seat-claims.ts",
     "./seats": "./src/seats.ts",
+    "./size-scale": "./src/size-scale.ts",
     "./speech": "./src/speech.ts",
     "./speech-store": "./src/speech-store.ts",
     "./status": "./src/status.ts",

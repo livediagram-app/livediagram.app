@@ -19,6 +19,7 @@ import {
 } from '@liveworkspace/workbench/lib/local-storage-safe';
 import { randomPick } from '@liveworkspace/workbench/lib/random';
 import { avatarBindings } from './bindings';
+import { AVATAR_SIZE_SCALE } from './size-scale';
 
 // The costume vocabulary itself lives in @liveworkspace/api-schema, because the
 // presence packet carries it to peers and both ends must agree on the tokens
@@ -146,20 +147,9 @@ export const AVATAR_SIZES: readonly { id: AvatarSize; label: string }[] = [
   { id: 'tall', label: 'Tall' },
 ];
 
-// How much bigger / smaller each size draws the sprite. Every step sits ABOVE
-// the base 40x56 sprite: at the old scale the character read as a detail on the
-// canvas rather than someone standing in the room, and the four costume choices
-// (a tie, a bun, a kangaroo pocket) were too small to see. Small is now roughly
-// what Regular used to be.
-const SIZE_SCALE: Record<AvatarSize, number> = {
-  small: 1.15,
-  regular: 1.5,
-  tall: 1.95,
-};
-
 export function avatarScale(size: AvatarSize): number {
   // A product without the Size choice (AvatarBindings.sizes) draws everyone at Regular.
-  return SIZE_SCALE[avatarBindings.sizes ? size : 'regular'];
+  return AVATAR_SIZE_SCALE[avatarBindings.sizes ? size : 'regular'];
 }
 
 // A random character for a first-time visitor: gender, clothing, hair and a natural hair colour are
