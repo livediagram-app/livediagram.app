@@ -161,8 +161,12 @@ export function useSelectionEditing(opts: {
         if (el.id !== elementId || el.type !== 'table') return el;
         const next = { ...el, ...patch };
         // A row grows to fit the words a cell commit leaves in it, in this same commit
-        // (docs/specs/009-elements/table-rows-fit-text.md): taller only, its top staying put.
-        const grown = patch.cells ? tableGrowthForCells(next, el.cells) : null;
+        // (docs/specs/009-elements/table-rows-fit-text.md): taller only, its top staying put. A style change (a
+        // bigger size, bold) can need more room too, so it measures every row.
+        const grown =
+          patch.cells || patch.cellStyles
+            ? tableGrowthForCells(next, patch.cellStyles ? null : el.cells)
+            : null;
         return grown ? { ...next, ...grown } : next;
       }),
     );

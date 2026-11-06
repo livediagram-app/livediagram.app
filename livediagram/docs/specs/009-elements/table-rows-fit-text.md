@@ -13,7 +13,8 @@ runs out of its cell. The table itself is specified in [Canvas and palette](../0
 - **What grows.** A row whose cells need more than its height is pinned to the height they need (`rowHeights[r]`),
   and the table grows by the same amount, downward: its top stays put and every other row keeps its height.
 - **When.** On every commit that changes a table's cells: a typed cell (Enter, Tab, an arrow out, a click away),
-  Tab off the last cell, a paste into the grid, and the cell menu's Clear. The grown height lands **in the same
+  Tab off the last cell, a paste into the grid, and the cell menu's Clear; and on a cell style change (a bigger text
+  size, bold), which measures every row. The grown height lands **in the same
   commit** as the words, so one undo takes both back.
 - **Never smaller.** A row never shrinks on its own: deleting words leaves the height it had, as a resized table
   keeps the size it was given. Dragging the row's divider, or resizing the table, is how it gets shorter.

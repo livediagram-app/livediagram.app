@@ -83,4 +83,13 @@ describe('commitTable', () => {
     s.editing.commitTable(base.id, { cells: withCell('') });
     expect(s.table()).toMatchObject({ height: 300, rowHeights: [null, 200, null] });
   });
+
+  it('grows a row when a cell style makes its words need more room', () => {
+    const cells = withCell('one two three four');
+    const s = setup({ ...base, cells });
+    s.editing.commitTable(base.id, {
+      cellStyles: [[], [{ textSize: 40 }], []],
+    });
+    expect(s.table().height).toBeGreaterThan(150);
+  });
 });
