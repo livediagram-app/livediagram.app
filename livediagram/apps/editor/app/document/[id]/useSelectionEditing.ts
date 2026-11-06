@@ -7,6 +7,7 @@ import {
   isMindNode,
   opensInlineLabelEditor,
   normalizeRuns,
+  tableGrowthForCells,
   trimLabel,
   truncateName,
   type Element,
@@ -156,7 +157,14 @@ export function useSelectionEditing(opts: {
     patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
   ) => {
     commit((els) =>
-      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, ...patch } : el)),
+      els.map((el) => {
+        if (el.id !== elementId || el.type !== 'table') return el;
+        const next = { ...el, ...patch };
+        // A row grows to fit the words a cell commit leaves in it, in this same commit
+        // (docs/specs/009-elements/table-rows-fit-text.md): taller only, its top staying put.
+        const grown = patch.cells ? tableGrowthForCells(next, el.cells) : null;
+        return grown ? { ...next, ...grown } : next;
+      }),
     );
   };
 
