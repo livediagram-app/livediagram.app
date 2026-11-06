@@ -86,7 +86,11 @@ function toCard(item: StartItem, palette: PlanPalette, showKind: boolean): Start
   // Import is its own name: no badge, or kind read out, saying it again.
   const kind = showKind && item.kind !== 'import';
   const badge =
-    item.kind === 'dashboard' && item.suggestion ? 'For You' : kind ? KIND_NAMES[item.kind] : undefined;
+    item.kind === 'dashboard' && item.suggestion
+      ? 'For You'
+      : kind
+        ? KIND_NAMES[item.kind]
+        : undefined;
   return {
     id: item.id,
     name: item.name,

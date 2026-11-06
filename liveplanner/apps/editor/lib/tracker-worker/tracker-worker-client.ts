@@ -26,7 +26,7 @@ type Pending = { task: TrackerTask; resolve: (r: unknown) => void; reject: (e: E
 const newWorker = (): TrackerWorkerLike =>
   new Worker(new URL('./tracker.worker.ts', import.meta.url), {
     type: 'module',
-  }) as unknown as TrackerWorkerLike;
+  });
 
 export type TrackerTasks = {
   run: <T extends TrackerTask>(task: T) => Promise<TrackerTaskResult<T>>;

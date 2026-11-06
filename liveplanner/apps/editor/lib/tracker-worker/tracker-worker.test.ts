@@ -10,13 +10,10 @@ import {
   trackerContextKey,
   type TrackerRequest,
   type TrackerResponse,
+  type TrackerRunner,
   type TrackerTaskContext,
 } from './tracker-tasks';
-import {
-  createTrackerTasks,
-  trackerTasks,
-  type TrackerWorkerLike,
-} from './tracker-worker-client';
+import { createTrackerTasks, trackerTasks, type TrackerWorkerLike } from './tracker-worker-client';
 
 const JIRA = 'Summary,Issue key,Status\nFix it,AB-1,To Do\nShip it,AB-2,Done\n';
 const ctx: TrackerTaskContext = {
@@ -67,13 +64,18 @@ describe('the tasks', () => {
       ok: false,
       error: TRACKER_BOARD_GONE,
     });
-    const throwing = { run: () => Promise.reject(0) as never };
-    vi.spyOn(throwing, 'run').mockImplementation(() => {
-      throw 'plain';
+    // A throw that is not an Error (a library's string) still answers with its text.
+    const throwing: TrackerRunner = {
+      run: () => {
+        // oxlint-disable-next-line only-throw-error
+        throw 'plain';
+      },
+    };
+    expect(answerTrackerRequest(throwing, { id: 1, task: { kind: 'plan', key: 1, ctx } })).toEqual({
+      id: 1,
+      ok: false,
+      error: 'plain',
     });
-    expect(answerTrackerRequest(throwing, { id: 1, task: { kind: 'plan', key: 1, ctx } })).toEqual(
-      { id: 1, ok: false, error: 'plain' },
-    );
   });
 
   it('keys a context by what a plan reads of it, never its fresh board id', () => {
@@ -96,7 +98,9 @@ function fakeWorker({ answers = true } = {}) {
       sent.push(req);
       if (answers)
         queueMicrotask(() =>
-          on.message?.({ data: answerTrackerRequest(runner, req) } as MessageEvent),
+          on.message?.({
+            data: answerTrackerRequest(runner, req),
+          } as MessageEvent<TrackerResponse>),
         );
     },
     addEventListener: ((type: 'message' | 'error', fn: never) => {
@@ -124,7 +128,9 @@ describe('the page’s side', () => {
     const fake = fakeWorker();
     const tasks = createTrackerTasks(() => fake.w);
     await expect(tasks.run({ kind: 'plan', key: 5, ctx })).rejects.toThrow(TRACKER_BOARD_GONE);
-    fake.on.message?.({ data: { id: 99, ok: true, result: { error: 'x' } } } as MessageEvent);
+    fake.on.message?.({
+      data: { id: 99, ok: true, result: { error: 'x' } },
+    } as MessageEvent<TrackerResponse>);
   });
 
   it('runs on the page where there are no workers, or one will not start', async () => {
