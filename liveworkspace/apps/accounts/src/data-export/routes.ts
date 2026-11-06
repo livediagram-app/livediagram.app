@@ -3,7 +3,8 @@
 //   POST /api/account/data-export {team?}         start theirs, or a team's they administer
 //   GET  /api/account/data-export/download        the emailed link: its signature, their session, then the zip
 //   POST /api/account/internal/data-export/ready  the export service, EXPORT_KEY_ACCOUNTS: send the email
-// The admin check is accounts' own records, never a token's claim, at the start and again at the download.
+// The admin check is accounts' own records, never a token's claim, at the start, at the ready email and at the
+// download.
 import {
   exportFileName,
   exportKeyOf,
@@ -203,11 +204,12 @@ export async function handleDataExportDownload(
   );
   // Made for someone else, or changed on the way: either way not this person's to open.
   if (!signed) return refuse('other-account');
-  if (expiresAt <= now) return refuse('expired');
+  // Whose it is before anything about it: someone no longer the team's admin learns nothing, lapsed or not.
   if (scope.kind === 'personal' && scope.personId !== actor.id) return refuse('other-account');
   if (scope.kind === 'team' && !(await adminOf(env.AUTH_DB, actor.id, scope.teamId))) {
     return refuse('other-account');
   }
+  if (expiresAt <= now) return refuse('expired');
   const file = await service.file(key);
   if (!file) return refuse('expired');
   // A newer export has replaced the one the link names.
@@ -254,6 +256,12 @@ export async function handleDataExportReady(request: Request, env: Env): Promise
   if (!sent || !(await sameSecret(sent, expected))) return error(401, 'unauthorized');
   const call = parseReady(await request.json().catch(() => null));
   if (!call) return error(400, 'invalid_body');
+  // A team's goes only to someone still its admin: demoted, removed or the team deleted while it ran, no email.
+  const scope = parseExportKey(call.key)!;
+  if (scope.kind === 'team' && !(await adminOf(env.AUTH_DB, call.requestedBy, scope.teamId))) {
+    console.log('[data-export] not sent', { kind: 'team', reason: 'not_team_admin' });
+    return new Response(null, { status: 204 });
+  }
   const user = await env.AUTH_DB.prepare('SELECT email, emailVerified FROM "user" WHERE id = ?')
     .bind(call.requestedBy)
     .first<{ email: string; emailVerified: number | boolean }>();

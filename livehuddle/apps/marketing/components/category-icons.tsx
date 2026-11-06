@@ -34,8 +34,8 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M5.5 14.5c.3-2.3 1.2-3.75 2.5-3.75s2.2 1.45 2.5 3.75" />
     </>,
   ),
-  // Workshops: a timer, the session's own clock.
-  workshops: glyph(
+  // Meetings: a timer, the meeting's own clock.
+  meetings: glyph(
     <>
       <circle cx="8" cy="9" r="5.25" />
       <path d="M8 9V6.25M6.5 1.75h3M12.25 4.25l1-1" />

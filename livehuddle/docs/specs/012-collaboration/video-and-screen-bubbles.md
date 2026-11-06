@@ -1,7 +1,7 @@
 # Video and screen share bubbles
 
-Status: **built for staging** (Work Tracker #317, #318), on top of [Proximity audio](proximity-audio.md) (#315) and
-under the [calls kill switch](../016-platform/calls-kill-switch.md) (#316). Off in production with the rest of calls
+Status: **built** (Work Tracker #317, #318), on top of [Proximity audio](proximity-audio.md) (#315) and
+under the [calls kill switch](../016-platform/calls-kill-switch.md) (#316). On wherever calls are
 ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
 People talking in proximity can turn on a camera, or share a screen, and it shows as a small **bubble above their

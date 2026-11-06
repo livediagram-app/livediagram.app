@@ -264,7 +264,7 @@ export type CapabilitiesResponse = {
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
   // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"): true when this deployment
-  // has calls (never on production yet, and only with the Realtime secrets set), paused or not. Absent is off.
+  // has calls (wherever the Realtime secrets are set, production included), paused or not. Absent is off.
   callsEnabled?: boolean;
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): `off` shows Calls Paused. Absent is `on`.
   callsMode?: CallsMode;

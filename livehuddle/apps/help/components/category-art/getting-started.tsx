@@ -1,12 +1,6 @@
-import {
-  Arrow,
-  Avatar,
-  Cursor,
-  Label,
-  Shape,
-  DiscText,
-} from '@liveworkspace/help-site/art/primitives';
+import { Avatar, Label, DiscText } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage, TickDisc } from '@liveworkspace/help-site/art/parts';
+import { Character } from './character';
 
 // A numbered step disc, sitting on the top edge of its card.
 function Step({ cx, cy, n }: { cx: number; cy: number; n: number }) {
@@ -21,7 +15,7 @@ function Step({ cx, cy, n }: { cx: number; cy: number; n: number }) {
 }
 
 // Getting Started: the first three things a new person does, as three cards on a path. Pick a starting point,
-// add to the board, share the link.
+// walk in, share the link.
 export function GettingStartedArt() {
   return (
     <Stage>
@@ -83,24 +77,41 @@ export function GettingStartedArt() {
       </Card>
       <Step cx={72} cy={52} n={1} />
 
-      {/* 2: add shapes. */}
+      {/* 2: walk in: your character at the meeting table, saying hello. */}
       <Card x={146} y={52} w={108} h={140} r={12}>
-        <Shape x={158} y={74} w={40} h={26} label="" />
-        <Shape
-          x={210}
-          y={98}
-          w={34}
-          h={34}
-          kind="circle"
-          fill="fill-violet-100"
-          stroke="stroke-violet-400"
+        <rect
+          x={158}
+          y={72}
+          width={84}
+          height={74}
+          rx={3}
+          className="fill-amber-50 stroke-slate-300"
+          strokeWidth={1.5}
         />
-        <Shape x={162} y={118} w={36} h={26} accent />
-        <Arrow from={[198, 87]} to={[214, 101]} width={2} />
-        <Arrow from={[180, 100]} to={[180, 115]} width={2} />
-        <Cursor x={226} y={128} colour="violet" />
+        <rect
+          x={182}
+          y={104}
+          width={36}
+          height={22}
+          rx={3}
+          className="fill-slate-200 stroke-slate-400"
+          strokeWidth={1.2}
+        />
+        <rect
+          x={162}
+          y={80}
+          width={34}
+          height={14}
+          rx={7}
+          className="fill-white stroke-brand-300"
+          strokeWidth={1}
+        />
+        <rect x={168} y={85.5} width={22} height={3} rx={1.5} className="fill-brand-400" />
+        <Character x={172} y={108} shirt="fill-brand-500" />
+        <Character x={230} y={108} shirt="fill-violet-400" />
+        <Character x={200} y={134} shirt="fill-amber-400" />
         <Label x={200} y={170} anchor="middle" size={10.5} weight={700} tone="strong">
-          Add to the board
+          Walk in
         </Label>
       </Card>
       <Step cx={200} cy={52} n={2} />

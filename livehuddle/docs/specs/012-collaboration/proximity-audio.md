@@ -1,7 +1,7 @@
 # Proximity audio
 
-Status: **built for staging** (Work Tracker #315), under the calls kill switch (Work Tracker #316). Still off in
-production; see [Turning calls on](#turning-calls-on).
+Status: **built** (Work Tracker #315), under the calls kill switch (Work Tracker #316). On wherever its secrets are set,
+production included; see [Turning calls on](#turning-calls-on).
 
 People in a Space talk by walking up to each other. You hear the characters near yours and nobody else; the voice
 fades as they walk away and sits left or right of you as they stand. A character too far away to hear still shows
@@ -156,19 +156,17 @@ checks every session and track against its mode ([Calls kill switch](../016-plat
 
 ## Turning calls on
 
-Calls are on only where everything below holds; the editor learns it from `/api/capabilities` (`callsEnabled`) and
+Calls run on any deployment, production (`www.livehuddle.app`) included, where both of these hold (the owner lifted
+the earlier off flag for production on 2026-11-05); the editor learns it from `/api/capabilities` (`callsEnabled`) and
 shows no audio controls otherwise (the camera and screen buttons stay, as a
 [local preview](video-and-screen-bubbles.md#local-preview) only you see).
 
-- **Never in production yet.** The mint route refuses every session on the production deployment
-  (`www.livehuddle.app`), whatever is configured. The kill switch (#316) is a further gate beside this flag, not its
-  replacement; lifting the flag is a later, deliberate change.
 - **The secrets are set**: the Realtime app's id and token, and a TURN key's id and API token. They are the owner's to
   create; unset, calls are off.
 - **The kill switch allows it** ([Calls kill switch](../016-platform/calls-kill-switch.md)): `off` pauses calls, and
   the controls read **Calls Paused** rather than going away; `audio-only` leaves audio as it is.
 
-`/api/capabilities` answers `callsEnabled` (this deployment has calls: not production, secrets set) and `callsMode`
+`/api/capabilities` answers `callsEnabled` (this deployment has calls: its secrets are set) and `callsMode`
 (the switch: `on`, `audio-only` or `off`).
 
 ## Cost

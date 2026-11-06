@@ -5,8 +5,9 @@ stores, GitHub, Product Hunt, and similar. Pick the one whose limit matches the
 field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
-Built from [`facts.md`](facts.md). No em dashes. Don't promise conflict-free
-(CRDT) editing or a paid tier (see "Do not claim" in the fact sheet).
+Built from [`facts.md`](facts.md). No em dashes. Don't promise voice or video,
+conflict-free (CRDT) editing or a paid tier (see "Do not claim" in the fact
+sheet).
 
 ---
 
@@ -14,13 +15,13 @@ Built from [`facts.md`](facts.md). No em dashes. Don't promise conflict-free
 
 For HTML `<meta name="description">` and search snippets.
 
-> A collaborative diagram and mindmap editor that works without signing in.
-> Real-time cursors, comments, and sharing. Free and open source. [137]
+> Meet your team in a Space: walk round a virtual office as your own character,
+> gather round the table, no sign-up. Free and open source. [135]
 
 Alternate:
 
-> Build diagrams and mindmaps with your team in real time. No sign-in wall, no
-> paid tier. Open source. [100]
+> A free, open-source virtual office in your browser. Open a link, walk in, and
+> meet your team in a room. [103]
 
 ---
 
@@ -28,9 +29,10 @@ Alternate:
 
 For social posts and short "about" fields.
 
-> livehuddle is a multiplayer diagram canvas in the browser. Open a link and
-> start drawing with your team: live cursors, comments, shapes, arrows,
-> mindmaps, and undo and redo. No sign-in wall. MIT-licensed and free. [214]
+> livehuddle is a free virtual office in the browser. Open a link and walk in
+> as your own character: find the team in the Team Pod, gather round the
+> table, put a sticky note on the wall and run the timer. No sign-up.
+> MIT-licensed. [228]
 
 ---
 
@@ -38,10 +40,10 @@ For social posts and short "about" fields.
 
 For directory cards and "short pitch" fields.
 
-> livehuddle is a real-time, multiplayer diagram and mindmap editor that works
-> without signing in. Open a link and start drawing with your team: live
-> cursors, comments, 82 templates, and undo that never touches anyone else's
-> work. MIT-licensed and free forever. [46 words]
+> livehuddle is where your team meets in a Space. Open a link and walk in as
+> your own pixel character, see who is around, and gather in a Team Pod, a
+> Virtual Office or an All-Hands Hall, with sticky notes and a timer on the
+> wall. No sign-up, MIT-licensed and free. [51 words]
 
 ---
 
@@ -49,17 +51,15 @@ For directory cards and "short pitch" fields.
 
 For Product Hunt, app store short descriptions, README intros.
 
-> livehuddle is a collaborative diagram and mindmap editor in the browser. The
-> canvas never sits behind a sign-in wall, so getting started is as simple as
-> opening a link and drawing. Teams work on the same canvas in real time: live
-> cursors, selection rings, comment threads and walking characters.
+> livehuddle is a virtual office in the browser. Open a link and you walk in as
+> your own little character, with a status above your head and speech bubbles
+> to say hello. Find the team in a Team Pod for the stand-up, a Virtual Office
+> to work side by side, or an All-Hands Hall for the company meeting.
 >
-> Build with ten core shapes, sticky notes, images, freehand sketching with
-> shape recognition, and arrows you can curve, bend, and label. Start from 82
-> templates, recolor everything with 31 themes, and step back any slip with
-> undo. Share links as an editor, participant or viewer any time.
->
-> It is MIT-licensed and free for everyone, with no paid tier. [106 words]
+> Every Space is also a board: sticky notes and stickers on the walls, and a
+> Timer or a Stopwatch in the room. Share a link as an Editor or a
+> Participant. It has no voice or video yet, so keep your usual call
+> alongside. MIT-licensed and free, with no paid tier. [109 words]
 
 ---
 
@@ -67,32 +67,31 @@ For Product Hunt, app store short descriptions, README intros.
 
 For longer listing bodies and "about this project" sections.
 
-> livehuddle is a collaborative diagram and mindmap editor that runs entirely
-> in the browser. Its defining choice: the canvas always works without signing
-> in. A visitor can open a link and build a real diagram before being asked to
-> create anything. Friction-free starting is the whole point.
+> livehuddle is a place for a remote team to meet. Instead of a grid of faces,
+> it gives the team a Space: a floor plan of rooms and furniture that everyone
+> walks round as a little pixel character. You can see who is at their desk,
+> who is in the meeting room and who has stepped away, and walk over to say
+> hello in a speech bubble.
 >
-> Collaboration is real time and built in, not bolted on. Everyone on a diagram
-> sees live cursors, selection rings, and comment threads, with a walking
-> character for taking a group through a design. Each document gets its own realtime room,
-> so presence and edits stay snappy.
+> It starts from a link. There is no sign-in wall: anyone can open a Space, and
+> a guest's new Space stays in their browser until they press Share. Nineteen
+> templates are ready to walk into (a blank Space, a Virtual Office, a Team
+> Pod, an All-Hands Hall, whole campuses of buildings and floors, and more),
+> and pieces build more: rooms with doors, desks, sofas, meeting tables,
+> plants, a coffee machine and portals between rooms.
 >
-> The canvas is deep enough for real work: ten core shapes, sticky notes, text,
-> images, and arrows you can draw straight, curved, or angled, with draggable
-> handles, configurable thickness and arrowheads, and optional labels. A
-> Freehand pen sketches, and a Shape Pen snaps your scribbles into clean
-> rectangles, circles, and diamonds. Multi-select, groups, and a format painter
-> keep large diagrams manageable. Start from 82 templates, recolor the whole
-> canvas with 31 themes, and organize work into tabs, nested folders and team
-> spaces.
+> Every Space is also a board. Sticky notes, text and stickers sit on the
+> walls, a Timer or a Stopwatch keeps the meeting to time, and Bring Focus and
+> Follow bring everyone to the same place. Comments with mentions and assigned
+> actions keep the follow-ups, and everyone can throw confetti round their
+> character when it goes well.
 >
-> Nothing is lost: every change saves on its own, and undo and redo step back
-> and forth through your recent edits. Share links as an editor, participant
-> or viewer and revoke them whenever you like. Export any tab to JSON,
-> Markdown, PNG, SVG, or PDF.
+> Share links come as Editor or Participant, with a password or an
+> expiry. livehuddle has no voice or video in production yet, so a team keeps
+> its usual call open alongside.
 >
-> livehuddle is MIT-licensed and free for everyone, with no paid tier and no
-> plan for one. [245 words]
+> It is MIT-licensed and free for everyone, with no paid tier and no plan for
+> one. [242 words]
 
 ---
 
@@ -101,55 +100,61 @@ For longer listing bodies and "about this project" sections.
 For directories with a generous body field, a landing-page "about" block, or a
 detailed GitHub / Product Hunt write-up.
 
-> ### livehuddle: diagram together, no sign-in required
+> ### livehuddle: meet your team in a Space
 >
-> livehuddle is a collaborative diagram and mindmap editor that lives in the
-> browser. It is built around one stubborn principle: the canvas always works
-> without signing in. A visitor can open a link and build a real diagram before
-> being asked to create an account. There is no sign-in wall in front of the
-> editor, ever, because the easiest way to get a team drawing together is to
-> remove every step between them and the canvas.
+> A team that meets online usually has a call in one tab and a document in
+> another, and neither has any idea who is near whom. livehuddle puts the
+> people in a place. Open a Space and you walk in as your own pixel character,
+> in your own colour and outfit, and everyone else in the Space is there too.
 >
-> #### Real-time multiplayer, built in
+> #### A place, not a grid
 >
-> Collaboration is the product, not a feature. Everyone on a diagram sees live
-> cursors, selection rings, and comment threads as they happen, plus a walking
-> character for taking a group through a design in a call. Each document runs in
-> its own realtime room, so presence and edits stay responsive even with a
-> crowd on the canvas.
+> A Space is a floor plan of rooms and furniture: desks to sit at, a meeting
+> table to gather round, sofas, plants, a water cooler and a coffee machine.
+> Portals take everyone from one room or floor to the next, and an Avatar Pad
+> is the door everyone arrives at. A status above each head says whether you
+> are Available, Focusing, In a Meeting or Away, and speech bubbles carry a
+> quick hello. Five moves (jumping jacks, a wave, a spin, a cheer and a dance)
+> say the rest.
 >
-> #### A canvas that holds up to real work
+> #### Ready to walk into
 >
-> Build with ten core shapes, sticky notes, text, and images. Connect them with
-> arrows you can draw straight, curved, or angled, each with draggable curve and
-> elbow handles, configurable thickness and arrowhead size, and optional labels.
-> The Freehand pen handles sketching, and the Shape Pen converts rough
-> scribbles into clean rectangles, circles, diamonds, and lines. Marquee select, shift-click, groups, and a format painter keep big
-> diagrams under control. Lock elements you don't want to move, and link any
-> element to another tab or an external URL.
+> Nineteen templates start you off: a blank Space, a Virtual Office, a Team Pod
+> for the stand-up, an All-Hands Hall with a stage for the company meeting, and
+> whole campuses, from a Company Campus to a Conference Venue, with buildings,
+> doors and floors. Every piece can be moved, and the pieces build more rooms. Twenty-five themes recolour a whole Space in
+> one click.
 >
-> #### Start fast, stay organized
+> #### Light tools for a meeting
 >
-> Open one of 82 templates (mind map, flowchart, Gantt, SWOT, retrospective,
-> org chart, timeline, fishbone, user journey, and more) or start
-> blank. Recolor an entire diagram, every shape and arrow, with one of 31 themes
-> in a single click. Group related work into tabs within a document, link across
-> them, copy a tab into another document, and file everything into nested
-> folders, personal or in a team space.
+> Every Space is also a board. Put a sticky note per person on the wall for the
+> stand-up, and start the Timer on the wall, or a Stopwatch. Whoever holds the
+> facilitator baton runs the clock. Bring Focus offers everyone a jump to the
+> thing you mean, and Follow takes you wherever a teammate goes. Comments with
+> mentions and reactions, and actions assigned to a teammate, keep the
+> follow-ups with the Space. Everyone can throw confetti, hearts or fireworks
+> round their character when the news is good.
 >
-> #### Nothing gets lost
+> #### Open from a link
 >
-> Every change saves on its own as you work, and undo and redo step back and
-> forth through your recent edits without touching anyone else's work.
-> Share links per document as an editor, participant or viewer, and revoke them
-> whenever you want. Anyone you share with can make their own copy. Export any
-> tab to JSON, Markdown, PNG, SVG, or PDF, and import the JSON back into a tab.
+> There is no sign-in wall. Anyone can open a Space; a guest's new Space stays
+> in their browser until they press Share, which syncs it in one step. Share
+> links come as Editor or Participant (walk, talk, comment and react), with
+> an optional password or expiry, and can be revoked at any time. Teams share a
+> library of Spaces. Spaces can sync to your own Google Drive, or stay in This
+> Browser and never reach our servers.
 >
-> #### Free, open, and yours
+> #### Talking
+>
+> livehuddle has no voice or video in production yet. Keep your usual call open
+> alongside the Space while proximity audio and calls are finished.
+>
+> #### Free, open, and scriptable
 >
 > livehuddle is MIT-licensed and publicly viewable. The hosted version at
 > livehuddle.app is free for everyone, with no paid tier and no plan to
-> introduce one. If you ship it, every user gets it. The open-source core never
-> calls home and never gates features behind a license check.
+> introduce one. An MCP server lets AI assistants set up and share Spaces for
+> you, and a command line and a REST API cover scripts. Export any tab as PNG,
+> SVG, PDF or JSON.
 >
-> Open a link, draw, share. That is the whole pitch. [481 words]
+> Open a link, walk in, meet your team. That is the whole pitch. [514 words]

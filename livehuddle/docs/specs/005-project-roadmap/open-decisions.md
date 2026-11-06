@@ -64,8 +64,9 @@ other app's does ([Platform registration](../016-platform/platform-registration.
 ## D4. Audio, video and screen sharing
 
 **Settled: calls are in, audio first** (owner, 2026-11-03; Work Tracker #315). v1 shipped without them; proximity
-audio is built for staging ([Proximity audio](../012-collaboration/proximity-audio.md)) and stays off in production
-until the calls kill switch (Work Tracker #316) is live; video and screen sharing stay [Future work](future-work.md).
+audio is built ([Proximity audio](../012-collaboration/proximity-audio.md)), under the calls kill switch (Work Tracker
+#316), and runs in production once its secrets are set (owner, 2026-11-05); video and screen sharing stay
+[Future work](future-work.md).
 
 - (a) Out of v1. Specify them next, after v1 ships, with TURN and Cloudflare Realtime's SFU, once the owner has set a
   spend limit.
@@ -80,7 +81,8 @@ and usage billing; v1 is built to leave room for them ([Future work](future-work
 **Settled: (a), (a) and (a)** (built as recommended; Work Tracker #187). The editor, the marketing site, the help centre,
 the Community and the emails wear emerald through `@livehuddle/tailwind-config` and `@liveworkspace/brand`
 ([Theme](../004-interface-design/color-scheme.md), [Brand mark](../004-interface-design/brand-mark.md)), and the
-landing page says "Meet and run workshops together" ([Marketing site](../019-marketing/marketing-site.md)). The domain
+landing page says "Meet your team in a Space" ([Marketing site](../019-marketing/marketing-site.md); it said "Meet and
+run workshops together" until Work Tracker #423 refocused livehuddle on meeting). The domain
 waits on the owner (D8).
 
 - **Domain:** (a) `livehuddle.app`, canonical on `www.livehuddle.app`, as every product; (b) another name.

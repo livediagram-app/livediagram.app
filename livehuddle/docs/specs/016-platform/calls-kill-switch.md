@@ -41,7 +41,7 @@ spending that does not wait for a deploy, and a guard that acts when nobody is w
   (`CALLS_MODE_CACHE_MS`), so a burst of joins costs one KV read, and a flip reaches every isolate within KV's own
   propagation (up to about a minute at the edge) plus those 5 seconds.
 - **What it reads as.** No key, or no `CALLS_SWITCH` binding (a fork, local dev), reads as `on`: the switch is a
-  brake, never a prerequisite, and production's own off flag for calls lives with the mint route (#315). A value it
+  brake, never a prerequisite: with the secrets set, production runs calls exactly as staging does (#315). A value it
   does not know reads as `off`, so a typo stops spending rather than starting it. `audio_only` and `audio` are
   accepted for `audio-only`, and case and spaces are ignored. If KV cannot be read, the last answer this isolate had
   stands; with none, `on`.
@@ -130,7 +130,7 @@ The rule and the track names live in `@livehuddle/api-schema`, so the api and th
 
 ### The mint route
 
-The switch is an extra gate after the calls gate, never a replacement: production's own hard off and the unset
+The switch is an extra gate after the calls gate, never a replacement: the unset
 secrets ([Proximity audio](../012-collaboration/proximity-audio.md#turning-calls-on)) are checked first and still
 refuse whatever the switch says.
 

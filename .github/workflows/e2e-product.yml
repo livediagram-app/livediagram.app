@@ -38,6 +38,13 @@ on:
         description: Whether the signed-in specs open it.
         type: boolean
         default: false
+      smoke-shards:
+        description: >-
+          The smoke shards, as a JSON list. Each shard pays about a minute of container start, checkout
+          and install, so a product whose smoke specs are short runs fewer: two, unless a shard would then
+          pass the 5-minute budget.
+        type: string
+        default: '[1, 2]'
       signed-in-cache:
         description: The signed-in build's cache name.
         type: string
@@ -125,7 +132,7 @@ jobs:
       # Every shard reports, so one failing shard never hides another's failures.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: ${{ fromJSON(inputs.smoke-shards) }}
     steps:
       - name: Check out
         uses: actions/checkout@v7

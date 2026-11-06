@@ -35,7 +35,7 @@ import {
   syncDocuments,
   updatePost,
 } from './posts';
-import { rowToPost } from './rows';
+import { rowCategory, rowToPost } from './rows';
 import { testDb, type TestDb } from './test-sqlite-d1';
 
 let db: TestDb;
@@ -143,6 +143,24 @@ describe('publishing', () => {
     for (const table of ['posts', 'post_tags', 'likes', 'copies', 'reports']) {
       expect(count(table)).toBe(0);
     }
+  });
+});
+
+describe("a post's category", () => {
+  it('reads one its app no longer offers as Something Else, and leaves the row alone', async () => {
+    await publish('d1', { category: 'workshops' }, 1000, 'livehuddle.app');
+    const row = (await getPostForDocument(db.env, 'livehuddle.app', 'd1'))!;
+    expect(row.category).toBe('workshops');
+    expect(rowToPost(row, false).category).toBe('other');
+    // livediagram still has Workshops.
+    expect(rowCategory({ app: LD, category: 'workshops' })).toBe('workshops');
+    expect(rowCategory({ app: 'livehuddle.app', category: 'retrospectives' })).toBe('other');
+    expect(rowCategory({ app: 'livehuddle.app', category: 'socials' })).toBe('socials');
+  });
+
+  it("falls back to any app's categories for a row whose app is unknown", () => {
+    expect(rowCategory({ app: 'nope.app', category: 'logos' })).toBe('logos');
+    expect(rowCategory({ app: 'nope.app', category: 'nope' })).toBe('other');
   });
 });
 
