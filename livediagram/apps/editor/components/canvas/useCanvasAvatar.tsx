@@ -3,7 +3,12 @@
 import { answerMachine } from '@/lib/machine-answer';
 import { useAvatarStatus } from '@liveworkspace/avatar/hooks/useAvatarStatus';
 import { useByValue } from '@/hooks/ui/useByValue';
-import { sameSitters, sittersByChair } from '@liveworkspace/avatar/chair-sitters';
+import {
+  sameSitters,
+  seatedPeer,
+  seatsOnBoard,
+  sittersByChair,
+} from '@liveworkspace/avatar/chair-sitters';
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import {
   DEFAULT_BUTTON_MODE,
@@ -202,19 +207,32 @@ export function useCanvasAvatar({
   // itself the moment its occupant leaves the mode, changes tab or drops off.
   // Kept by value: presence rebuilds the peers' list often (a join, a colour), and a new map would
   // render every element view for chairs nobody sits in.
+  // Each on the seat they hold (docs/specs/009-elements/chair.md "Occupancy is presence"), so a sofa or a table rings
+  // the exact seat, and at their drawn size, so the name pill clears the highest head.
+  const seatsOf = useMemo(() => seatsOnBoard(walkElements), [walkElements]);
+  const selfScale = avatarScale(avatarLook.config.size);
   const chairSitters = useByValue(
     useMemo(
       () =>
         sittersByChair(
-          avatar.seatedOn,
-          props.selfParticipant.color,
-          props.remoteAvatars.map((peer) => ({
-            name: peer.name,
-            color: peer.color,
-            seatedOn: peer.avatar.seatedOn,
-          })),
+          {
+            name: 'You',
+            color: props.selfParticipant.color,
+            seatedOn: avatar.seatedOn,
+            seat: avatar.seatClaim,
+            scale: selfScale,
+          },
+          props.remoteAvatars.map((peer) => seatedPeer(peer)),
+          seatsOf,
         ),
-      [avatar.seatedOn, props.remoteAvatars, props.selfParticipant.color],
+      [
+        avatar.seatedOn,
+        avatar.seatClaim,
+        selfScale,
+        seatsOf,
+        props.remoteAvatars,
+        props.selfParticipant.color,
+      ],
     ),
     sameSitters,
   );

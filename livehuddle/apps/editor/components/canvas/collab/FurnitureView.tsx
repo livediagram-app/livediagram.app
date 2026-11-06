@@ -1,5 +1,6 @@
 'use client';
 
+import { seatPillBottom, seatRing, type Sitter } from '@liveworkspace/avatar/chair-sitters';
 import { useEffect, useId, useRef } from 'react';
 import { podClosed } from '@liveworkspace/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
@@ -43,7 +44,7 @@ const MACHINE_ANSWER_MS = 1500;
 // own label renders under it. WHO is sitting is presence, never the element
 // (docs/specs/008-canvas/avatar-mode.md): the canvas passes the sitters it knows about.
 
-export type ChairSitter = { name: string; color: string };
+export type ChairSitter = Sitter;
 
 // The plant, the bookshelf, the machines, the meeting table and the rug (docs/specs/009-elements/office.md) are
 // drawn the same way, from OFFICE_ART: one drawing for every side.
@@ -119,17 +120,28 @@ export function FurnitureView({
   const occupied = sits && sitters.length > 0;
   const ringColor = sitters[0]?.color ?? stroke;
   const noun = NOUN[kind];
-  const { parts, ring, ringUnder = parts.length } = frame.view;
-  // A soft ring in the first sitter's colour, on the seat and under what stands nearer the camera (ringUnder). A
-  // meeting table (and a pod) names its sitters without a ring: the ring would circle the whole piece.
-  const ringView =
-    occupied &&
-    kind !== 'meeting-table' &&
-    kind !== 'office-pod' &&
-    kind !== 'picnic-table' &&
-    kind !== 'ping-pong-table' ? (
-      <ellipse key="ring" {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
-    ) : null;
+  const { parts, ring, ringUnder = parts.length, seats } = frame.view;
+  // Soft rings on the seat and under what stands nearer the camera (ringUnder): a one-seat piece's own ring in its
+  // sitter's colour; on a piece with several (a sofa, a meeting table, a pod) a ring on each taken seat, in that
+  // sitter's colour, at the seat their presence holds (docs/specs/009-elements/chair.md "Occupancy is presence").
+  const rings = !occupied
+    ? []
+    : seats.length > 1
+      ? sitters.flatMap((s, i) => {
+          const at = seatRing(frame.view, s.seat);
+          return at ? [{ ...at, color: s.color, key: `${s.seat}-${i}` }] : [];
+        })
+      : [{ ...ring, color: ringColor, key: 'piece' }];
+  const ringView = rings.map(({ key, color, ...at }) => (
+    <ellipse
+      key={`ring-${key}`}
+      {...at}
+      fill="none"
+      stroke={color}
+      strokeWidth="3"
+      opacity="0.85"
+    />
+  ));
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -164,8 +176,9 @@ export function FurnitureView({
       </svg>
       {occupied ? (
         <span
-          className={`absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[110%] whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
-          style={identityVars(ringColor)}
+          className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+          // Clear of the highest sitter's head and the chip over it, never below the piece's top (#582).
+          style={{ ...identityVars(ringColor), top: seatPillBottom(element, frame.view, sitters) }}
         >
           {sitters.map((s) => s.name).join(', ')}
         </span>
