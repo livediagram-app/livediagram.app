@@ -241,6 +241,16 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   Its fill is **opaque in both modes**, brand-tinted once it holds your dots: it is drawn on the element, and a
   sticky note stays pale on a dark canvas, so a translucent tint took the note's colour under the dark mode's
   light count and your own dots disappeared.
+  **On a small note when zoomed out it folds to a badge.** The stepper keeps its size on screen (about 84 by 34 px),
+  so at a zoomed-out view, such as a phone's fit of a whole board, it would cover a small note's text, and the text is
+  what people are choosing between. Below 100% zoom, when the element on screen is narrower than twice the stepper
+  (168 px) or shorter than three times it (102 px), the stepper collapses to a **vote badge** at the element's
+  bottom-right corner, hung a third off it: the count (as privacy allows) and a small plus, brand-filled once it holds
+  your dots. The badge's touch target is 44 px though it draws smaller. A tap (or Enter) on it opens the full stepper
+  for that element, focus on its plus; a press anywhere else, Escape, or the element growing past the threshold
+  closes it again. Only one is open at a time, as a press on another badge is a press elsewhere. At 100% and above
+  nothing changes, and pressing the element itself still casts. Plan cards on a board never zoom, so they keep the
+  stepper.
   Once casting closes it reverts to a read-only count: a result to read,
   not a control. **Nothing floats over the canvas for a vote.** How many dots
   you have left shows on the [Session strip](#the-session-strip)'s Vote

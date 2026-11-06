@@ -1,6 +1,14 @@
+import { useEffect, useRef } from 'react';
 import { canCastVote, voteHidesTallies, type TabVote, plural } from '@liveplanner/project';
 import { HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@liveplanner/ui';
-import { CounterScaled } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import {
+  CounterScaled,
+  useCanvasZoom,
+} from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import {
+  useVoteBadge,
+  voteStepperCollapses,
+} from '@liveworkspace/workbench/components/canvas/vote-badge';
 
 // The dot-vote overlay (docs/specs/012-collaboration/session-tools.md), lifted out of BoxedElementView: the
 // tally pill on the element's bottom-right corner — live count,
@@ -18,6 +26,7 @@ export function ElementVoteOverlay({
   votableInVote,
   voteReviewActive,
   isVoteFocus,
+  box,
   onRetractVote,
   onCastVote,
 }: {
@@ -35,6 +44,10 @@ export function ElementVoteOverlay({
   // so attention lands on a single pick at a time.
   voteReviewActive?: boolean;
   isVoteFocus?: boolean;
+  // The element's size in canvas units: on a small one at a zoomed-out view the stepper folds to a badge
+  // (docs/specs/012-collaboration/session-tools.md "On a small note when zoomed out it folds to a badge").
+  // Absent (a Plan card on a board, which never zooms), it never folds.
+  box?: { width: number; height: number };
   onRetractVote?: (elementId: string) => void;
   onCastVote?: (elementId: string) => void;
 }) {
@@ -81,67 +94,17 @@ export function ElementVoteOverlay({
         />
       ) : null}
       {showStepper ? (
-        <CounterScaled
-          // Sits INSIDE the element's bottom-right rather than hanging off
-          // the corner: the stepper is a control you aim at, so it wants
-          // clearance from the edge (and from a neighbour's stepper on a
-          // tightly packed canvas).
-          // Semi-transparent at rest, fully opaque on hover. On a small box
-          // the stepper covers the label, and during a vote the label is the
-          // whole point — you're choosing between them, so you have to be
-          // able to read them. Hovering the ELEMENT (not the stepper, which
-          // is a small target) brings it up solid to click.
-          //
-          // Gated on a real hover pointer: on touch there is no hover to
-          // restore it with, so a permanently faded control would be worse
-          // than an occluding one. `pointer-fine` covers both conditions —
-          // a coarse pointer keeps the plain opaque stepper.
-          className="lvd-vote-stepper absolute bottom-1.5 right-1.5 origin-bottom-right transition-opacity"
-          // The stepper sits ON the element, whose own press casts a dot
-          // too (docs/specs/012-collaboration/session-tools.md). Without this a click meant for minus would
-          // bubble into that and immediately re-add what it removed.
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          {/* Opaque in both modes: the pill sits on the element, and a sticky note is pale on a dark canvas too, so a
-              translucent wash took the note's colour under light text and hid your own count. */}
-          <div
-            className={
-              'pointer-events-auto flex items-center gap-1 rounded-full border p-1 shadow-sm ' +
-              (myVotes > 0
-                ? 'border-brand-300 bg-brand-50 dark:border-brand-500 dark:bg-brand-900'
-                : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900')
-            }
-          >
-            <VoteStepButton
-              label={`Remove a dot from ${name}`}
-              disabled={myVotes === 0}
-              onClick={() => onRetractVote?.(voteKey)}
-            >
-              &minus;
-            </VoteStepButton>
-            <span
-              className={
-                'min-w-[18px] text-center text-[13px] font-semibold tabular-nums ' +
-                (myVotes > 0
-                  ? 'text-brand-700 dark:text-brand-100'
-                  : 'text-slate-600 dark:text-slate-300')
-              }
-              role="img"
-              aria-label={
-                tallyHidden ? `Your ${plural(voteTotal, 'dot')}` : plural(voteTotal, 'vote')
-              }
-            >
-              {voteTotal}
-            </span>
-            <VoteStepButton
-              label={`Add a dot to ${name}`}
-              disabled={!canCast}
-              onClick={() => onCastVote?.(voteKey)}
-            >
-              +
-            </VoteStepButton>
-          </div>
-        </CounterScaled>
+        <VoteStepper
+          box={box}
+          voteKey={voteKey}
+          name={name}
+          myVotes={myVotes}
+          voteTotal={voteTotal}
+          tallyHidden={tallyHidden}
+          canCast={canCast}
+          onRetractVote={onRetractVote}
+          onCastVote={onCastVote}
+        />
       ) : null}
       {showReadOnlyCount ? (
         <CounterScaled className="absolute bottom-1.5 right-1.5 origin-bottom-right">
@@ -173,6 +136,151 @@ export function ElementVoteOverlay({
         </CounterScaled>
       ) : null}
     </>
+  );
+}
+
+// The stepper while casting is open, or its badge on a small element at a zoomed-out view. Its own component so only
+// a shown stepper reads the zoom: every element's overlay would otherwise render on each zoom frame.
+function VoteStepper({
+  box,
+  voteKey,
+  name,
+  myVotes,
+  voteTotal,
+  tallyHidden,
+  canCast,
+  onRetractVote,
+  onCastVote,
+}: {
+  box: { width: number; height: number } | undefined;
+  voteKey: string;
+  name: string;
+  myVotes: number;
+  voteTotal: number;
+  tallyHidden: boolean;
+  canCast: boolean;
+  onRetractVote?: (elementId: string) => void;
+  onCastVote?: (elementId: string) => void;
+}) {
+  const zoom = useCanvasZoom();
+  const collapsed = voteStepperCollapses(box, zoom);
+  const { ref: stepperRef, open, setOpen } = useVoteBadge(collapsed);
+  // The badge opened from the keyboard hands focus to the stepper it opened: plus, or minus once plus is spent.
+  const focusOnOpen = useRef(false);
+  useEffect(() => {
+    if (!open || !focusOnOpen.current) return;
+    focusOnOpen.current = false;
+    const buttons =
+      stepperRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+    buttons?.[buttons.length - 1]?.focus();
+  }, [open, stepperRef]);
+  if (collapsed && !open) {
+    const countLabel = tallyHidden ? `Your ${plural(voteTotal, 'dot')}` : plural(voteTotal, 'vote');
+    return (
+      <CounterScaled
+        // Hung a third off the element's corner, so a small note keeps nearly all of its text in view.
+        className="lvd-vote-badge absolute bottom-0 right-0 z-10 origin-bottom-right"
+        // A press on the badge opens it; it must not reach the element, whose own press casts a dot.
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          aria-label={`${countLabel} on ${name}. Open the vote stepper`}
+          aria-expanded={false}
+          aria-keyshortcuts="+ -"
+          onClick={(e) => {
+            e.stopPropagation();
+            // A keyboard press (Enter, Space) reports no pointer position, so it moves focus into the stepper.
+            focusOnOpen.current = e.detail === 0;
+            setOpen(true);
+          }}
+          className={
+            // 44 px to touch though it draws 24: the ::before pad takes the finger.
+            "pointer-events-auto relative flex h-6 min-w-[24px] translate-x-1/3 translate-y-1/3 cursor-pointer items-center justify-center gap-0.5 rounded-full px-1.5 text-[12px] font-semibold tabular-nums shadow-sm ring-2 ring-white transition before:absolute before:left-1/2 before:top-1/2 before:h-11 before:w-11 before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] focus-visible:outline-none focus-visible:ring-brand-500 dark:ring-slate-900 " +
+            (myVotes > 0
+              ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
+              : 'bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800')
+          }
+        >
+          <span className="text-optical-centre">{voteTotal}</span>
+          <span
+            aria-hidden
+            className={
+              'text-optical-centre text-[13px] leading-none ' +
+              (myVotes > 0 ? 'text-white' : 'text-brand-700 dark:text-brand-300')
+            }
+          >
+            +
+          </span>
+        </button>
+      </CounterScaled>
+    );
+  }
+  return (
+    <CounterScaled
+      ref={stepperRef}
+      // Sits INSIDE the element's bottom-right rather than hanging off
+      // the corner: the stepper is a control you aim at, so it wants
+      // clearance from the edge (and from a neighbour's stepper on a
+      // tightly packed canvas).
+      // Semi-transparent at rest, fully opaque on hover. On a small box
+      // the stepper covers the label, and during a vote the label is the
+      // whole point: you're choosing between them, so you have to be
+      // able to read them. Hovering the ELEMENT (not the stepper, which
+      // is a small target) brings it up solid to click.
+      //
+      // Gated on a real hover pointer: on touch there is no hover to
+      // restore it with, so a permanently faded control would be worse
+      // than an occluding one. `pointer-fine` covers both conditions:
+      // a coarse pointer keeps the plain opaque stepper. A badge's opened
+      // stepper (lvd-vote-stepper-open) is always solid and above its neighbours.
+      className={
+        'lvd-vote-stepper absolute bottom-1.5 right-1.5 origin-bottom-right transition-opacity' +
+        (open ? ' lvd-vote-stepper-open z-10' : '')
+      }
+      // The stepper sits ON the element, whose own press casts a dot
+      // too (docs/specs/012-collaboration/session-tools.md). Without this a click meant for minus would
+      // bubble into that and immediately re-add what it removed.
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      {/* Opaque in both modes: the pill sits on the element, and a sticky note is pale on a dark canvas too, so a
+          translucent wash took the note's colour under light text and hid your own count. */}
+      <div
+        className={
+          'pointer-events-auto flex items-center gap-1 rounded-full border p-1 shadow-sm ' +
+          (myVotes > 0
+            ? 'border-brand-300 bg-brand-50 dark:border-brand-500 dark:bg-brand-900'
+            : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900')
+        }
+      >
+        <VoteStepButton
+          label={`Remove a dot from ${name}`}
+          disabled={myVotes === 0}
+          onClick={() => onRetractVote?.(voteKey)}
+        >
+          &minus;
+        </VoteStepButton>
+        <span
+          className={
+            'min-w-[18px] text-center text-[13px] font-semibold tabular-nums ' +
+            (myVotes > 0
+              ? 'text-brand-700 dark:text-brand-100'
+              : 'text-slate-600 dark:text-slate-300')
+          }
+          role="img"
+          aria-label={tallyHidden ? `Your ${plural(voteTotal, 'dot')}` : plural(voteTotal, 'vote')}
+        >
+          {voteTotal}
+        </span>
+        <VoteStepButton
+          label={`Add a dot to ${name}`}
+          disabled={!canCast}
+          onClick={() => onCastVote?.(voteKey)}
+        >
+          +
+        </VoteStepButton>
+      </div>
+    </CounterScaled>
   );
 }
 
