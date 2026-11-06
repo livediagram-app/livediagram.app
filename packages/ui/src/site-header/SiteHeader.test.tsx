@@ -142,4 +142,17 @@ describe('SiteHeader: the marketing bar', () => {
     expect(ai).toContain('href="/new?via=Ai.Header"');
     expect(html.match(/<a [^>]*href="\/ai"[^>]*>/)?.[0]).not.toContain('aria-current');
   });
+
+  it('is Choose Template and Explorer alone for a product with no Build with AI page', () => {
+    const bar = renderToStaticMarkup(
+      <SiteHeader ctaSurface="Home" marketing account shareRail={false} />,
+    );
+    expect(bar).not.toContain('Build with AI');
+    expect(bar).not.toContain('href="/ai"');
+    expect(bar).not.toContain('Start Blank');
+    expect(bar).toContain('<span class="contents max-sm:hidden"><a ');
+    expect(bar).toContain('href="/new?via=Home.Header"');
+    expect(bar).toContain('aria-label="Guest, account menu"');
+    expect(bar).toContain('max-[479px]:hidden');
+  });
 });
