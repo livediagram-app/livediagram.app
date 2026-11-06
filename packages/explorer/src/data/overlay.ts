@@ -9,6 +9,10 @@
 // it touched, so a list still holding an older copy shows the newer one, and a later change made elsewhere
 // (a folder deleted and its items moved up) is no longer hidden behind a stale patch. A move into a folder
 // that is deleted is dropped at once (`dropFolder`).
+//
+// A read can also race a move the other way: started after a move was laid but before the index took it, a folder's
+// read comes back without the item moving into it, and no patch can add a row a list never loaded. `raced` names
+// such a read, so its list reads itself again once.
 
 import type { Item } from '@liveworkspace/index-client';
 
@@ -27,6 +31,9 @@ export type ItemOverlay = {
   stamp: () => number;
   /** What a read that started at `startedAt` brought back: retires every patch settled before it. */
   observe: (items: readonly Item[], startedAt: number) => void;
+  /** Whether a read that started at `startedAt` raced a change of place (a move, Trash, restore or purge): it started
+   *  after the change was laid and before the index took it, so it may lack what the change brought in. */
+  raced: (startedAt: number) => boolean;
   /** A folder is gone: a move into it no longer stands for anything. */
   dropFolder: (folderId: string) => void;
   /** The overlay's version: it changes with every patch, for memos and useSyncExternalStore. */
@@ -38,13 +45,18 @@ export type ItemOverlay = {
   size: () => number;
 };
 
-type Layer = { patch: ItemPatch; settledAt: number | null };
+type Layer = { patch: ItemPatch; laidAt: number; settledAt: number | null };
+// A change of place the index took: when it was laid and when it settled, for `raced`.
+type Placement = { laidAt: number; settledAt: number };
 // The index's latest word on the keys the person changed, and when the read that brought it started.
 type Base = { values: ItemPatch; seenAt: number };
 
 // The most items whose latest word is kept. Past it the oldest goes; a list still holding that item's older
 // copy then shows it as loaded, as it would have had the person never touched it.
 export const OVERLAY_BASE_MAX = 500;
+// The changes of place `raced` remembers: a read only races the ones settled while it was out, so the last few do.
+export const OVERLAY_PLACEMENTS_MAX = 20;
+const PLACE_KEYS = ['folderId', 'teamId', 'trashedAt', 'gone'] as const;
 
 export function createItemOverlay(): ItemOverlay {
   // Each item's patches in the order they were laid, and what they come to together. Taking one back removes
@@ -54,6 +66,7 @@ export function createItemOverlay(): ItemOverlay {
   const bases = new Map<string, Base>();
   const patches = new Map<string, ItemPatch>();
   const listeners = new Set<() => void>();
+  const placements: Placement[] = [];
   let version = 0;
   // Orders settles against read starts.
   let clock = 0;
@@ -76,7 +89,7 @@ export function createItemOverlay(): ItemOverlay {
   };
   return {
     patch(id, patch) {
-      const layer: Layer = { patch: { ...patch }, settledAt: null };
+      const layer: Layer = { patch: { ...patch }, laidAt: ++clock, settledAt: null };
       const list = layers.get(id);
       if (list) list.push(layer);
       else layers.set(id, [layer]);
@@ -92,7 +105,13 @@ export function createItemOverlay(): ItemOverlay {
       };
       return Object.assign(undo, {
         settle: () => {
-          if (layer.settledAt === null) layer.settledAt = ++clock;
+          if (layer.settledAt !== null) return;
+          layer.settledAt = ++clock;
+          if (!PLACE_KEYS.some((k) => k in layer.patch)) return;
+          placements.push({ laidAt: layer.laidAt, settledAt: layer.settledAt });
+          if (placements.length > OVERLAY_PLACEMENTS_MAX) placements.shift();
+          // Lists check whether their read raced it.
+          changed();
         },
       });
     },
@@ -143,6 +162,7 @@ export function createItemOverlay(): ItemOverlay {
       }
       if (any) changed();
     },
+    raced: (startedAt) => placements.some((p) => p.laidAt < startedAt && startedAt < p.settledAt),
     dropFolder(folderId) {
       let any = false;
       for (const [id, list] of layers) {
@@ -163,6 +183,7 @@ export function createItemOverlay(): ItemOverlay {
       if (patches.size === 0) return;
       layers.clear();
       bases.clear();
+      placements.length = 0;
       patches.clear();
       changed();
     },
