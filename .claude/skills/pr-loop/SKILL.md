@@ -37,7 +37,7 @@ CI isn't running, and carry on with conflicts and comments.
 
 **"Keep going till they are clear" does not end at an empty queue.** Other sessions open PRs all the time
 (2026-10-15: I reported the backlog clear and stopped, and six new PRs sat red for hours). When asked to clear a
-backlog, keep re-listing open PRs (a Monitor polling `gh pr list` every few minutes, or `/loop`) until you're told to stop.
+backlog, keep going (the step 6 watcher sees new PRs, and `/loop` runs the passes) until you're told to stop.
 
 ## Velocity first: CI is the bottleneck
 
@@ -98,17 +98,25 @@ merge origin/main`. Verify `git diff origin/main HEAD` equals `git diff origin/<
 `not-ready` label from a PR whose description has an unticked **Before merging** Owner step: only the owner
 clears those.
 
-6. **Watch it through to mergeable.** A push is not the end: arm a Monitor (`timeout_ms: 1800000`) on the pushed
-   PRs running `.claude/skills/pr-loop/watch-prs.sh <pr>...`. It polls every ~60s and prints one line per PR the
-   moment any check fails (RED, even with others still running), when every check has passed (GREEN), or when it
-   goes CONFLICTING/MERGED. Never wait for a whole run before reading a red check. On the event:
-   - red check: read the log and fix it (steps 2-5), then re-arm. A smoke/e2e failure unrelated to the diff:
-     `gh run rerun <id> -R "$REPO" --failed` once, then re-arm; if it fails again, fix it.
-   - conflict: step 1, then re-arm.
-   - green and `MERGEABLE`/`CLEAN`: merge it (section 3) if no label blocks it, otherwise report it ready.
+6. **Watch it through to mergeable: one watcher for every PR.** At the end of every pass (and after handling its
+   events), make sure the watcher runs: if `.claude/skills/pr-loop/watch-prs.py --running` exits 1, start
+   `.claude/skills/pr-loop/watch-prs.py` as a **background Bash command** (`run_in_background`), never a Monitor
+   and never one per PR. It watches every open PR of yours, including ones other sessions open later, with one
+   `gh` call a minute, and exits at the first change worth acting on, printing one line per PR that went RED (a
+   check failed, even with others still running), GREEN (every check passed), CONFLICTING, or COMMENTED (a new
+   comment or review). That exit is what wakes the loop, so a red check or a new comment gets picked up within
+   about a minute and the loop is not woken while CI just runs
+   (Monitors expire every 30 minutes and woke the loop each time; one per push piled up, 2026-11-05). Only one
+   runs per clone; it exits after 4 hours with `TIMEOUT` (just start it again). `--status` prints every PR's
+   state now. On its lines:
+   - RED: read the log and fix it (steps 2-5). A smoke/e2e failure unrelated to the diff:
+     `gh run rerun <id> -R "$REPO" --failed` once; if it fails again, fix it.
+   - CONFLICTING: step 1.
+   - COMMENTED: step 3.
+   - GREEN with `MERGEABLE`/`CLEAN`: merge it (section 3) if no label blocks it, otherwise report it ready.
    - CodeQL threads close on rescan; if one stays open after a green rescan, check the alert is gone and say so.
-     If the Monitor times out with checks still running, re-arm once. Keep going until each PR is mergeable or
-     blocked only on a person (a label or a decision).
+   - Then start the watcher again. Keep going until each PR is mergeable or blocked only on a person (a label
+     or a decision).
 
 ## 3. Merge
 
@@ -158,8 +166,8 @@ Then adjust:
 - **Nothing to do this pass** with PRs open (all mid-run, or all waiting on a person or a label): one row slower
   for each such pass in a row, up to 60 min. The first pass that does something (a fix, a merge, a new PR) goes
   straight back to the table.
-- **A Monitor from step 6 is still armed**: its events wake the loop first, so the wait is only a fallback; keep
-  the table's value.
+- **The step 6 watcher is running** (`watch-prs.py --running` exits 0): it wakes the loop the minute a PR goes
+  red, green, conflicting or gets a comment, so the timed pass is only a fallback: 60 min whatever the count.
 - Never go faster than 10 min. CI is the bottleneck (see "Velocity first"), so extra passes don't merge anything
   sooner.
 
