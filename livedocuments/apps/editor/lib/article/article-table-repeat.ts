@@ -20,21 +20,32 @@ export type RepeatInput = {
   firstTop: number;
   // Each row's height, the header row first.
   rowHeights: readonly number[];
+  // A page's text height when it is less than `columnHeight` (its footnotes take its foot), by the page's place
+  // from the one the table starts on (0).
+  heightAt?: (page: number) => number | undefined;
 };
 
 /** The indexes of the rows (after the header row) that start a new page, each to follow a copy of the
  *  header row. A row is never moved on when nothing but a repeated header is above it on its page (a
  *  row taller than a page breaks inside instead). O(rows). */
-export function repeatBreaks({ columnHeight, firstTop, rowHeights }: RepeatInput): number[] {
+export function repeatBreaks({
+  columnHeight,
+  firstTop,
+  rowHeights,
+  heightAt,
+}: RepeatInput): number[] {
   const header = rowHeights[0] ?? 0;
   const breaks: number[] = [];
+  let page = 0;
+  const foot = () => heightAt?.(page) ?? columnHeight;
   let y = firstTop + header;
   // Whether a row of the table's own sits above `y` on this page.
   let ownAbove = false;
   for (let i = 1; i < rowHeights.length; i++) {
     const h = rowHeights[i]!;
-    if (ownAbove && y + h > columnHeight - REPEAT_SLACK) {
+    if (ownAbove && y + h > foot() - REPEAT_SLACK) {
       breaks.push(i);
+      page++;
       y = header;
     }
     y += h;
@@ -123,7 +134,13 @@ export const repeatHeaderPlugin = new Plugin<RepeatBreaks>({
  * changed (meta only, never committed) and says whether it did, so the caller measures again once the
  * copies are drawn.
  */
-export function measureRepeats(view: EditorView, rootTop: number, z: number): boolean {
+export function measureRepeats(
+  view: EditorView,
+  rootTop: number,
+  z: number,
+  // The pages whose footnotes end their text early: a page's column from a screen x, and its text's foot.
+  foot?: { colOf: (x: number) => number; limit: (col: number) => number | undefined },
+): boolean {
   const columnHeight = view.dom.clientHeight;
   const next = new Map<string, string[]>();
   view.dom
@@ -134,10 +151,13 @@ export function measureRepeats(view: EditorView, rootTop: number, z: number): bo
       );
       const first = rows[0];
       if (!first || rows.length < 2) return;
+      const box = first.getBoundingClientRect();
+      const start = foot?.colOf(box.left) ?? 0;
       const breaks = repeatBreaks({
         columnHeight,
-        firstTop: (first.getBoundingClientRect().top - rootTop) / z,
+        firstTop: (box.top - rootTop) / z,
         rowHeights: rows.map((r) => r.offsetHeight),
+        ...(foot ? { heightAt: (page: number) => foot.limit(start + page) } : {}),
       });
       const id = t.dataset.blockId;
       if (id && breaks.length > 0)

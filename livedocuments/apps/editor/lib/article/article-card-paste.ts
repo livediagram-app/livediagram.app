@@ -1,7 +1,7 @@
 // A paste onto a flashcard, cut to what a card holds (docs/specs/007-editor/flashcards.md "Text only"):
 // a pasted table becomes a list, a row a bulleted item with its cells joined by " · " and the header
 // row's text bold (as an agent's table on a card is written, flashcardCut), and a page break, a zone
-// or a contents block is left out. Only those at the paste's top level are touched; anything else
+// or a contents block is left out, and a footnote's reference anywhere in it (a card never reflows). Only those at the paste's top level are touched; anything else
 // comes back as it was. Pasted nodes have no block ids yet (the editor gives them theirs), so the
 // table is read here as editor nodes, never through the stored blocks.
 import { Fragment, Slice, type Node as PMNode } from 'prosemirror-model';
@@ -28,13 +28,34 @@ function tableAsItems(table: PMNode): PMNode[] {
   return items;
 }
 
+const isFootnote = (n: PMNode) => n.type === articleSchema.nodes.footnote;
+function hasFootnote(f: Fragment): boolean {
+  let found = false;
+  f.descendants((n) => {
+    if (isFootnote(n)) found = true;
+    return !found;
+  });
+  return found;
+}
+function withoutFootnotes(f: Fragment): Fragment {
+  const out: PMNode[] = [];
+  f.forEach((n) => {
+    if (!isFootnote(n)) out.push(n.isLeaf ? n : n.copy(withoutFootnotes(n.content)));
+  });
+  return Fragment.from(out);
+}
+
 /** `slice` as a card takes it, with whether anything was cut (`cut`), to say so once. */
-export function cardPasteSlice(slice: Slice): { slice: Slice; cut: boolean } {
+export function cardPasteSlice(pasted: Slice): { slice: Slice; cut: boolean } {
+  const notes = hasFootnote(pasted.content);
+  const slice = notes
+    ? new Slice(withoutFootnotes(pasted.content), pasted.openStart, pasted.openEnd)
+    : pasted;
   let touched = false;
   slice.content.forEach((n) => {
     if (NOT_ON_A_CARD.has(n.type.name)) touched = true;
   });
-  if (!touched) return { slice, cut: false };
+  if (!touched) return { slice, cut: notes };
   const nodes: PMNode[] = [];
   slice.content.forEach((n) => {
     if (!NOT_ON_A_CARD.has(n.type.name)) nodes.push(n);
