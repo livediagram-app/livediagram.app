@@ -6,8 +6,10 @@
 // owner is entitled to place it there right now, or the item holds a grant for X. X's owner is entitled while they
 // are a joined member of the item's team, or while they have written to the item since its last push (an edit key in
 // its outbox: the index let them edit it). Grants are written only at trusted moments: as the item pushes the images
-// its content places (`grantPlaced`, from the outbox drain) while X's owner is entitled, and when a copy carries an
-// image its source could serve (`grant`). The live entitlement serves a placement before that push lands; the grant
+// its content places (`grantPlaced`, from the outbox drain) while X's owner is entitled, when a copy carries an
+// image its source could serve (`grant`), and when X's owner, able to add to the item, claims X as they place it
+// (`grantOwn`: a Participant's placement goes through the item's room, which knows no person, so it leaves no edit
+// key). The live entitlement serves a placement before that push lands; the grant
 // keeps serving it after the entitlement ends.
 //
 // Owners are as the media service names them (a guest's id is a one-way hash there), learned from the service once
@@ -234,6 +236,31 @@ export function createImageGrants(deps: ImageGrantDeps, options: ImageGrantOptio
       const grants = await entitled(item, foreign, owners, editorKeys);
       await grantImages(sql, grants, at);
       return grants.length;
+    },
+
+    /**
+     * A Participant's placement claim (@liveworkspace/media placement-claims.ts): grant each of `ids` that
+     * `personId` uploaded. The app has checked they may add to the item; an id of anyone else's, or one the
+     * service does not know, is left alone. A grant on an image the item does not place serves nothing until it
+     * does. Answers how many it granted.
+     */
+    async grantOwn(
+      sql: ImageGrantSql,
+      ids: readonly string[],
+      personId: string,
+      at: number,
+    ): Promise<number> {
+      if (ids.length === 0) return 0;
+      const [owners, person] = await Promise.all([
+        imageOwners(sql, ids),
+        deps.mediaOwnerOf(personId),
+      ]);
+      const own = ids.filter((id) => {
+        const owner = owners.get(id) ?? '';
+        return owner !== '' && owner === person;
+      });
+      await grantImages(sql, own, at);
+      return own.length;
     },
 
     /** Grant images outright: a copy's, which its source could serve. */

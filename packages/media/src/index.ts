@@ -3,8 +3,10 @@
 // page head every app's share page carries.
 export * from './apps';
 export * from './client';
+export * from './gallery-id';
 export * from './limits';
 export * from './owner';
+export * from './placement-claims';
 export * from './previews';
 export * from './share-page';
 export * from './sniff';
