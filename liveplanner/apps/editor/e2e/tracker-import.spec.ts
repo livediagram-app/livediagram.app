@@ -57,8 +57,10 @@ test('a Jira export becomes a new Board tab of this plan, its comments on each c
   await dialog.getByRole('button', { name: 'Import', exact: true }).click();
   await expect(dialog).toBeHidden();
 
-  // A new tab of the same plan, opened on the board.
-  expect(page.url()).toBe(planUrl);
+  // A new tab of the same plan, opened on the board: the same plan path, a different tab in the hash.
+  const before = new URL(planUrl);
+  await expect.poll(() => new URL(page.url()).hash).not.toBe(before.hash);
+  expect(new URL(page.url()).pathname).toBe(before.pathname);
   await expect(board(page)).toBeVisible();
   await expect
     .poll(() => columns(page))
