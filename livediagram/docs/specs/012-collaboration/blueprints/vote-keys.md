@@ -26,7 +26,8 @@ prevents default and returns, `false` falls through to type-to-edit unchanged.
 
 1. Not `canTakePart`, no vote, `vote.active` false, the element missing, or `isVotableInVote(el, vote, layers)`
    false: `null` (not the vote's key).
-2. `delta` 1: `canCastVote(vote, selfId, id)` false: spent budget speaks `No dots left.`; else (one per item)
+2. `delta` 1: `canCastVote(vote, selfId, id, elementHasText(el))` false: spent budget speaks `No dots left.`; else
+   (a text-only vote, the element's text blank) `No text on <name>, so it takes no more dots.`; else (one per item)
    `One dot each: <name> already has yours.` `cast(id)` returns false (edits blocked: a locked tab, VK2): `This tab is locked, so no dot moved.`
    Else `Dot added to <name>. <dotsLeft after>`.
 3. `delta` -1: no dot of `selfId` on the element: `No dot of yours on <name>.` `retract(id)` false:

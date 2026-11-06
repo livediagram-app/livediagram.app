@@ -8,7 +8,7 @@
 // countdown / stopwatch and the vote tallies are unit-testable and the
 // clients tick locally off an absolute anchor rather than over the wire.
 
-import type { Element, Layer } from './index';
+import { elementHasText, type Element, type Layer } from './index';
 import { resolveLayerId, tabLayers } from './layers';
 import { isCollabPanelShape } from './collab-shapes';
 
@@ -102,6 +102,11 @@ export type TabVote = {
   // stack freely, the classic dot-vote and the behaviour of every vote
   // persisted before this existed. Set once at start like the rest.
   onePerElement?: boolean;
+  // Only elements with text take dots (docs/specs/012-collaboration/session-tools.md "Only items with text"):
+  // a blank sticky is a spare, not a candidate. Absent = off, the behaviour of
+  // every vote persisted before this existed. Set once at start; the text
+  // itself is read live, so a note typed into mid-vote becomes votable.
+  onlyWithText?: boolean;
   // Which rank the results walkthrough is currently on. SHARED, not local:
   // the host steps the room through the picks together and everyone else
   // follows. Absent until the host reveals results.
@@ -153,6 +158,8 @@ export type VoteSetup = VotePrivacy & {
   // Cap each participant at one dot per element instead of letting them
   // stack their budget on a favourite.
   onePerElement?: boolean;
+  // Leave out elements whose text label is blank.
+  onlyWithText?: boolean;
 };
 
 // Should peer cursors / laser trails be withheld right now? Only while
@@ -220,7 +227,13 @@ export function isVotable(element: Element): boolean {
 }
 
 // Can this element take a dot in THIS vote? The kind rule above, plus
-// the vote's optional layer scope (docs/specs/012-collaboration/vote-layer-scope.md).
+// the vote's optional layer scope (docs/specs/012-collaboration/vote-layer-scope.md) and its optional
+// text-only rule (docs/specs/012-collaboration/session-tools.md "Only items with text").
+//
+// The text rule reads the element's text NOW, so a blank note typed into
+// mid-vote gains its stepper. One that already holds dots stays votable even
+// once its text is cleared, so those dots can still be taken back and its
+// total still shows after End; `canCastVote` refuses it any NEW dot.
 //
 // Layer resolution goes through `resolveLayerId` rather than comparing
 // `element.layerId` directly: elements authored before docs/specs/006-document/layers.md carry no
@@ -232,6 +245,13 @@ export function isVotableInVote(
   layers: Layer[] | undefined,
 ): boolean {
   if (!isVotable(element)) return false;
+  if (
+    vote?.onlyWithText &&
+    !elementHasText(element) &&
+    (vote.votes[element.id]?.length ?? 0) === 0
+  ) {
+    return false;
+  }
   const scope = vote?.voteLayerId;
   if (!scope) return true;
   return resolveLayerId(element.layerId, tabLayers(layers)) === scope;
@@ -312,10 +332,19 @@ export function votesSpentBy(vote: TabVote, participantId: string): number {
 
 // Can this participant place one more dot on this element? Out of budget
 // says no everywhere; a one-per-element vote also says no where they have
-// already placed one. The single rule the cast handler and the canvas
-// stepper both read, so the plus can't offer a dot the handler refuses.
-export function canCastVote(vote: TabVote, participantId: string, elementId: string): boolean {
+// already placed one, and a text-only vote where the element's text is blank
+// (`hasText`, the caller's `elementHasText`: a blank element is only still
+// votable because it holds dots, which can come off but not grow). The single
+// rule the cast handler, the vote keys and the canvas stepper all read, so the
+// plus can't offer a dot the handler refuses.
+export function canCastVote(
+  vote: TabVote,
+  participantId: string,
+  elementId: string,
+  hasText = true,
+): boolean {
   if (!vote.active) return false;
+  if (vote.onlyWithText && !hasText) return false;
   if (votesSpentBy(vote, participantId) >= vote.votesPerPerson) return false;
   if (vote.onePerElement && (vote.votes[elementId] ?? []).includes(participantId)) return false;
   return true;

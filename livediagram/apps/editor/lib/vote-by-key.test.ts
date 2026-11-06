@@ -111,6 +111,16 @@ describe('voteByKey', () => {
     expect(cast).not.toHaveBeenCalled();
   });
 
+  it('refuses a new dot on a text-only vote once the element is blank, but still takes one back', () => {
+    const blank = { ...idea, label: '' } as Element;
+    const v = openVote({ onlyWithText: true, votes: { [idea.id]: ['me'] } });
+    const plus = args({ vote: v, elements: [blank, frame] });
+    expect(voteByKey(plus.a)).toBe('No text on a Sticky note, so it takes no more dots.');
+    expect(plus.cast).not.toHaveBeenCalled();
+    const minus = args({ delta: -1, vote: v, elements: [blank, frame] });
+    expect(voteByKey(minus.a)).toMatch(/^Dot removed from /);
+  });
+
   it('says there is nothing to take back when none of the dots are yours', () => {
     const { a, retract } = args({ delta: -1, vote: openVote({ votes: { [idea.id]: ['them'] } }) });
     expect(voteByKey(a)).toBe("No dot of yours on 'Idea'.");

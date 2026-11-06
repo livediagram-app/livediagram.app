@@ -6844,6 +6844,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "onePerElement": {
         "type": "boolean"
       },
+      "onlyWithText": {
+        "type": "boolean"
+      },
       "revealed": {
         "type": "boolean"
       },
