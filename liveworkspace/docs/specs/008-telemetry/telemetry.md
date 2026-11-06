@@ -21,18 +21,18 @@ the apps' old `events` tables are no longer read or written.
 
 The same three fields as before, plus the app it came from:
 
-| Field      | What it is                                                                                                                                                                  |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app`      | The app's site: `livediagram.app`, `liveplanner.app`, `livedocuments.app` or `livedesign.app` (`TELEMETRY_APPS`), or a held app's (`HELD_TELEMETRY_APPS`: `livehuddle.app`) |
-| `category` | The parent, such as `Document` or `Element`                                                                                                                                 |
-| `action`   | The verb, such as `Created` or `Added`                                                                                                                                      |
-| `type`     | Optional. One short reference token, such as `Square`; never user content                                                                                                   |
-| `ts`       | Stamped by the service when the batch arrives                                                                                                                               |
+| Field      | What it is                                                                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app`      | The app's site: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app` or `livehuddle.app` (`TELEMETRY_APPS`), or a held app's (`HELD_TELEMETRY_APPS`, empty today) |
+| `category` | The parent, such as `Document` or `Element`                                                                                                                                              |
+| `action`   | The verb, such as `Created` or `Added`                                                                                                                                                   |
+| `type`     | Optional. One short reference token, such as `Square`; never user content                                                                                                                |
+| `ts`       | Stamped by the service when the batch arrives                                                                                                                                            |
 
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
 together. The service imports each sending app's vocabulary (livediagram's, liveplanner's,
-livedocuments', livedesign's and the held livehuddle's), and only stores an event that its app could have sent.
+livedocuments', livedesign's and livehuddle's), and only stores an event that its app could have sent.
 
 ## Sending events
 
@@ -155,7 +155,7 @@ the app's to report, so each change is counted once.
 ## The dashboard
 
 `https://www.liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app`,
-`?app=liveplanner.app`, `?app=livedocuments.app` or `?app=livedesign.app` opens one app's own dashboard, with all of
+`?app=liveplanner.app`, `?app=livedocuments.app`, `?app=livedesign.app` or `?app=livehuddle.app` opens one app's own dashboard, with all of
 its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
 - **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
@@ -221,9 +221,9 @@ the repo root runs the site with this Worker behind it, at http://localhost:3000
 
 ## Which apps send
 
-livediagram, liveplanner, livedocuments and livedesign send events, and each has its own dashboard
+livediagram, liveplanner, livedocuments, livedesign and livehuddle send events, and each has its own dashboard
 data under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `livedocuments/`,
-`livedesign/`). Each folder's tests read that app's source: every event an emitter can send must be
+`livedesign/`, `livehuddle/`). Each folder's tests read that app's source: every event an emitter can send must be
 in its vocabulary and have a chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every
 event has an explanation (`event-explanation.test.ts`). An event of a removed feature goes in the app's
 `retired-events.ts`, and the dashboard drops it before any chart (`_shared/retired-events.ts`).
@@ -236,8 +236,8 @@ databases are `liveworkspace-telemetry` and `liveworkspace-telemetry-staging`, w
 `apps/telemetry/wrangler.toml`. The dashboard ships with the site ([site.md](../010-site/site.md)).
 
 Secrets are set once per environment with `wrangler secret put` and survive every deploy: one key per app,
-`TELEMETRY_KEY_LIVEDIAGRAM`, `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_KEY_LIVEDOCUMENTS` and
-`TELEMETRY_KEY_LIVEDESIGN` (each `openssl rand -hex 32`), with the same value as that app's api and mcp
+`TELEMETRY_KEY_LIVEDIAGRAM`, `TELEMETRY_KEY_LIVEPLANNER`, `TELEMETRY_KEY_LIVEDOCUMENTS`,
+`TELEMETRY_KEY_LIVEDESIGN` and `TELEMETRY_KEY_LIVEHUDDLE` (each `openssl rand -hex 32`), with the same value as that app's api and mcp
 Workers' `TELEMETRY_KEY`. The apps reach the service over HTTPS, not a service binding.
 
 ## Adding an app
@@ -258,9 +258,11 @@ Workers' `TELEMETRY_KEY`. The apps reach the service over HTTPS, not a service b
 An app registered before its launch ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch))
 goes in `HELD_TELEMETRY_APPS` instead of `TELEMETRY_APPS` for step 1: the service stores its events and takes its
 key, and the dashboard's app picker and All apps view, which read `TELEMETRY_APPS`, leave it out, so step 3 waits
-for its launch. livehuddle is still held this way: it launched (Work Tracker #189) before its dashboard was built,
-so it moves into `TELEMETRY_APPS` with its dashboard, a follow-up to that card. It is checked against its own api-schema's vocabulary
-(`@livehuddle/api-schema`).
+for its launch. No app is held today. livehuddle was: it launched (Work Tracker #189) before its dashboard was
+built, and moved into `TELEMETRY_APPS` with its dashboard (Work Tracker #400). It is checked against its own
+api-schema's vocabulary (`@livehuddle/api-schema`). Its dashboard has no MCP or CLI views, and its checks leave
+out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle drops its MCP server and CLI
+(Work Tracker #562, #563), so their events get no charts.
 
 ## Performance
 
@@ -282,9 +284,10 @@ so it moves into `TELEMETRY_APPS` with its dashboard, a follow-up to that card. 
 - **Accounts' team and token events**: reporting one is an array push on the request; the app it
   counts for is read (one primary-key read each) and the batch sent, one per app, in `waitUntil` after
   the response, bounded at two seconds. No query or request is added to the request itself.
-- **Telemetry Worker**: taking settings events from liveworkspace.app bundles the four settings
-  catalogues: 112 KiB to 182 KiB (19.4 to 25.0 KiB gzipped). Their 300 events become one set per app
-  once per isolate, in about 0.3 ms.
+- **Telemetry Worker**: taking settings events from liveworkspace.app bundles the five settings
+  catalogues. The first four took it from 112 KiB to 182 KiB (19.4 to 25.0 KiB gzipped); livehuddle's
+  adds 9.2 KiB (0.3 KiB gzipped, 228 KiB and 30.2 KiB in all, November 2026). Their events become one
+  set per app once per isolate, in about 0.3 ms.
 - **Apps**: a browser batch is now cross-site, so it can't reuse the app's own connection; the first
   send on a page opens one more connection, to liveworkspace.app. Sends are batched (every 10
   seconds, and on page hide), so this is one connection per page view, off the critical path.

@@ -30,18 +30,18 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term            | Identifier                                                       | Meaning                                                                                            |
-| --------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Event           | `TelemetryWireEvent` `{ category, action, type? }`               | Three short fields from a closed vocabulary; never user content                                    |
-| Batch           | `TelemetryBatch` `{ app, events }`                               | What one `POST /events` carries                                                                    |
-| App             | `TelemetryApp`, one of `TELEMETRY_APPS` or `HELD_TELEMETRY_APPS` | `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`; held `livehuddle.app` |
-| Platform sender | `PLATFORM_TELEMETRY_APP` = `'liveworkspace.app'`                 | The Explorer and Settings on liveworkspace.app, speaking for an app or for itself                  |
-| Sender          | `TelemetrySender` = app or platform; `TELEMETRY_SENDERS`         | What a batch may name in `app`                                                                     |
-| Sender kind     | `'server' \| 'browser' \| 'platform'` (`senderOf`)               | How the batch proved who it is                                                                     |
-| Filter          | `TelemetryAppFilter` = app or `ALL_TELEMETRY_APPS` (`'all'`)     | What the summary is asked for                                                                      |
-| Window          | `TelemetryWindowKey` `today` / `last7` / `last30`                | 1, 7 or 30 UTC calendar days ending today (`TELEMETRY_WINDOW_DAYS`)                                |
-| Metric key      | `metricKey(category, action, type)` = `category\|action\|type`   | One event's series key; `type` null is `''`                                                        |
-| Server-only     | `isServerEmittedEvent` (each app's `api-schema`)                 | Events only the app's Workers may count (a sign-up, an email sent)                                 |
+| Term            | Identifier                                                       | Meaning                                                                                                  |
+| --------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Event           | `TelemetryWireEvent` `{ category, action, type? }`               | Three short fields from a closed vocabulary; never user content                                          |
+| Batch           | `TelemetryBatch` `{ app, events }`                               | What one `POST /events` carries                                                                          |
+| App             | `TelemetryApp`, one of `TELEMETRY_APPS` or `HELD_TELEMETRY_APPS` | `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app`; none held |
+| Platform sender | `PLATFORM_TELEMETRY_APP` = `'liveworkspace.app'`                 | The Explorer and Settings on liveworkspace.app, speaking for an app or for itself                        |
+| Sender          | `TelemetrySender` = app or platform; `TELEMETRY_SENDERS`         | What a batch may name in `app`                                                                           |
+| Sender kind     | `'server' \| 'browser' \| 'platform'` (`senderOf`)               | How the batch proved who it is                                                                           |
+| Filter          | `TelemetryAppFilter` = app or `ALL_TELEMETRY_APPS` (`'all'`)     | What the summary is asked for                                                                            |
+| Window          | `TelemetryWindowKey` `today` / `last7` / `last30`                | 1, 7 or 30 UTC calendar days ending today (`TELEMETRY_WINDOW_DAYS`)                                      |
+| Metric key      | `metricKey(category, action, type)` = `category\|action\|type`   | One event's series key; `type` null is `''`                                                              |
+| Server-only     | `isServerEmittedEvent` (each app's `api-schema`)                 | Events only the app's Workers may count (a sign-up, an email sent)                                       |
 
 ## Behaviour and state
 
@@ -180,7 +180,7 @@ SELECT date(ts / 1000, 'unixepoch') AS day, app, category, action, type, COUNT(*
 - No identity: no cookies are read, no address stored; the rate-limit key lives only in the limiter.
 - The `Origin` check is spoofable by any non-browser client; the bound is the per-network limit (120 a minute, both
   environments) and the closed vocabulary, so a forger adds only plausible counts.
-- Keys: one secret per app (`TELEMETRY_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`), compared
+- Keys: one secret per app (`TELEMETRY_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`, `_LIVEHUDDLE`), compared
   with `@liveworkspace/index-app/timing-safe` `timingSafeEqual`; a key never speaks for `liveworkspace.app`.
 - `compatibility_flags = ["global_fetch_strictly_public"]`; `workers_dev = false` in both environments.
 
@@ -240,16 +240,16 @@ Ingest logs no refusal, by design: every refusal is silent. A batch D1 failed to
 
 Worker configuration (`wrangler.toml`):
 
-| Setting               | Production                                                                   | Staging                                    |
-| --------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| Name                  | `liveworkspace-telemetry`                                                    | `liveworkspace-telemetry-staging`          |
-| Route                 | `www.liveworkspace.app/api/telemetry*`, `liveworkspace.app/api/telemetry*`   | `staging.liveworkspace.app/api/telemetry*` |
-| D1 `TELEMETRY_DB`     | `liveworkspace-telemetry`                                                    | `liveworkspace-telemetry-staging`          |
-| `EVENTS_RATE_LIMITER` | namespace `1101`, 120 per 60 s                                               | namespace `2101`, 120 per 60 s             |
-| Cron                  | `17 3 * * *`                                                                 | `17 3 * * *`                               |
-| `ENVIRONMENT`         | `production`                                                                 | `staging`                                  |
-| `TELEMETRY_ENABLED`   | `true`                                                                       | `true`                                     |
-| Secrets               | `TELEMETRY_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN` | the same                                   |
+| Setting               | Production                                                                                  | Staging                                    |
+| --------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Name                  | `liveworkspace-telemetry`                                                                   | `liveworkspace-telemetry-staging`          |
+| Route                 | `www.liveworkspace.app/api/telemetry*`, `liveworkspace.app/api/telemetry*`                  | `staging.liveworkspace.app/api/telemetry*` |
+| D1 `TELEMETRY_DB`     | `liveworkspace-telemetry`                                                                   | `liveworkspace-telemetry-staging`          |
+| `EVENTS_RATE_LIMITER` | namespace `1101`, 120 per 60 s                                                              | namespace `2101`, 120 per 60 s             |
+| Cron                  | `17 3 * * *`                                                                                | `17 3 * * *`                               |
+| `ENVIRONMENT`         | `production`                                                                                | `staging`                                  |
+| `TELEMETRY_ENABLED`   | `true`                                                                                      | `true`                                     |
+| Secrets               | `TELEMETRY_KEY_LIVEDIAGRAM`, `_LIVEPLANNER`, `_LIVEDOCUMENTS`, `_LIVEDESIGN`, `_LIVEHUDDLE` | the same                                   |
 
 Locally (`.dev.vars.example`): `ENVIRONMENT=development` and `dev-<app>-key` for each key; `wrangler dev --port 8790`.
 
