@@ -123,6 +123,22 @@ describe('only items with text', () => {
   });
 });
 
+describe('casting on a text-only vote', () => {
+  it('casts on an element with text and refuses a blank one', () => {
+    const h = harness({
+      elements: [
+        { id: 'a', type: 'sticky', x: 0, y: 0, width: 1, height: 1, label: 'Idea' },
+        { id: 'b', type: 'sticky', x: 0, y: 0, width: 1, height: 1, label: ' ' },
+      ],
+    });
+    h.session().startVote(3, { hideCursors: false, hideCounts: false, onlyWithText: true });
+    expect(h.session().castVote('a')).toBe(true);
+    expect(h.session().castVote('b')).toBe(false);
+    expect(h.session().castVote('missing')).toBe(false);
+    expect(h.tab().vote?.votes).toEqual({ a: ['me'] });
+  });
+});
+
 describe('one dot per item', () => {
   it('bakes the choice into the vote only when it is on', () => {
     const on = harness();

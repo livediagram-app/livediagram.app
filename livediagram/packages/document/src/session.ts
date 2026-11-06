@@ -233,7 +233,7 @@ export function isVotable(element: Element): boolean {
 // The text rule reads the element's text NOW, so a blank note typed into
 // mid-vote gains its stepper. One that already holds dots stays votable even
 // once its text is cleared, so those dots can still be taken back and its
-// total still shows after End.
+// total still shows after End; `canCastVote` refuses it any NEW dot.
 //
 // Layer resolution goes through `resolveLayerId` rather than comparing
 // `element.layerId` directly: elements authored before docs/specs/006-document/layers.md carry no
@@ -332,10 +332,19 @@ export function votesSpentBy(vote: TabVote, participantId: string): number {
 
 // Can this participant place one more dot on this element? Out of budget
 // says no everywhere; a one-per-element vote also says no where they have
-// already placed one. The single rule the cast handler and the canvas
-// stepper both read, so the plus can't offer a dot the handler refuses.
-export function canCastVote(vote: TabVote, participantId: string, elementId: string): boolean {
+// already placed one, and a text-only vote where the element's text is blank
+// (`hasText`, the caller's `elementHasText`: a blank element is only still
+// votable because it holds dots, which can come off but not grow). The single
+// rule the cast handler, the vote keys and the canvas stepper all read, so the
+// plus can't offer a dot the handler refuses.
+export function canCastVote(
+  vote: TabVote,
+  participantId: string,
+  elementId: string,
+  hasText = true,
+): boolean {
   if (!vote.active) return false;
+  if (vote.onlyWithText && !hasText) return false;
   if (votesSpentBy(vote, participantId) >= vote.votesPerPerson) return false;
   if (vote.onePerElement && (vote.votes[elementId] ?? []).includes(participantId)) return false;
   return true;

@@ -27,6 +27,7 @@ import {
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
+  elementHasText,
 } from '@livediagram/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
@@ -845,6 +846,7 @@ function BoxedElementViewImpl({
         selfId={selfId}
         voteMax={voteMax}
         votableInVote={votableInVote}
+        hasText={vote?.onlyWithText ? elementHasText(element) : true}
         voteReviewActive={voteReviewActive}
         isVoteFocus={isVoteFocus}
         onRetractVote={onRetractVote}

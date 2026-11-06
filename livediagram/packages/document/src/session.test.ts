@@ -308,6 +308,14 @@ describe('a text-only vote (docs/specs/012-collaboration/session-tools.md "Only 
     expect(isVotableInVote(img, vote({ onlyWithText: undefined }), undefined)).toBe(true);
   });
 
+  it('refuses a new dot on a blank element, so cleared text keeps its dots but cannot grow', () => {
+    const v = vote({ votes: { a: ['me'] } });
+    expect(canCastVote(v, 'me', 'a', false)).toBe(false);
+    expect(canCastVote(v, 'me', 'a', true)).toBe(true);
+    expect(canCastVote(v, 'me', 'a')).toBe(true);
+    expect(canCastVote(vote({ onlyWithText: undefined }), 'me', 'a', false)).toBe(true);
+  });
+
   it('leaves blank elements votable when the switch is off', () => {
     expect(isVotableInVote(sticky('a'), vote({ onlyWithText: undefined }), undefined)).toBe(true);
   });

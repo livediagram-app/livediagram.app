@@ -409,8 +409,10 @@ the set-up offers **Only items with text**.
   start: a blank note somebody types into mid-vote gains its stepper, and the
   room can still add an idea while voting.
 - **An element already holding dots stays votable** even if its text is
-  cleared, so those dots can still be taken back and its total still shows at
-  the end. Only a blank element with no dots drops out.
+  cleared, so those dots can still be taken back (its minus works) and its
+  total still shows at the end, but it takes no new dot: `canCastVote` is told
+  whether the element has text, so its plus disables and a cast or `+` key is
+  refused. Only a blank element with no dots drops out entirely.
 - Images carry no text label, so they drop out of a text-only vote. That is
   what the switch says, and a vote that should include pictures leaves it off.
 - While casting is open the canvas shows the votable set the way a
