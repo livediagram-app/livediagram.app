@@ -8,10 +8,12 @@ import type { CSSProperties } from 'react';
 import '../app/hero-scenes/space-floor.css';
 import '../app/hero-scenes/space-floor.generated.css';
 import {
+  BACK_ROW_SPAN,
   FLOOR_CAST_HREF,
   FLOOR_ONLY,
   FLOOR_STAGES,
   floorArtHref,
+  onBackRow,
   type FloorStage,
   type Walker,
 } from './hero-space-floor-cast';
@@ -98,23 +100,32 @@ function Bubbles({ stage, walker, shown }: Placed) {
 
 /**
  * A stage, 1:1 in px: the furniture, the characters further back first, then every bubble over them all. The wide
- * stage also holds its floor paths (FLOOR_ONLY), shown below lg in place of the walkers they stand in for.
+ * stage also holds its floor paths (FLOOR_ONLY), shown below lg in place of the walkers they stand in for. `part`
+ * splits the wide stage's characters: the back row's players live on its own layer (HeroSpaceBackRow), the rest on
+ * the stage.
  */
 export function HeroSpaceFloor({
   stage: key,
   className,
+  part = 'stage',
+  top,
 }: {
   stage: Exclude<FloorStage['key'], 'floor'>;
   className: string;
+  part?: 'stage' | 'back';
+  top?: number;
 }) {
   const stage = stageOf(key);
-  const twins = key === 'wide' ? FLOOR_ONLY.cast : [];
+  const back = part === 'back';
+  const twins = key === 'wide' && !back ? FLOOR_ONLY.cast : [];
   const cast: Placed[] = [
-    ...stage.cast.map((walker) => ({
-      stage,
-      walker,
-      shown: (walker.floorBeats ? 'hsf-lg-only' : '') as Shown,
-    })),
+    ...stage.cast
+      .filter((walker) => key !== 'wide' || onBackRow(walker) === back)
+      .map((walker) => ({
+        stage,
+        walker,
+        shown: (walker.floorBeats ? 'hsf-lg-only' : '') as Shown,
+      })),
     ...twins.map((walker) => ({ stage: FLOOR_ONLY, walker, shown: 'hsf-below-lg' as Shown })),
   ].sort((a, b) => a.walker.from.y - b.walker.from.y);
   return (
@@ -124,7 +135,7 @@ export function HeroSpaceFloor({
       aria-hidden
       data-optical-ignore
       className={`hsf-stage pointer-events-none select-none ${className}`}
-      style={{ width: stage.width, height: stage.height }}
+      style={{ width: stage.width, height: stage.height, top }}
     >
       {/* Lazy, so only the drawing shown is fetched: a browser never fetches a lazy image that isn't rendered, and
           the other appearance's (display: none) and the other stage's (under a hidden parent) never are. */}
@@ -166,6 +177,27 @@ export function HeroSpaceStage() {
       stage="wide"
       className="hsf-floor-only absolute bottom-0 left-1/2 -translate-x-1/2 max-sm:hidden"
     />
+  );
+}
+
+/**
+ * The back of the office: a window onto the wide stage's y 144..324 (its drawing and its two players), its own layer
+ * so it shows whole or not at all (space-floor.css `.hsf-back`). The same drawing as the stage, so nothing more is
+ * fetched.
+ */
+export function HeroSpaceBackRow() {
+  return (
+    <div
+      className="hsf-back pointer-events-none absolute left-1/2 -translate-x-1/2 overflow-hidden max-sm:hidden"
+      style={{ width: stageOf('wide').width, height: BACK_ROW_SPAN.foot - BACK_ROW_SPAN.top }}
+    >
+      <HeroSpaceFloor
+        stage="wide"
+        part="back"
+        className="absolute left-0"
+        top={-BACK_ROW_SPAN.top}
+      />
+    </div>
   );
 }
 
