@@ -97,6 +97,7 @@ import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useSlideDeck } from './useSlideDeck';
+import { sendDeckSave } from './deck-save';
 import { slideFitOptions } from '@/lib/presentation-config';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
@@ -1074,8 +1075,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // frames each slide through it.
   // The deck as this editor last saved or loaded it: what its next deck save was built on.
   const deckBaseRef = useRef<string | null>(documentPresentation);
+  // The deck this editor last sent: coming back through documentPresentation it is no new base (sendDeckSave moved
+  // the base already, or put it back when the save failed).
+  const sentDeckRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
-    deckBaseRef.current = documentPresentation;
+    if (documentPresentation !== sentDeckRef.current) deckBaseRef.current = documentPresentation;
   }, [documentPresentation]);
   const slideDeck = useSlideDeck({
     prefs: userPreferences,
@@ -1089,20 +1093,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isReadOnly,
     saveDeck: (serialised, opts) => {
       if (!hydrated || !documentId) return;
-      // The deck this one was built on goes with it, so the server keeps another person's note cards
-      // (speaker-note-cards.md "Two people writing at once"); then this save is the next one's base.
-      const presentationBase = deckBaseRef.current;
-      deckBaseRef.current = serialised;
+      sentDeckRef.current = serialised;
       setDocumentPresentation(serialised);
-      void apiSaveDocumentMeta(
-        selfParticipant.id,
-        { id: documentId, presentation: serialised, presentationBase },
-        sessionShareCode,
-        opts,
-      ).catch(() => {
-        // Best-effort, like every other metadata write: the deck is in
-        // state either way and the next edit retries.
-      });
+      sendDeckSave(
+        deckBaseRef,
+        serialised,
+        (presentationBase) =>
+          apiSaveDocumentMeta(
+            selfParticipant.id,
+            { id: documentId, presentation: serialised, presentationBase },
+            sessionShareCode,
+            opts,
+          ),
+        toast.error,
+      );
     },
   });
   // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
