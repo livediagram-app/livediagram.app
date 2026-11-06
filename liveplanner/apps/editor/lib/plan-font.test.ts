@@ -7,7 +7,6 @@ import {
   PLAN_TEXT_SCALE_MIN,
   PLAN_UI_FONT,
   planBoardFontStyle,
-  planFontStyle,
   planTextPx,
   planTextScale,
 } from './plan-font';
@@ -47,33 +46,6 @@ describe('planBoardFontStyle', () => {
       fontFamily: PLAN_UI_FONT,
       fontSizeAdjust: 'none',
     });
-  });
-});
-
-describe('planFontStyle', () => {
-  it('takes the editor face when the tab has none', () => {
-    expect(planFontStyle(undefined)).toEqual({});
-  });
-
-  it('letters a whole surface in the tab face and hands it to the boards in it', () => {
-    expect(planFontStyle("'Inter', sans-serif")).toEqual({
-      fontFamily: "'Inter', sans-serif",
-      '--plan-heading-font': "'Inter', sans-serif",
-    });
-  });
-
-  it('lifts the handwriting face', () => {
-    const stack = stackOf(SKETCH_FONT_ID);
-    expect(planFontStyle(stack)).toEqual({
-      fontFamily: stack,
-      fontSizeAdjust: LIFT,
-      '--plan-heading-font': stack,
-      '--plan-heading-adjust': LIFT,
-    });
-  });
-
-  it('takes the editor face for a face liveplanner does not draw', () => {
-    expect(planFontStyle(stackOf(MARKER_FONT_ID))).toEqual({});
   });
 });
 

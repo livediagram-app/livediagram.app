@@ -4,6 +4,7 @@
 // (a plain heading to anyone else), landing as one step when left, and the card's padding, clear of the slot's menu.
 import { DASHBOARD_CARD_TITLE_MAX } from '@liveplanner/project';
 import { useSlotDraft } from './useSlotDraft';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 export const CARD_BODY = 'flex h-full flex-col gap-2 overflow-hidden p-4';
 const HEADING_TEXT = 'text-[15px] font-semibold text-slate-800 dark:text-slate-100';
@@ -37,10 +38,13 @@ export function CardHeading({
             if (e.key === 'Enter') e.currentTarget.blur();
           }}
           placeholder="Heading"
+          style={PLAN_HEADING_STYLE}
           className={`min-w-0 flex-1 truncate bg-transparent outline-none placeholder:text-slate-400 ${HEADING_TEXT}`}
         />
       ) : (
-        <h3 className={`min-w-0 flex-1 truncate ${HEADING_TEXT}`}>{value}</h3>
+        <h3 style={PLAN_HEADING_STYLE} className={`min-w-0 flex-1 truncate ${HEADING_TEXT}`}>
+          {value}
+        </h3>
       )}
       {aside}
     </div>
