@@ -35,8 +35,7 @@ reach a deployed artefact, and nothing else.
 - **Embedded works.** A bundler sees JavaScript, not what is compiled into a WebAssembly binary or
   a font. Every emitted binary asset (`.wasm`, `.ttf`, `.otf`, `.woff`, `.woff2`) must match at least
   one entry of the reviewed **embedded-works table**, which names the libraries inside it with their
-  own licence texts: XNNPACK and its helpers plus the Emscripten runtime inside the TensorFlow.js
-  WASM backend, ONNX Runtime's third-party notices inside its WASM, libwebp inside `@jsquash/webp`,
+  own licence texts: libwebp and the Emscripten runtime inside `@jsquash/webp`,
   resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font inside the mcp worker. The same
   table covers material vendored into our own source (Lucide and Feather icon geometry, draw.io's
   view geometry ported into the draw.io importer), triggered by the first-party source file that
@@ -50,8 +49,8 @@ reach a deployed artefact, and nothing else.
 - **A work with no licence text fails the build**, naming the package and version. The fix is never
   to omit it: an **override** supplies the upstream text, committed to the repo with its source URL
   (pinned to a tag or commit) and a checksum, keyed to the exact package version so an upgrade asks
-  for review again. Today nine packages need one: five TensorFlow.js packages, two ONNX Runtime
-  packages, seedrandom and `@resvg/resvg-wasm`.
+  for review again. Today one package needs one: `@resvg/resvg-wasm`. (The TensorFlow.js and ONNX Runtime
+  entries, with seedrandom, went with the note reader they shipped for, Work Tracker #329.)
 - **Licence id.** The `license` field of the work's `package.json`, as an SPDX expression. When it is
   absent, the id is recognised from the text (MIT, ISC, BSD-2-Clause, BSD-3-Clause, Apache-2.0);
   text that is not recognised fails the build.

@@ -1,7 +1,7 @@
 # Path tool: blueprint
 
-Derived from [Path tool](../path-tool.md), with [Whiteboard, round one](whiteboard-round-one.md) for
-the dock, keys, ink and board style memory, and [Multi-point line / polygon tool](../../008-canvas/polygon-tool.md)
+Derived from [Path tool](../path-tool.md), with [Draw mode](../draw-mode.md) for the ink, and
+[Multi-point line / polygon tool](../../008-canvas/polygon-tool.md)
 for the click-to-place gesture it grows from. The spec decides; this file adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Pn`.
 

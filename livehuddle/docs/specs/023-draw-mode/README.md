@@ -1,5 +1,10 @@
 # The whiteboard tools
 
+**Status in livehuddle: retired.** Nothing in livehuddle arms these tools. Work Tracker #329 removed the whiteboard
+dock, its keys and settings, the Fill tool's paint bucket, Snap colours, the board's own style memory and the quick
+style panel's board and pen rows. What is left in the editor (the whiteboard pen, Path and Fill intents and the canvas
+gestures that serve them) is unreachable and goes in a later pass. The specs below describe livediagram's tools.
+
 Follow the references below only as needed; never upfront.
 
 - ./draw-mode.md - when working on the whiteboard tools Draw mode left behind (the mode itself is gone, see ../007-editor/editor-modes.md): preset pens, pen vs touch, stroke and partial erasers, shape recognition, backgrounds, light and dark board appearance, snapping custom colours to stock colours

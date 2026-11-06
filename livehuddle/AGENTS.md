@@ -185,7 +185,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Mode** is how a tab is worked on (Diagram, Draw); the tab's, shared by everyone on it, never a type of document or tab.
+- **Mode** (an editor mode) is livediagram's word for how a tab is worked on; livehuddle has none, only the stored value `opensIn: 'workshop'` ([Editor modes](docs/specs/007-editor/editor-modes.md)). "Avatar mode" is a canvas tool, not an editor mode.
 - **Kind** is what a tab is; every livehuddle tab is the general diagram tab.
 - **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
 - **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
