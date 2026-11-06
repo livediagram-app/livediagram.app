@@ -2,7 +2,8 @@
 // The stored rows stay in D1 until retention ages them out, but the dashboard
 // treats the feature as gone: these events are dropped from the summary the
 // moment it arrives, so no chart, stack, ranking or total ever renders them.
-// Their explanation sentences stay in event-explanations.ts for Search.
+// Their explanation sentences stay in event-explanations.ts, except for the features livehuddle inherited from
+// livediagram and never had as its own (Work Tracker #586): nothing renders a retired event, so theirs went.
 
 // The editor's Activity panel (removed 2026-10-03, docs/specs/012-collaboration/README.md "Removed: the
 // Activity panel"): its per-entry revert, the panel opening, its Settings
@@ -205,8 +206,64 @@ const DRIVE_MIRROR_CATEGORY = 'Drive';
 // commands already stored stay out of every chart.
 const AGENT_DOOR_CATEGORIES = new Set(['Mcp', 'Cli']);
 
+// The tokens a CLI or an AI tool signed in with (Work Tracker #586): accounts counts one under the app its owner
+// signed up through, and livehuddle has neither door now, so its AI Tools Connected and CLI Sign-ins charts went.
+const AGENT_DOOR_TOKEN_TYPES = new Set(['Cli', 'MCP']);
+
+// Diagram, Workshop and Draw modes' tours (removed with those modes, Work Tracker #329, #514; retired here by #586):
+// the Diagram tour (the welcome tour until October 2026: `Tour`, its offer, steps, ends and Settings switch), and
+// every `WorkshopTour*` and `DrawTour*` event, Show me Workshop on the old welcome tour's last card among them.
+const MODE_TOUR_TYPES = new Set([
+  'Tour',
+  'TourOffer',
+  'TourCompleted',
+  'TourSkipped',
+  'TourSeenOn',
+  'TourSeenOff',
+]);
+const MODE_TOUR_PREFIX = /^(TourStep|WorkshopTour|DrawTour)/;
+
+// The Show Me tours of surfaces livehuddle does not have: Plan's card types and dashboards, the sticky-note photo
+// review and a Sankey's Flows dialog (Work Tracker #586). The Share and Tab Style tours carry on.
+const GONE_SHOW_ME_PREFIX = /^(CardTypeTour|DashboardTour|PhotoReviewTour|SankeyFlowsTour)/;
+
+// A tab set to open in Diagram or Draw mode for everyone (the modes left with Work Tracker #329, #514).
+const MODE_OPENS_IN_TYPES = new Set(['OpensInDiagram', 'OpensInDraw']);
+
+// The Laser pointer and Spotlight (removed in livehuddle's meeting-place pass, PR #1323): switching either on and
+// their panels' options.
+const POINTER_TOOL_TYPES = new Set(['Laser', 'Spotlight']);
+const POINTER_TOOL_OPTION = /^(Laser|Spotlight)[A-Z]/;
+
+// The Eraser (left as a mode with the Selection Mode picker, owner 2026-11-06; livehuddle/docs/specs/
+// 002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes"): picking it up, its panel's options, what
+// it deleted, and the whiteboard eraser's stroke modes. The Format Painter carries on from a selection's popover.
+const ERASER_OPTION = /^Eraser[A-Z]/;
+
+function isEraserEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Canvas') return action === 'Used' && t === 'Eraser';
+  if (category === 'Element') return action === 'Deleted' && t === 'Eraser';
+  if (category === 'UI' || category === 'Draw')
+    return action === 'Changed' && ERASER_OPTION.test(t);
+  return false;
+}
+
+// What livehuddle inherited from livediagram and never had as its own, per the above.
+export function isInheritedEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Token') return action === 'Created' && AGENT_DOOR_TOKEN_TYPES.has(t);
+  if (category === 'Tab') return action === 'Changed' && MODE_OPENS_IN_TYPES.has(t);
+  if (category === 'Canvas') return action === 'Used' && POINTER_TOOL_TYPES.has(t);
+  if (category !== 'UI') return false;
+  if (action === 'Changed' && POINTER_TOOL_OPTION.test(t)) return true;
+  return MODE_TOUR_TYPES.has(t) || MODE_TOUR_PREFIX.test(t) || GONE_SHOW_ME_PREFIX.test(t);
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (AGENT_DOOR_CATEGORIES.has(category)) return true;
+  if (isInheritedEvent(category, action, type)) return true;
+  if (isEraserEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (category === DRIVE_MIRROR_CATEGORY) return true;
   if (isTagsEvent(category, action, type)) return true;

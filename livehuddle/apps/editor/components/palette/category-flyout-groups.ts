@@ -104,6 +104,11 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   // Rooms, Play and Garden (docs/specs/010-palette/palette-top-level-categories.md "Groups in a flyout"):
   // named where their groups are listed, in space-category-groups.ts.
   ...SPACE_GROUP_NAMES,
+  // Perks (docs/specs/009-elements/office-amenities.md "Where they live"): the office kit, the kitchen, the restroom,
+  // split by its tiles' dividers.
+  'tools:plant': 'Office',
+  'tools:water-cooler': 'Kitchen',
+  'tools:restroom': 'Restroom',
 };
 
 export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };

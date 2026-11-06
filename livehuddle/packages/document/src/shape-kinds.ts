@@ -87,6 +87,20 @@ export const SHAPE_KINDS = new Set<string>([
   'vending-machine',
   'bean-bag',
   'reading-nook',
+  // The office amenities (docs/specs/009-elements/office-amenities.md).
+  'printer',
+  'copier',
+  'lockers',
+  'coat-rack',
+  'umbrella-stand',
+  'kitchen-counter',
+  'kitchen-sink',
+  'fridge',
+  'microwave',
+  'kettle',
+  'toilet-cubicle',
+  'washbasin',
+  'hand-dryer',
   // Door (docs/specs/009-elements/room-builder.md "Door").
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).

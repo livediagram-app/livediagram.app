@@ -9,6 +9,9 @@ a team can lay out reception, desks, a meeting room, a kitchen and a lounge, the
 The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Play corner (Jukebox, Ping-Pong Table,
 Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace), a Vending Machine, a Bean Bag and a Reading Nook,
 and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
+The [Office amenities](office-amenities.md) add a Printer, a Copier, Lockers, a Coat Rack and an Umbrella Stand, a
+kitchenette (Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle) and a restroom (Toilet Cubicle, Washbasin, Hand
+Dryer, and a Restroom room preset).
 A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meet** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
@@ -23,7 +26,8 @@ places, so an office is drawn with the same tools as a diagram.
 
 Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `stage` and `rug` in **Rooms**
 (with the fence), `meeting-table` in **Seats** (with the chair, desk and sofa), and `plant`, `bookshelf`,
-`water-cooler` and `coffee-machine` in **Perks** (the Stage's tile from Work Tracker #319 part 4). `office-pod`
+`water-cooler` and `coffee-machine` in **Perks** (the Stage's tile from Work Tracker #319 part 4), where the
+[Office amenities](office-amenities.md#where-they-live) group them under Office, Kitchen and Restroom. `office-pod`
 joins **Seats**; `bar`, `bar-stool`, `drinks-cabinet` and `drinks-fridge` are **Play**'s **Bar** group (Bar
 was a category of its own until 2026-11-06), and `outdoor-plant`, `tree`, `garden-path`, `grass` and `garden-fence` are
 **Garden**'s **Plants** and **Paths and Fences** groups

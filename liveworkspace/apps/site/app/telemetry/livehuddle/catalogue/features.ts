@@ -91,32 +91,19 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser and format painter options.',
-  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
+  'Settings inside a canvas mode: format painter options.',
+  { typeIn: (t) => /^Format/.test(t ?? '') },
 );
 
+// Shape recognition on a pen stroke (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"): Alt, or the chip on a
+// touch screen, flipping the stroke being drawn between ink and the shape it reads as. Tabs set to open in Diagram or
+// Draw mode, beside it until Work Tracker #586, went with those modes.
 export const WHITEBOARD_RECOGNITION = chart(
   'Draw',
   'Toggled',
   'Shape Recognition',
-  'Shape recognition switched on or off on a whiteboard.',
+  'A pen stroke flipped between ink and the shape it reads as, with Alt or the chip on a touch screen.',
 );
-
-// The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
-export const TAB_OPENS_IN = chart(
-  'Tab',
-  'Changed',
-  'Opening Modes Set',
-  'A tab set to open in Diagram or Draw mode for everyone, from the tab menu.',
-  { types: ['OpensInDiagram', 'OpensInDraw'] },
-);
-
-export const WHITEBOARDS: MetricStack = {
-  stack: true,
-  title: 'Draw Mode',
-  blurb: 'Tabs opened in Draw, and the shape recognition people use in Draw mode.',
-  members: [TAB_OPENS_IN, WHITEBOARD_RECOGNITION],
-};
 
 // ---- Editing tab -------------------------------------------------------------
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
@@ -378,7 +365,6 @@ export const PALETTE_USE: MetricStack = {
 // The canvas selection modes, one chart per mode, and the options set inside
 // them (Canvas Modes tab has the rankings).
 const MODE_TITLES: Record<string, string> = {
-  Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   AvatarMode: 'Avatar Mode',
 };
@@ -554,27 +540,6 @@ export const MIND_OUTLINE_OPENED = opened(
   (t) => t === 'MindOutline',
 );
 
-export const TOUR_OFFERED = opened(
-  'Tour Offered',
-  'The Diagram tour (the welcome tour until October 2026) offered. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => t === 'TourOffer',
-);
-
-// The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md); charted in its funnel on
-// the Visitors tab.
-export const WORKSHOP_TOUR_OFFERED = opened(
-  'Workshop Tour Offered',
-  'The Workshop tour offered, the first time someone works in Workshop mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => t === 'WorkshopTourOffer',
-);
-
-// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
-export const DRAW_TOUR_OFFERED = opened(
-  'Draw Tour Offered',
-  'The Draw tour offered, the first time someone works in Draw mode. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => t === 'DrawTourOffer',
-);
-
 // The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
 export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',
@@ -636,7 +601,7 @@ export const SESSION_POLL_OPENED = opened(
   (t) => t === 'SessionPoll',
 );
 
-// Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
+// The Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
 // laid out counts under Tabs Auto-Arranged.
 export const TIDY_UP_OPENED = opened(
   'Tidy Up Opened',

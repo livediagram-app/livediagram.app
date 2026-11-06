@@ -250,29 +250,8 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
 // Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
-  'The Diagram, Workshop, Draw and Avatar tours switched back on or off.',
+  'The Avatar tour switched back on or off.',
   [
-    toggle(
-      'UI',
-      'TourSeenOff',
-      'TourSeenOn',
-      'Diagram Tour',
-      'The Diagram tour (the welcome tour until October 2026) switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'WorkshopTourSeenOff',
-      'WorkshopTourSeenOn',
-      'Workshop Tour',
-      'The Workshop tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'DrawTourSeenOff',
-      'DrawTourSeenOn',
-      'Draw Tour',
-      'The Draw tour switched back on or off.',
-    ),
     toggle(
       'UI',
       'AvatarTourSeenOff',

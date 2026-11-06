@@ -819,9 +819,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone dragged Pages mode's Contents sidebar to the canvas's right edge.",
   'UI|Changed|ContentsPlacementSidebar':
     "Someone docked Pages mode's Contents as a sidebar down the canvas's left, from its popover or in Settings > Editor.",
-  'UI|Opened|EmptyPageInvite':
-    'Someone pressed Choose a Layout on an empty page too small on screen for its layout card (a phone, or zoomed out).',
-  'UI|Closed|EmptyPageLayouts': 'Someone hid the Start From a Layout card on an empty page.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',

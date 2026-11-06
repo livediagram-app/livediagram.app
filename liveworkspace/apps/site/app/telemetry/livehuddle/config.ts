@@ -39,7 +39,6 @@ import {
   DISCUSSION,
   DOCUMENTS_CREATED,
   DOCUMENT_ACTIONS,
-  DRAW_TOUR,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
   EDITOR_SEARCH,
@@ -91,9 +90,8 @@ import {
   TRASH,
   UNDO_AND_REDO,
   WEB_VITAL_CHARTS,
-  WELCOME_TOUR,
-  WHITEBOARDS,
-  WORKSHOP_TOUR,
+  WELCOME_DIALOG_CLOSED,
+  WHITEBOARD_RECOGNITION,
 } from './metric-catalogue';
 import { isNonThemePick, PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 import { isRetiredEvent } from './retired-events';
@@ -225,7 +223,14 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
     },
     {
       title: 'Features',
-      metrics: [WHITEBOARDS, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [
+        WHITEBOARD_RECOGNITION,
+        PALETTE_USE,
+        CANVAS_MODES,
+        LOOK_AND_FEEL,
+        PANELS_OPENED,
+        OFFLINE_MODE,
+      ],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts invitations to be there,
@@ -291,9 +296,9 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   },
   modes: {
     selection: SELECTION_MODES,
-    selectionSubtitle: 'Eraser, format painter, avatar',
-    option: /^(Eraser|Format)/,
-    optionsSubtitle: 'Settings inside a mode: eraser size and target, format painter copies',
+    selectionSubtitle: 'Format painter, avatar',
+    option: /^Format/,
+    optionsSubtitle: 'Settings inside a mode: what the format painter copies',
   },
   settings: [
     { title: 'All categories', metrics: [SETTINGS_CHANGED] },
@@ -333,9 +338,9 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   tours: [
     {
       title: 'Tours',
-      metrics: [WELCOME_TOUR, WORKSHOP_TOUR, DRAW_TOUR, AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      metrics: [AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
-    { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
+    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
   ],
   exceptions: {
     groups: [

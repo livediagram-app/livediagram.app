@@ -51,8 +51,8 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('shows each Space category but Rooms, Play and Garden as one block, unheaded', () => {
-    for (const id of ['collab-travel', 'collab-seating', 'collab-amenities', 'collab-meeting']) {
+  it('shows each Space category but Rooms, Perks, Play and Garden as one block, unheaded', () => {
+    for (const id of ['collab-travel', 'collab-seating', 'collab-meeting']) {
       const groups = flyoutGroups(id, tiles(id));
       expect(groups, id).toHaveLength(1);
       expect(groups[0]!.title, id).toBeNull();
@@ -100,6 +100,18 @@ describe('a flyout’s groups', () => {
       ],
       ['Features', ['tools:fountain', 'tools:pond', 'tools:campfire']],
     ]);
+  });
+
+  // docs/specs/009-elements/office-amenities.md "Where they live".
+  it('splits Perks into Office, Kitchen and Restroom', () => {
+    const groups = flyoutGroups('collab-amenities', tiles('collab-amenities'));
+    expect(groups.map((g) => g.title)).toEqual(['Office', 'Kitchen', 'Restroom']);
+    expect(groups.map((g) => g.tiles[0]!.id)).toEqual([
+      'tools:plant',
+      'tools:water-cooler',
+      'tools:restroom',
+    ]);
+    expect(groups.map((g) => g.tiles.length)).toEqual([7, 8, 4]);
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {

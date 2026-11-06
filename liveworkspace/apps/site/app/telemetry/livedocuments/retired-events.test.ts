@@ -72,6 +72,13 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideContents')).toBe(false);
   });
 
+  it('retires the in-page layout card events, not the Page Layouts it opened', () => {
+    expect(isRetiredEvent('UI', 'Closed', 'EmptyPageLayouts')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'EmptyPageInvite')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'EmptyPageLayouts')).toBe(false);
+    expect(isRetiredEvent('UI', 'Closed', 'Presentation')).toBe(false);
+  });
+
   it('retires the palette Favourites events', () => {
     expect(isRetiredEvent('UI', 'Added', 'PaletteFavourite')).toBe(true);
     expect(isRetiredEvent('UI', 'Removed', 'PaletteFavourite')).toBe(true);

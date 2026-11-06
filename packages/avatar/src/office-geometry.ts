@@ -61,9 +61,18 @@ export function isFixedSeatShape(kind: string): kind is FixedSeatKind {
 }
 
 // Pieces that hang on a wall (livehuddle's social-pieces.md "How each one walks"): walked past, never blocking and
-// never a destination.
+// never a destination. livehuddle's office amenities (its office-amenities.md "How each one walks") add the hand dryer,
+// and the microwave and kettle, which stand on a counter (the counter under them blocks) and so walk as wall pieces.
+const WALL_PIECE_KINDS: readonly string[] = [
+  'notice-board',
+  'world-clock',
+  'dartboard',
+  'hand-dryer',
+  'microwave',
+  'kettle',
+];
 export function isWallPieceShape(kind: string): boolean {
-  return kind === 'notice-board' || kind === 'world-clock' || kind === 'dartboard';
+  return WALL_PIECE_KINDS.includes(kind);
 }
 
 /** Every piece a character sits down in: the seating that turns and the fixed seats. */
@@ -117,6 +126,18 @@ const OFFICE_FOOTPRINT: Partial<
   'pool-table': { x0: 8 / 200, x1: 192 / 200, y0: 50 / 128, y1: 120 / 128 },
   'foosball-table': { x0: 12 / 168, x1: 156 / 168, y0: 44 / 104, y1: 98 / 104 },
   'vending-machine': { x0: 4 / 72, x1: 68 / 72, y0: 96 / 128, y1: 124 / 128 },
+  // livehuddle's office amenities (its office-amenities.md): a cabinet, a base, a plinth, a foot, the units' cupboards
+  // full width (so a run of them is one barrier), a cubicle's floor and a basin's pedestal.
+  printer: { x0: 8 / 72, x1: 64 / 72, y0: 60 / 80, y1: 76 / 80 },
+  copier: { x0: 8 / 104, x1: 96 / 104, y0: 104 / 128, y1: 124 / 128 },
+  lockers: { x0: 0.03, x1: 0.97, y0: 0.8, y1: 0.96 },
+  'coat-rack': { x0: 14 / 56, x1: 42 / 56, y0: 114 / 128, y1: 126 / 128 },
+  'umbrella-stand': { x0: 6 / 40, x1: 34 / 40, y0: 50 / 64, y1: 62 / 64 },
+  'kitchen-counter': { x0: 0, x1: 1, y0: 44 / 88, y1: 84 / 88 },
+  'kitchen-sink': { x0: 0, x1: 1, y0: 44 / 88, y1: 84 / 88 },
+  fridge: { x0: 4 / 72, x1: 68 / 72, y0: 108 / 136, y1: 132 / 136 },
+  'toilet-cubicle': { x0: 0, x1: 1, y0: 0.6, y1: 0.96 },
+  washbasin: { x0: 26 / 72, x1: 46 / 72, y0: 96 / 112, y1: 110 / 112 },
 };
 
 /** Scenery: blocks with its footprint and is never a destination (walking up to it rings nothing). */

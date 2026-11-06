@@ -76,7 +76,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'amenities',
     label: 'Perks',
     description:
-      'What makes a Space feel like a place: plants, a bookshelf, a water cooler, a coffee machine and a vending machine.',
+      'What makes a Space feel like a place: plants and shelves, a printer, a copier, lockers and a coat rack, a kitchen, and a restroom.',
     tagline: 'The touches that make it feel like a place.',
     icon: lucide(lucideCoffee),
   },

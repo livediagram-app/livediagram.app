@@ -5,6 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note
 - ./chair.md - when implementing or changing the chair, desk or sofa, their facing, seating or the Stand press
 - ./office.md - when implementing or changing the office pieces: their drawings, a room's walls and doorway, footprints, the meeting table's seats, drinks and the held cup
+- ./office-amenities.md - when implementing or changing the office amenities: their drawings, footprints, counter-top pieces, the Perks groups and the Restroom preset
 - ./screen-and-room-sign.md - when implementing or changing the Screen or the Room Sign: their rooms, the live store, the faces, the Video Link and the Meet category
 - ./wayfinding.md - when implementing or changing the Directory or the Elevator: places, names, approach points, who is where, Walk There, Go, rides and re-entry
 - ./avatar-pad.md - when implementing or changing the Avatar Pad, its pixels, where Avatar mode starts or the arrival beam

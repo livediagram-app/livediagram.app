@@ -17,6 +17,7 @@ import {
 } from '@liveworkspace/avatar/office-geometry';
 import type { Element, ElementId, ShapeElement } from './index';
 import { createShape } from './shape-factory';
+import { roomPresetCompanions } from './room-presets';
 
 export { snap45, pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
 
@@ -229,11 +230,14 @@ export function roomWithDoorPiece(room: ShapeElement): {
   return { room: closed, door: snapDoorToWall(free, [closed]) };
 }
 
-/** A newly added element, plus the Door a new Room comes with (`roomWithDoorPiece`); anything else on its own. */
-export function withDoorPiece(el: Element): Element[] {
+/**
+ * A newly added element, plus the Door a new Room comes with (`roomWithDoorPiece`) and, placed from a room preset's tile
+ * (`variant`), the pieces the preset furnishes it with (`roomPresetCompanions`); anything else on its own.
+ */
+export function withDoorPiece(el: Element, variant?: string): Element[] {
   if (el.type !== 'shape' || el.shape !== 'room') return [el];
   const { room, door } = roomWithDoorPiece(el);
-  return door ? [room, door] : [room];
+  return [room, ...(door ? [door] : []), ...roomPresetCompanions(room, variant)];
 }
 
 // A room's walls, uncut by any built-in doorway, in an order that survives a resize (a rectangle's four sides, a

@@ -176,7 +176,10 @@ category colours, how its events read (`createEventExplanation` over its own sen
 events, its call-to-action vocabulary, and the charts on each tab and section. A section an app has
 nothing for is left out rather than shown empty: Community is livediagram's only, and Modes is left
 out for liveplanner, which has no canvas modes. `<app>/Body.tsx` hands the config to `AppDashboard`,
-which gives it to every view through context. The views draw with the shared design system,
+which gives it to every view through context. The accent itself is CSS: the page wraps the dashboard in
+`data-app="<app>"` and `telemetry.css` sets that app's brand scale under it. Anything portalled out to
+`<body>` (a stack's modal) copies the `data-app` of the card that opened it, so it wears the same accent
+rather than falling back to the default sky (Work Tracker #588). The views draw with the shared design system,
 `@liveworkspace/ui` (buttons, fields, tooltips, hover cards, menus), and import their glyphs (`Glyph`,
 `CloseIcon` and the rest, which `@livediagram/ui` re-exports from `@liveworkspace/ui`) and brand marks
 through `@livediagram/ui`. The shared views are tested against
