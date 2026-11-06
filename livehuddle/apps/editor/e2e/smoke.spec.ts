@@ -157,6 +157,11 @@ test.describe('mobile', () => {
     const style = page.getByRole('button', { name: 'Theme and canvas' });
     const walk = page.getByRole('button', { name: 'Walk', exact: true });
     await expect(style).toBeVisible();
+    // A blank Space opens on Start a Space (docs/specs/007-editor/new-document-route.md "No welcome screen"), and on a
+    // phone that sheet lies over the cluster (docs/specs/007-editor/start-diagramming.md), so close it to reach Walk.
+    const start = page.getByRole('region', { name: /^Start a Space$/ });
+    await start.getByRole('button', { name: 'Close' }).click();
+    await start.waitFor({ state: 'detached' });
     await walk.click();
     await expect(walk).toHaveAttribute('aria-pressed', 'true');
     await expect(undo).toHaveCount(0);
