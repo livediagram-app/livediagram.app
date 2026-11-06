@@ -119,14 +119,13 @@ describe('FootnoteNotes', () => {
     expect(enter.defaultPrevented).toBe(true);
     expect(on.commit).toHaveBeenCalledWith(4, 'Four');
     expect(on.leave).toHaveBeenCalledWith(4);
-    on.leave.mockClear();
     notes.focus(4);
     const outside = vi.fn();
     document.body.addEventListener('keydown', outside);
     text.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
     );
-    expect(on.leave).toHaveBeenCalledWith(4);
+    expect(on.leave).toHaveBeenNthCalledWith(2, 4);
     // A key typed into a note never reaches the canvas's shortcuts.
     expect(outside).not.toHaveBeenCalled();
     // Keys elsewhere in the boxes go on as they were.
