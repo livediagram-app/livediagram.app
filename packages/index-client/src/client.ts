@@ -10,6 +10,7 @@ import {
   INDEX_APP_HEADER,
   INDEX_PERSON_HEADER,
   INDEX_TEAMS_HEADER,
+  ITEM_GRANT_HEADER,
   SHARE_CODE_HEADER,
   SHARE_PASSWORD_HEADER,
   type App,
@@ -54,6 +55,12 @@ import type {
   Webhook,
   WebhookDelivery,
 } from './webhooks';
+import {
+  appConnectionPath,
+  type ConnectionInput,
+  type ConnectionMade,
+  type ConnectionOpen,
+} from './connections';
 
 export class IndexError extends Error {
   readonly status: number;
@@ -108,6 +115,8 @@ type CallOptions = {
   query?: Query;
   share?: ShareAccess | null;
   signal?: AbortSignal;
+  // A grant the index signed for an item (X-Index-Grant): the connected tabs' doors take the host's.
+  grant?: string;
 };
 
 // What a read can take besides its query: a signal, so a list superseded by a newer one (the Explorer's
@@ -130,6 +139,7 @@ export function createIndexClient({
       headers.set(SHARE_CODE_HEADER, options.share.code);
       if (options.share.password) headers.set(SHARE_PASSWORD_HEADER, options.share.password);
     }
+    if (options.grant) headers.set(ITEM_GRANT_HEADER, options.grant);
     let body: string | undefined;
     if (options.body !== undefined) {
       headers.set('Content-Type', 'application/json');
@@ -261,6 +271,20 @@ export function createIndexClient({
       }),
     removeShared: (itemId: string) => call<void>(`/shared/${enc(itemId)}`, { method: 'DELETE' }),
 
+    // Connected tabs (connected-tabs.md), each with the host's grant. Make one on `hostId`'s tab; where one leads
+    // (410 `connection_target_gone` or `connection_link_removed` when nowhere); take one back when the tab never
+    // made it into the host.
+    makeConnection: (hostId: string, input: ConnectionInput, grant: string) =>
+      call<ConnectionMade>(`/items/${enc(hostId)}/connections`, {
+        method: 'POST',
+        body: input,
+        grant,
+      }),
+    openConnection: (id: string, grant: string, options: RequestOptions = {}) =>
+      call<ConnectionOpen>(`/connections/${enc(id)}`, { grant, signal: options.signal }),
+    takeBackConnection: (id: string, grant: string) =>
+      call<void>(`/connections/${enc(id)}`, { method: 'DELETE', grant }),
+
     // Timeline: newest first, a page at a time.
     timeline: (query: TimelineQuery = {}, options: RequestOptions = {}) =>
       call<TimelinePage>('/timeline', { query, signal: options.signal }),
@@ -358,6 +382,14 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     });
     if (!res.ok) throw await failed(res);
   }
+  // A body-less call to one of the index's own `/app/...` paths (`appConnectionPath`).
+  async function send(method: 'PUT' | 'DELETE', path: string): Promise<void> {
+    const res = await (doFetch ?? fetch)(`${base}${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${key}`, [INDEX_APP_HEADER]: app },
+    });
+    if (!res.ok) throw await failed(res);
+  }
   // A read; null when the index answers 404.
   async function get<T>(path: string): Promise<T | null> {
     const res = await (doFetch ?? fetch)(`${base}/app${path}`, {
@@ -398,6 +430,12 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // again: each is one delivery per webhook.
     pushCardMoves: (itemId: string, moves: readonly CardMove[]) =>
       put(`/items/${enc(itemId)}/card-moves`, { moves }),
+    // Connected tabs (connected-tabs.md): the tab holding a connection is in the host now (confirm), or has left it
+    // (remove, which deletes the connection's pass). Each answers 204 whether or not it matched.
+    confirmConnection: (hostId: string, connectionId: string, tabId: string) =>
+      send('PUT', appConnectionPath(hostId, connectionId, tabId)),
+    removeConnection: (hostId: string, connectionId: string, tabId: string) =>
+      send('DELETE', appConnectionPath(hostId, connectionId, tabId)),
   };
 }
 
