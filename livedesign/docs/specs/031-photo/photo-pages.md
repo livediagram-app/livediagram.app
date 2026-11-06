@@ -221,7 +221,9 @@ Above the tabs, always shown, a card: the **histogram** of the composite (worked
 moment after each change; luminosity, or the red, green and blue channels overlaid, a Luma / RGB switch on it), and
 under it the photo's size and, while the pointer is over the photo, the pixel under it (`x, y`) and its colour as a
 swatch with its `#rrggbb` (Point at the photo otherwise). On a phone it is a bottom
-sheet opened by a **Layers** button at the end of the tools row.
+sheet opened by a **Layers** button at the end of the tools row (a tap again puts it away), closed as the options sheet
+is: a tap outside it (the photo, the canvas, the tools row; never the menus, popovers and dialogs it opens), Escape
+(unless a field, menu or popover in it has the key), or its grab handle dragged down.
 
 ### The title bar
 
