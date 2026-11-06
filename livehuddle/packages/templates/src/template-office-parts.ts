@@ -124,7 +124,10 @@ export function walkIn(right: number, cy: number, hint: string, hintW = HINT_W):
       // On the canvas beside the room: a slate that reads in either half (#475569 sank into the dark one).
       textColor: CANVAS_TONES.slate,
     },
-    { ...createShape('mode-button', right - WALK_IN_BUTTON_W, cy - BUTTON_H / 2), label: 'Walk In' },
+    {
+      ...createShape('mode-button', right - WALK_IN_BUTTON_W, cy - BUTTON_H / 2),
+      label: 'Walk In',
+    },
   ];
 }
 
