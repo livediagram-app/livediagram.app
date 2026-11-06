@@ -1,7 +1,7 @@
 # Path tool: blueprint
 
-Derived from [Path tool](../path-tool.md), with [Whiteboard, round one](whiteboard-round-one.md) for
-the dock, keys, ink and board style memory, and [Multi-point line / polygon tool](../../008-canvas/polygon-tool.md)
+Derived from [Path tool](../path-tool.md), with [Draw mode](../draw-mode.md) for the ink, and
+[Multi-point line / polygon tool](../../008-canvas/polygon-tool.md)
 for the click-to-place gesture it grows from. The spec decides; this file adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Pn`.
 
@@ -47,7 +47,6 @@ Scope, by file:
 | `apps/editor/app/globals.css`                                          | `[data-path-cursor]`: descendants inherit the edit cursor                                                                         |
 | `apps/editor/components/dialogs/EditorTabDialogs.tsx`                  | Exports `tabAsSeen`                                                                                                               |
 | `apps/editor/hooks/canvas/usePathCommits.ts`                           | Editor side: `commitPath`, `commitPathEdit`, telemetry                                                                            |
-| `apps/editor/hooks/canvas/useWhiteboard.ts`                            | `pickPath`, `pathEditing`, `leavePathEdit`                                                                                        |
 | `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                     | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                                                                                  |
 | `apps/editor/components/palette/palette-icons.tsx`                     | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts | Sentences for the four events                                                                                                     |
@@ -303,8 +302,9 @@ With the Path tool in hand, the draft is editable (as in Figma):
 ### Dock, keys and tool state
 
 - `activeWhiteboardTool`: `pendingDraw.type === 'path'` → `'path'`.
-- `useWhiteboard.pickPath()`: `setCanvasTool('select')`, `beginDraw({ type: 'path' })`, track
-  `Draw·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
+- livehuddle has no whiteboard dock (Work Tracker #329 removed it with `useWhiteboard`), so nothing arms the
+  tool: `pickPath`, `pathEditing` and `leavePathEdit` went with it, and the dock button, the Select button's
+  editing state and the keys below describe livediagram's build.
 - The dock button, in the Shapes group after the sticky note (the dock's own blueprint places it):
   key `path`, label "Path tool", shortcut `P`,
   `aria-pressed` when the tool is `path`, icon `ShapePenIcon` at `DOCK_ICON_PX`: the one component
@@ -505,7 +505,6 @@ numbers only).
 | Edit gesture: select, drag, keys, one commit                                                    | `apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                                    |
 | Commit: new, continued, edit, delete, telemetry                                                 | `apps/editor/hooks/canvas/usePathCommits.test.tsx`                                                                  |
 | Tool derivation                                                                                 | `apps/editor/lib/whiteboard-tool.test.ts`                                                                           |
-| `pickPath`                                                                                      | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                                                                   |
 | Quick style and memory                                                                          | `apps/editor/lib/quick-style.test.ts`, `style-memory.test.ts`                                                       |
 | Accessible name                                                                                 | `apps/editor/lib/element-names.test.ts`                                                                             |
 | Excalidraw line                                                                                 | `../livediagram/apps/editor/lib/excalidraw-export.test.ts`                                                          |

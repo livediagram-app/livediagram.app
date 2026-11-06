@@ -165,4 +165,4 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/StartFromTemplates.test.tsx`: the title, choosing, the blank closing, the close, scroll to top.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).
+- `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

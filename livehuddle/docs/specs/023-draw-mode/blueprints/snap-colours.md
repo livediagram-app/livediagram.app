@@ -4,17 +4,17 @@ Derived from [Draw mode](../draw-mode.md) "Snap colours" (and the Settings bulle
 whiteboard shows"). Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) as `Sn`.
 
+**Status in livehuddle: retired.** Work Tracker #329 removed Snap colours from the editor: its hook
+(`useSnapColours`), the Settings flyout's Colours section and the whiteboard dock that held it. The pure colour
+rules in the table below remain. The "Editor" and "Section" parts describe livediagram's build, whose own
+[Snap colours blueprint](../../../../../livediagram/docs/specs/023-draw-mode/blueprints/snap-colours.md) is the live contract for them.
+
 Scope, by file:
 
 | File                                                                                                                  | Role                                                                          |
 | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `packages/document/src/pen-colours.ts`                                                                                | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
 | `packages/document/src/snap-colours.ts`                                                                               | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
-| `apps/editor/hooks/canvas/useSnapColours.ts`                                                                          | The board's snappable colours and the one-commit `snap()`                     |
-| `apps/editor/components/canvas/whiteboard/SnapColoursSection.tsx`                                                     | The Settings flyout's Colours section                                         |
-| `apps/editor/components/canvas/whiteboard/dock-flyouts.tsx`                                                           | Renders the section last in `SettingsFlyoutBody`                              |
-| `apps/editor/hooks/canvas/useWhiteboard.ts`                                                                           | Carries `snapColours` on the dock model                                       |
-| `apps/editor/app/document/[id]/useEditorState.ts`                                                                     | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
 | `packages/api-schema/src/telemetry-schema.ts`, liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts | The `SnapColours` token's comment and its dashboard sentence                  |
 
 ## Domain and naming
@@ -182,9 +182,6 @@ export function snapTabColours(
 | Highlighter, stock, ink, locked, skipped, fills, text on a fill kept | same                                           |
 | `strokeSwatch` cleared                                               | same                                           |
 | Snappable colours: distinct, lower-cased, newest first               | same                                           |
-| Hook: one commit, telemetry, blocked no-op                           | `useSnapColours.test.tsx`                      |
-| Section: hidden, offer copy, press, done status, disabled            | `SnapColoursSection.test.tsx`                  |
-| Settings flyout shows the section only with custom colours           | `WhiteboardDock.test.tsx`                      |
 
 ## Constants and configuration
 

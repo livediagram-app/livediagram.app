@@ -40,7 +40,7 @@ export type SpaceCategory = {
   band?: number;
 };
 
-// The bands the Space categories sit in (palette-category-bands): Meet for the pieces a Space is furnished with,
+// The bands the Space categories sit in: Meet for the pieces a Space is furnished with,
 // Travel's own for Travel.
 export const MEET_BAND = 6;
 export const TRAVEL_BAND = 7;

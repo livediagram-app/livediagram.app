@@ -80,7 +80,7 @@ export function ConceptFace({
     <div
       className={`absolute flex items-center ${opts.align === 'left' ? 'justify-start' : 'justify-center'} px-1`}
       style={{ ...rectStyle(rect), fontFamily }}
-      // Where an element tour points (components/tour/concept-element-tour-steps.ts).
+      // Where an element tour points (livediagram's element tours; livehuddle tours no concept graphic).
       {...(opts.note ? { 'data-concept-note': i } : { 'data-concept-row': i })}
     >
       <InlineTextLine

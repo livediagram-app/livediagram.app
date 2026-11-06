@@ -954,17 +954,6 @@
   animation: lvd-pointer-tip-pulse 1.6s ease-out infinite;
 }
 
-@keyframes lvd-concept-flow {
-  to {
-    stroke-dashoffset: -24;
-  }
-}
-.lvd-concept-flow .lvd-cg-arc {
-  stroke-dasharray: 6 6;
-  animation: lvd-concept-flow calc(1.2s * var(--lvd-concept-speed, 1)) linear
-    var(--lvd-concept-iter, infinite);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .lvd-anim-text-glow,
   .lvd-anim-text-pulse,
@@ -1010,7 +999,6 @@
   .lvd-concept-build .lvd-cg-row,
   .lvd-concept-build-loop .lvd-cg-row,
   .lvd-concept-pulse .lvd-cg-row,
-  .lvd-concept-flow .lvd-cg-arc,
   .lvd-pointer-tip-pulse {
     animation: none;
   }
@@ -1018,10 +1006,6 @@
      visible. */
   .lvd-pointer-tip-pulse {
     opacity: 0;
-  }
-  /* A still Flow is the rest frame: solid arcs. */
-  .lvd-concept-flow .lvd-cg-arc {
-    stroke-dasharray: none;
   }
 }
 

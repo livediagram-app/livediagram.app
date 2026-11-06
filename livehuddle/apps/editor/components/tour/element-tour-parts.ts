@@ -1,10 +1,6 @@
-// The steps every concept graphic's element tour is built from (docs/specs/007-editor/element-tours.md, one section per
-// kind; docs/specs/009-elements/timeline.md): a step on the graphic or one of its rows (with an animation
-// previewed there, never stored), the More button, and the closing card. (livehuddle has no "+" ring to open,
-// docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect.)
-// Each kind's own steps and words live in its own file (timeline-tour-steps.ts, ...).
-import type { ConceptRow } from '@livehuddle/document';
-import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
+// The steps every element tour is built from (docs/specs/007-editor/element-tours.md): a step on the element or one
+// of its parts, a step on its own menu, and the closing card. Each kind's own steps and words live in its own file
+// (portal-tour-steps.ts).
 import type { ElementTourApi } from './element-tour-api';
 import {
   clearMenuPath,
@@ -15,33 +11,9 @@ import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-s
 
 type Step = TourStepOf<ElementTourApi>;
 
-// What a concept tour knows of its graphic when Play is pressed.
-export type ConceptTourContext = {
-  elementId: string;
-  rows: readonly ConceptRow[];
-  hasMore: boolean;
-  touch: boolean;
-};
-
-// A step on the graphic, or on one of its parts; `preview` plays its animation there while the step is up.
-export function onGraphic(
-  id: string,
-  title: string,
-  body: string,
-  selector: string,
-  preview?: TourPreviewAnim,
-): Step {
-  return {
-    id,
-    title,
-    body,
-    selector: () => selector,
-    prepare: (api) => {
-      if (preview) api.previewConcept(preview);
-      else api.clearPreview();
-    },
-    cleanup: (api) => api.clearPreview(),
-  };
+// A step on the element, or on one of its parts.
+export function onGraphic(id: string, title: string, body: string, selector: string): Step {
+  return { id, title, body, selector: () => selector };
 }
 
 // Whether the menu step on screen has been left, so a menu still opening as it ends is closed too.
@@ -57,7 +29,6 @@ export function inTheMenu(id: string, title: string, body: string, path: readonl
     selector: () => MENU_TARGET,
     prepare: async (api) => {
       menuLeft = false;
-      api.clearPreview();
       await api.openElementMenu();
       await openMenuPath(path);
       // Left while the menu was still opening: it closes as it arrives.

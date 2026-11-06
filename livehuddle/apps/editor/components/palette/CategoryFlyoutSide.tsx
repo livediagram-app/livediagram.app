@@ -119,7 +119,7 @@ export function CategoryFlyoutSide({
             />
           </div>
         ) : a.type === 'open' ? (
-          <div className="px-2 py-2.5">{openBody(a.category, a.group ?? null)}</div>
+          <div className="px-2 py-2.5">{openBody(a.category, null)}</div>
         ) : null}
       </div>
       {variants ? <InfoFooter def={hovered} /> : null}

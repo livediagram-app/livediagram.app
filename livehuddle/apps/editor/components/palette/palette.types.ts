@@ -75,10 +75,6 @@ export type PaletteProps = {
   // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
   onBeginHighlighter: () => void;
-  // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
-  // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
-  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
   onBeginShapePen: () => void;
   // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
   onCancelDraw?: () => void;

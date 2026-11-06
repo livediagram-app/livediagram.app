@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createLiveStroke } from './live-stroke';
 
 // The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens";
-// blueprint whiteboard-round-one "Pen ink").
+// docs/specs/023-draw-mode/draw-mode.md "Pens").
 
 describe('createLiveStroke', () => {
   it('records pressure for a pen, streamlined at 0.2', () => {

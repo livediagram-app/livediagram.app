@@ -1,4 +1,4 @@
-import { isChartShape, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import type { EditorCapabilities } from './editor-capabilities';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
@@ -7,40 +7,20 @@ import type { UserPreferences } from './user-preferences';
 // Start Tour button while one is selected. The synced `elementTourKinds` lists the kinds taken, for Settings alone;
 // `elementToursSeen` counts them all (tourTrackSeen).
 
-export const ELEMENT_TOUR_KINDS = [
-  'timeline',
-  'chart',
-  'stack',
-  'lane',
-  'boundary',
-  'diagram-key',
-  'portal',
-] as const;
+// The Portal alone: the diagram elements' tours (timeline, chart, stack, lane, boundary, diagram key) went with them
+// (Work Tracker #514); a stored answer naming one stays in `elementTourKinds`, unread.
+export const ELEMENT_TOUR_KINDS = ['portal'] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
 
 // What each toured kind's offer and Settings row call its element, in a sentence ("a timeline").
 export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
-  timeline: 'timeline',
-  chart: 'chart',
-  stack: 'stack',
-  lane: 'lane',
-  boundary: 'boundary',
-  'diagram-key': 'diagram key',
   portal: 'portal',
 };
 
 // The toured kind an element is, or null when its type has no tour.
 export function elementTourKindOf(el: Element | null | undefined): ElementTourKind | null {
-  if (el?.type !== 'shape') return null;
-  if (el.shape === 'timeline-rail') return 'timeline';
-  if (isChartShape(el.shape)) return 'chart';
-  if (el.shape === 'stack') return 'stack';
-  if (el.shape === 'lane') return 'lane';
-  if (el.shape === 'boundary') return 'boundary';
-  if (el.shape === 'diagram-key') return 'diagram-key';
-  if (el.shape === 'portal') return 'portal';
-  return null;
+  return el?.type === 'shape' && el.shape === 'portal' ? 'portal' : null;
 }
 
 // Whether this session may take the element's tour: each tour teaches editing its element, so its kind's own edit
@@ -51,16 +31,8 @@ export function canTourElement(
   kind: ElementTourKind,
 ): boolean {
   switch (kind) {
-    // A timeline's rows are structure, an Editor's on an unlocked element (docs/specs/009-elements/timeline.md
-    // "Share roles"); so are a chart's data, a stack's arrangement, a lane's gutter, a boundary's style, a key's
-    // meanings and a portal's link.
+    // A portal's link is an Editor's, on an unlocked element (docs/specs/007-editor/element-tours.md "Share roles").
     case 'portal':
-    case 'diagram-key':
-    case 'boundary':
-    case 'lane':
-    case 'stack':
-    case 'chart':
-    case 'timeline':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
   }
 }

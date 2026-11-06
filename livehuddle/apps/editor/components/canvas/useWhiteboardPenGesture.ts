@@ -20,7 +20,7 @@ type WhiteboardPenGestureDeps = Pick<
 };
 
 // The whiteboard pen's gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen
-// input"; blueprint whiteboard-round-one "Pen ink"). The press makes one LiveStroke and sets it as
+// input"; docs/specs/023-draw-mode/draw-mode.md "Pens"). The press makes one LiveStroke and sets it as
 // state once; after that every move adds its raw sample and pressure straight to the stroke and
 // notifies its subscribers (the ink, the recognition dwell), so drawing costs no React render. One
 // sample per move, as Excalidraw takes them: its streamline values are tuned to that rate. Release

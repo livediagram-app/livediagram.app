@@ -164,7 +164,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
   // a lingering pop-in class made unrelated elements visibly re-enter.
   // An element that never pops starts entered and arms nothing: one the board arrives with
   // (docs/specs/008-canvas/canvas-and-palette.md "Motion and animations"), and one mounted on a still
-  // canvas, which stays settled if the tab later switches to Diagram mode.
+  // canvas, which stays settled if the canvas later starts moving.
   const arrivesWithBoard = useArrivesWithBoard();
   const [entered, setEntered] = useState(() => still || arrivesWithBoard);
   const [pops] = useState(!entered);
