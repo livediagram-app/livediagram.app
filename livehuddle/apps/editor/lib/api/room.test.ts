@@ -315,6 +315,72 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     ]);
   });
 
+  // docs/specs/008-canvas/avatar-mode.md "A busy room", "The costume rides only when it is needed": the hello says
+  // we read lean packets, and we send them only once the room's `format` frame says it takes them.
+  it('sends lean avatar packets only to a room that takes them, carrying the costume when it is due', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first' },
+    );
+    const costume = { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' } as const;
+    const walk = (x: number) =>
+      ({
+        kind: 'op',
+        op: {
+          kind: 'avatar',
+          tabId: 't1',
+          avatar: {
+            x,
+            y: 2,
+            facing: 'down',
+            config: costume,
+            walking: true,
+            stepFrame: 0,
+            lift: 0,
+            wave: null,
+            seatedOn: null,
+            holding: null,
+          },
+        },
+      }) as const;
+    const sentAvatar = (socket: FakeSocket) =>
+      (socket.sent.at(-1) as unknown as { op: { avatar: unknown } }).op.avatar;
+    const bare = (x: number) => ({ x, y: 2, facing: 'down', walking: true });
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    expect(socket.sent[0]).toMatchObject({ kind: 'hello', leanAvatars: true });
+    // A room from before: full packets.
+    room.send(walk(1));
+    expect(sentAvatar(socket)).toEqual(walk(1).op.avatar);
+    socket.receive(JSON.stringify({ kind: 'format', format: DOCUMENT_FORMAT, leanAvatars: true }));
+    room.send(walk(2));
+    expect(sentAvatar(socket)).toEqual({ ...bare(2), config: costume });
+    room.send(walk(3));
+    expect(sentAvatar(socket)).toEqual(bare(3));
+    // Someone new joins: the next packet carries the costume.
+    socket.receive(JSON.stringify({ kind: 'presence', participants: [{ id: 'a' }] }));
+    room.send(walk(4));
+    expect(sentAvatar(socket)).toEqual({ ...bare(4), config: costume });
+    // Leaving the mode, then coming back: the costume again.
+    room.send({ kind: 'op', op: { kind: 'avatar', tabId: 't1', avatar: null } });
+    expect(sentAvatar(socket)).toBeNull();
+    room.send(walk(5));
+    expect(sentAvatar(socket)).toEqual({ ...bare(5), config: costume });
+    // A new socket starts on full packets until its room says otherwise.
+    socket.fire('close');
+    vi.runOnlyPendingTimers();
+    const next = FakeSocket.all[1]!;
+    next.fire('open');
+    room.send(walk(6));
+    expect(sentAvatar(next)).toEqual(walk(6).op.avatar);
+    next.receive(JSON.stringify({ kind: 'format', format: DOCUMENT_FORMAT }));
+    room.send(walk(7));
+    expect(sentAvatar(next)).toEqual(walk(7).op.avatar);
+    room.close();
+  });
+
   it('sends nothing for a grant-renew when no fresh grant can be had', async () => {
     const renewGrant = vi.fn(async () => null);
     connectRoom(

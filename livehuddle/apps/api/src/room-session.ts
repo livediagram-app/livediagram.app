@@ -75,6 +75,8 @@ export type SessionAttachment = {
   //   - `batches`: the session's editor takes a busy room's coalesced `batch` frames, from its `hello`
   //     (docs/specs/015-api/api.md "A busy room bounds its presence fan-out").
   batches?: boolean;
+  //   - `leanAvatars`: the session's editor reads lean avatar packets, from its `hello` (the same section).
+  leanAvatars?: boolean;
   //   - `callSession`: the Realtime session this connection's call proved with its `call-session` op
   //     (docs/specs/012-collaboration/proximity-audio.md "The wire"), so the mint route can ask the room who it is.
   callSession?: string | null;

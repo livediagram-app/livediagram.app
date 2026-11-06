@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   avatarReaches,
   batchFrame,
+  filledAvatarFrame,
   PresenceRelay,
   REMEMBERED_WALKERS,
   type RelaySession,
@@ -41,10 +43,38 @@ function room(
   return { relay, sockets, timers, runTimers, reads: () => reads };
 }
 
+const costume = { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' };
+// A full packet, as every editor sent before lean ones.
 const avatar = (tabId: string, x = 1) => ({
   kind: 'avatar',
   tabId,
-  avatar: { x, y: 2, walking: true },
+  avatar: {
+    x,
+    y: 2,
+    facing: 'down',
+    config: costume,
+    walking: true,
+    stepFrame: 0,
+    lift: 0,
+    wave: null,
+  },
+});
+// A lean packet (docs/specs/008-canvas/avatar-mode.md "The costume rides only when it is needed").
+const lean = (tabId: string, x = 1, withCostume = false) => ({
+  kind: 'avatar',
+  tabId,
+  avatar: { x, y: 2, facing: 'down', walking: true, ...(withCostume ? { config: costume } : null) },
+});
+// What an older editor is sent for a lean packet: filled back out.
+const filled = (x: number, config: unknown = costume) => ({
+  x,
+  y: 2,
+  facing: 'down',
+  walking: true,
+  stepFrame: 0,
+  lift: 0,
+  wave: null,
+  ...(config ? { config } : null),
 });
 const parsed = (raw: string) =>
   JSON.parse(raw) as { kind: string; frames?: unknown[]; from?: string };
@@ -226,5 +256,70 @@ describe('PresenceRelay with a product’s own sample kinds', () => {
       { kind: 'op', from: 'p0', op: avatar('t1', 1) },
       { kind: 'op', from: 'p0', op: voice('t1', 0) },
     ]);
+  });
+});
+
+describe('PresenceRelay with lean avatar packets', () => {
+  const opOf = (raw: string) => (JSON.parse(raw) as { op: { avatar: unknown } }).op.avatar;
+
+  it('sends a lean packet as it came to an editor that asked, and filled out to one that did not', () => {
+    const { relay, sockets } = room(3, (i) => ({ tabId: 't1', leanAvatars: i === 1 }));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 1, true));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 2));
+    expect(sockets[1]!.sent.map(opOf)).toEqual([lean('t1', 1, true).avatar, lean('t1', 2).avatar]);
+    // The older editor keeps the costume the room last saw, and the resting values.
+    expect(sockets[2]!.sent.map(opOf)).toEqual([filled(1), filled(2)]);
+  });
+
+  it('fills a lean packet without a costume it never saw, and forgets a costume when its walker leaves', () => {
+    const { relay, sockets } = room(2, () => ({ tabId: 't1' }));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 1));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 2, true));
+    relay.relay(sockets[0]!, 'p0', { kind: 'avatar', tabId: 't1', avatar: null });
+    relay.relay(sockets[0]!, 'p0', lean('t1', 3));
+    expect(sockets[1]!.sent.map(opOf)).toEqual([filled(1, null), filled(2), null, filled(3, null)]);
+  });
+
+  it('sends a full packet to everyone as it came, and nothing extra for a malformed one', () => {
+    const { relay, sockets } = room(3, (i) => ({ tabId: 't1', leanAvatars: i === 1 }));
+    const raw = avatar('t1', 7);
+    relay.relay(sockets[0]!, 'p0', raw);
+    expect(sockets[1]!.sent).toEqual(sockets[2]!.sent);
+    relay.relay(sockets[0]!, 'p0', { kind: 'avatar', tabId: 't1', avatar: [1] });
+    relay.relay(sockets[0]!, 'p0', { kind: 'avatar', tabId: 't1', avatar: 'x' });
+    expect(sockets[2]!.sent.map(opOf)).toEqual([raw.avatar, [1], 'x']);
+  });
+
+  it('fills a lean packet out in a catch-up, with the last costume its walker sent', () => {
+    const { relay, sockets } = room(3, (i) => ({
+      tabId: i === 2 ? 't2' : 't1',
+      leanAvatars: true,
+    }));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 1, true));
+    relay.relay(sockets[0]!, 'p0', lean('t1', 4));
+    relay.relay(sockets[1]!, 'p1', avatar('t1', 9));
+    relay.noteSession(sockets[2]!, { tabId: 't1', leanAvatars: true });
+    relay.catchUp(sockets[2]!, 'p2');
+    expect(sockets[2]!.sent.map(opOf)).toEqual([filled(4), avatar('t1', 9).avatar]);
+  });
+
+  it('fills a busy room of older editors out once a packet, inside a CPU budget', () => {
+    // 100 editors from before, every walker lean: a second of a full room's packets (1,500) relayed to each.
+    const { relay, sockets } = room(100, () => ({ tabId: 't1' }));
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 1500; i++) relay.relay(sockets[i % 100]!, `p${i % 100}`, lean('t1', i));
+    });
+    expect(sockets[1]!.sent.length).toBeGreaterThan(0);
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
+  });
+
+  it('builds a filled frame from an op', () => {
+    const out = filledAvatarFrame('p0', lean('t1', 5), costume as never);
+    expect(out.payload).toEqual({
+      kind: 'op',
+      from: 'p0',
+      op: { ...lean('t1', 5), avatar: filled(5) },
+    });
+    expect(JSON.parse(out.serialized)).toEqual(out.payload);
   });
 });
