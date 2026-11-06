@@ -9,6 +9,9 @@
 //     standing heartbeat fills it again.
 //   - In a room of more than 10, a socket that takes batches is sent its samples once a step, as one frame holding
 //     each sender's latest sample of each kind. Everything else goes at once, as it always did.
+//   - A character's costume rides only when it is needed: a lean packet (no costume, no resting values) goes as it
+//     came to a socket whose `hello` said `leanAvatars: true`, and filled back out, with the costume the room last
+//     saw from that walker, to one that did not (an editor from before), so it still draws the right character.
 //
 // The Durable Object owns the sockets; this owns the rules, through the small host below, so both products' rooms
 // share one tested copy.
@@ -17,6 +20,12 @@ import {
   presenceStepMs,
   type PresenceBatchMessage,
 } from '@liveworkspace/api-schema/presence-fanout';
+import {
+  expandAvatarPacket,
+  isLeanAvatarPacket,
+  type AvatarConfig,
+  type AvatarPacket,
+} from '@liveworkspace/api-schema/avatar';
 
 // The op kinds this relays: the two sample streams a room carries at walking pace.
 export const RELAYED_SAMPLE_KINDS: ReadonlySet<string> = new Set(['avatar', 'cursor']);
@@ -25,9 +34,15 @@ export const RELAYED_SAMPLE_KINDS: ReadonlySet<string> = new Set(['avatar', 'cur
 // missed close could leave behind (twice a full room).
 export const REMEMBERED_WALKERS = 200;
 
-// What the relay needs to know of a session: the tab it is on, the other pane of a split, and whether its editor
-// takes batched frames (its `hello` said `batches: true`). Null before its `hello`.
-export type RelaySession = { tabId?: string; besideTabId?: string; batches?: boolean };
+// What the relay needs to know of a session: the tab it is on, the other pane of a split, whether its editor
+// takes batched frames (its `hello` said `batches: true`) and lean avatar packets (`leanAvatars: true`). Null before
+// its `hello`.
+export type RelaySession = {
+  tabId?: string;
+  besideTabId?: string;
+  batches?: boolean;
+  leanAvatars?: boolean;
+};
 
 // One relayed op frame, as the room sends it.
 export type RelayedOp = { kind: 'op'; from: string; op: unknown };
@@ -52,6 +67,40 @@ export type PresenceRelayHost<S> = {
 
 type AvatarOpShape = { kind?: unknown; tabId?: unknown; avatar?: unknown };
 
+// One walker as the room remembers it: its tab, its last packet as relayed, the last costume it sent, and whether
+// that packet was lean (so a catch-up fills it back out).
+type Walker = {
+  tabId: string;
+  op: AvatarOpShape;
+  payload: RelayedOp;
+  serialized: string;
+  costume: AvatarConfig | undefined;
+  lean: boolean;
+};
+
+// The op's character, when it is one (an object), else null: leaving the mode, or something no editor sends.
+function packetOf(op: AvatarOpShape): AvatarPacket | null {
+  const avatar = op.avatar;
+  return typeof avatar === 'object' && avatar !== null && !Array.isArray(avatar)
+    ? (avatar as AvatarPacket)
+    : null;
+}
+
+/** `op`'s frame from `from` with its character filled back out, costume and resting values, for an older editor. */
+export function filledAvatarFrame(
+  from: string,
+  op: AvatarOpShape,
+  costume: AvatarConfig | undefined,
+): { payload: RelayedOp; serialized: string } {
+  const packet = packetOf(op)!;
+  const payload: RelayedOp = {
+    kind: 'op',
+    from,
+    op: { ...op, avatar: expandAvatarPacket(packet, costume) },
+  };
+  return { payload, serialized: JSON.stringify(payload) };
+}
+
 /** Whether a socket on `session` should be sent this `avatar` op. */
 export function avatarReaches(op: AvatarOpShape, session: RelaySession | null): boolean {
   if (op.avatar === null || typeof op.tabId !== 'string') return true;
@@ -72,11 +121,8 @@ export class PresenceRelay<S extends object> {
   // Per socket, the frames held for the next flush, keyed by `<kind>:<sender>` so a newer sample replaces an older.
   private readonly held = new Map<S, Map<string, string>>();
   private flushDue = false;
-  // Each walker's last packet: the tab it is on, and the frame as relayed.
-  private readonly walkers = new Map<
-    string,
-    { tabId: string; payload: RelayedOp; serialized: string }
-  >();
+  // Each walker's last packet: the tab it is on, the frame as relayed, and its costume.
+  private readonly walkers = new Map<string, Walker>();
 
   private readonly host: PresenceRelayHost<S>;
   private readonly sampleKinds: ReadonlySet<string>;
@@ -108,7 +154,11 @@ export class PresenceRelay<S extends object> {
     const payload: RelayedOp = { kind: 'op', from, op };
     const serialized = JSON.stringify(payload);
     const avatar = kind === 'avatar' ? (op as AvatarOpShape) : null;
-    if (avatar) this.remember(from, avatar, payload, serialized);
+    const packet = avatar ? packetOf(avatar) : null;
+    const lean = packet !== null && isLeanAvatarPacket(packet);
+    const costume = avatar ? this.remember(from, avatar, payload, serialized, lean) : undefined;
+    // A lean packet filled back out, built once and only if a socket that did not ask for lean ones is sent it.
+    let filled: { payload: RelayedOp; serialized: string } | null = null;
     // Any other sample kind but the cursor is a tab's alone, the way a standing character is.
     const scoped = avatar ?? (kind === 'cursor' ? null : (op as AvatarOpShape));
     const sockets = this.host.sockets();
@@ -118,7 +168,11 @@ export class PresenceRelay<S extends object> {
       if (socket === sender) continue;
       const session = this.sessionOf(socket);
       if (scoped && !avatarReaches(scoped, session)) continue;
-      const frame = this.host.frameFor(socket, payload, serialized);
+      const out =
+        lean && session?.leanAvatars !== true
+          ? (filled ??= filledAvatarFrame(from, avatar!, costume))
+          : { payload, serialized };
+      const frame = this.host.frameFor(socket, out.payload, out.serialized);
       if (frame === null) continue;
       if (batching && session?.batches) this.hold(socket, key, frame, sockets.length);
       else this.host.send(socket, frame);
@@ -126,13 +180,23 @@ export class PresenceRelay<S extends object> {
     return true;
   }
 
-  private remember(from: string, op: AvatarOpShape, payload: RelayedOp, serialized: string): void {
+  /** Remember `from`'s packet, and return the costume it now wears: its own, else the last one it sent. */
+  private remember(
+    from: string,
+    op: AvatarOpShape,
+    payload: RelayedOp,
+    serialized: string,
+    lean: boolean,
+  ): AvatarConfig | undefined {
+    const before = this.walkers.get(from);
     this.walkers.delete(from);
-    if (op.avatar === null || typeof op.tabId !== 'string') return;
-    this.walkers.set(from, { tabId: op.tabId, payload, serialized });
+    if (op.avatar === null || typeof op.tabId !== 'string') return undefined;
+    const costume = packetOf(op)?.config ?? before?.costume;
+    this.walkers.set(from, { tabId: op.tabId, op, payload, serialized, costume, lean });
     if (this.walkers.size > REMEMBERED_WALKERS) {
       this.walkers.delete(this.walkers.keys().next().value!);
     }
+    return costume;
   }
 
   private hold(socket: S, key: string, frame: string, connections: number): void {
@@ -155,13 +219,15 @@ export class PresenceRelay<S extends object> {
     for (const [socket, frames] of held) this.host.send(socket, batchFrame([...frames.values()]));
   }
 
-  /** Show a socket that just switched tab every walker on its tab, other than itself (`selfId`). */
+  /** Show a socket that just switched tab every walker on its tab, other than itself (`selfId`), costume and all. */
   catchUp(socket: S, selfId: string): void {
     const session = this.sessionOf(socket);
     for (const [from, walker] of this.walkers) {
       if (from === selfId) continue;
       if (!avatarReaches({ tabId: walker.tabId, avatar: true }, session)) continue;
-      const frame = this.host.frameFor(socket, walker.payload, walker.serialized);
+      // Always filled out: the switcher may never have been sent this walker's costume.
+      const out = walker.lean ? filledAvatarFrame(from, walker.op, walker.costume) : walker;
+      const frame = this.host.frameFor(socket, out.payload, out.serialized);
       if (frame !== null) this.host.send(socket, frame);
     }
   }
