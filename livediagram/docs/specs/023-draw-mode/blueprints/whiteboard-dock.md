@@ -90,9 +90,15 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
 - `fitDock({ room, pens, pins })` (`lib/whiteboard-dock-fold.ts`, pure) returns
   `{ pins, folded }`: the most pins (up to `pins`, the bar's pins after `splitBarPins`) and the
   fewest folded tools whose bar width (`dockBarWidth`) is at most `room`. Pins go first, the last
-  first; then `DOCK_FOLD_ORDER` (`path`, `fill`, `third`, `eraser`, `second`, `text`) one at a
-  time, More Tools' own tile counted once anything folds. With no room (`null`, not measured, or a
+  first; then `DOCK_FOLD_ORDER` (`path`, `fill`, `third`, `eraser`, `second`, `text`, `main`)
+  one at a time, More Tools' own tile counted once anything folds. With no room (`null`, not measured, or a
   phone) nothing folds.
+- `placeTopDock({ leftRoom, clear, wide, … })` chooses a top dock's placement: below `lg`
+  (`wide`, `(min-width: 1024px)`) beside the card (`TOP_BESIDE_CARD`); from `lg` centred
+  (`TOP_CENTRED`, `data-dock-centred`) when `fitDock` on the centred room
+  (`leftRoom - clear + DOCK_RIGHT_MARGIN_PX`) takes off no more pins plus folded tools than on
+  `leftRoom`, else beside the card. With no room measured it centres from `lg`, folding nothing.
+  `clear` is `useMenuCardClearance`, or `CLEAR_FALLBACK_PX` (120, the 7.5rem fallback) until measured.
 - `dockBarWidth` is arithmetic on the dock's fixed sizes, in dock px (the toolbar UI scale's
   units): the card's chrome (`DOCK_CARD_CHROME_PX`, 1 px border and 4 px padding each side), 36 px
   tiles, 5 px hairlines (1 px and 2 px margins), 2 px gaps between the card's children and between
@@ -409,8 +415,10 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
   are portalled out of the zoomed wrapper, so they draw at design size, like every menu opened
   from a scaled surface.
 - Wrapper at the **top** (the default): `top-3`, `left-[var(--dock-clear,…)]` with
-  `max-w-[calc(100%-var(--dock-clear,…)-0.75rem)]` below `lg`, and from `lg` centred with
-  `max-w-[calc(100%-2*var(--dock-clear,7.5rem))]`, the same clearance both sides (D33). `--dock-clear` is
+  `max-w-[calc(100%-var(--dock-clear,…)-0.75rem)]` (`TOP_BESIDE_CARD`), and from `lg` centred with
+  `max-w-[calc(100%-2*var(--dock-clear,7.5rem))]`, the same clearance both sides (`TOP_CENTRED`, D33),
+  where `placeTopDock` says centring folds no more. The classes are chosen at run time, not by an
+  `lg:` variant; the room probe always carries `TOP_BESIDE_CARD`. `--dock-clear` is
   `useMenuCardClearance` (`components/canvas/whiteboard/useMenuCardClearance.ts`): the Explorer menu card's
   (`[data-toolbar-menu]`) measured right edge from the dock's container plus `MENU_CARD_GAP_PX` (8), over the
   toolbar UI scale, read in a layout effect and again from a `ResizeObserver` on the card. The card holds the
@@ -487,56 +495,59 @@ to measure` (warn).
 
 ## Testing
 
-| Rule                                                      | Test                                                                        |
-| --------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Catalogue scope, keys, order, intents, armed read-back    | `apps/editor/lib/whiteboard-shape-catalogue.test.ts`                        |
-| Preselected set, six results, ranking, grid movement      | `apps/editor/lib/whiteboard-shape-search.test.ts`                           |
-| Default pins, the six slots, pick record, drops, outcomes | `apps/editor/lib/whiteboard-shape-slots.test.ts`                            |
-| Preference parsing and writing, emptied pins kept         | `apps/editor/lib/whiteboard-dock-prefs.test.ts`                             |
-| Picks counted, search pick, S request, pins, unpin count  | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                           |
-| Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`          |
-| Fold order, runs, bar width, pins before tools            | `apps/editor/lib/whiteboard-dock-fold.test.ts`                              |
-| More Tools: folded tiles, pressed, arm, a tool's flyout   | `apps/editor/components/canvas/whiteboard/MoreToolsFlyout.test.tsx`         |
-| No sideways scroll from 640 to 1100 px (744, 768 too)     | `whiteboard-dock-position.spec.ts`                                          |
-| A press focuses the flyout once shown; Escape hands back  | `WhiteboardDock.test.tsx` "takes the focus on a press once it is shown"     |
-| Off the dock: board side, centred, in viewport, tip over  | `WhiteboardDock.test.tsx` "offDock"                                         |
-| Pinned bar, pressed state, Unpin menu, drags both ways    | `apps/editor/components/canvas/whiteboard/ShapesGroup.test.tsx`             |
-| Shapes flyout: hover focus, slots, results, menu, closing | `apps/editor/components/canvas/whiteboard/ShapesFlyout.test.tsx`            |
-| Dock position: parse, write, default top                  | `apps/editor/lib/whiteboard-dock-prefs.test.ts`                             |
-| Top and bottom wrapper, flyout and hint below or above    | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`          |
-| A top bar (strip or dock) crowding the top corners        | `apps/editor/hooks/ui/useStripCrowdsCorners.test.tsx`                       |
-| Settings row: Top / Bottom round trip, section, token     | `apps/editor/components/dialogs/settings/settings-catalogue.test.ts`        |
-| Telemetry sentences                                       | liveworkspace/apps/site/app/telemetry/livediagram/event-explanation.test.ts |
-| Dock position and snap colours end to end                 | `whiteboard-dock-position.spec.ts`, `whiteboard-snap-colours.spec.ts`       |
-| End to end                                                | Playwright, Chromium and WebKit, dark and light, 1600 × 900 and 820 × 1180  |
+| Rule                                                      | Test                                                                               |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Catalogue scope, keys, order, intents, armed read-back    | `apps/editor/lib/whiteboard-shape-catalogue.test.ts`                               |
+| Preselected set, six results, ranking, grid movement      | `apps/editor/lib/whiteboard-shape-search.test.ts`                                  |
+| Default pins, the six slots, pick record, drops, outcomes | `apps/editor/lib/whiteboard-shape-slots.test.ts`                                   |
+| Preference parsing and writing, emptied pins kept         | `apps/editor/lib/whiteboard-dock-prefs.test.ts`                                    |
+| Picks counted, search pick, S request, pins, unpin count  | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                                  |
+| Groups, order, tab stops, arrows, scroll re-anchoring     | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                 |
+| Fold order, runs, bar width, pins before tools            | `apps/editor/lib/whiteboard-dock-fold.test.ts`                                     |
+| Centred from lg only where it folds no more               | `whiteboard-dock-fold.test.ts` "placeTopDock", `WhiteboardDock.test.tsx` "from lg" |
+| More Tools: folded tiles, pressed, arm, a tool's flyout   | `apps/editor/components/canvas/whiteboard/MoreToolsFlyout.test.tsx`                |
+| No sideways scroll from 640 to 1100 px (744, 768 too)     | `whiteboard-dock-position.spec.ts`                                                 |
+| A press focuses the flyout once shown; Escape hands back  | `WhiteboardDock.test.tsx` "takes the focus on a press once it is shown"            |
+| Off the dock: board side, centred, in viewport, tip over  | `WhiteboardDock.test.tsx` "offDock"                                                |
+| Pinned bar, pressed state, Unpin menu, drags both ways    | `apps/editor/components/canvas/whiteboard/ShapesGroup.test.tsx`                    |
+| Shapes flyout: hover focus, slots, results, menu, closing | `apps/editor/components/canvas/whiteboard/ShapesFlyout.test.tsx`                   |
+| Dock position: parse, write, default top                  | `apps/editor/lib/whiteboard-dock-prefs.test.ts`                                    |
+| Top and bottom wrapper, flyout and hint below or above    | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                 |
+| A top bar (strip or dock) crowding the top corners        | `apps/editor/hooks/ui/useStripCrowdsCorners.test.tsx`                              |
+| Settings row: Top / Bottom round trip, section, token     | `apps/editor/components/dialogs/settings/settings-catalogue.test.ts`               |
+| Telemetry sentences                                       | liveworkspace/apps/site/app/telemetry/livediagram/event-explanation.test.ts        |
+| Dock position and snap colours end to end                 | `whiteboard-dock-position.spec.ts`, `whiteboard-snap-colours.spec.ts`              |
+| End to end                                                | Playwright, Chromium and WebKit, dark and light, 1600 × 900 and 820 × 1180         |
 
 ## Constants and configuration
 
-| Constant                      | Value    | Provenance                      | Safe range        |
-| ----------------------------- | -------- | ------------------------------- | ----------------- |
-| `PINNED_SHAPES_MAX`           | 7        | spec                            | 7                 |
-| `DEFAULT_PINNED_SHAPES`       | 2 kinds  | spec                            |                   |
-| `SLOTS_PER_ROW`               | 3        | spec                            | 3                 |
-| `SHAPE_PICKS_PROTECTED`       | 5        | D16                             | 3 to 8            |
-| `SLOT_BAR_REACH_PX`           | 44       | D22                             | 24 to 64          |
-| `DockButton` size             | 36 px    | spec (the strip's tile)         | 36                |
-| `DOCK_ICON_PX`                | 18 px    | the strip's glyph size          | 18                |
-| `OFF_DOCK_GAP_PX`             | 8 px     | D36                             | 4 to 12           |
-| `VIEWPORT_MARGIN_PX`          | 12 px    | the flyouts' clamp margin       | 8 to 16           |
-| `TIP_INSET_PX`                | 14 px    | D37 (card radius 12 + 2)        | 12 to 20          |
-| Tip size                      | 10 px    | D37                             | 8 to 12           |
-| `SHAPE_SEARCH_LIMIT`          | 6        | spec                            | 6                 |
-| `SHAPE_GRID_COLUMNS`          | 3        | six as two rows of three        | 3                 |
-| `SHAPE_PICKS_KEPT`            | 20       | spec (e.g. 20), D16             | 12 to 30          |
-| `SHAPE_SLOT_DRAG_PX`          | 6        | spec                            | 4 to 10           |
-| `HINT_MS`                     | 4000     | D17                             | 3000 to 6000      |
-| Group separator               | hairline | D18                             | `TOOLBAR_DIVIDER` |
-| Dock drops beside the cluster | 1760 px  | D9 (widest dock 858 px)         | at least 1720     |
-| Top dock's side clearance     | 4.25rem  | D33 (menu button 12 + 46)       | at least 4rem     |
-| `DOCK_FOLD_ORDER`             | 6 tools  | spec, D39                       |                   |
-| `DOCK_CARD_CHROME_PX`         | 10 px    | `TOOLBAR_CARD` (p-1, border)    | 10                |
-| `DOCK_DIVIDER_PX`             | 5 px     | `TOOLBAR_DIVIDER` (w-px mx-0.5) | 5                 |
-| `DOCK_GAP_PX`                 | 2 px     | `gap-0.5`                       | 2                 |
+| Constant                      | Value    | Provenance                          | Safe range        |
+| ----------------------------- | -------- | ----------------------------------- | ----------------- |
+| `PINNED_SHAPES_MAX`           | 7        | spec                                | 7                 |
+| `DEFAULT_PINNED_SHAPES`       | 2 kinds  | spec                                |                   |
+| `SLOTS_PER_ROW`               | 3        | spec                                | 3                 |
+| `SHAPE_PICKS_PROTECTED`       | 5        | D16                                 | 3 to 8            |
+| `SLOT_BAR_REACH_PX`           | 44       | D22                                 | 24 to 64          |
+| `DockButton` size             | 36 px    | spec (the strip's tile)             | 36                |
+| `DOCK_ICON_PX`                | 18 px    | the strip's glyph size              | 18                |
+| `OFF_DOCK_GAP_PX`             | 8 px     | D36                                 | 4 to 12           |
+| `VIEWPORT_MARGIN_PX`          | 12 px    | the flyouts' clamp margin           | 8 to 16           |
+| `TIP_INSET_PX`                | 14 px    | D37 (card radius 12 + 2)            | 12 to 20          |
+| Tip size                      | 10 px    | D37                                 | 8 to 12           |
+| `SHAPE_SEARCH_LIMIT`          | 6        | spec                                | 6                 |
+| `SHAPE_GRID_COLUMNS`          | 3        | six as two rows of three            | 3                 |
+| `SHAPE_PICKS_KEPT`            | 20       | spec (e.g. 20), D16                 | 12 to 30          |
+| `SHAPE_SLOT_DRAG_PX`          | 6        | spec                                | 4 to 10           |
+| `HINT_MS`                     | 4000     | D17                                 | 3000 to 6000      |
+| Group separator               | hairline | D18                                 | `TOOLBAR_DIVIDER` |
+| Dock drops beside the cluster | 1760 px  | D9 (widest dock 858 px)             | at least 1720     |
+| Top dock's side clearance     | 4.25rem  | D33 (menu button 12 + 46)           | at least 4rem     |
+| `DOCK_FOLD_ORDER`             | 7 tools  | spec, D39                           |                   |
+| `DOCK_CARD_CHROME_PX`         | 10 px    | `TOOLBAR_CARD` (p-1, border)        | 10                |
+| `DOCK_DIVIDER_PX`             | 5 px     | `TOOLBAR_DIVIDER` (w-px mx-0.5)     | 5                 |
+| `DOCK_GAP_PX`                 | 2 px     | `gap-0.5`                           | 2                 |
+| `DOCK_RIGHT_MARGIN_PX`        | 12 px    | the top dock's 0.75rem right margin | 12                |
+| `CLEAR_FALLBACK_PX`           | 120 px   | the 7.5rem clearance fallback       | 120               |
 
 ## Defaults ledger
 

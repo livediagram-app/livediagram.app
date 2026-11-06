@@ -206,7 +206,10 @@ pointing at the button that opened it, on the edge facing the dock, over its but
     a phone or a tablet it starts 8 px to the card's right, whatever the card holds, so a tablet in
     portrait still shows the whole dock, and when it scrolls sideways its tools
     stay clear of the menu card rather than sliding under it; from 1024 px wide it is centred with
-    the same clearance on both sides;
+    the same clearance on both sides, but only where centred it folds no more of the bar (see
+    [When the bar is too wide](#when-the-bar-is-too-wide)) than beside the card: centring costs the
+    card's clearance on the right, so at a large toolbar UI scale the dock stays beside the card
+    rather than fold tools to sit in the middle;
   - its flyouts and the "Seven shapes are pinned" hint open **below** it;
   - the top-centre banners (follow-me, mode banners, timer, vote) sit
     **beneath** it, as they sit beneath the Toolbar strip;
@@ -305,14 +308,19 @@ only as far as it must, in this order:
    on it the pinned side's separator goes too, so no two hairlines stand together.
 2. Then the **least-used drawing tools** fold into a **More Tools** button (an ellipsis) at the
    end of the drawing tools, in this order: **Path tool**, **Fill**, **Marker 3**, **Eraser**,
-   **Marker 2**, **Text**. Select, Marker 1, Shapes and Settings never fold. A group of tools
-   that folds whole takes its hairline with it.
+   **Marker 2**, **Text**, and last of all **Marker 1**, only where nothing else is left to fold
+   (a large toolbar UI scale in a narrow window). Select, Shapes and Settings never fold. A group
+   of tools that folds whole takes its hairline with it.
 
 With the default bar and tab name, at the default toolbar UI scale, that is: from about 795 px
 nothing folds; at 768 and 744 only the pin leaves; at 720 the Path tool and Fill fold too; at 660
 Marker 3 as well, and at 640 the Eraser. A longer tab name or a larger UI scale folds a little sooner; a wider window
 unfolds again at once. The room is measured, not a set of breakpoints, so a bar with seven pins
-on a wide window folds its pins the same way.
+on a wide window folds its pins the same way. At the largest toolbar UI scale (161%) the fully
+folded bar (Select, More Tools, Shapes, Settings) is about 280 px wide and fits from 640 px, so
+nothing scrolls anywhere from 640 px up at any scale. Should a future setting make even that bar
+wider than its room, it scrolls sideways inside its card, as on a phone, rather than fold Select,
+Shapes or Settings.
 
 - **More Tools** opens on a press only (like Settings), on the board side, titled "More Tools":
   the folded tools as one row of tiles, in bar order, each with its icon, its name as tooltip and
