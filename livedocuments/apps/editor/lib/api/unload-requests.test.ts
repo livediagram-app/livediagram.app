@@ -1,13 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-// First: the offline store's own imports come back round to this module, which must be the one holding the mock.
+import { withNoteCards, type Slide } from '@livedocuments/document';
+import * as offlineStore from '../offline/offline-store';
+import { flushDocumentSavesBeacon } from './tabs';
 import {
   KEEPALIVE_BUDGET_BYTES,
+  bodyBytes,
   resetKeepaliveBudget,
   saveDocumentMetaOnUnload,
   takeKeepalive,
 } from './unload-requests';
-import { flushDocumentSavesBeacon } from './tabs';
-import * as offlineStore from '../offline/offline-store';
 
 vi.mock('../offline/offline-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../offline/offline-store')>()),
@@ -94,6 +95,61 @@ describe('saveDocumentMetaOnUnload', () => {
     });
     saveDocumentMetaOnUnload('owner-1', { id: 'd1', presentation: deck(20_000) }, null);
     expect(calls.map((c) => c.init.keepalive)).toEqual([true, false]);
+  });
+
+  // Work Tracker #575: a deck past the keepalive budget sends only the slides it changed, so it outlives the page.
+  describe('a deck too large to go whole', () => {
+    const slideWith = (id: string, text: string) =>
+      withNoteCards({ id, tabId: 't1', elementIds: [] }, [{ id: `${id}-c`, text }]);
+    // Forty slides of about 2 KB of notes each (mirrored): about 160 KB, far past the budget.
+    const slides = Array.from({ length: 40 }, (_, i) => slideWith(`s${i}`, 'n'.repeat(1000)));
+    const stored = (list: Slide[]) => JSON.stringify({ decks: [{ slides: list }] });
+    const base = stored(slides);
+    const sentDeck = (call: FetchCall) =>
+      (JSON.parse(call.init.body as string) as { presentation?: string }).presentation;
+
+    it('sends the changed slide alone, with its base cards, kept alive', () => {
+      const typed = slideWith('s7', `${'n'.repeat(1000)} and one more line`);
+      const mine = stored(slides.map((s) => (s.id === 's7' ? typed : s)));
+      expect(bodyBytes(mine)).toBeGreaterThan(KEEPALIVE_BUDGET_BYTES);
+      saveDocumentMetaOnUnload(
+        'owner-1',
+        { id: 'd1', presentation: mine, presentationBase: base },
+        null,
+      );
+      expect(calls).toHaveLength(1);
+      expect(calls[0]!.init.keepalive).toBe(true);
+      expect(JSON.parse(calls[0]!.init.body as string)).toEqual({
+        presentationPatch: {
+          slides: [
+            { slide: typed, baseCards: [{ id: 's7-c', text: 'n'.repeat(1000) }], after: 's6' },
+          ],
+        },
+      });
+    });
+
+    it('sends the whole deck as a plain request when a slide moved, or with no base', () => {
+      const moved = stored([slides[1]!, slides[0]!, ...slides.slice(2)]);
+      saveDocumentMetaOnUnload(
+        'owner-1',
+        { id: 'd1', presentation: moved, presentationBase: base },
+        null,
+      );
+      saveDocumentMetaOnUnload('owner-1', { id: 'd1', presentation: moved }, null);
+      expect(calls.map((c) => c.init.keepalive)).toEqual([false, false]);
+      expect(calls.map((c) => sentDeck(c))).toEqual([moved, moved]);
+    });
+
+    it('sends the whole deck as a plain request when even the changed slides do not fit', () => {
+      const mine = stored(slides.map((s) => slideWith(s.id, 'm'.repeat(1000))));
+      saveDocumentMetaOnUnload(
+        'owner-1',
+        { id: 'd1', presentation: mine, presentationBase: base },
+        null,
+      );
+      expect(calls[0]!.init.keepalive).toBe(false);
+      expect(sentDeck(calls[0]!)).toBe(mine);
+    });
   });
 
   it('skips the save for a signed-in owner with no cached token', () => {

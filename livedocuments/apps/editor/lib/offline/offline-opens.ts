@@ -8,7 +8,7 @@
 // Document) and never leaves the browser.
 
 import type { DocumentSummary } from '@livedocuments/api-schema';
-import { windowStartOf, utcDay } from '@livedocuments/api-schema';
+import { localOpensOf, nextLocalOpens } from './local-opens';
 import {
   offlineBackend,
   offlineUpdateRecord,
@@ -23,31 +23,8 @@ export type { LocalOpens };
 /** A local document that has been opened, as Jump Back In merges it. */
 export type LocalOpenDocument = { document: DocumentSummary; opens: LocalOpens };
 
-/** A record's stored opens as the current shape. The shape written before Within reach still
- *  vouches for its last open day and last open; anything unreadable is never opened. */
-export function localOpensOf(raw: unknown): LocalOpens | undefined {
-  if (typeof raw !== 'object' || raw === null) return undefined;
-  const r = raw as Record<string, unknown>;
-  if (typeof r.lastOpenedAt !== 'number') return undefined;
-  if (Array.isArray(r.days) && r.days.every((d) => typeof d === 'string')) {
-    return { days: r.days, lastOpenedAt: r.lastOpenedAt };
-  }
-  if (typeof r.lastOpenDay === 'string') {
-    return { days: [r.lastOpenDay], lastOpenedAt: r.lastOpenedAt };
-  }
-  return undefined;
-}
-
-/** The opens after one at `now`: its day first (once), days before the window dropped, and the
- *  last open moved forwards. */
-export function nextLocalOpens(prev: LocalOpens | undefined, now: number): LocalOpens {
-  const day = utcDay(now);
-  const from = utcDay(windowStartOf(now));
-  return {
-    days: [day, ...(prev?.days ?? []).filter((d) => d !== day && d >= from)],
-    lastOpenedAt: Math.max(prev?.lastOpenedAt ?? 0, now),
-  };
-}
+// Reading and moving on a record's opens (pure, local-opens.ts), kept importable from here.
+export { localOpensOf, nextLocalOpens };
 
 /** Count an open of a local document. Never throws: a failure is logged and the load goes on. */
 export async function offlineRecordOpen(id: string, now: number): Promise<void> {
