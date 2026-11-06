@@ -11,20 +11,23 @@ import {
   SWEEP_ITEMS_MAX,
   TOMBSTONES_PER_RUN,
 } from './config';
+import { hostedPassStatements } from './connection-rows';
 import { sendDriveSignals, touchItem, type DriveTouched } from './drive';
 import type { Env } from './env';
 
 export type Purgeable = { id: string; app: App };
 
-// Statements per D1 batch: two per item.
+// Statements per D1 batch: two per item, and two for the chunk's connected tabs' passes.
 const ITEMS_PER_BATCH = 50;
 
 export async function purgeRows(env: Env, items: Purgeable[], now = Date.now()): Promise<void> {
   const db = env.INDEX_DB;
   for (let i = 0; i < items.length; i += ITEMS_PER_BATCH) {
     const chunk = items.slice(i, i + ITEMS_PER_BATCH);
-    await db.batch(
-      chunk.flatMap((item) => [
+    await db.batch([
+      // Passes the chunk's connected tabs made on other items go first; the connections cascade with the items.
+      ...hostedPassStatements(db, JSON.stringify(chunk.map((item) => item.id))),
+      ...chunk.flatMap((item) => [
         db
           .prepare(
             `INSERT INTO purge_tombstones (item_id, app, created_at) VALUES (?, ?, ?)
@@ -33,7 +36,7 @@ export async function purgeRows(env: Env, items: Purgeable[], now = Date.now()):
           .bind(item.id, item.app, now),
         db.prepare('DELETE FROM items WHERE id = ?').bind(item.id),
       ]),
-    );
+    ]);
   }
 }
 

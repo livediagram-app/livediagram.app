@@ -151,7 +151,9 @@ in one transaction:
 
 Every statement is a plain `INSERT … SELECT` or DDL: no compound SELECT, no bound parameters, so D1's five-term and
 100-parameter limits never apply. A new table that references `items` (or one of its children) joins the list:
-`livehuddle-migration.test.ts` fails until it does. Before such a migration deploys it is rehearsed on a copy of
+`livehuddle-migration.test.ts` fails until it does. Since 0009, `connections` (`0010_connections.sql`,
+[connected-tabs.md](connected-tabs.md)) references `items`, `share_links` and itself, so the next rebuild carries it
+too. Before such a migration deploys it is rehearsed on a copy of
 production: `wrangler d1 export liveworkspace-index --remote --output prod.sql` (which only reads), then
 `node scripts/items-rebuild-counts.ts rehearse prod.sql` in `apps/index`, which applies the migration to the copy as
 D1 would and compares every table's row count and rows (a SHA-256 in key order), columns, foreign keys, CHECKs and

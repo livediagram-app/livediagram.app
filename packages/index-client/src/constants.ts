@@ -291,6 +291,11 @@ export const INDEX_ERRORS = [
   'password_invalid',
   'never_expires',
   'share_link_limit',
+  // Connected tabs (connected-tabs.md): an item connected to itself, a host's 51st, and why one opens nothing.
+  'connection_self',
+  'connection_limit',
+  'connection_target_gone',
+  'connection_link_removed',
   'wrong_app',
   'copy_failed',
   'grants_unavailable',
