@@ -20,7 +20,7 @@ import {
 } from '@/lib/photo-editor/tool-state';
 import { photoPress } from '@/lib/photo-editor/photo-pointer';
 import { toolFlyout } from '@/lib/photo-editor/tool-flyout';
-import { keysElsewhere } from './PhotoCanvasOverlays';
+import { keysElsewhere, layerListKey } from './PhotoCanvasOverlays';
 import { takeTool } from './PhotoToolsRail';
 
 const GROUP_KEY_SET: ReadonlySet<string> = new Set(Object.values(GROUP_KEYS));
@@ -45,9 +45,6 @@ const PAINTING: ReadonlySet<PhotoToolId> = new Set([
 // The bracket keys by their place on the keyboard: with Shift or Alt the character they type changes
 // ({, }, or on a Mac “ and ‘).
 const KEY_CODES: Readonly<Record<string, string>> = { '[': 'BracketLeft', ']': 'BracketRight' };
-
-// The keys the Layers list takes while one of its rows has focus.
-const LIST_KEYS: ReadonlySet<string> = new Set(['Delete', 'Backspace', 'ArrowUp', 'ArrowDown']);
 
 /** Whether a key event is the chord written as `keys` ("Mod+Shift+N", "Backspace"). */
 export function matchesKeys(
@@ -81,11 +78,7 @@ export function usePhotoShortcuts(photo: PhotoEditorView | null): void {
       if (e.defaultPrevented || keysElsewhere()) return;
       // The Layers list takes its own keys while a row has focus (Delete, Backspace, the arrows); every
       // other key (a tool's letter) still reaches the photo.
-      if (
-        LIST_KEYS.has(e.key) &&
-        (e.target as Element | null)?.closest?.('[data-photo-layer-list]')
-      )
-        return;
+      if (layerListKey(e)) return;
       const state = photoTools.get();
       const inHand = state.tool !== null;
       const mod = e.metaKey || e.ctrlKey;
