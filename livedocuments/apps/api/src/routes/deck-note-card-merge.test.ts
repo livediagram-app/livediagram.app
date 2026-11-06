@@ -4,6 +4,7 @@ import {
   type NoteCard,
   type StoredPresentation,
 } from '@livedocuments/document';
+import { MAX_BODY_BYTES, MAX_DECK_LEN } from '../limits';
 import { sqliteD1 } from '../test-sqlite-d1';
 import type { DocumentGrant } from '../index-service';
 import { makeTestRouteContext } from './test-route-context';
@@ -150,6 +151,40 @@ describe('two editors writing note cards on one slide at once', () => {
     expect(
       (await put(db.env, 'sam', { presentation: loaded, presentationBase: huge })).status,
     ).toBe(400);
+  });
+
+  // Work Tracker #389: every save carries its base, so a save is up to twice the deck. Each is held to the deck cap on
+  // its own (speaker-note-cards.md "Saving"), so a deck at the cap still saves with its base, and is merged.
+  it('saves and merges a deck at the cap sent with a base at the cap', async () => {
+    // The deck with these cards and a padding card that brings it to exactly the cap.
+    const atCap = (cards: NoteCard[]): string => {
+      const bare = deckOf([...cards, { id: 'pad', text: '' }]).length;
+      const deck = deckOf([...cards, { id: 'pad', text: 'x'.repeat(MAX_DECK_LEN - bare) }]);
+      expect(deck.length).toBe(MAX_DECK_LEN);
+      return deck;
+    };
+    const db = await setUp();
+    const base = atCap([{ id: 'c1', text: 'Open with the story' }]);
+    expect((await put(db.env, 'alex', { presentation: base })).status).toBe(200);
+    const sam = atCap([
+      { id: 'c1', text: 'Open with the story' },
+      { id: 'c3_samm', text: 'Thank the team' },
+    ]);
+    expect((await put(db.env, 'sam', { presentation: sam, presentationBase: base })).status).toBe(
+      200,
+    );
+    const alex = atCap([{ id: 'c1', text: 'Open with the customer story' }]);
+    const body = { presentation: alex, presentationBase: base };
+    // About twice the deck, far under the body cap.
+    expect(JSON.stringify(body).length).toBeLessThan(2 * MAX_DECK_LEN + 1024);
+    expect(JSON.stringify(body).length).toBeLessThan(MAX_BODY_BYTES / 10);
+    expect((await put(db.env, 'alex', body)).status).toBe(200);
+    expect(storedCards(db).map((c) => [c.id, c.text.slice(0, 30)])).toEqual([
+      ['c1', 'Open with the customer story'],
+      // Sam's card after the card it followed in Sam's deck.
+      ['c3_samm', 'Thank the team'],
+      ['pad', 'x'.repeat(30)],
+    ]);
   });
 
   it('lets a Participant or a Viewer write no cards', async () => {

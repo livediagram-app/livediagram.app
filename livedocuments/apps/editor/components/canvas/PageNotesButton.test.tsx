@@ -23,6 +23,7 @@ const controls = (slide?: { id: string; hidden: boolean; noteCards: readonly Not
   add: vi.fn(),
   toggleHidden: vi.fn(),
   setNoteCards: vi.fn(),
+  flushNotes: vi.fn(),
   present: vi.fn(),
 });
 

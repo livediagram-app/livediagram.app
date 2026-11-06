@@ -20,9 +20,11 @@ afterEach(() => {
 function Harness({
   initial,
   onChange,
+  onSettle,
 }: {
   initial: NoteCard[];
   onChange?: (cards: readonly NoteCard[]) => void;
+  onSettle?: () => void;
 }) {
   const [cards, setCards] = useState<readonly NoteCard[]>(initial);
   return (
@@ -34,6 +36,7 @@ function Harness({
           onChange?.(next);
           setCards(next);
         }}
+        {...(onSettle ? { onSettle } : {})}
       />
       {/* A new card's id ends in random characters (newNoteCardId): shown without them. */}
       <output data-testid="ids">
@@ -212,6 +215,37 @@ describe('NoteCardList', () => {
     onChange.mockClear();
     unmount();
     expect(onChange).toHaveBeenCalledWith(three);
+  });
+
+  // speaker-note-cards.md "Saving": the deck saves what it holds as the writing leaves the screen.
+  it('settles when a card closes (Done, Escape, a press outside, another card) and when the list goes', () => {
+    const order: string[] = [];
+    const onSettle = vi.fn(() => order.push('settle'));
+    const onChange = vi.fn(() => order.push('change'));
+    const { unmount } = render(<Harness initial={three} onChange={onChange} onSettle={onSettle} />);
+    fireEvent.click(card(1, 3));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'One, said slowly' } });
+    expect(onSettle).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(onSettle).toHaveBeenCalledTimes(1);
+    fireEvent.click(card(2, 3));
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape' });
+    expect(onSettle).toHaveBeenCalledTimes(2);
+    fireEvent.click(card(2, 3));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Outside' }));
+    expect(onSettle).toHaveBeenCalledTimes(3);
+    fireEvent.click(card(2, 3));
+    fireEvent.click(card(3, 3));
+    expect(onSettle).toHaveBeenCalledTimes(4);
+    // Opening a card with none open is no pause in the writing.
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    fireEvent.click(card(1, 3));
+    expect(onSettle).toHaveBeenCalledTimes(5);
+    // The list going with a blank card open: the blank card goes first, then the save.
+    fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
+    order.length = 0;
+    unmount();
+    expect(order).toEqual(['change', 'settle']);
   });
 
   it('reorders a card dragged by its grip', () => {
