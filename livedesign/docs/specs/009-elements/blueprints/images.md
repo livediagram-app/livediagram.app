@@ -158,6 +158,30 @@ Invariants:
    the service's stored (sniffed) type, `Cache-Control: private, max-age=86400`,
    `X-Content-Type-Options: nosniff`.
 
+### Placement claim (`POST /api/images/grants?d=<design>`)
+
+A Participant's claim on the pictures their ops place ([spec](../images.md#placement-grants)). Guards in order;
+the first failure answers.
+
+1. No media service → 503 `images_unavailable`. Pre-dispatch as an upload: a read-only token → 403, the write
+   limiter → 429.
+2. No resolved owner → 400 (`requireOwner`). A workbench session → 404 (it is the design's owner's, whose
+   images serve there without a grant).
+3. No `d` → 400. The body is not `{ ids }` of 1 to `IMAGE_GRANT_IDS_MAX` (100) gallery ids
+   (`parseImageGrantIds`, `@liveworkspace/media`) → 400.
+4. The index's grant on `d` (`resolveDesignGrant`): its refusal answers as sent; none → 404; `view`, or a design
+   in the Trash → 403 `forbidden`.
+5. One RPC, `grantOwnImages(ids, owner)`, to the design's object: `@liveworkspace/index-app` `grantOwn` reads each
+   id's owner from `image_owners` (asking the service once for an id never met), keeps those whose owner is
+   `mediaOwner(owner)`, and inserts them into `image_grants` (`INSERT OR IGNORE`). 200 `{ granted }`.
+
+The editor (`apps/live/app/design/[id]/tab-save-flow.ts` `relayParticipantChanges`) takes the ids from the
+save's ops (`placedImageIds`: each `add` or `update` of an image element with a gallery id), awaits
+`apiClaimPlacedImages` (`lib/api/images.ts`, over `createImageClaims`: each `(design, id)` sent until one claim
+succeeds, then never again on the page; at most 2,000 remembered; a failure swallowed), then relays the ops to
+the room it reads again (closed meanwhile: the hold is released and the save fails, so the autosave retries).
+The unload flush relays without a claim: it cannot wait.
+
 ### Delete, list, usage
 
 - `DELETE /api/images/:id`: owner only; `media.remove(mediaOwner(owner), id)`. The service checks
