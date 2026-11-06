@@ -32,6 +32,7 @@ Derived from [Speaker note cards](../speaker-note-cards.md). The model is pure a
 | ------------------------- | ------ | ------------------------ | ----------------------------------------------------------------------------- |
 | `NOTE_CARDS_MAX`          | 20     | `slide-notes.ts`         | A long slide's talking points; 10 to 50. Bounds the list and the deck's size  |
 | `NOTE_CARD_TEXT_MAX`      | 1000   | `slide-notes.ts`         | About 170 words, over a minute spoken; 400 to 4000. Typing only (`maxLength`) |
+| `DECK_SAVE_DEBOUNCE_MS`   | 900    | `useSlideDeck.ts`        | A typed phrase is one save; 300 to 2000. Flushes (spec "Saving") cut it short |
 | `NOTE_CARD_COUNTER_FROM`  | 800    | `NoteCardItem.tsx`       | The counter shows from here (80 % of the cap)                                 |
 | `NOTE_CARD_PREVIEW_LINES` | 6      | `NoteCardItem.tsx`       | A closed card's text, then faded                                              |
 | `NOTE_CARD_EDIT_LINES`    | 12     | `NoteCardItem.tsx`       | The open box grows to this many lines, then scrolls                           |
@@ -72,6 +73,25 @@ Derived from [Speaker note cards](../speaker-note-cards.md). The model is pure a
   keeps `mine`'s text; a card in `mine` the same as in `base` takes `theirs`' text, and goes when `theirs` removed it; a
   card in `base` and `theirs` but not `mine` (removed here) goes unless `theirs` changed it; a card only in `theirs`
   is placed after its nearest earlier neighbour in `theirs` that the result holds, else first. Cut to `NOTE_CARDS_MAX`.
+
+### Saving (spec "Saving")
+
+- `useSlideDeck.commitDeck` keeps the deck awaiting its save in `pendingRef` and (re)starts the `DECK_SAVE_DEBOUNCE_MS`
+  timer; `sendPending(unload)` clears the timer, takes `pendingRef` and hands `storePresentation` of it to `saveDeck`.
+- `flushDeckSave()` (on the hook, and `PageDeckControls.flushNotes`): queues a no-op deck update whose updater runs
+  `sendPending(false)`, so it runs after every deck update queued before it (the blank card a close removes goes in
+  the same save). Nothing pending sends nothing.
+- `NoteCardList`'s optional `onSettle` runs when a card closes (`close`, which Done, Escape and an outside press call,
+  and `open` of another card while one is open) and when the list unmounts (the popover closes, or `PageNotesButton`'s
+  `key={slide.id}` moves it to another slide), after the blank-card removal. `PageNotesButton` passes
+  `deck.flushNotes`.
+- `pagehide` on `window` and the hook's unmount call `sendPending(true)`: `saveDeck(serialised, { unload: true })`,
+  which `useEditorState` passes to `apiSaveDocumentMeta(..., { unload: true })`. That branch runs synchronously
+  (`saveDocumentMetaOnUnload` in `lib/api/unload-requests.ts`): Offline Mode writes the deck to IndexedDB by the sync
+  id check; otherwise one PUT with headers built synchronously (`unloadHeaders`, as the tab beacon) and `keepalive`
+  while the body fits the page's shared keepalive budget (`takeKeepalive`, 60 KB per task, shared with the tab
+  beacon), else a plain request. The base order holds: `saveDeck` moves `deckBaseRef` on before any request goes.
+- A read-only session never commits the deck (`setDeck` only), so there is never anything to flush.
 
 ## Interfaces and contracts
 
@@ -172,7 +192,12 @@ card, each line a run joined by `<a:br/>`.
 ## Performance and limits
 
 - One `<textarea>` at most is mounted (the open card); closed cards are plain text. Typing commits the deck (one array
-  map) and the deck save stays debounced (`DECK_SAVE_DEBOUNCE_MS`, 900 ms).
+  map) and the deck save stays debounced (`DECK_SAVE_DEBOUNCE_MS`, 900 ms): no keystroke serialises the deck, only
+  the timer or a flush does (spec "Saving").
+- A save is the deck plus its base. `PUT /api/documents/:id` checks `presentation` and `presentationBase` against
+  `MAX_DECK_LEN` (256 KB, UTF-16 length) each, never their sum: a deck at the cap with a base at the cap is about
+  512 KB of JSON, under `MAX_BODY_BYTES` (8 MB). A keepalive flush past the page's 60 KB budget goes as a plain
+  request.
 - Speaking time is a regex word count per card per render; at 20 x 1000 characters it is well under a millisecond.
 - The presenter flips with one animated element and one copy of text, never a canvas picture.
 
@@ -203,6 +228,10 @@ cards, one point each. You flip through them while you present.", "Add First Car
 | Parse, read old notes, mirror, limits                                                                | `packages/document/src/slide-notes.test.ts`                                                     |
 | Merge by card id (each rule), deck merge, unique ids                                                 | `packages/document/src/slide-notes-merge.test.ts`, `slide-notes.test.ts`                        |
 | Two clients writing different cards on one slide both survive; no base is as sent                    | `apps/api/src/routes/deck-note-card-merge.test.ts`                                              |
+| A deck at the cap saves with a base at the cap, merged                                               | `apps/api/src/routes/deck-note-card-merge.test.ts`                                              |
+| Saving: debounce, flush after queued updates, pagehide and unmount as unload, read-only sends none   | `app/document/[id]/useSlideDeck.save-flush.test.ts`                                             |
+| The list settles on a card's close and on unmount                                                    | `components/slide-notes/NoteCardList.test.tsx`                                                  |
+| The unload save: sync headers, keepalive within the shared budget, Offline Mode to IndexedDB         | `apps/editor/lib/api/unload-requests.test.ts`                                                   |
 | The editor sends the deck it built on                                                                | `apps/editor/lib/api-client.test.ts`                                                            |
 | List edits                                                                                           | `apps/editor/lib/note-card-edits.test.ts`                                                       |
 | The list: empty state, add, open one at a time, blank removed, keys, reorder, remove and undo, limit | `components/slide-notes/NoteCardList.test.tsx`                                                  |

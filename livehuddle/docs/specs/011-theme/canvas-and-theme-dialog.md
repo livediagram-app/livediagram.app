@@ -230,7 +230,10 @@ Undo puts every tab back."
 Options do not preview on hover (tried and removed: the canvas changing under a passing pointer was distracting); a
 click applies. Each pick **eases** the canvas's colours (background, fill, outline, text) over 250 ms instead of
 snapping (`../packages/workbench/src/lib/tab-style-ease.ts`); the transition is switched on only for the moment of the change (a class on the
-root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps.
+root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps. On a busy Space (more
+than 20 elements, [Canvas performance](../008-canvas/canvas-performance.md) "A Tab Style change on a busy Space eases
+the canvas, not its parts") the parts snap too, the canvas's own colour still easing: easing every node of every
+element held a campus Space in long frames for most of a second a pick.
 
 ### Text panel
 
