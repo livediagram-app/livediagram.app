@@ -184,8 +184,8 @@ Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --lo
 
 ## Performance and limits
 
-- Making: three reads (the host, the target, the tab's current connection), one batch of at most fourteen
-  statements (seven one way), plus one call to the target app and one batch after it when both ways.
+- Making: three reads (the host, the target, the tab's current connection), one batch of at most eleven
+  statements (eight one way), plus one call to the target app and one batch after it when both ways.
 - Opening: one indexed read of the row joined to its link and target (and the grant's link when it came through
   one), and one grant check against the index's own cached key.
 - The sweep: one indexed read and one batch of three statements, at most 200 rows, every 15 minutes.
