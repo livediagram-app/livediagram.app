@@ -160,6 +160,12 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'garden-umbrella': { width: 120, height: 152 },
   fountain: { width: 136, height: 120 },
   pond: { width: 240, height: 152 },
+  'pool-table': { width: 200, height: 128 },
+  'foosball-table': { width: 168, height: 104 },
+  dartboard: { width: 80, height: 96 },
+  'vending-machine': { width: 72, height: 128 },
+  'bean-bag': { width: 64, height: 56 },
+  'reading-nook': { width: 160, height: 112 },
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
@@ -337,7 +343,13 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'picnic-table' ||
       kind === 'hammock' ||
       kind === 'garden-umbrella' ||
-      kind === 'fountain'
+      kind === 'fountain' ||
+      kind === 'pool-table' ||
+      kind === 'foosball-table' ||
+      kind === 'dartboard' ||
+      kind === 'vending-machine' ||
+      kind === 'bean-bag' ||
+      kind === 'reading-nook'
         ? { label: '' }
         : {}),
       ...(kind === 'meeting-table' || kind === 'office-pod'

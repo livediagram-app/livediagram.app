@@ -425,6 +425,7 @@ export * from '@liveworkspace/model-core/code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
 export * from './chart-types';
+export * from './chart-text';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
@@ -542,6 +543,7 @@ export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './min
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';
+export * from './table-fit';
 // The SVG face kit's marks (text, line fitting, colour mixing), for drawings made outside this package.
 export {
   fitLine as svgFitLine,

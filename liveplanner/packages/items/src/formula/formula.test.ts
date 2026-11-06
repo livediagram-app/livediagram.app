@@ -5,7 +5,13 @@ import { evaluateTree } from './evaluate';
 import { FUNCTION_NAMES, arityText, functionNamed } from './functions';
 import { FORMULA_CACHE_MAX, FORMULA_DEPTH_MAX, FORMULA_MAX, FORMULA_STEPS_MAX } from './limits';
 import { parseFormula, refsOf } from './parse';
-import { formulaScopeOf, missingFieldProblem, shownFormula, storedFormula } from './references';
+import {
+  formulaScopeOf,
+  missingFieldProblem,
+  nameAsWritten,
+  shownFormula,
+  storedFormula,
+} from './references';
 import { tokenize } from './tokens';
 import { FormulaFail, dateOf, dayText, toText, truthy, type FormulaValue } from './values';
 
@@ -409,6 +415,55 @@ describe('names and ids', () => {
   });
 });
 
+describe('braces in a field label', () => {
+  // A label is kept as typed (item-types.md "Formula fields"): `\}` and `\\` escape it inside braces.
+  const scope = formulaScopeOf({
+    fields: ['f-cost', 'f-odd', 'f-open'],
+    custom: [
+      { id: 'f-cost', label: 'Cost {est}', kind: 'number' as const },
+      { id: 'f-odd', label: 'a\\b}c', kind: 'number' as const },
+      { id: 'f-open', label: 'Open {', kind: 'number' as const },
+    ],
+  });
+
+  it('reads `\\}` and `\\\\` as escapes inside braces, any other backslash as itself', () => {
+    expect(tokenize('{Cost {est\\}}')).toEqual([
+      { t: 'name', v: 'Cost {est}', braced: true, at: 0, end: 13 },
+    ]);
+    expect(tokenize('{a\\\\b\\}c}')).toMatchObject([{ v: 'a\\b}c', end: 9 }]);
+    expect(tokenize('{a\\nb}')).toMatchObject([{ v: 'a\\nb' }]);
+    expect(tokenize('{a\\}')).toMatchObject({ error: 'No closing } for the { at 1' });
+  });
+
+  it('names a field labelled with braces, escaped, and reads it back as itself', () => {
+    expect(nameAsWritten('Cost {est}')).toBe('{Cost {est\\}}');
+    expect(nameAsWritten('a\\b}c')).toBe('{a\\\\b\\}c}');
+    expect(nameAsWritten('Open {')).toBe('{Open {}');
+    expect(nameAsWritten('Budget')).toBe('Budget');
+    for (const f of scope.fields) {
+      const src = `${nameAsWritten(f.name)} * 2`;
+      const stored = storedFormula(src, scope);
+      expect(stored).toEqual({ ok: true, formula: `{${f.id}} * 2` });
+      expect(shownFormula(`{${f.id}} * 2`, scope)).toBe(src);
+    }
+  });
+
+  it('works out a formula naming a braced label', () => {
+    const stored = storedFormula('{Cost {est\\}} + {a\\\\b\\}c} * 2', scope);
+    expect(stored).toEqual({ ok: true, formula: '{f-cost} + {f-odd} * 2' });
+    const tree = parseFormula(stored.ok ? stored.formula : '');
+    expect('error' in tree).toBe(false);
+    const values: Record<string, FormulaValue> = { 'f-cost': 10, 'f-odd': 4 };
+    expect(
+      evaluateTree(tree as Exclude<typeof tree, { error: string }>, {
+        read: (id) => values[id]!,
+        today: () => TODAY,
+        budget: { left: FORMULA_STEPS_MAX },
+      }),
+    ).toBe(18);
+  });
+});
+
 describe('compileFormula', () => {
   it('parses once per stored text, and keeps the cache bounded', () => {
     const a = compileFormula('{f-a} + today()');
@@ -525,6 +580,9 @@ describe('fuzz', () => {
       ' '.repeat(FORMULA_MAX - 1) + '1',
       'a '.repeat(half),
       '{'.repeat(FORMULA_MAX),
+      // Escapes all the way, never closed.
+      '{' + '\\}'.repeat(half - 1),
+      '{' + '\\'.repeat(FORMULA_MAX - 1),
       '"'.repeat(FORMULA_MAX - 1),
       'max(' + '1,'.repeat(half - 3) + '1)',
       'concat(' + 'L,'.repeat(63) + 'L)',

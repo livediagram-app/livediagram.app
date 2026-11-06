@@ -149,3 +149,67 @@ export function PondIcon({ size = 14 }: IconSizeProps = {}) {
     </Glyph>
   );
 }
+
+// The second set (docs/specs/009-elements/social-pieces.md "Pool Table, Foosball Table, Dartboard", "Vending Machine",
+// "Bean Bag, Reading Nook").
+export function PoolTableIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="2" y="7" width="20" height="10" rx="2" />
+      <path d="M5 17v3M19 17v3" />
+      <circle cx="7.5" cy="12" r="1.3" />
+      <circle cx="14.5" cy="12" r="1.2" />
+      <circle cx="17.5" cy="10.3" r="1.2" />
+      <circle cx="17.5" cy="13.7" r="1.2" />
+    </Glyph>
+  );
+}
+
+export function FoosballTableIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="2" y="8" width="20" height="8" rx="1.5" />
+      <path d="M7 4v16M12 4v16M17 4v16" />
+      <path d="M5.5 11h3M10.5 13h3M15.5 11h3" />
+    </Glyph>
+  );
+}
+
+export function DartboardIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <circle cx="11" cy="13" r="8.5" />
+      <circle cx="11" cy="13" r="4.5" />
+      <path d="M11 13l7.5-7.5M17 3.5v2.5h2.5" />
+    </Glyph>
+  );
+}
+
+export function VendingMachineIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <rect x="4.5" y="2" width="15" height="20" rx="2" />
+      <rect x="7" y="5" width="7" height="10" rx="1" />
+      <path d="M16.5 6v1M16.5 9v1M16.5 12v1M7.5 18.5h6" />
+    </Glyph>
+  );
+}
+
+export function BeanBagIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M3.5 18C2.5 12.5 6 7 12 7s9.5 5.5 8.5 11c-1 2.5-16 2.5-17 0z" />
+      <path d="M8 13c2 1.5 6 1.5 8 0" />
+    </Glyph>
+  );
+}
+
+export function ReadingNookIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M4 12V8.5A3.5 3.5 0 0 1 7.5 5h3A3.5 3.5 0 0 1 14 8.5V12" />
+      <path d="M2 12h3v3h8v-3h3v6H2zM4 18v2M14 18v2" />
+      <path d="M20 20V9M17.5 9h5l-1.5-5h-2z" />
+    </Glyph>
+  );
+}

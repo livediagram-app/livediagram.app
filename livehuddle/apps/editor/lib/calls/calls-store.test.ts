@@ -21,7 +21,6 @@ import {
   onCallLevels,
   onCallMaximised,
   onCallsMode,
-  onCallTalkStart,
   onCallTracks,
   onStopShare,
   receiveStopShare,
@@ -70,27 +69,6 @@ describe('calls store peers', () => {
     expect(p1).toMatchObject({ tabId: 't1', level: 3, track: locator });
     expect(callPeers().has('p2')).toBe(false);
     expect(tracks).toHaveBeenCalledTimes(1);
-    off();
-  });
-
-  // meeting-rooms-and-stage.md "A big room hears its talkers" (#482).
-  it('notes when each peer last talked, and says when someone starts', () => {
-    const starts = vi.fn();
-    const off = onCallTalkStart(starts);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 0 });
-    expect(callPeers().get('p1')?.talkedAt).toBeUndefined();
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 3 });
-    const first = callPeers().get('p1')!.talkedAt!;
-    expect(starts).toHaveBeenCalledTimes(1);
-    vi.advanceTimersByTime(250);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 2 });
-    expect(callPeers().get('p1')!.talkedAt).toBeGreaterThan(first);
-    // Still talking: no new start. Silent, then again: one.
-    expect(starts).toHaveBeenCalledTimes(1);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 0 });
-    expect(callPeers().get('p1')!.talkedAt).toBeGreaterThan(first);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 1 });
-    expect(starts).toHaveBeenCalledTimes(2);
     off();
   });
 

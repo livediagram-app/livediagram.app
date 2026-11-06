@@ -160,11 +160,15 @@ export function storedFormula(text: string, scope: FormulaScope, selfId?: string
   return formula.length > FORMULA_MAX ? tooLong() : { ok: true, formula };
 }
 
-// A plain name is written as it is; any other (two spaces, a sign, true, a function's name) in braces.
+// A plain name is written as it is; any other (two spaces, a sign, true, a function's name) in braces, its `\` and `}`
+// escaped so a label holding braces reads back as itself (tokens.ts). One pass over the characters, no regex.
 export function nameAsWritten(name: string): string {
   const tree = parseFormula(name);
   const plain = !('error' in tree) && tree.k === 'ref' && tree.name === name;
-  return plain && !functionNamed(name) ? name : `{${name}}`;
+  if (plain && !functionNamed(name)) return name;
+  let escaped = '';
+  for (const ch of name) escaped += ch === '\\' || ch === '}' ? `\\${ch}` : ch;
+  return `{${escaped}}`;
 }
 
 // What a stored formula shows: each id as its field's name; a field gone from the type as `{deleted field}`, so

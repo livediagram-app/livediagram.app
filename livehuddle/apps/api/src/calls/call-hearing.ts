@@ -108,8 +108,7 @@ export function hearingVerdict(
   const theirs = possibleZones(p.at, zones);
   for (const zone of possibleZones(s.at, zones)) {
     if (!theirs.has(zone)) continue;
-    // A shared room hears whatever the distance; the open floor by distance.
-    if (zone !== null) return 'heard';
+    // A shared room, like the open floor, hears by distance; the walls between rooms block it.
     const d = Math.hypot(s.at.x - p.at.x, s.at.y - p.at.y);
     if (d <= CALL_RELEASE_RADIUS_PX + HEARING_MARGIN_PX) return 'heard';
   }

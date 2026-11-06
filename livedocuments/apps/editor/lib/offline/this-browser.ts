@@ -5,7 +5,7 @@
 
 import { thisBrowserPublisher } from '@liveworkspace/explorer/this-browser';
 import { inboxSnapshot } from './inbox-snapshot';
-import { localOpensOf } from './offline-opens';
+import { localOpensOf } from './local-opens';
 import type { OfflineDocumentRecord } from './offline-store';
 
 const list = thisBrowserPublisher<OfflineDocumentRecord>(

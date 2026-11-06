@@ -626,6 +626,12 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'garden-umbrella',
   'fountain',
   'pond',
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
   // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) draw themselves.
   'directory',
   'elevator',

@@ -130,6 +130,8 @@ fits, reason?, summary }` with `summary` the footer line.
 false`, `updatedAt` the last comment's; comments past `THREAD_BYTES` are dropped (none, given the plan's budget).
 - `withImportedThreads(creates, { home, sourceName, random })`: each create's `comments` become `threads: [thread]`
   (none when empty); the `comments` key is dropped. Shared by the editor and agents.
+- Caps: the thread is an ordinary `CardThread`, one per create, so `threadsOnCard` counts it toward `CARD_THREADS_MAX`
+  (50) like any other; nothing exempts it or caps it apart (`imported-thread.test.ts` "counts as an ordinary thread").
 
 ## api (`apps/api/src/routes/item-routes.ts`)
 
@@ -199,18 +201,33 @@ fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a
   `TOOL_ROWS` (`import-options.tsx`: source, file type, the line naming the file and where it lives, `ToolMark` from
   `tool-marks.tsx`), each `aria-label` "<Tool>: <line>". A row calls `flow.pick(source)`; the row being read says
   "Reading the File…" (`flow.reading`).
-- The dialog (`ariaLabel="Import"`, `initialFocus="container"` so focus starts on the panel, not the help link) is
+- The dialog (`ariaLabel="Import"`, `initialFocus="container"`, the fallback) is opened from the tab menu, the command
+  palette's `openImport` and Start Planning's Import card (`StartPlanning` `onImport`, given by `EditorStartPanels`
+  only when `trackerImport.canImport`). On a fine pointer `ImportChooseView` focuses its first enabled row as it
+  mounts (before the trap's effect, which keeps a focus already inside), never the help link; on a coarse pointer
+  the panel keeps it. It is
   headed **Import**, "Choose what to bring in, or drop a file here." (the drop clause `pointer-coarse:hidden`). Each
   section's `OptionRows` roves (one row in the Tab order, ArrowUp / ArrowDown / Home / End), its hint a wrapping
   line; the tool list is `aria-busy` while a file is read. A dimmed Into This Tab row's reason is a full-contrast line
   under it, not the dimmed row's own text. The liveplanner Tab step is the paste panel (`TextImportPanel`, its
   `initialText` a dropped tab's JSON) under the **All Imports** back bar; with nothing else in the list
   (`!tracker.canImport`, a JSON tab that is not locked) the dialog opens on it with no back bar.
-- `useTrackerFlow(tracker, onDone)` (`apps/editor/components/dialogs/tracker-import/useTrackerFlow.ts`): `{ preview, busy, reading, error, pick,
-show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT, { maxBytes })` and reads by
-  `readTrackerText(text, name)` (`apps/editor/lib/tracker-file.ts`), whose refusal carries its code; `show` previews
-  a board already read (a drop). The file's own source wins over the row pressed.
-- A drop on the list: `routeImportDrop(text, name, { intoTab, tools })` (`apps/editor/components/dialogs/import/import-drop.ts`) after the 20 MB
+- `useTrackerFlow(tracker, onDone, tasks = trackerTasks())` (`apps/editor/components/dialogs/tracker-import/useTrackerFlow.ts`): `{ preview, busy, reading, error, pick,
+show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT, { maxBytes })` and reads by the
+  worker's `read` task (`readTrackerText(text, name)`, `apps/editor/lib/tracker-file.ts`), whose refusal carries its
+  code; `show` previews a board already read (a drop). The file's own source wins over the row pressed. The preview
+  holds `board: TrackerBoardRef` (`{ key, source, cards }`), its `plans` and their `keys`
+  (`trackerContextKey(ctx)`, the JSON of the context's types, statuses, people, members and room: everything a plan
+  reads but its fresh `boardId`).
+- The worker (`apps/editor/lib/tracker-worker/`): `tracker-tasks.ts` (`createTrackerRunner`: `read` keeps the board
+  under a key, at most `TRACKER_BOARDS_KEPT` = 2, the oldest dropped, and answers `{ board: { key, source, cards } }`
+  or the refusal; `plan` runs `planTrackerImport` on a kept board, `TRACKER_BOARD_GONE` when it was dropped;
+  `answerTrackerRequest` turns a throw into `{ ok: false, error }`), `tracker.worker.ts` (one runner, each message
+  answered in turn) and `tracker-worker-client.ts` (`createTrackerTasks(make)`: one module worker, made on first use
+  and kept, tasks by id; with no `Worker`, a factory that throws, or an `error` event, it runs on the page with its
+  own runner from then on, re-running what the worker held; `trackerTasks()` is the page's one set). The context
+  crosses without `random`. The page never receives the board, only its summary and the plans.
+- A drop on the list: `await routeImportDrop(text, name, { intoTab, tools }, readTool)` (`apps/editor/components/dialogs/import/import-drop.ts`, `readTool` the worker's `read`) after the 20 MB
   check. A tab's JSON is told by `"kind": "liveplanner.tab"` in its first 512 characters, a tool's CSV by its first
   line (`isTrackerCsvHead`), so a file is parsed once, by the import it goes to.
 - `TrackerImportPanel` (`{ head, flow, preview }`): the preview under the dialog's `BackBar` (**All Imports**, the
@@ -219,8 +236,11 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   is headed "Import from <Tool>" while it shows.
 - `TrackerPreviewView`: sections Columns (chips with counts), Fields (a table: From, Becomes, Cards; a "New Field"
   pill), People, Comments, Left Out, then Where To as `OptionRows` (the tab row dimmed with its reason when not
-  `fits`, with an amber note). The preview is planned once per file and target (state), never per render; Import
-  plans the tab again against the plan as it is then.
+  `fits`, with an amber note). The preview is planned once per file and target (state), never per render. Import into a
+  tab reads `contextFor('tab')` again: the same `trackerContextKey` imports the preview's plan as it is (its
+  `boardId` still unused, `[tracker-import] plan reused`), a different one plans the kept board again; a plan that fails
+  (the board dropped from the worker) dims the tab with `TRACKER_FILE_LOST` and moves to the new plan when one was
+  planned already, else says `TRACKER_UNREADABLE` (the file is chosen again).
 - `useTrackerImport` (`apps/editor/hooks/plan/useTrackerImport.ts`, composed in `useEditorState`, exposed as
   `trackerImport`): `{ canImport, contextFor(target), importPlan(plan, target) }`. `contextFor('tab')` waits for the
   item store (`waitUntil`), reads members (`apiTeamMembers` when signed in and the plan has a team; a failure reads
@@ -280,6 +300,11 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   thread and a link statement per card with comments. At the caps (2,000 cards, 20,000 comments) that is under
   4,100 statements in one batch, held under a CPU budget by `item-import-route.test.ts`.
 - The preview is computed once per file (state), not per render.
+- Reading and planning run in a Web Worker (`tracker-worker/`). Measured at the caps on a laptop (the 7.7 MB Trello
+  board of `tracker-import.perf.test.ts`): read 71 ms and plan 69 ms, now off the main thread; what the page still
+  pays is receiving the plan (a structured clone of about 24 ms for the whole plan; the board's own 37 ms clone is
+  never paid, since the board stays in the worker) and, into a tab, nothing more when the plan is reused. The
+  worker holds two boards at most.
 
 ## Observability
 

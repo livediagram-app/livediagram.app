@@ -392,6 +392,7 @@ export * from './room-snap';
 export * from './room-outline-field';
 export * from './office-garden';
 export * from './office-social';
+export * from './office-recreation';
 export * from './office-wayfinding';
 // Where calls happen on a tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md): rooms, stages, who may speak.
 export * from './call-geometry';

@@ -700,7 +700,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **The expression** names fields by the names the card panel gives them, ignoring case. A name of plain words
     (letters, digits and `_`, one space between words: `Budget`, `Story Points`) is written as it is; any name may be
     written in braces (`{Children Done (%)}`), which a name holding other characters, or one that is also `true`,
-    `false` or a function's name, needs. It reads the type's custom fields (all but Image, Comments and Votes), the
+    `false` or a function's name, needs. Inside braces `\}` stands for a `}` and `\\` for a `\`, so a label holding
+    braces (`Cost {est}`) is written `{Cost {est\}}`; the label itself stays as it was typed, and inserting a field
+    from the list escapes it. It reads the type's custom fields (all but Image, Comments and Votes), the
     built-in Title, Estimate (or Points), Start Date (or Start), Due Date (or Due), Priority, Assignee, Labels,
     Colour and Checklist when the type offers them, and every card's **Number** and **Type**. A custom field's name
     wins over a built-in's other name. Status is not read (its names belong to the boards). Text is written in
