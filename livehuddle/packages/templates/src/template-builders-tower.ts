@@ -4,7 +4,7 @@
 //
 // - Ground Floor (the first tab, Wood): Hot Desks (three islands of four), a Meeting Room and a Cafe; the Walk In at
 //   the entrance with the Directory beside it.
-// - Level 2 (Carpet Tiles): Phone Booths (six Office Pods in two rows), a Quiet Room and two meeting rooms.
+// - Level 2 (Carpet Tiles): Phone Booths (six Office Pods in two rows), a Quiet Room, two meeting rooms and a Restroom.
 // - Level 3 (Parquet): the Event Floor (a Stage, two Screens, Bring Focus and twenty chairs either side of a centre
 //   aisle), a Green Room and a Roof Bar.
 //
@@ -77,6 +77,11 @@ const GROUND_ROOMS: IndoorRoom[] = [
       ...island(416, 80),
       ...island(792, 80),
       { kind: 'notice-board', x: 40, y: 380 },
+      // A print corner and a bank of lockers for the hot-deskers (docs/specs/009-elements/office-amenities.md), both
+      // clear of the door's way in.
+      { kind: 'copier', x: 232, y: 384 },
+      { kind: 'printer', x: 352, y: 430 },
+      { kind: 'lockers', x: 640, y: 392 },
       { kind: 'coffee-machine', x: 820, y: 420 },
       { kind: 'water-cooler', x: 920, y: 410 },
     ],
@@ -97,6 +102,7 @@ const GROUND_ROOMS: IndoorRoom[] = [
       { kind: 'chair', x: 40, y: 360, facing: 'w' },
       { kind: 'chair', x: 124, y: 360, facing: 'e' },
       { kind: 'water-cooler', x: 440, y: 40 },
+      { kind: 'fridge', x: 516, y: 24 },
       { kind: 'plant', x: 600, y: 44 },
     ],
   },
@@ -110,6 +116,9 @@ const GROUND_FLOOR: OfficePiece[] = [
   { kind: 'plant', x: 300, y: 1120 },
   { kind: 'plant', x: 1380, y: 1120 },
   { kind: 'directory', x: GROUND_MID + 60, y: 1110 },
+  // A coat rack and an umbrella stand inside the entrance, beside the Directory.
+  { kind: 'coat-rack', x: GROUND_MID + 160, y: 1110 },
+  { kind: 'umbrella-stand', x: GROUND_MID + 220, y: 1172 },
 ];
 
 export function buildTowerGround(cx: number, cy: number): Element[] {
@@ -165,6 +174,25 @@ const L2_ROOMS: IndoorRoom[] = [
       { kind: 'plant', x: 380, y: 50 },
     ],
   },
+  // A restroom off the open floor below the Quiet Room (docs/specs/009-elements/office-amenities.md "Restroom"), its
+  // door low in its right wall and signed there, its basins and plant along the back wall, clear of the way in.
+  {
+    name: 'Restroom',
+    x: 1000,
+    y: 700,
+    w: 480,
+    h: 260,
+    indoor: true,
+    door: { side: 'e', at: 210, sign: -1 },
+    pieces: [
+      { kind: 'toilet-cubicle', x: 16, y: 40 },
+      { kind: 'toilet-cubicle', x: 112, y: 40 },
+      { kind: 'hand-dryer', x: 220, y: 64 },
+      { kind: 'washbasin', x: 264, y: 44 },
+      { kind: 'washbasin', x: 344, y: 44 },
+      { kind: 'plant', x: 420, y: 40 },
+    ],
+  },
   meetingRoom('Meeting Room A', 1720, 60, 420),
   {
     ...meetingRoom('Meeting Room B', 1720, 600, 420),
@@ -183,12 +211,12 @@ export function buildTowerLevel2(cx: number, cy: number): Element[] {
     width: W,
     height: L2_H,
     rooms: L2_ROOMS,
-    open: [...LIFTS, LIFT_DIRECTORY, { kind: 'plant', x: 1200, y: 860 }],
+    open: [...LIFTS, LIFT_DIRECTORY, { kind: 'plant', x: 900, y: 860 }],
     title: {
       text: 'Level 2',
       width: 160,
       sticker: 'emoji-phone',
-      subtitle: 'Phone booths for calls, a quiet room to focus and two meeting rooms.',
+      subtitle: 'Phone booths for calls, a quiet room to focus, two meeting rooms and a restroom.',
     },
   });
 }

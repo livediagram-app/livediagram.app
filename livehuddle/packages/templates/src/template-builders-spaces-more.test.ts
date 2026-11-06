@@ -215,11 +215,16 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
   it('never stands one piece of furniture on another', () => {
     // A fence run may meet the next at a corner; nothing else may touch.
     const solid = furniture.filter((e) => e.shape !== 'garden-fence' && e.shape !== 'fence');
+    // A microwave or a kettle stands on a kitchen unit's worktop (docs/specs/009-elements/office-amenities.md).
+    const onWorktop = (a: Shape, b: Shape) =>
+      ['microwave', 'kettle'].includes(a.shape) &&
+      ['kitchen-counter', 'kitchen-sink'].includes(b.shape);
     for (const [i, a] of solid.entries())
       for (const b of solid.slice(i + 1))
-        expect(meets(a, b), `${a.shape} at ${a.x},${a.y} / ${b.shape} at ${b.x},${b.y}`).toBe(
-          false,
-        );
+        if (!onWorktop(a, b) && !onWorktop(b, a))
+          expect(meets(a, b), `${a.shape} at ${a.x},${a.y} / ${b.shape} at ${b.x},${b.y}`).toBe(
+            false,
+          );
     // And nothing stands on a fence.
     for (const fence of furniture.filter((e) => e.shape === 'garden-fence'))
       for (const piece of solid)

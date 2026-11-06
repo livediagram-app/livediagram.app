@@ -6,7 +6,7 @@
 //
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], rooms first so they lie behind the furniture.
 
-import type { Element } from '@livehuddle/document';
+import { counterTopY, type Element } from '@livehuddle/document';
 import { heading } from './template-session-parts';
 import { officePlan, walkIn, type OfficeRoom } from './template-office-parts';
 
@@ -22,6 +22,9 @@ const HEIGHT = HEAD + ROW_H * 2 + CORRIDOR;
 
 type RoomSpec = Omit<OfficeRoom, 'h'>;
 
+// The Kitchen's units stand with their feet level with the fridge's (24 + 136 = 72 + 88).
+const KITCHEN_UNIT_Y = 72;
+
 // Every room, its doorway onto the corridor, and what is in it, in room-relative px.
 const ROOMS: RoomSpec[] = [
   {
@@ -36,6 +39,9 @@ const ROOMS: RoomSpec[] = [
       { kind: 'sofa', x: 134, y: 58, facing: 'n' },
       { kind: 'plant', x: 22, y: 52 },
       { kind: 'plant', x: 342, y: 52 },
+      // A coat rack and an umbrella stand by the door (docs/specs/009-elements/office-amenities.md), clear of its way in.
+      { kind: 'coat-rack', x: 300, y: 176 },
+      { kind: 'umbrella-stand', x: 362, y: 240 },
     ],
   },
   {
@@ -51,6 +57,7 @@ const ROOMS: RoomSpec[] = [
       { kind: 'desk', x: 140, y: 48, facing: 's' },
       { kind: 'desk', x: 260, y: 48, facing: 's' },
       { kind: 'bookshelf', x: 480, y: 40 },
+      { kind: 'printer', x: 392, y: 56 },
       // The near row leaves the doorway's column (262..358) clear, so walking in never lands at a desk: two desks
       // on the left, and one on the right an aisle away.
       { kind: 'desk', x: 20, y: 160, facing: 'n' },
@@ -78,9 +85,17 @@ const ROOMS: RoomSpec[] = [
     w: 520,
     door: 'n',
     pieces: [
-      { kind: 'water-cooler', x: 30, y: 52 },
-      { kind: 'coffee-machine', x: 110, y: 68 },
-      { kind: 'plant', x: 440, y: 52 },
+      // A kitchenette along the back wall, either side of the door (docs/specs/009-elements/office-amenities.md
+      // "Kitchenette"): a fridge and a counter with the microwave and the kettle on it, then the sink and the coffee
+      // machine, their feet on one line.
+      { kind: 'fridge', x: 20, y: 24 },
+      { kind: 'kitchen-counter', x: 96, y: KITCHEN_UNIT_Y },
+      { kind: 'microwave', x: 104, y: counterTopY('microwave', KITCHEN_UNIT_Y) },
+      { kind: 'kettle', x: 170, y: counterTopY('kettle', KITCHEN_UNIT_Y) },
+      { kind: 'kitchen-sink', x: 312, y: KITCHEN_UNIT_Y },
+      { kind: 'coffee-machine', x: 432, y: 64 },
+      { kind: 'water-cooler', x: 440, y: 196 },
+      { kind: 'plant', x: 30, y: 230 },
       // Two chairs facing each other an aisle apart.
       { kind: 'chair', x: 150, y: 200, facing: 'w' },
       { kind: 'chair', x: 346, y: 200, facing: 'e' },
