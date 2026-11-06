@@ -841,7 +841,7 @@ function BoxedElementViewImpl({
           ElementVoteOverlay. */}
       <ElementVoteOverlay
         voteKey={element.id}
-        name={element.label ?? 'this element'}
+        name={elementHasText(element) ? (element.label ?? '') : 'this element'}
         vote={vote}
         selfId={selfId}
         voteMax={voteMax}

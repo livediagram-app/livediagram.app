@@ -105,7 +105,7 @@ describe('session panes', () => {
     render(<Vote {...p} />);
     fireEvent.click(screen.getByRole('radio', { name: '5 dots each' }));
     fireEvent.click(screen.getByRole('radio', { name: 'One each' }));
-    fireEvent.click(screen.getByRole('button', { name: /Hide running counts/ }));
+    fireEvent.click(screen.getByRole('switch', { name: /Hide running counts/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
     expect(p.onStartVote).toHaveBeenCalledWith(5, {
       hideCursors: true,
@@ -119,8 +119,10 @@ describe('session panes', () => {
   it('starts a text-only vote when Only items with text is switched on', () => {
     const p = props();
     render(<Vote {...p} />);
-    const card = screen.getByRole('button', { name: /Only items with text/ });
+    const card = screen.getByRole('switch', { name: /Only items with text/ });
+    expect(card.getAttribute('aria-checked')).toBe('false');
     fireEvent.click(card);
+    expect(card.getAttribute('aria-checked')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
     expect(p.onStartVote).toHaveBeenCalledWith(3, expect.objectContaining({ onlyWithText: true }));
   });

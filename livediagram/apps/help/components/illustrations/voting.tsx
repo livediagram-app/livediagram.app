@@ -76,8 +76,8 @@ export function VoteSetup() {
     </g>
   );
   return (
-    <Scene w={420} h={356} bg="plain">
-      <Panel x={x} y={y} w={248} h={334} title="Vote">
+    <Scene w={420} h={368} bg="plain">
+      <Panel x={x} y={y} w={248} h={346} title="Vote">
         <Label x={x + 14} y={y + 42} size={10} weight={600} tone="body">
           Dots per person
         </Label>
@@ -118,12 +118,12 @@ export function VoteSetup() {
           Votable items
         </Label>
         {card(y + 144, 'Only items with text', "Blank notes and shapes can't take a dot.", false)}
-        <Label x={x + 14} y={y + 192} size={10} weight={600} tone="body">
+        <Label x={x + 14} y={y + 204} size={10} weight={600} tone="body">
           Privacy
         </Label>
-        {card(y + 200, 'Hide cursors', 'Nobody can watch where others are pointing.', true)}
-        {card(y + 244, 'Hide running counts', 'Totals stay secret until you reveal them.', false)}
-        <Button x={x + 14} y={y + 294} w={220} h={26} label="Start vote" variant="primary" />
+        {card(y + 212, 'Hide cursors', 'Nobody can watch where others are pointing.', true)}
+        {card(y + 256, 'Hide running counts', 'Totals stay secret until you reveal them.', false)}
+        <Button x={x + 14} y={y + 306} w={220} h={26} label="Start vote" variant="primary" />
       </Panel>
     </Scene>
   );
