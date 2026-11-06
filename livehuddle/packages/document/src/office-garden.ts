@@ -4,7 +4,8 @@
 // OFFICE_ART (office.ts); the garden path, grass and the garden fence are drawn to their own size, as a room is. The
 // geometry the walk needs (the pod's seats, walls and door, the footprints) is @liveworkspace/avatar's. Pure: no React, no DOM.
 
-import type { FurnitureArt, FurnitureDrawing, FurniturePart, FurniturePartRole } from './seating';
+import type { FurnitureDrawing, FurniturePart } from './seating';
+import { allSides, ellipse, path, rect } from './furniture-parts';
 import { BAR_STOOL_SEATS, POD_SEATS } from '@liveworkspace/avatar/seats';
 import { fenceRun } from '@liveworkspace/avatar/fence';
 import { POD_DOOR_SPAN } from '@liveworkspace/avatar/pod';
@@ -42,36 +43,6 @@ export const GRASS_FILL = '#9bd27a';
 export const GRASS_FILL_DARK = '#2f4a2c';
 
 const T = GARDEN_TONES;
-
-const rect = (
-  role: FurniturePartRole,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  rx: number,
-  fill?: string,
-): FurniturePart => ({ tag: 'rect', role, x, y, w, h, rx, ...(fill ? { fill } : {}) });
-const ellipse = (
-  role: FurniturePartRole,
-  cx: number,
-  cy: number,
-  rx: number,
-  ry: number,
-  fill?: string,
-): FurniturePart => ({ tag: 'ellipse', role, cx, cy, rx, ry, ...(fill ? { fill } : {}) });
-const path = (role: FurniturePartRole, d: string, fill?: string): FurniturePart => ({
-  tag: 'path',
-  role,
-  d,
-  ...(fill ? { fill } : {}),
-});
-
-const allSides = (view: FurnitureDrawing): FurnitureArt => ({
-  front: view,
-  back: view,
-  side: view,
-});
 
 // --- The Office Pod -------------------------------------------------------------------------------------------
 
