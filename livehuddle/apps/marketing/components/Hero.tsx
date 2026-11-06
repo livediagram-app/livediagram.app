@@ -20,9 +20,12 @@ const SECONDARY =
 // column), so the floor is never under the copy.
 const FLOOR_ROOM = 'h-[316px]';
 
+// The copy stands on that floor: the taller band's extra height all goes above it (hero-tall.css's spacers, none
+// below), so the copy keeps one place on the stage at every height and a taller window shows more of the room above
+// it rather than an empty band (hero-space-floor-cast.ts, the wide stage).
 export function Hero() {
   return (
-    <section className="hero-band hero-tall relative overflow-hidden bg-(--hero-bg) text-(--hero-ink)">
+    <section className="hero-band hero-tall relative overflow-hidden bg-(--hero-bg) text-(--hero-ink) [--hero-tall-below:0]">
       <div aria-hidden className="hero-band-dots hsf-dots pointer-events-none absolute inset-0" />
       <HeroSpaceStage />
       <div className="hero-tall-copy relative mx-auto w-full max-w-6xl px-4 pt-12 text-center sm:px-6 sm:pt-16 lg:pt-20">

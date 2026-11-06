@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createShape } from '@livehuddle/document';
 import {
+  BACK_ROW_SPAN,
+  BACK_ROW_Y,
   FLOOR_CLIP_Y,
   FLOOR_FURNITURE_SCALE,
   FLOOR_MOTION,
@@ -94,12 +96,29 @@ describe('the hero floor keeps the copy clear', () => {
     'places the %s stage’s furniture off the copy, on the stage',
     (_, stage) => {
       const bounds = { x: 0, y: 0, width: stage.width, height: stage.height };
-      for (const rect of furnitureRects(stage)) {
-        expect(overlaps(rect, stage.clear)).toBe(false);
-        expect(inside(rect, bounds)).toBe(true);
-      }
+      stage.furniture.forEach((piece, i) => {
+        const rect = furnitureRects(stage)[i]!;
+        expect(overlaps(rect, stage.clear), `${piece.kind} at ${piece.x}, ${piece.y}`).toBe(false);
+        expect(inside(rect, bounds), `${piece.kind} at ${piece.x}, ${piece.y}`).toBe(true);
+      });
     },
   );
+
+  it('stands the back of the office wholly in its span, so a common screen never cuts it', () => {
+    const wide = FLOOR_STAGES.find((s) => s.key === 'wide')!;
+    const back = [
+      ...furnitureRects(wide),
+      ...wide.cast.flatMap((walker) => [
+        ...walkerRects(walker),
+        ...bubbleRects(wide, walker).map((b) => b.rect),
+      ]),
+    ].filter((rect) => rect.y < BACK_ROW_Y);
+    expect(back.length).toBeGreaterThan(10);
+    for (const rect of back) {
+      expect(rect.y).toBeGreaterThanOrEqual(BACK_ROW_SPAN.top);
+      expect(rect.y + rect.height).toBeLessThanOrEqual(BACK_ROW_SPAN.foot);
+    }
+  });
 
   it.each(every)(
     'walks %s %s round the copy, never into it or off the stage',
@@ -117,9 +136,10 @@ describe('the hero floor keeps the copy clear', () => {
   );
 });
 
-// Between sm and lg the wide stage shows its floor alone, clipped above FLOOR_CLIP_Y (Work Tracker #440): a walker
-// who crossed that line would vanish mid-walk, so each one shown there stays wholly on one side of it all loop, and a
-// walker whose own path crosses it walks its floor path instead (FLOOR_ONLY).
+// Between sm and lg the wide stage hides its wings, showing only the back of the office above BACK_ROW_Y and the floor
+// below FLOOR_CLIP_Y (Work Tracker #440, #505): a walker who crossed either line would vanish mid-walk, so each one
+// shown there stays wholly in one band all loop, and a walker whose own path crosses one walks its floor path instead
+// (FLOOR_ONLY).
 describe('the hero floor between sm and lg', () => {
   const wide = FLOOR_STAGES.find((s) => s.key === 'wide')!;
   const shownBelowLg = wide.cast.map(
@@ -127,19 +147,23 @@ describe('the hero floor between sm and lg', () => {
   );
   const STEP = 0.05;
   const moments = Array.from({ length: Math.round(LOOP_S / STEP) + 1 }, (_, i) => i * STEP);
-  const side = (rect: Rect) =>
-    rect.y >= FLOOR_CLIP_Y ? 'floor' : rect.y + rect.height <= FLOOR_CLIP_Y ? 'clipped' : 'cut';
+  const side = (rect: Rect) => {
+    if (rect.y >= FLOOR_CLIP_Y) return 'floor';
+    if (rect.y + rect.height <= BACK_ROW_Y) return 'back';
+    return rect.y >= BACK_ROW_Y && rect.y + rect.height <= FLOOR_CLIP_Y ? 'clipped' : 'cut';
+  };
 
   it.each(shownBelowLg.map((walker) => [walker.name, walker] as const))(
-    'keeps %s wholly on the floor or wholly clipped away at every moment of the loop',
+    'keeps %s wholly at the back, on the floor or clipped away at every moment of the loop',
     (_, walker) => {
       const sides = new Set(moments.map((t) => side(figureRect(walker, positionAt(walker, t)))));
       expect([...sides]).not.toContain('cut');
       expect(sides.size, `${walker.name} crosses the clip line`).toBe(1);
-      // A line said on the floor is said wholly on it, never cut by the clip.
+      // A line said on the floor or at the back is said wholly there, never cut by the clip.
       const stage = FLOOR_ONLY.cast.includes(walker) ? FLOOR_ONLY : wide;
-      if (sides.has('floor'))
-        for (const { rect } of bubbleRects(stage, walker)) expect(side(rect)).toBe('floor');
+      const [only] = sides;
+      if (only !== 'clipped')
+        for (const { rect } of bubbleRects(stage, walker)) expect(side(rect)).toBe(only);
     },
   );
 
@@ -165,12 +189,28 @@ describe('the hero floor between sm and lg', () => {
       }
   });
 
-  it('clips the stage on the same line the paths keep to', () => {
+  it('clips the stage on the same lines the paths keep to', () => {
     const css = readFileSync(
       new URL('../app/hero-scenes/space-floor.css', import.meta.url),
       'utf8',
     );
-    expect(css).toContain(`clip-path: inset(${FLOOR_CLIP_Y}px 0 0 0);`);
+    expect(css).toContain(
+      `clip-path: polygon(0 0, 100% 0, 100% ${BACK_ROW_Y}px, 0 ${BACK_ROW_Y}px, 0 ${FLOOR_CLIP_Y}px, 100% ${FLOOR_CLIP_Y}px, 100% 100%, 0 100%);`,
+    );
+  });
+
+  it('shows the back of the office at every height from lg, and the floor under the copy at every width', () => {
+    // From lg the band is at least its content (hero-tall.css): the copy's top padding, the copy and the floor room
+    // under the calls to action, so the stage shows from at most this far over its foot.
+    const shortest = 80 + 352 + 316;
+    expect(wide.height - shortest).toBe(BACK_ROW_Y);
+    // The copy (badges to calls to action) stands at one place on the stage, inside the keep-clear column.
+    expect(wide.clear.y).toBeLessThanOrEqual(wide.height - 316 - 352);
+    expect(wide.clear.y + wide.clear.height).toBeGreaterThanOrEqual(wide.height - 316);
+    expect(FLOOR_CLIP_Y).toBeGreaterThanOrEqual(wide.height - 316);
+    // The headline, 792px wide at 72px type and centred, stays inside the column at every width.
+    expect(wide.clear.x).toBeLessThanOrEqual(wide.width / 2 - 396 - 20);
+    expect(wide.clear.x + wide.clear.width).toBeGreaterThanOrEqual(wide.width / 2 + 396 + 20);
   });
 });
 
