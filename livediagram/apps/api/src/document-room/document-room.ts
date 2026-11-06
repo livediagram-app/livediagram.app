@@ -79,7 +79,7 @@ import { CHANGESET_RETENTION_MS, type CommunityAuthor } from '@livediagram/api-s
 import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
-import { documentMayServeImage } from '../db/image-grants';
+import { documentMayServeImage, grantOwnImages } from '../db/image-grants';
 import { indexService } from '../index-service';
 import { notifyDocumentJoin, notifyMentioned } from '../email/notifications';
 import { actionNotices, type NoticeDocument } from '../liveworkspace/action-notices';
@@ -772,6 +772,13 @@ export class DocumentRoom extends DurableObject<Env> {
     const env = this.requireEnv();
     if (!(await documentPlacesImage(env, documentId, imageId, onlyTabId))) return false;
     return documentMayServeImage(env, documentId, imageId);
+  }
+
+  // A Participant's placement claim (routes/images.ts checked the caller may add to the canvas): the images of `ids`
+  // that `personId` uploaded are granted here (db/image-grants.ts grantOwnImages). Answers how many.
+  async grantOwnImages(documentId: string, ids: string[], personId: string): Promise<number> {
+    this.bindDocument(documentId);
+    return grantOwnImages(this.requireEnv(), ids, personId, Date.now());
   }
 
   // The source side of a copy, for whoever copies (the index names them and the link they came through): anyone

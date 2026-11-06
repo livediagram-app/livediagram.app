@@ -1010,6 +1010,28 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401, 503],
   },
   {
+    method: 'POST',
+    path: '/images/grants',
+    segment: 'images',
+    tag: 'Images',
+    summary:
+      "Let a design serve the caller's own images they place in it (a Participant's placement claim).",
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    query: [{ name: 'd', required: true, description: 'The design the images are placed in.' }],
+    requestSchema: {
+      type: 'object',
+      properties: { ids: { type: 'array', items: { type: 'string' } } },
+      required: ['ids'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { granted: { type: 'integer' } },
+      required: ['granted'],
+    },
+    statuses: [200, 400, 401, 403, 404, 503],
+  },
+  {
     method: 'GET',
     path: '/images/{id}',
     segment: 'images',

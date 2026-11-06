@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {

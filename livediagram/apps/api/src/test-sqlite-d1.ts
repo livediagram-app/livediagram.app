@@ -401,6 +401,8 @@ function testDocumentRooms(
           await import('./db/image-refs')
         ).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
         (await import('./db/image-grants')).documentMayServeImage(env, documentId, imageId),
+      grantOwnImages: async (_documentId: string, ids: string[], personId: string) =>
+        (await import('./db/image-grants')).grantOwnImages(env, ids, personId, Date.now()),
       exportCopy: async (
         documentId: string,
         onlyTabId: string | null,

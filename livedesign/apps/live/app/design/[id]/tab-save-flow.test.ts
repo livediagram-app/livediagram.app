@@ -76,6 +76,53 @@ describe('relayParticipantChanges', () => {
   it('derives nothing for an unchanged tab', () => {
     expect(participantElementOps(tab([a]), tab([a]))).toEqual([]);
   });
+
+  // docs/specs/009-elements/images.md "Placement grants": the images a Participant places are claimed before the
+  // ops that place them reach anyone.
+  describe('claiming the images it places', () => {
+    const pic = (id: string, imageId: string | null) => ({ id, type: 'image', ...box, imageId });
+
+    it('claims the placed pictures first, then sends the ops', async () => {
+      const order: string[] = [];
+      const room: SaveRoom = { send: () => void order.push('send'), sequence: async () => true };
+      const claim = vi.fn(async (ids: string[]) => void order.push(`claim:${ids.join(',')}`));
+      const after = tab([
+        a,
+        pic('p', 'img-1'),
+        pic('q', 'data:image/png;base64,AA'),
+        pic('r', null),
+      ]);
+      await relayParticipantChanges(tab([a]), after, () => room, undefined, claim);
+      expect(order).toEqual(['claim:img-1', 'send', 'send', 'send']);
+    });
+
+    it('claims nothing for a change that places no picture', async () => {
+      const room: SaveRoom = { send: () => undefined, sequence: async () => true };
+      const claim = vi.fn(async () => undefined);
+      await relayParticipantChanges(tab([a]), tab([b]), () => room, undefined, claim);
+      expect(claim).not.toHaveBeenCalled();
+    });
+
+    it('fails, letting its hold go, when the room closed while it claimed', async () => {
+      const room: SaveRoom = { send: vi.fn(), sequence: async () => true };
+      let open = true;
+      const writes = createOwnElementWrites();
+      const claim = async () => {
+        open = false;
+      };
+      await expect(
+        relayParticipantChanges(
+          tab([]),
+          tab([pic('p', 'img-1')]),
+          () => (open ? room : null),
+          writes,
+          claim,
+        ),
+      ).rejects.toThrow();
+      expect(room.send).not.toHaveBeenCalled();
+      expect(writes.held.size).toBe(0);
+    });
+  });
 });
 
 // docs/specs/012-collaboration/realtime-conflict-resolution.md "Same-element edits converge": the elements a save

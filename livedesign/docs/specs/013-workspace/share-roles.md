@@ -46,6 +46,10 @@ A Participant changes the design's **content**, never its **shape**.
 - **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
   them. Shapes, frames, connectors and someone else's text boxes (which often carry the layout) stay where
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
+- **A Participant's pictures show for everyone.** The pictures a Participant places are their own uploads, and
+  their editor claims each one for the design as it places it, so every reader (Editor, Participant, Viewer, a link
+  guest) sees it, never the placeholder ([Images](../009-elements/images.md#placement-grants)). A Viewer places
+  nothing and its claim is refused.
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees no page panel or page actions. Empty states describe
   instead of instructing: a comment thread invites only someone who may add. A Viewer's
   selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button

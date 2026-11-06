@@ -1,5 +1,6 @@
 import { diffToElementOps, type ElementOp, type Tab } from '@livediagram/document';
 import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+import { placedImageIds } from '@liveworkspace/media';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 
@@ -80,16 +81,30 @@ export function participantElementOps(before: Tab | undefined, tab: Tab): Elemen
   );
 }
 
+//
+// The room knows no person, so nothing it writes grants the images the ops place (docs/specs/009-elements/images.md
+// "Placement grants"): `claimImages` claims them first, so every reader can see them by the time the ops reach them.
+// It never throws (@liveworkspace/media createImageClaims), and the room the ops go to is read after it answers.
 export async function relayParticipantChanges(
   before: Tab | undefined,
   tab: Tab,
   room: () => SaveRoom | null,
   writes?: OwnElementWrites,
+  claimImages?: (imageIds: string[]) => Promise<void>,
 ): Promise<null> {
-  const live = room();
-  if (!live) throw new Error('participant save: the room is not open');
+  let live = room();
+  if (!live) throw new Error(ROOM_CLOSED);
   const ops = participantElementOps(before, tab);
   const release = writes ? holdOwnWrites(writes, tab.id, ops) : null;
+  const imageIds = claimImages ? placedImageIds(ops) : [];
+  if (imageIds.length > 0) {
+    await claimImages!(imageIds);
+    live = room();
+    if (!live) {
+      release?.();
+      throw new Error(ROOM_CLOSED);
+    }
+  }
   relay(
     ops.map((op) => ({ kind: 'el', tabId: tab.id, op })),
     live,
@@ -97,3 +112,5 @@ export async function relayParticipantChanges(
   );
   return null;
 }
+
+const ROOM_CLOSED = 'participant save: the room is not open';
