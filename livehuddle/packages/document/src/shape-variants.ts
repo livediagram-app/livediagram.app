@@ -117,6 +117,10 @@ export function withVariantColours<T extends ShapeElement>(el: T, variant: strin
   return { ...rest, strokeColor } as T;
 }
 
+/** The Restroom room preset's variant (docs/specs/009-elements/office-amenities.md "The Restroom preset"): the Room
+ *  is named Restroom, and its pieces come with it (room-presets.ts). */
+export const RESTROOM_VARIANT = 'restroom';
+
 /** The badge presets' variants, in palette order after the New preset (no variant). */
 export const BADGE_PRESET_VARIANTS = ['beta', 'version', 'count', 'draft', 'warning'] as const;
 
@@ -133,5 +137,6 @@ export function applyShapeVariant(el: ShapeElement, variant: string | undefined)
   }
   if (el.shape === 'badge' && Object.hasOwn(BADGE_PRESETS, variant))
     return { ...el, ...BADGE_PRESETS[variant] };
+  if (el.shape === 'room' && variant === RESTROOM_VARIANT) return { ...el, label: 'Restroom' };
   return el;
 }

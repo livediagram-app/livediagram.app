@@ -41,6 +41,22 @@ import {
 } from './palette-icons-garden';
 import { RoomSignIcon, ScreenIcon } from './palette-icons-meeting';
 import {
+  CoatRackIcon,
+  CopierIcon,
+  FridgeIcon,
+  HandDryerIcon,
+  KettleIcon,
+  KitchenCounterIcon,
+  KitchenSinkIcon,
+  LockersIcon,
+  MicrowaveIcon,
+  PrinterIcon,
+  RestroomIcon,
+  ToiletCubicleIcon,
+  UmbrellaStandIcon,
+  WashbasinIcon,
+} from './palette-icons-amenities';
+import {
   ArcadeMachineIcon,
   BeanBagIcon,
   BenchIcon,
@@ -890,6 +906,82 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <BookshelfIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:printer',
+    tileGroup: 'amenities',
+    blurb: 'A desktop printer on a cabinet',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Printer',
+    caption: 'Printer',
+    description:
+      'A desktop printer on a small cabinet, a printed page in its tray. Characters walk round its cabinet.',
+    filled: true,
+    action: { type: 'shape', kind: 'printer' },
+    icon: <PrinterIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:copier',
+    tileGroup: 'amenities',
+    blurb: 'A floor-standing copier',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Copier',
+    caption: 'Copier',
+    description:
+      'A copier with paper trays, a lit touch screen and a stack of copies. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'copier' },
+    icon: <CopierIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:lockers',
+    tileGroup: 'amenities',
+    blurb: 'A bank of four lockers',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Lockers',
+    caption: 'Lockers',
+    description:
+      'A bank of four lockers for an entrance, a gym or a hot-desk floor. Stand it against a wall: characters walk along in front of it.',
+    filled: true,
+    action: { type: 'shape', kind: 'lockers' },
+    icon: <LockersIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:coat-rack',
+    tileGroup: 'amenities',
+    blurb: 'A coat stand by the door',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Coat Rack',
+    caption: 'Coat Rack',
+    description:
+      'A wooden coat stand with two coats, a scarf and a hat, for an entrance. Characters walk round its foot.',
+    filled: true,
+    action: { type: 'shape', kind: 'coat-rack' },
+    icon: <CoatRackIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:umbrella-stand',
+    tileGroup: 'amenities',
+    blurb: 'A stand of umbrellas',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Umbrella Stand',
+    caption: 'Umbrella Stand',
+    description:
+      'A round stand of three furled umbrellas, for beside the door. Characters walk round it.',
+    filled: true,
+    dividerAfter: true,
+    action: { type: 'shape', kind: 'umbrella-stand' },
+    icon: <UmbrellaStandIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Water Cooler (docs/specs/009-elements/office.md).
     id: 'tools:water-cooler',
     tileGroup: 'amenities',
@@ -933,6 +1025,140 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'vending-machine' },
     icon: <VendingMachineIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:kitchen-counter',
+    tileGroup: 'amenities',
+    blurb: 'A kitchen unit with a worktop',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Kitchen Counter',
+    caption: 'Kitchen Counter',
+    description:
+      'A base unit with an oak worktop and a tiled splashback. Place units side by side for a run; a Microwave or a Kettle stands on its worktop.',
+    filled: true,
+    action: { type: 'shape', kind: 'kitchen-counter' },
+    icon: <KitchenCounterIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:kitchen-sink',
+    tileGroup: 'amenities',
+    blurb: 'A kitchen unit with a sink',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Kitchen Sink',
+    caption: 'Kitchen Sink',
+    description:
+      'A base unit with a steel sink and a tap, the same height as a Kitchen Counter so the two make one run.',
+    filled: true,
+    action: { type: 'shape', kind: 'kitchen-sink' },
+    icon: <KitchenSinkIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:fridge',
+    tileGroup: 'amenities',
+    blurb: 'A tall fridge-freezer',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Fridge',
+    caption: 'Fridge',
+    description:
+      'A fridge-freezer with a drawing and a note on its door. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'fridge' },
+    icon: <FridgeIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:microwave',
+    tileGroup: 'amenities',
+    blurb: 'A microwave for the worktop',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Microwave',
+    caption: 'Microwave',
+    description:
+      'A microwave to stand on a Kitchen Counter. Place it over the worktop; characters never bump into it.',
+    filled: true,
+    action: { type: 'shape', kind: 'microwave' },
+    icon: <MicrowaveIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:kettle',
+    tileGroup: 'amenities',
+    blurb: 'A kettle for the worktop',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Kettle',
+    caption: 'Kettle',
+    description:
+      'A red electric kettle to stand on a Kitchen Counter. Place it over the worktop; characters never bump into it.',
+    filled: true,
+    dividerAfter: true,
+    action: { type: 'shape', kind: 'kettle' },
+    icon: <KettleIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:restroom',
+    tileGroup: 'amenities',
+    blurb: 'A furnished restroom with its sign',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Restroom',
+    caption: 'Restroom',
+    description:
+      'A room named Restroom, with its door, two toilet cubicles, a hand dryer, two washbasins and a sign outside that says when it is in use.',
+    filled: true,
+    action: { type: 'shape', kind: 'room', variant: 'restroom' },
+    icon: <RestroomIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:toilet-cubicle',
+    tileGroup: 'amenities',
+    blurb: 'A toilet cubicle',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Toilet Cubicle',
+    caption: 'Toilet Cubicle',
+    description:
+      'A toilet cubicle with its door open. Place several side by side for a row; characters walk along in front of them.',
+    filled: true,
+    action: { type: 'shape', kind: 'toilet-cubicle' },
+    icon: <ToiletCubicleIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:washbasin',
+    tileGroup: 'amenities',
+    blurb: 'A basin under a mirror',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Washbasin',
+    caption: 'Washbasin',
+    description: 'A washbasin on a pedestal under a mirror. Characters walk round its pedestal.',
+    filled: true,
+    action: { type: 'shape', kind: 'washbasin' },
+    icon: <WashbasinIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:hand-dryer',
+    tileGroup: 'amenities',
+    blurb: 'A dryer for the wall',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Hand Dryer',
+    caption: 'Hand Dryer',
+    description: 'A hand dryer to hang on a wall. Characters walk past it.',
+    filled: true,
+    action: { type: 'shape', kind: 'hand-dryer' },
+    icon: <HandDryerIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Office Pod (docs/specs/009-elements/office.md).

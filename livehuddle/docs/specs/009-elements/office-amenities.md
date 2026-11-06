@@ -1,0 +1,152 @@
+# Office amenities
+
+Status: **approved** (owner, 2026-11-06; Work Tracker #534, #531, #532, #536, #530). The everyday kit every real
+building has, so an office, a campus or a tower reads as a real place: a **Printer** and a **Copier**, a kitchenette
+(a **Kitchen Counter**, a **Kitchen Sink**, a **Fridge**, a **Microwave** and a **Kettle**), a bank of **Lockers**, a
+**Coat Rack** and an **Umbrella Stand** by the door, and a restroom (a **Toilet Cubicle**, a **Washbasin** with its
+mirror, a **Hand Dryer** and a **Restroom** room preset with its door sign). They are [Office](office.md) pieces in
+every way not said here: drawn upright from the room's camera, placed at a fixed size, aspect locked, no settings `…`,
+no words on them, an Editor's to place, move and delete, and walked round by everyone in
+[Avatar mode](../008-canvas/avatar-mode.md).
+
+## Why
+
+People recognise a place by its ordinary things. A team walking round a Space finds the printer queue, makes a tea in
+the kitchen, drops a coat at the door and goes to wash their hands, the way they would in a building. None of it needs
+a feature of its own: it is furniture, drawn well, that makes the rest believable.
+
+## Where they live
+
+All in **Amenities** (`collab-amenities`), which splits into three named groups in the flyout, each ending on a divider
+([Category flyout](../010-palette/palette-top-level-categories.md#the-space-categories)):
+
+| Group        | Tiles, in order                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------- |
+| **Office**   | Plant, Bookshelf, Printer, Copier, Lockers, Coat Rack, Umbrella Stand                                   |
+| **Kitchen**  | Water Cooler, Coffee Machine, Vending Machine, Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle |
+| **Restroom** | Restroom (the room preset), Toilet Cubicle, Washbasin, Hand Dryer                                       |
+
+Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `microwave`, `kettle`, `lockers`,
+`coat-rack`, `umbrella-stand`, `toilet-cubicle`, `washbasin`, `hand-dryer`. The Restroom is not a kind: it is a Room.
+
+## How each one walks
+
+| Piece           | Default size | Walking                                                                                  |
+| --------------- | ------------ | ---------------------------------------------------------------------------------------- |
+| Printer         | 72 × 80      | Scenery: its cabinet blocks                                                              |
+| Copier          | 104 × 128    | Scenery: its base (the paper trays' feet) blocks                                         |
+| Lockers         | 136 × 132    | Scenery: the bottom fifth, full width, blocks, so it stands against a wall               |
+| Coat Rack       | 56 × 128     | Scenery: its foot blocks; the coats above it never do                                    |
+| Umbrella Stand  | 40 × 64      | Scenery: the stand blocks                                                                |
+| Kitchen Counter | 112 × 88     | Scenery: the cabinets, the lower half full width, block; counters side by side join up   |
+| Kitchen Sink    | 112 × 88     | Scenery, exactly as the Kitchen Counter, so a run of units is one barrier                |
+| Fridge          | 72 × 136     | Scenery: its base blocks                                                                 |
+| Microwave       | 60 × 40      | Stands on a counter: never blocks, never a destination (the counter under it blocks)     |
+| Kettle          | 32 × 36      | Stands on a counter, as the Microwave                                                    |
+| Toilet Cubicle  | 96 × 152     | Scenery: its floor (the lower two fifths, full width) blocks; cubicles side by side join |
+| Washbasin       | 72 × 112     | Scenery: its pedestal blocks; the mirror above is on the wall                            |
+| Hand Dryer      | 36 × 44      | Hangs on a wall: never blocks, never a destination                                       |
+
+- **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
+  out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
+  front of it. Walking up to one rings nothing.
+- **On a counter**: the Microwave and the Kettle are drawn to stand on a Kitchen Counter's worktop when placed over
+  its top edge (their base level with the worktop's middle). They have no footprint and are never what you stand on,
+  exactly as a wall piece, so a click on one walks you to the clicked point, as a click on the counter does.
+- **Wall pieces** (the Hand Dryer) are walked past, not to.
+- Nobody sits in any of them; none gives a drink.
+
+## The pieces
+
+### Printer, Copier
+
+- **Printer**: a desktop laser printer on a small two-drawer cabinet, a printed sheet in its output tray, a little
+  status screen and a green light.
+- **Copier**: a floor-standing copier: a scanner lid with a document feeder on top, a control panel with a lit blue
+  touch screen, the body with a finished stack of copies in its output bay, and three paper trays with handles on
+  small feet.
+- Their bodies take the theme (the piece's own colour, else a wash of its stroke, as every office piece), so they sit
+  pale on light paper and soft grey on dark; the paper is always white and the screens always lit.
+
+### Lockers, Coat Rack, Umbrella Stand
+
+- **Lockers**: a bank of four tall lockers in alternating blues, each door with vent slits, a number plate and a
+  handle, on a plinth. For entrances, gyms and hot-desk floors.
+- **Coat Rack**: a wooden coat stand on a cross foot, a navy coat and a camel coat on its hooks, a striped scarf and
+  a hat on top.
+- **Umbrella Stand**: a round stand with three furled umbrellas (red, navy and yellow), their hooked handles up.
+
+### Kitchenette
+
+A run of units along a wall, the way a small office kitchen is built.
+
+- **Kitchen Counter**: base units in sage green with an oak worktop and a tiled splashback, two drawers over two
+  cupboard doors, a plinth below.
+- **Kitchen Sink**: the same unit with a steel sink set into the worktop, a swan-neck tap and a tea towel over the
+  cupboard door. A Sink and a Counter placed side by side read as one run: the same height, the same worktop line.
+- **Fridge**: a tall fridge-freezer, its freezer door over the fridge door, long handles, a child's drawing and two
+  magnets on the door.
+- **Microwave**: a microwave with a dark glass door and a control panel (a green clock and buttons).
+- **Kettle**: a red electric kettle on its base, with a water window.
+- The units' colours are their own (sage, oak, white tile, steel, red); the Fridge's, Microwave's and appliances' bodies
+  take the theme.
+
+### Restroom
+
+- **Toilet Cubicle**: a cubicle seen from the front: a head rail and two side panels, the door swung open against the
+  right panel, and inside a white toilet under its cistern, a roll of paper on the left panel and a green Vacant
+  indicator on the door. Placed side by side, cubicles make a row.
+- **Washbasin**: a white wall-hung basin on a pedestal with a tap and a soap dispenser, under a framed mirror with a
+  glint across its glass.
+- **Hand Dryer**: a wall-mounted dryer with a grille, a nozzle under it and a green ready light.
+
+### The Restroom preset
+
+The palette's **Restroom** tile places a whole restroom in one go, a [Room](office.md#room) furnished as one:
+
+- A Room named **Restroom** at a room's default size (480 × 320), its [Door](room-builder.md#door) in the middle of the
+  front wall as every new Room.
+- Inside, along the back wall: two **Toilet Cubicles** side by side at the left, a **Hand Dryer** on the wall beside
+  them and two **Washbasins** at the right, all clear of the doorway.
+- Outside, beside the door on the corridor side: a [Room Sign](screen-and-room-sign.md#room-sign) that reads the
+  room, **Restroom**, and shows Free or In Use (and has its Knock).
+- Everything is ordinary elements: one change, so one undo takes the whole restroom away; the room is selected and each
+  piece can be moved or deleted on its own. It is placed however a Room is (a tap or a press with the tile armed, or a
+  drop from the palette) and lines up with other rooms as a Room does. The preset draws its cubicles, basins and sign in
+  the room's stroke, so a themed room keeps its pieces in step.
+- The armed tile's preview is the room alone (the room's default size), as the Room tile's.
+
+## In the templates
+
+- **Virtual Office**: the **Kitchen** gets a kitchenette along its back wall, either side of its door: a Fridge and a
+  Counter with a Microwave and a Kettle on it, a Sink and the Coffee Machine; the Water Cooler and a plant move to the
+  floor. **Reception** gets a Coat Rack and an Umbrella Stand by the door, **Desks** a Printer.
+- **Co-working Tower**: **Hot Desks** (Ground Floor) gets a print corner (a Copier and a Printer) and a bank of
+  Lockers along its front; the **Cafe** a Fridge; **Level 2** a **Restroom** (two cubicles, a hand dryer, two
+  basins), its door onto the open floor, signed like every room there.
+
+## Share roles
+
+- **Editor**: places, moves, recolours and deletes every piece, and places the Restroom preset.
+- **Participant**: has no palette, so it places none; walks round them like everyone.
+- **Viewer**: walks round them like everyone (walking is presence, which a Viewer has).
+
+Nothing here stores anything but the elements themselves: no state, no delta, no presence of their own.
+
+## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
+
+- Placing one: `Element · Added · <Kind>` (`Printer`, `Copier`, `Kitchen-counter`, `Kitchen-sink`, `Fridge`,
+  `Microwave`, `Kettle`, `Lockers`, `Coat-rack`, `Umbrella-stand`, `Toilet-cubicle`, `Washbasin`, `Hand-dryer`).
+- Placing the Restroom preset: `Element · Added · Room`, as any Room (the preset is a Room).
+
+## Export
+
+An export draws each piece's art exactly as the canvas does (the shared drawing table), in the paper's ink.
+
+## Not in scope
+
+- Printing, copying or a print queue; a drink or a snack from the kitchen (a tea from the Kettle is a follow-up,
+  with a new held drink).
+- Opening a locker, hanging your own coat, or an occupied cubicle (who is in one is presence the Room Sign already
+  shows for the whole restroom).
+- Room presets for other rooms (a Kitchen preset, a Meeting Room preset): the Restroom is the first.
