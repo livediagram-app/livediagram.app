@@ -571,6 +571,7 @@ export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = 
   'onboarding-task': 'Before Day One',
   objective: 'Draft',
   'key-result': 'Not Started',
+  milestone: 'Not Started',
   'launch-check': 'Not Checked',
   deal: 'Lead',
   ticket: 'New',
