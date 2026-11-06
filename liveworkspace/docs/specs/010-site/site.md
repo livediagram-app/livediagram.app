@@ -316,6 +316,9 @@ built once here. It is shown here and, through each switched-on app's router, at
 
 - **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
   signed-in account's, or this browser's guest's ([accounts.md](../003-accounts/accounts.md)). Signing out here asks again.
+  Until the answer comes (seconds on a slow session) the page shows the Explorer's own skeleton under the header
+  (`ExplorerSkeleton`: the sidebar's rows and a pane of cards, pulsing, `aria-busy`), never a blank page; a failed
+  answer says so, with the reload to try again.
 - **Which app.** The app the person came from: `?from=`, then the referrer. The page wears that app's colours (its
   brand ramp, light and dark) and opens filtered to its items, with **All Apps** one click away. The switch reads the
   app's own name ("livediagram") and **All Apps**, each with its logo: the app's prism in its accent, and
