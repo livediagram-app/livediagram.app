@@ -7,6 +7,7 @@ import type { APIRequestContext } from '@playwright/test';
 // `view` in the e2e stack's own index D1 (scripts/e2e-stack.mjs INDEX_STATE), as a link stored before would read.
 const INDEX_DIR = path.resolve(import.meta.dirname, '../../../../liveworkspace/apps/index');
 const INDEX_STATE = path.join(INDEX_DIR, '.wrangler', 'e2e-state');
+const LOWER_ATTEMPTS = 3;
 
 export async function legacyViewerLink(
   request: APIRequestContext,
@@ -22,22 +23,40 @@ export async function legacyViewerLink(
   const code = ((await share.json()) as { link: { code: string } }).link.code;
   // The code is the index's own alphabet (no quotes), so it is safe inside the statement.
   if (!/^[A-Z0-9]+$/.test(code)) throw new Error(`unexpected share code ${code}`);
-  execFileSync(
-    'corepack',
-    [
-      'pnpm',
-      'exec',
-      'wrangler',
-      'd1',
-      'execute',
-      'liveworkspace-index',
-      '--local',
-      '--persist-to',
-      INDEX_STATE,
-      '--command',
-      `UPDATE share_links SET level = 'view' WHERE code = '${code}'`,
-    ],
-    { cwd: INDEX_DIR, stdio: 'ignore' },
-  );
+  // The stack's own index Worker writes the same SQLite file all the while (four workers in parallel in CI), and a
+  // write from outside it has failed once in CI and passed on the retry: try again a few times before failing, and
+  // fail with what wrangler said (it was swallowed before).
+  const command = `UPDATE share_links SET level = 'view' WHERE code = '${code}'`;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      execFileSync(
+        'corepack',
+        [
+          'pnpm',
+          'exec',
+          'wrangler',
+          'd1',
+          'execute',
+          'liveworkspace-index',
+          '--local',
+          '--persist-to',
+          INDEX_STATE,
+          '--command',
+          command,
+        ],
+        { cwd: INDEX_DIR, stdio: 'pipe' },
+      );
+      break;
+    } catch (error) {
+      if (attempt >= LOWER_ATTEMPTS) {
+        const output = error as { stderr?: Buffer; stdout?: Buffer };
+        throw new Error(
+          `lowering ${code} to view failed ${attempt} times: ${String(output.stderr ?? '')}${String(output.stdout ?? '')}`,
+          { cause: error },
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+    }
+  }
   return code;
 }
