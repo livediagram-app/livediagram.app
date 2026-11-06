@@ -1520,7 +1520,7 @@ A shape can be **locked** to prevent accidental movement or resizing.
   - Holds wherever the change comes from: a multi-selection (Select All included) dragged, resized or nudged with
     the arrow keys moves its other members and leaves a locked one where it is, a frame or lane carries none, and a
     typed size or rotation leaves it unchanged.
-- A small **lock indicator** badge sits in the shape's top-left corner whenever it's locked, so the state is visible even when the shape is not selected.
+- A small **lock indicator** badge sits in the shape's top-left corner whenever the shape itself is locked, so the state is visible even when the shape is not selected. It marks the element's own lock only: on a locked tab or a locked layer the tab's or the layer's padlock says so once, and its elements show no badge of their own unless each is locked too.
 - Locked state lives on the element: `locked?: boolean` (defaults to `false` / `undefined`).
 
 ## Move

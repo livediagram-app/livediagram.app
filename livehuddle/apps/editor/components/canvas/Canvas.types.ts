@@ -11,7 +11,6 @@ import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 import type { EmbedProvider, Finish, FrameHandle } from '@livehuddle/document';
 import type {
   BackgroundPattern,
-  EditorMode,
   Element,
   ShapeKind,
   TextAlignX,
@@ -66,12 +65,7 @@ export type CanvasProps = {
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
-  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
-  // palette, the strip and the tool panels for the dock, and keeps the canvas still.
-  editorMode?: EditorMode;
-  // The whiteboard dock's model and the board's ink for this appearance
-  // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
-  whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
+  // The board's ink for this appearance, for a whiteboard pen's live stroke (WhiteboardPenPreview).
   whiteboardInk?: string;
   // Dragged element ids to render translucent while a shift-duplicate is
   // in progress (docs/specs/008-canvas/shift-drag-duplicate.md): the materialised copies already sit at the
@@ -255,8 +249,6 @@ export type CanvasProps = {
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
   onBeginHighlighter: () => void;
-  // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
   // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.

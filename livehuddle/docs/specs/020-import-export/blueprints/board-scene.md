@@ -32,7 +32,7 @@ Scope, by file:
 | `../livediagram/apps/editor/lib/board-scene-hug.ts`                       | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
 | `../livediagram/apps/editor/lib/board-scene-browser.ts`                   | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
 | `../livediagram/apps/editor/components/dialogs/ImportImageReport.tsx`     | The dialog's result view: scene report, board failures, images                                    |
-| `apps/editor/lib/quick-style-applicability.ts`                            | `quickStyleApplicability`, `quickStyleCaption`                                                    |
+| `../livediagram/apps/editor/lib/quick-style-applicability.ts`             | `quickStyleApplicability`, `quickStyleCaption`                                                    |
 | `apps/editor/lib/reset-colours.ts`                                        | "Reset to Theme" per element, named colours included                                              |
 | `../livediagram/apps/editor/components/canvas/BoardSceneNotice.tsx`       | The paste notice                                                                                  |
 | `../livediagram/apps/editor/components/dialogs/BoardSceneReportList.tsx`  | The report's rows, shared by the notice and the Import dialog                                     |

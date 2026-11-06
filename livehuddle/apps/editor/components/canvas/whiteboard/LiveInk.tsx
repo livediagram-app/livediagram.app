@@ -15,7 +15,7 @@ type LiveInkProps = {
 };
 
 // The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens";
-// blueprint whiteboard-round-one "Pen ink"). It sits inside the canvas's transformed layer, beside
+// docs/specs/023-draw-mode/draw-mode.md "Pens"). It sits inside the canvas's transformed layer, beside
 // the committed elements, and IS the stroke it lands as: the same geometry (`freehandGeometry`, what
 // `createFreehand` gives), a box at that geometry's place, and the same svg, viewBox and filled
 // perfect-freehand outline (`penStrokeSvg`) that FreehandSvg draws. So the one layer rasterises

@@ -85,17 +85,15 @@ drifting.
 - **JS cascades** call `cascadeDelayMs`: the shared Explorer's `Timeline` (`@liveworkspace/explorer`).
 - **Cascade items run at `micro`**: `menu-drop`, `lvd-row-in`, `tl-fan-out(-up)`, and `pop-in` /
   `slide-row-in` / `fade-in` when used with `.stagger-enter`.
-- `ToolbarStripRail` takes the shared step, with no `--stagger-step` override of its own.
+- `ToolbarStripRail` took the shared step (it went with the strip's More in Work Tracker #329).
 
 ### Exit holds
 
 Each is set to the token of the exit animation it waits for.
 
-| Where                              | Before | After             |
-| ---------------------------------- | ------ | ----------------- |
-| `TabPresenceStack` `POP_OUT_MS`    | 240    | `MOTION_MS.micro` |
-| `ToolbarStripRail` `RAIL_LEAVE_MS` | 160    | `MOTION_MS.micro` |
-| `ToolbarStripRail` `REORDER_MS`    | 200    | `MOTION_MS.short` |
+| Where                           | Before | After             |
+| ------------------------------- | ------ | ----------------- |
+| `TabPresenceStack` `POP_OUT_MS` | 240    | `MOTION_MS.micro` |
 
 Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY_MS`,
 `RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces and
@@ -148,7 +146,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 - **`apps/editor`**
   - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     and the `MovablePanel` fade.
-  - `short`: `ToolbarStripRail`, `AccordionSection`,
+  - `short`: `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
     `template-picker-wizard` progress bar, and the `PollPanel` bars.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
@@ -348,7 +346,7 @@ logging, because motion isn't a decision point.
 | Source: classes, hover, inline, templates    | `../packages/style-guards/src/motion-budget.test.ts`                                             |
 | The shared theme is within budget            | `../packages/tailwind-config/src/theme-budget.test.ts`                                           |
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, community, ui and template-previews |
-| Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                         |
+| Exit holds equal their tokens                | `TabPresenceStack.test.tsx`                                                                      |
 | Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                         |
 | Canvas entry keeps 360ms                     | `apps/editor/app/canvas-motion.test.ts`, `apps/editor/components/canvas/canvas-motion.test.tsx`  |
 | Chrome animations settle in 250ms at runtime | `apps/editor/e2e/motion-budget.spec.ts`                                                          |

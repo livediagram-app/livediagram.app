@@ -2,13 +2,10 @@
 
 import { useRef, type ReactNode } from 'react';
 import { ChevronDownIcon, HoverCard } from '@livehuddle/ui';
-import { isIconCatalogsLoaded } from '@liveworkspace/workbench/lib/icon-registry';
-import { stickerBrowseGroups } from './StickerPickerTab';
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The Toolbar strip's tiles for Stickers (docs/specs/007-editor/toolbar-layout.md "More"; no Icons in livehuddle): the
-// catalogue's browse groups, each opening a popover of its entries. The groups are the browse's own
-// (PaletteCategoryBrowser), so the strip and the More body never disagree.
+// An opener tile on the strip and what a strip popover opened on (docs/specs/007-editor/toolbar-layout.md): a tile's
+// presets open from a group tile.
 
 export type StripGroup = { id: string; label: string; icon: ReactNode };
 
@@ -22,23 +19,6 @@ export type StripOpen = {
   label: string;
   variants?: { description: string; tiles: readonly PaletteTileDef[] };
 };
-
-/** The category's groups when it is a grouped catalogue, else null (its strip shows tiles). Empty groups (the
- *  catalogue chunk still in flight) are left out, so the strip shows nothing until there is something to open. */
-export function catalogueStripGroups(categoryId: string): StripGroup[] | null {
-  const cached = CACHE.get(categoryId);
-  if (cached) return cached;
-  const groups = categoryId === 'stickers' ? stickerBrowseGroups() : null;
-  if (!groups) return null;
-  const strip = groups
-    .filter((g) => g.items.length > 0)
-    .map(({ id, label, icon }) => ({ id, label, icon }));
-  // Built once the catalogues have landed, after which they never change, so a strip render never rebuilds them.
-  if (isIconCatalogsLoaded()) CACHE.set(categoryId, strip);
-  return strip;
-}
-
-const CACHE = new Map<string, StripGroup[]>();
 
 /** One group on the strip. Drawn as an opener, not a tile: its artwork with a chevron, as the strip's other pickers
  *  are, so it reads as "open this group" rather than "drag this icon". Pressing it toggles its popover, hung from the

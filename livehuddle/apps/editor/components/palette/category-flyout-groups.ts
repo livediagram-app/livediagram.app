@@ -1,14 +1,9 @@
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar"): which modes show
-// the bar, whether it has room to name its categories, how each one's tiles are laid out in its flyout, the short line under its name, and
+// The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar"): whether it has room to name its categories, how each one's tiles are laid out in its flyout, the short line under its name, and
 // the names of its groups. Pure, so the rules are testable without rendering the strip.
 
-import type { EditorMode } from '@livehuddle/document';
 import { SPACE_CATEGORIES } from './space-categories';
-
-/** The modes whose strip is a category bar: Workshop, the one mode. */
-export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['workshop']);
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
@@ -67,13 +62,8 @@ const TAGLINES: Readonly<Record<string, string>> = {
   devices: 'Frames to set a screen design in.',
 };
 
-// Where a mode fills a category differently enough that its default line would mislead.
-const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  workshop: {},
-};
-
-export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
-  return (mode && MODE_TAGLINES[mode]?.[categoryId]) ?? TAGLINES[categoryId] ?? fallback;
+export function flyoutTagline(categoryId: string, fallback: string): string {
+  return TAGLINES[categoryId] ?? fallback;
 }
 
 // A group's name, by the tile that starts it: a category splits into groups where a tile ends one (`dividerAfter`,

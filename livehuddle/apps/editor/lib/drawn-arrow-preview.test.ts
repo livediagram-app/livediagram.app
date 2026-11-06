@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type { Element, ThemeDefinition } from '@livehuddle/document';
-import { PEN_INK } from '@livehuddle/document';
 import { buildDressedDrawnArrow } from './draw-commit';
 import { drawnArrowAsShown } from './drawn-arrow-preview';
 
@@ -11,33 +10,22 @@ const theme = { elementStroke: '#123456' } as unknown as ThemeDefinition;
 const dress = <T extends Element>(el: T): T => ({ ...el, strokeWidth: 4 });
 
 describe('drawnArrowAsShown', () => {
-  it('is the committed arrow, its Ink drawn for the canvas', () => {
-    const intent = { type: 'arrow', ends: 'to', board: true } as const;
+  it('is the committed arrow, as it lands, in the theme stroke', () => {
+    const intent = { type: 'arrow', ends: 'to' } as const;
     const shown = drawnArrowAsShown(intent, 0, 0, 200, 50, {
       elements: [],
       theme,
-      whiteboard: true,
       styleNewElement: dress,
       surface: 'dark',
     });
-    const landed = buildDressedDrawnArrow(
-      intent,
-      0,
-      0,
-      200,
-      50,
-      { elements: [], theme, whiteboard: true },
-      dress,
-    );
-    expect({ ...shown, id: 'x' }).toEqual({ ...landed, strokeColor: PEN_INK.dark, id: 'x' });
-    expect(shown.strokeWidth).toBe(4);
+    const landed = buildDressedDrawnArrow(intent, 0, 0, 200, 50, { elements: [], theme }, dress);
+    expect({ ...shown, id: 'x' }).toEqual({ ...landed, id: 'x' });
   });
 
-  it('leaves a diagram arrow as it lands, in the theme stroke', () => {
+  it('leaves an arrow in the theme stroke', () => {
     const shown = drawnArrowAsShown({ type: 'arrow' }, 0, 0, 200, 50, {
       elements: [],
       theme,
-      whiteboard: false,
       styleNewElement: dress,
       surface: 'light',
     });
@@ -49,7 +37,6 @@ describe('drawnArrowAsShown', () => {
     const shown = drawnArrowAsShown({ type: 'arrow' }, 0, 0, 200, 50, {
       elements: [],
       theme,
-      whiteboard: false,
       styleNewElement: dress,
       surface: 'light',
     });

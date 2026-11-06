@@ -62,27 +62,14 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     const key = 'livehuddle:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (
-        prefs.workshopTourSeen !== true ||
-        prefs.avatarTourSeen !== true ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (prefs.avatarTourSeen !== true || !Array.isArray(prefs.elementTourKinds))
         localStorage.setItem(
           key,
           JSON.stringify({
             ...prefs,
-            workshopTourSeen: true,
             avatarTourSeen: true,
             // Element tours (docs/specs/007-editor/element-tours.md): every toured kind.
-            elementTourKinds: [
-              'timeline',
-              'chart',
-              'stack',
-              'lane',
-              'boundary',
-              'diagram-key',
-              'portal',
-            ],
+            elementTourKinds: ['portal'],
           }),
         );
     } catch {

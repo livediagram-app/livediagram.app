@@ -71,8 +71,6 @@ export function useEditorCommands(open: boolean): {
   const { selectedId, multiSelectedIds } = useSelectionOf(
     useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
   );
-  // Draw mode, which had no format painter, is gone (docs/specs/007-editor/editor-modes.md).
-  const whiteboard = false;
   const {
     isReadOnly,
     canShareDocument,
@@ -159,7 +157,6 @@ export function useEditorCommands(open: boolean): {
       // content-dependent tools, so search can never offer a tool the palette
       // has greyed out.
       canvasEmpty,
-      whiteboard,
       tabLocked,
     }),
     [
@@ -177,7 +174,6 @@ export function useEditorCommands(open: boolean): {
       isOffline,
       canvasTool,
       canvasEmpty,
-      whiteboard,
       tabLocked,
     ],
   );

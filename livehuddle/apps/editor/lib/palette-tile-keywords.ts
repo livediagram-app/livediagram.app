@@ -17,9 +17,7 @@ import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 // This used to be a hand-written list of the shapes themselves, and it had
 // silently fallen 22 kinds behind the palette: every Devices, Data, Media and
 // Behaviour element was unfindable from the search panel.
-// 'estimate' (retired in Work Tracker #423 part 4) keeps its row until open PR #1310, which adds the stage beside it,
-// merges; the row matches no tile, so it finds nothing.
-export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
+export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   square: 'square box rect node',
   circle: 'oval ellipse round node',
   diamond: 'decision rhombus flowchart',
@@ -114,7 +112,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
   rug: 'rug carpet mat floor lounge reception office',
   stage:
     'stage platform podium all-hands all hands town hall keynote presenter speaker speak broadcast audience',
-  estimate: 'points sizing poker fist estimate vote',
   'focus-button':
     'look here attention bring everyone jump navigate spotlight point show gather focus',
   actor: 'person stick figure user role uml',

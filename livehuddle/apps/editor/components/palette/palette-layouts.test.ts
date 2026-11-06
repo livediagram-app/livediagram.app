@@ -3,9 +3,9 @@ import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,
   DIVIDE,
-  PALETTE_LAYOUTS,
+  MEETING_PALETTE,
   SEARCH_ONLY_TILE_IDS,
-  paletteCategoriesFor,
+  paletteCategories,
   paletteCategoryOffered,
   paletteLandingCategory,
 } from './palette-layouts';
@@ -13,18 +13,17 @@ import { tileById, tilesForCategory } from './palette-tile-defs';
 import { SPACE_CATEGORIES } from './space-categories';
 
 // The meeting palette (docs/specs/012-collaboration/workshop-mode.md "The palette"), livehuddle's one palette.
-const ids = () => paletteCategoriesFor('workshop').map((c) => c.id);
+const ids = () => paletteCategories().map((c) => c.id);
 const tileIds = (category: string) =>
-  paletteCategoriesFor('workshop')
+  paletteCategories()
     .find((c) => c.id === category)!
     .tiles!.map((t) => t.id);
-const allTiles = () =>
-  paletteCategoriesFor('workshop').flatMap((c) => (c.tiles ?? []).map((t) => t.id));
+const allTiles = () => paletteCategories().flatMap((c) => (c.tiles ?? []).map((t) => t.id));
 
 describe('palette layouts', () => {
   it('name only known categories, once each, and only known tiles', () => {
     const known = new Set(PALETTE_CATEGORIES.map((c) => c.id));
-    for (const [mode, layout] of Object.entries(PALETTE_LAYOUTS)) {
+    for (const [mode, layout] of Object.entries({ meeting: MEETING_PALETTE })) {
       const seen = layout.categories.map((e) => e.id);
       expect(new Set(seen).size, mode).toBe(seen.length);
       for (const e of layout.categories) {
@@ -51,9 +50,9 @@ describe('palette layouts', () => {
       'collab-travel',
       'stickers',
     ]);
-    expect(paletteLandingCategory('workshop')).toBe('popular');
+    expect(paletteLandingCategory()).toBe('popular');
     // No opener anywhere: every category is one level deep.
-    for (const c of paletteCategoriesFor('workshop'))
+    for (const c of paletteCategories())
       for (const t of c.tiles ?? []) expect(t.action.type, t.id).not.toBe('open');
   });
 
@@ -67,14 +66,14 @@ describe('palette layouts', () => {
       'tools:focus-button',
       'tools:avatar-pad',
     ]);
-    const popular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!;
+    const popular = paletteCategories().find((c) => c.id === 'popular')!;
     expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual(['tools:text']);
   });
 
   it('holds only light content in Write, and offers no Image or Link card anywhere (not-in-livehuddle.md "Media")', () => {
     expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky']);
-    expect(paletteCategoryOffered('workshop', 'media')).toBe(false);
-    for (const c of paletteCategoriesFor('workshop'))
+    expect(paletteCategoryOffered('media')).toBe(false);
+    for (const c of paletteCategories())
       for (const t of c.tiles ?? [])
         expect(['tools:image', 'tools:link-card'], c.id).not.toContain(t.id);
   });
@@ -108,7 +107,7 @@ describe('palette layouts', () => {
       'tools:office-pod',
       'tools:rug',
     ]);
-    const rooms = paletteCategoriesFor('workshop').find((c) => c.id === 'collab-rooms')!;
+    const rooms = paletteCategories().find((c) => c.id === 'collab-rooms')!;
     expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
       'tools:wall-door',
     ]);
@@ -134,7 +133,7 @@ describe('palette layouts', () => {
       'tools:washbasin',
       'tools:hand-dryer',
     ]);
-    const amenities = paletteCategoriesFor('workshop').find((c) => c.id === 'collab-amenities')!;
+    const amenities = paletteCategories().find((c) => c.id === 'collab-amenities')!;
     expect(amenities.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
       'tools:umbrella-stand',
       'tools:kettle',
@@ -165,7 +164,7 @@ describe('palette layouts', () => {
     const pieces = SPACE_CATEGORIES.flatMap((c) => tilesForCategory(c.id).map((t) => t.id));
     expect(new Set(pieces).size).toBe(pieces.length);
     // The meeting layout's Space categories hold every piece once too, Rooms' Build group included.
-    const offered = paletteCategoriesFor('workshop')
+    const offered = paletteCategories()
       .filter((c) => c.id.startsWith('collab-'))
       .flatMap((c) => (c.tiles ?? []).map((t) => t.id));
     expect([...offered].sort()).toEqual([...pieces].sort());
@@ -173,14 +172,12 @@ describe('palette layouts', () => {
 
   it('leaves a Space category off until it holds a tile', () => {
     for (const c of SPACE_CATEGORIES)
-      expect(paletteCategoryOffered('workshop', c.id), c.id).toBe(
-        tilesForCategory(c.id).length > 0,
-      );
+      expect(paletteCategoryOffered(c.id), c.id).toBe(tilesForCategory(c.id).length > 0);
   });
 
   // docs/specs/009-elements/mode-button.md "Only Avatar": no Selection Mode category; the Avatar button is in Travel.
   it('keeps only the Avatar Selection Mode button, in Travel', () => {
-    expect(paletteCategoryOffered('workshop', 'collab-mode')).toBe(false);
+    expect(paletteCategoryOffered('collab-mode')).toBe(false);
     expect(tileIds('collab-travel')).toContain('tools:mode-avatar');
     const modeButtons = allTiles().filter((id) => id.startsWith('tools:mode-'));
     expect([...new Set(modeButtons)]).toEqual(['tools:mode-avatar']);
@@ -228,12 +225,12 @@ describe('palette layouts', () => {
       'collab-navigate',
       'frame',
     ])
-      expect(paletteCategoryOffered('workshop', gone), gone).toBe(false);
+      expect(paletteCategoryOffered(gone), gone).toBe(false);
     expect(SEARCH_ONLY_TILE_IDS).toEqual([]);
   });
 
   it('offers no Participate category: a Participant has no palette (share-roles.md "A Participant walks")', () => {
-    expect(paletteCategoryOffered('workshop', 'participate')).toBe(false);
+    expect(paletteCategoryOffered('participate')).toBe(false);
     expect(PALETTE_CATEGORIES.some((c) => c.id === 'participate')).toBe(false);
   });
 });

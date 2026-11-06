@@ -28,7 +28,7 @@ Derived from [Avatar mode](../avatar-mode.md) "Where it lives" and "Opening walk
 | Opening walk | `openWalking`        | Entering Avatar mode because the tab offers it, not because someone picked it    |
 | Re-judge     | `rejudge(tabId)`     | Forget a tab was judged, for the template that has just landed on it             |
 
-Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different feature, `useModeDefaultTool`).
+Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different feature, `useStartingTool`).
 
 ## Behaviour and state
 

@@ -1,32 +1,39 @@
 # Editor modes blueprint
 
 Derived from [Editor modes](../editor-modes.md) at the fold-back (build plan step 9, Work Tracker #190). livehuddle has
-one editor mode, Workshop, and no switch; this records where that rule lives in the code and what pins it.
+no editor modes: `EditorMode` survives only as the stored value `'workshop'`, and since Work Tracker #329 the editor
+neither holds nor passes one. This records where the stored value lives in the code and what pins it.
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                  | File                                                                                                                     |
-| ----------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| editor mode       | `EditorMode` (the one id `'workshop'`)                                                      | `packages/document/src/editor-mode.ts`                                                                                   |
-| the modes         | `EDITOR_MODE_CATALOGUE` (id, label, description), `EDITOR_MODES`                            | `packages/document/src/editor-mode.ts`                                                                                   |
-| the default       | `DEFAULT_EDITOR_MODE` (`'workshop'`)                                                        | `packages/document/src/editor-mode.ts`                                                                                   |
-| the mode's name   | `editorModeLabel` ("Workshop")                                                              | `packages/document/src/editor-mode.ts`                                                                                   |
-| a tab's mode      | `Tab.opensIn` (stored name kept), read through `opensInOf`                                  | `packages/document/src/editor-mode.ts`                                                                                   |
-| a stored mode     | `parseEditorMode`, over the private `LEGACY_EDITOR_MODES` set                               | `packages/document/src/editor-mode.ts`                                                                                   |
-| the palette       | `PALETTE_LAYOUTS` (one entry, `workshop`), `paletteCategoriesFor`, `paletteLandingCategory` | `apps/editor/components/palette/palette-layouts.ts`                                                                      |
-| the Session strip | `sessionStripTools(mode)`                                                                   | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
+| Spec term         | Identifier                                                                              | File                                                                                                                     |
+| ----------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| editor mode       | `EditorMode` (the one id `'workshop'`)                                                  | `packages/document/src/editor-mode.ts`                                                                                   |
+| the modes         | `EDITOR_MODE_CATALOGUE` (id, label, description), `EDITOR_MODES`                        | `packages/document/src/editor-mode.ts`                                                                                   |
+| the default       | `DEFAULT_EDITOR_MODE` (`'workshop'`)                                                    | `packages/document/src/editor-mode.ts`                                                                                   |
+| the mode's name   | `editorModeLabel` ("Workshop")                                                          | `packages/document/src/editor-mode.ts`                                                                                   |
+| a tab's mode      | `Tab.opensIn` (stored name kept), read through `opensInOf`                              | `packages/document/src/editor-mode.ts`                                                                                   |
+| a stored mode     | `parseEditorMode`, over the private `LEGACY_EDITOR_MODES` set                           | `packages/document/src/editor-mode.ts`                                                                                   |
+| the palette       | `MEETING_PALETTE`, `paletteCategories()`, `paletteLandingCategory()` (no mode argument) | `apps/editor/components/palette/palette-layouts.ts`                                                                      |
+| the starting tool | `useStartingTool`, `startingTool(mobile)`                                               | `apps/editor/hooks/editor/useStartingTool.ts`                                                                            |
+| a new tab's mode  | `opensIn: DEFAULT_EDITOR_MODE` in `addTab`                                              | `apps/editor/hooks/persistence/useTabActions.ts`                                                                         |
+| the Session strip | `sessionStripTools(mode)`                                                               | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
 
 "Diagram mode" and "Draw mode" name livediagram's modes only; no livehuddle identifier carries them as a live value.
 
 ## Behaviour and state
 
-- **There is no mode state.** `opensInOf(tab)` ignores its argument and answers `DEFAULT_EDITOR_MODE`, so every reader
-  (the canvas, the palette, the Session strip, the templates' `templateOpensIn`) sees Workshop whatever a tab stored.
+- **There is no mode state.** The editor context has no `editorMode`, the canvas no `editorMode` prop, the editor
+  root no `data-editor-mode` attribute, and the palette, the Search and the tab actions take no mode. `opensInOf(tab)`
+  ignores its argument and answers `DEFAULT_EDITOR_MODE`, so the readers that remain (the templates'
+  `templateOpensIn`, stored-tab reads) see Workshop whatever a tab stored.
 - **A stored mode** reads through `parseEditorMode`: `'workshop'` is itself; `'diagram'`, `'draw'`, `'pages'`,
   `'plan'`, `'illustrate'`, `'infographic'` and `'facilitate'` read as `'workshop'`; any other value (an unknown
   string, a number, `null`, absent) is `undefined`, and the tab still opens in Workshop through `opensInOf`.
-- **The palette** has one layout: `PALETTE_LAYOUTS.workshop`, landing on `'popular'`; a Participant lands on
-  `'participate'` instead (`ToolbarPalette`).
+- **The palette** has one layout: `MEETING_PALETTE`, landing on `'popular'`. A Participant has no palette
+  ([Share roles](../../013-workspace/share-roles.md)).
+- **The starting tool** is picked once as the editor opens (`useStartingTool`): Select, Hand on a phone, Hand for an
+  embed. A later pick is the person's.
 - **The Session strip** offers Timer and Poll when the mode is `'workshop'` (always, in livehuddle); any other
   value answers `null`. An embed gets no strip (`sessionToolsForSurface`).
 - **Stored tabs from other products** pass through `migrateStoredTab` (`packages/document/src/stored-tab.ts`) on every
@@ -74,6 +81,7 @@ one editor mode, Workshop, and no switch; this records where that rule lives in 
 | Only `'workshop'` is a mode id                                          | `packages/document/src/editor-mode.test.ts` ("recognises Workshop and nothing else")                                     |
 | Every stored mode livediagram or an older build wrote reads as Workshop | `packages/document/src/editor-mode.test.ts`                                                                              |
 | One palette layout, its categories and tiles                            | `apps/editor/components/palette/palette-layouts.test.ts`                                                                 |
+| The editor starts on Select, Hand on a phone or in an embed, once       | `apps/editor/hooks/editor/useStartingTool.test.ts`                                                                       |
 | The Session strip offers all three tools in Workshop only               | gone with the Session strip ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)) |
 | Pages and Plan content is dropped on the way in                         | `packages/document/src/retired-pages.test.ts`, `retired-plan.test.ts`                                                    |
 | A whiteboard tab becomes a general tab                                  | `packages/document/src/legacy-whiteboard-tab.test.ts`                                                                    |

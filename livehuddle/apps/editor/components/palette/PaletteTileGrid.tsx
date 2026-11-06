@@ -6,8 +6,6 @@ import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import { MarkerPaletteTile } from './MarkerPaletteTile';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -34,8 +32,6 @@ export type PaletteTileActions = {
   addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
-  // Picks up one of livediagram's Draw mode markers (palette-marker-tiles); no livehuddle tile offers one today.
-  beginMarker: (penId: WhiteboardPenId) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
   // Whether image uploads are available (the editor supplied onAddImage);
@@ -45,14 +41,14 @@ export type PaletteTileActions = {
 };
 
 // A tile pressed: places or arms its tool; pressed again while armed (`pendingDraw`), puts it down
-// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A marker keeps its press, which opens its settings.
+// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function tileHandler(
   def: PaletteTileDef,
   actions: PaletteTileActions,
   pendingDraw?: PendingDraw | null,
 ): () => void {
   const a = def.action;
-  if (a.type !== 'marker' && actions.cancelDraw && tileActive(def, pendingDraw)) {
+  if (actions.cancelDraw && tileActive(def, pendingDraw)) {
     return actions.cancelDraw;
   }
   switch (a.type) {
@@ -96,8 +92,6 @@ export function tileHandler(
       return () => actions.addSticker(a.stickerId);
     case 'component':
       return () => actions.addComponent(a.kind);
-    case 'marker':
-      return () => actions.beginMarker(a.penId);
     case 'open':
       // Off the strip (which opens its popover itself) an opener moves the palette to its category.
       return () => requestPaletteCategory(a.category);
@@ -149,15 +143,6 @@ export function tileActive(
     case 'annotation':
     case 'sticker':
       return false;
-    // A marker in hand: the whiteboard pen intent in this pen's colour and width.
-    case 'marker':
-      return (
-        pendingDraw.type === 'freehand' &&
-        pendingDraw.variant === 'whiteboard' &&
-        (pendingDraw.penId !== undefined
-          ? pendingDraw.penId === a.penId
-          : pendingDraw.colour === a.colour && pendingDraw.width === a.width)
-      );
     default:
       return pendingDraw.type === a.type;
   }
@@ -182,14 +167,9 @@ export function PaletteTile({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   compact?: boolean;
-  // A press of the tile's own (a held marker opening its flyout), else the tile's action.
+  // A press of the tile's own, else the tile's action.
   onPress?: () => void;
 }) {
-  // A marker held, pressed again, opens its colour and width (MarkerPaletteTile).
-  if (def.action.type === 'marker' && !onPress)
-    return (
-      <MarkerPaletteTile def={def} actions={actions} pendingDraw={pendingDraw} compact={compact} />
-    );
   return (
     <TileButton
       def={def}

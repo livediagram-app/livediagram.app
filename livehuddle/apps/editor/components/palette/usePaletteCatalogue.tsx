@@ -1,4 +1,4 @@
-import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livehuddle/document';
+import type { EmbedProvider } from '@livehuddle/document';
 import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
@@ -8,8 +8,7 @@ import { buildCanvasToolOptions } from './canvas-tool-options';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { paletteCategoriesFor } from './palette-layouts';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import { paletteCategories } from './palette-layouts';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
@@ -56,7 +55,6 @@ export function usePaletteCatalogue({
   onAddArrow,
   onBeginFreehand,
   onBeginHighlighter,
-  onBeginMarker,
   onCancelDraw,
   onBeginShapePen,
   onBeginPolygon,
@@ -64,8 +62,6 @@ export function usePaletteCatalogue({
   pendingDraw,
   onTileUsed,
 }: Deps) {
-  // The editor mode picks the palette layout (palette-layouts): Workshop, the one mode.
-  const editorMode = DEFAULT_EDITOR_MODE;
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
@@ -93,7 +89,6 @@ export function usePaletteCatalogue({
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
-  const beginMarker = (penId: WhiteboardPenId) => armed(() => onBeginMarker(penId))();
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
   const beginRoomWalls = armed(() => onBeginRoomWalls?.());
@@ -125,7 +120,6 @@ export function usePaletteCatalogue({
       addText,
       beginFreehand,
       beginHighlighter,
-      beginMarker,
       beginShapePen,
       beginPolygon,
       beginRoomWalls,
@@ -160,8 +154,8 @@ export function usePaletteCatalogue({
   // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles.
-  const categories = paletteCategoriesFor(editorMode);
+  // The palette's layout (palette-layouts): its categories, in order, with their tiles.
+  const categories = paletteCategories();
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -180,7 +174,6 @@ export function usePaletteCatalogue({
   return {
     tileActions,
     tabs,
-    editorMode,
     canvasToolOptions,
     onCanvasToolChange,
     iconCatalogsLoaded,

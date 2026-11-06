@@ -334,8 +334,9 @@ one per document id. What livehuddle keeps for one person lives in their own Dur
 - `agent_changesets` and `agent_changeset_parts` (the changeset log).
 - `tab_shares` and `share_outbox`: the other documents each shared tab is in, and what they are still to hear
   ([Tab ↔ document many-to-many](../006-document/tab-document-many-to-many.md)).
-- `guest_voters`: the guests who voted on a Q&A board, counted per network. Nothing writes it since the board left
-  livehuddle (Work Tracker #423, part 4); it stays so an existing store is never migrated.
+- `guest_voters`, in an older room's store only: the guests who voted on a Q&A board, counted per network. Nothing
+  reads or writes it since the board left livehuddle (Work Tracker #423, part 4), and a new room no longer creates
+  it (Work Tracker #514); an existing one is left as it is, never dropped or migrated.
 - `outbox`: what the index and the media service still have to hear (below).
 - In the object's key-value storage: the order state (`epoch`, `seq`), the collaboration ledger, selections and
   agent presence.
@@ -553,7 +554,7 @@ Every tab the api receives (document create, tab save) runs the stored-tab migra
 The api has no D1 database and no SQL migrations. Its data is in three kinds of SQLite-backed Durable Object, each
 creating its schema on first use:
 
-- **Document content** (`document`, `community_post`, `tabs`, `document_tabs`, `tab_stats`, `image_refs`, `image_owners`, `image_grants`, `notify_claims`, `agent_changesets`, `agent_changeset_parts`, `tab_shares`, `share_outbox`, `guest_voters`, `outbox`) is in each document's Durable Object, `apps/api/src/document-room/document-schema.ts`. The document's own row holds its name, owner and deck. See [Per-tab storage](../006-document/per-tab-storage.md) for why a tab is its own row.
+- **Document content** (`document`, `community_post`, `tabs`, `document_tabs`, `tab_stats`, `image_refs`, `image_owners`, `image_grants`, `notify_claims`, `agent_changesets`, `agent_changeset_parts`, `tab_shares`, `share_outbox`, `outbox`; an older room's unused `guest_voters` too) is in each document's Durable Object, `apps/api/src/document-room/document-schema.ts`. The document's own row holds its name, owner and deck. See [Per-tab storage](../006-document/per-tab-storage.md) for why a tab is its own row.
 - **A person's own store** (`PERSON_STORE`, `apps/api/src/person-store/`): their shape libraries.
 
 Document-store hybrid: the document's meta lives in real columns; element content lives in tab `data` JSON. Element-level SQL filtering isn't a use case, so normalising element rows would buy nothing, and the editor already round-trips JSON for every save.

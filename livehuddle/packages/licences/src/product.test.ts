@@ -8,10 +8,6 @@ import { LICENCES } from './product.ts';
 // the bundlers write them) the embedded works must cover.
 describeLicenceTables(LICENCES, {
   embeddedAssets: [
-    ['tfjs-backend-wasm.38dtokxvvg789.wasm', ['xnnpack', 'emscripten']],
-    ['tfjs-backend-wasm-simd.3qlltfrj4oad9.wasm', ['xnnpack', 'cpuinfo', 'pthreadpool']],
-    ['tfjs-backend-wasm-threaded-simd.0brfufvrco1qv.wasm', ['fp16', 'fxdiv', 'psimd', 'clog']],
-    ['ort-wasm-simd-threaded.jsep.1d4fxnu9gfd3p.wasm', ['onnxruntime', 'emscripten']],
     ['webp_enc_simd.0abc.wasm', ['libwebp', 'emscripten']],
     ['webp_dec.0abc.wasm', ['libwebp']],
     ['dd4dd8881e2df4e64203b5c0ae65e1648ab55207-index_bg.wasm', ['resvg', 'tiny-skia']],

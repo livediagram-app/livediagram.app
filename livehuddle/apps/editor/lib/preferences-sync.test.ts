@@ -26,7 +26,6 @@ import {
   writeUserPreferences,
   type UserPreferences,
 } from './user-preferences';
-import type { ShapePicks } from './whiteboard-shape-slots';
 
 // Saving preferences to the server (docs/specs/007-editor/user-preferences.md "Saving to the server").
 
@@ -60,7 +59,7 @@ function fullAccount(): UserPreferences {
   ];
   const picks = Object.fromEntries(
     kinds.map((k, i) => [k, [i + 1, 1_760_000_000_000 + i * 1000]]),
-  ) as ShapePicks;
+  ) as UserPreferences['whiteboardShapePicks'];
   return {
     ...({
       recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
@@ -78,8 +77,8 @@ function fullAccount(): UserPreferences {
     customSwatches: Array.from({ length: 100 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     whiteboardYourColours: Array.from({ length: 50 }, (_, i) => `#${String(i).padStart(6, 'a')}`),
     telemetryEnabled: false,
-    tourSeen: true,
-    workshopTourSeen: true,
+    avatarTourSeen: true,
+    elementToursSeen: true,
     uiScale: 1.1,
     panelOpacity: 0.85,
     elementIndicatorStyle: 'footer',
@@ -105,7 +104,7 @@ afterEach(() => {
 
 describe('fitPreferences', () => {
   it('leaves a blob that fits as it is', () => {
-    const prefs = { tourSeen: true };
+    const prefs = { avatarTourSeen: true };
     expect(fitPreferences(prefs)).toBe(prefs);
   });
 
@@ -192,10 +191,10 @@ describe('fetchUserPreferences after a save that did not land', () => {
   it('keeps the device copy over the server and sends it again', async () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false, uiScale: 1.2 }));
     window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
-    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, tourSeen: true });
+    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, avatarTourSeen: true });
     mockedPut.mockResolvedValue(true);
     const merged = await fetchUserPreferences('owner-1');
-    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, tourSeen: true });
+    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, avatarTourSeen: true });
     // Only what differs from the server's copy goes.
     expect(mockedPut).toHaveBeenCalledWith('owner-1', { showMinimap: false, uiScale: 1.2 });
   });
@@ -292,17 +291,20 @@ describe('rebaseUserPreferences', () => {
   });
 
   it('removes a key the change removed', () => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ uiScale: 1.1, tourSeen: true }));
-    const { uiScale: _gone, ...rest } = { uiScale: 1.1, tourSeen: true };
-    expect(rebaseUserPreferences({ uiScale: 1.1, tourSeen: true }, rest)).toEqual({
-      tourSeen: true,
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ uiScale: 1.1, avatarTourSeen: true }),
+    );
+    const { uiScale: _gone, ...rest } = { uiScale: 1.1, avatarTourSeen: true };
+    expect(rebaseUserPreferences({ uiScale: 1.1, avatarTourSeen: true }, rest)).toEqual({
+      avatarTourSeen: true,
     });
   });
 
   it('builds on the snapshot when there is no cache yet', () => {
-    expect(rebaseUserPreferences({ uiScale: 1 }, { uiScale: 1, tourSeen: true })).toEqual({
+    expect(rebaseUserPreferences({ uiScale: 1 }, { uiScale: 1, avatarTourSeen: true })).toEqual({
       uiScale: 1,
-      tourSeen: true,
+      avatarTourSeen: true,
     });
   });
 });

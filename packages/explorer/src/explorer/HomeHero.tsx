@@ -263,7 +263,7 @@ function HeroCorner({ onHide }: { onHide?: () => void }) {
           aria-label={HERO_COPY.hideBanner}
           title={HERO_COPY.hideBanner}
           data-home-banner-close=""
-          className={`relative flex size-[30px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white ${FOCUS_RING}`}
+          className={`relative touch-target-y flex size-[30px] shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white ${FOCUS_RING}`}
         >
           <CloseIcon size={14} />
         </button>
@@ -280,7 +280,7 @@ export function HelpButton({ href }: { href: string }) {
       href={href}
       target="_blank"
       rel="noreferrer noopener"
-      className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white ${FOCUS_RING}`}
+      className={`relative touch-target-y inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white ${FOCUS_RING}`}
     >
       <HelpMarkIcon />
       <span>{HERO_COPY.help}</span>

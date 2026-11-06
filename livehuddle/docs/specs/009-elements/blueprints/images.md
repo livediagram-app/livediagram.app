@@ -338,29 +338,30 @@ reads a 503 as `null`.
 
 ## Errors and edge cases
 
-| #   | Case                                                 | Handling                                                                                        |
-| --- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| E1  | SVG, HTML or other bytes declared as PNG             | Sniff mismatch, 415 `unsupported_type`                                                          |
-| E2  | Truncated or malformed JPEG                          | 415 `malformed_jpeg`; nothing written                                                           |
-| E3  | Lying `Content-Length`                               | Body re-checked after read, 413                                                                 |
-| E4  | Forged `X-Image-Sha256`                              | The service's early dedupe is owner-scoped; the body hash is recomputed before insert           |
-| E4a | Token probing the gallery by hash                    | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row |
-| E5  | Same bytes uploaded concurrently                     | The service's unique index keeps one image; the other answers it `deduped: true`                |
-| E5a | Racing uploads that together pass a cap              | The service refuses the later insert and deletes its bytes; 403 `gallery_full`, or 409          |
-| E6  | Upload without a valid sha header at a full gallery  | The service checks the caps before body dedupe: 403 even when the bytes are already stored      |
-| E7  | Service refuses the key, or fails                    | 401 / 5xx → 503 `images_unavailable`, logged `[images] media service answered`                  |
-| E8  | Delete of a referenced image                         | 200; references render **broken**                                                               |
-| E9  | Referenced id the service does not know              | `''` remembered, so later reads 404 without asking; canvas **broken**; snapshot placeholder     |
-| E10 | Snapshot images over the budget                      | Placeholder for each that does not fit                                                          |
-| E11 | Offline `data:` id sent to the api                   | Not servable, placeholder in snapshots; canvas and client export use it directly                |
-| E12 | Retention and reference edge cases                   | [Image reference index](image-reference-index.md#errors-and-edge-cases)                         |
-| E13 | Share read of a document in the Trash                | The index grants no read; 404                                                                   |
-| E14 | Account deletion when the service fails              | `forgetOwner` not ok throws before any row here is touched; the deletion can run again          |
-| E18 | Image later known to the service, remembered as `''` | Stays unserved through that document until its `image_owners` row is asked again                |
-| E19 | A document placing more than 1,000 images            | First 1,000 sent; logged; the rest could be swept by the service (unreachable under the cap)    |
-| E20 | Guest image from another app placed here             | Owner name matches nobody here: served only through a grant                                     |
-| E15 | Picker opened while the tab is locked / view role    | `openImagePickerFor` no-ops; placeholder shows "No image"                                       |
-| E16 | Image with zero natural height                       | `readImageDimensions` fails, "Could not read image dimensions."                                 |
+| #    | Case                                                 | Handling                                                                                                      |
+| ---- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| E1   | SVG, HTML or other bytes declared as PNG             | Sniff mismatch, 415 `unsupported_type`                                                                        |
+| E2   | Truncated or malformed JPEG                          | 415 `malformed_jpeg`; nothing written                                                                         |
+| E3   | Lying `Content-Length`                               | Body re-checked after read, 413                                                                               |
+| E4   | Forged `X-Image-Sha256`                              | The service's early dedupe is owner-scoped; the body hash is recomputed before insert                         |
+| E4a  | Token probing the gallery by hash                    | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row               |
+| E5   | Same bytes uploaded concurrently                     | The service's unique index keeps one image; the other answers it `deduped: true`                              |
+| E5a  | Racing uploads that together pass a cap              | The service refuses the later insert and deletes its bytes; 403 `gallery_full`, or 409                        |
+| E6   | Upload without a valid sha header at a full gallery  | The service checks the caps before body dedupe: 403 even when the bytes are already stored                    |
+| E7   | Service refuses the key, or fails                    | 401 / 5xx → 503 `images_unavailable`, logged `[images] media service answered`                                |
+| E8   | Delete of a referenced image                         | 200; references render **broken**                                                                             |
+| E9   | Referenced id the service does not know              | `''` remembered, so later reads 404 without asking; canvas **broken**; snapshot placeholder                   |
+| E10  | Snapshot images over the budget                      | Placeholder for each that does not fit                                                                        |
+| E11  | Offline `data:` id sent to the api                   | Not servable, placeholder in snapshots; canvas and client export use it directly                              |
+| E12  | Retention and reference edge cases                   | [Image reference index](image-reference-index.md#errors-and-edge-cases)                                       |
+| E13  | Share read of a document in the Trash                | The index grants no read; 404                                                                                 |
+| E14  | Account deletion when the service fails              | `forgetOwner` not ok throws before any row here is touched; the deletion can run again                        |
+| E18  | Image later known to the service, remembered as `''` | Stays unserved through that document until its `image_owners` row is asked again                              |
+| E19  | A document placing more than 1,000 images            | First 1,000 sent; logged; the rest could be swept by the service (unreachable under the cap)                  |
+| E20  | Guest image from another app placed here             | Owner name matches nobody here: served only through a grant                                                   |
+| E15  | Picker opened by a view role                         | `openImagePickerFor` no-ops; placeholder shows "No image"                                                     |
+| E15a | Picker opened on a locked image or a locked tab      | Opens; the pick commits through `commit(…, { picture: true })`, which holds to `pictureBlocked` (no tab lock) |
+| E16  | Image with zero natural height                       | `readImageDimensions` fails, "Could not read image dimensions."                                               |
 
 ## Security and trust
 

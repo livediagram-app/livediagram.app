@@ -1,7 +1,6 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
-import { badgePresetFace, type PenColour } from '@livehuddle/document';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
+import { badgePresetFace } from '@livehuddle/document';
 import type { EmbedProvider } from '@livehuddle/document';
 
 import type { ComponentKind, SelectionMode, ShapeKind } from '@livehuddle/document';
@@ -153,8 +152,8 @@ type PaletteTileAction =
       variant?: string;
     }
   | { type: 'text' }
-  // An opener: stands for a category, or one group of a catalogue, and opens it; places nothing.
-  | { type: 'open'; category: string; group?: string }
+  // An opener: stands for a category and opens it; places nothing.
+  | { type: 'open'; category: string }
   | { type: 'freehand' }
   // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
   // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)
@@ -173,17 +172,7 @@ type PaletteTileAction =
   | { type: 'image' }
   | { type: 'annotation' }
   | { type: 'link-card' }
-  | { type: 'component'; kind: ComponentKind }
-  // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
-  // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
-  // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
-  // the person's own, read when the Search opens.
-  | {
-      type: 'marker';
-      penId: WhiteboardPenId;
-      colour: PenColour | null;
-      width: number;
-    };
+  | { type: 'component'; kind: ComponentKind };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat

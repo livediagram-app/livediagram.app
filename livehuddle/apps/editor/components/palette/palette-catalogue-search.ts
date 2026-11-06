@@ -1,23 +1,18 @@
 // The Toolbar strip's Search over the open-ended catalogues (docs/specs/007-editor/toolbar-layout.md
 // "Search: every element type"): Stickers, each entry a dynamic tile (palette-dynamic-tiles) so it places as its
-// category's own tile does. Split like the element tiles: a catalogue the mode's palette offers is this mode's, the
-// rest another mode's. No line-art icons and no Technology marks: livehuddle offers neither
+// category's own tile does. No line-art icons and no Technology marks: livehuddle offers neither
 // (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
-import type { EditorMode, Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import { paletteRank, type StickerDef } from '@liveworkspace/icons';
 import { getStickerCatalog } from '@liveworkspace/workbench/lib/stickers';
-import { paletteCategoryOffered } from './palette-layouts';
 import { stickerTileDef } from './palette-dynamic-tiles';
 import type { PaletteTileDef } from './palette-tile-defs';
-import type { ElementTileSearch } from './palette-tile-search';
 
 // Matches shown per catalogue: five rows of the popover's three-wide grid. The catalogue's own
 // category has the rest, with its browse.
 export const CATALOGUE_MATCH_LIMIT = 15;
 
 type Catalogue<T> = {
-  // The PALETTE_CATEGORIES id: whether the mode offers it decides its section.
-  category: 'stickers';
   entries: () => readonly T[];
   id: (entry: T) => string;
   name: (entry: T) => string;
@@ -26,7 +21,6 @@ type Catalogue<T> = {
 };
 
 const STICKERS: Catalogue<StickerDef> = {
-  category: 'stickers',
   entries: getStickerCatalog,
   id: (s) => s.id,
   name: (s) => s.label,
@@ -64,26 +58,20 @@ function onTab<T>(cat: Catalogue<T>, ids: Set<string>): PaletteTileDef[] {
     .map(cat.tile);
 }
 
-/** The catalogue tiles the Search lists: the query's matches, or before anything is typed, the
- *  entries already on the tab; each catalogue in this mode's section when the mode offers it. */
+/** The catalogue tiles the Search lists: the query's matches, or before anything is typed, the entries already on the
+ *  tab. */
 export function searchCatalogueTiles({
   query,
-  mode,
   tabElements = [],
   loaded = true,
 }: {
   query: string;
-  mode: EditorMode;
   tabElements?: readonly Element[];
   // Whether the catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the React
   // Compiler re-runs this when they land. Before then they hold nothing to list.
   loaded?: boolean;
-}): ElementTileSearch {
-  if (!loaded) return { here: [], elsewhere: [] };
-  const browsing = !query.trim();
-  const ids = browsing ? stickerIdsOnTab(tabElements) : null;
-  const out: ElementTileSearch = { here: [], elsewhere: [] };
-  const tiles = ids ? onTab(STICKERS, ids) : matchesIn(STICKERS, query);
-  (paletteCategoryOffered(mode, STICKERS.category) ? out.here : out.elsewhere).push(...tiles);
-  return out;
+}): PaletteTileDef[] {
+  if (!loaded) return [];
+  if (query.trim()) return matchesIn(STICKERS, query);
+  return onTab(STICKERS, stickerIdsOnTab(tabElements));
 }

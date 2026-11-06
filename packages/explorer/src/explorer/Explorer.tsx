@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useEscape, useFocusTrap } from '@liveworkspace/ui';
 import { CloseIcon } from '../ui/icons';
+import { EXPLORER_MAIN } from '../ui/classes';
 import { useItemCount } from '../data/useItemCount';
 import type { App, IndexClient, Item } from '@liveworkspace/index-client';
 import { ToastProvider } from '../ui/Toasts';
@@ -427,7 +428,7 @@ function ExplorerInner({
                   </div>
                 </div>
               ) : null}
-              <main className="mx-auto flex w-full max-w-7xl flex-1 gap-8 px-4 pb-16 pt-8 sm:px-6">
+              <main className={EXPLORER_MAIN}>
                 {/* No box: the tree sits on the page. Hidden on a phone, where the drawer holds it. */}
                 <aside className="hidden w-64 shrink-0 self-start sm:block" aria-label="Sections">
                   <div className="sticky top-20 px-1 py-1">

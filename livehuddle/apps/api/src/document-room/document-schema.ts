@@ -153,16 +153,9 @@ CREATE TABLE IF NOT EXISTS agent_changeset_parts (
   PRIMARY KEY (changeset_id, part)
 );
 
--- Who has voted as a guest (docs/specs/012-collaboration/vote-integrity.md): a guest's Q&A upvote was admitted
--- against a cap of guest voters per network. Nothing writes it since the Q&A board left (Work Tracker #423, part 4);
--- kept so an existing document's store is never migrated.
-CREATE TABLE IF NOT EXISTS guest_voters (
-  document_id TEXT    NOT NULL,
-  network_tag TEXT    NOT NULL,
-  person_tag  TEXT    NOT NULL,
-  created_at  INTEGER NOT NULL,
-  PRIMARY KEY (document_id, network_tag, person_tag)
-) WITHOUT ROWID;
+-- An older room's store may hold a guest_voters table (a guest's Q&A upvotes, docs/specs/012-collaboration/vote-integrity.md):
+-- nothing reads or writes it since the Q&A board left (Work Tracker #423, part 4), and a new room no longer makes it
+-- (Work Tracker #514). It is left where it is, never dropped or migrated.
 
 -- What the document owes the index and the media service (document-outbox.ts): a key per thing whose derived rows
 -- changed, filled by the triggers below so no write path can forget it, drained by the room's alarm.

@@ -50,8 +50,8 @@ reach a deployed artefact, and nothing else.
 - **A work with no licence text fails the build**, naming the package and version. The fix is never
   to omit it: an **override** supplies the upstream text, committed to the repo with its source URL
   (pinned to a tag or commit) and a checksum, keyed to the exact package version so an upgrade asks
-  for review again. Today nine packages need one: five TensorFlow.js packages, two ONNX Runtime
-  packages, seedrandom and `@resvg/resvg-wasm`.
+  for review again. Today one package needs one: `@resvg/resvg-wasm`. (The TensorFlow.js and ONNX Runtime
+  entries, with seedrandom, went with the note reader they shipped for, Work Tracker #329.)
 - **Licence id.** The `license` field of the work's `package.json`, as an SPDX expression. When it is
   absent, the id is recognised from the text (MIT, ISC, BSD-2-Clause, BSD-3-Clause, Apache-2.0);
   text that is not recognised fails the build.

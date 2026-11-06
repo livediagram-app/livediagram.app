@@ -32,38 +32,10 @@ describe('buildDressedDrawnArrow', () => {
     strokeWidth: 6,
     arrowheadSize: 'large',
   });
-  const board = { elements: [] as Element[], theme: themed, whiteboard: true };
+  const board = { elements: [] as Element[], theme: themed };
 
-  // Written in Ink by name (docs/specs/007-editor/editor-modes.md "One look").
-  it('is the drawn arrow in its tool style, in Ink in Draw mode', () => {
-    const out = buildDressedDrawnArrow(
-      { type: 'arrow', ends: 'to', board: true },
-      10,
-      20,
-      150,
-      90,
-      board,
-      thick,
-    );
-    const { id: _id, ...rest } = out;
-    const { id: _raw, ...raw } = buildDrawnArrow(10, 20, 150, 90, [], themed, {
-      ends: 'to',
-      unpainted: true,
-    });
-    expect(rest).toEqual({ ...raw, penColour: 'ink', strokeWidth: 6, arrowheadSize: 'large' });
-    expect(out.strokeColor).toBeUndefined();
-  });
-
-  it('paints a diagram arrow in the theme stroke, then dresses it', () => {
-    const out = buildDressedDrawnArrow(
-      { type: 'arrow' },
-      0,
-      0,
-      100,
-      0,
-      { ...board, whiteboard: false },
-      thick,
-    );
+  it('paints a drawn arrow in the theme stroke, then dresses it', () => {
+    const out = buildDressedDrawnArrow({ type: 'arrow' }, 0, 0, 100, 0, board, thick);
     expect(out.strokeColor).toBe('#123456');
     expect(out.strokeWidth).toBe(6);
     expect(out.arrowEnds).toBe('none');
@@ -161,18 +133,6 @@ describe('buildDrawnBoxed', () => {
   });
 
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
-
-  // docs/specs/023-draw-mode/draw-mode.md "Text boxes": in Draw mode a text box hugs its text.
-  it('places a Draw mode text box empty, caret-sized, at the click', () => {
-    const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab(), true);
-    // 14 px text in a 1.25 line: 17.5, rounded up, plus 2 px above and below.
-    expect(out).toMatchObject({ label: '', sizing: 'fit', x: 496, y: 289, width: 8, height: 22 });
-  });
-
-  it('sets a dragged Draw mode text box to the dragged width and one line', () => {
-    const out = buildDrawnBoxed({ type: 'text' }, 100, 50, 340, 200, null, tab(), true);
-    expect(out).toMatchObject({ label: '', sizing: 'wrap', x: 100, y: 50, width: 240, height: 22 });
-  });
 
   it('centres the factory-default size on a tap', () => {
     const out = buildDrawnBoxed(shapeIntent, 500, 300, 504, 303, null, tab());
