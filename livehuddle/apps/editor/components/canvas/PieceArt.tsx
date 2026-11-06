@@ -11,6 +11,7 @@ import {
 import { GardenFenceView, GardenPathView, GrassView } from '@/components/canvas/collab/GardenViews';
 import { DoorView } from '@/components/canvas/collab/RoomBuilderViews';
 import { PondView } from '@/components/canvas/collab/PondView';
+import { SwimmingPoolView } from '@/components/canvas/collab/SwimmingPoolView';
 import { hasSocialFace, SocialFace } from '@/components/canvas/collab/SocialFaces';
 import { RoomView } from '@/components/canvas/collab/RoomView';
 import { RoomSignView } from '@/components/canvas/collab/RoomSignView';
@@ -29,6 +30,8 @@ export function hasPieceArt(kind: string): boolean {
     isFurnitureViewShape(kind) ||
     // The Pond (docs/specs/009-elements/social-pieces.md), drawn to its size.
     kind === 'pond' ||
+    // The Swimming Pool (docs/specs/009-elements/venue-pieces.md), drawn to its size.
+    kind === 'swimming-pool' ||
     kind === 'room' ||
     kind === 'door' ||
     kind === 'stage' ||
@@ -122,6 +125,10 @@ export function PieceArt({
       );
     case 'pond':
       return <PondView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
+    case 'swimming-pool':
+      return (
+        <SwimmingPoolView element={element} stroke={stroke} floor={fill} animClass={animClass} />
+      );
     case 'grass':
       return <GrassView element={element} floor={fill} animClass={animClass} />;
     case 'garden-fence':

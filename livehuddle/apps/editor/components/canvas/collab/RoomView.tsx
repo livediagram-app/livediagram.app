@@ -2,14 +2,11 @@
 
 import {
   DEFAULT_ROOM_DOOR,
-  FURNITURE_FACE_SHADE,
-  FURNITURE_PANEL_STROKE,
-  FURNITURE_RAIL_OPACITY,
-  FURNITURE_RAIL_STROKE,
   roomParts,
   type FurniturePart,
   type ShapeElement,
 } from '@livehuddle/document';
+import { FurniturePartView } from './FurnitureView';
 import { OutlinedRoomView } from './RoomBuilderViews';
 
 // A room (docs/specs/009-elements/office.md "Room"): a floor in the element's fill, the back wall standing up
@@ -53,8 +50,9 @@ export function RoomView({
 }
 
 /**
- * An office piece drawn at its own size (a room, a stage): its parts in its own px, the floor and panels in the
- * element's fill, outlines and rails in its stroke, a face shaded with the stroke so it reads as standing up.
+ * An office piece drawn at its own size (a room, a stage): its parts in its own px through the furniture's painter
+ * (FurniturePartView), the floor and uncoloured panels in the element's fill, a part's own colour where it has one (a
+ * stage's nosing, skirt and footlights), outlines and rails in its stroke, a face shaded with the stroke.
  */
 export function SizedPieceView({
   parts,
@@ -82,44 +80,9 @@ export function SizedPieceView({
         role="img"
         aria-label={label}
       >
-        {parts.map((p, i) => {
-          if (p.tag === 'path') {
-            // A plank line: a rail, never filled.
-            return (
-              <path
-                key={i}
-                d={p.d}
-                fill="none"
-                stroke={stroke}
-                strokeWidth={FURNITURE_RAIL_STROKE}
-                opacity={FURNITURE_RAIL_OPACITY}
-                strokeLinecap="round"
-              />
-            );
-          }
-          if (p.tag !== 'rect') return null;
-          const box = { x: p.x, y: p.y, width: p.w, height: p.h, rx: p.rx };
-          if (p.role === 'floor') return <rect key={i} {...box} fill={floor} />;
-          if (p.role === 'rail')
-            return (
-              <rect
-                key={i}
-                {...box}
-                fill="none"
-                stroke={stroke}
-                strokeWidth={FURNITURE_RAIL_STROKE}
-                opacity={FURNITURE_RAIL_OPACITY}
-              />
-            );
-          return (
-            <g key={i}>
-              <rect {...box} fill={floor} stroke={stroke} strokeWidth={FURNITURE_PANEL_STROKE} />
-              {p.role === 'face' ? (
-                <rect {...box} fill={stroke} opacity={FURNITURE_FACE_SHADE} />
-              ) : null}
-            </g>
-          );
-        })}
+        {parts.map((p, i) => (
+          <FurniturePartView key={i} part={p} seat={floor} stroke={stroke} />
+        ))}
       </svg>
     </div>
   );

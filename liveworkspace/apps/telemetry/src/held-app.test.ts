@@ -99,6 +99,13 @@ describe('livehuddle in the telemetry service', () => {
       'Toilet-cubicle',
       'Washbasin',
       'Hand-dryer',
+      'Pillar',
+      'Column',
+      'Car-park',
+      'Bike-rack',
+      'Swimming-pool',
+      'Stage-curtains',
+      'Podium',
       'Timer',
       'Stopwatch',
     ]);

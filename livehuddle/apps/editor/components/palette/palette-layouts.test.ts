@@ -104,8 +104,14 @@ describe('palette layouts', () => {
       'tools:wall-door',
       'tools:fence',
       'tools:stage',
+      // The Stage's curtains and podium beside it; the pillar and column after the rug
+      // (docs/specs/009-elements/venue-pieces.md "Where they live").
+      'tools:stage-curtains',
+      'tools:podium',
       'tools:office-pod',
       'tools:rug',
+      'tools:pillar',
+      'tools:column',
     ]);
     const rooms = paletteCategories().find((c) => c.id === 'collab-rooms')!;
     expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
@@ -146,6 +152,23 @@ describe('palette layouts', () => {
       'tools:arcade-machine',
       'tools:dartboard',
       'tools:fireplace',
+    ]);
+    expect(tileIds('collab-garden')).toEqual([
+      'tools:outdoor-plant',
+      'tools:tree',
+      'tools:garden-path',
+      'tools:grass',
+      'tools:garden-fence',
+      'tools:bench',
+      'tools:picnic-table',
+      'tools:hammock',
+      'tools:garden-umbrella',
+      'tools:fountain',
+      'tools:pond',
+      'tools:swimming-pool',
+      'tools:campfire',
+      'tools:car-park',
+      'tools:bike-rack',
     ]);
     expect(tileIds('collab-meeting')).toEqual([
       'tools:screen',
