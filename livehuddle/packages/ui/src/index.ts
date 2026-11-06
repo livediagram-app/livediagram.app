@@ -22,7 +22,8 @@ export { SiteHeader } from './SiteHeader';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { SiteFooter } from './SiteFooter';
 export { StableLabel } from './StableLabel';
-export { DiagramBuildAnimation } from '@liveworkspace/ui/diagram-build-animation';
+// The loaders' shared loop phase, so a remounted loading picture carries on where it was.
+export { useLoopPhase } from '@liveworkspace/ui/build-animation-kit';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
 export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';

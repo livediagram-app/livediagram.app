@@ -238,6 +238,9 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   // chords above and nothing below. Nothing was dispatched, so this is `false`:
   // the caller swallows the key either way.
   if (live.isReadOnly) return false;
+  // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): no Undo or Redo, so a stray key
+  // never changes the Space behind you. Not dispatched, so the caller swallows the browser's own undo too.
+  if (live.canvasTool === 'avatar' && (lower === 'z' || lower === 'y')) return false;
   // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z.
   if (lower === 'y' || (lower === 'z' && e.shiftKey)) {
     e.preventDefault();

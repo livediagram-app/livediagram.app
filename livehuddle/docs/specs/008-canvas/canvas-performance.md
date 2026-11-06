@@ -84,6 +84,13 @@ the bench also reports it at the reference speed (4× slower), where it is not a
   animations"): an animation over the whole board makes the browser lay out the page's
   compositing again as it starts and as it ends, and a per-element entry re-renders every element
   view once more. Chrome may still fade in; it is small.
+- **A Tab Style change on a busy Space eases the canvas, not its parts.** On a tab of more than 20 elements the
+  canvas's own colour (its backdrop) still eases into a new theme, look, finish, typeface, size or pattern, and every
+  part inside it snaps ([Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md) "Eased changes"). Easing the
+  parts sets a colour transition on every node of every element at once, and the browser restyles each of them on
+  every frame of the 250 ms ease: on Company Campus (114 elements, about 2,500 nodes) a theme pick took about 270 ms to
+  paint and held the page in long frames for 600 to 850 ms, the board changing in steps; snapping the parts paints it
+  in about 40 ms with no long frame. The state change was already one commit, one undo step and one room op.
 - **The Map redraws its content when a gesture ends**, not on every frame of it. During a drag,
   pan or stroke it keeps its last drawing and moves only its viewport rectangle; a remote edit
   redraws it at most once every 250 ms. Opening a board draws the board first; the Map's picture

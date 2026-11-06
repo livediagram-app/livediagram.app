@@ -22,6 +22,8 @@ afterEach(() => {
 });
 
 const rug = { id: 'rug', type: 'shape', shape: 'rug', x: 0, y: 0, width: 400, height: 400 };
+// A sofa on the rug, frontmost, to sit on and click again.
+const sofa = { id: 'sofa', type: 'shape', shape: 'sofa', x: 200, y: 200, width: 120, height: 60 };
 
 function setup() {
   const onPresence = vi.fn();
@@ -30,7 +32,7 @@ function setup() {
       active: true,
       config: DEFAULT_AVATAR_CONFIG,
       onToggleGender: vi.fn(),
-      elements: [rug],
+      elements: [rug, sofa],
       mainRef: { current: null },
       wrapperRef: { current: null },
       viewportOffset: { x: 0, y: 0 },
@@ -93,6 +95,69 @@ describe('useAvatarWalk seats', () => {
       vi.advanceTimersByTime(500);
     });
     expect(result.current.pos!.x).toBeGreaterThan(50);
+  });
+
+  // Any movement stands you up (docs/specs/009-elements/chair.md, Work Tracker #560): a click, a tap and a route all
+  // reach walkTo, so one test covers them.
+  it('a walk while seated stands up, frees the seat at once and walks there', () => {
+    const { result, onPresence } = setup();
+    act(() => result.current.sitOn('chair', { x: 50, y: 70 }, 'down'));
+    onPresence.mockClear();
+    act(() => result.current.walkTo({ x: 150, y: 70 }));
+    expect(result.current.seatedOn).toBeNull();
+    expect(result.current.seatClaim).toBeNull();
+    expect(onPresence).toHaveBeenCalledWith(expect.objectContaining({ seatedOn: null }));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(result.current.pos!.x).toBeGreaterThan(50);
+  });
+
+  it('a walk onto the piece you sit on keeps you in it', () => {
+    const { result, onPresence } = setup();
+    act(() => result.current.sitOn('sofa', { x: 230, y: 230 }, 'down'));
+    onPresence.mockClear();
+    act(() => result.current.walkTo({ x: 300, y: 240 }));
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(result.current.seatedOn).toBe('sofa');
+    expect(result.current.pos).toEqual({ x: 230, y: 230 });
+    expect(onPresence).not.toHaveBeenCalledWith(expect.objectContaining({ seatedOn: null }));
+  });
+
+  it('an arrow key stands up and walks off in the same press', () => {
+    const { result, onPresence } = setup();
+    act(() => result.current.sitOn('chair', { x: 50, y: 70 }, 'down'));
+    onPresence.mockClear();
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    });
+    expect(result.current.seatedOn).toBeNull();
+    expect(onPresence).toHaveBeenCalledWith(expect.objectContaining({ seatedOn: null }));
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
+    });
+    expect(result.current.pos!.x).toBeGreaterThan(50);
+  });
+
+  it('keys typed into a field never stand you up', () => {
+    const { result } = setup();
+    act(() => result.current.sitOn('chair', { x: 50, y: 70 }, 'down'));
+    const field = document.createElement('input');
+    document.body.append(field);
+    act(() => {
+      field.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    });
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current.seatedOn).toBe('chair');
+    expect(result.current.pos).toEqual({ x: 50, y: 70 });
+    field.remove();
   });
 
   it('steps aside without walking: standing, at the spot, and told to the room', () => {

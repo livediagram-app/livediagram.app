@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { canvasIsBusy } from '@/lib/canvas-busy';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasFinishProvider } from './CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
@@ -457,8 +458,10 @@ function CanvasView(props: CanvasProps) {
           // ink is tuned for light paper and vanishes on a dark wall. Flagged
           // here so the peel's CSS can respond without knowing about themes.
           data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
-          // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts).
+          // The Tab Style colour ease scopes to the canvas (@liveworkspace/workbench/lib/tab-style-ease.ts); on a busy
+          // Space it eases this surface alone, the parts snapping (lib/canvas-busy.ts).
           data-canvas-root=""
+          data-canvas-busy={canvasIsBusy(elements.length) ? '' : undefined}
           onContextMenuCapture={surface.onContextMenuCapture}
           onContextMenu={surface.onContextMenu}
           onPointerUp={surface.onContextMenuPointerUp}
@@ -682,7 +685,7 @@ function CanvasView(props: CanvasProps) {
                 status={avatarStatus}
                 shirt={props.selfParticipant.color}
                 standingOn={avatarStandingOn}
-                onStand={avatar.standUp}
+                self
               />
             ) : null}
             {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
