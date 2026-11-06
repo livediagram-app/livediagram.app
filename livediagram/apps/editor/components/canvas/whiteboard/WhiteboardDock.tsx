@@ -4,8 +4,9 @@
 // groups, Drawing tools, Shapes and Settings (Undo and Redo live in the bottom bar), each its own
 // toolbar with one Tab stop. The groups sit side by side in a floating bar at the top centre, or
 // the bottom centre by choice ("Where the dock sits"), the strip's height at the toolbar UI scale;
-// flyouts open on its board side; on a narrow screen the groups scroll sideways together. One
-// flyout at a time, and nothing moves under the pointer when a tool is picked.
+// flyouts open on its board side; a bar too wide for its room folds to fit ("When the bar is too
+// wide"), and only on a phone do the groups scroll sideways together. One flyout at a time, and
+// nothing moves under the pointer when a tool is picked.
 
 import {
   useEffect,
@@ -19,6 +20,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import type { WhiteboardDockPosition } from '@/lib/whiteboard-dock-prefs';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
+import { fitDock } from '@/lib/whiteboard-dock-fold';
 import {
   pinFromMenu,
   resolveSlotDrop,
@@ -37,7 +39,8 @@ import {
   SlotMenuBody,
 } from './dock-flyouts';
 import { DockDivider } from './DockToolbar';
-import { DrawingToolsGroup } from './DrawingToolsGroup';
+import { DrawingToolsGroup, MORE_TOOLS_LABEL } from './DrawingToolsGroup';
+import { MoreToolsFlyout } from './MoreToolsFlyout';
 import { SettingsGroup } from './SettingsGroup';
 import { ShapesFlyout } from './ShapesFlyout';
 import { PINS_FULL_HINT, ShapesGroup } from './ShapesGroup';
@@ -46,6 +49,7 @@ import { useDockFlyout, type DockFlyout, type DockFlyoutApi } from './useDockFly
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { useMenuCardClearance } from './useMenuCardClearance';
+import { useDockRoom } from './useDockRoom';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
 import { useMediaQuery } from '@livediagram/ui';
@@ -92,7 +96,23 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
   const phone = useIsMobileViewport();
   const tablet = useMediaQuery(NARROW_DOCK_MEDIA_QUERY);
   const narrow = phone || tablet;
-  const pins = splitBarPins(model.pinnedShapes, narrow);
+  const split = splitBarPins(model.pinnedShapes, narrow);
+  // A bar too wide for its room (not on a phone, whose dock scrolls) sheds pins into the Shapes
+  // flyout, then folds the least-used drawing tools into More Tools ("When the bar is too wide").
+  const probe = useRef<HTMLDivElement>(null);
+  const room = useDockRoom(probe, scale, !phone);
+  const fit = fitDock({
+    room,
+    pens: model.prefs.pens.map((p) => p.id),
+    pins: split.onBar.length,
+    canDrag: !narrow,
+  });
+  const pins = {
+    onBar: split.onBar.slice(0, fit.pins),
+    inMenu: [...split.onBar.slice(fit.pins), ...split.inMenu],
+  };
+  // Drops land by the bar's slots, so shapes drag only while every pin is on it.
+  const canDrag = !narrow && pins.inMenu.length === 0;
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -201,6 +221,19 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
         return { label: 'Eraser', body: <EraserFlyoutBody model={model} /> };
       case 'fill':
         return { label: 'Fill', body: <FillFlyoutBody model={model} /> };
+      case 'more':
+        return {
+          label: MORE_TOOLS_LABEL,
+          body: (
+            <MoreToolsFlyout
+              model={model}
+              ink={ink}
+              folded={fit.folded}
+              fly={fly}
+              pickAndClose={pickAndClose}
+            />
+          ),
+        };
       case 'shapes':
         return {
           label: 'Shapes',
@@ -210,7 +243,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
               ink={ink}
               slots={model.slotShapes}
               menuPins={pins.inMenu}
-              canDrag={!narrow}
+              canDrag={canDrag}
               slotDrag={slotDrag}
               onPin={(key) => chooseFromMenu({ key, from: 'flyout' })}
               onEngage={fly.stick}
@@ -252,12 +285,18 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
 
   const groups = (
     <>
-      <DrawingToolsGroup model={model} ink={ink} fly={fly} pickAndClose={pickAndClose} />
+      <DrawingToolsGroup
+        model={model}
+        ink={ink}
+        fly={fly}
+        folded={fit.folded}
+        pickAndClose={pickAndClose}
+      />
       <DockDivider data-dock-group-divider="" />
       <ShapesGroup
         model={model}
         pinned={pins.onBar}
-        canDrag={!narrow}
+        canDrag={canDrag}
         fly={fly}
         slotDrag={slotDrag}
         refusing={refusing}
@@ -271,32 +310,44 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
     </>
   );
 
+  const zoom = scale === 1 ? undefined : uiScaleStyle(scale);
+  const clearStyle = clear === null ? {} : ({ '--dock-clear': `${clear}px` } as CSSProperties);
   return (
-    <div
-      data-floating-panel=""
-      ref={wrapper}
-      data-whiteboard-dock=""
-      data-region="palette"
-      data-dock-position={model.position}
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      style={{
-        ...(clear === null ? {} : ({ '--dock-clear': `${clear}px` } as CSSProperties)),
-        ...(scale === 1
-          ? {}
-          : {
-              ...uiScaleStyle(scale),
-              // Restated so the dock keeps its 12px from the edge however it is zoomed.
-              ...(model.position === 'top' ? { top: toSurfacePx(12, scale) } : {}),
-            }),
-      }}
-      className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${WRAPPER_PLACEMENT[model.position]}`}
-    >
-      <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} />
-    </div>
+    <>
+      {/* The room the bar may take: the wrapper's own placement at full width (useDockRoom). */}
+      <div
+        ref={probe}
+        aria-hidden
+        data-dock-room=""
+        style={{ ...clearStyle, ...zoom }}
+        className={`pointer-events-none invisible absolute h-0 w-full ${WRAPPER_PLACEMENT[model.position]}`}
+      />
+      <div
+        data-floating-panel=""
+        ref={wrapper}
+        data-whiteboard-dock=""
+        data-region="palette"
+        data-dock-position={model.position}
+        onPointerDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        style={{
+          ...clearStyle,
+          ...(scale === 1
+            ? {}
+            : {
+                ...zoom,
+                // Restated so the dock keeps its 12px from the edge however it is zoomed.
+                ...(model.position === 'top' ? { top: toSurfacePx(12, scale) } : {}),
+              }),
+        }}
+        className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${WRAPPER_PLACEMENT[model.position]}`}
+      >
+        <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} />
+      </div>
+    </>
   );
 }
 

@@ -79,7 +79,9 @@ export function ShapesGroup({
             onMenu={openPinMenu}
           />
         ))}
-        <DockDivider data-pinned-separator="" />
+        {/* The pinned side's end, where drops land: kept while shapes drag, even with no pins; with
+            no pins and no dragging it would only double the hairline before the group. */}
+        {pinned.length > 0 || canDrag ? <DockDivider data-pinned-separator="" /> : null}
         <DockButton
           itemKey="shapes"
           label="Shapes"
