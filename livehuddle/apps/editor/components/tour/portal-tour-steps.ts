@@ -1,4 +1,4 @@
-import { conceptOutro, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, onGraphic } from './element-tour-parts';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, pressWord, type MenuTourEnv } from './menu-tour-step';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';

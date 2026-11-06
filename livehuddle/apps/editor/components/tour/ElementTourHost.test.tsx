@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// Element tours (docs/specs/007-editor/element-tours.md): the footer's Start Tour button offering a selected timeline's
+// Element tours (docs/specs/007-editor/element-tours.md): the footer's Start Tour button offering a selected portal's
 // tour until it is taken, a press starting it, the share-role gate, one tour at a time, and the tour ending when its element goes.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -45,7 +45,7 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ct
 const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();
 
-const timeline = { ...createShape('timeline-rail', 0, 0), id: 'tl1' } as Element;
+const portal = { ...createShape('portal', 0, 0), id: 'p1' } as Element;
 const square = { ...createShape('square', 0, 0), id: 'sq1' } as Element;
 
 const editor = (over: Record<string, unknown> = {}) => {
@@ -55,7 +55,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     anyWelcomeOpen: false,
     embedMode: false,
     can: { level: 'edit' },
-    activeTab: { id: 'tab1', elements: [timeline, square] },
+    activeTab: { id: 'tab1', elements: [portal, square] },
     userPreferences: {},
     setUserPreferences,
     writeUserPreferences,
@@ -87,36 +87,36 @@ afterEach(() => {
   cleanup();
   viewport.phone = false;
   vi.clearAllMocks();
-  setActiveTour('draw', false);
+  setActiveTour('avatar', false);
   setActiveTour('element', false);
   setStartPanelOpen(false);
   resetTourOffersForTests();
 });
 
 describe('ElementTourHost offer', () => {
-  it('offers the tour for a selected timeline, and nothing for a square', () => {
+  it('offers the tour for a selected portal, and nothing for a square', () => {
     editor();
     mount();
     expect(tourOffer()).toBeNull();
     act(() => store.setSelectedId('sq1'));
     expect(tourOffer()).toBeNull();
-    act(() => store.setSelectedId('tl1'));
-    expect(tourOffer()).toMatchObject({ name: 'Timeline' });
+    act(() => store.setSelectedId('p1'));
+    expect(tourOffer()).toMatchObject({ name: 'Portal' });
     act(() => tourOffer()!.onShown!());
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'TimelineTourOffer');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'PortalTourOffer');
   });
 
   it.each([
     ['a Participant', { can: { level: 'participate' } }],
     ['a Viewer', { can: { level: 'view' } }],
-    ['locked', { activeTab: { id: 'tab1', elements: [{ ...timeline, locked: true }] } }],
+    ['locked', { activeTab: { id: 'tab1', elements: [{ ...portal, locked: true }] } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
     ['under a welcome overlay', { anyWelcomeOpen: true }],
   ])('offers nothing when %s', (_why, over) => {
     editor(over);
     mount();
-    act(() => store.setSelectedId('tl1'));
+    act(() => store.setSelectedId('p1'));
     expect(tourOffer()).toBeNull();
   });
 
@@ -124,44 +124,44 @@ describe('ElementTourHost offer', () => {
     viewport.phone = true;
     editor();
     mount();
-    act(() => store.setSelectedId('tl1'));
+    act(() => store.setSelectedId('p1'));
     expect(tourOffer()).toBeNull();
-    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'TimelineTour');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'PortalTour');
   });
 
   it('makes no offer for a multi-selection', () => {
     editor();
     mount();
-    act(() => store.setMultiSelectedIds(new Set(['tl1', 'sq1'])));
+    act(() => store.setMultiSelectedIds(new Set(['p1', 'sq1'])));
     expect(tourOffer()).toBeNull();
   });
 
   it('starts nothing while another tour is on screen', () => {
     editor();
     mount();
-    act(() => setActiveTour('draw', true));
-    act(() => store.setSelectedId('tl1'));
+    act(() => setActiveTour('avatar', true));
+    act(() => store.setSelectedId('p1'));
     act(() => tourOffer()!.start());
     expect(stage.engine?.active).toBe(false);
   });
 
   // Work Tracker #177: a taken element tour leaves the button; its Settings › Show Me switch brings it back.
   it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
-    editor({ userPreferences: { elementTourKinds: ['timeline'] } });
+    editor({ userPreferences: { elementTourKinds: ['portal'] } });
     const r = mount();
-    act(() => store.setSelectedId('tl1'));
+    act(() => store.setSelectedId('p1'));
     expect(tourOffer()).toBeNull();
     editor({ userPreferences: { elementTourKinds: [] } });
     rerenderWith(r);
-    expect(tourOffer()?.name).toBe('Timeline');
+    expect(tourOffer()?.name).toBe('Portal');
   });
 
   it('never starts on its own', () => {
     editor();
     mount();
-    act(() => store.setSelectedId('tl1'));
+    act(() => store.setSelectedId('p1'));
     expect(stage.engine?.active).toBe(false);
-    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'TimelineTour');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'PortalTour');
   });
 });
 
@@ -169,33 +169,33 @@ describe('ElementTourHost tour', () => {
   it('a press records the kind as taken, starts on the first step and holds the tour slot', () => {
     editor();
     mount();
-    act(() => store.setSelectedId('tl1'));
+    act(() => store.setSelectedId('p1'));
     act(() => tourOffer()!.start());
-    expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['timeline'] }, 'me');
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'TimelineTour');
+    expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['portal'] }, 'me');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'PortalTour');
     expect(stage.engine?.active).toBe(true);
     expect(stage.engine?.step?.id).toBe('line');
-    expect(track).toHaveBeenCalledWith('UI', 'View', 'TimelineTourStepLine');
+    expect(track).toHaveBeenCalledWith('UI', 'View', 'PortalTourStepPortal');
     expect(activeTour()).toBe('element');
   });
 
   it('ends as skipped when its diagram is deleted', () => {
     editor();
     const r = mount();
-    act(() => store.setSelectedId('tl1'));
+    act(() => store.setSelectedId('p1'));
     act(() => tourOffer()!.start());
     editor({ activeTab: { id: 'tab1', elements: [square] } });
     rerenderWith(r);
     expect(stage.engine?.active).toBe(false);
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'TimelineTourSkipped');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PortalTourSkipped');
   });
 
   it('ends as skipped on another tab', () => {
     editor();
     const r = mount();
-    act(() => store.setSelectedId('tl1'));
+    act(() => store.setSelectedId('p1'));
     act(() => tourOffer()!.start());
-    editor({ activeTab: { id: 'tab2', elements: [timeline] } });
+    editor({ activeTab: { id: 'tab2', elements: [portal] } });
     rerenderWith(r);
     expect(stage.engine?.active).toBe(false);
   });

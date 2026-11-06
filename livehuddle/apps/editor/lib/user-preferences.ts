@@ -159,21 +159,10 @@ export type UserPreferences = {
   notifyActionAssigned?: boolean;
   // "A teammate @-mentioned me in a comment" (docs/specs/012-collaboration/comment-mentions.md).
   notifyMentions?: boolean;
-  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it was
-  // until October 2026, so earlier answers still hold). True once the
-  // tour's welcome offer has been answered (taken, skipped, or declined),
-  // so the offer never re-appears for this user — synced, so it follows
-  // the account across devices like every other preference. Surfaced in
-  // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
-  // closing Settings replays the tour. Missing / undefined === not seen.
-  tourSeen?: boolean;
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
-  workshopTourSeen?: boolean;
-  // The Draw tour's seen-guard, kept so a stored value still parses: the tour went with Draw mode
-  // (docs/specs/007-editor/editor-modes.md) and nothing reads it.
-  drawTourSeen?: boolean;
-  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
+  // livediagram's Diagram, Workshop and Draw tours' seen-guards (`tourSeen`, `workshopTourSeen`, `drawTourSeen`) are
+  // not fields here: those tours are not in livehuddle, and a stored value stays in the blob unread, like any key this
+  // version does not know (docs/specs/007-editor/user-preferences.md "Retired keys").
+  // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md).
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken,

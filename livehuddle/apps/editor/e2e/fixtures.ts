@@ -63,7 +63,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       if (
-        prefs.workshopTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
         !Array.isArray(prefs.elementTourKinds)
       )
@@ -71,18 +70,9 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
           key,
           JSON.stringify({
             ...prefs,
-            workshopTourSeen: true,
             avatarTourSeen: true,
             // Element tours (docs/specs/007-editor/element-tours.md): every toured kind.
-            elementTourKinds: [
-              'timeline',
-              'chart',
-              'stack',
-              'lane',
-              'boundary',
-              'diagram-key',
-              'portal',
-            ],
+            elementTourKinds: ['portal'],
           }),
         );
     } catch {

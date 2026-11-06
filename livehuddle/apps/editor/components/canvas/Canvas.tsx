@@ -430,7 +430,7 @@ function CanvasView(props: CanvasProps) {
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
       {/* The surface's slide View Transition went with presenting (Work Tracker #423 part 2). A fragment keeps the
-            surface's indentation until open PR #1301 (which edits inside it) merges; it is unwrapped then. */}
+            surface's indentation until open PRs #1326 and #1335 (which edit inside it) merge; it is unwrapped then. */}
       <>
         <main
           ref={mainRef}

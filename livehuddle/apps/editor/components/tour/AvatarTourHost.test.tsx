@@ -81,8 +81,8 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   vi.useRealTimers();
-  setActiveTour('welcome', false);
-  setActiveTour('draw', false);
+  setActiveTour('element', false);
+  setActiveTour('show-me', false);
   setActiveTour('avatar', false);
   setStartPanelOpen(false);
   resetTourOffersForTests();
@@ -191,7 +191,7 @@ describe('AvatarTourHost offer', () => {
   });
 
   it('never starts beside another tour', () => {
-    setActiveTour('draw', true);
+    setActiveTour('show-me', true);
     editor();
     render(<AvatarTourHost />);
     act(() => tourOffer()!.start());

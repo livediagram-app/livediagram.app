@@ -1,4 +1,4 @@
-import { inTheMenu } from './concept-element-tour-steps';
+import { inTheMenu } from './element-tour-parts';
 import type { ElementTourApi } from './element-tour-api';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
