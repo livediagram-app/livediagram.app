@@ -7,7 +7,7 @@ import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the
 // Explorer's menu button in the app, a workspace frame's Back in a workbench. `data-toolbar-menu` is what the strip
-// measures to keep clear of it (useStripCrowded, useBarLabels), so whatever the card holds, the
+// measures to keep clear of it (useStripCrowded, useBarLabels, useStripTileLimit), so whatever the card holds, the
 // strip makes room for it.
 //
 // `inline` drops the corner positioning so the strip's row can hold it in its own card at the far left, beside the
