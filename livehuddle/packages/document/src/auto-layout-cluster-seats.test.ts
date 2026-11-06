@@ -12,7 +12,7 @@ import { pathsCross } from './index';
 import { layoutGraph, type GraphInput } from './graph-input';
 import type { ArrowElement, BoxedElement, DiagramGraph, Element } from './index';
 
-// Groups keep their lines clear (docs/specs/015-api/mcp-server.md §4.7 "The graph look").
+// Groups keep their lines clear (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look").
 
 let n = 0;
 const ids = () => `e${n++}`;

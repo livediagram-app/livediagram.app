@@ -203,7 +203,7 @@ export function useCanvasChromePanels({
   const explorerOpen = activeDockPanel === 'explorer';
   const [explorerOpened, setExplorerOpened] = useState(explorerOpen);
   if (explorerOpen && !explorerOpened) setExplorerOpened(true);
-  // Withheld (the workbench frame, a phone held sideways), an open Explorer closes.
+  // Withheld (a phone held sideways), an open Explorer closes.
   const explorerHidden = !!props.explorerHidden;
   useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
   const explorerEl =

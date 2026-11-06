@@ -15,8 +15,7 @@ binding = "ASSETS"
 not_found_handling = "404-page"
 # Assets are served BEFORE the worker by default, so without this the
 # security headers in src/worker.ts (X-Frame-Options DENY et al.) only
-# reached paths that matched no file: every real page, including the
-# MCP OAuth consent screen, shipped frameable. Run the worker first for
+# reached paths that matched no file: every real page shipped frameable. Run the worker first for
 # everything but the hashed /_next/ bundles, which need no page headers.
 run_worker_first = ["/*", "!/_next/*"]
 

@@ -1,4 +1,4 @@
-// Stacked groups line up (docs/specs/015-api/mcp-server.md "Stacked groups line up"). Each group is laid out on its
+// Stacked groups line up (livediagram/docs/specs/015-api/mcp-server.md "Stacked groups line up"). Each group is laid out on its
 // own and centred on its own members, so a pipeline stage whose branch sat to one side (a rollback beside the
 // decision) pulled its entry off the spine, and the line into it jogged. Groups that follow one another down the flow,
 // no two side by side, move so each one-entry group's entry sits on the line of what feeds it. Frames keep their own

@@ -44,7 +44,6 @@ function deleteContext(conversion?: string): RouteContext {
     accountEmail: null,
     resolveOwner: () => 'user_a',
     token: { id: 'tok1' },
-    workbench: null,
     teams: [],
     bearer: null,
   };

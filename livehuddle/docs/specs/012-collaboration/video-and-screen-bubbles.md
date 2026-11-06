@@ -125,6 +125,10 @@ People talking stand close, so their bubbles would cover each other. They never 
   sits 8 canvas px above the one before, and every row of a wrap is kept inside the view. A person's camera and screen
   never split. The order stays the one above, so wrapping adds no jitter; a wrapped bubble's tail is hidden, since
   its head is under another row.
+- **Near the edge, a row stays inside the view** (#503). A row that fits, over people standing at the left or right
+  edge of the visible canvas, slides in just far enough to show every bubble whole, as a speech bubble does; only the
+  bubbles at the edge move, so someone further in keeps theirs over their head. The order and the gaps stay, so it
+  adds no jitter, and each tail still points down at its own head.
 - Under reduced motion the nudge and the swap are not animated.
 
 **Speech bubbles stay clear.** A speech bubble ([Avatar mode](../008-canvas/avatar-mode.md#speech-bubbles)) floats
@@ -170,7 +174,9 @@ From [Future work](../005-project-roadmap/future-work.md#share-roles) and [Proxi
   bubble shows a **Stop** button to an Editor (top left, on hover or focus, always on a touch screen, beside the
   maximise mark; its name and hover card say "Stop Sam's Screen"), and the maximised panel's bar shows **Stop
   Sharing** too. Pressing it ends the share as the sharer's own Stop does: their bubble closes
-  for everyone, their strip's Share Screen reads off, and nothing else of their call changes. Counted
+  for everyone, their strip's Share Screen reads off, and nothing else of their call changes. The sharer is told who
+  did it (#504): a short info toast, "Alex stopped your screen share" (the Editor's presence name, or "An Editor" when
+  their canvas does not know them), shown only when a share was really running. Counted
   (`StopOthersShare`). The room delivers the stop only from an Editor and the sharer's browser acts on it only from
   someone the room stamped an Editor; until the sharer's call says its screen is off, the mint route refuses anyone a
   new subscription to that screen.

@@ -1,4 +1,4 @@
-// The cycle layout (docs/specs/015-api/mcp-server.md §4.7 `style: "cycle"`): the nodes in a ring, in order
+// The cycle layout (livediagram/docs/specs/015-api/mcp-server.md §4.7 `style: "cycle"`): the nodes in a ring, in order
 // clockwise from the top, each edge a curved arrow that follows the ring's own arc. A node with no edge at all sits
 // at the ring's centre (the theme a cycle turns around, as the flywheel template's hub). A node given no shape is a
 // circle, the cycle's usual stop.

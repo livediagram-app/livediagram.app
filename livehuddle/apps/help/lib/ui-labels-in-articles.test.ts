@@ -102,7 +102,7 @@ function editorSource(): string {
       else if (/\.tsx?$/.test(entry)) all += readFileSync(full, 'utf8');
     }
   };
-  for (const root of ['apps/editor', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
+  for (const root of ['apps/editor', 'packages']) walk(`${ROOT}/${root}`);
   walk(EXPLORER_PACKAGE);
   walk(SETTINGS_PACKAGE);
   // The design system (@liveworkspace/ui) left this product's packages/ui for the monorepo's; its words still print here.

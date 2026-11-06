@@ -1,4 +1,4 @@
-// A graph's title, caption and key (docs/specs/015-api/mcp-server.md §4.7 "The graph look"), as every template
+// A graph's title, caption and key (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"), as every template
 // has them: a bold heading and a muted caption above the drawing, left aligned, and on request a key beside it
 // naming what each shape kind the graph uses means, drawn in the diagram's own tones.
 

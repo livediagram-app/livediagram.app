@@ -30,7 +30,7 @@ describe('the status page’s services', () => {
     ]);
   });
 
-  it('gives every app its API, realtime rooms, editor, marketing site, help centre, MCP server and router', () => {
+  it('gives every app its API, realtime rooms, editor, marketing site, help centre and router, and an MCP server where it ships one', () => {
     for (const group of groups.slice(1)) {
       const names = group.services.map((s) => s.name);
       for (const name of [
@@ -39,10 +39,12 @@ describe('the status page’s services', () => {
         'Editor',
         'Marketing site',
         'Help centre',
-        'MCP server',
         'Router',
       ])
         expect(names, group.id).toContain(name);
+      // livehuddle removed its MCP server (Work Tracker #562); every other app keeps one.
+      if (group.id === 'livehuddle') expect(names, group.id).not.toContain('MCP server');
+      else expect(names, group.id).toContain('MCP server');
     }
   });
 
@@ -95,9 +97,9 @@ describe('the status page’s services', () => {
     );
   });
 
-  it('keeps one round small: 32 requests, under a Worker’s 50 subrequests with room to spare', () => {
-    expect(probedServices(groups)).toHaveLength(32);
+  it('keeps one round small: 31 requests, under a Worker’s 50 subrequests with room to spare', () => {
+    expect(probedServices(groups)).toHaveLength(31);
     expect(probedServices(groups).length).toBeLessThan(40);
-    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(42);
+    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(41);
   });
 });

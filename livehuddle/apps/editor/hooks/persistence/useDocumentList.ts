@@ -44,7 +44,7 @@ function whenIdle(run: () => void): () => void {
   return () => window.clearTimeout(handle);
 }
 
-// `enabled` once the document has loaded for a person (not a workbench, not before hydration). A change of
+// `enabled` once the document has loaded for a person (not before hydration). A change of
 // `ownerId` (signing in or out) reads the list again.
 export function useDocumentList(
   enabled: boolean,

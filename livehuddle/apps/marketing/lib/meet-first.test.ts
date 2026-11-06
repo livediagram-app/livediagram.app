@@ -1,10 +1,7 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
 
-import { STARTER_PROMPTS } from './ai-clients';
 import { COMPARISONS } from './alternatives';
 import { FAQ_CATEGORIES } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
@@ -19,15 +16,6 @@ const RETIRED =
 // A sentence that legitimately names a retired thing, because it points the reader elsewhere (say, "Running a
 // workshop? livediagram's Workshop mode has every tool for it."). Exact sentences, kept short; prefer rewording.
 const ALLOWED: ReadonlySet<string> = new Set([]);
-
-// The Build with AI page's own words, from its source with the comments taken out (they may name what left).
-const AI_SOURCES = [
-  '../app/ai/page.tsx',
-  '../components/ai/AiCapabilities.tsx',
-  '../components/ai/AiChatArt.tsx',
-];
-const withoutComments = (source: string) =>
-  source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 const copy: { where: string; text: string }[] = [
   { where: 'alternatives', text: JSON.stringify(COMPARISONS) },
@@ -47,14 +35,6 @@ const copy: { where: string; text: string }[] = [
       text: `${i.title}. ${i.description}`,
     })),
   ),
-  ...STARTER_PROMPTS.map((p) => ({
-    where: `ai prompt: ${p.title}`,
-    text: `${p.title}. ${p.prompt}`,
-  })),
-  ...AI_SOURCES.map((path) => ({
-    where: path.slice(3),
-    text: withoutComments(readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8')),
-  })),
 ];
 
 const sentences = (text: string) => text.split(/(?<=[.!?])\s+|"\s*[,:{}[\]]\s*"/);

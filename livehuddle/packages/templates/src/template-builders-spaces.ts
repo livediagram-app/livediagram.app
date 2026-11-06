@@ -6,7 +6,13 @@
 
 import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import { heading } from './template-session-parts';
-import { officePlan, walkIn, type OfficePiece, type OfficeRoom } from './template-office-parts';
+import {
+  officePlan,
+  walkIn,
+  WALK_IN_BUTTON_W,
+  type OfficePiece,
+  type OfficeRoom,
+} from './template-office-parts';
 
 const HEAD = 96;
 const BELOW = 120;
@@ -150,6 +156,7 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
   // The team's board on the wall beside the pod: four stickies to fill in together.
   const bx = x0 + POD_W + BOARD_GAP;
   const by = y0 + HEAD;
+  const boardBottom = by + 44 + 2 * 154 - 8;
   const board: Element[] = [
     {
       ...createText(bx, by),
@@ -177,12 +184,15 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
     'Your team’s corner: four desks together, a table for the stand-up, and a board for the week.',
     [
       ...board,
-      // Under the pod, not the whole plan: the button is where the character lands, so it waits by the pod's door
-      // rather than under the board, a long walk from the way in.
+      // Under the board, beside the pod (docs/specs/012-collaboration/virtual-office-template.md "Spaces"), not under
+      // the plan: seen at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where
+      // the bottom-right cluster floats, and a button under the pod sat under the cluster. Here it is level with the
+      // pod's lower half, with open floor under it and a short walk round to the door.
       ...walkIn(
-        x0 + POD_W,
-        y0 + HEAD + POD_H + BELOW / 2,
-        'Press Walk In (or W), take a desk, and meet round the table for the stand-up.',
+        x0 + width,
+        (boardBottom + y0 + HEAD + POD_H) / 2,
+        'Press Walk In (or W), take a desk, and meet at the table for the stand-up.',
+        BOARD_W - WALK_IN_BUTTON_W - 20,
       ),
     ],
   );

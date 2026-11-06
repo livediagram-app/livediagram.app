@@ -1,4 +1,4 @@
-// The MCP's graph-first input (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph turned into laid-out
+// The MCP's graph-first input (livediagram/docs/specs/015-api/mcp-server.md §4.7): a node/edge graph turned into laid-out
 // elements (no Mermaid: imports from other tools are gone, docs/specs/002-project-scope/not-in-livehuddle.md).
 // Three things happen here that the shared graph code doesn't do on its own:
 //
@@ -51,7 +51,7 @@ export const GRAPH_LABEL_MAX = 40;
 // listed in the group's `members`: the natural shape for a model to write.
 export type GraphInputNode = LookNode & { group?: string };
 
-// The layouts graph input offers: the editor's two, and two of its own (docs/specs/015-api/mcp-server.md §4.7).
+// The layouts graph input offers: the editor's two, and two of its own (livediagram/docs/specs/015-api/mcp-server.md §4.7).
 export type GraphStyle = LayoutStyle | 'lanes' | 'cycle';
 
 export type GraphInput = {
@@ -259,7 +259,7 @@ export function layoutGraph(
   else if (style === 'cycle') laid = layoutCycle(graph, { look, makeEdgeId });
   else if (style === 'flow') {
     // Auto direction: a flowchart reads down the page, as the template does; anything else takes whichever
-    // direction lands nearer a landscape page (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
+    // direction lands nearer a landscape page (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
     if (direction || isFlowchart(g.nodes) || g.nodes.length > AUTO_DIRECTION_MAX_NODES)
       laid = flowLayout(flowDir);
     else {

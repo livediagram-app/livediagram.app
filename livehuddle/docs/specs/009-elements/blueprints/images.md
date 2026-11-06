@@ -53,7 +53,7 @@ import pipeline (`apps/editor/lib/import-images/`,
 (`../packages/explorer/src/library/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
 account deletion and the guest merge (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
-([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).
+([Trash](../../013-workspace/trash.md)), and the mcp embedder (`livediagram/apps/mcp/src/image-result.ts`).
 
 ## Domain and naming
 
@@ -120,7 +120,7 @@ on as sent (`serviceAnswer`).
    `{ acceptedTypes }`.
 5. `Content-Length` missing, non-finite or `<= 0` → 400; `> MAX_IMAGE_BYTES` → 413
    `file_too_large` (unreachable behind step 2 while both caps are equal).
-6. `X-Image-Sha256` is kept only when the caller is not a workbench session (`ctx.workbench`) nor
+6. `X-Image-Sha256` is kept only when the caller is not
    an API token (`ctx.token`) and it matches `/^[0-9a-f]{64}$/` (E4a). The body is read whole;
    `byteLength > MAX_IMAGE_BYTES` → 413 `file_too_large`.
 7. `media.upload({ owner: mediaOwner(owner), bytes, contentType, byteSize, width, height,
@@ -144,10 +144,8 @@ Invariants:
 
 1. `mediaImageOwner(media, id, caller)`: the isolate's memo (at most 2,000 ids), else one `media.get(id)`
    remembered (`''` when the service has no such image; a guest image of
-   the caller's own comes back under the caller's guest id). No owner → 404. Not a document-scope
-   workbench session, and the caller's resolved owner equals it → allowed.
-2. Otherwise, with `?d=<documentId>` (for a document-scope workbench session, only its own
-   document): `resolveDocumentGrant` returns the index's grant, then one RPC,
+   the caller's own comes back under the caller's guest id). No owner → 404. The caller's resolved owner equals it → allowed.
+2. Otherwise, with `?d=<documentId>`: `resolveDocumentGrant` returns the index's grant, then one RPC,
    `documentRoom(env, d).servesImage(id, grant.tab)`, answers from the document's own SQLite that it
    places the image ([Image reference index](image-reference-index.md#readers)) and may serve it
    (ownership, the owner's live entitlement or a [placement grant](../images.md#placement-grants)) → allowed; a placed but unservable image logs
@@ -346,7 +344,7 @@ reads a 503 as `null`.
 | E2  | Truncated or malformed JPEG                          | 415 `malformed_jpeg`; nothing written                                                           |
 | E3  | Lying `Content-Length`                               | Body re-checked after read, 413                                                                 |
 | E4  | Forged `X-Image-Sha256`                              | The service's early dedupe is owner-scoped; the body hash is recomputed before insert           |
-| E4a | Workbench or token probing the gallery by hash       | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row |
+| E4a | Token probing the gallery by hash                    | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row |
 | E5  | Same bytes uploaded concurrently                     | The service's unique index keeps one image; the other answers it `deduped: true`                |
 | E5a | Racing uploads that together pass a cap              | The service refuses the later insert and deletes its bytes; 403 `gallery_full`, or 409          |
 | E6  | Upload without a valid sha header at a full gallery  | The service checks the caps before body dedupe: 403 even when the bytes are already stored      |
@@ -473,7 +471,6 @@ O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md]
 | Hash shortcut only for the owner's editor (E4a)      | `the hash-only dedupe shortcut` suite                     | `apps/api/src/routes/images.test.ts`             |
 | Read: owner, unknown id remembered, document gate    | `the byte read` suite                                     | `apps/api/src/routes/images.test.ts`             |
 | Read of another app's upload through a document      | `serves an image uploaded in another app…`                | `apps/api/src/routes/images.test.ts`             |
-| Workbench session read                               | `under a workbench session` suite                         | `apps/api/src/routes/images.test.ts`             |
 | Delete: owner, idempotent, forgotten here            | `DELETE` suite                                            | `apps/api/src/routes/images.test.ts`             |
 | A document's set pushed on change, kept on failure   | `a document's images` suite                               | `apps/api/src/media.test.ts`                     |
 | Owner asked once per image, forgotten on delete      | `whose an image is` suite                                 | `apps/api/src/media.test.ts`                     |

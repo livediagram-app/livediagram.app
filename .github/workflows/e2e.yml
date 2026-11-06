@@ -26,10 +26,10 @@ jobs:
     name: Plan
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # actions: read, to list this workflow's runs on main.
+    # actions: read, to list this workflow's runs on main; write, to fail fast (docs/ci.md "Fail fast").
     permissions:
       contents: read
-      actions: read
+      actions: write
     outputs:
       e2e: ${{ steps.plan.outputs.e2e }}
     steps:
@@ -70,10 +70,19 @@ jobs:
           HEAD: ${{ github.sha }}
         run: node .github/scripts/ci-plan.mjs
 
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels this commit's other workflow (CI or E2E).
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   livediagram:
     name: livediagram
     needs: plan
     if: contains(fromJSON(needs.plan.outputs.e2e), 'livediagram')
+    # A called workflow gets at most what its caller grants: actions: write, to fail fast.
+    permissions:
+      contents: read
+      actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
       product: livediagram
@@ -95,6 +104,10 @@ jobs:
     name: liveplanner
     needs: plan
     if: contains(fromJSON(needs.plan.outputs.e2e), 'liveplanner')
+    # A called workflow gets at most what its caller grants: actions: write, to fail fast.
+    permissions:
+      contents: read
+      actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
       product: liveplanner
@@ -113,6 +126,10 @@ jobs:
     name: livedesign
     needs: plan
     if: contains(fromJSON(needs.plan.outputs.e2e), 'livedesign')
+    # A called workflow gets at most what its caller grants: actions: write, to fail fast.
+    permissions:
+      contents: read
+      actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
       product: livedesign
@@ -130,6 +147,10 @@ jobs:
     name: livedocuments
     needs: plan
     if: contains(fromJSON(needs.plan.outputs.e2e), 'livedocuments')
+    # A called workflow gets at most what its caller grants: actions: write, to fail fast.
+    permissions:
+      contents: read
+      actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
       product: livedocuments
@@ -145,6 +166,10 @@ jobs:
     name: livehuddle
     needs: plan
     if: contains(fromJSON(needs.plan.outputs.e2e), 'livehuddle')
+    # A called workflow gets at most what its caller grants: actions: write, to fail fast.
+    permissions:
+      contents: read
+      actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
       product: livehuddle

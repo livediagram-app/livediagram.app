@@ -1,4 +1,4 @@
-// Only lines drawn alike share a run across a gap (docs/specs/015-api/mcp-server.md "Flow lines are elbows"): a source's
+// Only lines drawn alike share a run across a gap (livediagram/docs/specs/015-api/mcp-server.md "Flow lines are elbows"): a source's
 // solid call and dashed event line each take their own channel, so the dashed line never rides the solid one's run.
 import { describe, expect, it } from 'vitest';
 import { layoutGraph } from './graph-input';

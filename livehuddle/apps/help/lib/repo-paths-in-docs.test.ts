@@ -34,8 +34,6 @@ const WORKSPACE_ROOTS = [
   'apps/api/',
   'apps/help/',
   'apps/marketing/',
-  'apps/mcp/src/',
-  'apps/mcp/',
   'apps/router/src/',
   'apps/router/',
   'packages/document/',

@@ -57,10 +57,10 @@ describe('the site header account menu', () => {
     expect(container.querySelector('[aria-label$="account menu"]')).toBeNull();
   });
 
-  it('keeps the marketing bar for someone signed in: the three links, then the menu at the far right', async () => {
+  it('keeps the marketing bar for someone signed in: the two links, then the menu at the far right', async () => {
     document.cookie = 'lh_signed_in=1; path=/';
     document.cookie = 'lh_account=Ada; path=/';
-    const { container } = render(<SiteHeader ctaSurface="Home" buildWithAi="link" account />);
+    const { container } = render(<SiteHeader ctaSurface="Home" marketing account />);
     const menu = await screen.findByRole(
       'button',
       { name: 'Ada, account menu' },
@@ -68,7 +68,6 @@ describe('the site header account menu', () => {
     );
     const bar = container.querySelector('header > div > div:last-child')!;
     expect([...bar.querySelectorAll('a')].map((a) => a.getAttribute('aria-label'))).toEqual([
-      'Build with AI',
       'Choose Template',
       'Explorer',
     ]);

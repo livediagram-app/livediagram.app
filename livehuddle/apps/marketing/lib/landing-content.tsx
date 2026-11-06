@@ -1,6 +1,5 @@
 import type { HeroSceneKey } from '@/components/hero-scenes';
 import {
-  AiSpaceArt,
   ApiArt,
   ArriveArt,
   BringFocusArt,
@@ -364,20 +363,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Publish a Space you are proud of to the Community gallery, filed under offices, meetings or socials, so another team can start their next meeting from yours.',
       },
       {
-        art: <AiSpaceArt />,
-        href: '/help/account-and-data/connect-ai-mcp/',
-        group: 'Your Spaces, your way',
-        title: 'Bring your AI tools',
-        description:
-          'Hook livehuddle up to Claude or any MCP client at mcp.livehuddle.app and let it find, read, create, change and share your Spaces for you: set up a Team Pod for Monday’s stand-up with a sticky on the wall for each person. It runs on a revocable token, read-only if you prefer.',
-      },
-      {
         art: <ApiArt />,
-        href: '/help/developers/cli/',
+        href: '/help/developers/api-overview/',
         group: 'Your Spaces, your way',
-        title: 'A command line and an API',
+        title: 'An open API',
         description:
-          'Install the livehuddle command line from npm, or call the same REST API the editor uses with an API token, to read, change, share and export your Spaces from your own scripts.',
+          'Call the same REST API the editor uses with an API token to read, change, share and export your Spaces from your own scripts.',
       },
     ],
   },

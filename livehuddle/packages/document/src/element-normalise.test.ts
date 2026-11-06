@@ -7,7 +7,7 @@ import {
   normaliseElements,
 } from './element-normalise';
 
-// docs/specs/015-api/mcp-server.md §4.7a: the content-carrying kinds are made safe before validation.
+// livediagram/docs/specs/015-api/mcp-server.md §4.7a: the content-carrying kinds are made safe before validation.
 
 const box = { x: 0, y: 0, width: 200, height: 100 };
 const valid = (elements: unknown[]) => isValidTab({ id: 't', name: 'T', elements });

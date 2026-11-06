@@ -292,7 +292,9 @@ export class ProximityCall {
     if (this.stopped) return;
     const level = callLevels().get(from);
     if (level !== undefined && level !== 'edit') return;
+    if (!this.video.screen) return;
     this.video.stopScreen();
+    this.input.onShareStopped?.(from);
   }
 
   /** Do Not Disturb: nobody's voice or bubbles reach you; you are still heard. */
