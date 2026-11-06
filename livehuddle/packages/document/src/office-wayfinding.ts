@@ -3,7 +3,8 @@
 // the rest of the office, so the canvas (FurnitureView) and an export (svg-render-faces) paint the same piece. What
 // they do (the list of rooms, the floor panel) is the editor's. Pure: no React, no DOM.
 
-import type { FurnitureArt, FurnitureDrawing, FurniturePart, FurniturePartRole } from './seating';
+import type { FurnitureDrawing } from './seating';
+import { allSides, ellipse, path, rect } from './furniture-parts';
 
 // Fixed colours, as OFFICE_TONES: the sign's blue, the room dots, the elevator's steel and its display. Outlines
 // stay the theme's stroke, so both pieces sit in the same drawing style on light and dark paper.
@@ -19,36 +20,6 @@ export const WAYFINDING_TONES = {
 } as const;
 
 const T = WAYFINDING_TONES;
-
-const rect = (
-  role: FurniturePartRole,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  rx: number,
-  fill?: string,
-): FurniturePart => ({ tag: 'rect', role, x, y, w, h, rx, ...(fill ? { fill } : {}) });
-const ellipse = (
-  role: FurniturePartRole,
-  cx: number,
-  cy: number,
-  rx: number,
-  ry: number,
-  fill?: string,
-): FurniturePart => ({ tag: 'ellipse', role, cx, cy, rx, ry, ...(fill ? { fill } : {}) });
-const path = (role: FurniturePartRole, d: string, fill?: string): FurniturePart => ({
-  tag: 'path',
-  role,
-  d,
-  ...(fill ? { fill } : {}),
-});
-
-const allSides = (view: FurnitureDrawing): FurnitureArt => ({
-  front: view,
-  back: view,
-  side: view,
-});
 
 // The Directory: a freestanding stand on a post and a plinth, a blue sign across its head with an "i" dot and a
 // title, and a board of rooms, each a coloured dot and a line of text.

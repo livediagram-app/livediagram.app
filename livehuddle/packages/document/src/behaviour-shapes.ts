@@ -60,6 +60,12 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'garden-umbrella',
   'fountain',
   'pond',
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
   // The Door (docs/specs/009-elements/room-builder.md): walked through.
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.
