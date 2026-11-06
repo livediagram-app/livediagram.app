@@ -229,6 +229,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // The palette strip: an Editor's alone; a Viewer and a Participant have none
   // (docs/specs/013-workspace/share-roles.md "A Participant walks").
   const paletteShown = !readOnly;
+  // Walking is being in the room, not editing it (docs/specs/008-canvas/avatar-mode.md "No editing chrome while
+  // walking"): Undo, Redo and Tab Style step aside for as long as the mode is on.
+  const walking = canvasTool === 'avatar';
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
@@ -445,8 +448,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone. */}
-            {!chromeAway && !readOnly ? (
+            {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. */}
+            {!chromeAway && !readOnly && !walking ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}
@@ -497,8 +500,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
-                read-only sessions pass no handler): see ThemeStrip. */}
-            {!chromeAway ? (
+                read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
+            {!chromeAway && !walking ? (
               <ThemeStrip
                 // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
                 tidyUp={

@@ -128,7 +128,10 @@ test.describe('mobile', () => {
     deviceScaleFactor: 3,
   });
 
-  test('the bottom-right cluster keeps Undo on screen in one row', async ({ page, pageErrors }) => {
+  test('the bottom-right cluster keeps Undo on screen in one row, and steps it aside while walking', async ({
+    page,
+    pageErrors,
+  }) => {
     await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.
@@ -137,15 +140,34 @@ test.describe('mobile', () => {
     const undoBox = await undo.boundingBox();
     expect(undoBox && undoBox.x >= 0).toBe(true);
     // And the whole cluster is one row at phone width.
-    const rows = await page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
-      ...new Set(
-        buttons
-          .map((b) => b.getBoundingClientRect())
-          .filter((r) => r.width > 0)
-          .map((r) => Math.round((r.top + r.bottom) / 2 / 10)),
-      ),
-    ]);
-    expect(rows).toHaveLength(1);
+    const rows = () =>
+      page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
+        ...new Set(
+          buttons
+            .map((b) => b.getBoundingClientRect())
+            .filter((r) => r.width > 0)
+            .map((r) => Math.round((r.top + r.bottom) / 2 / 10)),
+        ),
+      ]);
+    expect(await rows()).toHaveLength(1);
+
+    // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): Undo, Redo and Tab Style step
+    // aside, the cluster still one row, and leaving the mode brings them back.
+    const redo = page.getByRole('button', { name: /^redo/i });
+    const style = page.getByRole('button', { name: 'Theme and canvas' });
+    const walk = page.getByRole('button', { name: 'Walk', exact: true });
+    await expect(style).toBeVisible();
+    await walk.click();
+    await expect(walk).toHaveAttribute('aria-pressed', 'true');
+    await expect(undo).toHaveCount(0);
+    await expect(redo).toHaveCount(0);
+    await expect(style).toHaveCount(0);
+    expect(await rows()).toHaveLength(1);
+    await walk.click();
+    await expect(walk).toHaveAttribute('aria-pressed', 'false');
+    await expect(undo).toBeVisible();
+    await expect(redo).toBeVisible();
+    await expect(style).toBeVisible();
 
     expectNoPageErrors(pageErrors);
   });

@@ -206,9 +206,12 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
 
   if (!ctx.tabLocked) out.push(...selectionCommands(ctx, h));
 
+  // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): no history and no Tab Style.
+  const walking = ctx.canvasTool === 'avatar';
+
   // History. Offered only when there's actually something to un/redo, so
   // the palette never lists a dead verb.
-  if (ctx.canUndo) {
+  if (ctx.canUndo && !walking) {
     out.push({
       id: 'undo',
       name: 'Undo',
@@ -216,7 +219,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.undo,
     });
   }
-  if (ctx.canRedo) {
+  if (ctx.canRedo && !walking) {
     out.push({
       id: 'redo',
       name: 'Redo',
@@ -254,19 +257,21 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.deleteDocument,
     });
   }
-  out.push({
-    id: 'open-theme',
-    name: 'Open Theme',
-    keywords: 'theme colour color scheme style appearance palette',
-    run: h.openTheme,
-  });
-  out.push({
-    id: 'open-canvas',
-    name: 'Open Canvas Options',
-    keywords:
-      'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
-    run: h.openCanvasOptions,
-  });
+  if (!walking) {
+    out.push({
+      id: 'open-theme',
+      name: 'Open Theme',
+      keywords: 'theme colour color scheme style appearance palette',
+      run: h.openTheme,
+    });
+    out.push({
+      id: 'open-canvas',
+      name: 'Open Canvas Options',
+      keywords:
+        'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
+      run: h.openCanvasOptions,
+    });
+  }
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
