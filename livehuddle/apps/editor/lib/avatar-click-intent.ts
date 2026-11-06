@@ -61,6 +61,8 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'picnic-table': W,
   hammock: W,
   'ping-pong-table': W,
+  'bean-bag': W,
+  'reading-nook': W,
   // Walk: arriving gives you a drink.
   'water-cooler': W,
   'coffee-machine': W,
@@ -81,6 +83,11 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   fountain: W,
   pond: W,
   'garden-umbrella': W,
+  'pool-table': W,
+  'foosball-table': W,
+  'vending-machine': W,
+  // Walk: a wall piece, walked past, never rung: a click is a click on the floor in front of it.
+  dartboard: W,
   // Walk: areas drawn round other things, and lines and marks with nothing to read.
   lane: W,
   boundary: W,

@@ -6,15 +6,18 @@ import {
   FIREPLACE_FLAMES,
   FOUNTAIN_SPOUT,
   FOUNTAIN_WATER,
+  glowsAtNight,
   JUKEBOX_ARCH,
+  NIGHT_GLOW,
   PING_PONG_TOP,
   SOCIAL_TONES,
 } from '@livehuddle/document';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useJukeboxPlaying } from '@/lib/jukebox-listening';
 
 // The live parts of the social pieces (docs/specs/009-elements/social-pieces.md), drawn over a piece's art inside
 // FurnitureView's own grid: a ping-pong rally, the arcade's screen, a fire's flicker, the fountain's water, the
-// jukebox's lights. Every loop is CSS on transform or opacity (app/social-motion.css), so nothing runs per frame in
+// jukebox's lights, and the glow a lit piece throws on dark paper. Every loop is CSS on transform or opacity (app/social-motion.css), so nothing runs per frame in
 // JavaScript, and every one holds still under reduced motion (the `lh-social-anim` class).
 
 const T = SOCIAL_TONES;
@@ -27,7 +30,8 @@ export function hasSocialArt(kind: string): boolean {
     kind === 'fireplace' ||
     kind === 'campfire' ||
     kind === 'fountain' ||
-    kind === 'jukebox'
+    kind === 'jukebox' ||
+    glowsAtNight(kind)
   );
 }
 
@@ -47,6 +51,9 @@ export function SocialArt({ kind, id, sitters }: { kind: string; id: string; sit
       return <FountainWater />;
     case 'jukebox':
       return <JukeboxLights id={id} />;
+    case 'vending-machine':
+    case 'reading-nook':
+      return <NightGlow kind={kind} />;
     default:
       return null;
   }
@@ -203,6 +210,28 @@ function JukeboxLights({ id }: { id: string }) {
       {note(18, 'lh-note-a')}
       {note(36, 'lh-note-b')}
       {note(52, 'lh-note-c')}
+    </g>
+  );
+}
+
+// On dark paper only (docs/specs/009-elements/social-pieces.md "Vending Machine", "Reading Nook"): a pool of light on the
+// floor and a halo round what is lit, each a radial fade in the light's colour. Static, so reduced motion changes
+// nothing; the gradient ids are per kind, the same on every copy, as the arcade's sheen is.
+function NightGlow({ kind }: { kind: 'vending-machine' | 'reading-nook' }) {
+  const surface = useCanvasSurface();
+  if (surface !== 'dark') return null;
+  const { color, pool, halo } = NIGHT_GLOW[kind];
+  const id = `lh-night-glow-${kind}`;
+  return (
+    <g aria-hidden data-night-glow="">
+      <defs>
+        <radialGradient id={id}>
+          <stop offset="0" stopColor={color} stopOpacity={0.55} />
+          <stop offset="1" stopColor={color} stopOpacity={0} />
+        </radialGradient>
+      </defs>
+      <ellipse {...pool} fill={`url(#${id})`} />
+      <ellipse {...halo} fill={`url(#${id})`} opacity={0.7} />
     </g>
   );
 }
