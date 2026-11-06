@@ -54,7 +54,8 @@ export function useRowPointerDrag({
   const pressRef = useRef<{ id: string; x: number; y: number } | null>(null);
   const rowPointerDown = (id: string) => (e: ReactPointerEvent<HTMLElement>) => {
     if (e.button !== 0 || renamingId === id) return;
-    if (e.target instanceof HTMLElement && e.target.closest('button, input')) return;
+    if (e.target instanceof HTMLElement && e.target.closest('button:not([data-row-drag]), input'))
+      return;
     pressRef.current = { id, x: e.clientX, y: e.clientY };
   };
   const rowPointerMove = (e: ReactPointerEvent<HTMLElement>) => {

@@ -83,7 +83,7 @@ export function usePhotoShortcuts(photo: PhotoEditorView | null): void {
       // other key (a tool's letter) still reaches the photo.
       if (
         LIST_KEYS.has(e.key) &&
-        (e.target as Element | null)?.closest?.('[role="listbox"][aria-label="Layers"]')
+        (e.target as Element | null)?.closest?.('[data-photo-layer-list]')
       )
         return;
       const state = photoTools.get();
