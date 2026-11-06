@@ -163,7 +163,8 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   the default / Dot) and **Drawing** (Basic / Shape recognition). A fourth,
   **Colours**, follows only while the board has custom colours to snap (see
   [Snap colours](#snap-colours)). Text and
-  the Path tool are always in the drawing tools bar; nothing hides them.
+  the Path tool are always in the drawing tools; only a bar too wide for its room folds them into
+  More Tools (see [When the bar is too wide](#when-the-bar-is-too-wide)).
 - **No highlighter.** A whiteboard's pens are its markers, so the dock has
   none (search does not offer the format painter either), and a Highlighter
   armed from the palette in Diagram mode is put down on entering Draw mode,
@@ -172,9 +173,11 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   of it (**below** a dock at the top, **above** one at the bottom), and each
   group's own width is fixed per breakpoint, so nothing shifts under the
   pointer (zero layout shift).
-- On narrow screens the dock scrolls horizontally rather than wrapping. On a phone or a tablet
-  its bar keeps one pinned shape and moves the rest into the Shapes flyout first (see
-  [On a phone or a tablet](#shape-slots)), so a portrait or landscape tablet shows the whole dock.
+- The dock never wraps. On a phone or a tablet its bar keeps one pinned shape and moves the rest
+  into the Shapes flyout (see [On a phone or a tablet](#shape-slots)); where even that bar is too
+  wide for its room (a small tablet in portrait, a narrow desktop window, a large toolbar UI scale)
+  it **folds** to fit (see [When the bar is too wide](#when-the-bar-is-too-wide)), so from 640 px
+  up the whole dock always shows without scrolling. Only a phone's dock scrolls sideways.
 - A sticky or a text box placed from the dock opens for typing at once.
 - Selecting an element shows the ordinary on-canvas selection handles; its
   styling is reached through right-click, as on any tab, but the menu offers
@@ -282,16 +285,42 @@ Explorer Home's Jump Back In.
   their shape keys work as before. The flyout grows by that row (it stays fixed while typing).
   Shapes do not drag on or off the bar there; pinning and unpinning go through the slot's menu
   (long-press or right-click). A pinned shape in the flyout has no menu: it is already pinned.
-  - **How the bar fits a tablet:** the drawing tools, Shapes and Settings never leave the bar;
-    only pins move, the least likely to be missed (Rectangle is one press away in the flyout's
-    Pinned row, and R still arms it). With one pin, the default bar fits beside the menu card on a
-    portrait tablet from about 800 px wide (an iPad Air or Pro in portrait, 820 to 834), and
-    centred on a landscape tablet (1024). The upper bound is measured: with both default pins and
-    a short tab name the full bar fits centred from about 1060 px, and 1099 leaves room for a
-    longer tab name in the menu card.
+  - **How the bar fits a tablet:** pins move first, the least likely to be missed (Rectangle is
+    one press away in the flyout's Pinned row, and R still arms it). With one pin, the default bar
+    fits beside the menu card on a portrait tablet from about 800 px wide (an iPad Air or Pro in
+    portrait, 820 to 834), and centred on a landscape tablet (1024). The upper bound is measured:
+    with both default pins and a short tab name the full bar fits centred from about 1060 px, and
+    1099 leaves room for a longer tab name in the menu card.
   - Narrower windows (a small tablet in portrait, such as 744 or 768, or a narrow desktop window
-    from 640) have less room beside the menu card than even the trimmed bar needs, so the bar
-    scrolls sideways there, as on a phone, rather than hiding a drawing tool.
+    from 640) have less room beside the menu card than even that bar needs, so it folds (below).
+
+### When the bar is too wide
+
+Anywhere but a phone, the bar never scrolls sideways: when it is wider than its room (the
+window less the menu card's clearance, at the toolbar UI scale), it folds, one step at a time,
+only as far as it must, in this order:
+
+1. **The pinned shapes** leave the bar, the last first, into the Shapes flyout's **Pinned** row
+   (as on a tablet). With any pin off the bar, shapes do not drag on or off it, and with none left
+   on it the pinned side's separator goes too, so no two hairlines stand together.
+2. Then the **least-used drawing tools** fold into a **More Tools** button (an ellipsis) at the
+   end of the drawing tools, in this order: **Path tool**, **Fill**, **Marker 3**, **Eraser**,
+   **Marker 2**, **Text**. Select, Marker 1, Shapes and Settings never fold. A group of tools
+   that folds whole takes its hairline with it.
+
+With the default bar and tab name, at the default toolbar UI scale, that is: from about 795 px
+nothing folds; at 768 and 744 only the pin leaves; at 720 the Path tool and Fill fold too; at 660
+Marker 3 as well, and at 640 the Eraser. A longer tab name or a larger UI scale folds a little sooner; a wider window
+unfolds again at once. The room is measured, not a set of breakpoints, so a bar with seven pins
+on a wide window folds its pins the same way.
+
+- **More Tools** opens on a press only (like Settings), on the board side, titled "More Tools":
+  the folded tools as one row of tiles, in bar order, each with its icon, its name as tooltip and
+  accessible name, and its key; the tool in hand is marked. A press arms the tool and closes the
+  menu; a press on the tool already in hand opens that tool's own flyout (a marker's colour and
+  width, Fill's colours, the Eraser's mode) in its place, pointing at More Tools.
+- More Tools shows **pressed** while a folded tool is in hand, so the bar always says a tool is
+  held. Every key still works, folded or not.
 
 ## Pens
 
