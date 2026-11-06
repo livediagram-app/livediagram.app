@@ -18,6 +18,7 @@ import { useTrackerFlow } from './tracker-import/useTrackerFlow';
 import { ImportChooseView } from './import/ImportChooseView';
 import { intoTabCopy } from './import/import-options';
 import { routeImportDrop } from './import/import-drop';
+import { trackerTasks } from '@/lib/tracker-worker/tracker-worker-client';
 import type { IntoTab } from './import/into-tab';
 
 type ImportTabDialogProps = {
@@ -65,7 +66,8 @@ export function ImportTabDialog({
   // shows how it came across instead of closing.
   const [report, setReport] = useState<DoneOutcome | null>(null);
   const [dropError, setDropError] = useState<string | null>(null);
-  const flow = useTrackerFlow(tracker, onClose);
+  const tasks = trackerTasks();
+  const flow = useTrackerFlow(tracker, onClose, tasks);
 
   const pickIntoTab = () => {
     if (intoTab.blocked) return;
@@ -99,7 +101,9 @@ export function ImportTabDialog({
       return;
     }
     const text = await file.text();
-    const route = routeImportDrop(text, file.name, { intoTab, tools });
+    const route = await routeImportDrop(text, file.name, { intoTab, tools }, (t, name) =>
+      tasks.run({ kind: 'read', text: t, name }),
+    );
     debugLog('[import] drop', { to: route.to, bytes: file.size });
     if (route.to === 'error') setDropError(route.error);
     else if (route.to === 'tracker') await flow.show(route.read);

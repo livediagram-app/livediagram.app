@@ -308,6 +308,33 @@ describe('TrackerImportPanel: the import', () => {
     expect(t.contextFor.mock.calls.map((c) => c[0])).toEqual(['tab', 'tab']);
   });
 
+  // The plan's board id tells them apart: the preview's (b1) when reused, the fresh context's (b2) when planned again.
+  it('imports the preview’s own plan while what it read of this plan is unchanged', async () => {
+    const t = tracker({ tab: [ctx(), ctx({ boardId: 'b2' })] });
+    pick(JIRA);
+    const { onDone } = open(t);
+    await choose();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
+    expect(t.importPlan).toHaveBeenCalledWith(
+      expect.objectContaining({ board: expect.objectContaining({ id: 'b1' }) }),
+      'tab',
+    );
+  });
+
+  it('plans again when cards came or went since the preview', async () => {
+    const t = tracker({ tab: [ctx(), ctx({ boardId: 'b2', room: ITEMS_MAX - 1 })] });
+    pick(JIRA);
+    const { onDone } = open(t);
+    await choose();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
+    expect(t.importPlan).toHaveBeenCalledWith(
+      expect.objectContaining({ board: expect.objectContaining({ id: 'b2' }) }),
+      'tab',
+    );
+  });
+
   it('moves to a new plan, importing nothing, when the plan filled up since the preview', async () => {
     const t = tracker({ tab: [ctx(), ctx({ room: 0 })] });
     pick(JIRA);

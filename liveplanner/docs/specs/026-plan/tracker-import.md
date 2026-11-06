@@ -57,6 +57,10 @@ writes (`403 forbidden`) whatever sends them.
 - **Every value is untrusted text.** Nothing is run or parsed as markup: HTML, Markdown and wiki markup stay as the
   characters they are, control characters other than line breaks and tabs are dropped, and every value is cut to its
   field's limit. A link is kept only when it is an `http` or `https` address.
+- **The page stays responsive.** The file is read, and the import planned, in a Web Worker, never on the page's main
+  thread: at the caps (2,000 cards, a 7.7 MB Trello board) each takes hundreds of milliseconds, more on a phone. The
+  worker keeps the board it read; the page holds only the plans. Where a worker can't start, the same work runs on the
+  page.
 
 ## What it makes
 
@@ -170,7 +174,10 @@ Choosing a file shows what the import will make, before anything is written:
 
 - **Into a new Board tab**: the card type is saved (one undo step), the tab is added and opened (one undo step), then
   every card is made in **one write** with its comments (one undo step); undo takes them back newest first, as a
-  JSON import's. The import waits for the plan's cards to load first, as a JSON import does.
+  JSON import's. The import waits for the plan's cards to load first, as a JSON import does. It imports the
+  preview's own plan when what that plan read of this plan (its card types, the statuses its boards name, its people
+  and team, and how many cards it has room for) is unchanged; when cards, types or people came or went since the
+  preview, the board is planned again first.
 - **Into a new plan**: one create makes the plan with the tab and the card type, then every card lands with its
   comments in **one write**, so the plan opens whole. It is named after the board, filed where a new plan from New
   would be, and opens in this window once made. A guest's plan is made in This Browser, as a guest's New makes one.
