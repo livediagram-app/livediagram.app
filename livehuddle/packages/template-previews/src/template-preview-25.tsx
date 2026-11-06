@@ -9,10 +9,14 @@ import {
   PICKET,
   POD,
   RUG,
+  DECK,
+  POOL,
   STAGE_FRONT,
   STAGE_TOP,
   Stools,
+  TARMAC,
   Tree,
+  VELVET,
   WOOD,
 } from './template-preview-24';
 
@@ -81,6 +85,60 @@ export const Stage = ({ s, at: [x, y, w, h] }: { s: Site; at: Rect }) => (
   <>
     <rect x={s.X(x)} y={s.Y(y)} width={s.L(w)} height={s.L(h)} rx="0.8" fill={STAGE_TOP} />
     <rect x={s.X(x)} y={s.Y(y + h) - 1.4} width={s.L(w)} height="1.4" rx="0.4" fill={STAGE_FRONT} />
+  </>
+);
+
+// Stage Curtains over a stage (docs/specs/009-elements/venue-pieces.md): a pelmet along its back and a drape either
+// side, open in the middle.
+export const Curtains = ({
+  s,
+  at: [x, y, w],
+}: {
+  s: Site;
+  at: readonly [number, number, number];
+}) => (
+  <>
+    <rect x={s.X(x)} y={s.Y(y)} width={s.L(w)} height="0.9" rx="0.3" fill={VELVET} />
+    <rect x={s.X(x)} y={s.Y(y)} width="1.1" height={s.L(w / 3)} rx="0.4" fill={VELVET} />
+    <rect x={s.X(x + w) - 1.1} y={s.Y(y)} width="1.1" height={s.L(w / 3)} rx="0.4" fill={VELVET} />
+  </>
+);
+
+// A podium on a stage: a small wooden block.
+export const Podium = ({ s, x, y }: { s: Site; x: number; y: number }) => (
+  <rect x={s.X(x)} y={s.Y(y)} width="1.4" height="1.9" rx="0.3" fill={WOOD} />
+);
+
+// A swimming pool: its deck round the water.
+export const SwimmingPool = ({ s, at: [x, y, w, h] }: { s: Site; at: Rect }) => (
+  <>
+    <rect x={s.X(x)} y={s.Y(y)} width={s.L(w)} height={s.L(h)} rx="0.4" fill={DECK} />
+    <rect
+      x={s.X(x) + 0.5}
+      y={s.Y(y) + 0.5}
+      width={s.L(w) - 1}
+      height={s.L(h) - 1}
+      rx="0.3"
+      fill={POOL}
+    />
+  </>
+);
+
+// A car park: tarmac with a red car and a blue one in its outer bays.
+export const CarPark = ({ s, at: [x, y, w, h] }: { s: Site; at: Rect }) => (
+  <>
+    <rect x={s.X(x)} y={s.Y(y)} width={s.L(w)} height={s.L(h)} rx="0.3" fill={TARMAC} />
+    {[0.12, 0.88].map((t, i) => (
+      <rect
+        key={t}
+        x={s.X(x + w * t) - 0.7}
+        y={s.Y(y + h / 2) - 0.6}
+        width="1.4"
+        height="1.6"
+        rx="0.4"
+        fill={i ? 'rgb(37 99 235)' : 'rgb(220 38 38)'}
+      />
+    ))}
   </>
 );
 
@@ -193,7 +251,10 @@ function companyCampus(): ReactElement {
       <Tree x={s.X(748)} y={s.Y(740)} r={2.6} />
       <Tree x={s.X(1608)} y={s.Y(740)} r={2.6} />
       <Tree x={s.X(700)} y={s.Y(1250)} r={2.6} />
-      <Tree x={s.X(1500)} y={s.Y(1220)} r={3} />
+      <Tree x={s.X(1560)} y={s.Y(1080)} r={3} />
+      {/* By the gate: the car park to its right, a bike rack to its left. */}
+      <CarPark s={s} at={[1300, 1200, 480, 128]} />
+      <Blocks s={s} at={[[960, 1250, 136, 64]]} fill="rgb(148 163 184)" />
       <Tree x={s.X(620)} y={s.Y(100)} r={2.4} />
       <Tree x={s.X(1700)} y={s.Y(100)} r={2.4} />
       <Blocks s={s} at={[[720, 1000, 200, 152]]} fill={WOOD} />
@@ -239,6 +300,8 @@ function conferenceVenue(): ReactElement {
       <Stools xs={[100, 160, 220, 280].map(s.X)} y={s.Y(240)} />
       <ellipse cx={s.X(290)} cy={s.Y(480)} rx={s.L(100)} ry={s.L(60)} fill={RUG} />
       <Stage s={s} at={[820, 88, 480, 150]} />
+      <Curtains s={s} at={[820, 60, 480]} />
+      <Podium s={s} x={1180} y={130} />
       <Seats s={s} xs={[592, 670, 748, 826, 904, 1140, 1218, 1296, 1374, 1452]} ys={[330, 534]} />
       <ellipse cx={s.X(1960)} cy={s.Y(250)} rx={s.L(100)} ry={s.L(60)} fill={RUG} />
       <Blocks
