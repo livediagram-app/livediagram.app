@@ -159,6 +159,7 @@ the one new stored value, a synced user preference.
 | E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                                                             |
 | E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin                                           |
 | E14 | Bubble rising to the view's top edge       | It stops 120px below the top (`topShift`, `SPEECH_TOP_CLEAR`), under the palette strip, and fades there |
+| E15 | Composer with your character at the top    | It sits 120px below the top (`topShift` on its measured height), over the head                          |
 
 ## Security and trust
 
@@ -188,8 +189,10 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
   down a card whose top is at screen y `top` (its anchor, less its rise, lift and scaled height) moves to keep
   SPEECH_TOP_CLEAR (the walk's follow margin, `AVATAR_FOLLOW_MARGIN`, 120px: the palette strip floats over the
   canvas's top) below the view's top: zero while it fits, so a bubble rises until it meets the top and holds
-  there as it fades. Floating bubbles only: the composer sits over your own character, which the camera follow
-  keeps clear of the edges. No layout reads per frame.
+  there as it fades. The composer (#501) takes the same `topShift` on its head's `screenY` less its height, read
+  (`offsetHeight`) in a layout effect only when its draft, its cooldown or the view's height changes, and moves down by
+  it (a negative bottom margin), so a character the camera follow has not yet brought clear of the top still types in
+  view. No layout reads per frame.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say
   something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
   button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under

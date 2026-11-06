@@ -144,6 +144,49 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     expect(panel.style.marginLeft).toBe('');
   });
 
+  // #501: the composer keeps SPEECH_TOP_CLEAR below the view's top, as every speech bubble does.
+  it('keeps the composer below the chrome at the top of the view, as it grows', () => {
+    const height = vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(60);
+    const composer = {
+      head: { x: 400, y: 0 },
+      coolingDown: false,
+      onSend: () => true,
+      onCancel: () => {},
+    };
+    // Canvas y 0 is at screen y 0, as x is above.
+    const tall = { ...VIEW, offsetY: -400, height: 800 };
+    const at = (head: { x: number; y: number }, view: typeof tall | typeof VIEW = tall) => (
+      <AvatarSpeechLayer
+        bubbles={[]}
+        activeTabId="t1"
+        zoom={0.5}
+        view={view}
+        peers={PEERS}
+        composer={{ ...composer, head }}
+        self={{ name: 'Tom', colour: '#14b8a6' }}
+      />
+    );
+    const { container, rerender } = render(at(composer.head));
+    const panel = container.querySelector<HTMLElement>('[data-floating-panel]')!;
+    // Its top would be 60px above the view: down by that and SPEECH_TOP_CLEAR (120px).
+    expect(panel.style.marginBottom).toBe('-180px');
+    expect(panel.style.marginLeft).toBe('');
+    // A line more makes it taller, so it comes down further.
+    height.mockReturnValue(80);
+    fireEvent.change(screen.getByRole('textbox', { name: 'Message' }), {
+      target: { value: 'hi' },
+    });
+    expect(panel.style.marginBottom).toBe('-200px');
+    // A head well down the view leaves it on the head.
+    rerender(at({ x: 400, y: 800 }));
+    expect(panel.style.marginBottom).toBe('');
+    // Without the view's height only the sides hold it in.
+    rerender(at(composer.head, VIEW));
+    expect(panel.style.marginBottom).toBe('');
+    expect(panel.style.marginLeft).toBe('');
+    height.mockRestore();
+  });
+
   it('refuses a key typed past the limit, but trims text dropped in at once', () => {
     layer([], { head: { x: 0, y: 0 }, coolingDown: false, onSend: () => true, onCancel: () => {} });
     const box = screen.getByRole('textbox', { name: 'Message' }) as HTMLTextAreaElement;
