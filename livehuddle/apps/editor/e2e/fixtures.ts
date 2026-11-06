@@ -62,10 +62,7 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     const key = 'livehuddle:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (
-        prefs.avatarTourSeen !== true ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (prefs.avatarTourSeen !== true || !Array.isArray(prefs.elementTourKinds))
         localStorage.setItem(
           key,
           JSON.stringify({

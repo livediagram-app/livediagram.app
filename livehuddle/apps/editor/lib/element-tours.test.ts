@@ -23,9 +23,7 @@ describe('element tours', () => {
     expect(canTourElement({ level: 'edit' }, portal, 'portal')).toBe(true);
     expect(canTourElement({ level: 'participate' }, portal, 'portal')).toBe(false);
     expect(canTourElement({ level: 'view' }, portal, 'portal')).toBe(false);
-    expect(canTourElement({ level: 'edit' }, { ...portal, locked: true }, 'portal')).toBe(
-      false,
-    );
+    expect(canTourElement({ level: 'edit' }, { ...portal, locked: true }, 'portal')).toBe(false);
   });
 
   it('remembers an answer, and counts every kind seen under the blanket flag', () => {

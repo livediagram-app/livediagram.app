@@ -31,7 +31,7 @@ export function canTourElement(
   kind: ElementTourKind,
 ): boolean {
   switch (kind) {
-    // A portal's link is an Editor's, on an unlocked element (docs/specs/009-elements/portal.md "Share roles").
+    // A portal's link is an Editor's, on an unlocked element (docs/specs/007-editor/element-tours.md "Share roles").
     case 'portal':
       return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
   }

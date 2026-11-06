@@ -185,10 +185,7 @@ export function ElementTourHost() {
     }
   }, [active, stillTourable, tabId, engineRef, endTourRef]);
 
-  useEffect(
-    () => () => setActiveTour('element', false),
-    [],
-  );
+  useEffect(() => () => setActiveTour('element', false), []);
 
   return (
     <TourStage
