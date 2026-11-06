@@ -19,6 +19,7 @@ import {
 import type { TeamRef } from '../types';
 import { isAbort } from '../data/errors';
 import { applyTeamChanges, teamChanges } from '../data/teamChanges';
+import { useReturnToTab } from '../data/useReturnToTab';
 import type {
   AnsweredInvitation,
   MyTeams,
@@ -75,7 +76,8 @@ export function useTeams(): TeamsContext {
   return useContext(Ctx) ?? QUIET;
 }
 
-/** Accounts' list, read once as the page opens (signed in, with a host) and again after a change. */
+/** Accounts' list, read once as the page opens (signed in, with a host), again after a change, and again when the person
+ *  comes back to the tab (at most once in 30 s), so a team they were removed from elsewhere leaves the sidebar. */
 function useMyTeams(host: TeamsHost | null, read: boolean) {
   const [mine, setMine] = useState<MyTeams | null>(null);
   const [failed, setFailed] = useState(false);
@@ -96,6 +98,7 @@ function useMyTeams(host: TeamsHost | null, read: boolean) {
     return () => controller.abort();
   }, [host, read, epoch]);
   const refresh = useCallback(() => setEpoch((n) => n + 1), []);
+  useReturnToTab(refresh, 30_000, Boolean(host && read));
   return [mine, setMine, refresh, failed] as const;
 }
 

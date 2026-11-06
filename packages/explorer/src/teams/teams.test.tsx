@@ -8,6 +8,7 @@ import { applyTeamChanges, teamChanges } from '../data/teamChanges';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import type { ExplorerView } from '../views';
 import { Explorer } from '../explorer/Explorer';
+import { landOnMyWork } from '../explorer/TeamPane';
 import { ExplorerPanel } from '../panel/ExplorerPanel';
 import { lastAdmin, memberName, orderMembers, removalCopy } from './rules';
 
@@ -290,6 +291,62 @@ describe('a team’s view', () => {
     await waitFor(() => expect(host.remove).toHaveBeenCalledWith('t1'));
     await waitFor(() => expect(onNavigate).toHaveBeenCalledWith({ kind: 'all' }, '/explorer/all'));
     expect(await screen.findByText('Design was deleted.')).toBeTruthy();
+    // The card and its ⋯ are going: the keyboard lands on My Work's row, where the person now is, not the body.
+    expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'My Work' }));
+  });
+
+  it('lands on Browse Sections when the sidebar is out of reach (a phone, its drawer shut)', () => {
+    render(
+      <div data-explorer="">
+        <button type="button" aria-label="Browse sections" />
+      </div>,
+    );
+    landOnMyWork();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Browse sections' }));
+  });
+
+  it('drops a team the person was removed from elsewhere when its view finds them gone', async () => {
+    const host = fakeHost(null, {
+      myTeams: vi
+        .fn()
+        .mockResolvedValueOnce({
+          teams: [{ id: 't1', name: 'Design', memberCount: 2 }],
+          invitations: [],
+        })
+        .mockResolvedValue({ teams: [], invitations: [] }),
+    });
+    page({ kind: 'team', id: 't1' }, host);
+    expect(await screen.findByText('Team not found')).toBeTruthy();
+    await waitFor(() => expect(host.myTeams).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.queryByRole('treeitem', { name: /^Design/ })).toBeNull());
+  });
+
+  it('reads the teams again on coming back to the tab, so a removal elsewhere leaves the sidebar', async () => {
+    const host = fakeHost(details(), {
+      myTeams: vi
+        .fn()
+        .mockResolvedValueOnce({
+          teams: [{ id: 't1', name: 'Design', memberCount: 2 }],
+          invitations: [],
+        })
+        .mockResolvedValue({ teams: [], invitations: [] }),
+    });
+    const now = vi.spyOn(Date, 'now');
+    try {
+      now.mockReturnValue(1_000_000);
+      page({ kind: 'all' }, host);
+      await screen.findByRole('treeitem', { name: 'Design (2 members)' });
+      // Within 30 s of the last read: not asked again.
+      now.mockReturnValue(1_010_000);
+      fireEvent.focus(window);
+      expect(host.myTeams).toHaveBeenCalledTimes(1);
+      now.mockReturnValue(1_031_000);
+      fireEvent.focus(window);
+      await waitFor(() => expect(host.myTeams).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(screen.queryByRole('treeitem', { name: /^Design/ })).toBeNull());
+    } finally {
+      now.mockRestore();
+    }
   });
 
   it('lets a member leave, but not the only admin of a team with others in it', async () => {
