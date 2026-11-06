@@ -72,27 +72,29 @@ export function furnishRooms(rooms: readonly OfficeRoom[], x0: number, y0: numbe
   return [...walls, ...floor, ...furniture];
 }
 
-const BUTTON_W = 104;
+export const WALK_IN_BUTTON_W = 104;
 const BUTTON_H = 96;
 const HINT_W = 520;
 
 /**
  * The way in: a Selection Mode button labelled Walk In (it hands out Avatar mode and drops the character at it),
- * with a line saying what to do, right-aligned to `right` and centred on `cy`.
+ * with a line saying what to do, right-aligned to `right` and centred on `cy`. A narrower `hintW` (a way in tucked
+ * into a column beside the plan) wraps the line over the button's whole height.
  */
-export function walkIn(right: number, cy: number, hint: string): Element[] {
+export function walkIn(right: number, cy: number, hint: string, hintW = HINT_W): Element[] {
+  const hintH = hintW < HINT_W ? BUTTON_H : 64;
   return [
     {
-      ...createText(right - BUTTON_W - 20 - HINT_W, cy - 32),
-      width: HINT_W,
-      height: 64,
+      ...createText(right - WALK_IN_BUTTON_W - 20 - hintW, cy - hintH / 2),
+      width: hintW,
+      height: hintH,
       label: hint,
       textSize: 'sm',
       textAlignX: 'right',
       // On the canvas beside the room: a slate that reads in either half (#475569 sank into the dark one).
       textColor: CANVAS_TONES.slate,
     },
-    { ...createShape('mode-button', right - BUTTON_W, cy - BUTTON_H / 2), label: 'Walk In' },
+    { ...createShape('mode-button', right - WALK_IN_BUTTON_W, cy - BUTTON_H / 2), label: 'Walk In' },
   ];
 }
 
