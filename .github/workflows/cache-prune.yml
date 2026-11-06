@@ -1,0 +1,37 @@
+name: Cache prune
+
+# Deletes the caches main's newer runs have replaced (docs/ci.md "Cache pruning"), once CI or E2E
+# finishes on main: they save the caches. It runs main's own script and checks out nothing else, so
+# the write access it holds never meets a pull request's code.
+on:
+  workflow_run:
+    workflows: [CI, E2E]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+# One prune at a time; a newer one covers whatever a pending one would have deleted.
+concurrency:
+  group: cache-prune
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    name: Prune
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Delete superseded caches
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/cache-prune.mjs

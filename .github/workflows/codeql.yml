@@ -41,6 +41,8 @@ jobs:
         with:
           languages: actions, javascript-typescript
           build-mode: none
+          # Leaves test code out (the file says why).
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Analyse
         uses: github/codeql-action/analyze@v4
