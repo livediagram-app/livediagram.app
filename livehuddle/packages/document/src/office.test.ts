@@ -66,6 +66,20 @@ describe('the office pieces', () => {
       'vending-machine',
       'bean-bag',
       'reading-nook',
+      // The office amenities (docs/specs/009-elements/office-amenities.md).
+      'printer',
+      'copier',
+      'lockers',
+      'coat-rack',
+      'umbrella-stand',
+      'kitchen-counter',
+      'kitchen-sink',
+      'fridge',
+      'microwave',
+      'kettle',
+      'toilet-cubicle',
+      'washbasin',
+      'hand-dryer',
     ]);
     const sized = ['room', 'stage', 'garden-path', 'grass', 'garden-fence', 'door', 'pond'];
     for (const kind of OFFICE_KINDS) {

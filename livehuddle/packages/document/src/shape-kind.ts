@@ -118,6 +118,20 @@ export type ShapeKind =
   | 'vending-machine'
   | 'bean-bag'
   | 'reading-nook'
+  // The office amenities (docs/specs/009-elements/office-amenities.md).
+  | 'printer'
+  | 'copier'
+  | 'lockers'
+  | 'coat-rack'
+  | 'umbrella-stand'
+  | 'kitchen-counter'
+  | 'kitchen-sink'
+  | 'fridge'
+  | 'microwave'
+  | 'kettle'
+  | 'toilet-cubicle'
+  | 'washbasin'
+  | 'hand-dryer'
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in

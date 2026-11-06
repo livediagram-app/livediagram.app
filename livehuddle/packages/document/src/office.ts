@@ -19,6 +19,9 @@ import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats
 import { OFFICE_EXTRA_ART } from './office-garden';
 import { OFFICE_SOCIAL_ART } from './office-social';
 import { OFFICE_RECREATION_ART } from './office-recreation';
+import { OFFICE_WORKPLACE_ART } from './office-workplace';
+import { OFFICE_KITCHEN_ART } from './office-kitchen';
+import { OFFICE_RESTROOM_ART } from './office-restroom';
 import { WAYFINDING_ART } from './office-wayfinding';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
@@ -70,7 +73,21 @@ export type OfficeKind =
   | 'dartboard'
   | 'vending-machine'
   | 'bean-bag'
-  | 'reading-nook';
+  | 'reading-nook'
+  // The office amenities (docs/specs/009-elements/office-amenities.md).
+  | 'printer'
+  | 'copier'
+  | 'lockers'
+  | 'coat-rack'
+  | 'umbrella-stand'
+  | 'kitchen-counter'
+  | 'kitchen-sink'
+  | 'fridge'
+  | 'microwave'
+  | 'kettle'
+  | 'toilet-cubicle'
+  | 'washbasin'
+  | 'hand-dryer';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -113,6 +130,19 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'vending-machine',
   'bean-bag',
   'reading-nook',
+  'printer',
+  'copier',
+  'lockers',
+  'coat-rack',
+  'umbrella-stand',
+  'kitchen-counter',
+  'kitchen-sink',
+  'fridge',
+  'microwave',
+  'kettle',
+  'toilet-cubicle',
+  'washbasin',
+  'hand-dryer',
 ];
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
@@ -327,6 +357,9 @@ export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   ...OFFICE_EXTRA_ART,
   ...OFFICE_SOCIAL_ART,
   ...OFFICE_RECREATION_ART,
+  ...OFFICE_WORKPLACE_ART,
+  ...OFFICE_KITCHEN_ART,
+  ...OFFICE_RESTROOM_ART,
   ...WAYFINDING_ART,
 };
 

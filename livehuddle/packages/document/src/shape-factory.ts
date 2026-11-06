@@ -166,6 +166,20 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'vending-machine': { width: 72, height: 128 },
   'bean-bag': { width: 64, height: 56 },
   'reading-nook': { width: 160, height: 112 },
+  // The office amenities (docs/specs/009-elements/office-amenities.md).
+  printer: { width: 72, height: 80 },
+  copier: { width: 104, height: 128 },
+  lockers: { width: 136, height: 132 },
+  'coat-rack': { width: 56, height: 128 },
+  'umbrella-stand': { width: 40, height: 64 },
+  'kitchen-counter': { width: 112, height: 88 },
+  'kitchen-sink': { width: 112, height: 88 },
+  fridge: { width: 72, height: 136 },
+  microwave: { width: 60, height: 40 },
+  kettle: { width: 32, height: 36 },
+  'toilet-cubicle': { width: 96, height: 152 },
+  washbasin: { width: 72, height: 112 },
+  'hand-dryer': { width: 36, height: 44 },
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
@@ -349,7 +363,20 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'dartboard' ||
       kind === 'vending-machine' ||
       kind === 'bean-bag' ||
-      kind === 'reading-nook'
+      kind === 'reading-nook' ||
+      kind === 'printer' ||
+      kind === 'copier' ||
+      kind === 'lockers' ||
+      kind === 'coat-rack' ||
+      kind === 'umbrella-stand' ||
+      kind === 'kitchen-counter' ||
+      kind === 'kitchen-sink' ||
+      kind === 'fridge' ||
+      kind === 'microwave' ||
+      kind === 'kettle' ||
+      kind === 'toilet-cubicle' ||
+      kind === 'washbasin' ||
+      kind === 'hand-dryer'
         ? { label: '' }
         : {}),
       ...(kind === 'meeting-table' || kind === 'office-pod'
