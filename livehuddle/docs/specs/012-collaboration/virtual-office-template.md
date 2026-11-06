@@ -9,14 +9,14 @@ A template that starts a team with a whole office to walk round in
 A title, **Our Office**, with a waving sticker and a line inviting people to walk in and rename the rooms. Under it,
 six [rooms](../009-elements/office.md#room) either side of a corridor, every doorway opening onto the corridor:
 
-| Row    | Room             | What is in it                                                                          |
-| ------ | ---------------- | -------------------------------------------------------------------------------------- |
-| Top    | **Reception**    | A sofa facing the room on a rug, a plant either side                                   |
-| Top    | **Desks**        | Six desks in two rows, every sitter facing their screen; a bookshelf and a plant       |
-| Top    | **Meeting Room** | A [meeting table](../009-elements/office.md#meeting-table) of six, a plant either side |
-| Bottom | **Kitchen**      | A water cooler and a coffee machine, a plant, two chairs facing each other             |
-| Bottom | **Lounge**       | A bookshelf, a sofa on a rug, two chairs facing in, a plant                            |
-| Bottom | **Focus Room**   | One desk on its own, a bookshelf and a plant                                           |
+| Row    | Room             | What is in it                                                                                                                                                                                                                      |
+| ------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Top    | **Reception**    | A sofa facing the room on a rug, a plant either side; a coat rack and an umbrella stand by the door                                                                                                                                |
+| Top    | **Desks**        | Six desks in two rows, every sitter facing their screen; a bookshelf, a plant and a printer                                                                                                                                        |
+| Top    | **Meeting Room** | A [meeting table](../009-elements/office.md#meeting-table) of six, a plant either side                                                                                                                                             |
+| Bottom | **Kitchen**      | A kitchenette along the back wall ([Office amenities](../009-elements/office-amenities.md)): a fridge, a counter with a microwave and a kettle, a sink and a coffee machine; a water cooler, a plant, two chairs facing each other |
+| Bottom | **Lounge**       | A bookshelf, a sofa on a rug, two chairs facing in, a plant                                                                                                                                                                        |
+| Bottom | **Focus Room**   | One desk on its own, a bookshelf and a plant                                                                                                                                                                                       |
 
 At the corridor's end: a [Selection Mode button](../009-elements/mode-button.md) set to Avatar, labelled **Walk In**,
 so one press puts a visitor's character at the door, and a line saying how to walk, talk, sit and get a coffee.
@@ -108,9 +108,10 @@ a fenced garden that joins them up, so one Space holds the whole working day (`t
   of two Office Pods and an open terrace of garden umbrellas, hammocks, planters and a long water garden (a Pond), with
   the **Rooftop Lift**.
 - **Co-working Tower** (three floors, three tabs): the **Ground Floor** (wood), with **Hot Desks** (three islands of
-  four), a **Meeting Room**, a **Cafe** (a counter with stools, coffee, two chairs) and the **North Lift** and **South
-  Lift** off the open floor by the entrance; **Level 2** (carpet tiles), **Phone Booths** (six Office Pods in two rows),
-  a **Quiet Room** and two meeting rooms; **Level 3** (parquet), the **Event Floor** (a Stage, two Screens, Bring Focus
+  four, a print corner and lockers), a **Meeting Room**, a **Cafe** (a counter with stools, coffee, a fridge, two chairs)
+  and the **North Lift** and **South Lift** off the open floor by the entrance, a coat rack and an umbrella stand
+  inside it; **Level 2** (carpet tiles), **Phone Booths** (six Office Pods in two rows), a **Quiet Room**, two meeting
+  rooms and a **Restroom** (two cubicles, a hand dryer and two basins); **Level 3** (parquet), the **Event Floor** (a Stage, two Screens, Bring Focus
   and twenty chairs either side of a centre aisle), a **Green Room** and a **Roof Bar**. Every floor has both lifts,
   in the same places, so riding one steps out where you expect.
 - **School Quad** (one tab, a garden): a **Lecture Hall** (a Stage, a Screen, Bring Focus and twelve chairs), two
