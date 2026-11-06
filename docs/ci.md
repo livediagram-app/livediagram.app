@@ -50,6 +50,32 @@ Turbo's own cache (`.turbo/cache`) is kept between runs with GitHub's cache, sav
 read by pull requests, so a workspace whose inputs haven't changed since `main`'s run replays its
 result.
 
+### Cache pruning
+
+Every run on `main` saves its turbo and Next build caches under a key ending in its commit, and a
+restore takes the newest of each family, so the older copies are never read again. They still count
+against the repository's 10 GB of cache storage, and past it GitHub evicts the least recently used
+caches of every family: on 2026-11-06 the repository held 10.65 GB, 6.04 GB of it superseded copies.
+**Cache prune** (`cache-prune.yml`) runs `.github/scripts/cache-prune.mjs` whenever CI or E2E finishes
+on `main`, and deletes every cache a newer one of the same family (key without its commit, on the same
+ref) replaced. A key without a commit, such as setup-node's pnpm store, is never touched. It runs
+`main`'s own script and checks out nothing else, so its `actions: write` never meets a pull request's
+code.
+
+## Runs on main
+
+CI, E2E and CodeQL keep one run per branch. On a pull request, a newer push cancels the older run. On
+`main`, a run that has started always finishes: a newer push waits behind it, and a still newer one
+replaces the one waiting, so at most one run runs and one waits. A run started by hand is never
+cancelled. So that the commits a replaced run skipped are still checked, a push to `main` plans against
+the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit
+just before it, and with no such commit everything runs. A failure on `main` is therefore pinned on the
+commits since the last green one. Until 2026-11-06 every commit on `main` ran to the end, and a burst of
+merges kept jobs waiting a median 16 minutes for one of the free plan's 20 runners. For an hour after
+that, a push to `main` cancelled the run in progress, and with merges landing faster than a run takes
+no run on `main` finished, so staging never deployed; letting the running one finish ends that (each
+product's `docs/specs/016-platform/deployment.md` "Runs on main cancel older ones").
+
 ## Workflows
 
 - **CI** (`ci.yml`), on every pull request and every push to `main`. Its Plan job also writes the
@@ -70,11 +96,13 @@ result.
   - **CI:** one job that fails when any of the above failed, and passes when nothing needed to run.
     It's the check to require on `main`.
 - **E2E** (`e2e.yml`, calling `e2e-product.yml` per product), on every pull request and push to
-  `main`, for each product whose editor a change reaches: one smoke build shared by three smoke shards, the sites audit and the
+  `main`, for each product whose editor a change reaches: one smoke build shared by the smoke shards (three for livediagram, whose smoke specs take about three minutes a shard; two for the others, whose shards take about a minute and a half on three), the sites audit and the
   signed-in specs, in Playwright's container, with Turbopack's build cache restored from `main`.
   **E2E** is its one result check.
 - **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss
   opens or updates that product's issue, **Canvas performance budget: <product>**.
+- **Cache prune** (`cache-prune.yml`): after CI or E2E on `main`, deletes the superseded caches (see
+  [Cache pruning](#cache-pruning)).
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.
 - **Dependency updates** (`dependabot.yml`): Dependabot, weekly, for the npm tree (one lockfile for every
   product) and the actions. Minor and patch bumps come grouped, dev apart from production; each major
@@ -85,11 +113,18 @@ result.
   `deploy-group.yml` once per group of Workers): see [Deploys](#deploys).
 
 - **CodeQL** (`codeql.yml`): one Analyze job scans the whole repository (Actions and
-  JavaScript/TypeScript) on every pull request, every push to `main` and weekly on Mondays, so newly
+  JavaScript/TypeScript) but its test code, on every pull request, every push to `main` and weekly on Mondays, so newly
   released queries also run against an unchanged `main`. It is an advanced setup, so the repository's
   CodeQL default setup stays off, or GitHub rejects the upload. The `main` ruleset requires its results.
   The job may run for 60 minutes: since the livehuddle fork a full analysis takes 21 to over 30, and a run
   cancelled at its limit leaves the PR's required CodeQL result missing until it runs again.
+  `.github/codeql/codeql-config.yml` leaves out the unit tests and e2e specs (37% of the code it read,
+  measured 2026-11-06): they never ship, and their alerts don't block a merge. It keeps the default
+  query suite, which GitHub's incremental pull request analysis needs; that analysis is behind a GitHub
+  feature flag not yet on for this repository (the log says `overlay database mode: none`), and the
+  action turns it on by itself once it is. GitHub's separate Code Quality scan (a second CodeQL run of
+  11 to 21 minutes on every push) was turned off on 2026-11-06 to free runners: the `main` ruleset no
+  longer requires it.
 
 - **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes the
   chosen product's `server.json` (livediagram, liveplanner, livedocuments or livedesign) to the official MCP

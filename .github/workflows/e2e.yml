@@ -11,8 +11,11 @@ on:
 permissions:
   contents: read
 
+# One run per branch: a newer push, to a pull request or to main, cancels the older run. A push to main
+# plans against the last commit this workflow passed there, so a cancelled run's commits are still
+# checked. A run started by hand gets a group of its own (docs/ci.md "Runs on main").
 concurrency:
-  group: e2e-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  group: e2e-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -23,6 +26,10 @@ jobs:
     name: Plan
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # actions: read, to list this workflow's runs on main.
+    permissions:
+      contents: read
+      actions: read
     outputs:
       e2e: ${{ steps.plan.outputs.e2e }}
     steps:
@@ -41,12 +48,25 @@ jobs:
         with:
           node-version: 22
 
+      # A push to main plans against the last commit this workflow passed on main, so the commits of a
+      # run a newer push cancelled are still checked (docs/ci.md "Runs on main").
+      - name: Find main's base
+        id: base
+        if: github.event_name == 'push'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          WORKFLOW: e2e.yml
+          HEAD: ${{ github.sha }}
+        run: node .github/scripts/main-base.mjs
+
+      # A pull request against its base; a push to main against the step above. A manual run has no
+      # base and runs everything.
       - name: Plan
         id: plan
         env:
           BASE: >-
             ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha ||
-            github.event_name == 'push' && github.event.before || '' }}
+            github.event_name == 'push' && steps.base.outputs.base || '' }}
           HEAD: ${{ github.sha }}
         run: node .github/scripts/ci-plan.mjs
 
@@ -68,6 +88,8 @@ jobs:
       smoke-explorer: true
       signed-in-explorer: true
       signed-in-cache: editor-signed-in
+      # Its smoke specs take about three minutes a shard on three: two would pass the 5-minute budget.
+      smoke-shards: '[1, 2, 3]'
 
   liveplanner:
     name: liveplanner

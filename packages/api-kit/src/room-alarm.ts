@@ -38,3 +38,13 @@ export function armRoomAlarm(
   else void storage.setAlarm(next);
   return next;
 }
+
+/**
+ * Delete the room's alarm and forget the time remembered for it, so the next armRoomAlarm on this storage always
+ * writes. A room's purge goes through this rather than storage.deleteAlarm(), which would leave the remembered time
+ * stale and let a later arm at that time skip setting an alarm that is no longer there.
+ */
+export async function disarmRoomAlarm(storage: RoomAlarmStorage): Promise<void> {
+  armed.delete(storage);
+  await storage.deleteAlarm();
+}
