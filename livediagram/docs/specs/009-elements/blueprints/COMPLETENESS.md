@@ -42,8 +42,8 @@
 - [x] Presentation and UX
 - [x] Accessibility
 - [x] Web Experience
-- [ ] Observability
-- [ ] Testing
+- [x] Observability
+- [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
 

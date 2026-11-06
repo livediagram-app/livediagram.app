@@ -32,10 +32,13 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
   });
 }
 
+// A blank canvas with its start closed (Start Blank, `?blank=1`, docs/specs/007-editor/new-document-route.md). A
+// `?template=blank-session` tab opens on Start a Space a moment after the canvas mounts; when that moment came after
+// addNote's Escape, its N went into the start's search and its click picked Company Campus.
 async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto(await serverNewUrl(page, '/new?template=blank-session'));
+  await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
 }
