@@ -77,7 +77,7 @@ export function penCursorSvg(
   };
 }
 
-export const svgDataUrl = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+const svgDataUrl = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 
 /** The CSS `cursor` value, with the system crosshair as the fallback. */
 export function penCursor(

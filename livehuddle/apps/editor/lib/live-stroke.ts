@@ -1,5 +1,5 @@
 // The stroke being drawn with a whiteboard pen (docs/specs/023-draw-mode/draw-mode.md "Pens";
-// blueprint whiteboard-round-one "Pen ink"). One object per stroke, made on the press: its raw
+// docs/specs/023-draw-mode/draw-mode.md "Pens"). One object per stroke, made on the press: its raw
 // samples in canvas px (only exact repeats dropped, as Excalidraw does), a pressure per sample when
 // the pointer is a pen, the streamline its pointer draws with, and the subscribers that draw it, so
 // the input handler can add a sample and have the ink redrawn at once, without a React render.

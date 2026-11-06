@@ -47,9 +47,6 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
-// Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
-// fetches it as the editor mounts).
-
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {

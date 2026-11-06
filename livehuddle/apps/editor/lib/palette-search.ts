@@ -13,7 +13,7 @@ import {
   tileDisplayName,
   type PaletteTileDef,
 } from '@/components/palette/palette-tile-defs';
-import { paletteCategoriesFor, SEARCH_ONLY_TILE_IDS } from '@/components/palette/palette-layouts';
+import { paletteCategories, SEARCH_ONLY_TILE_IDS } from '@/components/palette/palette-layouts';
 import { getLoadedStickerCatalog } from '@liveworkspace/workbench/lib/icon-registry';
 
 // The shape-placing tiles, in palette order. Derived from the shared
@@ -26,7 +26,7 @@ export const SHAPE_TILES = PALETTE_TILES.filter(
 );
 
 // One shape tile as a search item. Also read by the whiteboard's More shapes
-// search (lib/whiteboard-shape-catalogue.ts), so both searches find a shape by
+// search, so both searches find a shape by
 // the same words.
 export function shapeTileSearchItem(tile: PaletteTileDef) {
   const action = tile.action as {
@@ -76,7 +76,7 @@ const OTHER_TILES = PALETTE_TILES.filter(
 let offeredIds: ReadonlySet<string> | null = null;
 function offered(tile: PaletteTileDef): boolean {
   offeredIds ??= new Set([
-    ...paletteCategoriesFor('workshop').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
+    ...paletteCategories().flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
     ...SEARCH_ONLY_TILE_IDS,
   ]);
   return offeredIds.has(tile.id);

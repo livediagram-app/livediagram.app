@@ -13,7 +13,6 @@ import {
   type Tab,
   type TextRun,
 } from '@livehuddle/document';
-import { whiteboardTakesTyping } from '@/lib/whiteboard-tool';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { patchTab } from './editor-page-helpers';
@@ -46,9 +45,6 @@ export function useSelectionEditing(opts: {
   documentName: string;
   tabs: Tab[];
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): plain keys belong to
-  // the dock.
-  drawMode: boolean;
   // The element whose label editor is open, if any: what an Escape leaves.
   editingId: string | null;
   commit: (updater: (els: Element[]) => Element[]) => void;
@@ -309,8 +305,6 @@ export function useSelectionEditing(opts: {
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
     if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
-    // Draw mode leaves the key to its dock unless a note or text box is selected.
-    if (opts.drawMode && !whiteboardTakesTyping(el)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the
     // editor would re-open against the stale runs instead of the seed char.

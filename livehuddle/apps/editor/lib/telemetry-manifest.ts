@@ -62,10 +62,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Renamed',
   // A pass issued in the Share dialog, typed by its level (Edit / Participate / View).
   'Document·Shared',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a pen picked, the eraser mode or background changed,
-  // recognition toggled.
-  'Draw·Changed',
-  'Draw·Selected',
+  // A whiteboard pen's shape recognition toggled for the stroke being drawn (docs/specs/023-draw-mode/draw-mode.md). The
+  // dock's Draw·Selected and Draw·Changed went with it (Work Tracker #329).
   'Draw·Toggled',
   'Document·Undone',
   'Element·Added',

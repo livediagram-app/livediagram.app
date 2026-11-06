@@ -45,9 +45,7 @@ import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canva
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { EraserBrushRing } from '@liveworkspace/workbench/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
-import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
-import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
 import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
 import { parseAvatarStatus } from '@liveworkspace/avatar/status';
@@ -139,12 +137,6 @@ function CanvasView(props: CanvasProps) {
   const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // A whiteboard pen's own cursor, as chosen in the dock's More flyout.
-  const penCursorValue = useWhiteboardPenCursor(
-    pendingDraw,
-    props.whiteboardDock?.prefs.cursor,
-    viewportZoom,
-  );
 
   // Paint mode is the Format canvas tool: it reads as paint mode from its
   // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
@@ -379,7 +371,7 @@ function CanvasView(props: CanvasProps) {
     canvasTool,
     middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
-    whiteboard: props.whiteboardDock !== undefined,
+    whiteboard: false,
     viewportOffset,
     viewportZoom,
     mainRef,
@@ -506,7 +498,7 @@ function CanvasView(props: CanvasProps) {
             // surrounding "letterbox" gap falls through to <main>. Without
             // setting cursor here too, the user would see the OS default
             // arrow in that gap while a draw-to-size intent is pending.
-            ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+            ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
             ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
           }}
         >
@@ -549,7 +541,7 @@ function CanvasView(props: CanvasProps) {
               // intents inherited the default arrow cursor because the
               // wrapper drops its Tailwind cursor- class above when
               // pendingDraw is set, leaving no cursor specified at all.
-              ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+              ...(pendingDraw ? { cursor: drawIntentCursor(pendingDraw) } : null),
               // A path in its edit mode says what a press would do (usePathTool).
               ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
             }}
@@ -732,16 +724,8 @@ function CanvasView(props: CanvasProps) {
           {canvasTool === 'eraser' ? (
             <EraserBrushRing
               pos={eraserPos}
-              // A whiteboard's brush is fixed per mode (docs/specs/023-draw-mode/draw-mode.md "Eraser").
-              radius={
-                props.whiteboardDock
-                  ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
-                  : eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)
-              }
-              filtered={
-                !props.whiteboardDock &&
-                (props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'
-              }
+              radius={eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)}
+              filtered={(props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'}
             />
           ) : null}
 

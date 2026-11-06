@@ -174,7 +174,7 @@ describe('ElementTourHost tour', () => {
     expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['portal'] }, 'me');
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'PortalTour');
     expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.step?.id).toBe('line');
+    expect(stage.engine?.step?.id).toBe('portal');
     expect(track).toHaveBeenCalledWith('UI', 'View', 'PortalTourStepPortal');
     expect(activeTour()).toBe('element');
   });

@@ -186,11 +186,9 @@ export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): 
   return (intent.type === 'shape' || intent.type === 'arrow') && intent.board === true;
 }
 
-// Whether a freshly drawn element drops straight into typing. A text box is
-// only useful once typed into; on a whiteboard a sticky is too, as on a real
-// board (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolean {
-  return intent.type === 'text' || (whiteboard && intent.type === 'sticky');
+// Whether a freshly drawn element drops straight into typing: a text box is only useful once typed into.
+export function opensForTyping(intent: PendingDraw): boolean {
+  return intent.type === 'text';
 }
 
 // A pen held in the hand rather than armed for one gesture: a whiteboard pen
@@ -381,7 +379,7 @@ export function drawIntentCursor(intent: PendingDraw): string {
       );
     }
     if (intent.variant === 'whiteboard') {
-      // The canvas draws the look chosen in the dock (useWhiteboardPenCursor);
+      // The canvas draws the pen's own look;
       // this is its default, on the light board.
       return penCursor(
         DEFAULT_PEN_CURSOR,

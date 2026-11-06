@@ -24,8 +24,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 import { upgradeLegacyPreferences } from '@livehuddle/api-schema';
 import type { ElementTourKind } from './element-tours';
 import type { SwatchOverrideStore } from './swatch-overrides';
-import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
-import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livehuddle/telemetry-client';
 import { apiGetPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
 import {
@@ -181,19 +179,13 @@ export type UserPreferences = {
   // colour of your own. Read and written through lib/swatch-overrides, which
   // validates it and keeps it inside its share of the 4 KB cap.
   quickSwatchOverrides?: SwatchOverrideStore;
-  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): the pinned shape
-  // kinds and the pick counts behind the Shapes flyout's slots. Read and written through
-  // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
-  whiteboardPinnedShapes?: WhiteboardShapeKey[];
-  whiteboardShapePicks?: ShapePicks;
-  // DEAD as of docs/specs/004-interface-design/colour-picker.md, like `customSwatches`: the markers'
-  // Custom colours are the document's. Kept in the type because it is already stored.
+  // livediagram's whiteboard dock settings (its pinned shapes, their pick counts, its colours, where it sat, its
+  // pattern). livehuddle has no whiteboard since Work Tracker #329: nothing reads them, they stay in the type because
+  // they are already stored, and the picks are the first thing trimmed when the blob is full (lib/preferences-sync).
+  whiteboardPinnedShapes?: string[];
+  whiteboardShapePicks?: Partial<Record<string, readonly [number, number]>>;
   whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
-  // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
   whiteboardDockPosition?: 'top' | 'bottom';
-  // Draw mode's pattern, the person's own (docs/specs/007-editor/editor-modes.md "One look"):
-  // Plain, Dots or Grid. Read through lib/whiteboard-dock-prefs. Missing === Grid.
   drawPattern?: 'blank' | 'grid' | 'graph';
   // livediagram's presenter settings (docs/specs/012-collaboration/presentation-mode.md), one shared setting.
   // livehuddle has no presenting since Work Tracker #423 part 2: it never reads or writes the key, only carries it.

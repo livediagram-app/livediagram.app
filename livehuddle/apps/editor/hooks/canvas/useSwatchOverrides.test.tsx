@@ -44,9 +44,12 @@ describe('useSwatchOverrides', () => {
   });
 
   it('keeps every other preference when it writes', () => {
-    const { result } = setup('forest', { customSwatches: ['#abcdef'], tourSeen: true });
+    const { result } = setup('forest', { customSwatches: ['#abcdef'], avatarTourSeen: true });
     act(() => result.current.setOverride('fill', 1, '#123456'));
-    expect(readUserPreferences()).toMatchObject({ customSwatches: ['#abcdef'], tourSeen: true });
+    expect(readUserPreferences()).toMatchObject({
+      customSwatches: ['#abcdef'],
+      avatarTourSeen: true,
+    });
   });
 
   it('shows each theme its own slots when the theme changes', () => {

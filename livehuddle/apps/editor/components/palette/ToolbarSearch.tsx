@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { EditorMode, Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livehuddle/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
@@ -60,12 +60,10 @@ export function ToolbarSearchButton({
 }
 
 export function ToolbarSearchPanel({
-  mode,
   actions,
   pendingDraw,
   tabElements,
 }: {
-  mode: EditorMode;
   // The tab's elements: before anything is typed, the panel lists the element types on it.
   tabElements: readonly Element[];
   actions: PaletteTileActions;
@@ -75,10 +73,10 @@ export function ToolbarSearchPanel({
   const [query, setQuery] = useState('');
   // Stickers load as a chunk of their own: re-rendered when it lands.
   const cataloguesLoaded = useIconCatalogs();
-  const elements = searchElementTiles({ query, mode, hasImage: actions.hasImage, tabElements });
-  const catalogues = searchCatalogueTiles({ query, mode, tabElements, loaded: cataloguesLoaded });
+  const elements = searchElementTiles({ query, hasImage: actions.hasImage, tabElements });
+  const catalogues = searchCatalogueTiles({ query, tabElements, loaded: cataloguesLoaded });
   // One ranking across element types and catalogue entries: name matches first. Only what the palette offers.
-  const here = mergeByName(query, elements.here, catalogues.here);
+  const here = mergeByName(query, elements, catalogues);
   const browsing = !query.trim();
 
   // Enter places the best match.

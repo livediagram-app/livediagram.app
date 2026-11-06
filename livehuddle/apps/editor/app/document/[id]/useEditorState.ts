@@ -14,7 +14,7 @@ import {
 } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
-import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
+import { useStartingTool } from '@/hooks/editor/useStartingTool';
 import { useKeyboardAvoidance } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
 import {
   useCallback,
@@ -36,15 +36,9 @@ import {
   type Tab,
 } from '@livehuddle/document';
 
-import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
-import { useSnapColours } from '@/hooks/canvas/useSnapColours';
 import { useDoorToggle } from '@/hooks/canvas/useDoorToggle';
-import { isPathEditing } from '@/lib/path-edit';
 import { dropsOnTap } from '@/lib/draw-mode';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
-import { usePaintBucket } from '@/hooks/canvas/usePaintBucket';
-import { applySwatchOverrides } from '@/lib/swatch-overrides';
-import { quickSwatches } from '@livehuddle/document';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -56,7 +50,6 @@ import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livehuddle/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
-import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
@@ -997,16 +990,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     selfName: selfParticipant.name,
     canReact: participant.can.takePart && realtime.sessionCommunity === null,
   });
-  // The tab's editor mode (docs/specs/007-editor/editor-modes.md): Workshop, on every tab.
-  const editorMode = useEditorMode(canEdit);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
-  // Draw mode is gone (docs/specs/007-editor/editor-modes.md); the whiteboard tools below still take its flag.
-  const drawMode = false;
-  // The tool a mode starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
-  useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
+  // The tool the editor starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
+  useStartingTool(canvasTool, setCanvasTool, embedMode);
   // A tab that offers the walk opens walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"). After the
   // mode's default tool, so the walk is what a Spaces board settles on.
   const openWalking = useOpenWalking({
@@ -1481,11 +1470,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // chose per element kind, applied to the next element the user draws. The
   // style hooks below get `commit` / `tickTabs` wrapped to record into it.
   const activeTheme = getTheme(activeTab.theme);
-  const styleMemory = useStyleMemory({
-    documentId,
-    theme: activeTheme,
-    board: drawMode,
-  });
+  const styleMemory = useStyleMemory({ documentId, theme: activeTheme });
   const liveActiveElements = () =>
     (tabsRef.current.find((t) => t.id === activeId) ?? activeTab).elements;
   const rememberingCommit = (mapElements: (els: Element[]) => Element[]) => {
@@ -1570,7 +1555,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useTabActions({
     tabs,
     activeId,
-    editorMode: editorMode.mode,
     canEditStructure: !isStructureReadOnly,
     documentList,
     ownerId: selfParticipant.id,
@@ -1762,7 +1746,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelDrawShape,
     beginFreehand,
     beginHighlighter,
-    beginMarker,
     beginShapePen,
     beginPolygon,
     beginRoomWalls,
@@ -1776,7 +1759,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canvasTool,
     setCanvasTool,
     activeTab,
-    drawMode,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -1879,17 +1861,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lockedByOther,
   });
 
-  // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"): one commit, one undo step.
-  const snapColours = useSnapColours({
-    elements: activeTab.elements,
-    editsBlocked: structureBlocked,
-    commit,
-  });
-
-  // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md): device-local pens, recognition and
-  // eraser mode, and the dock presses turned into ordinary editor calls.
-  // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md), read by the
-  // panel and by the Fill tool's colours (docs/specs/023-draw-mode/fill-tool.md).
+  // The quick bar's custom swatches (docs/specs/008-canvas/quick-style-panel.md), for the Quick Style view.
   const swatchOverrides = useSwatchOverrides({
     themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
     userPreferences,
@@ -1897,44 +1869,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     writeUserPreferences,
     ownerId: selfParticipant.id,
   });
-  const whiteboardDock = useWhiteboard({
-    activeTab,
-    drawMode,
-    canvasTool,
-    pendingDraw,
-    editsBlocked: structureCreateBlocked,
-    setCanvasTool,
-    selectCanvasTool,
-    beginDraw,
-    cancelDraw: cancelDrawShape,
-    pathEditing: isPathEditing(activeTab.elements, editingId),
-    leavePathEdit: () => setEditingId(null),
-    snapColours,
-    fillSwatches: applySwatchOverrides(
-      quickSwatches(activeTheme, 'fill'),
-      swatchOverrides.overrides.fill,
-    ),
-    userPreferences,
-    setUserPreferences,
-    writeUserPreferences,
-    ownerId: selfParticipant.id,
-  });
-  // The Fill tool's press (docs/specs/023-draw-mode/fill-tool.md): what it fills, as one commit.
-  const { paintBucket } = usePaintBucket({
-    pendingDraw,
-    elements: () => activeTab.elements,
-    editsBlocked: structureBlocked,
-    canRecolour: participant.can.recolour,
-    commit,
-    hint: toast.info,
-  });
 
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
   // pointer touches, as a single-undo gesture. Canvas calls beginErase
   // from its capture-phase pointerdown. See useCanvasEraser.
   const { beginErase } = useCanvasEraser({
     config: eraserSettings.config,
-    whiteboard: whiteboardDock.whiteboard ? { mode: whiteboardDock.prefs.eraserMode } : null,
     editsBlocked: structureBlocked,
     activeId,
     activeTab,
@@ -2058,7 +1998,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Every input of the Quick Style view but the selection, which ClearStylesHost reads from the store.
   const quickStyleDeps: QuickStyleDeps = {
     activeTab,
-    drawMode,
     theme: activeTheme,
     editsBlocked: structureBlocked,
     canStyle: participant.participating ? participant.can.recolour : undefined,
@@ -2066,10 +2005,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     memory: styleMemory,
     swatchOverrides,
-    pen: {
-      held: whiteboardDock.tool === 'pen' ? whiteboardDock.activePen : null,
-      update: whiteboardDock.updatePen,
-    },
     highlighter,
     toolIntent: pendingDraw,
   };
@@ -2217,7 +2152,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentName,
     tabs,
     activeTab,
-    drawMode,
     editingId,
     commit,
     discardLastStep: cancelToCheckpoint,
@@ -2409,20 +2343,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onZoomReset: () => setViewportZoom(1),
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     enabled: shortcutsEnabled,
-    // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
-    whiteboard: whiteboardDock.whiteboard
-      ? {
-          pickSelect: whiteboardDock.pickSelect,
-          pickPen: whiteboardDock.pickPen,
-          pickEraser: whiteboardDock.pickEraser,
-          pickSticky: whiteboardDock.pickSticky,
-          pickText: whiteboardDock.pickText,
-          pickShape: whiteboardDock.pickShape,
-          pickPath: whiteboardDock.pickPath,
-          pickFill: whiteboardDock.pickFill,
-          openShapes: whiteboardDock.openShapes,
-        }
-      : null,
   });
 
   // The workbench's side of the conversation, and the ends the editor learns of.
@@ -2454,9 +2374,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     changesetReveals: changesetFeed.reveals,
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
-    // The person's editor mode on the active tab, for the mode switch and the canvas.
-    editorMode,
-    whiteboardDock,
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
@@ -2543,7 +2460,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     beginEndpointDrag,
     beginFreehand,
     beginHighlighter,
-    beginMarker,
     beginShapePen,
     beginPolygon,
     beginRoomWalls,
@@ -2588,7 +2504,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitPolygon,
     commitRoomWalls,
     commitPath,
-    paintBucket,
     commitPathEdit,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { SHAPE_KINDS } from '@livehuddle/document';
 
-import { modeElementTiles } from '@/components/palette/palette-tile-search';
+import { paletteElementTiles } from '@/components/palette/palette-tile-search';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { SHAPE_KEYWORDS } from '@/lib/palette-tile-keywords';
 
@@ -14,7 +14,7 @@ import { SHAPE_KEYWORDS } from '@/lib/palette-tile-keywords';
 // exist so that stays true. It offers only what that palette offers
 // (docs/specs/002-project-scope/not-in-livehuddle.md "The diagram tools still in livehuddle's UI").
 
-const OFFERED = modeElementTiles('workshop');
+const OFFERED = paletteElementTiles();
 const shapeTiles = OFFERED.filter(
   (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
 );

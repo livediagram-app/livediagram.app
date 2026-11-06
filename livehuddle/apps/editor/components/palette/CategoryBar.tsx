@@ -21,7 +21,6 @@ import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
 import { opensSide } from './category-flyout-items';
 import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyoutSide';
 import type { PaletteTileDef } from './palette-tile-defs';
-import type { EditorMode } from '@livehuddle/document';
 import { StripOpenedBody, Divider } from './strip-rail-items';
 import type { PaletteTileActions } from './PaletteTileGrid';
 
@@ -280,7 +279,6 @@ export function CategoryBarButtons({
 export function CategoryBarFlyout({
   bar,
   categories,
-  mode,
   actions,
   pendingDraw,
   isMobile,
@@ -288,7 +286,6 @@ export function CategoryBarFlyout({
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
-  mode: EditorMode;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
   isMobile: boolean;
@@ -362,7 +359,6 @@ export function CategoryBarFlyout({
           <CategoryFlyout
             key={category.id}
             category={category}
-            mode={mode}
             actions={actions}
             pendingDraw={pendingDraw}
             focusFirst={bar.viaKeyboard}

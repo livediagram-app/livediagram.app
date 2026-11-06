@@ -21,7 +21,7 @@ describe('Show Me section (element tours)', () => {
   it('starts closed, saying how many tours are on', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     expect(header().getAttribute('aria-expanded')).toBe('false');
-    expect(header().textContent).toContain('7 of 7 On');
+    expect(header().textContent).toContain('1 of 1 On');
     // The mode tours stay open above it.
     expect(screen.getByRole('switch', { name: 'Avatar Tour' })).toBeTruthy();
   });
@@ -31,7 +31,7 @@ describe('Show Me section (element tours)', () => {
     fireEvent.click(header());
     expect(header().getAttribute('aria-expanded')).toBe('true');
     const group = screen.getByRole('group', { name: 'Show Me on Every Element settings' });
-    expect(group.textContent).toContain('Diagram Key');
+    expect(group.textContent).toContain('Portal');
   });
 
   it('opens on its own when Settings lands on one of its rows', () => {
@@ -40,7 +40,7 @@ describe('Show Me section (element tours)', () => {
         category={TOURS}
         settings={{}}
         onChange={vi.fn()}
-        focusRowKey="elementTour-timeline"
+        focusRowKey="elementTour-portal"
       />,
     );
     expect(header().getAttribute('aria-expanded')).toBe('true');

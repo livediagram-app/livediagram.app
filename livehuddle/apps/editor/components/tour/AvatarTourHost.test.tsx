@@ -62,7 +62,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     canvasTool: 'avatar',
     can: { takePart: true },
     activeTab: { id: 'tab1', locked: false },
-    userPreferences: { tourSeen: true },
+    userPreferences: {},
     setUserPreferences,
     writeUserPreferences,
     selfParticipant: { id: 'me' },
@@ -141,14 +141,11 @@ describe('AvatarTourHost offer', () => {
     editor({ isReadOnly: true, can: { takePart: false } });
     const { rerender } = render(<AvatarTourHost />);
     act(() => tourOffer()!.start());
-    expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, avatarTourSeen: true },
-      'me',
-    );
+    expect(writeUserPreferences).toHaveBeenCalledWith({ avatarTourSeen: true }, 'me');
     editor({
       isReadOnly: true,
       can: { takePart: false },
-      userPreferences: { tourSeen: true, avatarTourSeen: true },
+      userPreferences: { avatarTourSeen: true },
     });
     rerender(<AvatarTourHost />);
     expect(tourOffer()).toBeNull();
@@ -162,23 +159,20 @@ describe('AvatarTourHost offer', () => {
 
   // Work Tracker #177: a taken tour leaves the button; its Settings › Tours switch (clearing the record) brings it back.
   it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
-    editor({ userPreferences: { tourSeen: true, avatarTourSeen: true } });
+    editor({ userPreferences: { avatarTourSeen: true } });
     const { rerender } = render(<AvatarTourHost />);
     expect(tourOffer()).toBeNull();
-    editor({ userPreferences: { tourSeen: true } });
+    editor({ userPreferences: {} });
     rerender(<AvatarTourHost />);
     expect(tourOffer()?.name).toBe('Avatar');
   });
 
   it('records it taken as a press starts it, before it is finished or skipped', () => {
-    editor({ userPreferences: { tourSeen: true } });
+    editor({ userPreferences: {} });
     render(<AvatarTourHost />);
     act(() => tourOffer()!.start());
     expect(writeUserPreferences).toHaveBeenCalledTimes(1);
-    expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, avatarTourSeen: true },
-      'me',
-    );
+    expect(writeUserPreferences).toHaveBeenCalledWith({ avatarTourSeen: true }, 'me');
   });
 
   it.each([
@@ -230,10 +224,7 @@ describe('AvatarTourHost end', () => {
   it('skipping marks it seen and sends the skip', () => {
     start();
     act(() => stage.engine!.skip());
-    expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, avatarTourSeen: true },
-      'me',
-    );
+    expect(writeUserPreferences).toHaveBeenCalledWith({ avatarTourSeen: true }, 'me');
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'AvatarTourSkipped');
   });
 
