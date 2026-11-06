@@ -109,8 +109,12 @@ in `useAvatarWalk`; published on every avatar presence packet.
      them with no arrival push.
 4. **Wave and react.** `playReaction` and `jump` do not read `seatedRef`; a seated character keeps
    both.
-5. **Occupancy.** `Canvas.chairSitters` builds `Map<chairId, ChairSitter[]>` from our own
-   `seatedOn` (named "You") and each `remoteAvatars[i].avatar.seatedOn`.
+5. **Occupancy.** `Canvas.chairSitters` builds `Map<chairId, ChairSitter[]>` with
+   `sittersByChair(self, peers.map(seatedPeer), seatsOnBoard(walkElements))` from our own `seatedOn` and
+   `seatClaim` (named "You") and each `remoteAvatars[i].avatar` (`seatedOn`, `seat`, feet, `config.size`). Each
+   sitter carries `seat` (the claim's index, or the seat nearest the feet for a packet without one, by `claimOf`)
+   and `scale` (`avatarScale` of their size); each list is in seat order. `seatsOnBoard` looks a piece's seats up
+   once per board and keeps them, so a packet costs a map lookup per seated peer.
 
 Invariants:
 
@@ -154,7 +158,7 @@ seatedOn?: string | null;   // absent parses as standing
 seat?: { index: number; at: number; tie: number } | null;   // absent: the seat nearest the feet, earliest
 
 // apps/editor
-export type ChairSitter = { name: string; color: string };
+export type ChairSitter = Sitter; // @liveworkspace/avatar/chair-sitters: { name; color; seat?; scale? }
 export function FurnitureView(props: { element: ShapeElement; stroke: string; sitters: ChairSitter[];
   animClass?: string }): JSX.Element | null;
 ```
@@ -210,10 +214,16 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
   this, and so does the canvas: `FurnitureView` takes `defaultStrokeColor(element, surface)`.
 - **Label:** under the chair (`textAlignY: 'bottom'`), on the canvas and in the export.
 - **Palette:** tile `tools:chair` ("Add Chair") in the **Navigate** category (Workshop's Collaborate band).
-- **Occupied:** a 3 px ring (the drawing's `ring`, opacity 0.85) in the first sitter's colour, painted
-  inside the drawing's frame (so a mirrored side mirrors it) before `parts[ringUnder]`: on the seat,
-  under whatever stands nearer the camera (a backrest's back, the desk and its monitor, a sofa's
-  arms). Names in a pill ABOVE the piece [QF16].
+- **Occupied:** a 3 px ring (opacity 0.85) painted inside the drawing's frame (so a mirrored side
+  mirrors it) before `parts[ringUnder]`: on the seat, under whatever stands nearer the camera (a
+  backrest's back, the desk and its monitor, a sofa's arms). A one-seat drawing uses its own `ring`
+  in the first sitter's colour; a drawing with several `seats` draws `seatRing(view, sitter.seat)` per
+  sitter in their colour: centred on the seat point, `ry` 8, `rx` 20 narrowed to 0.45 of the gap to a
+  seat on the same row. A sitter with no `seat` gets no ring there. Names in a pill ABOVE the piece
+  [QF16], its bottom edge at `seatPillBottom(element, view, sitters)`: the highest
+  `feet - (AVATAR_HEIGHT x scale + AVATAR_HEAD_CHROME)` among the sitters, less `SEAT_PILL_GAP` (3 px),
+  never below the box's top. `AVATAR_HEAD_CHROME` (walk.ts, 24 px) is the highest of what `AvatarWalker`
+  draws over a head (name chip 16, own status 22, Zz 24), so the pill clears both the sprite and its chip.
 - **No `…`:** `carriesSharedSettingsMenu('chair')` is `false`.
 - **Telemetry:** placing emits `Element·Added·Chair`; a facing change emits `Element·Changed·Chair`;
   sitting and standing emit nothing.
@@ -268,6 +278,7 @@ presence packet at once ("tells the room at once which seat it sat on …", "fre
 | Re-entering the mode starts unseated          | "comes back unseated"                                                | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`                   |
 | Created with no stored colour; stamp is unset | "are created with no stored colour", "treat the …"                   | `packages/document/src/behaviour-skin.test.ts`                      |
 | Occupancy from presence only (I1, I2)         | "lists our own character and every seated peer …"                    | `../packages/avatar/src/chair-sitters.test.ts`                      |
+| The exact seat ringed; pill clears the head   | "rings each sofa cushion …", "lifts the name pill clear …"           | `apps/editor/components/canvas/collab/FurnitureView.test.tsx`       |
 | Label survives export                         | "prints a chair label under the seat"                                | `packages/document/src/svg-render-fidelity.test.ts`                 |
 | Unknown facing rejected                       | "rejects an off-vocabulary chair facing"                             | `packages/document/src/collab-shapes.test.ts`                       |
 | Desk faces the computer; sofa the reader      | "a new desk faces its sitter at the computer …"                      | `packages/document/src/seating.test.ts`                             |

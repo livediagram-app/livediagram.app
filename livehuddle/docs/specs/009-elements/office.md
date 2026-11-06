@@ -94,8 +94,9 @@ A table with six chairs round it, every seat facing the table.
   far chairs face down, the near chairs up, the left end right, the right end left. A seat takes one sitter, as
   any chair does: a taken seat is skipped for the nearest free one, and a full table stops you beside it
   ([Chair](chair.md) "Sitting").
-- Who is sitting is presence, as for every seat: the table shows the sitters' names in a pill above it. It does not
-  ring one chair yet; which seat each sitter took now rides their presence (`seat.index`).
+- Who is sitting is presence, as for every seat: the table rings each taken chair in its sitter's colour
+  (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
+  "Occupancy is presence").
 - It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
 
 ## Plant, Bookshelf
@@ -161,7 +162,7 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
 - **Two seats**, one on each bench, the left sitter facing right and the right sitter facing left. Walking in
   through the doorway sits you on the free seat nearest where you came in, by the [Chair](chair.md) rules: one
   sitter a seat, a taken seat skipped, a full pod stops you beside it. Who sits is presence, never stored, and the
-  pod names its sitters in a pill above it like the meeting table.
+  pod rings each taken bench seat and names its sitters in a pill above it like the meeting table.
 - **The door closes when two people sit in it**, and opens the moment either stands up or leaves. Every machine
   works it out from the same presence (both seats held), so everyone sees the same door. It **slides** shut or open
   over 0.6 seconds; under reduced motion it jumps to where it ends.
