@@ -3,6 +3,7 @@
 // panel, and the view helpers a host's router needs.
 
 export { Explorer, type ExplorerProps } from './explorer/Explorer';
+export { ExplorerSkeleton } from './explorer/ExplorerSkeleton';
 export {
   EXPLORER_POPOVER_HEIGHT,
   EXPLORER_POPOVER_WIDTH,
