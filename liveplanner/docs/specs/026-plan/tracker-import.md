@@ -131,6 +131,9 @@ Each card keeps, where the source has them:
 - They are posted as the import ("Trello import", "Jira import"): no one's own comment, so they **mention no one**
   (an `@name` stays text), make **no Inbox row**, send **no email** and raise no notice. An Editor may delete them as
   any comment.
+- An Imported comments thread **counts as an ordinary thread**: there is no separate cap and no exemption. Each card
+  takes one at most, so it uses one of the card's 50 ([Card comments](items.md#limits)), leaving 49, and a plan's
+  threads stay capped by its cards as always; with no Inbox row, it takes nothing from anyone's Inbox.
 - A thread holds at most 200 comments within its size budget: past that the newest are kept, and an import holds at
   most 20,000 comments in all; the rest are left out and counted. A comment cut to 2,000 characters is marked "…".
 - Asana's and Linear's CSV exports carry no comments.
