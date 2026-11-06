@@ -2,7 +2,7 @@ import { assertD1Compound } from '@liveworkspace/api-kit/d1-compound-guard';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { ItemGrant } from '../index-service';
 import { TEST_GRANT_HOOK, type TestGrantCaller } from '../test-sqlite-d1';
-import type { DocumentRouteContext, RouteContext, WorkbenchContext } from './context';
+import type { DocumentRouteContext, RouteContext } from './context';
 import type { Env, DocumentEnv } from '../types';
 
 // Shared test builder for RouteContext (docs/specs/003-system-architecture/testing.md). Eight route test
@@ -31,8 +31,6 @@ export function makeTestRouteContext(
     accountEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
     token?: RouteContext['token'];
-    // The workbench session the request presented (docs/specs/013-workspace/workbench-embeds.md).
-    workbench?: WorkbenchContext | null;
     // JSON-encoded into the request body when present.
     body?: unknown;
     // Sent as is, for a body that does not parse.
@@ -75,7 +73,6 @@ export function makeTestRouteContext(
     accountEmail: opts.accountEmail ?? null,
     resolveOwner: () => opts.owner ?? null,
     token: opts.token ?? null,
-    workbench: opts.workbench ?? null,
     teams: opts.teams ?? null,
     bearer: null,
     grant,

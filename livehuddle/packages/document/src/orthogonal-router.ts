@@ -1,4 +1,4 @@
-// An orthogonal arrow router (docs/specs/015-api/mcp-server.md §4.7 "Loops and detours go round"): the shortest path
+// An orthogonal arrow router (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Loops and detours go round"): the shortest path
 // of horizontal and vertical runs from one box side to another that crosses no box, with as few bends as it can.
 // Used by graph input for the arrows its plain elbows cannot draw cleanly (a loop back, an edge skipping ranks).
 //

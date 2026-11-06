@@ -87,7 +87,7 @@ describe('buildEditorCommands — document/tab commands', () => {
   });
 });
 
-// The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+// The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
 describe('buildEditorCommands — in a workbench', () => {
   it('offers neither Share nor Delete document, and keeps the rest', () => {
     const inWorkbench = ids({ ...base, canShare: true, workbench: true });

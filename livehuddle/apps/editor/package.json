@@ -19,8 +19,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo coverage",
     "icons:sheet": "vitest run --config scripts/icon-sheet/vitest.config.ts && node scripts/icon-sheet/shoot.mjs",
-    "icons:brand": "node scripts/brand-icons/render.mjs",
-    "test:e2e:workbench": "NEXT_PUBLIC_E2E_AUTH=1 next build && E2E_WORKBENCH=1 playwright test --project=workbench"
+    "icons:brand": "node scripts/brand-icons/render.mjs"
   },
   "dependencies": {
     "@jsquash/webp": "1.5.0",

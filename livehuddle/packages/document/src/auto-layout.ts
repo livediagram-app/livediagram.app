@@ -1,4 +1,4 @@
-// Deterministic auto-layout for AI-generated diagrams (the MCP server, docs/specs/015-api/mcp-server.md) and the
+// Deterministic auto-layout for generated diagrams (graph input, livediagram/docs/specs/015-api/mcp-server.md) and the
 // editor's Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md).
 //
 // The model is good at deciding WHAT nodes and edges a diagram needs but poor
@@ -63,7 +63,7 @@ export type AutoLayoutOptions = {
   // box is not a graph node, so arrows to it are not edges, and a locked arrow keeps its anchors.
   lockedIds?: ReadonlySet<ElementId>;
   // Edges (`from->to`) whose target ranks level with its source and sits just after it across the flow: a
-  // decision's side step (docs/specs/015-api/mcp-server.md §4.7 "Side steps sit level with their decision").
+  // decision's side step (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Side steps sit level with their decision").
   // Graph input only; Tidy Up never passes it.
   flatEdges?: ReadonlySet<string>;
   // Tree style: parents whose leaf children stack in a column under them (auto-layout-tree.ts). Graph input only;
@@ -73,7 +73,7 @@ export type AutoLayoutOptions = {
 
 export const edgeKey = (from: ElementId, to: ElementId) => `${from}->${to}`;
 
-// The axis swap a tree run left to right is laid out through (docs/specs/015-api/mcp-server.md §4.7).
+// The axis swap a tree run left to right is laid out through (livediagram/docs/specs/015-api/mcp-server.md §4.7).
 function transposedSizes(size: Map<ElementId, Size>): Map<ElementId, Size> {
   const out = new Map<ElementId, Size>();
   for (const [id, s] of size) out.set(id, { w: s.h, h: s.w });
@@ -318,7 +318,7 @@ export function isLayoutCandidate(elements: Element[]): boolean {
 // roughly one point (e.g. everything left at 0,0) — i.e. the model left
 // placement to us. Lets a caller PRESERVE a real layout the model produced (a
 // ring for a cycle, a tree, a grid) and only auto-lay-out when it didn't bother
-// to place things (docs/specs/015-api/mcp-server.md §4.3: the calling LLM decides the layout).
+// to place things (livediagram/docs/specs/015-api/mcp-server.md §4.3: the calling LLM decides the layout).
 export function nodesLookUnplaced(elements: Element[]): boolean {
   const boxed = elements.filter(isBoxed);
   if (boxed.length < 2) return true; // nothing meaningful to preserve
@@ -344,7 +344,7 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   // content — titles, captions, per-stage descriptions, legends, loose notes —
   // is NOT a node: it passes through at the position it was given rather than
   // being raked into a disconnected-component column beside the graph (which
-  // detached and scrambled the frog-lifecycle descriptions, docs/specs/015-api/mcp-server.md §4.3).
+  // detached and scrambled the frog-lifecycle descriptions, livediagram/docs/specs/015-api/mcp-server.md §4.3).
   const connected = new Set<ElementId>();
   for (const e of buildEdges(arrows, new Set(allBoxed.map((n) => n.id)))) {
     connected.add(e.from);

@@ -18,7 +18,6 @@ import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
-import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
@@ -236,15 +235,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, so it keeps the corner there.
   const menuInStrip = isMobile && paletteShown;
-  // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
-  const { workbenchBack } = props;
-  const explorerMenuButton = workbenchBack ? (
-    <WorkbenchBackButton
-      onBack={workbenchBack.back}
-      backTitle={workbenchBack.backTitle}
-      inline={menuInStrip}
-    />
-  ) : props.explorerHidden ? null : (
+  const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}

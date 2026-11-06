@@ -8,10 +8,8 @@ import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { handleAuth } from './routes/auth';
 import { resolveApiToken } from './db';
 import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livehuddle/api-schema';
-import { isWorkbenchSessionFormat, WORKBENCH_SESSION_PREFIX } from '@livehuddle/api-schema';
 import { hasApiTokenPrefix, isApiTokenFormat } from '@livehuddle/api-schema';
 import { handleTokens } from './routes/tokens';
-import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
 import { PersonStore } from './person-store/person-store';
 import { handleInternalItems } from './routes/internal-items';
@@ -32,7 +30,7 @@ import { handleCapabilities } from './routes/capabilities';
 import { handleOpenapi } from './routes/openapi';
 import { handleShapeLibraries } from './routes/shape-libraries';
 import { handleUnfurl } from './routes/unfurl';
-import type { RouteContext, WorkbenchContext } from './routes/context';
+import type { RouteContext } from './routes/context';
 import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
@@ -42,10 +40,7 @@ import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
-import { resolveWorkbenchSession } from './auth/workbench-session';
-import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
-import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspace-proxy';
 import type { Env } from './types';
 import { pollCallsBudget } from './calls/calls-budget';
 
@@ -94,20 +89,6 @@ async function routeApiRequest(
   if (segments[1] === 'internal')
     return handleInternalItems(request, env, (p) => executionCtx?.waitUntil(p));
 
-  // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the router sends
-  // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is
-  // forwarded the same way, as livehuddle, before identity, since accounts checks the credential.
-  if (segments[1] === 'workbench') {
-    const forwarded = env.ACCOUNTS_URL
-      ? routeToWorkspace(request, {
-          app: 'livehuddle',
-          origin: env.ACCOUNTS_URL,
-          routes: [WORKBENCH_ROUTE],
-        })
-      : null;
-    return forwarded ?? json({ error: 'accounts_unavailable' }, { status: 503 });
-  }
-
   // Who is calling (docs/specs/014-identity/auth-and-guest-access.md): a liveworkspace access token or guest token,
   // verified once here against the accounts Worker's keys. Null when sign-in isn't configured, no Bearer was sent
   // (a link visitor with no identity yet), or the token failed verification.
@@ -149,58 +130,16 @@ async function routeApiRequest(
       }
     }
   }
-  // Workbench session (docs/specs/013-workspace/workbench-embeds.md): a `Bearer lvw_…` is a person's editor
-  // on one document, minted from their token's ticket. Consulted only when neither an account access token nor a token
-  // resolved. A session-shaped bearer that does not resolve is refused, never read as a guest. A resolved one
-  // is confined at once (auth/workbench-confinement.ts): another document reads as absent, any route outside
-  // the allow-list is refused, and a view session writes nothing.
-  let workbench: WorkbenchContext | null = null;
-  if (!person && !tokenAuth) {
-    const bearer = bearerTokenOf(request.headers.get('Authorization'));
-    if (bearer?.startsWith(WORKBENCH_SESSION_PREFIX)) {
-      // Cut short or mistyped, a session-shaped bearer is refused as a session too (as a token is, above).
-      // When liveworkspace can't answer, the session is neither good nor bad: 503, as for a token.
-      let resolved:
-        | Awaited<ReturnType<typeof resolveWorkbenchSession>>
-        | {
-            ok: false;
-            reason: 'malformed';
-            sessionPrefix: string;
-          };
-      try {
-        resolved = isWorkbenchSessionFormat(bearer)
-          ? await resolveWorkbenchSession(env, bearer)
-          : { ok: false, reason: 'malformed', sessionPrefix: '' };
-      } catch (err) {
-        if (!(err instanceof AccountsUnavailable)) throw err;
-        return accountsUnavailable();
-      }
-      if (!resolved.ok) {
-        console.warn('[workbench] bearer-refused', {
-          reason: resolved.reason,
-          sessionPrefix: resolved.sessionPrefix,
-        });
-        return json(
-          { error: 'invalid_session' },
-          { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } },
-        );
-      }
-      workbench = resolved.workbench;
-      const refusal = workbenchRefusal(workbench, request.method, segments, request.headers);
-      if (refusal) return refusal;
-    }
-  }
   const guestId = person?.kind === 'guest' ? person.guestId : null;
-  // The caller's id: an account (signed in, or behind an API token or a workbench session), else a guest.
-  const resolveOwner = (): string | null =>
-    accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? guestId;
+  // The caller's id: an account (signed in, or behind an API token), else a guest.
+  const resolveOwner = (): string | null => accountUserId ?? tokenAuth?.ownerId ?? guestId;
   // Server-verified account id from either credential (session JWT
   // or API token). Feeds the team-membership content gates + teams-surface
   // reads (see RouteContext.verifiedUserId); administration surfaces keep
   // reading `accountUserId` directly. A guest is never one.
-  const verifiedUserId = accountUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
+  const verifiedUserId = accountUserId ?? tokenAuth?.ownerId ?? null;
   // Teams are run on liveworkspace.app; the caller's token carries the teams they're in (no copy here).
-  const teamsClaim = account?.teams ?? tokenAuth?.teams ?? workbench?.teams ?? null;
+  const teamsClaim = account?.teams ?? tokenAuth?.teams ?? null;
 
   // Per-owner write rate limit. Gates POST / PUT / DELETE at a
   // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
@@ -216,12 +155,12 @@ async function routeApiRequest(
   // its volume low instead.
   const isWrite =
     request.method === 'POST' || request.method === 'PUT' || request.method === 'DELETE';
-  // Read-only token enforcement (docs/specs/015-api/mcp-server.md §4.11): a token minted read-only may
+  // Read-only token enforcement (docs/specs/015-api/public-api-and-tokens.md): a token minted read-only may
   // only GET/HEAD. Reject every write it presents at this single choke point
   // — so no write route can be reached, present or future, with no per-route
   // changes. signed-in sessions and full tokens are unaffected (tokenAuth is null
   // or readOnly false). A guest's requests carry no tokenAuth either.
-  // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
+  // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/public-api-and-tokens.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
   if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
@@ -274,12 +213,9 @@ async function routeApiRequest(
     // interactive app use; everything else keys on the resolved owner.
     // A caller with no identity (a link visitor) is keyed on its
     // network, not one global 'anonymous' bucket every new visitor shares.
-    // A workbench session's writes key on the session (WB10), apart from its owner's own app use.
     const key = tokenAuth
       ? `token:${tokenAuth.tokenId}`
-      : workbench
-        ? `workbench:${workbench.sessionId}`
-        : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
+      : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
     if (await isWriteRateLimited(env, key)) return rateLimited();
   }
   // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
@@ -322,7 +258,6 @@ async function routeApiRequest(
           expiresAt: tokenAuth.expiresAt,
         }
       : null,
-    workbench,
     bearer: person ? bearerTokenOf(request.headers.get('Authorization')) : null,
     teams: teamsClaim,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
@@ -356,8 +291,6 @@ async function routeApiRequest(
       return await handleTeams(ctx);
     case 'tokens':
       return await handleTokens(ctx);
-    case 'oauth':
-      return await handleOauthExchange(ctx);
     case 'account':
       return await handleAccount(ctx);
     case 'trash':

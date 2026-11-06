@@ -45,13 +45,12 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-type Opts = { owner?: string | null; workbench?: unknown; token?: { id: string }; env?: Env };
+type Opts = { owner?: string | null; token?: { id: string }; env?: Env };
 
 const call = (method: string, path: string, opts: Opts = {}, request?: RequestInit) => {
   const ctx = makeTestRouteContext(method, path, {
     owner: opts.owner === undefined ? 'user_ada' : opts.owner,
     env: opts.env ?? db.env,
-    ...(opts.workbench ? { workbench: opts.workbench as never } : {}),
     ...(opts.token ? { token: opts.token } : {}),
   });
   if (!request) return handleImages(ctx);
@@ -173,15 +172,9 @@ describe('handleImages', () => {
       expect(await res.json()).toMatchObject({ image: { id }, deduped: true });
     });
 
-    it.each([
-      [
-        'a workbench session',
-        { workbench: { documentId: 'd1', ownerId: 'user_ada', sessionId: 's1' } },
-      ],
-      ['an API token', { token: { id: 'tok-1' } }],
-    ])('never answers %s from the hash alone', async (_label, opts) => {
+    it('never answers an API token from the hash alone', async () => {
       const id = await uploaded();
-      const res = await probe(opts);
+      const res = await probe({ token: { id: 'tok-1' } });
       expect(res.status).toBe(415);
       expect(JSON.stringify(await res.json())).not.toContain(id);
     });
@@ -240,28 +233,6 @@ describe('handleImages', () => {
       resolveDocumentGrant.mockResolvedValue(VIEW);
       const res = await call('GET', `/api/images/${id}?d=d2`, { owner: 'visitor' });
       expect(res.status).toBe(404);
-    });
-
-    // docs/specs/013-workspace/workbench-embeds.md: a workbench session reads images through its own document
-    // only, never by owning them, so it cannot walk its owner's gallery by id.
-    describe('under a workbench session', () => {
-      const workbench = { scope: 'document', documentId: 'd1', ownerId: 'user_ada' };
-
-      it('skips the owner shortcut and refuses any document but its own', async () => {
-        const id = await uploaded();
-        expect((await call('GET', `/api/images/${id}`, { workbench })).status).toBe(404);
-        resolveDocumentGrant.mockResolvedValue(VIEW);
-        expect((await call('GET', `/api/images/${id}?d=d2`, { workbench })).status).toBe(404);
-        expect(resolveDocumentGrant).not.toHaveBeenCalled();
-      });
-
-      it('serves an image its own document serves', async () => {
-        const id = await uploaded();
-        liveDoc(db.sql, 'd1', 'user_ada');
-        await upsertTab(db.env, 'd1', tabWith('t1', id), 0);
-        resolveDocumentGrant.mockResolvedValue(VIEW);
-        expect((await call('GET', `/api/images/${id}?d=d1`, { workbench })).status).toBe(200);
-      });
     });
   });
 
