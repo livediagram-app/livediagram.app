@@ -99,6 +99,9 @@ export type ProximityCallInput = {
   pageVisible?: () => boolean;
   // The canvas's local preview (video-and-screen-bubbles.md "Local preview"): a live call sends what it may of it.
   preview?: Pick<LocalPreview, 'stream' | 'take' | 'stop' | 'subscribe'>;
+  // An Editor stopped your screen share (video-and-screen-bubbles.md "Share roles"): told who, by presence id, so the
+  // canvas can say so (#504).
+  onShareStopped?: (by: string) => void;
 };
 
 /** The browser's getUserMedia, unless the input brings its own. */

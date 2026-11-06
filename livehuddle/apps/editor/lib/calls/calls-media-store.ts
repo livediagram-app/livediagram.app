@@ -89,6 +89,15 @@ export function receiveStopShare(from: string, op: unknown): void {
   for (const listener of stopShareListeners) listener(from);
 }
 
+/**
+ * What the sharer is told when an Editor stopped their screen share (#504): the Editor by name, or by role when the
+ * canvas does not know them.
+ */
+export function shareStoppedNotice(editorName: string | null | undefined): string {
+  const name = (editorName ?? '').replace(/\s+/g, ' ').trim();
+  return `${name || 'An Editor'} stopped your screen share`;
+}
+
 /** Subscribe to stop-shares addressed to you (the running call). */
 export function onStopShare(listener: (from: string) => void): () => void {
   stopShareListeners.add(listener);

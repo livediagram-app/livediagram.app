@@ -14,6 +14,8 @@ const hook = vi.hoisted(() => ({ useProximityCall: vi.fn() }));
 vi.mock('@/lib/calls/useProximityCall', () => hook);
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => telemetry);
+const toast = vi.hoisted(() => ({ info: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const props = {
   remoteAvatars: [
@@ -212,5 +214,24 @@ describe('useCanvasCall', () => {
     expect(run({})).toBeUndefined();
     expect(run({ takePart: false })).toBeUndefined();
     expect(run({ canShareScreen: true }, 'select')).toBeUndefined();
+  });
+
+  // video-and-screen-bubbles.md "Share roles" (#504).
+  it('tells you which Editor stopped your share, or that an Editor did', () => {
+    renderHook(() =>
+      useCanvasCall({
+        props,
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+      }),
+    );
+    const { onShareStopped } = hook.useProximityCall.mock.calls.at(-1)![0] as {
+      onShareStopped: (by: string) => void;
+    };
+    onShareStopped('p1');
+    expect(toast.info).toHaveBeenLastCalledWith('Sam stopped your screen share');
+    onShareStopped('gone');
+    expect(toast.info).toHaveBeenLastCalledWith('An Editor stopped your screen share');
   });
 });

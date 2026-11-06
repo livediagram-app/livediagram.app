@@ -87,7 +87,8 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   and is addressed to the target. The room records the target's current screen token (from their last `call-track`)
   as stopped, and the mint route answers `stopped` (as `not_heard`) to a new subscription to that screen until the
   sharer's `call-track` names no screen or a new one. The sharer's call stops its screen unless the room stamped the
-  sender something other than an Editor. UI: an Editor-only **Stop** (named "Stop Sam's Screen") on someone else's screen bubble (a
+  sender something other than an Editor, then (only when a screen was running) calls `onShareStopped(from)`, which
+  `useCanvasCall` turns into `toast.info(shareStoppedNotice(name))`, the name looked up in `remoteAvatars` (#504). UI: an Editor-only **Stop** (named "Stop Sam's Screen") on someone else's screen bubble (a
   sibling of the maximise button, top left, on hover, focus or always on a touch screen) and in the maximised panel's
   bar (focus then goes to the panel, never to Stop). Counted `StopOthersShare`.
 
@@ -112,8 +113,11 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 - **Wrapping** (#487). `layoutBubbles(boxes, prevOrder, view)` takes the visible canvas across (`BubbleView`, from
   the call's snapped view rect, half a snap step in from each edge). A row wider than it is cut, in its stable order,
   into runs that fit (a person's group never splits; one wider than the view gets a run alone); each further run is
-  lifted its height plus `BUBBLE_GAP_PX`, every run of a wrapped row is moved as little as keeps it inside the view,
-  and a lifted group's tail is hidden. `dy` comes back beside `dx`, and the rects handed to the speech layer include
+  lifted its height plus `BUBBLE_GAP_PX`, and a lifted group's tail is hidden. Every run, wrapped or not (#503), is
+  held inside the view by `keepInside`: each box's left is clamped between the view's left plus the run before it and
+  the view's right less the run from it on. Both bounds step by a box's width plus the gap, as packed lefts do at
+  least, so the clamp keeps the order and the gaps and moves only the boxes that would run off; one box wider than the
+  view keeps its left end in view. `dy` comes back beside `dx`, and the rects handed to the speech layer include
   the lift.
 
 - `components/calls/MediaBubble.tsx`: the one bubble (camera or screen), and `CallBubbles.tsx`, the layer that places

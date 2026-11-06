@@ -13,7 +13,13 @@ import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
 import { useProximityCall } from '@/lib/calls/useProximityCall';
 import { callStages, mayLetSpeakSelf } from '@/lib/calls/stage';
-import { callMaximised, noteLetSpeak, setCallMaximised } from '@/lib/calls/calls-store';
+import {
+  callMaximised,
+  noteLetSpeak,
+  setCallMaximised,
+  shareStoppedNotice,
+} from '@/lib/calls/calls-store';
+import { useToast } from '@/hooks/ui/useToast';
 import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import { useTimerEarshot } from '@/lib/office/timer-earshot';
@@ -87,6 +93,7 @@ export function useCanvasCall(deps: {
   // Who hears each Timer's chime: the people in its room (docs/specs/009-elements/timer-and-stopwatch.md "The chime").
   useTimerEarshot({ elements: props.elements, zones, inMode, self });
   const view = useViewRect(deps.viewport);
+  const toast = useToast();
   useProximityCall({
     inMode,
     caller,
@@ -102,6 +109,9 @@ export function useCanvasCall(deps: {
     zones,
     stages,
     doNotDisturb: deps.doNotDisturb,
+    // An Editor stopped your share (video-and-screen-bubbles.md "Share roles", #504): say who, by their presence name.
+    onShareStopped: (by) =>
+      toast.info(shareStoppedNotice(props.remoteAvatars.find((p) => p.id === by)?.name)),
   });
 
   // Let Speak (meeting-rooms-and-stage.md "Raise hand"): an Editor anywhere, or whoever speaks from a stage.

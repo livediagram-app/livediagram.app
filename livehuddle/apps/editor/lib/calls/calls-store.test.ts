@@ -25,6 +25,7 @@ import {
   onCallTracks,
   onStopShare,
   receiveStopShare,
+  shareStoppedNotice,
   pruneCallPeers,
   receiveCallOp,
   receiveCallsMode,
@@ -103,6 +104,12 @@ describe('calls store peers', () => {
     off();
     receiveStopShare('ed', { kind: 'call-stop-share', tabId: 't1', targetId: 'me' });
     expect(heard).toHaveBeenCalledTimes(1);
+  });
+
+  it('names the Editor who stopped your share, or their role without a name (#504)', () => {
+    expect(shareStoppedNotice('  Alex   Lee ')).toBe('Alex Lee stopped your screen share');
+    expect(shareStoppedNotice(' ')).toBe('An Editor stopped your screen share');
+    expect(shareStoppedNotice(undefined)).toBe('An Editor stopped your screen share');
   });
 
   it('coalesces level notifications and tells a locator at once', () => {
