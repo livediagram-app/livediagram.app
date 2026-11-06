@@ -62,7 +62,7 @@ describe('the read API', () => {
     expect(text).not.toMatch(/\n/);
     const body = JSON.parse(text) as StatusHistory;
     expect(body.at).toBe(T0);
-    expect(Object.keys(body.services)).toHaveLength(42);
+    expect(Object.keys(body.services)).toHaveLength(41);
     expect(body.latest['livediagram:api']).toEqual(['u', 200, 80]);
     const latest = await (await get(env, '/api/status')).json();
     expect(latest).toMatchObject({ v: 1, at: T0 });
@@ -149,7 +149,7 @@ describe('the read API', () => {
     await runOnce(env, T0, { results: all });
     const text = await (await get(env, '/api/status/history')).text();
     console.log(JSON.stringify({ worstCaseBytes: text.length, gzipBytes: gzipSync(text).length }));
-    // About 580 bytes a service (42 today, 24.3 kB measured; 852 bytes gzipped): the raw budget grows with the services,
+    // About 580 bytes a service (41 today, 23.6 kB measured; 842 bytes gzipped): the raw budget grows with the services,
     // the gzipped one, what a visitor downloads, does not.
     expect(text.length).toBeLessThan(30_000);
     expect(gzipSync(text).length).toBeLessThan(4_000);
