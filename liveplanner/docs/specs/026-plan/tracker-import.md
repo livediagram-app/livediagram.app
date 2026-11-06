@@ -177,7 +177,9 @@ Choosing a file shows what the import will make, before anything is written:
   JSON import's. The import waits for the plan's cards to load first, as a JSON import does. It imports the
   preview's own plan when what that plan read of this plan (its card types, the statuses its boards name, its people
   and team, and how many cards it has room for) is unchanged; when cards, types or people came or went since the
-  preview, the board is planned again first.
+  preview, the board is planned again first. Should the board have been let go meanwhile (two newer files read), the
+  tab choice is dimmed with "This plan can’t take that file until it is chosen again." and it goes into the new plan
+  already previewed, or, with none, the dialog says "Couldn’t read that file. Check it and try again."
 - **Into a new plan**: one create makes the plan with the tab and the card type, then every card lands with its
   comments in **one write**, so the plan opens whole. It is named after the board, filed where a new plan from New
   would be, and opens in this window once made. A guest's plan is made in This Browser, as a guest's New makes one.

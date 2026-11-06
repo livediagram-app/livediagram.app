@@ -239,7 +239,8 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   `fits`, with an amber note). The preview is planned once per file and target (state), never per render. Import into a
   tab reads `contextFor('tab')` again: the same `trackerContextKey` imports the preview's plan as it is (its
   `boardId` still unused, `[tracker-import] plan reused`), a different one plans the kept board again; a plan that fails
-  (the board dropped from the worker) is taken as the tab not fitting: it moves to a new plan, or says it failed.
+  (the board dropped from the worker) dims the tab with `TRACKER_FILE_LOST` and moves to the new plan when one was
+  planned already, else says `TRACKER_UNREADABLE` (the file is chosen again).
 - `useTrackerImport` (`apps/editor/hooks/plan/useTrackerImport.ts`, composed in `useEditorState`, exposed as
   `trackerImport`): `{ canImport, contextFor(target), importPlan(plan, target) }`. `contextFor('tab')` waits for the
   item store (`waitUntil`), reads members (`apiTeamMembers` when signed in and the plan has a team; a failure reads

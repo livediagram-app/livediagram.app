@@ -18,9 +18,11 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 
 - Every tab is in **Plan**, the one editor mode ([Editor mode](../007-editor/editor-modes.md)); a stored `opensIn` is
   ignored. No tab menu lists modes.
-- The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), four tiles two by two:
-  **Dashboard** a Dashboard tab, **Board** (then a preset) a Board tab, **Spreadsheet** (then a start) a Sheet tab,
-  and a search reaches Plan's templates. The choice sets the tab's kind and adds its element in one change, one undo step.
+- The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), a rail of
+  categories beside a grid of cards: a board type makes a Board tab, a sheet start a Sheet tab, a form starter a Form
+  tab, a Visualisation one chart filling the tab, a layout (or one built from the plan's work) a Dashboard tab, and an
+  Inspiration template applies across tabs; its search reaches every one. Recommended ends with **Import**, which
+  places nothing: it opens [the Import dialog](#the-import-dialog). The choice sets the tab's kind and adds its element in one change, one undo step.
   A Dashboard started on a tab still on its default name ("Tab 5") is named **Dashboard**; a name someone gave the tab
   stays.
 - Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather

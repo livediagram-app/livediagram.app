@@ -30,6 +30,8 @@ import {
 // Why the tab choice is dimmed when the plan's cards never loaded.
 export const TRACKER_NOT_LOADED = 'This plan’s cards haven’t loaded, so it can’t take a board now.';
 export const TRACKER_UNREADABLE = 'Couldn’t read that file. Check it and try again.';
+// Why the tab choice is dimmed when the file has to be read again before this plan can take it (the worker let it go).
+export const TRACKER_FILE_LOST = 'This plan can’t take that file until it is chosen again.';
 
 export type TrackerPreviewState = {
   // The board the worker holds, by key, with what the page shows of it.
@@ -159,8 +161,9 @@ export function useTrackerFlow(
       // Checked against the plan as it is now: the preview's plan is imported while what it read is unchanged, and
       // planned again when cards, card types or people have come or gone since.
       const fresh = await freshTabPlan(preview);
-      if (!fresh?.preview.fits) {
-        const tabReason = fresh?.preview.reason ?? TRACKER_NOT_LOADED;
+      if (fresh === 'lost' || !fresh?.preview.fits) {
+        const tabReason =
+          fresh === 'lost' ? TRACKER_FILE_LOST : (fresh?.preview.reason ?? TRACKER_NOT_LOADED);
         const asPlan =
           preview.plans.plan ?? (await planFor(preview.board, 'plan').catch(() => null))?.plan;
         if (asPlan)
@@ -170,7 +173,8 @@ export function useTrackerFlow(
             target: 'plan',
             plans: { ...preview.plans, plan: asPlan },
           });
-        else setError(TRACKER_IMPORT_FAILED);
+        // No board left to plan from: the file is chosen again.
+        else setError(fresh === 'lost' ? TRACKER_UNREADABLE : TRACKER_IMPORT_FAILED);
         setBusy(null);
         return;
       }
@@ -187,8 +191,10 @@ export function useTrackerFlow(
   };
 
   // The tab's plan as of now: the preview's own when this plan reads the same as it did, else planned again (null when
-  // the cards never loaded, or the worker lost the board).
-  const freshTabPlan = async (p: TrackerPreviewState): Promise<TrackerImportPlan | null> => {
+  // the cards never loaded, 'lost' when the plan failed, the worker having let the board go).
+  const freshTabPlan = async (
+    p: TrackerPreviewState,
+  ): Promise<TrackerImportPlan | 'lost' | null> => {
     const got = await tracker.contextFor('tab');
     if (!got) return null;
     const { random: _random, ...ctx } = got;
@@ -203,7 +209,7 @@ export function useTrackerFlow(
       return await tasks.run({ kind: 'plan', key: p.board.key, ctx });
     } catch (err) {
       console.warn('[tracker-import] plan failed', { error: String(err) });
-      return null;
+      return 'lost';
     }
   };
 
