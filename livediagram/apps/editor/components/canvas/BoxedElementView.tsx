@@ -851,6 +851,7 @@ function BoxedElementViewImpl({
         hasText={vote?.onlyWithText ? elementHasText(element) : true}
         voteReviewActive={voteReviewActive}
         isVoteFocus={isVoteFocus}
+        box={element}
         onRetractVote={onRetractVote}
         onCastVote={onCastVote}
       />
