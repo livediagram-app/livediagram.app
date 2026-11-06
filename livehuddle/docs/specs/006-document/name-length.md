@@ -49,7 +49,7 @@ import, or an API-driven change.
 The api worker applies `truncateName` to every document and tab name it is asked
 to store, so the cap holds for every caller: the editor, an API-token script
 ([Public API and API tokens](../015-api/public-api-and-tokens.md)), an AI tool
-through the [MCP server](../015-api/mcp-server.md), or an Offline Mode sync.
+through the [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md), or an Offline Mode sync.
 The worker **shortens, it does not reject**: a name over the cap is stored in
 its truncated form and the response carries the stored name, exactly as the
 editor would have shortened it. The write points are:

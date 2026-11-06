@@ -86,27 +86,23 @@ closed the escalation. The fix is [§4](#4-guest-identity-a-verified-guest-token
 ## 3. Design: API tokens
 
 **API tokens belong to the liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
-"API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API and
-MCP server. liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
+"API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API (and
+the other apps' MCP servers; livehuddle has none). liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
 account). What follows records how livehuddle uses them; where it describes livehuddle minting, listing or
 storing tokens itself, the account-level design below supersedes it.
 
 - **Verifying.** An `lwt_` bearer is checked with liveworkspace (`POST /api/account/internal/tokens/verify`,
   client-credentials) by `createTokenChecker` in `apps/api/src/db/api-tokens.ts`. A verified token is cached for
-  a minute per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
+  a minute per isolate, so a burst of script calls costs one round trip a minute. A token
   liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
   with `Retry-After: 5`.
-- **No copy.** livehuddle keeps no table of tokens. What hangs off one (workbench pairings and sessions) is
-  liveworkspace's too, which reads the token's state at each mint and session check and ends what was paired through
-  it when it is revoked ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access"). `GET /api/tokens/current` answers from the verify response.
-- **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
-  token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
-  revoked by presenting it to `DELETE /api/tokens/current`.
+- **No copy.** livehuddle keeps no table of tokens. `GET /api/tokens/current` answers from the verify response.
+- **No minting here.** livehuddle has no MCP server, so no OAuth exchange mints a token through it
+  ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)); every token is made on liveworkspace.app.
 - **Management** is on liveworkspace.app. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
-  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's API Tokens row links to liveworkspace.app and
-  lists the account's paired workbenches with Unpair.
+  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's API Tokens row links to liveworkspace.app.
 - **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
-  (`POST /api/account/internal/tokens/revoke`) and ends its pairings here.
+  (`POST /api/account/internal/tokens/revoke`).
 - **Expiry reminders** are not sent: liveworkspace sends none yet.
 
 ### 3.1 Token format
@@ -125,8 +121,7 @@ storing tokens itself, the account-level design below supersedes it.
 
 livehuddle stores no token and has no database to store one in. liveworkspace keeps each token (its hash, owner,
 name, read-only flag, expiry and last use) with the account ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
-"API tokens"). What hangs off a token, a workbench pairing or session, is liveworkspace's too, which ends it with the token
-([Workbench embeds](../013-workspace/workbench-embeds.md)).
+"API tokens").
 
 **Lifetime: fixed 6 months.** Every token expires at `created_at + 6 months`.
 This is a hard maximum AND the only option: `expires_at` is **never null** (no
@@ -151,8 +146,7 @@ alongside the account access token and the guest token:
    `last_used_at`. The column means "the last request this token made, to
    within a minute": a request writes it only when the stored value is older
    than `LAST_USED_STAMP_WINDOW_MS` (60 s, `apps/api/src/db/api-tokens.ts`),
-   checked again in the UPDATE's WHERE, so a burst of MCP tool calls (3 to 6
-   api requests each) costs one write a minute rather than one per request.
+   checked again in the UPDATE's WHERE, so a burst of script calls costs one write a minute rather than one per request.
    Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lwt_`
    bearer with no such row (unknown, revoked or expired), or one too short to be a token at all (cut short or
    mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer
@@ -176,12 +170,10 @@ A token grants its owner's **full** access: read AND write, the same surface
 the app has, **unless** it was minted **read-only** (the one scope that
 exists): a `read_only` flag on the token (kept by liveworkspace accounts) that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
-single dispatch choke point with `403 read_only_token`
-([MCP server §4.11](mcp-server.md)). The same choke point refuses it the one read that is a
+single dispatch choke point with `403 read_only_token`. The same choke point refuses it the one read that is a
 credential rather than content: `GET /api/documents/:id/share`, whose links and password would let it
-open an edit link. Read-only tokens are minted through the MCP
-consent screen (a "read-only access" checkbox), giving a cautious user a way to
-let an AI tool VIEW their documents without granting edit. There is still no
+open an edit link. Read-only tokens are made on liveworkspace.app (a **Read-only**
+switch), giving a cautious user a way to let a script VIEW their documents without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
 ([§7](#7-out-of-scope-for-now)): `read_only` is a single boolean, not a general
 scopes system.
@@ -211,8 +203,7 @@ like every other delete; `DELETE /api/documents/<id>?permanent=true` deletes it
 for good at once (and purges one already in the Trash). The Trash routes
 (`GET /api/trash`, `POST /api/trash/<id>/restore`, `DELETE /api/trash[/<id>]`)
 are token-usable with the same delete authority; a read-only token may list the
-Trash but not restore or purge. The MCP server, by contrast, offers no permanent
-delete at all ([MCP server §4.9](mcp-server.md)).
+Trash but not restore or purge.
 
 ### 3.5 Rate limiting
 
@@ -259,17 +250,10 @@ out top to bottom:
   has passed, tinted by status (Active / Expires soon inside 14 days /
   Expired), labelled with the time left. A **Revoke** control per card opens
   a confirmation popover with the revoke warning first.
-- **Paired workbenches.** Under a card's lifetime bar, the workbenches the token
-  is paired with ([Workbench embeds](../013-workspace/workbench-embeds.md#pairing)),
-  read once per account (`GET /api/workbench/pairings`) and grouped by token: each row
-  the workbench's name ("Unnamed workbench" when it sent none), its origin in
-  monospace, "Paired <relative time>", and an **Unpair** text button that asks
-  first in the same popover as Revoke. A token with no pairings shows nothing extra.
 - **First run.** With no tokens, the composer is already open and is the
   whole category: no New button, no meter, no Cancel, and no empty-list
   card, so the one thing on screen is the form. It does not take focus on
-  load. Under it a single quiet line points readers who want to connect an AI
-  tool at the Connect an AI Tool guide, since that flow creates its own token.
+  load.
   Once a token exists the overview's meter and New button take over.
 
 "Edit" is exactly what the API supports: create and revoke. There is no rename
@@ -303,18 +287,17 @@ integration set, low enough to keep the list + table tidy. Revoking or letting
 one expire frees a slot. The count is part of the INSERT itself (one
 `INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < 10` statement in
 `apps/api/src/db/api-tokens.ts`), so concurrent mints, from the Explorer and
-the OAuth exchange alike, can never take an account past 10; a refused mint
+any other minting door alike, can never take an account past 10; a refused mint
 logs `[api-tokens] mint refused: owner at the token cap` and answers `409
 token_limit_reached`.
 
 **Account deletion removes them.** Deleting an account erases ALL of that
 user's data, tokens included: the tokens are the liveworkspace account's, and closing the account there deletes
-them, so no credential outlives the account. livehuddle keeps no copy; their workbench pairings and sessions, which hang
-off their tokens, are liveworkspace's and close with the account there.
+them, so no credential outlives the account. livehuddle keeps no copy.
 
 ### 3.6a A token's view of itself
 
-A token may read and revoke **itself**, which escalates nothing, so the [CLI](cli.md) can show who it is and sign
+A token may read and revoke **itself**, which escalates nothing, so a script can show who it is and sign
 out cleanly:
 
 - `GET /api/tokens/current`: the account id and display name, the token's name, its role and `expiresAt`.
@@ -380,13 +363,12 @@ this API's own audience, answering the kind (`account` or `guest`) and the id.
 That closes the [§2](#2-why-the-api-wasnt-safe-to-expose-as-is-history)
 escalation at its root. The only things that say who is asking are tokens the
 accounts site signed: an account's access token, a guest token, an API token
-([§3](#3-design-api-tokens)) or a workbench session minted from one. A guest
+([§3](#3-design-api-tokens)). A guest
 token is held in one browser's `localStorage` and never appears in a DTO, a
 presence frame or a URL.
 
 **Guarantee for signed-up users.** An account's documents are reachable only
-through a verified account credential (its access token, an API token, or a
-workbench session). Nothing a guest or a stranger can send names an account.
+through a verified account credential (its access token or an API token). Nothing a guest or a stranger can send names an account.
 
 **Without the accounts site.** Guest tokens come from the accounts site. A deployment
 without it (`ACCOUNTS_*` unset) has no guest identity at all: visitors cannot
@@ -493,7 +475,7 @@ Finer-grained scopes (per-document / per-folder grants, per-verb permissions)
 and any billing or quota tiers (the product has no paid tier:
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope that DID land is
 the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
-OAuth / third-party app authorization landed in [MCP server](mcp-server.md).)
+livehuddle has no OAuth / third-party app authorization: its MCP server was removed, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches).)
 Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.
 

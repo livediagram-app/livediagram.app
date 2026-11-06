@@ -88,4 +88,4 @@ folder drops the defaults that point at it.
 
 [Folders](folders.md), [Team shared documents](team-shared-documents.md),
 [Dedicated route for new-document creation](../007-editor/new-document-route.md),
-[MCP server](../015-api/mcp-server.md).
+[MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md).

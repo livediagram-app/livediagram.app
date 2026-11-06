@@ -82,7 +82,7 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   `adoptGuest` wins over it, so a spec that seeds as a guest it minted still opens as that guest. Contexts a spec makes
   itself (`browser.newContext()`, a share link's visitor) stay fresh unless the spec adopts a guest there. The first
   visit has one test of its own (`smoke.spec.ts`, under `test.use({ freshVisitor: true })`), which waits for the round
-  trip to come back before it checks the page. Signed-in and workbench runs skip it: their pages sign in.
+  trip to come back before it checks the page. The signed-in run skips it: its pages sign in.
   `e2e/guest-first.test.ts` holds every spec that opens a page to the shared fixture, and `freshVisitor` to that one
   test.
 - **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)),
@@ -225,7 +225,7 @@ The Explorer at `/explorer` is liveworkspace's site, a separate export, so it ne
 `pnpm --filter @livehuddle/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
 `signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
 (live `:3115`, api `:8115`, marketing `:3116`, index `:8117`, media `:8116`), so a guest stack already up on `:3502` is never
-reused for it; the workbench run has its own too (live `:3121`, api `:8121`, marketing `:3122`, index `:8118`, media `:8122`).
+reused for it.
 The stack also stands in for the accounts Worker in every run (guests get their identity from it and the api
 keeps no settings or profiles of its own, so guest runs need it too, and it answers the settings, profile,
 sighting, milestone, email, activity and team-making routes from memory, and the index's

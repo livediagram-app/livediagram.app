@@ -37,7 +37,10 @@ apps/site/app/workbench/pair/   the one pairing page, liveworkspace.app/workbenc
 ## Addresses
 
 Every app keeps `/api/workbench/*` on its own address, with the same requests and answers as before, so its CLI, its
-editor and its Settings change nothing. The app's router forwards the path to accounts
+editor and its Settings change nothing. The exception is livehuddle, which has no CLI and so no workbenches
+([Not in livehuddle](../../../../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+its router forwards no `/api/workbench/*` (`workspaceRoutes` leaves `WORKBENCH_ROUTE` out for it), so the path is the
+api's, which answers 404. The app's router forwards the path to accounts
 (`@liveworkspace/sites` `WORKBENCH_ROUTE`: `/api/workbench/*` → `/api/account/workbench/*`), stamping the app's name in
 `X-Liveworkspace-Proxy`. The app's API Worker forwards it too, for a caller that reaches the API without the router
 (the CLI against `wrangler dev`, an editor built with `NEXT_PUBLIC_API_BASE`). On liveworkspace.app itself the routes
