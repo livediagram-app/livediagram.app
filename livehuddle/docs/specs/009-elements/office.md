@@ -7,7 +7,8 @@ Fridge**); and a garden (an **Outdoor Plant**, a **Tree**, a **Garden Path**, **
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
 The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Recreation corner (Jukebox, Ping-Pong Table,
-Arcade Machine, Fireplace) and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
+Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace), a Vending Machine, a Bean Bag and a Reading Nook,
+and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
 A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meeting** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 

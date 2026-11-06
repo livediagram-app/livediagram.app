@@ -80,4 +80,7 @@ From [Social pieces](../009-elements/social-pieces.md):
 
 - **A built-in jukebox list.** v1 is link only. A short list of always-on streams, each checked to be CC0 or licensed
   royalty-free for any use (and its licence linked from the menu), becomes the Jukebox section's first choice.
-- **Mini-games.** A playable rally at the Ping-Pong Table and a game on the Arcade Machine, each for the people at it.
+- **Mini-games.** A playable rally at the Ping-Pong Table, a frame of pool, a foosball match, a round of darts and a
+  game on the Arcade Machine, each for the people at it (Work Tracker #528).
+- **A snack from the Vending Machine.** Walking up to it hands you a can or a snack, as the Drinks Fridge does; it
+  needs a held-snack drawing and a way to use a piece that blocks.

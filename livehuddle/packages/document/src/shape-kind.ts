@@ -111,6 +111,13 @@ export type ShapeKind =
   | 'garden-umbrella'
   | 'fountain'
   | 'pond'
+  // The social pieces' second set (docs/specs/009-elements/social-pieces.md).
+  | 'pool-table'
+  | 'foosball-table'
+  | 'dartboard'
+  | 'vending-machine'
+  | 'bean-bag'
+  | 'reading-nook'
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in

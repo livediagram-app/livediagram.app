@@ -80,6 +80,12 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   hammock: 'Hammock',
   'garden-umbrella': 'Garden umbrella',
   fountain: 'Fountain',
+  'pool-table': 'Pool table',
+  'foosball-table': 'Foosball table',
+  dartboard: 'Dartboard',
+  'vending-machine': 'Vending machine',
+  'bean-bag': 'Bean bag',
+  'reading-nook': 'Reading nook',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */

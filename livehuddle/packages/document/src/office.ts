@@ -6,7 +6,8 @@
 // @liveworkspace/avatar/office-geometry, re-exported here. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureDrawing } from './seating';
+import type { FurnitureArt, FurniturePart, FurnitureDrawing } from './seating';
+import { allSides, ellipse, path, rect } from './furniture-parts';
 import {
   brokenRun,
   roomDoorSpan,
@@ -17,6 +18,7 @@ import {
 import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats';
 import { OFFICE_EXTRA_ART } from './office-garden';
 import { OFFICE_SOCIAL_ART } from './office-social';
+import { OFFICE_RECREATION_ART } from './office-recreation';
 import { WAYFINDING_ART } from './office-wayfinding';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
@@ -61,7 +63,14 @@ export type OfficeKind =
   | 'hammock'
   | 'garden-umbrella'
   | 'fountain'
-  | 'pond';
+  | 'pond'
+  // The social pieces' second set (docs/specs/009-elements/social-pieces.md).
+  | 'pool-table'
+  | 'foosball-table'
+  | 'dartboard'
+  | 'vending-machine'
+  | 'bean-bag'
+  | 'reading-nook';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -98,6 +107,12 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'garden-umbrella',
   'fountain',
   'pond',
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
 ];
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
@@ -140,36 +155,6 @@ export const OFFICE_TONES = {
 } as const;
 
 type Part = FurniturePart;
-const rect = (
-  role: FurniturePartRole,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  rx: number,
-  fill?: string,
-): Part => ({ tag: 'rect', role, x, y, w, h, rx, ...(fill ? { fill } : {}) });
-const ellipse = (
-  role: FurniturePartRole,
-  cx: number,
-  cy: number,
-  rx: number,
-  ry: number,
-  fill?: string,
-): Part => ({ tag: 'ellipse', role, cx, cy, rx, ry, ...(fill ? { fill } : {}) });
-const path = (role: FurniturePartRole, d: string, fill?: string): Part => ({
-  tag: 'path',
-  role,
-  d,
-  ...(fill ? { fill } : {}),
-});
-
-// A drawing that reads the same from every side, so every facing shows it.
-const allSides = (view: FurnitureDrawing): FurnitureArt => ({
-  front: view,
-  back: view,
-  side: view,
-});
 
 const T = OFFICE_TONES;
 
@@ -341,6 +326,7 @@ export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   rug: allSides(RUG_VIEW),
   ...OFFICE_EXTRA_ART,
   ...OFFICE_SOCIAL_ART,
+  ...OFFICE_RECREATION_ART,
   ...WAYFINDING_ART,
 };
 

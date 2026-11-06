@@ -448,6 +448,12 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Garden-umbrella',
     'Fountain',
     'Pond',
+    'Pool-table',
+    'Foosball-table',
+    'Dartboard',
+    'Vending-machine',
+    'Bean-bag',
+    'Reading-nook',
     // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md), beside the meeting pieces.
     'Timer',
     'Stopwatch',
