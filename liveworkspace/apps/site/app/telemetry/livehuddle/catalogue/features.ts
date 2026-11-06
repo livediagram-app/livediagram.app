@@ -91,7 +91,7 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
+  'Settings inside a canvas mode: eraser and format painter options.',
   { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
 );
 
@@ -403,7 +403,7 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
     'Canvas',
     'Used',
     MODE_TITLES[mode] ?? mode,
-    `The ${(MODE_TITLES[mode] ?? mode).toLowerCase()} mode switched on from the palette.`,
+    `The ${(MODE_TITLES[mode] ?? mode).toLowerCase().replace(/ mode$/, '')} mode switched on from the palette.`,
     { types: [mode] },
   ),
 );
