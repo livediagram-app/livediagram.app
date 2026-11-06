@@ -9,9 +9,8 @@ describe('sitemap', () => {
   });
 });
 
-describe('sitemap: Build with AI', () => {
-  it('lists /ai (docs/specs/019-marketing/build-with-ai.md "Metadata")', () => {
-    const entry = sitemap().find((e) => e.url === 'https://www.livehuddle.app/ai');
-    expect(entry).toMatchObject({ changeFrequency: 'monthly', priority: 0.8 });
+describe('sitemap: no Build with AI', () => {
+  it('leaves /ai out, since livehuddle has no MCP server (docs/specs/002-project-scope/not-in-livehuddle.md)', () => {
+    expect(sitemap().some((e) => e.url.endsWith('/ai'))).toBe(false);
   });
 });

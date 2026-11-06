@@ -1,4 +1,4 @@
-// A row of members seats by the outside nodes it links to (docs/specs/015-api/mcp-server.md "Groups keep their lines
+// A row of members seats by the outside nodes it links to (livediagram/docs/specs/015-api/mcp-server.md "Groups keep their lines
 // clear").
 import { describe, expect, it } from 'vitest';
 import { layoutClusteredGraph } from './auto-layout-clusters';

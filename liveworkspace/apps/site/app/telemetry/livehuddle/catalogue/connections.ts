@@ -23,29 +23,12 @@ export const TOKENS_REVOKED: Metric = {
   blurb: 'API tokens revoked by hand on liveworkspace.app.',
 };
 
-export const AI_TOOLS_CONNECTED: Metric = {
-  category: 'Token',
-  action: 'Created',
-  type: 'MCP',
-  title: 'AI Tools Connected',
-  blurb: 'AI assistants that connected through the MCP OAuth consent screen.',
-};
-
-export const CLI_SIGN_INS: Metric = {
-  category: 'Token',
-  action: 'Created',
-  type: 'Cli',
-  title: 'CLI Sign-ins',
-  blurb: 'The livehuddle CLI signed in, through the browser or with a code on another device.',
-};
-
 export const API_TOKEN_ACTIVITY: MetricStack = {
   rising: 'neutral',
   stack: true,
   title: 'API Token Activity',
-  blurb:
-    'Every token event: created by hand, by an AI tool connecting over MCP or by the CLI signing in, and revoked.',
-  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, TOKENS_REVOKED],
+  blurb: 'Every token event: created by hand, and revoked.',
+  members: [TOKENS_CREATED, TOKENS_REVOKED],
 };
 
 // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):

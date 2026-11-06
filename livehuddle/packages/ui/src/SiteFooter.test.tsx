@@ -35,7 +35,12 @@ describe('SiteFooter', () => {
     const withIcon = [...footerNav.matchAll(/<a [^>]*><svg[\s\S]*?<\/svg>([^<]+)<\/a>/g)].map(
       (m) => m[1],
     );
-    expect(withIcon).toEqual(['New Space', 'AI &amp; MCP', 'Help Centre', 'GitHub']);
+    expect(withIcon).toEqual(['New Space', 'Help Centre', 'GitHub']);
+  });
+
+  it('has no AI & MCP link, since livehuddle has no MCP server', () => {
+    expect(footerNav).not.toContain('href="/ai"');
+    expect(labels).not.toContain('AI &amp; MCP');
   });
 });
 

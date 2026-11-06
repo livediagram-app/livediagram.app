@@ -3,7 +3,7 @@
 // It is the same team on liveworkspace.app and in every app, managed there, and usable at once, so a canvas
 // can be filed into it straight away.
 //
-// The interactive session only (an API token or a workbench can't make one), and the app vouches for
+// The interactive session only (an API token can't make one), and the app vouches for
 // the person with the access token they sent.
 
 import { bearerTokenOf } from '@livehuddle/api-schema';

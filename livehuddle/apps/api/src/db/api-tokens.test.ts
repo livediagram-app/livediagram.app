@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import {
-  AccountsUnavailable,
-  mintApiToken,
-  resolveApiToken,
-  revokePresentedToken,
-} from './api-tokens';
+import { AccountsUnavailable, resolveApiToken, revokePresentedToken } from './api-tokens';
 
 // API tokens are the liveworkspace account's (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): these
 // stand liveworkspace up at `fetch` and check what this app does with its answers. It keeps no copy.
@@ -92,37 +87,6 @@ describe('resolveApiToken', () => {
 
   it('is null on a deployment without sign-in', async () => {
     expect(await resolveApiToken(sqliteD1().env, `lwt_${'e'.repeat(43)}`)).toBeNull();
-  });
-});
-
-describe('mintApiToken', () => {
-  it('asks liveworkspace for a token for whoever the access token is', async () => {
-    let asked: Record<string, unknown> = {};
-    handle = (path, body) => {
-      asked = { path, ...body };
-      return Response.json(
-        { id: 'tok-m', name: 'Claude', readOnly: false, expiresAt: 5, secret: 'lwt_x' },
-        { status: 201 },
-      );
-    };
-    expect(
-      await mintApiToken(db.env, { accessToken: 'jwt', name: 'Claude', readOnly: false }),
-    ).toEqual({ secret: 'lwt_x', id: 'tok-m', expiresAt: 5 });
-    expect(asked).toEqual({ path: '/tokens', accessToken: 'jwt', name: 'Claude', readOnly: false });
-  });
-
-  it('is null on a deployment without sign-in, asking nothing', async () => {
-    expect(
-      await mintApiToken(sqliteD1().env, { accessToken: 'jwt', name: 'x', readOnly: false }),
-    ).toBeNull();
-    expect(calls).toEqual([]);
-  });
-
-  it('is null at the account’s token cap', async () => {
-    handle = () => new Response(null, { status: 409 });
-    expect(
-      await mintApiToken(db.env, { accessToken: 'jwt', name: 'x', readOnly: false }),
-    ).toBeNull();
   });
 });
 

@@ -19,10 +19,6 @@ import { ELEMENT_TYPES, isValidElement, isValidTab } from './validate';
 // editor, forget this one Set, and the feature works right up until the first
 // save.
 //
-// ELEMENT_TYPES is also what the MCP hands the calling model as the list of
-// types it may emit (apps/mcp/src/schema.ts), so a missing entry is invisible
-// to AI callers as well.
-//
 // The union is compile-time only, so its members are read out of the source,
 // the same way shape-kind.test.ts does it.
 

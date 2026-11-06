@@ -1,5 +1,5 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @livehuddle/document so the MCP worker (docs/specs/015-api/mcp-server.md)
+// transforms) now lives in @livehuddle/document so the api
 // themes tabs identically to the editor. This file re-exports it and adds
 // the LIVE-ONLY layer: resolution in the current viewer's appearance and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
@@ -69,7 +69,7 @@ export function themeViewMap(
 }
 
 // Resolves through the catalogue, and ultimately the default, so an id nobody
-// knows never breaks a document. The MCP worker uses getBuiltInTheme directly.
+// knows never breaks a document. The api uses getBuiltInTheme directly.
 // `appearance` defaults to the CURRENT VIEWER's (the module-level appearance
 // store, no React needed), so every one of the ~120 existing callers gets the
 // right half of Default without passing anything. Callers rendering for

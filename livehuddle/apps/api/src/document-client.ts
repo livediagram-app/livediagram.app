@@ -41,7 +41,7 @@ export type DocumentRoomClient = {
   // made from one (the import door).
   exportFile(query: ExportQuery): Promise<ExportResult>;
   importFile(file: DocumentFileImport): Promise<void>;
-  // Whether the document holds this tab (a workbench ticket's check).
+  // Whether the document holds this tab.
   hasTab(tabId: string): Promise<boolean>;
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
   // endpoint's share check.

@@ -55,14 +55,6 @@ const APPEARANCE_LABELS = tokensAfter(
   '};',
 );
 
-// The Explorer filter lens's facets (docs/specs/013-workspace/explorer-filters.md "Telemetry"): the values of the shared
-// Explorer's LENS_TELEMETRY_TYPES, whose keys are lower case.
-const LENS_FACETS = tokensAfter(
-  read('../../packages/explorer/src/lens/dimensions.ts'),
-  'export const LENS_TELEMETRY_TYPES',
-  '}',
-).filter((token) => /^[A-Z]/.test(token));
-
 // The Trash a restored canvas sat in: useDocumentTrashed's `from`, Personal or Team.
 const TRASH_TYPES = tokensAfter(
   read('editor/app/document/[id]/useDocumentTrashed.ts'),
@@ -229,42 +221,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: TEMPLATE_WHY,
   },
   'apps/editor/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // The shared Explorer's Timeline, through ExplorerHost's onTimeline prop (@liveworkspace/explorer TimelinePane.tsx):
-  // each a fixed token from the package.
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Changed': {
-    values: ['List', 'Calendar'],
-  },
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Selected': {
-    values: [
-      'Everyone',
-      'Others',
-      'new',
-      'edits',
-      'renames',
-      'deletions',
-      'sharing',
-      'filing',
-      'favourites',
-      'other',
-    ],
-  },
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Loaded': { values: ['More', 'Retry'] },
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Opened': {
-    values: ['Card', 'Stack', 'Menu'],
-  },
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Timeline·Removed': {
-    values: ['Entry', 'Stack'],
-  },
-  // Home's What Happened, through the Explorer's onHome prop (@liveworkspace/explorer WhatHappened.tsx).
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Selected': {
-    values: ['WhatHappened', 'SeeTimeline'],
-  },
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Opened': { values: ['Group'] },
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Home·Loaded': {
-    values: EXPLORER_TELEMETRY_EVENTS['Home·Loaded'],
-  },
-  // The filter lens, through the Explorer's onLensSelected prop.
-  'apps/editor/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // Publishing to the Community: the post's category, as communityCategoryType.

@@ -120,23 +120,6 @@ export const EMBEDS_VIEWED = chart(
   { types: ['Embed'] },
 );
 
-export const WORKBENCH_SESSIONS = chart(
-  'Session',
-  'Opened',
-  'Workbench Sessions',
-  'A document opened inside a developer tool’s frame, signed in.',
-  { types: ['Workbench'] },
-);
-
-// The workspace scope (docs/specs/013-workspace/workbench-embeds.md "Two scopes"): the Explorer in a tool's frame.
-export const WORKBENCH_WORKSPACES = chart(
-  'Session',
-  'Opened',
-  'Workbench Workspaces',
-  'The Explorer opened inside a developer tool’s frame, signed in.',
-  { types: ['WorkbenchWorkspace'] },
-);
-
 export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
@@ -369,7 +352,7 @@ export const SHARING_AND_JOINING: MetricStack = {
   stack: true,
   title: 'Sharing & Embeds',
   blurb:
-    'Edit, Participant and view links made, share links and embed codes copied or switched off, embeds viewed, and the Workbench.',
+    'Edit, Participant and view links made, share links and embed codes copied or switched off, and embeds viewed.',
   members: [
     EDIT_LINKS_SHARED,
     PARTICIPATE_LINKS_SHARED,
@@ -378,8 +361,6 @@ export const SHARING_AND_JOINING: MetricStack = {
     SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
-    WORKBENCH_SESSIONS,
-    WORKBENCH_WORKSPACES,
     LIVE_IMAGE_TABS,
   ],
   headline: SHARE_LINKS_COPIED,

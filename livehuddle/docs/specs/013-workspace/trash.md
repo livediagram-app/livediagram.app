@@ -82,7 +82,7 @@ API clients list, restore and purge trashed canvases at `/api/trash` ([API](../0
 writes the index: `GET /api/trash`, `POST /api/trash/:id/restore`, `DELETE /api/trash/:id`, and `DELETE /api/trash`
 (`?team=<id>` for a team's) to empty livehuddle's canvases from a Trash. The MCP server's `delete_document` bins a
 canvas but never destroys one; `list_trash` and `restore_document` are the way back
-([MCP server](../015-api/mcp-server.md)).
+([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
 
 ## Google Drive sync
 

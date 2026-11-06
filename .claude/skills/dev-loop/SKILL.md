@@ -85,7 +85,12 @@ A card is **not ready** when any of these holds:
   (`gh pr list -R "$REPO" --state open`).
 - It reverses a recent deliberate decision (`git log origin/main --oneline -S '<symbol>'` or `--grep`), or a
   declined idea in the owner's memory.
-- The scope is ambiguous in a way that leads to different products, and the card's threads don't settle it.
+- The scope is ambiguous in a way that leads to different products, the card's threads don't settle it, and
+  the choice could cost money (a paid service, a new account or app, billing) or is high risk (secrets, deploy
+  config, deleting or migrating user data, auth, sharing or permissions). Any other open choice isn't a reason
+  to wait: **decide and build.** Take the recommendation you'd give, post it on the card as a resolved thread
+  ("Decided: ... The owner can overturn this later."), and put it in the brief so the PR lists it under
+  Decisions.
 - An answer can't be acted on as written: it's unclear, two answers contradict each other, or it asks for
   something the code shows can't work. Reply in that answer's thread, quoting it and saying what's missing.
 - It has a feasibility blocker, or touches something a loop must never do alone: remote D1 migrations, deploy
@@ -184,7 +189,13 @@ and update the PR description's Answers. If the earlier PR has merged, the new w
 `work/<number>-<slug>-2` (or the next free number).
 
 Check the machine first: if `uptime`'s one-minute load is above `sysctl -n hw.ncpu`, other sessions are busy, so
-run at most two agents this pass.
+start no new agent until it drops, and run at most two agents this pass.
+
+**Mind the PR backlog.** Every open PR waits on the same CI runners and on the pr-loop. Count the loop's open
+`work/*` PRs before each new builder (`gh pr list -R "$REPO" --state open --author @me --json headRefName -q
+'[.[] | select(.headRefName | startswith("work/"))] | length'`): at 8 or more, start no new builder and run at
+most two agents (verifiers and rework only) until it drops below 8. Meanwhile prefer cards that unblock or
+shrink an open PR.
 
 For each agent, when its turn comes:
 
@@ -197,7 +208,8 @@ Keep your own context light: read the agents' reports, not their transcripts.
 200k tokens by the time it pushes, so the browser check (a fifth of a build's tokens before this split) costs far
 less in an agent that starts clean. So a builder whose work is visible stops after its first push and reports
 `BUILT <PR url>` with a **Verify** section. The coordinator then spawns a **verifier**: a background
-`general-purpose` agent with `isolation: "worktree"`, on Opus when any card in the group went to Opus for UI,
+`general-purpose` agent working in the **builder's worktree and port block** (no new worktree, so it starts from
+the installed `node_modules` instead of a fresh install), on Opus when any card in the group went to Opus for UI,
 otherwise on Sonnet, with the verifier brief below, the builder's port block and scratch folder, and the hard
 rules. Work with no visible change skips this: its builder finishes and reports `DONE`.
 
@@ -223,7 +235,8 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   resolved with no reply accepts its recommendation.
   Before writing code, turn each answer into a checklist item. Before pushing, check every item is done.
 - **Never ask questions.** At every other choice, take the recommendation you'd give and record it under
-  "Decisions" in the PR. If an answer turns out not to work in the code, report FAILED and say which one,
+  "Decisions" in the PR. Only a choice that could cost money or is high risk (see step 2) goes on the PR's
+  Owner checklist instead, with `not-ready`. If an answer turns out not to work in the code, report FAILED and say which one,
   rather than building something else.
 - **Spec first:** update the product's spec and blueprint before the code, then fold back what drifted. Follow
   the share roles (Editor, Participant, Viewer) the spec sets, with role tests.
@@ -255,8 +268,15 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   touched app's guard tests (the `*.test.ts` files at the app's root and in its `app/` folder, plus
   `lib/small-text-contrast.test.ts`: `dark-palette`, `label-contrast`, `aria-label-roles`, `optical-guard` and the
   rest) and, when you add a telemetry event, the site's metric-emitters test. They caught most of the red CI on recent PRs.
+- **Let the pre-push hook run.** When it says another push holds it, wait and push again; never push unchecked.
+  Use `--no-verify` only when the failing suite is outside your change and passes when run alone, and say so
+  in the PR.
 - **Checks the pre-push hook can miss.** The hook runs once per machine, so it skips its checks when another push
   holds them, and it runs in this machine's en-GB locale. Before every push, do these yourself:
+  - When the change touches `packages/` or `liveworkspace/`, run the platform tests (`Tests (platform)` in
+    ci-plan). They were the most common red check after the flaky Sites audit.
+  - When you delete or move files, run each affected product's help tests: they check every repo path a help
+    article cites (`repo-paths-in-docs`).
   - Run `prettier --check` and oxlint on every changed file.
   - Grep your new tests for `performance.now`. Speed budgets use `cpuMsOf` or `cpuBudgetMs` from
     `@liveworkspace/vitest-config/cpu-time`.
@@ -299,7 +319,11 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
   close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
-- **Clean up:** remove your build output and stop only the PIDs you started.
+- **Simple follow-ups go in this PR.** A test gap, a doc or blueprint gap, a formatting fix, a small bug or
+  layout fix in the files you already touch: do it now. Only list as a follow-up what needs a decision the
+  owner must take, reaches a new area, is risky or is big.
+- **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
+  say) and remove your build output. Your port block must be empty when you report.
 - **Report:** `DONE <PR url>`, `BUILT <PR url>` (with the Verify section) or `FAILED`, then each answer and how
   it was built, a few lines on what was built, the decisions, the PR's Owner checklist (or "none"), and a
   **Follow-ups** list: every risk to address,
@@ -309,7 +333,7 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 **Verifier brief** (fill in the PR url and branch, the builder's Verify section, every card's Answers, and the
 port block and scratch folder):
 
-- Check out the PR's branch in your worktree (`git fetch -q origin <branch> && git checkout <branch>`). Read only
+- Work in the builder's worktree, already on the PR's branch (`git pull -q --ff-only` first). Read only
   what the Verify section points to, the `verify` skill, and the files a failing check leads you to.
 - **Verify in a real browser**, following the `verify` skill. Where the same change lands in several apps (a
   shared component, or the same edit in each editor's copy), verify it in **one** app and rely on tests for the
@@ -329,8 +353,10 @@ port block and scratch folder):
   says), and push once, gated on the PR being OPEN. Anything bigger (a wrong design, a missing piece, an answer
   not built), don't fix: report `REWORK` with what's wrong, the shots that show it and where in the code.
 - Push the shots to the `pr-assets/<PR#>` branch and add them to the description (as the builder brief says),
-  remove "Verifying in the browser", and remove `not-ready` unless the description gives a high-risk or Owner
+  remove "Verifying in the browser" (`gh pr edit` is allowed), and remove `not-ready` unless the description gives a high-risk or Owner
   reason to keep it.
+- **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
+  say). Your port block must be empty when you report.
 - Report `DONE <PR url>` (with what you checked, any fix you pushed, and any follow-ups) or `REWORK`, as above.
 
 Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
@@ -343,6 +369,10 @@ screenshots.
 - NEVER pkill, killall or kill by name; stop only PIDs you started. Don't stop, restart or bind the dev servers
   already running (ports 3000 to 3499), or Wrangler workers named liveworkspace-\*, live\*-api, live\*-mcp or
   live\*-router-local. Wrangler's registry is machine-wide.
+- Background processes outlive you: a server you start keeps running after you report unless you stop it. Record
+  each one's PID (`$!`) when you start it, `kill` those PIDs before you report, then check your port block is
+  empty (`lsof -nP -iTCP:<first>-<last> -sTCP:LISTEN`). If anything is still listening, end your report with
+  `Left running: <pid> <port> <command>` for each.
 - `pnpm install` rewrites the shared git `core.hooksPath`. Read it (`git config --get core.hooksPath`) before
   installing and set it back to that value straight after.
 - Don't touch .dev.vars or .env files. Don't touch the main checkout's working tree: other sessions keep
@@ -370,6 +400,9 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
   this PR built, in one line: "Built in <PR url>: <how, short>". Then resolve every question thread the loop
   started on the card that is now settled (for a Large card, only those its finished parts built, and the plan
   thread after the last part). The owner hears through the Inbox that the card was built and where.
+- **Send simple follow-ups back first** (on DONE): any item on the Follow-ups list that the builder brief's
+  "Simple follow-ups go in this PR" covers goes back to the same agent with SendMessage, to build on the open
+  PR, before anything is filed.
 - **File the follow-ups** (on DONE and FAILED): the owner never reads the chat or this loop's report, so a
   follow-up left there is lost. Turn every item on the agent's Follow-ups list, and anything else you noticed
   that needs doing later, into its own **new Work Item in Under Review**, in one `change_items` batch:
@@ -381,7 +414,12 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
   add it to the PR's checklist yourself (`gh pr edit`) and set the label when needed.
 - **FAILED:** move the card to **Development Failure** and start one thread on it, in review-loop's format: what blocked it, what was tried, and lettered options for how to unblock it, with a recommendation.
 
-Then remove that agent's worktree (`git worktree remove`), and its local branch on FAILED.
+Then, once the agent's work is finished (after its verifier, when it has one), stop anything still listening in
+its port block before removing its worktree: list it with
+`lsof -nP -iTCP:<first>-<last> -sTCP:LISTEN` (and any `Left running` PIDs from its report), check each PID's working
+folder is inside that agent's worktree or scratch folder (`lsof -a -d cwd -p <pid>`), and `kill` only those. Never
+stop anything on 3000 to 3499 or with a working folder elsewhere; report it instead. A port block goes to the next
+agent only once it is empty. Then remove the worktree (`git worktree remove`), and its local branch on FAILED.
 
 If the MCP refuses a change, report it and carry on with the other cards.
 
@@ -396,7 +434,8 @@ If the MCP refuses a change, report it and carry on with the other cards.
 - One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.
-- Remove every worktree this pass made before it ends. At the end of a pass with no agents running, prune the
+- Remove every worktree this pass made before it ends, and leave nothing listening on 3600 to 3719 that this
+  pass started (step 4's port-block check, for every agent of the pass). At the end of a pass with no agents running, prune the
   shared turbo cache: delete its entries untouched for 7 days
   (`find <repo>/.turbo/shared-cache -type f -mtime +7 -delete`), so it stays bounded.
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isValidTab, type ArrowElement, type Element } from './index';
 import { buildGraphTab, buildTab } from './tab-builders';
 
-// Graph-first authoring end-to-end (docs/specs/015-api/mcp-server.md §4.7): a node/edge graph must
+// Graph-first authoring end-to-end (livediagram/docs/specs/015-api/mcp-server.md §4.7): a node/edge graph must
 // come out a valid, themed, auto-laid-out tab.
 describe('buildGraphTab', () => {
   it('builds a valid themed tab from a graph, positioning the nodes', () => {

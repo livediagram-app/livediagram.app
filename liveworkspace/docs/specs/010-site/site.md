@@ -36,7 +36,10 @@ The APIs are Workers on more specific routes of the same origin, so the pages ca
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
 (the current site highlighted), links to Our Apps and Telemetry, each with its icon, and the account
 control. On a phone the wordmark and the account control show; the footer has the rest. The
-Appearance toggle is never in the header: it is on the rail.
+Appearance toggle is never in the header: it is on the rail. The sign-in pages served under an app's own
+address wear that app's logo in place of the wordmark, linking to the app's home, with that app highlighted in the
+switcher (`HeaderLogo`), so the person stays in the app they came from; the page's first render, before it knows its
+address, is liveworkspace's.
 
 ### The rail
 

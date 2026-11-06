@@ -13,6 +13,7 @@ export function pageDeckControls(
     newPageSlide: (pageId: string) => void;
     toggleSlideHidden: (slideId: string) => void;
     setSlideNoteCards: (slideId: string, cards: readonly NoteCard[]) => void;
+    flushDeckSave: () => void;
     start: (fromSlideId?: string) => Promise<void>;
   },
 ): PageDeckControls | undefined {
@@ -28,6 +29,7 @@ export function pageDeckControls(
     add: verbs.newPageSlide,
     toggleHidden: verbs.toggleSlideHidden,
     setNoteCards: verbs.setSlideNoteCards,
+    flushNotes: verbs.flushDeckSave,
     present: (slideId) => {
       track('UI', 'Used', 'PresentFromHere');
       void verbs.start(slideId);

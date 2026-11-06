@@ -3,11 +3,7 @@
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
-import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
-import { useTabRevisions } from './useTabRevisions';
-import { useWorkbenchEnd } from './useWorkbenchEnd';
-import { useWorkbenchMessages } from './useWorkbenchMessages';
 import {
   usePublishTabName,
   usePublishTabRename,
@@ -161,14 +157,11 @@ import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast'
 export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Where the editor runs (editor-surface.ts). The read-only embed view (docs/specs/013-workspace/
   // embeds.md) forces view behaviour regardless of the share role, suppresses the visitor identity
-  // screen, and EditorView swaps the chrome for the embed badge + tab switcher. A workbench
-  // (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a workbench") is signed in
-  // by its session and drops the app's surroundings and everything beyond its one document.
+  // screen, and EditorView swaps the chrome for the embed badge + tab switcher.
   // Constant for the lifetime of the page (it comes from which route mounted us), so it's safe in
   // derived consts.
   const surface = opts.surface ?? 'app';
-  const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
-  const workbench = useWorkbenchDocumentSession();
+  const { embedMode, appChrome } = surfaceFlags(surface);
   const initialTabs: Tab[] = [createTab('Tab 1')];
 
   // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —
@@ -584,9 +577,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   const [hydrated, setHydrated] = useState(false);
   // The person's documents, for the pickers that name another document: read from the index once the document is open and the
-  // browser idle (useDocumentList), never inside a workbench, which reaches its one document only.
+  // browser idle (useDocumentList), never inside an embed.
   const { documentList, refreshDocumentList } = useDocumentList(
-    hydrated && !workbenchMode && !embedMode,
+    hydrated && !embedMode,
     selfParticipant.id,
   );
   // The deleted state (docs/specs/013-workspace/trash.md): the document is in
@@ -601,9 +594,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
   // The role pill's local read-only preview (docs/specs/007-editor/editor-app.md#role-pill).
-  // A workbench session that ended leaves the editor read-only (the autosave stands down with it).
   const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, canEdit } = useViewPreview(
-    workbench?.ended ? 'view' : sessionRole,
+    sessionRole,
     () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -616,7 +608,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Previewing as a Participant, an Editor has no adder key of its own (a room ticket carries one only for a
   // participate session), so the preview stamps what it adds with a local one and handles it as a Participant would.
   const participant = useParticipantSession(
-    workbench?.ended ? 'view' : previewLevel,
+    previewLevel,
     toast.info,
     previewLevel === 'participate' && canToggleRole ? previewAdderKey() : null,
   );
@@ -664,8 +656,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Per-tab autosave (debounced + beforeunload flush). See useAutosave;
   // the last-saved mirror refs above are seeded by the hydration effect.
-  // The last revision known per tab, for the workbench's selection reference.
-  const tabRevisions = useTabRevisions(realtime.changesetSeen.seen);
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
     documentId,
@@ -692,7 +682,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSavedAt,
     onDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     changesetSeen: realtime.changesetSeen.seen,
-    noteTabRevision: tabRevisions.noteSaved,
   });
   // Sync Space from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
   // in place").
@@ -731,7 +720,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     accountUserId,
     accountDisplayName,
     embed: embedMode,
-    workbench,
     activeId,
     selfParticipant,
     resetTabs,
@@ -772,17 +760,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   });
   useEffect(() => {
-    // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
-    // a document in This Browser opens before the reader is known (docs/specs/006-document/offline-mode.md
-    // "Instant open"), and 'self' is nobody's row.
-    if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
+    // The placeholder never writes the participant record: a document in This Browser opens before the reader
+    // is known (docs/specs/006-document/offline-mode.md "Instant open"), and 'self' is nobody's row.
+    if (!hydrated || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;
     if (prev && prev.name === selfParticipant.name && prev.color === selfParticipant.color) {
       return;
     }
     lastPersistedSelfRef.current = { name: selfParticipant.name, color: selfParticipant.color };
     apiSaveSelf(selfParticipant).catch(() => {});
-  }, [hydrated, selfParticipant, workbenchMode]);
+  }, [hydrated, selfParticipant]);
 
   const selfParticipantRef = useRef(selfParticipant);
   useEffect(() => {
@@ -891,9 +878,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
-    // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
-    enabled: realtime.sessionCommunity === null && !workbench?.ended,
-    onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
+    enabled: realtime.sessionCommunity === null,
     // docs/specs/015-api/api.md "A room holds at most 100 connections": said once; editing carries on alone.
     onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
     documentTeamId,
@@ -976,12 +961,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Explorer panel now surfaces teams + their documents (a Teams
   // accordion, team rows in Recent, the current team document —
   // docs/specs/013-workspace/team-shared-documents.md), so the data has to be present whenever the panel is.
-  const teams = useTokenTeams(!!accountUserId && !workbenchMode);
+  const teams = useTokenTeams(!!accountUserId);
   // Comment @-mentions (docs/specs/012-collaboration/comment-mentions.md): the document team's members as
   // candidates, and the notify a mentioning comment fires.
   const commentMentions = useCommentMentions({
-    // A workbench reads no team and notifies no one.
-    ownerId: workbenchMode ? null : (accountUserId ?? null),
+    ownerId: accountUserId ?? null,
     teams,
     documentTeamId,
     documentId,
@@ -1372,12 +1356,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // card inside a README iframe is wrong, so embed sessions keep
   // their default guest identity silently.
   const joinScreenOpen =
-    !embedMode &&
-    !workbenchMode &&
-    hydrated &&
-    loadedExistingDocument &&
-    !nameConfirmed &&
-    identityPromptOpen;
+    !embedMode && hydrated && loadedExistingDocument && !nameConfirmed && identityPromptOpen;
   const identityOnlyScreenOpen = joinScreenOpen;
   // Combined gate for chrome-hide. Only the join-existing flow lives
   // on this route now; the historical new-document welcome lives on
@@ -1736,8 +1715,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     }),
     isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
     embedMode,
-    // Upload only in a workbench: no gallery read.
-    galleryHidden: workbenchMode,
     commit,
     documentId,
     ownerId: selfParticipant.id,
@@ -2425,31 +2402,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       : null,
   });
 
-  // The workbench's side of the conversation, and the ends the editor learns of.
-  useWorkbenchMessages({
-    workbench,
-    hydrated,
-    documentId,
-    documentName,
-    tabs,
-    activeId,
-    sessionRole,
-    selection: selectionStore,
-    revOf: tabRevisions.revOf,
-    revealInView: (tabId, ids) => revealChangesetRef.current?.(tabId, ids),
-    reveals: changesetFeed.reveals,
-    selfColor: selfParticipant.color,
-  });
-  useWorkbenchEnd(workbench, documentTrashed.trashed);
-
   return {
     surface,
     tourSquare,
     addCustomColour,
     setTagColour,
-    workbenchMode,
     appChrome,
-    workbench,
     // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
     changesetReveals: changesetFeed.reveals,
     // What the agents present name in focus on the active tab, for the focus rings.

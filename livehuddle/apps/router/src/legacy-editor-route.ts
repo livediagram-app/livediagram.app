@@ -91,8 +91,15 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/themes/custom-themes': 'canvas/themes',
   'explorer/themes-library': 'canvas/themes',
   'explorer/tags': 'explorer/folders',
-  'tools/ai': 'account-and-data/connect-ai-mcp',
-  'tools/ai/ai-tools': 'account-and-data/connect-ai-mcp',
+  'tools/ai': 'account-and-data/api-tokens',
+  'tools/ai/ai-tools': 'account-and-data/api-tokens',
+  // livehuddle has no MCP server, CLI or workbenches (docs/specs/002-project-scope/not-in-livehuddle.md): their
+  // articles' old addresses land on what stays, API tokens and the API.
+  'account-and-data/connect-ai-mcp': 'account-and-data/api-tokens',
+  'account-and-data/connect-ai-mcp/ai-clients': 'account-and-data/api-tokens',
+  'developers/cli': 'developers/api-overview',
+  'developers/workbenches': 'developers/api-overview',
+  'developers/workbenches/building-a-workbench': 'developers/api-overview',
   'selection-modes/slide-deck': 'canvas/follow-along',
   'selection-modes/slide-deck/building-a-deck': 'canvas/follow-along',
   'selection-modes/slide-deck/presenting': 'canvas/follow-along',

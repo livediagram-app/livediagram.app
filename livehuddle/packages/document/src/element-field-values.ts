@@ -1,4 +1,4 @@
-// The values a style field takes (docs/specs/024-agents/edit-operations.md "The vocabulary", docs/specs/015-api/mcp-server.md
+// The values a style field takes (docs/specs/024-agents/edit-operations.md "The vocabulary", livediagram/docs/specs/015-api/mcp-server.md
 // §4.4 "Values checked"): the closed vocabularies of the stored fields an agent writes most, in one place, so an
 // edit operation's `set` and the MCP's whole-element check refuse the same values the same way. A value off its list
 // used to be stored and drawn wrong in silence (`textSize: "xl"` drew tiny overlapping text).

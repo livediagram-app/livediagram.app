@@ -47,7 +47,7 @@ const bbox = (els: BoxedElement[]): Rect => unionRects(els)!;
 // origin (everything starts at 0,0). Sweep them into rows below the placed
 // content instead. Lives here (the import path) on purpose: for the MCP's
 // element authoring, leaving edgeless content alone is load-bearing
-// (docs/specs/015-api/mcp-server.md §4.3) — for a parsed graph there is no hand-placed content.
+// (livediagram/docs/specs/015-api/mcp-server.md §4.3): for a parsed graph there is no hand-placed content.
 // `exempt` ids are deliberately-placed nodes the sweep must leave alone but
 // still avoid (frames and their members in the clustered pass).
 export function sweepEdgelessNodes(elements: Element[], exempt?: Set<string>): Element[] {
@@ -180,7 +180,7 @@ export function layoutClusteredGraph(
   // 2. Contract: one frame element per cluster, sized to its members' block,
   // plus the free nodes, joined by the edges projected through the clusters.
   // A line into a group's first members lands clear of its heading: the members start that much further in.
-  // (docs/specs/015-api/mcp-server.md "Groups keep their lines clear")
+  // (livediagram/docs/specs/015-api/mcp-server.md "Groups keep their lines clear")
   const lead = new Map(
     clusters.map((c) => {
       const inside = new Set(c.members);

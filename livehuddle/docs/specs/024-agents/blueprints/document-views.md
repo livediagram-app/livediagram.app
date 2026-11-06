@@ -5,7 +5,7 @@
 Derived from [Document views](../document-views.md), with the selector vocabulary and rejection codes of
 [Edit operations](../edit-operations.md), the tab revision of [Agent changesets](../agent-changesets.md), the findings
 of [Diagram lint](../diagram-lint.md), the route row of [API](../../015-api/api.md) ("Agents"), `read_document` of
-[MCP server](../../015-api/mcp-server.md) §4.2, the anonymous events of [Telemetry](../../017-telemetry/telemetry.md)
+[MCP server](../../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.2, the anonymous events of [Telemetry](../../017-telemetry/telemetry.md)
 and the terms of [Domain language](../../003-system-architecture/domain-language.md#agents). The spec decides; this
 file only adds engineering precision. Defaults applied where the spec is silent are ledgered in
 [DEFAULTS.md](DEFAULTS.md) and cited as `VWn`.
@@ -59,11 +59,11 @@ Scope, by file:
 | `apps/api/src/db/tabs.ts`                                                 | `tabBodiesInOrder(env, documentId, offset, limit)`                                                                                                                                        |
 | `apps/api/src/openapi/{manifest,document,types}.ts`                       | The view query parameters; `textResponse` on the two GETs                                                                                                                                 |
 | `apps/api/scripts/gen-openapi-schemas.mjs`                                | The view wire types join `ROOT_TYPES`                                                                                                                                                     |
-| `apps/mcp/src/api.ts`                                                     | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                                                                                  |
-| `apps/mcp/src/tool-helpers.ts`                                            | `viewResult`: the view text first, then its one-line JSON                                                                                                                                 |
-| `apps/mcp/src/read-document.ts`                                           | `readDocument`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                                                                               |
-| `apps/mcp/src/{tools,schema,output-schema}.ts`                            | `read_document` registered on `readDocument`; its input and output schemas; `READ_DOCUMENT_DEFAULT_BUDGET`                                                                                |
-| `apps/mcp/src/image-result.ts`                                            | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                                                                                           |
+| `livediagram/apps/mcp/src/api.ts`                                         | `apiText` → `{ text, etag }`, through the shared api client as `apiJson`                                                                                                                  |
+| `livediagram/apps/mcp/src/tool-helpers.ts`                                | `viewResult`: the view text first, then its one-line JSON                                                                                                                                 |
+| `livediagram/apps/mcp/src/read-document.ts`                               | `readDocument`: the view (the outline by default), `format: "json"`, `image: true`, ref refusals as results                                                                               |
+| `livediagram/apps/mcp/src/{tools,schema,output-schema}.ts`                | `read_document` registered on `readDocument`; its input and output schemas; `READ_DOCUMENT_DEFAULT_BUDGET`                                                                                |
+| `livediagram/apps/mcp/src/image-result.ts`                                | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                                                                                           |
 | liveworkspace/apps/site/app/telemetry/livehuddle/catalogue/connections.ts | The `Agent·Viewed` chart, by view                                                                                                                                                         |
 | `docs/development/architecture.md`, `README.md`                           | The new package in the layout and the package list                                                                                                                                        |
 | `@livehuddle/edit-operations`, `@livehuddle/diagram-lint` (own)           | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livehuddle/document`                                                                                     |
@@ -820,36 +820,36 @@ view (above), beside the front doors' `Mcp·Used` and `Cli·Used`.
 
 Every rule maps to a deterministic test; the spec's rules are numbered here.
 
-| Rule                                                                 | Test                                                                                                                                     |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts`                                                                                             |
-| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                          |
-| R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                                   |
-| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                               |
-| R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                         |
-| R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                           |
-| R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `packages/document/src/collab-index-rows.test.ts` |
-| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
-| R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
-| R10 JSON strings, cut 60 / 48 on a word boundary                     | `../packages/document-views/src/text.test.ts`                                                                                            |
-| R11 Smallest frame or lane holding the centre                        | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
-| R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
-| R13 Reading order                                                    | `../packages/document-views/src/reading-order.test.ts`                                                                                   |
-| R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |
-| R15 Bare strokes fold into one counted line                          | `../packages/document-views/src/freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                  |
-| R16 What the outline leaves out                                      | `outline.test.ts`, `header.test.ts`                                                                                                      |
-| R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                              |
-| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                          |
-| R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                           |
-| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `apps/mcp/src/read-document.test.ts` (8,000)           |
-| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                  |
-| R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                      |
-| R23 `?view=` answers `text/plain`; overview on the document; no diff | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                |
-| R24 `read_document` reads a view; JSON and the PNG only on request   | `apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                                   |
-| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                        |
-| R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite                     |
-| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                               |
-| OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                         |
+| Rule                                                                 | Test                                                                                                                                       |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts`                                                                                               |
+| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                            |
+| R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                                     |
+| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                                 |
+| R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                           |
+| R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                             |
+| R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `packages/document/src/collab-index-rows.test.ts`   |
+| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                               |
+| R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                        |
+| R10 JSON strings, cut 60 / 48 on a word boundary                     | `../packages/document-views/src/text.test.ts`                                                                                              |
+| R11 Smallest frame or lane holding the centre                        | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                   |
+| R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                            |
+| R13 Reading order                                                    | `../packages/document-views/src/reading-order.test.ts`                                                                                     |
+| R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                             |
+| R15 Bare strokes fold into one counted line                          | `../packages/document-views/src/freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                    |
+| R16 What the outline leaves out                                      | `outline.test.ts`, `header.test.ts`                                                                                                        |
+| R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                                |
+| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                            |
+| R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                             |
+| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `livediagram/apps/mcp/src/read-document.test.ts` (8,000) |
+| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                    |
+| R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                        |
+| R23 `?view=` answers `text/plain`; overview on the document; no diff | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                  |
+| R24 `read_document` reads a view; JSON and the PNG only on request   | `livediagram/apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                         |
+| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                          |
+| R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite                       |
+| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                                 |
+| OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                           |
 
 Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 `packages/document-views/src/__fixtures__/golden/`:
@@ -890,7 +890,7 @@ out of Prettier (`.prettierignore`).
 | `LABEL_CUT_CHARS`              | 60                            | Spec                                                                      | fixed           |
 | `NOTE_CUT_CHARS`               | 48                            | Spec                                                                      | fixed           |
 | `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                      | fixed           |
-| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)             | 2,000 to 32,000 |
+| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `livediagram/packages/agent-verbs/src/mcp/schema.ts`) | 2,000 to 32,000 |
 | `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
 | `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                         | 24 to 120       |
 | `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                | narrower only   |

@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createShape } from '@livehuddle/document';
 import {
+  BACK_ROW_MIN_BAND,
+  BACK_ROW_MIN_TOP,
+  BACK_ROW_SPAN,
   FLOOR_CLIP_Y,
   FLOOR_FURNITURE_SCALE,
   FLOOR_MOTION,
   FLOOR_ONLY,
   FLOOR_STAGES,
   LOOP_S,
+  HERO_HEADER,
   SETTLED_AT,
+  backRowTop,
+  onBackRow,
   type FloorStage,
   type Rect,
   type Walker,
@@ -28,6 +34,10 @@ import {
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the copy stays clear, the groups talk in turn, the loop closes,
 // reduced motion holds a settled frame, and only transform and opacity move.
+
+// The floor under the calls to action (Hero.tsx FLOOR_ROOM) and the copy's height from lg, badges to calls to action.
+const FLOOR_ROOM = 316;
+const LG_COPY = 352;
 
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
@@ -94,12 +104,32 @@ describe('the hero floor keeps the copy clear', () => {
     'places the %s stage’s furniture off the copy, on the stage',
     (_, stage) => {
       const bounds = { x: 0, y: 0, width: stage.width, height: stage.height };
-      for (const rect of furnitureRects(stage)) {
-        expect(overlaps(rect, stage.clear)).toBe(false);
-        expect(inside(rect, bounds)).toBe(true);
-      }
+      stage.furniture.forEach((piece, i) => {
+        const rect = furnitureRects(stage)[i]!;
+        expect(overlaps(rect, stage.clear), `${piece.kind} at ${piece.x}, ${piece.y}`).toBe(false);
+        expect(inside(rect, bounds), `${piece.kind} at ${piece.x}, ${piece.y}`).toBe(true);
+      });
     },
   );
+
+  it('stands the back of the office wholly in its span, players, chips and bubbles too', () => {
+    const wide = FLOOR_STAGES.find((s) => s.key === 'wide')!;
+    const back = [
+      ...furnitureRects(wide),
+      ...wide.cast.flatMap((walker) => [
+        ...walkerRects(walker),
+        ...bubbleRects(wide, walker).map((b) => b.rect),
+      ]),
+    ].filter((rect) => rect.y < BACK_ROW_SPAN.foot);
+    expect(back.length).toBeGreaterThan(10);
+    for (const rect of back) {
+      expect(rect.y).toBeGreaterThanOrEqual(BACK_ROW_SPAN.top);
+      expect(rect.y + rect.height).toBeLessThanOrEqual(BACK_ROW_SPAN.foot);
+    }
+    // Its players stand still, so nobody walks across the layer's edge.
+    for (const walker of wide.cast.filter(onBackRow))
+      expect(timelineOf(walker).every((seg) => !seg.walking)).toBe(true);
+  });
 
   it.each(every)(
     'walks %s %s round the copy, never into it or off the stage',
@@ -119,12 +149,13 @@ describe('the hero floor keeps the copy clear', () => {
 
 // Between sm and lg the wide stage shows its floor alone, clipped above FLOOR_CLIP_Y (Work Tracker #440): a walker
 // who crossed that line would vanish mid-walk, so each one shown there stays wholly on one side of it all loop, and a
-// walker whose own path crosses it walks its floor path instead (FLOOR_ONLY).
+// walker whose own path crosses it walks its floor path instead (FLOOR_ONLY). The back row's players are on a layer
+// of their own (below).
 describe('the hero floor between sm and lg', () => {
   const wide = FLOOR_STAGES.find((s) => s.key === 'wide')!;
-  const shownBelowLg = wide.cast.map(
-    (walker) => FLOOR_ONLY.cast.find((twin) => twin.name === walker.name) ?? walker,
-  );
+  const shownBelowLg = wide.cast
+    .filter((walker) => !onBackRow(walker))
+    .map((walker) => FLOOR_ONLY.cast.find((twin) => twin.name === walker.name) ?? walker);
   const STEP = 0.05;
   const moments = Array.from({ length: Math.round(LOOP_S / STEP) + 1 }, (_, i) => i * STEP);
   const side = (rect: Rect) =>
@@ -146,6 +177,7 @@ describe('the hero floor between sm and lg', () => {
   it('gives a floor path to exactly the walkers whose own path crosses the line', () => {
     const crossing = wide.cast.filter(
       (walker) =>
+        !onBackRow(walker) &&
         new Set(moments.map((t) => side(figureRect(walker, positionAt(walker, t))))).size > 1,
     );
     expect(crossing.map((w) => w.name)).toEqual(FLOOR_ONLY.cast.map((w) => w.name));
@@ -165,12 +197,117 @@ describe('the hero floor between sm and lg', () => {
       }
   });
 
-  it('clips the stage on the same line the paths keep to', () => {
+  it('clips the stage on the lines the paths and the back row keep to', () => {
     const css = readFileSync(
       new URL('../app/hero-scenes/space-floor.css', import.meta.url),
       'utf8',
     );
+    expect(css).toContain(`clip-path: inset(${BACK_ROW_SPAN.foot}px 0 0 0);`);
     expect(css).toContain(`clip-path: inset(${FLOOR_CLIP_Y}px 0 0 0);`);
+    // The back row's layer, as backRowTop places it: at the band's foot less its place on the stage, or
+    // BACK_ROW_MIN_TOP under the band's top; hidden in a window under the band it needs plus the header.
+    expect(css).toContain(
+      `top: max(calc(100% - ${wide.height - BACK_ROW_SPAN.top}px), ${BACK_ROW_MIN_TOP}px);`,
+    );
+    expect(css).toContain(
+      `@media (max-height: ${BACK_ROW_MIN_BAND + HERO_HEADER - 1 + 0.98}px) {\n  .hsf-back {\n    display: none;`,
+    );
+  });
+
+  it('stands the copy at one place on the stage, inside the keep-clear column', () => {
+    expect(wide.clear.y).toBeLessThanOrEqual(wide.height - FLOOR_ROOM - LG_COPY);
+    expect(wide.clear.y + wide.clear.height).toBeGreaterThanOrEqual(wide.height - FLOOR_ROOM);
+    expect(FLOOR_CLIP_Y).toBeGreaterThanOrEqual(wide.height - FLOOR_ROOM);
+    // The headline, 792px wide at 72px type and centred, stays inside the column at every width.
+    expect(wide.clear.x).toBeLessThanOrEqual(wide.width / 2 - 396 - 20);
+    expect(wide.clear.x + wide.clear.width).toBeGreaterThanOrEqual(wide.width / 2 + 396 + 20);
+  });
+});
+
+// The back of the office is a layer of its own (Work Tracker #505's rework): a window shows it whole, its players'
+// heads and bubbles too, or not at all, and never over the copy or the wings, at every height a window comes in.
+describe('the hero’s back row at every window height', () => {
+  const wide = FLOOR_STAGES.find((s) => s.key === 'wide')!;
+  const GAP = 12;
+  const grow = (r: Rect): Rect => ({
+    x: r.x - GAP,
+    y: r.y - GAP,
+    width: r.width + 2 * GAP,
+    height: r.height + 2 * GAP,
+  });
+  const back = [
+    ...furnitureRects(wide).filter((r) => r.y < BACK_ROW_SPAN.foot),
+    ...wide.cast
+      .filter(onBackRow)
+      .flatMap((w) => [...walkerRects(w), ...bubbleRects(wide, w).map((b) => b.rect)]),
+  ];
+  // What the stage shows from lg: every piece, figure and bubble under the back row (the wings and the floor).
+  const stageLg = [
+    ...furnitureRects(wide).filter((r) => r.y >= BACK_ROW_SPAN.foot),
+    ...wide.cast
+      .filter((w) => !onBackRow(w))
+      .flatMap((w) => [...walkerRects(w), ...bubbleRects(wide, w).map((b) => b.rect)]),
+  ];
+  // Below lg the stage shows only its floor.
+  const stageBelowLg = stageLg.filter((r) => r.y >= FLOOR_CLIP_Y);
+  // The copy's height, badges to calls to action, and its top padding: one line of headline from lg, and from sm a
+  // smaller headline over a subhead of three or four lines.
+  const layouts = [
+    { name: 'lg', padding: 80, copy: [LG_COPY], stage: stageLg },
+    { name: 'sm', padding: 64, copy: [322, 350, 380], stage: stageBelowLg },
+  ];
+  const heights = Array.from({ length: 1440 - 640 + 1 }, (_, i) => 640 + i);
+
+  it.each(layouts)(
+    'shows it whole or not at all, clear of the copy and the stage ($name)',
+    (layout) => {
+      // Collected and asserted once: a million expects would cost seconds.
+      const wrong: string[] = [];
+      for (const copy of layout.copy) {
+        // Every height a window comes in, checked once per band height it makes.
+        const seen = new Set<number>();
+        for (const height of heights) {
+          const band = Math.max(
+            layout.padding + copy + FLOOR_ROOM,
+            Math.min(height - HERO_HEADER, wide.height),
+          );
+          const top = backRowTop(band);
+          // The CSS hides the layer by the window's height; backRowTop by the band's: the two agree.
+          if ((top === null) !== height - HERO_HEADER < BACK_ROW_MIN_BAND)
+            wrong.push(`${height}: shown by one rule, hidden by the other`);
+          if (top === null || seen.has(band)) continue;
+          seen.add(band);
+          const at = `${layout.name}, copy ${copy}, window ${height}`;
+          const lift = wide.height - band;
+          const copyRect = {
+            x: wide.clear.x,
+            y: band - FLOOR_ROOM - copy,
+            width: wide.clear.width,
+            height: copy,
+          };
+          const shown = layout.stage.map((r) => ({ ...r, y: r.y - lift }));
+          for (const r of back) {
+            const inBand = { ...r, y: top + r.y - BACK_ROW_SPAN.top };
+            // Whole: everything on it, bubbles included, under the band's top.
+            if (inBand.y < BACK_ROW_MIN_TOP) wrong.push(`${at}: cut at the top`);
+            // Clear of the copy and of whatever the stage shows there.
+            const placed = grow(inBand);
+            if (overlaps(placed, copyRect)) wrong.push(`${at}: over the copy`);
+            if (shown.some((s) => overlaps(placed, s))) wrong.push(`${at}: over the stage`);
+          }
+        }
+      }
+      expect(wrong.slice(0, 5)).toEqual([]);
+    },
+  );
+
+  it('shows it at 1000 to 1200px and on a full cap, at its place on the stage when the band is tall enough', () => {
+    for (let height = 1000; height <= 1200; height++)
+      expect(backRowTop(Math.min(height - HERO_HEADER, wide.height)), `${height}`).not.toBeNull();
+    expect(backRowTop(wide.height)).toBe(BACK_ROW_SPAN.top);
+    expect(backRowTop(1128)).toBe(1128 - wide.height + BACK_ROW_SPAN.top);
+    expect(backRowTop(888)).toBe(BACK_ROW_MIN_TOP);
+    expect(backRowTop(BACK_ROW_MIN_BAND - 1)).toBeNull();
   });
 });
 

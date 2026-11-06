@@ -88,8 +88,7 @@ before they joined; anyone else is refused (`403 not_team_member`) and the view 
 
 `Timeline·Changed` (`Cards` is reported as `List`, and `Calendar`), `Timeline·Selected` (a category switched off,
 `Everyone`, `Others`), `Timeline·Loaded` (`More`, `Retry`), `Timeline·Opened` (`Card`, `Stack`, `Menu`) and
-`Timeline·Removed` (`Entry`, `Stack`), through the Explorer's `onTimeline` prop, counted for livehuddle on the Explorer at its address and in the
-workbench's Explorer (`apps/editor/app/embed/workbench/ExplorerHost.tsx`).
+`Timeline·Removed` (`Entry`, `Stack`), through the Explorer's `onTimeline` prop, counted for livehuddle on the Explorer at its address.
 
 ## 5. Performance
 
