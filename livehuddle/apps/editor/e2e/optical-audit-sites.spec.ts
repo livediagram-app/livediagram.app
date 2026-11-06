@@ -29,6 +29,23 @@ async function open(page: Page, url: string, build: string): Promise<void> {
     res?.status(),
     `${url} did not load: build it (pnpm --filter @livehuddle/${build} build)`,
   ).toBe(200);
+  // Measure the settled page: an illustration still loading moves what sits beside it by a fraction of a pixel, which
+  // snaps its text to a different row (the feature page's call to action read -1.49px on some runs, 0 on others).
+  await page.waitForLoadState('networkidle');
+  // A lazy image off screen never loads, so only the eager ones still loading are waited for.
+  await page.evaluate(() =>
+    Promise.all(
+      Array.from(document.images)
+        .filter((img) => !img.complete && img.loading !== 'lazy')
+        .map(
+          (img) =>
+            new Promise((done) => {
+              img.addEventListener('load', done, { once: true });
+              img.addEventListener('error', done, { once: true });
+            }),
+        ),
+    ),
+  );
 }
 
 async function expectCentred(page: Page, screen: string): Promise<void> {
@@ -60,7 +77,23 @@ test.describe('Optical alignment audit, other sites', () => {
 
   test('the Community', async ({ page, pageErrors, baseURL }) => {
     // The gallery (docs/specs/025-community/community.md), as a visitor with nothing shared yet sees it on a fresh
-    // stack: its header, search box and controls, and the empty state.
+    // stack: its header, search box and controls, and the empty state. The stack's api has no Community service key,
+    // so its capabilities say the Community is off and the gate would leave for the home page once they answer; the
+    // audit measures the gallery, so it hears the Community is on. The posts live on the liveworkspace Community
+    // service (production's, from this origin), so the gallery is answered empty here, never from a live service.
+    await page.route('**/api/capabilities', async (route) => {
+      const res = await route.fetch();
+      await route.fulfill({
+        response: res,
+        json: { ...(await res.json()), communityEnabled: true },
+      });
+    });
+    await page.route('**/api/community/posts?*', (route) =>
+      route.fulfill({ json: { posts: [], nextOffset: null } }),
+    );
+    await page.route('**/api/community/facets?*', (route) =>
+      route.fulfill({ json: { total: 0, categories: {}, tags: [] } }),
+    );
     await open(page, `${site('community', baseURL!)}/`, 'community');
     await expect(page.getByRole('searchbox')).toBeVisible();
     await page.waitForLoadState('networkidle');
