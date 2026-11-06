@@ -52,7 +52,7 @@ Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `
   front of it. Walking up to one rings nothing.
 - **On a counter**: the Microwave and the Kettle are drawn to stand on a Kitchen Counter's worktop when placed over
   its top edge (their base level with the worktop's middle). They have no footprint and are never what you stand on,
-  exactly as a wall piece, so a click on one walks you to the floor in front of the counter.
+  exactly as a wall piece, so a click on one walks you to the clicked point, as a click on the counter does.
 - **Wall pieces** (the Hand Dryer) are walked past, not to.
 - Nobody sits in any of them; none gives a drink.
 
