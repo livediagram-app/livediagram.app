@@ -273,8 +273,9 @@ const BEAN_BAG_VIEW: FurnitureDrawing = {
     path('glint', 'M13 28C15 22 18 19 22 17'),
   ],
   seats: BEAN_BAG_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 32, cy: 34, rx: 18, ry: 8 },
-  ringUnder: 3,
+  // Round the rim of the hollow, wider than a sitter, so it shows either side of them.
+  ring: { cx: 32, cy: 40, rx: 27, ry: 9 },
+  ringUnder: 2,
 };
 
 // A wingback armchair on a round rug, a side table with a stack of books, and a floor lamp with its shade lit.
@@ -303,8 +304,9 @@ const READING_NOOK_VIEW: FurnitureDrawing = {
     rect('panel', 10, 48, 16, 5, 1.5, T.bookYellow),
   ],
   seats: READING_NOOK_SEATS.seats.map(({ u, v }) => ({ u, v })),
-  ring: { cx: 76, cy: 62, rx: 26, ry: 8 },
-  ringUnder: 9,
+  // Across the cushion's front and the arms' feet, so it shows either side of a sitter.
+  ring: { cx: 76, cy: 74, rx: 34, ry: 8 },
+  ringUnder: 12,
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */
