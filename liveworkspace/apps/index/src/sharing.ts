@@ -260,7 +260,8 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
         itemId: id,
         type: 'shared',
         actorId: caller.person?.id ?? null,
-        detail: { level: link.level },
+        // A public link (a Community post's) says so, for the team audit log.
+        detail: link.public ? { level: link.level, public: 'true' } : { level: link.level },
         at: now,
         when: { sql: 'EXISTS (SELECT 1 FROM share_links WHERE code = ?)', args: [link.code] },
       }),

@@ -11,6 +11,8 @@
 //   defaults and Timeline rows only they see go.
 // - Rows on other people's items that only name them (comment threads they are in, actions assigned to
 //   or by them, Timeline events they did) keep the row but name ANONYMISED_PERSON instead.
+// - The team audit log (team-audit.ts): a closed team's goes; rows they did, or that a team event is about them,
+//   name ANONYMISED_PERSON instead, with no name.
 //
 // Everything is done in chunks of CHUNK rows, so a person with any number of items stays inside D1's
 // limits, and every step deletes or rewrites only what still names them, so running it again (a retry,
@@ -28,6 +30,7 @@ import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
 import { drainPersonNotices, recordPersonNotices } from './person-notices';
 import { drainTombstones, drainTombstonesSoon } from './purge';
+import { teamAuditPurgeStatements } from './team-audit';
 import { webhookPurgeStatements } from './webhooks/purge';
 
 // What a reference to a closed account becomes. Shaped like neither an account (`user_…`) nor a guest
@@ -258,7 +261,11 @@ export async function purgePerson(
   }
   const own = await purgeOwnItems(db, budget, person, now);
   if (!own.done) return { done: false, items: own.purged.length, purged: own.purged };
-  for (const statement of personalStatements(db, person)) {
+  // Then the team audit log (team-audit.ts): a closed team's goes, their name comes off the rest.
+  for (const statement of [
+    ...personalStatements(db, person),
+    ...teamAuditPurgeStatements(db, person, teams, ANONYMISED_PERSON, CHUNK),
+  ]) {
     if (!(await untilDone(budget, statement)))
       return { done: false, items: own.purged.length, purged: own.purged };
   }

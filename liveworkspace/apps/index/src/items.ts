@@ -229,7 +229,7 @@ export async function handleTrash(ctx: PersonContext): Promise<Response> {
   )
     .bind(...(appParam ? [scope, appParam, EMPTY_TRASH_MAX] : [scope, EMPTY_TRASH_MAX]))
     .all<Pick<ItemRow, 'id' | 'app'>>();
-  await purgeRows(env, results);
+  await purgeRows(env, results, Date.now(), { actorId: person.id });
   if (results.length > 0 && !team) ctx.drive.add(person.id);
   if (results.length > 0) {
     const ids = results.slice(0, PURGE_NOW_MAX).map((r) => r.id);
@@ -476,6 +476,7 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
     );
   }
   if (folderId !== row.folder_id || teamId !== row.team_id) {
+    const teamChanged = teamId !== row.team_id;
     // Its events go where it went (who sees its history is who reaches it), then the move is recorded there.
     events.push(...moveScopeStatements(db, id, row.scope, scope));
     events.push(
@@ -483,8 +484,12 @@ async function updateItem(ctx: RouteContext, id: string): Promise<Response> {
         itemId: id,
         type: 'moved',
         actorId,
-        detail: { folderName, teamId },
+        detail: teamChanged
+          ? { folderName, teamId, fromTeamId: row.team_id }
+          : { folderName, teamId },
         at: now,
+        // Into, out of or between teams: in the audit log of each team involved; a move between folders, in none.
+        auditTeams: teamChanged ? [row.team_id, teamId] : [],
       }),
     );
   }
@@ -545,8 +550,12 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
   const teammate =
     offline && row.team_id !== null && caller.person !== null && caller.person.id !== row.owner_id;
   if (url.searchParams.get('permanent') === 'true' && !teammate) {
-    if (offline) await env.INDEX_DB.batch(takenOffline(Date.now()));
-    await purgeRows(env, [{ id: row.id, app: row.app }]);
+    const now = Date.now();
+    if (offline) await env.INDEX_DB.batch(takenOffline(now));
+    await purgeRows(env, [{ id: row.id, app: row.app }], now, {
+      actorId: caller.person?.id ?? null,
+      ...(offline ? { detail: { reason: 'offline' } } : {}),
+    });
     touchItem(ctx.drive, row);
     ctx.waitUntil(drainTombstonesSoon(env, [row.id]));
     console.log('[index] purged', { app: row.app });

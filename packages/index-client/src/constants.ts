@@ -195,6 +195,36 @@ export const TIMELINE_DISMISS_MAX = 100;
 // The sidebar's Timeline count stops here and reads "99+".
 export const TIMELINE_NEW_CAP = 99;
 
+// The team audit log (liveworkspace/docs/specs/004-index/team-audit-log.md): what a team's admins can look back on.
+// Team-level events only, never a document's content: a team's own (but team_deleted), a team item's shares, moves
+// across teams, trashes, restores and permanent deletes, and the team's webhooks added or removed. Never an API
+// token's: a token is its owner's.
+export const TEAM_AUDIT_ACCOUNT_TYPES = [
+  'team_invite_sent',
+  'team_joined',
+  'team_declined',
+  'team_role_changed',
+  'team_member_removed',
+  'team_renamed',
+] as const satisfies readonly AccountTimelineEventType[];
+export const TEAM_AUDIT_ITEM_TYPES = [
+  'shared',
+  'unshared',
+  'moved',
+  'trashed',
+  'restored',
+] as const satisfies readonly TimelineEventType[];
+// Kinds with no Timeline event of their own: a team item deleted for good, a team webhook added or removed.
+export const TEAM_AUDIT_OWN_TYPES = ['deleted', 'webhook_added', 'webhook_removed'] as const;
+export const TEAM_AUDIT_EVENT_TYPES = [
+  ...TEAM_AUDIT_ACCOUNT_TYPES,
+  ...TEAM_AUDIT_ITEM_TYPES,
+  ...TEAM_AUDIT_OWN_TYPES,
+] as const;
+export type TeamAuditEventType = (typeof TEAM_AUDIT_EVENT_TYPES)[number];
+// How long a row is kept, from when it happened.
+export const TEAM_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
+
 // Share links, as the apps have them today: a lifetime chosen when made, `never` by default.
 export const SHARE_LINK_EXPIRIES = ['never', 'week', 'month', 'sixMonths'] as const;
 export type ShareLinkExpiry = (typeof SHARE_LINK_EXPIRIES)[number];

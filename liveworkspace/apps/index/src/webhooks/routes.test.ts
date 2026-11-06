@@ -400,3 +400,31 @@ describe('testing one and its deliveries', () => {
     expect(deliveries()).toEqual([]);
   });
 });
+
+describe("a team's audit log", () => {
+  it("logs a team webhook added and removed, with who, its kind and host, and never one's own", async () => {
+    const eve = await person('user_wa1', { teams: [{ id: 'team_wa', role: 'admin' }] });
+    world.roles.user_wa1 = [{ id: 'team_wa', role: 'admin' }];
+    const { webhook } = await addWebhook(eve.auth, { teamId: 'team_wa', name: 'Ops' });
+    const own = await addWebhook(eve.auth);
+    const removed = await call(`/webhooks/${webhook.id}`, { method: 'DELETE', auth: eve.auth });
+    expect(removed.status).toBe(204);
+    await call(`/webhooks/${own.webhook.id}`, { method: 'DELETE', auth: eve.auth });
+    const detail = JSON.stringify({ webhookId: webhook.id, kind: 'json', host: webhook.host });
+    const row = (type: string) => ({
+      team_id: 'team_wa',
+      type,
+      app: 'liveworkspace',
+      actor_id: 'user_wa1',
+      title: 'Ops',
+      detail,
+    });
+    expect(
+      h.db.sql
+        .prepare(
+          'SELECT team_id, type, app, actor_id, title, detail FROM team_audit_events ORDER BY type',
+        )
+        .all(),
+    ).toEqual([row('webhook_added'), row('webhook_removed')]);
+  });
+});
