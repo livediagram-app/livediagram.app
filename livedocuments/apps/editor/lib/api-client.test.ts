@@ -285,6 +285,31 @@ describe('response helpers (observed through api callers)', () => {
       });
     });
 
+    it('sends the deck synchronously as the page goes, kept alive (speaker-note-cards.md "Saving")', () => {
+      stubFetch(200);
+      void apiSaveDocumentMeta(
+        'owner',
+        { id: 'd-1', presentation: '{"decks":[]}', presentationBase: null },
+        null,
+        { unload: true },
+      );
+      // Sent before the call's first await: the page may be gone by then.
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const [, init] = vi.mocked(fetch).mock.calls[0]!;
+      expect(init?.keepalive).toBe(true);
+      expect(JSON.parse(init?.body as string)).toEqual({
+        presentation: '{"decks":[]}',
+        presentationBase: null,
+      });
+    });
+
+    it('takes the usual path for an unloading save with no deck in it', async () => {
+      stubFetch(200);
+      await apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' }, null, { unload: true });
+      const [, init] = vi.mocked(fetch).mock.calls[0]!;
+      expect(init?.keepalive).toBeUndefined();
+    });
+
     it('throws "save document meta failed: <status>" on 500', async () => {
       stubFetch(500);
       await expect(apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
