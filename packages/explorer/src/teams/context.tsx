@@ -89,12 +89,23 @@ function useMyTeams(host: TeamsHost | null, read: boolean) {
       return;
     }
     const controller = new AbortController();
-    host.myTeams(controller.signal).then(setMine, (e: unknown) => {
-      // Without it the badges stay away and the token's teams show; Invites says it couldn't load.
-      if (isAbort(e)) return;
-      setMine(null);
-      setFailed(true);
-    });
+    const startedAt = teamChanges.stamp();
+    host.myTeams(controller.signal).then(
+      (read) => {
+        // A team left here and listed again by a read made after it: added back elsewhere.
+        teamChanges.listed(
+          read.teams.map((t) => t.id),
+          startedAt,
+        );
+        setMine(read);
+      },
+      (e: unknown) => {
+        // Without it the badges stay away and the token's teams show; Invites says it couldn't load.
+        if (isAbort(e)) return;
+        setMine(null);
+        setFailed(true);
+      },
+    );
     return () => controller.abort();
   }, [host, read, epoch]);
   const refresh = useCallback(() => setEpoch((n) => n + 1), []);
