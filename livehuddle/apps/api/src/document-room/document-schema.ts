@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS agent_changeset_parts (
   PRIMARY KEY (changeset_id, part)
 );
 
--- An older room's store may hold a `guest_voters` table (a guest's Q&A upvotes, docs/specs/012-collaboration/vote-integrity.md):
+-- An older room's store may hold a guest_voters table (a guest's Q&A upvotes, docs/specs/012-collaboration/vote-integrity.md):
 -- nothing reads or writes it since the Q&A board left (Work Tracker #423, part 4), and a new room no longer makes it
 -- (Work Tracker #514). It is left where it is, never dropped or migrated.
 
