@@ -3,6 +3,7 @@
 // inline code and links) becomes the blocks it means; other plain text becomes one paragraph per
 // line. Pure: text in, blocks out (ids fresh).
 import { tableFromGrid } from './article-table';
+import { ARTICLE_FOOTNOTE_REF, cleanFootnoteText } from './article-footnotes';
 import {
   isSafeArticleHref,
   nextArticleBlockId,
@@ -17,8 +18,11 @@ import {
 const MARKDOWN_SIGNAL =
   /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*[^*]+\*\*|\[[^\][]+\]\([^()]+\)|`[^`]+`/m;
 
+// A footnote's definition line opens a line: `[^label]: `.
+const FOOTNOTE_SIGNAL = /^\[\^[^\]\s[]{1,64}\]:/m;
+
 export function looksLikeMarkdown(text: string): boolean {
-  if (MARKDOWN_SIGNAL.test(text)) return true;
+  if (MARKDOWN_SIGNAL.test(text) || FOOTNOTE_SIGNAL.test(text)) return true;
   // A pipe table: a row of cells over its rule row.
   const lines = text.split(/\r\n?|\n/);
   return lines.some((line, i) => isTableRow(line) && isTableRule(lines[i + 1] ?? ''));
@@ -61,17 +65,80 @@ export function tableCells(row: string): string[] {
 const BREAK = '\ue010';
 
 /** One cell's Markdown as runs: inline marks and links, `\|` a bar, `<br>` a line break. */
-function cellRuns(cell: string): ArticleRun[] {
+function cellRuns(cell: string, notes?: FootnoteNotes): ArticleRun[] {
   const text = cell.replace(/\\\|/g, '|').replace(/<br\s*\/?>/gi, BREAK);
-  return parseInline(text).map((r) => ({ ...r, text: r.text.replaceAll(BREAK, '\n') }));
+  return parseInline(text, {}, notes).map((r) => ({ ...r, text: r.text.replaceAll(BREAK, '\n') }));
+}
+
+/** Footnotes' texts by the label their Markdown gives them (`[^label]: text`). */
+export type FootnoteNotes = ReadonlyMap<string, string>;
+
+// A footnote's definition line, `[^label]: text`: a label of up to 64 characters, no space or bracket in it.
+const FOOTNOTE_LINE = /^\[\^([^\]\s[]{1,64})\]:[ \t]?(.*)$/;
+
+/** The footnote definitions among `lines` (never inside a code fence), and the lines without them. The first
+ *  definition of a label wins; its text is read as plain text, its marks dropped and escapes released. */
+export function takeFootnoteDefinitions(lines: readonly string[]): {
+  lines: string[];
+  notes: FootnoteNotes;
+} {
+  const notes = new Map<string, string>();
+  const rest: string[] = [];
+  let fence = 0;
+  for (const line of lines) {
+    if (fence) {
+      if (closesFence(line, fence)) fence = 0;
+    } else fence = fenceOpening(line);
+    const def = fence ? null : FOOTNOTE_LINE.exec(line);
+    if (!def) {
+      rest.push(line);
+      continue;
+    }
+    if (!notes.has(def[1]!))
+      notes.set(
+        def[1]!,
+        cleanFootnoteText(
+          parseInline(def[2]!)
+            .map((r) => r.text)
+            .join('')
+            .trim(),
+        ),
+      );
+  }
+  return { lines: rest, notes };
+}
+
+/** A run's text split at its footnote references (`[^label]` with a definition in `notes`), each one reference run.
+ *  Left to right, each `]` looked for once, so a long run of `[^` with no `]` stays linear. */
+export function withFootnoteRefs(run: ArticleRun, notes: FootnoteNotes): ArticleRun[] {
+  const { text } = run;
+  const out: ArticleRun[] = [];
+  let from = 0;
+  let close = -1;
+  for (let i = text.indexOf('[^'); i >= 0; i = text.indexOf('[^', i + 1)) {
+    if (close < i + 2) close = text.indexOf(']', i + 2);
+    if (close < 0) break;
+    // A label is 1 to 64 characters: a longer stretch is never cut out to be looked up.
+    if (close - i - 2 < 1 || close - i - 2 > 64) continue;
+    const note = notes.get(releaseEscapes(text.slice(i + 2, close)));
+    if (note === undefined) continue;
+    if (i > from) out.push({ ...run, text: text.slice(from, i) });
+    out.push({ text: ARTICLE_FOOTNOTE_REF, fn: note });
+    from = close + 1;
+    i = close;
+  }
+  if (from === 0) return [run];
+  if (from < text.length) out.push({ ...run, text: text.slice(from) });
+  return out;
 }
 
 const TOC_LINE = /^\[TOC(?: ([12]))?\]$/;
 
 // Bold and italic at once (`***x***`, `___x___`) first, so the two marks are read together rather than as bold inside
-// two literal stars.
+// two literal stars. A link's text holds no bracket (as MARKDOWN_SIGNAL's), so each `[` scans only to the next one: a
+// long run of `[^` with one `]` far after it was quadratic.
 const INLINE =
-  /(\*\*\*([^*]+)\*\*\*|___([^_]+)___|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\]]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
+  /(\*\*\*([^*]+)\*\*\*|___([^_]+)___|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|(?<!`)(`+)(?!`)([\s\S]*?[^`])\7(?!`)|\[([^\][]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
 
 // Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
 // marks are read, so an escaped character never opens or closes one, then put back as the character.
@@ -99,10 +166,16 @@ function codeText(held: string): string {
   return spaceWrapped(text) ? text.slice(1, -1) : text;
 }
 
-/** One line's inline Markdown as runs. */
-export function parseInline(text: string, base: Omit<ArticleRun, 'text'> = {}): ArticleRun[] {
+/** One line's inline Markdown as runs; with `notes`, a `[^label]` it defines is a footnote's reference. */
+export function parseInline(
+  text: string,
+  base: Omit<ArticleRun, 'text'> = {},
+  notes?: FootnoteNotes,
+): ArticleRun[] {
+  let runs = readInline(holdEscapes(text), base);
+  if (notes?.size) runs = runs.flatMap((r) => (r.code ? [r] : withFootnoteRefs(r, notes)));
   return normaliseRuns(
-    readInline(holdEscapes(text), base).map((r) => ({ ...r, text: releaseEscapes(r.text) })),
+    runs.map((r) => (r.fn === undefined ? { ...r, text: releaseEscapes(r.text) } : r)),
   );
 }
 
@@ -145,7 +218,7 @@ export function closesFence(line: string, fence: number): boolean {
   return bare.length >= fence && /^`+$/.test(bare);
 }
 
-// CommonMark's hard line break: a paragraph line ending in two or more spaces, or in an odd number of backslashes
+// CommonMark's hard line break: a paragraph's, a list item's or a quote's line ending in two or more spaces, or in an odd number of backslashes
 // (an even run is escaped backslashes). Found by a scan back from the line's end, never a regex such as ` {2,}$`,
 // which retries from every offset and is quadratic on a long run of spaces.
 type HardBreak = 'spaces' | 'slash' | undefined;
@@ -174,8 +247,33 @@ function joinParagraph(lines: readonly { text: string; brk: HardBreak }[]): stri
 
 const levelOf = (indent: string) => Math.min(4, Math.floor(indent.replace(/\t/g, '  ').length / 2));
 
-/** Markdown as blocks. */
-export function parseMarkdownBlocks(text: string): ArticleBlock[] {
+const HEADING_LINE = /^(#{1,6})\s+(.*)$/;
+const DIVIDER_LINE = /^\s*(-{3,}|\*{3,}|_{3,})\s*$/;
+const TODO_LINE = /^(\s*)[-*+]\s+\[( |x|X)\]\s+(.*)$/;
+const BULLET_LINE = /^(\s*)[-*+]\s+(.*)$/;
+const NUMBERED_LINE = /^(\s*)\d+[.)]\s+(.*)$/;
+const QUOTE_LINE = /^>\s?(.*)$/;
+
+/** Whether `line` (with `next` after it) opens a block of its own, so it never carries on a list item's text after a
+ *  hard break. */
+function opensBlock(line: string, next: string): boolean {
+  const bare = line.trim();
+  return (
+    !bare ||
+    fenceOpening(line) > 0 ||
+    (isTableRow(line) && isTableRule(next)) ||
+    TOC_LINE.test(bare) ||
+    HEADING_LINE.test(line) ||
+    DIVIDER_LINE.test(line) ||
+    BULLET_LINE.test(line) ||
+    NUMBERED_LINE.test(line) ||
+    QUOTE_LINE.test(line)
+  );
+}
+
+/** Markdown as blocks. Its footnote definitions are taken out and its references to them read as footnotes; or, with
+ *  `given` (an agent's text read in stretches, articleFromMarkdown), the definitions already taken from the whole. */
+export function parseMarkdownBlocks(text: string, given?: FootnoteNotes): ArticleBlock[] {
   const taken = new Set<string>();
   const id = () => {
     const next = nextArticleBlockId(taken);
@@ -183,11 +281,12 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
     return next;
   };
   const blocks: ArticleBlock[] = [];
-  const lines = text.replace(/\r\n?/g, '\n').split('\n');
+  const all = text.replace(/\r\n?/g, '\n').split('\n');
+  const { lines, notes } = given ? { lines: all, notes: given } : takeFootnoteDefinitions(all);
   let para: { text: string; brk: HardBreak }[] = [];
   const flush = () => {
     if (para.length === 0) return;
-    blocks.push({ id: id(), type: 'paragraph', runs: parseInline(joinParagraph(para)) });
+    blocks.push({ id: id(), type: 'paragraph', runs: parseInline(joinParagraph(para), {}, notes) });
     para = [];
   };
   for (let i = 0; i < lines.length; i++) {
@@ -212,8 +311,14 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
       i -= 1;
       // A header line of empty cells is no header row: the table starts with its first body row.
       const header = head.some(Boolean);
-      const grid = (header ? [head, ...body] : body).map((row) => row.map(cellRuns));
-      const table = tableFromGrid(id(), grid.length ? grid : [head.map(cellRuns)], header);
+      const grid = (header ? [head, ...body] : body).map((row) =>
+        row.map((c) => cellRuns(c, notes)),
+      );
+      const table = tableFromGrid(
+        id(),
+        grid.length ? grid : [head.map((c) => cellRuns(c, notes))],
+        header,
+      );
       if (table) blocks.push(table);
       continue;
     }
@@ -224,41 +329,66 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
       blocks.push({ id: id(), type: 'toc', ...(depth ? { depth } : {}) });
       continue;
     }
-    const heading = /^(#{1,6})\s+(.*)$/.exec(line);
+    const heading = HEADING_LINE.exec(line);
     if (heading) {
       flush();
       const n = heading[1]!.length;
       const style = n === 1 ? 'h1' : n === 2 ? 'h2' : 'h3';
-      blocks.push({ id: id(), type: 'paragraph', style, runs: parseInline(heading[2]!) });
+      blocks.push({
+        id: id(),
+        type: 'paragraph',
+        style,
+        runs: parseInline(heading[2]!, {}, notes),
+      });
       continue;
     }
-    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+    if (DIVIDER_LINE.test(line)) {
       flush();
       blocks.push({ id: id(), type: 'divider' });
       continue;
     }
-    const todo = /^(\s*)[-*+]\s+\[( |x|X)\]\s+(.*)$/.exec(line);
-    const bullet = /^(\s*)[-*+]\s+(.*)$/.exec(line);
-    const numbered = /^(\s*)\d+[.)]\s+(.*)$/.exec(line);
+    const todo = TODO_LINE.exec(line);
+    const bullet = BULLET_LINE.exec(line);
+    const numbered = NUMBERED_LINE.exec(line);
     const item = todo ?? bullet ?? numbered;
     if (item) {
       flush();
       const list: ArticleListKind = todo ? 'todo' : bullet ? 'bullet' : 'numbered';
       const level = levelOf(item[1]!);
+      // A hard break at the line's end carries the item on to the next line (indented under it, as the writer puts
+      // it), unless that line opens a block of its own.
+      const text = [hardBreakOf(todo ? todo[3]! : item[2]!)];
+      while (text[text.length - 1]!.brk && i + 1 < lines.length) {
+        if (opensBlock(lines[i + 1]!, lines[i + 2] ?? '')) break;
+        text.push(hardBreakOf(lines[++i]!));
+      }
       blocks.push({
         id: id(),
         type: 'list',
         list,
         ...(level > 0 ? { level } : {}),
         ...(todo && todo[2] !== ' ' ? { checked: true as const } : {}),
-        runs: parseInline(todo ? todo[3]! : item[2]!),
+        runs: parseInline(joinParagraph(text), {}, notes),
       });
       continue;
     }
-    const quote = /^>\s?(.*)$/.exec(line);
+    const quote = QUOTE_LINE.exec(line);
     if (quote) {
       flush();
-      blocks.push({ id: id(), type: 'paragraph', style: 'quote', runs: parseInline(quote[1]!) });
+      // Each `>` line is a quote of its own, but one ending in a hard break goes on into the `>` line after it.
+      const text = [hardBreakOf(quote[1]!)];
+      while (text[text.length - 1]!.brk) {
+        const more = QUOTE_LINE.exec(lines[i + 1] ?? '');
+        if (!more) break;
+        text.push(hardBreakOf(more[1]!));
+        i++;
+      }
+      blocks.push({
+        id: id(),
+        type: 'paragraph',
+        style: 'quote',
+        runs: parseInline(joinParagraph(text), {}, notes),
+      });
       continue;
     }
     para.push(hardBreakOf(line));

@@ -358,3 +358,36 @@ describe('readDocx, the edges', () => {
     expect((blocks[3] as Extract<ArticleBlock, { type: 'paragraph' }>).runs[0]!.b).toBeUndefined();
   });
 });
+
+// docs/specs/007-editor/article-pages.md "Footnotes" (Work Tracker #219).
+describe('readDocx, footnotes', () => {
+  it('brings each footnote in on its reference, its paragraphs one plain line', async () => {
+    const { blocks, tally } = await read({
+      body: p(
+        [
+          r('Sales rose'),
+          '<w:r><w:rPr><w:rStyle w:val="FootnoteReference"/></w:rPr><w:footnoteReference w:id="2"/></w:r>',
+          r(' again.'),
+          '<w:r><w:footnoteReference w:id="9"/></w:r>',
+          '<w:r><w:endnoteReference w:id="1"/></w:r>',
+        ].join(''),
+      ),
+      footnotes: [
+        '<w:footnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>',
+        '<w:footnote w:id="2"><w:p><w:r><w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> Q3 </w:t></w:r><w:r><w:t>figures.</w:t></w:r></w:p><w:p><w:r><w:t>Unaudited.</w:t></w:r></w:p></w:footnote>',
+      ].join(''),
+    });
+    expect(blocks).toMatchObject([
+      {
+        type: 'paragraph',
+        runs: [
+          { text: 'Sales rose' },
+          { text: '*', fn: 'Q3 figures. Unaudited.' },
+          { text: ' again.' },
+        ],
+      },
+    ]);
+    // A reference to no footnote, and an endnote, are still left out and counted.
+    expect(tally).toEqual({ footnotes: 2 });
+  });
+});

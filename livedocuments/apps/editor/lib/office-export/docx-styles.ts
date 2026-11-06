@@ -19,6 +19,7 @@ export const DOCX_TYPES = {
   settings: `${WML}.settings+xml`,
   footer: `${WML}.footer+xml`,
   header: `${WML}.header+xml`,
+  footnotes: `${WML}.footnotes+xml`,
 } as const;
 
 /** Twips (twentieths of a point) per page px: 96 px an inch, 1440 twips an inch. */
@@ -56,6 +57,8 @@ export const CODE_STYLE_ID = 'Code';
 export const CODE_CHAR_STYLE_ID = 'CodeChar';
 export const LIST_STYLE_ID = 'ListParagraph';
 export const HYPERLINK_STYLE_ID = 'Hyperlink';
+export const FOOTNOTE_TEXT_STYLE_ID = 'FootnoteText';
+export const FOOTNOTE_REFERENCE_STYLE_ID = 'FootnoteReference';
 // A contents block (docs/specs/007-editor/article-pages.md "Table of contents"): its heading, and its entries by
 // level, Word's own style names so Update Field keeps them.
 export const TOC_HEADING_STYLE_ID = 'TOCHeading';
@@ -179,6 +182,13 @@ export function stylesXml(look: DocxLook): string {
     `<w:rPr><w:color w:val="${look.accent}"/><w:u w:val="single"/></w:rPr></w:style>` +
     `<w:style w:type="character" w:styleId="${CODE_CHAR_STYLE_ID}"><w:name w:val="Code Char"/><w:basedOn w:val="DefaultParagraphFont"/>` +
     `<w:rPr>${fonts(look.codeFont)}<w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/></w:rPr></w:style>` +
+    // Footnotes (docs/specs/007-editor/article-pages.md "Footnotes"): the note at 13/16 of the body in muted ink, the
+    // reference raised.
+    `<w:style w:type="paragraph" w:styleId="${FOOTNOTE_TEXT_STYLE_ID}"><w:name w:val="footnote text"/><w:basedOn w:val="Normal"/><w:uiPriority w:val="99"/>` +
+    `<w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:rPr><w:color w:val="${look.muted}"/>` +
+    `<w:sz w:val="${halfPoints((body * 13) / 16)}"/><w:szCs w:val="${halfPoints((body * 13) / 16)}"/></w:rPr></w:style>` +
+    `<w:style w:type="character" w:styleId="${FOOTNOTE_REFERENCE_STYLE_ID}"><w:name w:val="footnote reference"/><w:basedOn w:val="DefaultParagraphFont"/><w:uiPriority w:val="99"/>` +
+    '<w:rPr><w:vertAlign w:val="superscript"/></w:rPr></w:style>' +
     '</w:styles>'
   );
 }
@@ -216,8 +226,10 @@ export function numberingXml(look: DocxLook, numberedRuns: number): string {
   );
 }
 
-export const SETTINGS_XML =
+/** `word/settings.xml`; with footnotes, Word's separator notes named as its own documents name them. */
+export const settingsXml = (footnotes = false) =>
   `${XML_DECL}<w:settings ${WML_NS}><w:defaultTabStop w:val="720"/><w:characterSpacingControl w:val="doNotCompress"/>` +
+  (footnotes ? '<w:footnotePr><w:footnote w:id="-1"/><w:footnote w:id="0"/></w:footnotePr>' : '') +
   '<w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat>' +
   '</w:settings>';
 

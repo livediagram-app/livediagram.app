@@ -4,11 +4,13 @@
 // images) and the numbered runs the other parts need. Pure string building.
 
 import type { ArticleAlign, ArticleRun, ArticleTableBlock } from '@livedocuments/document';
-import { REL, xmlText, type OoxmlRel } from './ooxml';
+import { REL, XML_DECL, xmlText, type OoxmlRel } from './ooxml';
 import {
   BULLET_NUM_ID,
   CODE_CHAR_STYLE_ID,
   CODE_STYLE_ID,
+  FOOTNOTE_REFERENCE_STYLE_ID,
+  FOOTNOTE_TEXT_STYLE_ID,
   HYPERLINK_STYLE_ID,
   LIST_LEVELS,
   LIST_STYLE_ID,
@@ -17,6 +19,7 @@ import {
   TOC_HEADING_STYLE_ID,
   tocStyleId,
   TWIPS_PER_PX,
+  WML_NS,
 } from './docx-styles';
 import type { DocxBlock, DocxImage, DocxLook, DocxToc } from './docx-types';
 
@@ -57,7 +60,27 @@ export type DocxBodyOut = {
   rels: OoxmlRel[];
   media: { name: string; png: Uint8Array }[];
   numberedRuns: number;
+  // The footnotes' texts in order, the first Word's footnote 1 (docxFootnotesXml).
+  footnotes: string[];
 };
+
+/** `word/footnotes.xml`: Word's two separators (ids -1 and 0), then each note, its id its number, in Footnote Text
+ *  after its own raised number (docs/specs/007-editor/article-pages.md "Footnotes"). */
+export function docxFootnotesXml(notes: readonly string[]): string {
+  const separator = (type: string, id: number, mark: string) =>
+    `<w:footnote w:type="${type}" w:id="${id}"><w:p><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:${mark}/></w:r></w:p></w:footnote>`;
+  const note = (text: string, i: number) =>
+    `<w:footnote w:id="${i + 1}"><w:p><w:pPr><w:pStyle w:val="${FOOTNOTE_TEXT_STYLE_ID}"/></w:pPr>` +
+    `<w:r><w:rPr><w:rStyle w:val="${FOOTNOTE_REFERENCE_STYLE_ID}"/></w:rPr><w:footnoteRef/></w:r>` +
+    `<w:r><w:t xml:space="preserve"> ${xmlText(text)}</w:t></w:r></w:p></w:footnote>`;
+  return (
+    `${XML_DECL}<w:footnotes ${WML_NS}>` +
+    separator('separator', -1, 'separator') +
+    separator('continuationSeparator', 0, 'continuationSeparator') +
+    notes.map(note).join('') +
+    '</w:footnotes>'
+  );
+}
 
 const JC: Readonly<Record<ArticleAlign, string>> = {
   left: 'left',
@@ -76,6 +99,7 @@ const hex = (c: string | undefined): string | undefined => {
 class BodyWriter {
   readonly rels: OoxmlRel[] = [];
   readonly media: { name: string; png: Uint8Array }[] = [];
+  readonly footnotes: string[] = [];
   numberedRuns = 0;
   private drawingId = 0;
   private links = new Map<string, string>();
@@ -169,6 +193,14 @@ class BodyWriter {
 
   /** One run's XML: its formatting in the schema's order, its text with line breaks. */
   run(r: ArticleRun, extra: { strike?: boolean; colour?: string } = {}): string {
+    // A footnote's reference: Word's own, numbered by Word, the note in footnotes.xml under the next id.
+    const fn = r.fn;
+    if (fn !== undefined)
+      return Array.from(
+        r.text,
+        () =>
+          `<w:r><w:rPr><w:rStyle w:val="${FOOTNOTE_REFERENCE_STYLE_ID}"/></w:rPr><w:footnoteReference w:id="${this.footnotes.push(fn)}"/></w:r>`,
+      ).join('');
     const colour = extra.colour ?? hex(r.color);
     const highlight = hex(r.hl);
     const rPr =
@@ -361,5 +393,11 @@ export function docxBody(
 ): DocxBodyOut {
   const w = new BodyWriter(look, firstRelId, textWidthPx);
   const xml = w.blocks(blocks);
-  return { xml, rels: w.rels, media: w.media, numberedRuns: w.numberedRuns };
+  return {
+    xml,
+    rels: w.rels,
+    media: w.media,
+    numberedRuns: w.numberedRuns,
+    footnotes: w.footnotes,
+  };
 }

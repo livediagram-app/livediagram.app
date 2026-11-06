@@ -3,8 +3,8 @@
 // The dot vote tool (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/vote-layer-scope.md).
 //
 // Setting up, every choice is drawn as the thing it produces: the dot budget
-// is a row of dots you tap, the privacy switches are cards that say what the
-// room will and won't see. A running vote opens the Vote panel instead
+// is a row of dots you tap, the text-only and privacy switches are cards that
+// say what will take a dot and what the room will and won't see. A running vote opens the Vote panel instead
 // (components/panels/VotePanel.tsx): turnout, the rules in force, the results.
 
 import { useState, type ReactNode } from 'react';
@@ -67,6 +67,10 @@ export function VoteSetupBody({
   // Stacking is the classic dot-vote, so it stays the default; one per item
   // turns the budget into "pick your top N" instead of "back your favourite".
   const [stacking, setStacking] = useState<'stack' | 'one'>('stack');
+  // Off by default: an ordinary vote counts every votable element, and a
+  // blank note left out without asking would be a surprise. On, blank
+  // stickies and shapes take no dot (docs/specs/012-collaboration/session-tools.md "Only items with text").
+  const [onlyWithText, setOnlyWithText] = useState(false);
   // '' is the explicit "all layers" choice (docs/specs/012-collaboration/vote-layer-scope.md).
   const [layerId, setLayerId] = useState(activeLayerId);
   const multiLayer = voteLayers.length > 1;
@@ -115,15 +119,25 @@ export function VoteSetupBody({
         </div>
       ) : null}
       <div className="flex flex-col gap-1.5">
+        <StudioLabel>Votable items</StudioLabel>
+        <ToggleCard
+          icon={<TextOnlyGlyph />}
+          title="Only items with text"
+          hint="Blank notes and shapes can't take a dot."
+          checked={onlyWithText}
+          onToggle={() => setOnlyWithText((v) => !v)}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
         <StudioLabel>Privacy</StudioLabel>
-        <PrivacyCard
+        <ToggleCard
           icon={<CursorOffGlyph />}
           title="Hide cursors"
           hint="Nobody can watch where others are pointing."
           checked={hideCursors}
           onToggle={() => setHideCursors((v) => !v)}
         />
-        <PrivacyCard
+        <ToggleCard
           icon={<TallyOffGlyph />}
           title="Hide running counts"
           hint="Totals stay secret until you reveal them."
@@ -139,6 +153,7 @@ export function VoteSetupBody({
             hideCounts,
             layerId: multiLayer && layerId ? layerId : undefined,
             onePerElement: dots > 1 && stacking === 'one',
+            onlyWithText,
           })
         }
       >
@@ -190,7 +205,8 @@ function DotBudgetPicker({ value, onChange }: { value: number; onChange: (n: num
   );
 }
 
-function PrivacyCard({
+// One set-up switch drawn as a card: what it does in a line, and its state.
+function ToggleCard({
   icon,
   title,
   hint,
@@ -206,6 +222,8 @@ function PrivacyCard({
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={checked}
       onClick={onToggle}
       className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition ${
         checked
@@ -238,6 +256,16 @@ function CursorOffGlyph() {
     <Glyph size={14} units={16}>
       <path d="M3.5 2.5l3.2 10 1.6-4.2 4.2-1.6z" />
       <path d="M2 14L14 2" />
+    </Glyph>
+  );
+}
+
+// A "T" over a text line: the element's words.
+function TextOnlyGlyph() {
+  return (
+    <Glyph size={14} units={16}>
+      <path d="M3.5 3h9M8 3v7" />
+      <path d="M3 13h10" />
     </Glyph>
   );
 }

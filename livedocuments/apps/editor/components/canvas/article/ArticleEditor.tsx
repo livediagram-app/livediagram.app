@@ -16,7 +16,7 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { EditorState, Selection, type Transaction } from 'prosemirror-state';
+import { EditorState, Selection, TextSelection, type Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
 import {
@@ -89,6 +89,15 @@ import {
 import { insertTable } from '@/lib/article/article-table-commands';
 import { measureRepeats } from '@/lib/article/article-table-repeat';
 import { measureTocPages } from '@/lib/article/article-toc-view';
+import {
+  clearPendingNote,
+  footnoteKey,
+  footnoteNodeView,
+  footnotesPlugin,
+  insertFootnote,
+} from '@/lib/article/article-footnotes';
+import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
+import { layoutFootnotes } from '@/lib/article/article-footnote-layout';
 
 // How many times one change may re-measure for repeated header rows settling (each copy drawn can move
 // the rows after it); a guard, two is the most a real layout needs.
@@ -183,6 +192,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const lastLocal = useRef(0);
   const measureFrame = useRef<number | null>(null);
   const repeatTries = useRef(0);
+  // The notes at the pages' feet, and each page's text foot above them (the header rows repeat above it).
+  const notesRef = useRef<FootnoteNotes | null>(null);
+  const footLimits = useRef<ReadonlyMap<number, number>>(new Map());
+  const footTries = useRef(0);
   // Whether this writing's layout has been announced to the pictures drawn from it (the Map).
   const announced = useRef(false);
   // Set while an undo or redo from the writing is under way: the change it brings back takes the
@@ -249,6 +262,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     else if (a.kind === 'list') done = toggleList(a.list)(view.state, view.dispatch, view);
     else if (a.kind === 'block' && a.block === 'table')
       done = insertTable(view.state, view.dispatch, view);
+    else if (a.kind === 'block' && a.block === 'footnote')
+      done = insertFootnote(view.state, view.dispatch, view);
     else if (a.kind === 'block')
       done = insertBlocksAfterCaret(
         a.block === 'divider'
@@ -301,12 +316,36 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const { frame, root, z } = writingScale(view, p);
     // Repeated header rows first: a copy drawn moves the rows after it, so the rest is measured once
     // they have settled (a frame later).
-    if (measureRepeats(view, root.top, z) && repeatTries.current < REPEAT_SETTLE_TRIES) {
+    const foot = {
+      colOf: (x: number) => columnAt(frame, (x - root.left) / z),
+      limit: (col: number) => footLimits.current.get(col),
+    };
+    if (measureRepeats(view, root.top, z, foot) && repeatTries.current < REPEAT_SETTLE_TRIES) {
       repeatTries.current++;
       scheduleMeasure();
       return;
     }
     repeatTries.current = 0;
+    // Then the footnotes: each page's notes at its foot and its text ended above them, measured again once the
+    // breaks have moved (the header rows repeat above the notes).
+    const footNotes = notesRef.current;
+    if (footNotes && !p.card) {
+      const laid = layoutFootnotes(view, { frame, root, z, pages: p.pages, notes: footNotes });
+      footLimits.current = laid.limits;
+      if (laid.changed && footTries.current < REPEAT_SETTLE_TRIES) {
+        footTries.current++;
+        scheduleMeasure();
+        return;
+      }
+      footTries.current = 0;
+      // A footnote just put in: its note takes the caret.
+      const fs = footnoteKey.getState(view.state);
+      if (fs && fs.pending !== null) {
+        const n = fs.refs.indexOf(fs.pending) + 1;
+        clearPendingNote(view);
+        if (n > 0) footNotes.focus(n);
+      }
+    }
     // The contents' page numbers, from where each heading landed.
     measureTocPages(view, (x) =>
       Math.min(p.pages.length - 1, columnAt(frame, (x - root.left) / z)),
@@ -485,6 +524,14 @@ export default function ArticleEditor(props: ArticleEditorProps) {
           redo: () => undoRedo('redo'),
           onLink: () => latest.current.onLinkRequest(),
           onComment: () => requestArticleComment(),
+          // Not on a card, and not by a Participant (an insert).
+          onFootnote: (state, dispatch, v) => {
+            const p = latest.current;
+            if (p.card || p.reshape === false || !p.editable) return false;
+            const done = insertFootnote(state, dispatch, v);
+            if (done && dispatch) track('Element', 'Added', 'ArticleFootnote');
+            return done;
+          },
           onEscape: () => {
             flush();
             viewRef.current?.dom?.blur();
@@ -497,6 +544,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         articlePeersPlugin,
         // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
         findHighlightPlugin(() => latest.current.flow),
+        // The footnotes' numbers and the breaks above their notes; a press on a reference puts the caret in its note.
+        footnotesPlugin((n) => {
+          if (latest.current.editable) notesRef.current?.focus(n);
+        }),
         ...tablePlugins(),
         gapCursor(),
       ],
@@ -561,18 +612,21 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         if (onCard.cut) announceTextOnly();
         return onCard.slice;
       },
-      nodeViews: tableNodeViews(rights, (v, id) =>
-        jumpToHeading(v, id, latest.current.editable, (r) => {
-          const p = latest.current;
-          const { frame, root, z } = writingScale(v, p);
-          p.onRevealCaret?.({
-            x: frame.x + (r.left - root.left) / z,
-            y: frame.y + (r.top - root.top) / z,
-            w: Math.max(1, r.width / z),
-            h: Math.max(1, r.height / z),
-          });
-        }),
-      ),
+      nodeViews: {
+        footnote: footnoteNodeView,
+        ...tableNodeViews(rights, (v, id) =>
+          jumpToHeading(v, id, latest.current.editable, (r) => {
+            const p = latest.current;
+            const { frame, root, z } = writingScale(v, p);
+            p.onRevealCaret?.({
+              x: frame.x + (r.left - root.left) / z,
+              y: frame.y + (r.top - root.top) / z,
+              w: Math.max(1, r.width / z),
+              h: Math.max(1, r.height / z),
+            });
+          }),
+        ),
+      },
       dispatchTransaction(tr: Transaction) {
         const v = viewRef.current;
         if (!v) return;
@@ -638,6 +692,28 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       },
     });
     viewRef.current = view;
+    // The notes at the pages' feet: edited by anyone who may write, each change one edit of the writing.
+    notesRef.current = new FootnoteNotes(mount, {
+      editable: () => latest.current.editable,
+      commit: (n, text) => {
+        const v = viewRef.current;
+        if (!v || !latest.current.editable) return;
+        const pos = footnoteKey.getState(v.state)?.refs[n - 1];
+        const node = pos === undefined ? null : v.state.doc.nodeAt(pos);
+        if (pos === undefined || !node || node.attrs.text === text) return;
+        v.dispatch(v.state.tr.setNodeAttribute(pos, 'text', text));
+        flush();
+      },
+      leave: (n) => {
+        const v = viewRef.current;
+        const pos = v ? footnoteKey.getState(v.state)?.refs[n - 1] : undefined;
+        if (!v || pos === undefined) return;
+        v.dispatch(v.state.tr.setSelection(TextSelection.create(v.state.doc, pos + 1)));
+        v.focus();
+      },
+      resize: () => scheduleMeasure(),
+      press: () => latest.current.onWritingPress(),
+    });
     // A handle for driving the writing in development (browser checks); never in production.
     if (process.env.NODE_ENV !== 'production') Reflect.set(window, '__articleView', view);
     handleRef.current = createArticleHandle({
@@ -649,6 +725,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       barsCache,
       flush,
       undoRedo,
+      noteRoots: () => notesRef.current?.roots() ?? [],
     });
     const unregister = registerArticleHandle(handleRef.current);
     scheduleMeasure();
@@ -673,6 +750,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       if (blurTimer.current !== null) window.clearTimeout(blurTimer.current);
       if (process.env.NODE_ENV !== 'production' && Reflect.get(window, '__articleView') === view)
         Reflect.deleteProperty(window, '__articleView');
+      notesRef.current?.destroy();
+      notesRef.current = null;
       view.destroy();
       viewRef.current = null;
       clearActiveArticle(latest.current.flow);

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { withAttachedArrows, type ArrowElement, type Element } from './index';
 
 // docs/specs/008-canvas/arrow-to-arrow.md: deleting a target arrow cascade-deletes the arrows attached to it, and so
@@ -45,9 +46,11 @@ describe('withAttachedArrows', () => {
     const els: Element[] = [box('a')];
     for (let i = 0; i < n; i += 1)
       els.push(i === n - 1 ? link(`c${i}`, 'a', 'a') : hung(`c${i}`, `c${i + 1}`));
-    const started = performance.now();
-    const out = withAttachedArrows(els, new Set(['a']));
+    let out = new Set<string>();
+    const took = cpuMsOf(() => {
+      out = withAttachedArrows(els, new Set(['a']));
+    });
     expect(out.size).toBe(n + 1);
-    expect(performance.now() - started).toBeLessThan(100);
+    expect(took).toBeLessThan(cpuBudgetMs(100));
   });
 });

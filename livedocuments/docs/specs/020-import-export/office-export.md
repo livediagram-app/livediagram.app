@@ -94,6 +94,7 @@ article's margins.
 | Inline code                                                    | A run in the Code font, shaded                                                                                                                                                            |
 | A link (http, https or mailto)                                 | A hyperlink in Word's Hyperlink style                                                                                                                                                     |
 | Text colour, highlight                                         | The same colour; the highlight as the run's shading                                                                                                                                       |
+| A footnote                                                     | A Word footnote at its reference, numbered by Word through the document, its text in Footnote Text                                                                                        |
 | A line break inside a block                                    | A line break                                                                                                                                                                              |
 | An object or drawing zone                                      | An image of the zone as the page shows it, its size, inline or wrapped                                                                                                                    |
 

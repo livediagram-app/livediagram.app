@@ -5,6 +5,7 @@
 
 import {
   canCastVote,
+  elementHasText,
   isVotableInVote,
   votesSpentBy,
   type Element,
@@ -60,8 +61,11 @@ export function voteByKey(args: VoteByKeyArgs): string | null {
   const budget = vote.votesPerPerson;
   const spent = votesSpentBy(vote, selfId);
   if (delta === 1) {
-    if (!canCastVote(vote, selfId, elementId)) {
-      return spent >= budget ? 'No dots left.' : `One dot each: ${name} already has yours.`;
+    const hasText = elementHasText(el);
+    if (!canCastVote(vote, selfId, elementId, hasText)) {
+      if (spent >= budget) return 'No dots left.';
+      if (vote.onlyWithText && !hasText) return `No text on ${name}, so it takes no more dots.`;
+      return `One dot each: ${name} already has yours.`;
     }
     if (!args.cast(elementId)) return VOTE_KEY_LOCKED;
     return `Dot added to ${name}. ${dotsLeftText(Math.max(0, budget - spent - 1), budget)}.`;

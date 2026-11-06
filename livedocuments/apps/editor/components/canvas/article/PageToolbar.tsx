@@ -66,6 +66,7 @@ import {
 import { articleSchema } from '@/lib/article/article-schema';
 import { track } from '@/lib/telemetry';
 import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
+import { insertFootnote } from '@/lib/article/article-footnotes';
 import {
   insertTable,
   tableCommand,
@@ -249,6 +250,8 @@ export function PageToolbar({
   const insertBlock = (what: BlockInsert) => {
     if (what === 'table') {
       if (!handle.run(insertTable)) return;
+    } else if (what === 'footnote') {
+      if (!handle.run(insertFootnote)) return;
     } else
       handle.insert(
         what === 'toc'

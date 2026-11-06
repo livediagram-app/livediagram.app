@@ -11,6 +11,7 @@ export const ARTICLE_BLOCK_INSERT_EVENT = {
   code: 'ArticleCode',
   table: 'ArticleTable',
   toc: 'ArticleContents',
+  footnote: 'ArticleFootnote',
 } as const;
 
 type ArticleBlockInsert = keyof typeof ARTICLE_BLOCK_INSERT_EVENT;

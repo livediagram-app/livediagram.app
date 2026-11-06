@@ -43,3 +43,12 @@ export function takeEarlyModeChoice(): EditorMode | null {
     ? (chosen as EditorMode)
     : null;
 }
+
+// The bypass pre-hydration guard (docs/specs/007-editor/new-document-route.md): this static page's prerendered HTML is
+// the wizard, and React only learns about ?blank=1 / ?template= at hydration. The script runs as the HTML parses,
+// before the wizard markup paints, and flags the root element; the style hides the wizard-only content under that flag
+// until React swaps in the opening screen.
+export const BYPASS_GUARD_SCRIPT =
+  "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}";
+export const BYPASS_GUARD_STYLE =
+  'html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}';

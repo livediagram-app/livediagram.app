@@ -16,7 +16,7 @@ const vote = (active: boolean): TabVote => ({
   votes: { [el.id]: ['me'] },
 });
 
-function overlay(v: TabVote | null, zoom = 2, canCast = true) {
+function overlay(v: TabVote | null, zoom = 2, canCast = true, hasText?: boolean) {
   return render(
     <CanvasZoomProvider zoom={zoom}>
       <ElementVoteOverlay
@@ -26,6 +26,7 @@ function overlay(v: TabVote | null, zoom = 2, canCast = true) {
         selfId="me"
         voteMax={1}
         votableInVote
+        hasText={hasText}
         onCastVote={canCast ? () => {} : undefined}
       />
     </CanvasZoomProvider>,
@@ -48,6 +49,19 @@ describe('ElementVoteOverlay', () => {
   it('shows a Viewer the live count, not a stepper whose plus would do nothing', () => {
     const c = overlay(vote(true), 2, false);
     expect(c.querySelector('.lvd-vote-stepper')).toBeNull();
+    expect(c.querySelector('[aria-label="1 vote"]')).not.toBeNull();
+  });
+
+  // docs/specs/012-collaboration/session-tools.md "Only items with text": cleared text keeps its dots and its
+  // minus, but the plus goes, as a blank element takes no new dot.
+  it('disables only the plus on a text-only vote once the element is blank', () => {
+    const c = overlay({ ...vote(true), onlyWithText: true }, 2, true, false);
+    const plus = c.querySelector<HTMLButtonElement>('button[aria-label="Add a dot to Square"]');
+    const minus = c.querySelector<HTMLButtonElement>(
+      'button[aria-label="Remove a dot from Square"]',
+    );
+    expect(plus?.disabled).toBe(true);
+    expect(minus?.disabled).toBe(false);
     expect(c.querySelector('[aria-label="1 vote"]')).not.toBeNull();
   });
 

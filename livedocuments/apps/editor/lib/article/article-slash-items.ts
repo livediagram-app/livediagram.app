@@ -6,7 +6,7 @@ import type { ArticleListKind, ArticleParagraphStyle } from '@livedocuments/docu
 export type SlashAction =
   | { kind: 'style'; style: ArticleParagraphStyle | 'code' }
   | { kind: 'list'; list: ArticleListKind }
-  | { kind: 'block'; block: 'divider' | 'pageBreak' | 'table' | 'toc' }
+  | { kind: 'block'; block: 'divider' | 'pageBreak' | 'table' | 'toc' | 'footnote' }
   | {
       kind: 'insert';
       what: 'image' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky';
@@ -141,6 +141,14 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     keywords: 'contents toc outline headings index',
     hint: 'The headings, with their pages',
     action: { kind: 'block', block: 'toc' },
+  },
+  {
+    id: 'footnote',
+    label: 'Footnote',
+    group: 'Blocks',
+    keywords: 'note reference citation source endnote',
+    hint: 'A numbered note at the foot of the page',
+    action: { kind: 'block', block: 'footnote' },
   },
   {
     id: 'image',
