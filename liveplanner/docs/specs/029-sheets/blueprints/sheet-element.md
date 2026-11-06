@@ -208,7 +208,7 @@ shares with DiagramBuildAnimation) and `../packages/ui/src/LoadingSweep.tsx` (th
   visible row heights × column widths; frozen rows and columns are drawn in sticky panes (top, left, corner).
 - `visibleWindow(geometry, scroll, view)` (`sheet-geometry.ts`) binary-searches the offset prefix sums (rebuilt on
   layout change) for the first and last visible row and column. Only those cells render.
-- Cells are absolutely positioned `div`s (`role="gridcell"`), text in the tab's font at the cell's size; wrapped
+- Cells are absolutely positioned `div`s (`role="gridcell"`), text in the UI face (the root's `planBoardFontStyle`) at the cell's size, or in the cell's own Font; wrapped
   cells use `white-space: pre-wrap`; overflow runs are drawn by giving a left-aligned text cell a width spanning
   its empty neighbours (computed per row from the window).
 - Canvas zoom: the element's body is inside the canvas transform; pointer to cell maps `clientX/Y` through the

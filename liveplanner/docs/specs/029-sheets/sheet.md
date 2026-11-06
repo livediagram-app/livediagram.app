@@ -314,7 +314,8 @@ inset, as the menu box's mode tile does), and to its right the chosen category's
 ## The grid
 
 - Column headers read `A` to `Z`, then `AA`, `AB`, ...; row headers `1`, `2`, ....
-- A new sheet's columns are 120 px and rows 28 px; text is 13 px in the tab's font.
+- A new sheet's columns are 120 px and rows 28 px; text is 13 px in the editor's UI face, the title in the tab's font
+  ([Fonts](../004-interface-design/fonts.md) "On Sheet tabs and charts").
 - Below the last row, for someone who may edit, **Add** [100] more rows at the bottom (the number can be changed)
   grows the grid, up to its limit.
 - Cells are drawn only as they scroll into view, so a sheet of thousands of rows scrolls as smoothly as a small one.
@@ -515,10 +516,10 @@ view gets the header and **Copy** alone.
 ### Formatting
 
 - Formats a cell can take: number format (and its decimals), bold, italic, underline, strikethrough, text colour,
-  fill colour, font (one of the editor's [fonts](../004-interface-design/fonts.md), by id; unset, the tab's font; the
+  fill colour, font (one of the editor's [fonts](../004-interface-design/fonts.md), by id; unset, the editor's UI face; the
   toolbar's **Font** is a button naming the active cell's font in its own face, left of Font Size, opening a menu of
   **Default** then every font, each named in its own face, the active cell's ticked; an id the editor no longer
-  offers draws in the tab's font), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +, worn in the Sheet's own colours as the Font button beside it is
+  offers draws in the UI face), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +, worn in the Sheet's own colours as the Font button beside it is
   that step through 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 36, 48 and 72, and takes a typed size, kept within the
   limits; folded into More it is a menu of those sizes), horizontal alignment, vertical alignment (top, middle,
   bottom; middle when unset), wrap (overflow, wrap, clip), a border on each side (thin, medium, thick, dashed or dotted, in a colour) and,
