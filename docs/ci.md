@@ -207,8 +207,10 @@ each product's api, sites, MCP and router, and the platform's services and site.
   check for `main`'s tip and deploys the head of the branch it was started on, moving
   `deployed/staging` there, so production's default then ships that commit.
 - **Production** is a manual gate (`deploy-production.yml`): run **Deploy Production** from the Actions
-  tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs. A
-  `ref` ships another commit; one older than production's own (a rollback) redeploys every Worker, as
+  tab, or `gh workflow run deploy-production.yml`. By default (**Deploy Staging Tip**) it ships
+  exactly what staging runs; **Deploy Latest Main** ships `main`'s tip instead, to move faster than
+  staging (`gh workflow run deploy-production.yml -f source='Deploy Latest Main'`). A `ref` ships
+  another commit instead of either; one older than production's own (a rollback) redeploys every Worker, as
   **all** does. Required reviewers on the `production` environment, if set in the repository's
   settings, add a second gate before anything deploys.
 
