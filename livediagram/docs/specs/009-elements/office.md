@@ -50,8 +50,9 @@ A table with six chairs round it, every seat facing the table.
   far chairs face down, the near chairs up, the left end right, the right end left. A seat takes one sitter, as
   any chair does: a taken seat is skipped for the nearest free one, and a full table stops you beside it
   ([Chair](chair.md) "Sitting").
-- Who is sitting is presence, as for every seat: the table shows the sitters' names in a pill above it. It does not
-  ring one chair yet; which seat each sitter took now rides their presence (`seat.index`).
+- Who is sitting is presence, as for every seat: the table rings each taken chair in its sitter's colour
+  (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
+  "Occupancy is presence").
 - It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
 
 ## Plant, Bookshelf
