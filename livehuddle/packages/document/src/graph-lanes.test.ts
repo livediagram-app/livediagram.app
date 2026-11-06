@@ -3,7 +3,7 @@ import { layoutGraph, type GraphInput } from './graph-input';
 import { anchorPrimarySide } from './anchors';
 import type { ArrowElement, BoxedElement, Element } from './index';
 
-// A shared end in swimlanes (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
+// A shared end in swimlanes (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
 // stacks ordered by their feeders, a hand-off along its lane lined up straight.
 
 let n = 0;

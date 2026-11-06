@@ -90,15 +90,18 @@ there).
   (`n` down the canvas, `e` left, `s` up, `w` right: the same words the menu
   tiles use). The seat point turns with the chair, so the sitter lands on the
   seat rather than on the backrest of a sideways chair.
-- While seated it **ignores walk targets**: clicking elsewhere on the canvas
-  does not drag it out of the chair by accident.
+- **Any movement stands you up** (Work Tracker #560). While seated, a move is a move: an arrow key, a click or tap
+  on the floor, on a piece or on a peer, or a walk somebody else starts for you (a Directory's Walk There, a talker's
+  bars) stands the character up and starts that move in the same gesture, with no second press. Clicking **the piece
+  you are sitting on** keeps you in it. Keys typed into a field (a panel's search, the message composer) are the
+  field's, not movement, so typing never stands you up; nor do a pressed piece that acts in place, a reaction or a
+  wave.
 - **A taken seat is not sat in.** Walking into a chair somebody is already sitting in does not seat
   you: your character **stops beside it**, just outside the piece on the side it came from, and
   stays standing. A piece with more than one seat (a sofa, a meeting table) seats you on the **free
   seat nearest where you arrived**, and stops you beside it only when every seat is taken.
-- **Standing up** is any arrow key, or double-clicking the canvas. Both are
-  deliberate acts. The seated face also carries a small **Stand** press for
-  people using a touch device with no arrow keys.
+- **There is no Stand button.** Standing up is implied by moving, on a desktop and a touch screen alike, so the
+  seated character carries no press of its own and a double-click means nothing more than a click.
 - A seated character can still **wave and react** ([Avatar mode](../008-canvas/avatar-mode.md)). Sitting removes
   locomotion, not personality.
 - A seated character **cannot be pushed** ([Avatar mode](../008-canvas/avatar-mode.md) "You can push each other"):
@@ -120,8 +123,16 @@ chair's occupancy cannot conflict between two clients, and no seating state
 reaches the stored document or undo.
 
 - The chair renders **occupied**: a soft ring in the sitter's presence colour
-  and their name under it, derived from the peer presence the canvas already
+  and their name in a pill above it, derived from the peer presence the canvas already
   receives.
+- **The exact seat is ringed.** A piece with more than one seat (a sofa, a meeting table) rings **each taken
+  seat on its own**, in that sitter's colour, at the seat they hold (their presence's `seat.index`; a packet
+  without one, the seat nearest their feet). Two people on a sofa show two rings, one per cushion. A one-seat
+  piece rings its seat as before.
+- **The name pill clears the sitter's head.** The pill names the sitters in seat order and sits above the
+  highest head among them, measured from each sitter's seat and drawn size (Small, Regular or Tall), with room
+  for the name chip and status over that head, so a sprite never covers it, on a tall chair or a short bean bag
+  alike. It never sits lower than the piece's top edge.
 - **One sitter per seat, with no lock.** A seat is taken while somebody's presence says they sit in
   it; nothing else holds it, so it cannot get stuck. Two people who arrive at the same seat at once
   (each seated before the other's presence arrived) settle it the same way on every machine: the
@@ -147,8 +158,8 @@ Two more pieces of furniture seat a character exactly as a chair does, beside it
 
 Both share the chair's rules unchanged: the same `chairFacing` field and **Desk** / **Sofa**
 menu section (the Chair section, titled for the furniture it is on), arrival seating through the
-same walk hook, the same seated guards and ways of standing, and occupancy as presence (one ring in
-the first sitter's colour, names above). A cushion takes one sitter, as a chair does; a sofa takes two.
+same walk hook, the same seated guards and ways of standing, and occupancy as presence (a ring on each
+taken cushion in its sitter's colour, names above). A cushion takes one sitter, as a chair does; a sofa takes two.
 
 Where they differ from the chair:
 

@@ -6,7 +6,6 @@
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so the layout spells out only where it
 // differs. The catalogue category (Stickers) is a body with their own content and take no tile list. The
 // palette lands on Popular, a fixed pick of tiles from across its categories.
-import type { EditorMode } from '@livehuddle/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { SPACE_CATEGORIES } from './space-categories';
@@ -89,13 +88,8 @@ const MEETING: PaletteLayout = {
   ],
 };
 
-export const PALETTE_LAYOUTS: Record<EditorMode, PaletteLayout> = {
-  workshop: MEETING,
-};
-
-function paletteLayoutFor(mode: EditorMode): PaletteLayout {
-  return PALETTE_LAYOUTS[mode];
-}
+// The one layout; the palette is not keyed by a mode (docs/specs/007-editor/editor-modes.md "The palette").
+export const MEETING_PALETTE: PaletteLayout = MEETING;
 
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {
   // The tiles it holds, in order; null for a catalogue category, whose body is its own.
@@ -136,22 +130,22 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   };
 }
 
-/** The categories a mode's palette offers, in order, with their tiles. A tile category with no tiles (a Space
- *  category whose pieces have not landed yet) is left off rather than opening onto nothing. */
-export function paletteCategoriesFor(mode: EditorMode): ResolvedPaletteCategory[] {
-  return paletteLayoutFor(mode)
-    .categories.map(resolve)
+/** The categories the palette offers, in order, with their tiles. A tile category with no tiles (a Space category
+ *  whose pieces have not landed yet) is left off rather than opening onto nothing. */
+export function paletteCategories(): ResolvedPaletteCategory[] {
+  return MEETING_PALETTE.categories
+    .map(resolve)
     .filter((c) => c.tiles === null || c.tiles.length > 0);
 }
 
-/** Whether a mode's palette offers category `id`. */
-export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
-  return paletteCategoriesFor(mode).some((c) => c.id === id);
+/** Whether the palette offers category `id`. */
+export function paletteCategoryOffered(id: string): boolean {
+  return paletteCategories().some((c) => c.id === id);
 }
 
-/** The category the palette opens on: the mode's own. */
-export function paletteLandingCategory(mode: EditorMode): string {
-  return paletteLayoutFor(mode).landing;
+/** The category the palette opens on. */
+export function paletteLandingCategory(): string {
+  return MEETING_PALETTE.landing;
 }
 
 // A Participant has no palette (docs/specs/013-workspace/share-roles.md "A Participant walks").

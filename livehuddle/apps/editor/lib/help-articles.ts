@@ -37,8 +37,6 @@ export const HELP_ARTICLES = {
   avatarMode: 'selection-modes/avatar-mode',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  // AI
-  connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
   exportingSpaces: 'account-and-data/exporting-spaces',
   apiTokens: 'account-and-data/api-tokens',
@@ -79,14 +77,8 @@ export const HELP_ARTICLES = {
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools',
-  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md). All but the portal's are
-  // leaving kinds, so they land on the Virtual Office, whose Rooms mark out an area of a Space.
-  stacks: 'palette/virtual-office',
-  lanes: 'palette/virtual-office',
-  boundaries: 'palette/virtual-office',
-  diagramKeys: 'palette/virtual-office',
+  // The Portal tour's closing card (docs/specs/007-editor/element-tours.md).
   portals: 'palette/tools/portals',
-  timelineRail: 'palette/virtual-office',
   palette: 'palette',
   // Settings
   whatWeCollect: 'privacy-and-security/what-we-collect',
@@ -152,10 +144,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  connectAiTool: {
-    title: 'Learn about connecting AI tools',
-    description: 'Drive your spaces from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingSpaces: {
     title: 'Learn about exporting',
@@ -270,29 +258,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the palette',
     description: 'Where each element lives, category by category.',
   },
-  stacks: {
-    title: 'Learn about frames',
-    description: 'Labelled sections that carry what sits inside them.',
-  },
-  lanes: {
-    title: 'Learn about frames',
-    description: 'Labelled sections that carry what sits inside them.',
-  },
-  boundaries: {
-    title: 'Learn about frames',
-    description: 'Labelled sections that carry what sits inside them.',
-  },
-  diagramKeys: {
-    title: 'Learn about frames',
-    description: 'Labelled sections that carry what sits inside them.',
-  },
   portals: {
     title: 'Learn about portals',
     description: 'Linked rings that take you across the canvas or to another tab.',
-  },
-  timelineRail: {
-    title: 'Learn about frames',
-    description: 'Labelled sections that carry what sits inside them.',
   },
   palette: {
     title: 'Learn about the Palette',

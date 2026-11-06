@@ -10,6 +10,7 @@ import type { MetricKind } from '@liveplanner/items';
 import { BoardWidgetArt } from '../plan-tile-art';
 import { PersonDisc } from '../PersonDisc';
 import type { PlanPalette } from '../plan-palette';
+import { planBoardFontStyle } from '@/lib/plan-font';
 import {
   METRIC_SIDE_BY_SIDE_MIN_W,
   heroSize,
@@ -50,7 +51,9 @@ export function MetricTile({
     borderColor: palette.border,
     backgroundColor: palette.surface,
     color: palette.text,
-    ...(fontFamily ? { fontFamily } : null),
+    // Its figure, label and lines are numbers and small labels, so the UI face whatever the tab's (fonts.md "On
+    // Dashboards and views").
+    ...planBoardFontStyle(fontFamily),
   };
   const header = (
     <div className="flex min-w-0 items-center gap-2">

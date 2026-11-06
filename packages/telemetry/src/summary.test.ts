@@ -132,12 +132,14 @@ describe('apps', () => {
       'liveplanner.app': 2,
       'livedocuments.app': 0,
       'livedesign.app': 0,
+      'livehuddle.app': 0,
     });
     expect(s.previousWindows!.last7.byApp).toEqual({
       'livediagram.app': 0,
       'liveplanner.app': 1,
       'livedocuments.app': 0,
       'livedesign.app': 0,
+      'livehuddle.app': 0,
     });
     expect(s.daily!.byApp!['liveplanner.app']!.at(-1)).toBe(2);
     expect(s.daily!.byApp!['livediagram.app']!.at(-1)).toBe(3);

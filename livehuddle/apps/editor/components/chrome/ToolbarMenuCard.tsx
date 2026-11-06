@@ -6,7 +6,7 @@ import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the
-// Explorer's menu button in the app, a workspace frame's Back in a workbench. `data-toolbar-menu` is what the strip
+// Explorer's menu button. `data-toolbar-menu` is what the strip
 // measures to keep clear of it (useStripCrowded, useBarLabels, useStripTileLimit), so whatever the card holds, the
 // strip makes room for it.
 //

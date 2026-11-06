@@ -612,7 +612,9 @@ function BoxedElementViewImpl({
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
 
-      {isLocked ? <LockBadge /> : null}
+      {/* The element's own lock only: a locked tab or layer shows its padlock once, on the tab or the layer
+          (canvas-and-palette.md "Locking"). */}
+      {element.locked === true ? <LockBadge /> : null}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 

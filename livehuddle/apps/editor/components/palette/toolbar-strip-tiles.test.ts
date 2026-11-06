@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { paletteCategoriesFor } from './palette-layouts';
+import { paletteCategories } from './palette-layouts';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -15,7 +15,7 @@ import {
 
 const NONE = { hasImage: true };
 // Workshop's Popular, as its palette layout fills it.
-const workshopPopular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!.tiles!;
+const workshopPopular = paletteCategories().find((c) => c.id === 'popular')!.tiles!;
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {

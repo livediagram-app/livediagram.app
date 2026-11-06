@@ -1,8 +1,8 @@
 # Diagram lint
 
-**Status: built**, with the [CLI](../015-api/cli.md)'s `tab lint` and `graph lint` (`--compare`).
+**Status: built.**
 `@livehuddle/diagram-lint` checks a tab; the api serves `?view=lint`, every changeset, dry run and revert carries
-the verdict, and the MCP's write tools carry the summary line.
+the verdict.
 
 The **diagram lint** reports what is wrong with how a tab is drawn, as text an agent can act on without looking at
 an image: about 100 tokens where a preview costs about 1,000, and usable by models that cannot see. On a measured

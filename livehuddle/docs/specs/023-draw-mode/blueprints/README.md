@@ -2,7 +2,6 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./whiteboard-round-one.md - when implementing or changing the whiteboard pens, eraser modes, input rules, look or backgrounds
 - ./text-boxes.md - when changing how a text box hugs its text (its sizing): placement, typing, commit, resize, Shift scale
 - ./path-tool.md - when implementing or changing the Path tool: the path element, drawing, edit mode, rendering, style
 - ./fill-tool.md - when implementing or changing the Fill tool: what a press fills, the marker loop rule, its colour, the press

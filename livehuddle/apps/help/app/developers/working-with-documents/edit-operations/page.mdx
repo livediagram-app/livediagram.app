@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Edit Operations Reference',
   description:
-    'Every livehuddle edit operation, selector, placement, flag and lint finding: the changeset vocabulary the API, the CLI and the MCP server share.',
+    'Every livehuddle edit operation, selector, placement, flag and lint finding: the changeset vocabulary of the livehuddle API.',
   path: '/help/developers/working-with-documents/edit-operations/',
 });
 
@@ -13,11 +13,7 @@ export const metadata = helpMetadata({
 
 A **changeset** changes a tab with a short list of edit operations, applied together or not at all. This page lists the whole vocabulary: every operation, how to pick the elements it acts on, where new elements go, and what the answer and the lint tell you. [Working with Spaces](/help/developers/working-with-documents/#update-a-tab) shows how to send one.
 
-The same vocabulary reaches a tab three ways:
-
-- **The API**: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
-- **The CLI**: `livehuddle edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livehuddle element add|set|rm|move|connect|insert|wrap` sends one operation. `livehuddle guide edit` explains the line form, and `livehuddle schema view sticky` lists the fields a kind takes.
-- **The MCP server**: `update_document` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
+It reaches a tab through the API: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
 
 ## Two Forms
 
@@ -136,7 +132,7 @@ In the JSON form, a flag is a member set to `true`: `"all"`, `"keepArrows"`, `"a
 
 ## The Answer
 
-A changeset answers with one line per element, the same for a dry run (`?dryRun=1`, or `--dry-run` on the CLI) and a write:
+A changeset answers with one line per element, the same for a dry run (`?dryRun=1`) and a write:
 
 ```text
 ~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160

@@ -1,7 +1,7 @@
 // The formula tokenizer (docs/specs/026-plan/item-types.md "Formula fields"): one hand-written pass over the
 // characters, no regular expressions over the text, so its cost is linear in the formula's length whatever it holds.
-// A field is a run of plain words (`Story Points`) or anything in braces (`{Children Done (%)}`); in a stored formula
-// the braces hold the field's id.
+// A field is a run of plain words (`Story Points`) or anything in braces (`{Children Done (%)}`, `\}` and `\\` its
+// escapes); in a stored formula the braces hold the field's id.
 
 export type Token =
   | { t: 'num'; v: number; at: number; end: number }
@@ -105,12 +105,27 @@ export function tokenize(src: string): Token[] | FormulaSyntaxError {
       continue;
     }
     if (c === '{') {
-      const close = src.indexOf('}', i + 1);
-      if (close < 0) return { error: `No closing } for the { at ${column(at)}`, at };
-      const name = src.slice(i + 1, close).trim();
+      // Up to the first `}` not escaped: `\}` is a `}` in the name and `\\` a `\`, so a label holding braces can be
+      // named (`{Cost {est\}}`); any other `\` is kept as it is.
+      let name = '';
+      i += 1;
+      for (;;) {
+        if (i >= n) return { error: `No closing } for the { at ${column(at)}`, at };
+        const ch = src[i]!;
+        if (ch === '}') break;
+        const next = src[i + 1];
+        if (ch === '\\' && (next === '}' || next === '\\')) {
+          name += next;
+          i += 2;
+          continue;
+        }
+        name += ch;
+        i += 1;
+      }
+      i += 1;
+      name = name.trim();
       if (!name) return { error: `Empty {} at ${column(at)}`, at };
-      out.push({ t: 'name', v: name, braced: true, at, end: close + 1 });
-      i = close + 1;
+      out.push({ t: 'name', v: name, braced: true, at, end: i });
       continue;
     }
     if (isLetter(c)) {

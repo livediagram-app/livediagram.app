@@ -76,8 +76,8 @@ export const CTA_SOURCES = {
     'HeaderSession',
     'Card',
   ],
-  // The Build with AI page (docs/specs/019-marketing/build-with-ai.md): its header only. Its own buttons open
-  // a third-party tool or sign-up, never /new, so they are not funnel sources.
+  // The retired Build with AI page (/ai, removed with the MCP server, docs/specs/002-project-scope/not-in-livehuddle.md):
+  // kept so the visits and clicks it recorded still parse and count on the dashboard.
   Ai: [
     'Header',
     'HeaderBlank',

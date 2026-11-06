@@ -49,7 +49,7 @@ describe('resolveTemplate', () => {
   });
 });
 
-// docs/specs/015-api/mcp-server.md §4.5: an unknown kind is refused with the ones it most likely meant.
+// livediagram/docs/specs/015-api/mcp-server.md §4.5: an unknown kind is refused with the ones it most likely meant.
 describe('closestTemplateKinds', () => {
   it('offers the kinds with a word starting with a word of it', () => {
     expect(closestTemplateKinds('space')).toEqual(['blank-session', 'coworking-space']);

@@ -152,4 +152,46 @@ test.describe('whiteboard dock position', () => {
     await expect(shapes.getByRole('button', { name: 'Rectangle', exact: true })).toHaveCount(1);
     expectNoPageErrors(pageErrors);
   });
+
+  // draw-mode.md "When the bar is too wide": from 640 px up the bar never scrolls sideways; it sheds
+  // its pins, then folds the least-used tools into More Tools, and unfolds as the window widens.
+  test('never scrolls sideways from 640 to 1100 px, folding into More Tools', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openWhiteboard(page, { width: 1100, height: 900 });
+    const scroller = dock(page).locator('[data-dock-scroller]');
+    const more = dock(page).getByRole('button', { name: 'More Tools' });
+    // A small tablet in portrait (744, 768) and every 8 px of the band, then up to the wide bar.
+    const widths = [744, 768];
+    for (let w = 640; w <= 1100; w += 8) widths.push(w);
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect
+        .poll(() => scroller.evaluate((el) => el.scrollWidth - el.clientWidth), {
+          message: `overflow at ${width}`,
+        })
+        .toBe(0);
+      // Select, Marker 1, Shapes and Settings never fold.
+      for (const name of ['Select', 'Shapes', 'Settings'])
+        await expect(dock(page).getByRole('button', { name, exact: true })).toHaveCount(1);
+      await expect(dock(page).getByRole('button', { name: /^Marker 1/ })).toHaveCount(1);
+    }
+    // At 640 the folded tools wait in More Tools, and one is armed from there.
+    await page.setViewportSize({ width: 640, height: 900 });
+    await more.click();
+    const menu = page.locator('#whiteboard-flyout-more');
+    await expect(menu.getByRole('button', { name: 'Path tool' })).toBeVisible();
+    await menu.getByRole('button', { name: 'Path tool' }).click();
+    await expect(menu).toHaveCount(0);
+    await expect(more).toHaveAttribute('aria-pressed', 'true');
+    // Wide again, nothing is folded.
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await expect(more).toHaveCount(0);
+    await expect(dock(page).getByRole('button', { name: 'Path tool' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expectNoPageErrors(pageErrors);
+  });
 });

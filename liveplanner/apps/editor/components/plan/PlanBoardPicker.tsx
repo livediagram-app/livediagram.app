@@ -135,8 +135,11 @@ export function PlanBoardPicker({
   onSuggestedDashboard,
   onVisualisation,
   onForm,
+  onImport,
 }: {
   onPick: (preset: string) => void;
+  // Opens the Import dialog (Start Planning's Import card); absent, no card.
+  onImport?: (() => void) | undefined;
   // Makes the tab a Form tab from a starter (Start Planning's Forms, docs/specs/030-forms/forms.md).
   onForm?: (starter: StarterId) => void;
   // The project's tabs and their fetch, and making a Dashboard built from its work (Start Planning's Dashboards).
@@ -178,6 +181,7 @@ export function PlanBoardPicker({
       onSuggestedDashboard={onSuggestedDashboard}
       onVisualisation={onVisualisation}
       onForm={onForm}
+      onImport={onImport}
     />
   );
 }

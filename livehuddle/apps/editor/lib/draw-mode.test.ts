@@ -278,17 +278,13 @@ describe('drawIntentCursor', () => {
 });
 
 describe('opensForTyping', () => {
-  it('opens a drawn text box for typing everywhere', () => {
-    expect(opensForTyping({ type: 'text' }, false)).toBe(true);
+  it('opens a drawn text box for typing', () => {
+    expect(opensForTyping({ type: 'text' })).toBe(true);
   });
 
-  it('opens a sticky for typing on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md)', () => {
-    expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
-    expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
-  });
-
-  it('leaves shapes selected, not typing', () => {
-    expect(opensForTyping({ type: 'shape', kind: 'square' }, true)).toBe(false);
+  it('leaves stickies and shapes selected, not typing', () => {
+    expect(opensForTyping({ type: 'sticky' })).toBe(false);
+    expect(opensForTyping({ type: 'shape', kind: 'square' })).toBe(false);
   });
 });
 

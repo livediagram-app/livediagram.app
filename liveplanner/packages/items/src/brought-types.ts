@@ -1,5 +1,5 @@
 // Ready-made card types (docs/specs/026-plan/plan-templates.md "Ready-made card types"): the card types a board brings
-// into a project when it is made. The five default types live in item-types.ts; these are the twelve more a template or
+// into a project when it is made. The five default types live in item-types.ts; these are the thirteen more a template or
 // preset uses where none of the five fits the work: a Bug Triage board takes Bugs, a Hiring Pipeline's Pipeline board
 // Candidates. Making a board chooses or adds the project's card types (catalogueWithBoardTypes); a project that
 // already has a type (by id) keeps its own. Pure data, one catalogue the board presets and the Plan templates share.
@@ -232,6 +232,17 @@ const BROUGHT = [
     ],
     display: detailedWith(['f-current', 'f-target'], ['due']),
   },
+  // A step on the way to a personal goal (Personal Goals): a row per goal, reached when it is in a done column, so
+  // it needs no numbers; Due is the date to reach it by.
+  {
+    id: 'milestone',
+    label: 'Milestone',
+    newTitle: 'New milestone',
+    glyph: 'milestone',
+    color: '#0d9488',
+    fields: ['title', 'description', 'status', 'f-goal', 'due', 'checklist'],
+    custom: [card('f-goal', 'Goal', 'objective')],
+  },
   // A go / no-go item on launch day (Product Launch), under its workstream.
   {
     id: 'launch-check',
@@ -307,7 +318,7 @@ const MORE_CARD_TYPES: readonly ItemTypeDef[] = BROUGHT.map((t) => ({
 }));
 
 // Every card type a board can bring (docs/specs/026-plan/plan-templates.md "Ready-made card types"): the five default
-// types, then the twelve the templates and presets add. None is set apart from a type a person makes.
+// types, then the thirteen the templates and presets add. None is set apart from a type a person makes.
 export const READY_MADE_CARD_TYPES: readonly ItemTypeDef[] = [...ITEM_TYPES, ...MORE_CARD_TYPES];
 
 const DEFAULT_TYPE_IDS: readonly string[] = ITEM_TYPES.map((t) => t.id);

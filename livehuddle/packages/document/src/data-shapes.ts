@@ -230,6 +230,12 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'garden-umbrella' ||
     kind === 'fountain' ||
     kind === 'pond' ||
+    kind === 'pool-table' ||
+    kind === 'foosball-table' ||
+    kind === 'dartboard' ||
+    kind === 'vending-machine' ||
+    kind === 'bean-bag' ||
+    kind === 'reading-nook' ||
     // A door (docs/specs/009-elements/room-builder.md) is a doorway, with nothing to write on.
     kind === 'door' ||
     // The Directory (docs/specs/009-elements/directory.md) draws its own words; an Elevator keeps its name.

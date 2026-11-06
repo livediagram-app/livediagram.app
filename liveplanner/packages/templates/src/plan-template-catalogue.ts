@@ -1049,25 +1049,24 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
       ganttTypes: ['objective'],
     },
     {
-      name: 'Key Results',
+      name: 'Milestones',
       board: {
         preset: 'blank',
-        title: 'Key Results',
+        title: 'Milestones',
         width: W4,
         height: 680,
         setup: {
           columns: [
-            col('pg-kr-not-started', 'Not Started'),
-            col('pg-kr-on-track', 'On Track', { color: GREEN }),
-            col('pg-kr-behind', 'Behind', { color: AMBER }),
-            col('pg-kr-done', 'Done'),
+            col('pg-ms-not-started', 'Not Started'),
+            col('pg-ms-in-progress', 'In Progress', { color: TEAL }),
+            col('pg-ms-done', 'Done', { color: GREEN }),
           ],
-          doneColumnId: 'pg-kr-done',
-          // A row per goal: each Key Result names its own.
+          doneColumnId: 'pg-ms-done',
+          // A row per goal: each Milestone names its own.
           swimlaneBy: 'field',
-          swimlaneField: 'f-objective',
+          swimlaneField: 'f-goal',
           cardFields: ['due', 'checklist'],
-          addTypes: ['key-result'],
+          addTypes: ['milestone'],
           widgets: ['progress', 'due'],
         },
       },
@@ -1076,8 +1075,8 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           kind: 'sticky',
           text: steps('How this works', [
             'Write each goal on Goals, with when you want it by',
-            'Give it two or three Key Results you can measure',
-            'Each Sunday, update every key result’s Current',
+            'Break it into two or three Milestones, each with a date',
+            'Each Sunday, move your milestones along',
             'Tick your habits on Habits each day',
           ]),
         },

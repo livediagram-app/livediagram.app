@@ -62,6 +62,59 @@ ref) replaced. A key without a commit, such as setup-node's pnpm store, is never
 `main`'s own script and checks out nothing else, so its `actions: write` never meets a pull request's
 code.
 
+## Runs on main
+
+CI, E2E and CodeQL keep one run per branch. On a pull request, a newer push cancels the older run. On
+`main`, a run that has started always finishes: a newer push waits behind it, and a still newer one
+replaces the one waiting, so at most one run runs and one waits. A run started by hand is never
+cancelled. So that the commits a replaced run skipped are still checked, a push to `main` plans against
+the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit
+just before it, and with no such commit everything runs. A failure on `main` is therefore pinned on the
+commits since the last green one. Until 2026-11-06 every commit on `main` ran to the end, and a burst of
+merges kept jobs waiting a median 16 minutes for one of the free plan's 20 runners. For an hour after
+that, a push to `main` cancelled the run in progress, and with merges landing faster than a run takes
+no run on `main` finished, so staging never deployed; letting the running one finish ends that (each
+product's `docs/specs/016-platform/deployment.md` "Runs on main cancel older ones").
+
+## Fail fast
+
+On a pull request, a commit that is already red stops spending runners. Over the 80 pull request
+commits before 2026-11-06, 1,527 of their 9,248 CI and E2E runner minutes (17%) ran after one of
+their jobs had already failed.
+
+- **The step.** Every job of CI and E2E that checks out (Plan, Checks, Tests, the editor shards and
+  Build in `ci.yml`; Plan in `e2e.yml`; each product's smoke build, smoke shards, sites audit and
+  signed-in specs in `e2e-product.yml`) ends with **Cancel on failure**
+  (`.github/actions/cancel-on-failure`), run only `if: failure() && github.event_name ==
+'pull_request'`. It runs on the runner that just failed, so it starts at once; a job of its own
+  would wait for everything it watched and then queue for a runner. It calls
+  `.github/scripts/cancel-on-failure.mjs`, which lists the commit's unfinished pull request runs of
+  `ci.yml` and `e2e.yml` (by the pull request's head commit) and cancels them. It never fails the job
+  further, and on a fork's read-only token it logs and does nothing.
+- **Never its own run.** Cancelling the run it is in would also stop that run's other jobs, but GitHub
+  then records the failing job itself as `cancelled`, not `failure`: a probe on pull request #1356 (a
+  job that failed a step and then cancelled its own run) came out `cancelled`, as did the run. That
+  hides the red, so the step cancels only the other workflow: CI's failure cancels E2E, E2E's cancels
+  CI. The failing workflow's other jobs run to the end, which also means each of them still reports
+  its own failures.
+- **The required checks stay red.** A cancelled run's **CI** or **E2E** gate still runs (`if:
+always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a red pull request
+  never looks mergeable.
+- **Reruns.** `gh run rerun --failed` (and **Re-run failed jobs**) reruns a run's cancelled jobs as
+  well as its failed ones (seen in the probe). A retry without a fix reruns the failed jobs of both
+  workflows, the cancelled one included.
+- **Only pull requests.** A push to `main`, a run by hand and the deploys always run to the end: the
+  step's `if:`, the action's own `if:` and the script each check the event.
+  `.github/scripts/cancel-on-failure.test.mjs` holds the step as the last of every such job, guarded
+  to pull requests, with `actions: write` granted (the jobs' own `permissions`, and `e2e.yml`'s calls
+  of `e2e-product.yml`, which can grant no more than its callers). Exempt: the **CI** and **E2E**
+  gates, and the coverage report, whose failure never gates. A same-repository pull request's jobs
+  already run code its author can push, and a fork's token stays read-only, so `actions: write` opens
+  nothing new.
+- **The trade-off.** A commit with two separate failures, one in each workflow, shows only the first
+  until it runs again: in the sample 4 of 24 red commits had two, 3 of them from a breakage on `main`
+  since fixed.
+
 ## Workflows
 
 - **CI** (`ci.yml`), on every pull request and every push to `main`. Its Plan job also writes the
@@ -207,8 +260,10 @@ each product's api, sites, MCP and router, and the platform's services and site.
   check for `main`'s tip and deploys the head of the branch it was started on, moving
   `deployed/staging` there, so production's default then ships that commit.
 - **Production** is a manual gate (`deploy-production.yml`): run **Deploy Production** from the Actions
-  tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs. A
-  `ref` ships another commit; one older than production's own (a rollback) redeploys every Worker, as
+  tab, or `gh workflow run deploy-production.yml`. By default (**Deploy Staging Tip**) it ships
+  exactly what staging runs; **Deploy Latest Main** ships `main`'s tip instead, to move faster than
+  staging (`gh workflow run deploy-production.yml -f source='Deploy Latest Main'`). A `ref` ships
+  another commit instead of either; one older than production's own (a rollback) redeploys every Worker, as
   **all** does. Required reviewers on the `production` environment, if set in the repository's
   settings, add a second gate before anything deploys.
 

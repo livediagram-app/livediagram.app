@@ -4,7 +4,7 @@
 // The export used to nest each silhouette in an <svg> whose viewBox stretched
 // the table's 0..100 art over the box, keeping the border thin with
 // `vector-effect="non-scaling-stroke"`. Browsers honour that; resvg, which
-// rasterises the MCP's inline previews (docs/specs/015-api/mcp-server.md §5), does not, so a frame
+// rasterises the MCP's inline previews (livediagram/docs/specs/015-api/mcp-server.md §5), does not, so a frame
 // or cylinder came out with a border scaled up with the box: several pixels
 // thick on a large frame. Mapping the coordinates themselves draws the same
 // outline with nothing scaled, so the stroke is the stroke in every renderer.

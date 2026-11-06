@@ -1,7 +1,6 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import type { EditorMode } from '@livehuddle/document';
 import { CountBadge } from '@livehuddle/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
@@ -50,7 +49,6 @@ export function onFlyoutArrowKey(e: KeyboardEvent<HTMLElement>, body: HTMLElemen
 
 export function CategoryFlyout({
   category,
-  mode,
   actions,
   pendingDraw,
   focusFirst,
@@ -59,8 +57,6 @@ export function CategoryFlyout({
   onItemHover,
 }: {
   category: FlyoutCategory;
-  // The mode, for a line it words its own way.
-  mode?: EditorMode;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
   // Opened from the keyboard: the first tile takes focus, so the arrows carry on from there.
@@ -97,7 +93,7 @@ export function CategoryFlyout({
       <FlyoutHeader
         icon={category.icon}
         title={category.label}
-        tagline={flyoutTagline(category.id, category.description, mode)}
+        tagline={flyoutTagline(category.id, category.description)}
         count={tiles?.length}
       />
       {/* Keyed on the category, so a switch fades the new body in and replays the tiles' cascade. */}

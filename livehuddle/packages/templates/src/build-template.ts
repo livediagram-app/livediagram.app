@@ -3,7 +3,7 @@
 // constants live inline so each template is self-describing. See
 // docs/specs/008-canvas/canvas-and-palette.md for the picker UX; the editor applies its theme recolour on
 // top (apps/editor/lib/template-builders.ts), and the MCP worker
-// materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
+// materialises these directly (livediagram/docs/specs/015-api/mcp-server.md §4.5).
 
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';

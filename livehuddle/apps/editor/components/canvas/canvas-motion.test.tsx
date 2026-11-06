@@ -119,7 +119,7 @@ describe('the board a tab opens with', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('keeps an element drawn on a still canvas settled when the tab switches to Diagram mode', () => {
+  it('keeps an element drawn on a still canvas settled when the canvas starts moving', () => {
     const seen = new Map<string, string>();
     const { rerender } = render(
       createElement(Board, { tabId: 't1', ids: ['a'], still: true, seen }),

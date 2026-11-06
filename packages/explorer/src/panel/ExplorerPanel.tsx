@@ -1668,6 +1668,18 @@ function TrashSection() {
 
 // The team card, as the page shows it over the team's library: read when the dialog opens. Leaving or deleting the
 // team closes it and goes Home.
+/** After leaving or deleting a team from its Members dialog, the dialog and the team's pane are gone: the keyboard
+ *  lands on the rail's Home, where the panel now is, once the dialog has closed and handed focus back. */
+export function landOnPanelHome(): void {
+  setTimeout(() => {
+    const entries = document.querySelectorAll<HTMLElement>(
+      '[data-explorer-panel] [data-rail-entry]',
+    );
+    const home = [...entries].find((e) => /^Home( \(|$)/.test(e.getAttribute('aria-label') ?? ''));
+    home?.focus({ preventScroll: true });
+  }, 0);
+}
+
 function TeamMembersDialog({
   teamId,
   teamName,
@@ -1694,6 +1706,7 @@ function TeamMembersDialog({
             onGone={() => {
               onClose();
               navigate({ kind: 'home' });
+              landOnPanelHome();
             }}
           />
         ) : load.state === 'loading' ? (

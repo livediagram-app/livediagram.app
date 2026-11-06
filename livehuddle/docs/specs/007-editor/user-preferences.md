@@ -257,10 +257,7 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md). The tour left livehuddle
-  // (Work Tracker #423, part 3): the field is kept as stored data, never read or rewritten, with no migration.
-  workshopTourSeen?: boolean;
-  // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `workshopTourSeen`.
+  // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md).
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started.
@@ -358,13 +355,14 @@ Missing key === undefined === default behaviour. Concretely:
   `infographicModeEnabled` and `planModeEnabled` (there is one editor mode, [Editor modes](editor-modes.md)), `skipLocationStep` (the New Document wizard never asks
   where a document goes, [New document route](new-document-route.md#no-welcome-screen)), and `aiAssistanceEnabled` and
   `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
-  [MCP server](../015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
+  [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
   `powerUserOfferShown` ([Power user mode](power-user-mode.md) is retired). Dropping them reverts nothing: whatever
   the mode's preset wrote (alignment guides, the tours' seen flags) stays as it is, and only Minimal chrome, which
   nothing reads any more, goes. Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,
-  `contentsPlacement`, the logo guide switches) and livediagram's Diagram and Draw keys (`tourSeen`, `drawTourSeen`,
+  `contentsPlacement`, the logo guide switches) and livediagram's Diagram, Workshop and Draw keys (`tourSeen`, `workshopTourSeen`, `drawTourSeen`,
   `whiteboardPinnedShapes`, `whiteboardShapePicks`, `whiteboardYourColours`, `whiteboardDockPosition`, `drawPattern`), and
-  `layersPanelEnabled` (there is no Layers panel), are read by nothing here
+  `layersPanelEnabled` (there is no Layers panel), are read by nothing here and are not fields of livehuddle's
+  `UserPreferences` type: a stored value stays in the blob as it is, like any key this version does not know
   ([Editor modes](editor-modes.md#stored-tabs-from-other-products-modes)).
 - `quickAddOnHover` is not read (Quick Connect, the `+` menu it opened on hover, is gone from livehuddle,
   [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-connect)). The key stays shared in

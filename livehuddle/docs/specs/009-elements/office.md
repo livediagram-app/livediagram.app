@@ -7,7 +7,8 @@ Fridge**); and a garden (an **Outdoor Plant**, a **Tree**, a **Garden Path**, **
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
 The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Recreation corner (Jukebox, Ping-Pong Table,
-Arcade Machine, Fireplace) and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
+Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace), a Vending Machine, a Bean Bag and a Reading Nook,
+and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
 A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meeting** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
@@ -59,7 +60,7 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
 - **The walls block** walking exactly as a [Fence](fence.md#blocking) does: same reach, same slide along them, from
   either side; a Door (or an older room's built-in doorway) does not. A character inside a room with no door stays
   inside until it takes a portal.
-- **It is a call of its own** while calls are on: everyone inside hears everyone else inside at full volume, and
+- **It is private** while calls are on: everyone inside hears the people near them inside, by distance, and
   nobody outside hears them; the walls block sound as they block walking, and the doorway's threshold is the line
   of the walls ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)).
 - **Any shape, any doors**: the [Room Builder](room-builder.md) draws a room of any outline wall by wall, snapped
@@ -91,8 +92,9 @@ A table with six chairs round it, every seat facing the table.
   far chairs face down, the near chairs up, the left end right, the right end left. A seat takes one sitter, as
   any chair does: a taken seat is skipped for the nearest free one, and a full table stops you beside it
   ([Chair](chair.md) "Sitting").
-- Who is sitting is presence, as for every seat: the table shows the sitters' names in a pill above it. It does not
-  ring one chair yet; which seat each sitter took now rides their presence (`seat.index`).
+- Who is sitting is presence, as for every seat: the table rings each taken chair in its sitter's colour
+  (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
+  "Occupancy is presence").
 - It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
 
 ## Plant, Bookshelf
@@ -158,7 +160,7 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
 - **Two seats**, one on each bench, the left sitter facing right and the right sitter facing left. Walking in
   through the doorway sits you on the free seat nearest where you came in, by the [Chair](chair.md) rules: one
   sitter a seat, a taken seat skipped, a full pod stops you beside it. Who sits is presence, never stored, and the
-  pod names its sitters in a pill above it like the meeting table.
+  pod rings each taken bench seat and names its sitters in a pill above it like the meeting table.
 - **The door closes when two people sit in it**, and opens the moment either stands up or leaves. Every machine
   works it out from the same presence (both seats held), so everyone sees the same door. It **slides** shut or open
   over 0.6 seconds; under reduced motion it jumps to where it ends.

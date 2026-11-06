@@ -185,7 +185,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Mode** is how a tab is worked on (Diagram, Draw); the tab's, shared by everyone on it, never a type of document or tab.
+- **Mode** (an editor mode) is livediagram's word for how a tab is worked on; livehuddle has none, only the stored value `opensIn: 'workshop'` ([Editor modes](docs/specs/007-editor/editor-modes.md)). "Avatar mode" is a canvas tool, not an editor mode.
 - **Kind** is what a tab is; every livehuddle tab is the general diagram tab.
 - **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
 - **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
@@ -199,18 +199,15 @@ apps/
   help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livehuddle.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
-  cli/          # the livehuddle command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
   document/       # document data model (Tab, Element types + element helpers) over @liveworkspace/model-core
-  templates/      # template catalogue + pure element builders (editor template starts + MCP)
+  templates/      # template catalogue + pure element builders (editor template starts + api)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # this product's wire-format DTOs the api worker emits + the live editor consumes, over @liveworkspace/api-schema
-  agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client

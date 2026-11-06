@@ -27,13 +27,6 @@ import {
   type ThemeDefinition,
 } from '@livehuddle/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
-import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
-
-// The whiteboard's colours as a row: the choice the targets share and the stock options.
-export type BoardColourSection = {
-  value: PenColourChoice | null;
-  options: PenColourOption[];
-};
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;
 type QuickSectionId =
@@ -50,8 +43,6 @@ export type QuickFillValue = QuickSwatchValue | typeof QUICK_TRANSPARENT;
 export type QuickWidth = 'thin' | 'medium' | 'thick';
 export type QuickStrokeStyle = 'solid' | 'dashed' | 'dotted' | 'flowing';
 export type QuickIconAlign = 'left' | 'above' | 'right';
-// The Corners row's choices: the corner presets but Full, which is a pill rather than a corner.
-export type QuickCorners = 'none' | 'sm' | 'md' | 'lg';
 
 export const QUICK_WIDTHS: readonly QuickWidth[] = ['thin', 'medium', 'thick'];
 export const QUICK_TEXT_ALIGNS: readonly TextAlignX[] = ['left', 'center', 'right'];
@@ -71,15 +62,7 @@ export type QuickStyleView = {
     style?: { value: QuickStrokeStyle | null; options: readonly QuickStrokeStyle[] };
     textAlign?: { value: TextAlignX | null };
     iconAlign?: { value: QuickIconAlign | null };
-    // A whiteboard's Stroke and Text colour rows (lib/quick-style-whiteboard): the whiteboard's
-    // colours in place of `stroke` and `textColour`.
-    boardStroke?: BoardColourSection;
-    boardText?: BoardColourSection;
-    // A whiteboard's Corners row (docs/specs/008-canvas/corner-radius.md): the shared preset.
-    corners?: { value: QuickCorners | null };
   };
-  // A whiteboard's pen rows (lib/quick-style-pen): the selected strokes, or the pen in hand.
-  pen?: QuickPenStyle;
   // The Highlighter rows (lib/quick-style-highlighter): the selected highlights, or the armed
   // Highlighter tile's next stroke (docs/specs/008-canvas/highlighter.md "Settings").
   highlighter?: import('./quick-style-highlighter').QuickHighlighterStyle;

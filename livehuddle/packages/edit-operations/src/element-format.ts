@@ -1,4 +1,4 @@
-// The element format as an agent writes it (docs/specs/015-api/blueprints/cli.md CLI73): the kinds `add` makes, and
+// The element format as an agent writes it (livediagram/docs/specs/015-api/blueprints/cli.md CLI73): the kinds `add` makes, and
 // for one kind its first size, the aliases `set` takes with their values, and the stored fields it also takes by
 // name. Read off the engine's own factories, aliases and value lists, so it says what the engine accepts.
 

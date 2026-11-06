@@ -1,4 +1,4 @@
-// Arrow SVG emitters (docs/specs/015-api/mcp-server.md §5), split from svg-render.ts alongside
+// Arrow SVG emitters (livediagram/docs/specs/015-api/mcp-server.md §5), split from svg-render.ts alongside
 // the -primitives / -shapes / -table / -labels siblings: the arrowhead
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled

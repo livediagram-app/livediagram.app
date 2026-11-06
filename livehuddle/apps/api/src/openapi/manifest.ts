@@ -184,7 +184,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200],
   },
 
-  // ---- Catalogues (docs/specs/015-api/blueprints/cli.md "Catalogue routes") ----
+  // ---- Catalogues (livediagram/docs/specs/015-api/blueprints/cli.md "Catalogue routes") ----
   {
     method: 'GET',
     path: '/templates',
@@ -327,9 +327,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: ['object', 'null'],
           description:
             'What the new Space is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
-            "With no choice of place, the Space lands in the caller's default folder for it: " +
-            'the tab kind default, else the template family default, else the mode default, else ' +
-            'the root of My Work. Malformed: intent_invalid (400).',
+            "With no choice of place, the Space lands in the caller's default folder for new " +
+            'Spaces, else the root of My Work. Malformed: intent_invalid (400).',
           properties: {
             mode: ref('EditorMode'),
             tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },
@@ -1381,18 +1380,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401, 403, 404],
   },
 
-  // ---- OAuth (MCP) ----
-  {
-    method: 'POST',
-    path: '/oauth/exchange',
-    segment: 'oauth',
-    tag: 'API tokens',
-    summary: 'Exchange an MCP OAuth authorization for an API token.',
-    auth: 'clerk',
-    requestSchema: { type: 'object', properties: { clientName: { type: 'string' } } },
-    statuses: [201, 400, 403, 404, 409],
-  },
-
   // ---- Link unfurl ----
   {
     method: 'GET',
@@ -1422,127 +1409,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204],
   },
 
-  // ---- Workbench (docs/specs/013-workspace/workbench-embeds.md) ----
-  {
-    method: 'POST',
-    path: '/workbench/tickets',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary:
-      "Mint a single-use, one-minute ticket that opens a Space, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
-    auth: 'clerk',
-    tokenUsable: true,
-    requestSchema: 'WorkbenchTicketRequest',
-    responseSchema: {
-      anyOf: [ref('WorkbenchTicketResponse'), ref('WorkbenchWorkspaceTicketResponse')],
-    },
-    statuses: [201, 400, 401, 403, 404, 410, 428, 429],
-  },
-  {
-    method: 'POST',
-    path: '/workbench/sessions',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary:
-      "Redeem a ticket for a workbench session: the person's editor on that one Space, or in their workspace. The ticket is the credential.",
-    auth: 'public',
-    requestSchema: 'WorkbenchSessionRequest',
-    responseSchema: 'WorkbenchSessionResponse',
-    statuses: [201, 400, 401, 404, 410, 429],
-  },
-  {
-    method: 'DELETE',
-    path: '/workbench/sessions/current',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary: 'End the workbench session this request presented.',
-    auth: 'public',
-    statuses: [204, 401, 403],
-  },
-  {
-    method: 'POST',
-    path: '/workbench/pairing-requests',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary:
-      "Ask to pair this token with a workbench origin; the token's owner approves it once in their browser.",
-    auth: 'clerk',
-    tokenUsable: true,
-    requestSchema: 'WorkbenchPairingRequestCreate',
-    responseSchema: 'WorkbenchPairingRequestCreated',
-    statuses: [200, 400, 401, 403, 429],
-  },
-  {
-    method: 'GET',
-    path: '/workbench/pairing-requests/{code}/status',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary: 'Poll a pairing request, by the token that asked.',
-    auth: 'clerk',
-    tokenUsable: true,
-    responseSchema: 'WorkbenchPairingStatusResponse',
-    statuses: [200, 403, 404],
-  },
-  {
-    method: 'GET',
-    path: '/workbench/pairing-requests/{code}',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary: "The pairing page's view of a request, for the token's owner.",
-    auth: 'clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { request: ref('WorkbenchPairingRequestView') },
-      required: ['request'],
-    },
-    statuses: [200, 401, 404],
-  },
-  {
-    method: 'POST',
-    path: '/workbench/pairing-requests/{code}/approve',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary: 'Allow the workbench: records the pairing.',
-    auth: 'clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { pairing: ref('WorkbenchPairing') },
-      required: ['pairing'],
-    },
-    statuses: [200, 401, 404, 409, 410],
-  },
-  {
-    method: 'POST',
-    path: '/workbench/pairing-requests/{code}/decline',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary: "Don't allow the workbench: records nothing.",
-    auth: 'clerk',
-    statuses: [204, 401, 404, 409, 410],
-  },
-  {
-    method: 'GET',
-    path: '/workbench/pairings',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary: "The signed-in person's paired workbenches, for Settings > API tokens.",
-    auth: 'clerk',
-    responseSchema: 'WorkbenchPairingsResponse',
-    statuses: [200, 401],
-  },
-  {
-    method: 'DELETE',
-    path: '/workbench/pairings/{id}',
-    segment: 'workbench',
-    tag: 'Workbench',
-    summary: 'Unpair a workbench, ending its open sessions.',
-    auth: 'clerk',
-    statuses: [204, 401, 404],
-  },
-
   // ---- The move from the old livehuddle.app (docs/specs/015-api/api.md "Migration") ----
-  // One-time doors for the editor's pass after the move, as the browser's own guest or account; an API token or a
-  // workbench session is refused (401 identity_required). First-party only.
+  // One-time doors for the editor's pass after the move, as the browser's own guest or account; an API token is refused (401 identity_required). First-party only.
   {
     method: 'POST',
     path: '/legacy-guest/claim',

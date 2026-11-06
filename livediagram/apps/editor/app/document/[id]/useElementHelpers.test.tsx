@@ -127,9 +127,16 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
 // The Format tool is the only painter (docs/specs/008-canvas/format-panel.md): its
 // Mode alone decides whether the brush stays loaded after a paint.
 describe('applyFormatFromSource', () => {
-  function paintHarness(mode: FormatMode, source = 'a') {
+  function paintHarness(
+    mode: FormatMode,
+    source = 'a',
+    lock: { element?: string; layer?: string; tab?: boolean } = {},
+  ) {
     const line: Element = { ...createArrow(0, 0, 10, 0), id: 'line' };
-    const tab: Tab = { id: 't1', name: 'Tab 1', elements: [...ROW, line] };
+    const elements = [...ROW, line].map((el) =>
+      el.id === lock.element ? { ...el, locked: true } : el,
+    );
+    const tab: Tab = { id: 't1', name: 'Tab 1', elements, ...(lock.tab ? { locked: true } : {}) };
     const commit = vi.fn();
     const setFormatSourceId = vi.fn();
     const { result } = renderHook(() =>
@@ -138,6 +145,7 @@ describe('applyFormatFromSource', () => {
         activeId: 't1',
         activeTab: tab,
         editsBlocked: false,
+        layerInertIds: new Set(lock.layer ? [lock.layer] : []),
         formatSourceId: source,
         formatConfig: { ...DEFAULT_FORMAT_CONFIG, mode },
         getViewportCenter: () => ({ x: 0, y: 0 }),
@@ -180,5 +188,40 @@ describe('applyFormatFromSource', () => {
     paint('b');
     expect(commit).not.toHaveBeenCalled();
     expect(setFormatSourceId).toHaveBeenCalledWith(null);
+  });
+
+  // docs/specs/008-canvas/format-panel.md "Locks": a lock holds an element's look as well as its place.
+
+  it('paints nothing onto a locked element, and keeps the brush loaded', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once', 'a', { element: 'b' });
+    telemetry.track.mockClear();
+    paint('b');
+    expect(commit).not.toHaveBeenCalled();
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  it('paints nothing on a locked tab', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once', 'a', { tab: true });
+    telemetry.track.mockClear();
+    paint('b');
+    expect(commit).not.toHaveBeenCalled();
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  it('paints nothing onto an element on a locked layer', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once', 'a', { layer: 'b' });
+    telemetry.track.mockClear();
+    paint('b');
+    expect(commit).not.toHaveBeenCalled();
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  it('still lends a locked source its look', () => {
+    const { paint, commit } = paintHarness('keep', 'a', { element: 'a' });
+    paint('b');
+    expect(commit).toHaveBeenCalledTimes(1);
   });
 });

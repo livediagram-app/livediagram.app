@@ -97,6 +97,7 @@ import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useSlideDeck } from './useSlideDeck';
+import { deckSaveQueue, type DeckSaveQueue } from './deck-save';
 import { slideFitOptions } from '@/lib/presentation-config';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
@@ -1072,11 +1073,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
-  // The deck as this editor last saved or loaded it: what its next deck save was built on.
+  // The deck as this editor last stored or loaded it: what its next deck save is built on.
   const deckBaseRef = useRef<string | null>(documentPresentation);
+  // The deck this editor last sent: coming back through documentPresentation it is no new base (the save queue moves
+  // the base itself, once the save lands).
+  const sentDeckRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
-    deckBaseRef.current = documentPresentation;
+    if (documentPresentation !== sentDeckRef.current) deckBaseRef.current = documentPresentation;
   }, [documentPresentation]);
+  // Deck saves one at a time, each built on the outcome of the one before (deck-save.ts); made on the first save.
+  const toastRef = useLatest(toast);
+  const deckSavesRef = useRef<DeckSaveQueue | null>(null);
   const slideDeck = useSlideDeck({
     prefs: userPreferences,
     // Built on this render's preferences: moved onto the freshest before the whole blob is written.
@@ -1087,21 +1094,24 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setMultiSelectedIds,
     isReadOnly,
-    saveDeck: (serialised) => {
+    saveDeck: (serialised, opts) => {
       if (!hydrated || !documentId) return;
-      // The deck this one was built on goes with it, so the server keeps another person's note cards
-      // (speaker-note-cards.md "Two people writing at once"); then this save is the next one's base.
-      const presentationBase = deckBaseRef.current;
-      deckBaseRef.current = serialised;
+      sentDeckRef.current = serialised;
       setDocumentPresentation(serialised);
-      void apiSaveDocumentMeta(
-        selfParticipant.id,
-        { id: documentId, presentation: serialised, presentationBase },
-        sessionShareCode,
-      ).catch(() => {
-        // Best-effort, like every other metadata write: the deck is in
-        // state either way and the next edit retries.
-      });
+      deckSavesRef.current ??= deckSaveQueue(deckBaseRef, (message) =>
+        toastRef.current.error(message),
+      );
+      deckSavesRef.current.save(
+        serialised,
+        (presentationBase) =>
+          apiSaveDocumentMeta(
+            selfParticipant.id,
+            { id: documentId, presentation: serialised, presentationBase },
+            sessionShareCode,
+            opts,
+          ),
+        opts,
+      );
     },
   });
   // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
@@ -1524,6 +1534,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
     activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+  // What a picture swap answers to (docs/specs/009-elements/images.md "Locked images"): all of the above but the
+  // tab's lock, which holds every element's place, not an image's picture.
+  const pictureBlocked =
+    (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
   // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
@@ -1547,8 +1561,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openComments,
   });
 
-  const commit = (mapElements: (els: Element[]) => Element[]) => {
-    if (editsBlocked) return;
+  // A picture swap passes `{ picture: true }` and answers to `pictureBlocked` instead of `editsBlocked`.
+  const commit = (mapElements: (els: Element[]) => Element[], opts?: { picture?: boolean }) => {
+    if (opts?.picture ? pictureBlocked : editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
     // closure. A deferred caller can run long after the render that created
     // this `commit` — e.g. the link-card unfurl resolves a few seconds
@@ -1740,6 +1755,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     newPageSlide,
     toggleSlideHidden,
     setSlideNoteCards,
+    flushDeckSave,
     start: startDeck,
   } = slideDeck;
   const pageDeck = useMemo(
@@ -1748,6 +1764,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         newPageSlide,
         toggleSlideHidden,
         setSlideNoteCards,
+        flushDeckSave,
         start: startDeck,
       }),
     [
@@ -1757,6 +1774,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       newPageSlide,
       toggleSlideHidden,
       setSlideNoteCards,
+      flushDeckSave,
       startDeck,
     ],
   );
@@ -1771,6 +1789,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Selection + placement + format helpers. See useElementHelpers.
   const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
+      layerInertIds,
       readSelection,
       activeId,
       activeTab,
@@ -1976,6 +1995,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
+    // A locked tab still takes a picture swap (docs/specs/009-elements/images.md "Locked images").
+    pictureBlocked: pictureBlocked || isReadOnly,
+    commitPicture: (mapElements) => commit(mapElements, { picture: true }),
     getViewportCenter,
     elements: () => activeTab.elements,
     commit,

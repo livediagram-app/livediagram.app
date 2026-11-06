@@ -28,6 +28,7 @@ The text here is the page's own, one continuous piece of writing, never elements
 | **article style**      | The article's look (`ArticleFlow.style`): fonts, accent, text size, spacing, heading rules, margins, page numbers.                                          |
 | **look**               | A named article style to start from (Clean, Classic, Report, Notebook, Bold).                                                                               |
 | **page toolbar**       | The formatting bar at the top of the page being written on.                                                                                                 |
+| **footnote**           | A note on a spot in the writing: a raised number in the text (its **reference**, a run's `fn`) and the note at the foot of the page it lands on.            |
 | **margin note**        | A comment thread or an action on a stretch of the writing: a marker in the page's right margin beside that text, which carries a `note` mark.               |
 | **writer**             | The person whose edit changed the writing's layout; only they write the layout's consequences (zone moves, pages added or removed).                         |
 
@@ -78,6 +79,8 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   muted type, whenever the style has them (off by default), one page or many, unless the footer
   says something in its centre (see "Headers and footers").
   They are a view, never elements; exports draw them.
+- **Footnotes** sit at the foot of the page their reference lands on, the writing ending above them
+  (see "Footnotes").
 
 ## Blocks
 
@@ -113,7 +116,8 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
 
 Bold, italic, underline, strikethrough, inline code, superscript, subscript, a **link** (an
 http, https or mailto address), a **text colour** and a **highlight** (each a hex colour from the
-[colour picker](../004-interface-design/colour-picker.md)), and a line break inside a block (Shift+Enter). Code blocks keep plain text.
+[colour picker](../004-interface-design/colour-picker.md)), a line break inside a block (Shift+Enter), and a
+footnote's reference (see "Footnotes"). Code blocks keep plain text.
 
 ## Writing
 
@@ -146,7 +150,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   character lands. Inline: `**bold**`, `*italic*` or `_italic_`, `~~struck~~`, `` `code` `` as the
   closing mark is typed. Backspace right after a conversion puts the characters back.
 - **Keyboard**: ⌘B, ⌘I, ⌘U, ⌘⇧X (strikethrough), ⌘E (inline code), ⌘K (link), ⌘⌥0 (body),
-  ⌘⌥1 to ⌘⌥3 (headings), ⌘⇧7 (numbered), ⌘⇧8 (bullets), ⌘⇧9 (to-do), ⌘⇧L / E / R / J (align left,
+  ⌘⌥1 to ⌘⌥3 (headings), ⌘⌥F (footnote), ⌘⇧7 (numbered), ⌘⇧8 (bullets), ⌘⇧9 (to-do), ⌘⇧L / E / R / J (align left,
   centre, right, justify), ⌘\ (clear formatting), ⌘Enter (tick or untick the to-do at the
   caret), ⌘Z / ⌘⇧Z (undo, redo), ⌘A (all the article's writing), Escape (leave the writing; the caret goes, nothing is selected).
 - **Paste**: from a web page or another editor, its headings, lists, quotes, code, links and
@@ -157,7 +161,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   writing that opens with a heading, quote, list item or code takes the block's place, so it keeps
   its kind; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links, and a
-  paragraph line ending in two spaces or a backslash as a line break); other
+  paragraph's, a quote's or a list item's line ending in two spaces or a backslash as a line break); other
   plain text pastes as paragraphs, one per line. A pasted table (from a spreadsheet, a web page,
   Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones. A paste of
   canvas elements (copied from a canvas) lands as a drawing zone holding them. A whole Word
@@ -171,7 +175,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   it closes when the caret leaves the `/`. With nothing matching it says so ("No blocks match"
   and what was typed). Entries: **Text**, **Title**, **Subtitle**, **Heading
   1 to 3**, **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code**,
-  **Divider**, **Page break**, **Table**, **Table of Contents**, **Image**, **Bar chart**, **Pie
+  **Divider**, **Page break**, **Table**, **Table of Contents**, **Footnote**, **Image**, **Bar chart**, **Pie
   chart**, **Line chart**, **Drawing**, **Callout**, **Sticky note**. **Table** puts a table block
   in the text; the palette's table element still places a table freely, as an object zone or loose on
   a page. (An icon comes in from the palette, where one is chosen: dropped or placed on the writing
@@ -193,7 +197,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   hovered, else the one last shown, else the tab's first, so the controls stay as the pointer
   leaves a page for the strip. On a phone its controls scroll in the strip's rail. The **Insert**
   menu is the palette's rows (a glyph chip, the name and the slash menu's line for it), headed
-  **Objects** (Image, Bar Chart) and **Blocks** (Table, Table of Contents, Divider, Page Break, Quote, Code). Under
+  **Objects** (Image, Bar Chart) and **Blocks** (Table, Table of Contents, Footnote, Divider, Page Break, Quote, Code). Under
   any other kind the card below is used.
 - **Where**: a card fixed at the top of the page, inside it, centred in the top margin. An article
   page's top margin is never less than 72 px (`ARTICLE_TOP_MIN_PX`), whatever its margins, so at
@@ -227,7 +231,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   - **Alignment** (a menu: left, centre, right, justify);
   - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style);
-  - **Insert** (a menu: Image, Chart, then Table, Table of Contents, Divider, Page break, Quote,
+  - **Insert** (a menu: Image, Chart, then Table, Table of Contents, Footnote, Divider, Page break, Quote,
     Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
     callout from the slash menu).
   - **Table** (a menu, shown only while the caret or a cell selection is in a table: Insert Row
@@ -400,6 +404,52 @@ from the writing and its layout, never stored, so it is always up to date.
   (outlined), Backspace or Delete removes it, and Backspace from the block after it selects it first.
 - **Splitting across pages**: a long contents breaks between its entries.
 
+## Footnotes
+
+A **footnote** is a note on a spot in the writing: a small raised number in the text (its
+**reference**), and the note itself at the foot of the page the reference lands on, after the same
+number. The note is part of the writing, stored on its reference (a run's `fn`), so it moves, syncs,
+undoes and copies with the text it sits in.
+
+- **Putting one in**: **Footnote** in the slash menu or the page toolbar's Insert, or ⌘⌥F, at the
+  caret (after the selection, when text is selected). The reference goes in and the caret goes to
+  its note at the foot of the page, empty, to type it. One edit. Not in a code block, and not on a
+  flashcard (a card holds text only and never reflows). A Participant does not put one in (an insert),
+  as with every insert.
+- **Numbering**: through the whole article, 1, 2, 3, in the writing's order (a table's cells in
+  reading order), never restarting on a page. A reference put in, moved or deleted renumbers every
+  one after it, at once, for everyone, on screen and in every export.
+- **Where the note sits**: at the foot of the page its reference lands on, under a short rule (a
+  third of the text width) in the page's rule colour, in the body font at 13/16 of the body size,
+  muted ink, each note its number then its text, notes in their numbers' order. The writing on that
+  page ends above the notes, line by line: the line that would run under them goes on to the next
+  page, and with it any reference in it, its note following. A page's notes take at most two thirds of
+  its text height; a note past that is cut short on screen with the rest kept (a Word export carries
+  it whole).
+- **Moving with reflow**: typing, a style, a zone or a page break that carries a reference onto
+  another page carries its note with it; the pages are laid out again as the writing settles, as the
+  writing's own layout is.
+- **The note's text** is plain text, at most 1,000 characters (`MAX_ARTICLE_FOOTNOTE_TEXT`), no
+  line breaks, edited in place at the foot of the page by anyone who may write: a press on it puts the
+  caret there; Enter or Escape, or a press elsewhere, leaves it (the change is one edit), Enter
+  and Escape putting the caret back after its reference. An empty note says "Footnote" to someone writing.
+  A press on a reference puts the caret in its note.
+- **Removing one**: deleting its reference (Backspace after it, Delete before it, or a selection
+  holding it) removes the note with it. Emptying the note keeps an empty note.
+- **For a screen reader** a reference reads "Footnote 3", and each note's region "Footnotes" with
+  the notes as a list.
+- **Paste and Markdown**: a copy of writing holding references pastes them with their notes, within
+  livedocuments. Markdown writes a reference as `[^3]` and the notes, numbered, after the article's
+  last block (`[^3]: The note.`); reading, a `[^label]` with a `[^label]: text` line anywhere in the
+  text is a footnote with that text (any label: the article numbers them itself), the definition
+  lines leaving the writing; a `[^label]` with no definition stays text. A footnote on the title or
+  subtitle stays in its front matter line (`title: A study[^1]`), numbered first as the title comes
+  first, its note with the others.
+- **Exports**: PDF, PNG and SVG draw each note at the foot of its page as on screen, the references
+  as raised numbers. **Word** writes each as a Word footnote (Word numbers them and places them at
+  the foot of their page, as it lays the document out). A Word document's footnotes come in through
+  Import as footnotes.
+
 ## Comments and actions
 
 A comment or an action can be put on any stretch of the writing, as on an element, and everything
@@ -558,7 +608,7 @@ ink").
   A PDF's pages carry link areas over the images: each contents entry links to its heading's page,
   each link in the text to its address. **Word** writes the article as an editable `.docx`, its
   headings as Word styles, its tables as Word tables, its contents as a Word table of contents,
-  its header and footer as Word's, and its zones as images
+  its header and footer as Word's, its footnotes as Word footnotes, and its zones as images
   ([PowerPoint and Word export](../020-import-export/office-export.md)). **Markdown** (an agent's
   read) writes a table as a pipe table and a contents block as `[TOC]`
   ([Pages for agents](../024-agents/pages-for-agents.md)).
@@ -574,11 +624,11 @@ ink").
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything on this page: writes, formats, inserts (tables and contents included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                                                                                  |
-| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, and the text of a table's cells. Never formats the article's style (its header and footer included), inserts (a table or contents included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
-| **Viewer**      | Reads the writing and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything on this page: writes, formats, inserts (tables, contents and footnotes included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, the text of a table's cells, and the text of the footnotes already there (removing one with its reference). Never formats the article's style (its header and footer included), inserts (a table, contents or a footnote included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
+| **Viewer**      | Reads the writing, its footnotes and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ## Collaboration
 
@@ -617,7 +667,7 @@ ink").
 - `Element · Added · Article<Insert>` for an insert from the toolbar's Insert, the slash menu or
   a palette drop: `ArticleImage`, `ArticleTable`, `ArticleChart`, `ArticleCallout`,
   `ArticleSticky`, `ArticleDrawing`, `ArticleObject`, `ArticleDivider`, `ArticlePageBreak`,
-  `ArticleQuote`, `ArticleCode`, `ArticleContents` (a contents block); `ArticleTable` counts the
+  `ArticleQuote`, `ArticleCode`, `ArticleContents` (a contents block), `ArticleFootnote`; `ArticleTable` counts the
   table block; and `ArticleComment`, `ArticleAction` for a margin note. Each is
   counted once the insert went in, never for one refused (no caret, a lock).
 - `Element · Changed · ArticleFormat` (a mark from the toolbar), `ArticleBlockStyle` (style menu,
@@ -629,9 +679,8 @@ ink").
 
 ## Non-goals
 
-- **Footnotes**, planned for a later card: a note at the foot of its page needs a page layout pass the
-  writing's columns cannot give (the browser fills each page as a column, so it cannot keep a note at
-  the foot of the page its reference lands on). Until then, notes go at the end of the article.
+- Endnotes, footnote numbering by page or in other styles (i, ii; \*, †), formatting inside a note, and a
+  note running on onto the next page on screen.
 - Merged cells, cell colours, per-cell alignment and nested tables; a header column.
 - A first-page header or footer with text of its own, and different odd and even pages.
 - Columns, suggestions and tracked changes. (Find and replace across a tab's pages, the writing included, is its own

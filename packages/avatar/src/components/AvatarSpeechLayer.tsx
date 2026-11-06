@@ -218,21 +218,43 @@ function Composer({
   const submit = () => {
     if (onSend(draft)) setDraft('');
   };
-  // Kept inside the view, its tail still on the head: plain arithmetic on the head's screen x.
+  // Its laid-out height, read only when the view's height is known, after anything that can change it (a line more,
+  // the hint): the top clamp below needs it.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+  const clampsTop = (view.height ?? 0) > 0;
+  useLayoutEffect(() => {
+    if (clampsTop && panelRef.current) setHeight(panelRef.current.offsetHeight);
+  }, [clampsTop, draft, coolingDown]);
+  // Kept inside the view, its tail still on the head: plain arithmetic on the head's screen x, and on its screen y for
+  // the top (SPEECH_TOP_CLEAR below the view's top edge, as every speech bubble is).
   const shift =
     view.width > 0
       ? edgeShift(screenX(head.x, zoom, view.offsetX, view.width), COMPOSER_WIDTH, view.width)
       : 0;
+  const down = clampsTop
+    ? topShift(screenY(head.y, zoom, view.offsetY ?? 0, view.height!) - height)
+    : 0;
+  const style =
+    shift || down
+      ? { marginLeft: shift || undefined, marginBottom: -down || undefined }
+      : undefined;
   return (
     <AtPoint at={head} zoom={zoom}>
       <div
+        ref={panelRef}
         // A press here is the composer's, never a walk (useCanvasSurfaceGestures skips floating panels).
         data-floating-panel
         className="absolute bottom-0 left-0 w-[240px] -translate-x-1/2 pb-[6px]"
-        style={shift ? { marginLeft: shift } : undefined}
+        style={style}
       >
         <div className="origin-bottom animate-speech-pop">
-          <SpeechCard colour={colour || undefined} tailShift={tailOffset(shift, COMPOSER_WIDTH)}>
+          <SpeechCard
+            colour={colour || undefined}
+            tailShift={tailOffset(shift, COMPOSER_WIDTH)}
+            // Moved down below the head (#501), there is nothing under it to point at.
+            tail={down <= 0}
+          >
             <div className="flex items-end gap-2">
               <SpeechDraftField
                 autoFocus

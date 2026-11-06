@@ -6,7 +6,7 @@
 // makes its item at once in its app. The pictures are the manifest's static SVGs, drawn as images.
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { FOCUS_RING, MUTED } from '../ui/classes';
+import { FOCUS_RING, MUTED, SECTION_LINK } from '../ui/classes';
 import { PlusIcon, SearchIcon } from '../ui/icons';
 import { useExplorer } from '../explorer/context';
 import { useFirstRun } from './context';
@@ -17,8 +17,6 @@ import { importLine, signInLine, WELCOME_COPY, type WelcomeStart } from './types
 
 const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
-const SECTION_LINK =
-  'inline-flex min-h-6 items-center rounded-sm text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300';
 const CARD_SURFACE =
   'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-brand-300 hover:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-brand-300)_25%,transparent),0_18px_36px_-16px_color-mix(in_oklab,var(--color-brand-600)_45%,transparent)] motion-safe:hover:-translate-y-0.5 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-400/60';
 

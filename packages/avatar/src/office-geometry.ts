@@ -34,9 +34,16 @@ export function isSeatingShape(kind: string): kind is SeatingKind {
 // Seats that never turn, each seat saying which way its sitter faces (livehuddle's docs/specs/009-elements/office.md
 // "Office Pod", "Bar, Bar Stool"). Kept apart from SeatingKind, whose pieces a product draws per facing.
 // livehuddle's social pieces (its docs/specs/009-elements/social-pieces.md) seat people too: a ping-pong table's two
-// ends, a bench, a picnic table and a hammock.
+// ends, a bench, a picnic table and a hammock, and the breakout seating: a bean bag and a reading nook's armchair.
 export type FixedSeatKind =
-  'office-pod' | 'bar-stool' | 'ping-pong-table' | 'bench' | 'picnic-table' | 'hammock';
+  | 'office-pod'
+  | 'bar-stool'
+  | 'ping-pong-table'
+  | 'bench'
+  | 'picnic-table'
+  | 'hammock'
+  | 'bean-bag'
+  | 'reading-nook';
 
 const FIXED_SEAT_KINDS: readonly string[] = [
   'office-pod',
@@ -45,6 +52,8 @@ const FIXED_SEAT_KINDS: readonly string[] = [
   'bench',
   'picnic-table',
   'hammock',
+  'bean-bag',
+  'reading-nook',
 ];
 
 export function isFixedSeatShape(kind: string): kind is FixedSeatKind {
@@ -54,7 +63,7 @@ export function isFixedSeatShape(kind: string): kind is FixedSeatKind {
 // Pieces that hang on a wall (livehuddle's social-pieces.md "How each one walks"): walked past, never blocking and
 // never a destination.
 export function isWallPieceShape(kind: string): boolean {
-  return kind === 'notice-board' || kind === 'world-clock';
+  return kind === 'notice-board' || kind === 'world-clock' || kind === 'dartboard';
 }
 
 /** Every piece a character sits down in: the seating that turns and the fixed seats. */
@@ -104,6 +113,10 @@ const OFFICE_FOOTPRINT: Partial<
   fountain: { x0: 8 / 136, x1: 128 / 136, y0: 72 / 120, y1: 112 / 120 },
   pond: { x0: 0.06, x1: 0.94, y0: 0.1, y1: 0.92 },
   campfire: { x0: 10 / 80, x1: 70 / 80, y0: 40 / 72, y1: 66 / 72 },
+  // The games corner and the break room: a table from the middle of its top to its feet, a machine's base.
+  'pool-table': { x0: 8 / 200, x1: 192 / 200, y0: 50 / 128, y1: 120 / 128 },
+  'foosball-table': { x0: 12 / 168, x1: 156 / 168, y0: 44 / 104, y1: 98 / 104 },
+  'vending-machine': { x0: 4 / 72, x1: 68 / 72, y0: 96 / 128, y1: 124 / 128 },
 };
 
 /** Scenery: blocks with its footprint and is never a destination (walking up to it rings nothing). */

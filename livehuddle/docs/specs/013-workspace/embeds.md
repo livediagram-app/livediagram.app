@@ -22,9 +22,7 @@ The share-password gate ([Share password](share-password.md)) renders inside the
 
 ## Frame headers
 
-The editor worker (`apps/editor/src/worker.ts`) sends `X-Frame-Options: DENY` on every response as clickjacking defence. It can only do that because `apps/editor/wrangler.toml` sets `run_worker_first = ["/*", "!/_next/*"]`: Static Assets otherwise serves a matching file before the worker runs, so every real page (the MCP OAuth consent screen included) would ship without the header. Embed responses (`/embed` and anything under it) are the **one path-scoped exception**: the header is omitted so any site can frame them. This is safe because the embed carries no authenticated actions to clickjack: its only authority is the share code already present in the URL the host page chose to embed (framing an edit-role embed grants nothing the embedding page didn't already hold), and no owner session or credential lives inside the frame; the editor and every other route keep DENY. The one embed that does hold a credential, the
-[workbench embed](workbench-embeds.md) under `/embed/workbench`, is safe for a second reason: its credential comes
-only from a ticket minted with the person's own API token, and the page mounts only for the origin that minted it. No `Content-Security-Policy: frame-ancestors` is added (absence means frameable, and the CSP cycle is still deferred per the worker's comment).
+The editor worker (`apps/editor/src/worker.ts`) sends `X-Frame-Options: DENY` on every response as clickjacking defence. It can only do that because `apps/editor/wrangler.toml` sets `run_worker_first = ["/*", "!/_next/*"]`: Static Assets otherwise serves a matching file before the worker runs, so every real page would ship without the header. Embed responses (`/embed` and anything under it) are the **one path-scoped exception**: the header is omitted so any site can frame them. This is safe because the embed carries no authenticated actions to clickjack: its only authority is the share code already present in the URL the host page chose to embed (framing an edit-role embed grants nothing the embedding page didn't already hold), and no owner session or credential lives inside the frame; the editor and every other route keep DENY. livehuddle has no embed that holds a credential (the workbench embed went with the CLI, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)). No `Content-Security-Policy: frame-ancestors` is added (absence means frameable, and the CSP cycle is still deferred per the worker's comment).
 
 ## Share dialog
 
@@ -44,5 +42,4 @@ Works with zero external services: the embed page is part of the editor app's st
 - oEmbed / OpenGraph provider endpoints (candidate follow-up).
 - Embedding a single element or region rather than a tab.
 - Hiding the "Open in livehuddle" badge (it is deliberately not configurable).
-- A signed-in editor inside a developer tool: that is a [workbench embed](workbench-embeds.md), served under `/embed`
-  so it may be framed, and admitted by a workbench ticket rather than a share code.
+- A signed-in editor inside a developer tool (a workbench embed): livehuddle has none ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).

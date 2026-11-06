@@ -41,7 +41,6 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useTimerPieceControls } from '@/lib/timer-piece-controls';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
-import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -98,7 +97,6 @@ export function EditorCanvasHost() {
     beginErase,
     beginFreehand,
     beginHighlighter,
-    beginMarker,
     beginShapePen,
     beginPolygon,
     beginRoomWalls,
@@ -137,7 +135,6 @@ export function EditorCanvasHost() {
     commitPolygon,
     commitRoomWalls,
     commitPath,
-    paintBucket,
     commitPathEdit,
     styleNewElement,
     commitLabel,
@@ -158,7 +155,6 @@ export function EditorCanvasHost() {
     editCursorAtEnd,
     editingId,
     embedMode,
-    workbenchMode,
 
     exitFormatTool,
     fitToScreen,
@@ -235,16 +231,12 @@ export function EditorCanvasHost() {
     toggleLockSelected,
     undo,
     userPreferences,
-    whiteboardDock,
     drag,
-    editorMode,
     loadedTabIds,
     applyElementDelta,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  // Draw mode is gone (docs/specs/007-editor/editor-modes.md); the whiteboard tools still take its flag.
-  const drawMode = false;
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&
@@ -281,8 +273,6 @@ export function EditorCanvasHost() {
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   const landscapePhone = useIsLandscapePhone();
-  // A workspace frame's hooks: its Back, at the canvas's top left (WB59).
-  const workbenchFrame = useWorkbenchSession()?.frame ?? null;
   // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md).
   const openEditDialog = (id: string) => {
     const el = activeTab.elements.find((e) => e.id === id);
@@ -320,7 +310,6 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
-    whiteboard: drawMode,
     setContextMenu,
   });
 
@@ -375,14 +364,11 @@ export function EditorCanvasHost() {
           }}
           setViewportOffset={setViewportOffset}
           elements={canvasElements}
-          editorMode={editorMode.mode}
-          whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
           whiteboardInk={PEN_INK[surface]}
           previewDrawnArrow={(intent, startX, startY, endX, endY) =>
             drawnArrowAsShown(intent, startX, startY, endX, endY, {
               elements: activeTab.elements,
               theme: activeTheme,
-              whiteboard: drawMode,
               styleNewElement,
               surface,
             })
@@ -511,7 +497,6 @@ export function EditorCanvasHost() {
           reshapingArrowId={reshapingArrowId}
           onBeginFreehand={beginFreehand}
           onBeginHighlighter={beginHighlighter}
-          onBeginMarker={beginMarker}
           onBeginShapePen={beginShapePen}
           onBeginPolygon={beginPolygon}
           onBeginRoomWalls={beginRoomWalls}
@@ -521,7 +506,6 @@ export function EditorCanvasHost() {
           onCommitPolygon={commitPolygon}
           onCommitRoomWalls={commitRoomWalls}
           onCommitPath={commitPath}
-          onPaintBucket={paintBucket}
           onCommitPathEdit={commitPathEdit}
           onDressPath={styleNewElement}
           settings={userPreferences}
@@ -775,8 +759,7 @@ export function EditorCanvasHost() {
           chromeAway={embedMode}
           // A phone held sideways has no Explorer at all (docs/specs/007-editor/editor-app.md "A phone
           // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
-          explorerHidden={workbenchMode || landscapePhone}
-          workbenchBack={workbenchFrame}
+          explorerHidden={landscapePhone}
         />
         {lockedMenu ? (
           <LockedElementMenu

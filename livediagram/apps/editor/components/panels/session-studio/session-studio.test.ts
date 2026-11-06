@@ -87,10 +87,17 @@ describe('voteRules', () => {
   });
 
   it('adds one per item, the layer scope and the privacy in force', () => {
-    const v = vote({ onePerElement: true, voteLayerId: 'l2', hideCursors: true, hideCounts: true });
+    const v = vote({
+      onePerElement: true,
+      onlyWithText: true,
+      voteLayerId: 'l2',
+      hideCursors: true,
+      hideCounts: true,
+    });
     expect(voteRules(v, layers)).toEqual([
       '3 dots each',
       'One per item',
+      'With text only',
       'Ideas only',
       'Cursors hidden',
       'Counts hidden',

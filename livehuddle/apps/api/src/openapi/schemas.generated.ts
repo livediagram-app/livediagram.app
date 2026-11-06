@@ -636,18 +636,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "callsMode": {
         "$ref": "#/components/schemas/CallsMode"
       },
-      "cli": {
-        "additionalProperties": false,
-        "properties": {
-          "minVersion": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "minVersion"
-        ],
-        "type": "object"
-      },
       "communityEnabled": {
         "type": "boolean"
       },
@@ -656,9 +644,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "emailEnabled": {
         "type": "boolean"
-      },
-      "oauthIssuer": {
-        "type": "string"
       }
     },
     "type": "object"
@@ -1791,14 +1776,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ]
       },
       "templateFamily": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/TemplateFamily"
-          },
-          {
-            "type": "null"
-          }
-        ]
+        "$ref": "#/components/schemas/TemplateFamilyOrNone"
       }
     },
     "required": [
@@ -2024,14 +2002,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ]
       },
       "templateFamily": {
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/TemplateFamily"
-          },
-          {
-            "type": "null"
-          }
-        ]
+        "$ref": "#/components/schemas/TemplateFamilyOrNone"
       }
     },
     "required": [
@@ -4054,15 +4025,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "PairingRequestStatus": {
-    "enum": [
-      "pending",
-      "approved",
-      "declined",
-      "expired"
-    ],
-    "type": "string"
-  },
   "ParticipantRecord": {
     "additionalProperties": false,
     "properties": {
@@ -5391,6 +5353,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "garden-umbrella",
       "fountain",
       "pond",
+      "pool-table",
+      "foosball-table",
+      "dartboard",
+      "vending-machine",
+      "bean-bag",
+      "reading-nook",
       "door",
       "directory",
       "elevator",
@@ -6781,8 +6749,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "object"
   },
   "TemplateFamily": {
-    "const": "retrospective",
+    "deprecated": true,
+    "description": "No template family is offered today: summaries carry null, and a create naming the retired `retrospective` reads as none (any other value is intent_invalid).",
     "type": "string"
+  },
+  "TemplateFamilyOrNone": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/TemplateFamily"
+      },
+      {
+        "type": "null"
+      }
+    ],
+    "description": "A family, or null for none (only null while there is no family)."
   },
   "TextAlignX": {
     "enum": [
@@ -7468,431 +7448,5 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "lint"
     ],
     "type": "string"
-  },
-  "WorkbenchPairing": {
-    "additionalProperties": false,
-    "properties": {
-      "id": {
-        "type": "string"
-      },
-      "name": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "origin": {
-        "type": "string"
-      },
-      "pairedAt": {
-        "type": "number"
-      },
-      "scope": {
-        "$ref": "#/components/schemas/WorkbenchScope"
-      },
-      "tokenId": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "tokenId",
-      "origin",
-      "name",
-      "scope",
-      "pairedAt"
-    ],
-    "type": "object"
-  },
-  "WorkbenchPairingRequestCreate": {
-    "additionalProperties": false,
-    "properties": {
-      "name": {
-        "type": "string"
-      },
-      "origin": {
-        "type": "string"
-      },
-      "scope": {
-        "$ref": "#/components/schemas/WorkbenchScope"
-      }
-    },
-    "required": [
-      "origin"
-    ],
-    "type": "object"
-  },
-  "WorkbenchPairingRequestCreated": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "pairing": {
-            "$ref": "#/components/schemas/WorkbenchPairing"
-          },
-          "status": {
-            "const": "paired",
-            "type": "string"
-          }
-        },
-        "required": [
-          "status",
-          "pairing"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "type": "number"
-          },
-          "interval": {
-            "type": "number"
-          },
-          "pairingUrl": {
-            "type": "string"
-          },
-          "status": {
-            "const": "pending",
-            "type": "string"
-          }
-        },
-        "required": [
-          "status",
-          "pairingUrl",
-          "code",
-          "expiresAt",
-          "interval"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "WorkbenchPairingRequestView": {
-    "additionalProperties": false,
-    "properties": {
-      "expiresAt": {
-        "type": "number"
-      },
-      "name": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "origin": {
-        "type": "string"
-      },
-      "scope": {
-        "$ref": "#/components/schemas/WorkbenchScope"
-      },
-      "status": {
-        "$ref": "#/components/schemas/PairingRequestStatus"
-      },
-      "tokenName": {
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    },
-    "required": [
-      "origin",
-      "name",
-      "tokenName",
-      "scope",
-      "expiresAt",
-      "status"
-    ],
-    "type": "object"
-  },
-  "WorkbenchPairingStatusResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "expiresAt": {
-        "type": "number"
-      },
-      "interval": {
-        "type": "number"
-      },
-      "status": {
-        "$ref": "#/components/schemas/PairingRequestStatus"
-      }
-    },
-    "required": [
-      "status",
-      "expiresAt",
-      "interval"
-    ],
-    "type": "object"
-  },
-  "WorkbenchPairingsResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "pairings": {
-        "items": {
-          "$ref": "#/components/schemas/WorkbenchPairing"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "pairings"
-    ],
-    "type": "object"
-  },
-  "WorkbenchPerson": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "id": {
-        "type": "string"
-      },
-      "name": {
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    },
-    "required": [
-      "id",
-      "name",
-      "color"
-    ],
-    "type": "object"
-  },
-  "WorkbenchRole": {
-    "$ref": "#/components/schemas/AccessLevel"
-  },
-  "WorkbenchScope": {
-    "enum": [
-      "document",
-      "workspace"
-    ],
-    "type": "string"
-  },
-  "WorkbenchSessionRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "ticket": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "ticket"
-    ],
-    "type": "object"
-  },
-  "WorkbenchSessionResponse": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "documentId": {
-            "type": "string"
-          },
-          "expiresAt": {
-            "type": "number"
-          },
-          "folderId": {
-            "type": "null"
-          },
-          "origin": {
-            "type": "string"
-          },
-          "person": {
-            "$ref": "#/components/schemas/WorkbenchPerson"
-          },
-          "role": {
-            "$ref": "#/components/schemas/WorkbenchRole"
-          },
-          "scope": {
-            "const": "document",
-            "type": "string"
-          },
-          "session": {
-            "type": "string"
-          },
-          "tabId": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "documentId",
-          "expiresAt",
-          "folderId",
-          "origin",
-          "person",
-          "role",
-          "scope",
-          "session",
-          "tabId"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "documentId": {
-            "type": "null"
-          },
-          "expiresAt": {
-            "type": "number"
-          },
-          "folderId": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "origin": {
-            "type": "string"
-          },
-          "person": {
-            "$ref": "#/components/schemas/WorkbenchPerson"
-          },
-          "role": {
-            "$ref": "#/components/schemas/WorkbenchRole"
-          },
-          "scope": {
-            "const": "workspace",
-            "type": "string"
-          },
-          "session": {
-            "type": "string"
-          },
-          "tabId": {
-            "type": "null"
-          }
-        },
-        "required": [
-          "documentId",
-          "expiresAt",
-          "folderId",
-          "origin",
-          "person",
-          "role",
-          "scope",
-          "session",
-          "tabId"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "WorkbenchTicketRequest": {
-    "anyOf": [
-      {
-        "additionalProperties": false,
-        "properties": {
-          "documentId": {
-            "type": "string"
-          },
-          "origin": {
-            "type": "string"
-          },
-          "scope": {
-            "const": "document",
-            "type": "string"
-          },
-          "tabId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "documentId",
-          "origin"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "folderId": {
-            "type": "string"
-          },
-          "origin": {
-            "type": "string"
-          },
-          "scope": {
-            "const": "workspace",
-            "type": "string"
-          }
-        },
-        "required": [
-          "scope",
-          "origin"
-        ],
-        "type": "object"
-      }
-    ]
-  },
-  "WorkbenchTicketResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "documentId": {
-        "type": "string"
-      },
-      "expiresAt": {
-        "type": "number"
-      },
-      "tabId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "url": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "url",
-      "documentId",
-      "tabId",
-      "expiresAt"
-    ],
-    "type": "object"
-  },
-  "WorkbenchWorkspaceTicketResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "expiresAt": {
-        "type": "number"
-      },
-      "folderId": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "scope": {
-        "const": "workspace",
-        "type": "string"
-      },
-      "url": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "url",
-      "scope",
-      "folderId",
-      "expiresAt"
-    ],
-    "type": "object"
   }
 };

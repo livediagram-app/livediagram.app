@@ -49,8 +49,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
-    articleCount: 9,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, the Google Drive mirror, and email notifications work.',
+    articleCount: 8,
   },
   {
     slug: 'privacy-and-security',
@@ -63,8 +63,8 @@ export const categories: Category[] = [
     slug: 'developers',
     title: 'Developers',
     description:
-      'Call the livehuddle REST API from your own scripts or the command line: authentication, worked examples, the CLI and developer tools, errors and limits, and the OpenAPI reference.',
-    articleCount: 8,
+      'Call the livehuddle REST API from your own scripts: authentication, worked examples, errors and limits, and the OpenAPI reference.',
+    articleCount: 6,
   },
   {
     slug: 'troubleshooting',
@@ -456,25 +456,7 @@ export const articles: Article[] = [
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
-  {
-    slug: 'connect-ai-mcp',
-    title: 'Connect an AI Tool (MCP)',
-    description: 'Connect Claude or any MCP client to find, view, create, and edit your spaces.',
-    keywords:
-      'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore read-only document',
-    category: 'Account and Data',
-    categorySlug: 'account-and-data',
-  },
-  {
-    slug: 'ai-clients',
-    title: 'Connecting AI Tools',
-    description: 'Add livehuddle to Claude, Claude Code, Cursor, ChatGPT or any MCP client',
-    keywords:
-      'mcp connector claude desktop claude code cursor chatgpt oauth bearer token setup remote server url',
-    category: 'Account and Data',
-    categorySlug: 'account-and-data/connect-ai-mcp',
-    parentSlug: 'connect-ai-mcp',
-  },
+
   {
     slug: 'google-drive',
     title: 'Google Drive',
@@ -525,7 +507,7 @@ export const articles: Article[] = [
     title: 'Edit Operations Reference',
     description: 'Every changeset operation, selector, placement, flag and lint finding.',
     keywords:
-      'changeset edit operations ops line form json selector placement flags lint findings vocabulary cli mcp agent',
+      'changeset edit operations ops line form json selector placement flags lint findings vocabulary agent',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -547,42 +529,13 @@ export const articles: Article[] = [
     category: 'Developers',
     categorySlug: 'developers',
   },
-  {
-    slug: 'cli',
-    title: 'The livehuddle CLI',
-    description:
-      'Read, build, edit and discuss spaces from a terminal: install, sign in, the commands, and profiles for other servers.',
-    keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile host document',
-    category: 'Developers',
-    categorySlug: 'developers',
-  },
-  {
-    slug: 'workbenches',
-    title: 'Spaces in Your Developer Tools',
-    description:
-      'Draw in a space inside a developer tool beside your agent, and talk about what you select.',
-    keywords:
-      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace document',
-    category: 'Developers',
-    categorySlug: 'developers',
-  },
-  {
-    slug: 'building-a-workbench',
-    title: 'Building a Workbench',
-    description: 'Pair, frame and message the editor from your own developer tool.',
-    keywords:
-      'workbench integration postmessage post message iframe frame embed ticket pairing pair handshake hello ack renew selection reference reveal theme ended vs code extension protocol origin',
-    category: 'Developers',
-    categorySlug: 'developers/workbenches',
-    parentSlug: 'workbenches',
-  },
+
   {
     slug: 'agent-changes',
     title: "Reviewing and Undoing an Agent's Changes",
-    description: 'See what an AI tool, the CLI or a script changed, and undo it for 30 days',
+    description: 'See what an agent or a script changed, and undo it for 30 days',
     keywords:
-      'changeset changesets undo revert agent ai mcp cli history review rollback toast kept diff',
+      'changeset changesets undo revert agent ai script history review rollback toast kept diff',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -591,7 +544,7 @@ export const articles: Article[] = [
     title: 'Comments and Presence for Agents',
     description: 'Reply to and resolve comments, and show what your agent is doing.',
     keywords:
-      'agent comments reply resolve reopen threads presence status focus ring card comments api cli bot',
+      'agent comments reply resolve reopen threads presence status focus ring card comments api script bot',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -917,9 +870,9 @@ export const articles: Article[] = [
     slug: 'virtual-office',
     title: 'Virtual Office',
     description:
-      'Rooms of any shape with doors, a stage, an office pod, a meeting table, a bar, a garden, a recreation corner, a notice board, world clocks, plants, shelves, drinks and rugs for Avatar mode.',
+      'Rooms of any shape with doors, a stage, an office pod, a meeting table, bean bags and a reading nook, a bar, a garden, a recreation corner, a vending machine, a notice board, world clocks, plants, shelves, drinks and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis arcade game recreation team avatar walk sit navigate',
+      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks bean bag beanbag reading nook armchair lamp breakout arcade game recreation team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -1252,9 +1205,9 @@ export const articles: Article[] = [
   {
     slug: 'default-folders',
     title: 'Default Folders',
-    description: 'Choose the folder new spaces and sessions land in automatically.',
+    description: 'Choose the folder new spaces land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives diagrams use as default settings documents new document wizard sessions canvas space spaces',
+      'default folder where new documents go automatic placement file use as default settings documents new space wizard canvas space spaces',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -1265,7 +1218,7 @@ export const articles: Article[] = [
     description:
       'Narrow any canvas list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in kind template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages document',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in kind template edited date last week recent people me others owner space team shared unfiled root lens results pages document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',

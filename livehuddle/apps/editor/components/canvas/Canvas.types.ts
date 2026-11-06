@@ -11,7 +11,6 @@ import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 import type { EmbedProvider, Finish, FrameHandle } from '@livehuddle/document';
 import type {
   BackgroundPattern,
-  EditorMode,
   Element,
   ShapeKind,
   TextAlignX,
@@ -22,7 +21,6 @@ import type { ArrowEnd, DragMode } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import type { WorkspaceFrameHooks } from '@/components/providers/workbench-session-context';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -67,12 +65,7 @@ export type CanvasProps = {
   onFitToScreen: () => void;
   isPinchingRef?: React.RefObject<boolean>;
   elements: Element[];
-  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
-  // palette, the strip and the tool panels for the dock, and keeps the canvas still.
-  editorMode?: EditorMode;
-  // The whiteboard dock's model and the board's ink for this appearance
-  // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
-  whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
+  // The board's ink for this appearance, for a whiteboard pen's live stroke (WhiteboardPenPreview).
   whiteboardInk?: string;
   // Dragged element ids to render translucent while a shift-duplicate is
   // in progress (docs/specs/008-canvas/shift-drag-duplicate.md): the materialised copies already sit at the
@@ -256,8 +249,6 @@ export type CanvasProps = {
   // Highlighter variant of the pencil (docs/specs/008-canvas/highlighter.md) + the polygon
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
   onBeginHighlighter: () => void;
-  // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
   // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
@@ -571,10 +562,6 @@ export type CanvasProps = {
   // An embed (docs/specs/013-workspace/embeds.md): CanvasChrome hides every floating panel, the history dock and
   // the owner badge, keeping only the canvas content and the zoom controls.
   chromeAway?: boolean;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
-  // has no Explorer: neither the floating panel nor the Toolbar layout's menu button.
+  // No Explorer: neither the floating panel nor the Toolbar layout's menu button (a phone held sideways).
   explorerHidden?: boolean;
-  // A workspace frame's Back (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB59), in the menu button's
-  // place at the canvas's top left.
-  workbenchBack?: Pick<WorkspaceFrameHooks, 'back' | 'backTitle'> | null;
 };

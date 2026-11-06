@@ -1,7 +1,7 @@
 'use client';
 
 // What the shared Explorer reports about keeping things in order (@liveworkspace/explorer OrganiseTelemetry), from
-// the editor's Explorer (its panel, its page or the Workbench's) and Settings › Default Folders: folders made,
+// the editor's Explorer (its panel or its page) and Settings › Default Folders: folders made,
 // re-parented and deleted, a default folder set or cleared, the Trash restored from, deleted from and emptied, and an
 // item moved into, within or out of a team. The names the app's own Explorer always sent, each a literal pair so the
 // telemetry manifest's coverage test sees it (docs/specs/017-telemetry/telemetry.md). The Explorer on

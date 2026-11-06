@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { MAX_ARTICLE_BLOCK_TEXT, type ArticleBlock, type ArticleFlow } from './article-flow';
 import {
   ARTICLE_MARKDOWN_MAX,
@@ -7,7 +8,7 @@ import {
   articleToMarkdown,
   articleWordCount,
 } from './article-markdown-io';
-import { parseInline } from './article-markdown';
+import { parseInline, parseMarkdownBlocks } from './article-markdown';
 
 // docs/specs/024-agents/pages-for-agents.md "write_article", "Reading: the pages view".
 
@@ -101,16 +102,83 @@ describe('a line break in a paragraph', () => {
     expect(roundTrip(block)).toEqual([{ type: 'paragraph', runs: block.runs }]);
   });
 
-  it('drops a break at the paragraph end, and keeps a heading or list item on one line', () => {
+  it('drops a break at the paragraph end, and keeps a heading on one line', () => {
     expect(
       articleToMarkdown({
         blocks: [
           { id: 'a', type: 'paragraph', runs: [{ text: 'end\n\n' }] },
           { id: 'b', type: 'paragraph', style: 'h2', runs: [{ text: 'a\nb' }] },
-          { id: 'c', type: 'list', list: 'bullet', runs: [{ text: 'c\nd' }] },
+          { id: 'c', type: 'list', list: 'bullet', runs: [{ text: 'c\n' }] },
         ],
       }),
-    ).toBe('end\n\n## a b\n\n- c d\n');
+    ).toBe('end\n\n## a b\n\n- c\n');
+  });
+});
+
+// Work Tracker #390: a quote and a list item keep their line breaks through a round trip.
+describe('a line break in a quote or a list item', () => {
+  const roundTrip = (blocks: ArticleBlock[]) => shape(blocksOf(articleToMarkdown({ blocks })));
+
+  it('writes a quote line by line, each its own `> `, and reads it back as one quote', () => {
+    const quote: ArticleBlock = {
+      id: 'q',
+      type: 'paragraph',
+      style: 'quote',
+      runs: [
+        { text: 'Roses are red,\n' },
+        { text: 'violets', i: true },
+        { text: ' are blue\n\n- Anon' },
+      ],
+    };
+    expect(articleToMarkdown({ blocks: [quote] })).toBe(
+      '> Roses are red,\\\n> *violets* are blue\\\n> \\\n> \\- Anon\n',
+    );
+    expect(roundTrip([quote])).toEqual([{ type: 'paragraph', style: 'quote', runs: quote.runs }]);
+  });
+
+  it('writes a list item on lines indented under its text, at any level and marker', () => {
+    const items: ArticleBlock[] = [
+      { id: 'a', type: 'list', list: 'bullet', runs: [{ text: 'Harbour Coffee\n1 Quay St' }] },
+      { id: 'b', type: 'list', list: 'numbered', level: 1, runs: [{ text: 'one\n# two' }] },
+      { id: 'c', type: 'list', list: 'todo', checked: true, runs: [{ text: 'buy\nmilk' }] },
+    ];
+    expect(articleToMarkdown({ blocks: items })).toBe(
+      '- Harbour Coffee\\\n  1 Quay St\n  1. one\\\n     \\# two\n- [x] buy\\\n      milk\n',
+    );
+    expect(roundTrip(items)).toEqual(shape(items));
+  });
+
+  it('reads CommonMark hard breaks written by others: two spaces, or a backslash', () => {
+    expect(shape(blocksOf('> one  \n> two\n\n- three  \n  four\\\n  five\n'))).toEqual([
+      { type: 'paragraph', style: 'quote', runs: [{ text: 'one\ntwo' }] },
+      { type: 'list', list: 'bullet', runs: [{ text: 'three\nfour\nfive' }] },
+    ]);
+  });
+
+  it('keeps `>` lines with no break apart, and never carries an item into a block of its own', () => {
+    expect(shape(blocksOf('> a\n> b\\\n\n- c\\\n- d\\\n## e\n- f\\'))).toEqual([
+      { type: 'paragraph', style: 'quote', runs: [{ text: 'a' }] },
+      // A break with no `>` line after it is no break: the backslash stays.
+      { type: 'paragraph', style: 'quote', runs: [{ text: 'b\\' }] },
+      { type: 'list', list: 'bullet', runs: [{ text: 'c\\' }] },
+      { type: 'list', list: 'bullet', runs: [{ text: 'd\\' }] },
+      { type: 'paragraph', style: 'h2', runs: [{ text: 'e' }] },
+      { type: 'list', list: 'bullet', runs: [{ text: 'f\\' }] },
+    ]);
+  });
+
+  it('reads a long run of broken quote and item lines in budget', () => {
+    const spaces = ' '.repeat(20_000);
+    const quote = Array.from({ length: 2_000 }, () => `> x${spaces.slice(0, 9)}`).join('\n');
+    const item = `- y${spaces}\n  ${'\\'.repeat(20_001)}\n  z`;
+    let out: ArticleBlock[] = [];
+    const took = cpuMsOf(() => {
+      // The reader itself: a write refuses a paragraph this long before reading it (tooLong).
+      out = [...parseMarkdownBlocks(quote), ...parseMarkdownBlocks(item)];
+    });
+    expect(out.map((b) => b.type)).toEqual(['paragraph', 'list']);
+    // Measured under 10 ms: each line is scanned back from its end once.
+    expect(took).toBeLessThan(cpuBudgetMs(250));
   });
 });
 
@@ -372,13 +440,13 @@ describe('an article as Markdown', () => {
     expect(shape(back)).toEqual(shape(flow.blocks));
   });
 
-  it("prints an empty article as nothing, and a quote's line break as a space", () => {
+  it("prints an empty article as nothing, and a quote's line break as a hard break", () => {
     expect(articleToMarkdown({ blocks: [] })).toBe('');
     expect(
       articleToMarkdown({
         blocks: [{ id: 'a', type: 'paragraph', style: 'quote', runs: [{ text: 'a\nb' }] }],
       }),
-    ).toBe('> a b\n');
+    ).toBe('> a\\\n> b\n');
   });
 
   it('counts words and names the article by its title, else its first heading', () => {
@@ -401,48 +469,52 @@ describe('worst case', () => {
       size += line.length + 2;
     }
     const text = lines.join('\n').slice(0, ARTICLE_MARKDOWN_MAX);
-    const started = performance.now();
-    const blocks = blocksOf(text);
-    const took = performance.now() - started;
+    let blocks: ReturnType<typeof blocksOf> = [];
+    const took = cpuMsOf(() => {
+      blocks = blocksOf(text);
+    });
     expect(blocks.length).toBeGreaterThan(1000);
-    // Measured 77 to 346 ms on a loaded machine; held at 1,000 ms for CI under load.
-    expect(took).toBeLessThan(1000);
+    // Measured 77 to 346 ms of wall time on a loaded machine; CPU time, so load never fails it.
+    expect(took).toBeLessThan(cpuBudgetMs(1000));
   });
 
   it('reads a block of unclosed backtick fences in budget', () => {
     // Every fence length up to 190, none closed: each fence scans the rest of the line once.
     const line = Array.from({ length: 190 }, (_, i) => '`'.repeat(i + 1) + 'x').join('');
-    const started = performance.now();
-    parseInline(line);
-    // Measured 3 ms; 250 leaves room for CI under load.
-    expect(performance.now() - started).toBeLessThan(250);
+    const took = cpuMsOf(() => parseInline(line));
+    // Measured 3 ms.
+    expect(took).toBeLessThan(cpuBudgetMs(250));
   });
 
   it('writes and reads inline code of a long run of spaces in budget', () => {
     const code = ' ' + '!'.repeat(15_000) + ' !';
-    const started = performance.now();
-    const back = articleFromMarkdown(
-      articleToMarkdown({
-        blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: code, code: true }] }],
-      }),
-    );
+    let back: ReturnType<typeof articleFromMarkdown> = { error: '' } as never;
+    const took = cpuMsOf(() => {
+      back = articleFromMarkdown(
+        articleToMarkdown({
+          blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: code, code: true }] }],
+        }),
+      );
+    });
     // CodeQL's case for the edge-space check this replaced: quadratic as a regex.
-    expect(performance.now() - started).toBeLessThan(250);
+    expect(took).toBeLessThan(cpuBudgetMs(250));
     expect('blocks' in back).toBe(true);
   });
 
   it('stays linear on a long run of spaces (no regex backtracking)', () => {
     const spaces = ' '.repeat(50_000);
-    const started = performance.now();
-    const md = articleToMarkdown({
-      blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: `${spaces}x${spaces}y`, b: true }] }],
+    let md = '';
+    let out: ReturnType<typeof articleFromMarkdown> = { error: '' } as never;
+    const took = cpuMsOf(() => {
+      md = articleToMarkdown({
+        blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: `${spaces}x${spaces}y`, b: true }] }],
+      });
+      out = articleFromMarkdown(`| a | b |\n|${spaces}x\n| 1 | 2 |`);
     });
-    const out = articleFromMarkdown(`| a | b |\n|${spaces}x\n| 1 | 2 |`);
-    const took = performance.now() - started;
     expect(md).toBe(`${spaces}**x${spaces}y**\n`);
     // Not a table rule, so the line stays a paragraph, then refused as longer than a block takes.
     expect('blocks' in out).toBe(false);
     // Measured under 5 ms; the quadratic regexes this guards took about 3 s each.
-    expect(took).toBeLessThan(250);
+    expect(took).toBeLessThan(cpuBudgetMs(250));
   });
 });

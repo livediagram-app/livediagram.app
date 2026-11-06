@@ -27,7 +27,7 @@ import {
   PRIMARY_BUTTON,
   QUIET_BUTTON,
 } from './AccountPage';
-import { APP_NAMES, Pitch } from './Pitch';
+import { Pitch } from './Pitch';
 
 // Signing in and registering (liveworkspace/docs/specs/010-site/site.md "Accounts"): an email code, or Google, and
 // the person's first and last name. The page is static; an app's OAuth request rides in its query,
@@ -78,6 +78,9 @@ export function SignInFlow({ flow }: { flow: Flow }) {
   const digitBoxes = useRef<CodeDigitsHandle>(null);
   const captchaBox = useRef<HTMLDivElement>(null);
   const captcha = useRef<{ turnstile: Turnstile; widget: string } | null>(null);
+  // Whether the widget's token went with a send. It is reset only when the next send needs one, so the code
+  // step doesn't run a fresh check (and show the widget again) right after the email step's.
+  const captchaSpent = useRef(false);
   const nameStepGiven = useRef<HTMLInputElement>(null);
 
   const setError = (message: string) => {
@@ -128,6 +131,10 @@ export function SignInFlow({ flow }: { flow: Flow }) {
   // Resend waits for its token rather than being refused for not having one.
   async function captchaToken(): Promise<string> {
     if (!siteKey) return '';
+    if (captchaSpent.current && captcha.current) {
+      captcha.current.turnstile.reset(captcha.current.widget);
+      captchaSpent.current = false;
+    }
     for (let waited = 0; waited < 15000; waited += 200) {
       const token = captcha.current?.turnstile.getResponse(captcha.current.widget);
       if (token) return token;
@@ -143,7 +150,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
       { email: to, type: 'sign-in' },
       { 'x-captcha-response': token },
     );
-    captcha.current?.turnstile.reset(captcha.current.widget);
+    captchaSpent.current = true;
     if (result.ok) return true;
     setError(
       result.status === 429
@@ -342,7 +349,7 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     <>
       <AccountCard>
         <AccountHeading title={title}>
-          One account for {APP_NAMES} and the rest of liveworkspace.
+          One free account that works for every app in liveworkspace.
         </AccountHeading>
         {error && <Alert tone="error">{error}</Alert>}
         {notice && <Alert tone="notice">{notice}</Alert>}

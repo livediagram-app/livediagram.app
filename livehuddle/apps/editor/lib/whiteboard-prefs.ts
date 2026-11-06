@@ -104,7 +104,7 @@ export function colourLabel(colour: PenColour | null): string {
   return isPenColourName(colour) ? penColourLabel(colour) : colour;
 }
 
-export function widthLabel(px: number): string {
+function widthLabel(px: number): string {
   return WHITEBOARD_PEN_WIDTHS.find((w) => w.px === px)?.label ?? `${px}px`;
 }
 

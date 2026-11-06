@@ -21,10 +21,6 @@ function dispatchedSegments(): Set<string> {
   const source = readFileSync(fileURLToPath(new URL('../index.ts', import.meta.url).href), 'utf8');
   const segments = new Set<string>();
   for (const m of source.matchAll(/case '([^']+)':/g)) if (m[1]) segments.add(m[1]);
-  // Forwarded to liveworkspace unchanged ahead of the switch (liveworkspace/docs/specs/011-workbench/workbench.md), and still part of
-  // this api's published surface.
-  if (/segments\[1\] === 'workbench'[\s\S]{0,400}routeToWorkspace/.test(source))
-    segments.add('workbench');
   return segments;
 }
 
@@ -326,5 +322,16 @@ describe('OpenAPI teams surface', () => {
     const teams = ROUTE_MANIFEST.filter((r) => r.segment === 'teams');
     const usable = teams.filter((r) => r.tokenUsable).map((r) => `${r.method} ${r.path}`);
     expect(usable).toEqual(['GET /teams', 'GET /teams/{id}/library']);
+  });
+});
+
+// An empty closed list (TemplateFamily since Work Tracker #507) generates `{}`, any value; the summaries and the
+// create body must reference what the API really takes instead (EMPTY_LIST_SCHEMAS in the generator).
+describe('a type with an empty closed list', () => {
+  it('is published as a described schema, never an empty one', () => {
+    for (const [name, schema] of Object.entries(COMPONENT_SCHEMAS)) {
+      expect(Object.keys(schema as object), name).not.toHaveLength(0);
+    }
+    expect(COMPONENT_SCHEMAS.TemplateFamily).toMatchObject({ type: 'string', deprecated: true });
   });
 });

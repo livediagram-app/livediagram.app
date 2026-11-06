@@ -29,12 +29,6 @@ import { useCommunityState } from '@/lib/community-state-store';
 import { useCommunityEnabled } from '@livehuddle/ui';
 import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
-import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
-import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
-
-// The document in a full tab, by its link when the frame opened it by one.
-const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
-  appHrefOfPlace({ kind: 'document', documentId, tabId: null, shareCode });
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
@@ -105,10 +99,8 @@ export function EditorView() {
     followMe,
     anyWelcomeOpen,
     embedMode,
-    // The app's surroundings, and the workbench session (docs/specs/013-workspace/blueprints/
-    // workbench-embeds.md, Surface table).
+    // The app's surroundings.
     appChrome,
-    workbench,
     quickStyleDeps,
     focusInvite,
     livePresence,
@@ -194,8 +186,6 @@ export function EditorView() {
   // actions the menus use. Empty (undefined items) for view-only sessions.
   // Retarget the brand-* accent (buttons, rings, focus) to the active tab's
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
-  // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
-  // follows the tab's theme in Draw mode too.
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/editor-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
@@ -275,16 +265,6 @@ export function EditorView() {
       <LandscapeBarFold shown={landscapeBars.shown}>
         <AreaErrorBoundary area="TabBar" fallback="panel">
           <TabBar
-            workbenchLink={
-              workbench && documentId
-                ? (labelled) => (
-                    <WorkbenchOpenLink
-                      href={workbenchDocumentHref(documentId, workbench.shareCode)}
-                      labelled={labelled}
-                    />
-                  )
-                : undefined
-            }
             tabs={tabs}
             activeId={activeId}
             // Clicking an avatar in a presence stack opens the Collaborators
@@ -311,7 +291,6 @@ export function EditorView() {
               documentId,
               documentList,
               isOffline,
-              workbench: workbench !== null,
               isOwner,
             })}
             onCopyTabTo={linkActiveTabTo}
@@ -350,7 +329,7 @@ export function EditorView() {
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
-  // where there are bars to fold (not in an embed, the workbench frame or the welcome flow).
+  // where there are bars to fold (not in an embed or the welcome flow).
   const landscapeBarsHandle =
     header && footer ? (
       <LandscapeBarsHandle shown={landscapeBars.shown} onToggle={landscapeBars.toggle} />
@@ -378,7 +357,6 @@ export function EditorView() {
                   {(headerInColumn, footerInColumn) => (
                     <div
                       // The open tab's editor mode, for the e2e helpers (e2e/fixtures.ts).
-                      data-editor-mode={ctx.editorMode.mode}
                       className="flex h-dvh flex-col"
                     >
                       {/* Arrow click-to-connect hint (docs/specs/008-canvas/canvas-and-palette.md): shown while the gesture
@@ -443,13 +421,6 @@ export function EditorView() {
                           activeId={activeId}
                           shareCode={sessionShareCode}
                           onSelectTab={selectTab}
-                        />
-                      ) : null}
-                      {workbench ? (
-                        // The workbench's Reconnect line; its Open in livehuddle sits in the tab bar.
-                        <WorkbenchReconnectLine
-                          workbenchName={workbench.workbenchName}
-                          ended={workbench.ended}
                         />
                       ) : null}
                       {footerInColumn}

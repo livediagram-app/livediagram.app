@@ -28,6 +28,30 @@ describe('EmptyPageLayouts', () => {
     expect(onHide).not.toHaveBeenCalled();
   });
 
+  it('hides on Escape pressed inside the card, keeping the press from the canvas', () => {
+    const [page] = layOutPages([newLogoPage('l')]);
+    const onHide = vi.fn();
+    const onCanvasKey = vi.fn();
+    render(
+      <div onKeyDown={onCanvasKey}>
+        <EmptyPageLayouts
+          page={page!}
+          zoom={1}
+          onApply={vi.fn()}
+          onHide={onHide}
+          onBlank={vi.fn()}
+        />
+      </div>,
+    );
+    const hide = screen.getByRole('button', { name: 'Hide' });
+    fireEvent.keyDown(hide, { key: 'Enter' });
+    expect(onHide).not.toHaveBeenCalled();
+    expect(onCanvasKey).toHaveBeenCalledTimes(1);
+    fireEvent.keyDown(hide, { key: 'Escape' });
+    expect(onHide).toHaveBeenCalledTimes(1);
+    expect(onCanvasKey).toHaveBeenCalledTimes(1);
+  });
+
   it('offers no Start From Scratch on an infographic page', () => {
     const [page] = layOutPages([{ id: 'i', orientation: 'portrait' }]);
     render(

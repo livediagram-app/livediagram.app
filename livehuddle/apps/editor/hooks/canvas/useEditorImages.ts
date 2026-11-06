@@ -40,6 +40,10 @@ type EditorImagesDeps = {
   // locked tab). Mirrors the page's `editsBlocked`; the placement
   // handlers no-op when set.
   editsBlocked: boolean;
+  // What a picture swap alone answers to (docs/specs/009-elements/images.md "Locked images"): the
+  // session's guard without the tab's lock, so a locked tab's images still take Select Image. Left
+  // out, editsBlocked.
+  pictureBlocked?: boolean;
   // Whether the current viewer is a view-only visitor. Gates the
   // recent-images fetch + the onOpenPicker handle on imageContext.
   isReadOnly: boolean;
@@ -49,12 +53,11 @@ type EditorImagesDeps = {
   // throwaway per-partition guest — uploads would land in an un-owned
   // gallery nobody can manage. Everything else in the embed stays editable.
   embedMode: boolean;
-  // The editor in a workbench uploads but never reads the person's gallery
-  // (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table): no recent-images fetch.
-  galleryHidden?: boolean;
   // The history-aware element mutator. Snapshots history, same path the
   // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
+  // The commit a picture swap lands through: `commit` without the tab lock's refusal. Left out, commit.
+  commitPicture?: (mapElements: (els: Element[]) => Element[]) => void;
   // The current document id (null before hydration). The picker +
   // recent-images list only operate once it's known.
   documentId: string | null;
@@ -67,7 +70,9 @@ type EditorImagesDeps = {
 
 export function useEditorImages(deps: EditorImagesDeps) {
   const { editsBlocked, isReadOnly, embedMode, commit } = deps;
-  const { documentId, ownerId, sessionShareCode, galleryHidden = false } = deps;
+  const pictureBlocked = deps.pictureBlocked ?? editsBlocked;
+  const commitPicture = deps.commitPicture ?? commit;
+  const { documentId, ownerId, sessionShareCode } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
     forElementId: string | null;
@@ -90,9 +95,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // placeholder is nobody's gallery.
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
-    if (!documentId || isReadOnly || embedMode || galleryHidden || ownerId === 'self') return;
+    if (!documentId || isReadOnly || embedMode || ownerId === 'self') return;
     loadRecentImages();
-  }, [documentId, isReadOnly, embedMode, galleryHidden, ownerId]);
+  }, [documentId, isReadOnly, embedMode, ownerId]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
   // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a
@@ -113,10 +118,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // element on the active tab).
   const openImagePickerFor = useCallback(
     (elementId: string) => {
-      if (editsBlocked || embedMode) return;
+      if (pictureBlocked || embedMode) return;
       setImagePickerOpenFor({ forElementId: elementId });
     },
-    [editsBlocked, embedMode],
+    [pictureBlocked, embedMode],
   );
 
   const closeImagePicker = useCallback(() => setImagePickerOpenFor(null), []);
@@ -133,9 +138,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
             ownerId,
             documentId,
             shareCode: sessionShareCode,
-            // Offered only where the picker opens: a locked tab refuses it, so its empty images
-            // show no Select Image button that would do nothing.
-            onOpenPicker: isReadOnly || embedMode || editsBlocked ? undefined : openImagePickerFor,
+            // Offered only where the picker opens. A lock (the image's own or its tab's) holds its
+            // place, not its picture, so a locked image keeps its Select Image button.
+            onOpenPicker:
+              isReadOnly || embedMode || pictureBlocked ? undefined : openImagePickerFor,
           }
         : undefined,
     [
@@ -144,7 +150,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
       sessionShareCode,
       isReadOnly,
       embedMode,
-      editsBlocked,
+      pictureBlocked,
       openImagePickerFor,
     ],
   );
@@ -159,7 +165,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // A search pick carries a credit (docs/specs/009-elements/image-search.md); any
   // other pick drops the old one so it never describes a picture that's gone.
   const applyImageToElement = (elementId: string, image: ImageDescriptor) => {
-    commit((els) =>
+    commitPicture((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { credit: _old, ...rest } = el;
@@ -184,7 +190,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // doesn't snap to stale dimensions. The element's width/height
   // stay so the user keeps the footprint they sized to.
   const removeImageFromElement = (elementId: string) => {
-    commit((els) =>
+    commitPicture((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;

@@ -37,8 +37,6 @@ import {
   HIGHLIGHTER_COLOR,
   HIGHLIGHTER_WIDTH,
 } from '@liveworkspace/workbench/lib/highlighter-config';
-import { boardShape, whiteboardPenIntent } from '@/lib/whiteboard-tool';
-import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
@@ -53,9 +51,6 @@ type ShapeDrawingDeps = {
   canvasTool: CanvasTool;
   setCanvasTool: (tool: CanvasTool) => void;
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): what is drawn is
-  // written the Draw way (unpainted ink, no fill, hugging text, a sticky open for typing).
-  drawMode: boolean;
   // Every draw lands through the functional `commit` (live elements): the
   // commit closure is frozen for the whole
   // gesture, so a wholesale write of gesture-start elements would
@@ -78,7 +73,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     canvasTool,
     setCanvasTool,
     activeTab,
-    drawMode,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -102,8 +96,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // last one you had selected" behaviour through the combined gesture.
   const inheritSizeRef = useRef<Element | null>(null);
 
-  // The canvas tools an armed draw cannot share the pointer with: the eraser and the format painter go to select, as a whiteboard's pens
-  // put them down (useWhiteboard armPen). With the eraser still held, A said "drag to draw an arrow" and the drag
+  // The canvas tools an armed draw cannot share the pointer with: the eraser and the format painter go to select. With
+  // the eraser still held, A said "drag to draw an arrow" and the drag
   // erased what it crossed.
   const putDownPressTool = () => {
     if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
@@ -154,12 +148,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // frozen for the whole gesture, so writing gesture-start elements
     // wholesale would revert anything that landed mid-drag. New
     // elements default to the FRONT of z-order (see addBoxed).
-    // A shape drawn in Draw mode starts as plain ink, unfilled (a pen never colours
-    // it), then wears the style chosen for its tool, which Draw mode keeps
-    // apart from Diagram mode's (docs/specs/023-draw-mode/draw-mode.md "Shapes").
-    const whiteboard = drawMode;
-    const dress = <T extends Element>(el: T): T =>
-      styleNewElement(whiteboard ? boardShape(el) : el);
     if (intent.type === 'arrow') {
       // Built exactly as the canvas previews it while the drag is in flight.
       const arrow = buildDressedDrawnArrow(
@@ -168,7 +156,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         startY,
         endX,
         endY,
-        { elements: activeTab.elements, theme: getTheme(activeTab.theme), whiteboard },
+        { elements: activeTab.elements, theme: getTheme(activeTab.theme) },
         styleNewElement,
       );
       commit((els) => [...els, arrow]);
@@ -184,7 +172,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // mis-routes either here, bail rather than fall through into the
     // boxed branch and mint a phantom element where the user expected
     // a sketch.
-    // The Fill tool (docs/specs/023-draw-mode/fill-tool.md) presses, never draws: usePaintBucket.
+    // The Fill tool (docs/specs/023-draw-mode/fill-tool.md) presses, never draws.
     if (
       intent.type === 'freehand' ||
       intent.type === 'polygon' ||
@@ -213,8 +201,8 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         : null;
     const sx = startX + (roomSnap?.dx ?? 0);
     const sy = startY + (roomSnap?.dy ?? 0);
-    const dressed = dress(
-      buildDrawnBoxed(intent, sx, sy, endX, endY, inheritSizeRef.current, activeTab, drawMode),
+    const dressed = styleNewElement(
+      buildDrawnBoxed(intent, sx, sy, endX, endY, inheritSizeRef.current, activeTab),
     );
     // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
     const sized =
@@ -239,7 +227,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // an empty text box is only useful once you type into it, so save the
     // user the extra click. Other element kinds stay selected-but-not-
     // editing so their format popover is the immediate next interaction.
-    if (opensForTyping(intent, whiteboard)) setEditingId(sized.id);
+    if (opensForTyping(intent)) setEditingId(sized.id);
     setPendingDraw(null);
     const label =
       intent.type === 'shape'
@@ -305,14 +293,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       colour: highlighterColour,
       width: highlighterWidth,
     });
-  // One of Draw mode's markers, picked up in another mode from the Toolbar strip's Search
-  // (docs/specs/007-editor/toolbar-layout.md "Search: every element type"): the dock's own pen
-  // intent, in the pen's colour and width as this browser last set them, held until put down.
-  const beginMarker = (penId: WhiteboardPenId) => {
-    const prefs = loadWhiteboardPrefs();
-    const pen = prefs.pens.find((p) => p.id === penId);
-    if (pen) armFreehand(whiteboardPenIntent(pen, prefs.recognise));
-  };
   // A setting chosen while the tile is armed reaches the armed stroke too, so the very next drag
   // (and its preview) lands in it.
   const rearmHighlighter = (patch: { colour?: string; width?: number }) =>
@@ -409,7 +389,6 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     cancelDrawShape,
     beginFreehand,
     beginHighlighter,
-    beginMarker,
     beginShapePen,
     beginPolygon,
     beginRoomWalls,

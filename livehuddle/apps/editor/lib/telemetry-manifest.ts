@@ -62,10 +62,8 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Document·Renamed',
   // A pass issued in the Share dialog, typed by its level (Edit / Participate / View).
   'Document·Shared',
-  // Draw mode (docs/specs/023-draw-mode/draw-mode.md): a pen picked, the eraser mode or background changed,
-  // recognition toggled.
-  'Draw·Changed',
-  'Draw·Selected',
+  // A whiteboard pen's shape recognition toggled for the stroke being drawn (docs/specs/023-draw-mode/draw-mode.md). The
+  // dock's Draw·Selected and Draw·Changed went with it (Work Tracker #329).
   'Draw·Toggled',
   'Document·Undone',
   'Element·Added',
@@ -90,8 +88,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Error·Client',
   // A recoverable problem: a slow document load, an api warning (docs/specs/017-telemetry/telemetry.md).
   'Error·Warning',
-  // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value.
-  'Explorer·Selected',
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md): taken, handed on, stepped down. The
   // question is whether rooms use the role at all, never who held it.
   'Facilitator·Changed',
@@ -103,9 +99,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Folder·Deleted',
   'Folder·Moved',
   'Folder·Renamed',
-  'Home·Loaded',
-  'Home·Opened',
-  'Home·Selected',
   'Note·Added',
   'Note·Changed',
   'Note·Deleted',
@@ -143,15 +136,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Team·Removed',
   'Template·Used',
   'Theme·Changed',
-  // The shared Explorer's Timeline (docs/specs/013-workspace/timeline.md): Changed (Cards or Calendar), Selected (a
-  // kind of event switched off, Everyone or Others), Loaded (More or Retry), Opened (a Card, a Stack or a card's
-  // Menu), Removed (an Entry or a whole Stack taken off the reader's own Timeline).
-  'Timeline·Changed',
-  'Timeline·Loaded',
-  'Timeline·Opened',
-  'Timeline·Removed',
-  'Timeline·Selected',
-  'Token·Created',
   // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.
   'Trash·Cleared',
   'Trash·Deleted',

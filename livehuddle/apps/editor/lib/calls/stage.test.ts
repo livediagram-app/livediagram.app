@@ -173,7 +173,7 @@ describe('the stage', () => {
     ).toBeUndefined();
   });
 
-  it('turns the hall into an audience that whispers by distance, never heard by the stage', () => {
+  it('leaves the hall hearing by distance, never heard by the stage', () => {
     const near = { x: 100, y: 700 };
     const others: Who = [
       ['speaker', onStage, 'edit'],
@@ -184,8 +184,8 @@ describe('the stage', () => {
     expect(heard).toEqual(['neighbour', 'speaker']);
     expect(togetherWith('neighbour', z)).toBe('open');
     expect(togetherWith('far', z)).toBe('open');
-    // Without the stage, the hall is one room: the far corner heard too.
-    expect(scene(near, others.slice(1)).heard).toEqual(['far', 'neighbour']);
+    // Without the stage, the hall still hears by distance: the far corner is not heard.
+    expect(scene(near, others.slice(1)).heard).toEqual(['neighbour']);
     // The stage hears none of them, and they do not hear their voice reach it.
     expect(inEarshot(near, onStage, 'stage')).toBe(false);
     const speaker = scene(onStage, others.slice(1), { selfLevel: 'edit' });
@@ -193,17 +193,18 @@ describe('the stage', () => {
     expect(togetherWith('neighbour', speaker.zoning)).toBe('apart');
   });
 
-  it('keeps the walls: the hall’s audience never hears the corridor, and the meeting room keeps its call', () => {
+  it('keeps the walls: the hall’s audience never hears the corridor, and the meeting room hears its own', () => {
     const others: Who = [
       ['speaker', onStage, 'edit'],
       ['passer-by', { x: 100, y: 820 }],
       ['in the meeting', { x: 1600, y: 250 }],
     ];
     expect(scene({ x: 100, y: 760 }, others).heard).toEqual(['speaker']);
-    // In the meeting room: the stage and the meeting, from its far corner, as a room.
+    // In the meeting room: the stage, and the meeting by distance (its far corner out of earshot).
     const meeting = scene({ x: 1320, y: 50 }, others);
-    expect(meeting.heard).toEqual(['in the meeting', 'speaker']);
-    expect(togetherWith('in the meeting', meeting.zoning)).toBe('room');
+    expect(meeting.heard).toEqual(['speaker']);
+    expect(togetherWith('in the meeting', meeting.zoning)).toBe('open');
+    expect(scene({ x: 1450, y: 250 }, others).heard).toEqual(['in the meeting', 'speaker']);
   });
 
   it('lets speakers hear each other as one room, panned by side, and anyone on the tab hear them', () => {
@@ -222,7 +223,7 @@ describe('the stage', () => {
     expect(someoneHears(onStage, new Map(), z)).toBe(false);
   });
 
-  it('makes a stage in the open the whole floor’s, and leaves every room its own call', () => {
+  it('makes a stage in the open the whole floor’s, and leaves every room behind its walls', () => {
     const outdoor = callStages([stage('lawn', 2000, 1000)], zones);
     const lawn = { x: 2100, y: 1050 };
     const others: Who = [
@@ -231,9 +232,12 @@ describe('the stage', () => {
       ['in the hall', { x: 1100, y: 700 }],
     ];
     const hall = scene({ x: 100, y: 700 }, others, { stages: outdoor });
-    expect(hall.heard).toEqual(['in the hall', 'speaker']);
-    expect(togetherWith('in the hall', hall.zoning)).toBe('room');
-    expect(hall.zoning.stage?.audience.size).toBe(0);
+    expect(hall.heard).toEqual(['speaker']);
+    expect(togetherWith('in the hall', hall.zoning)).toBe('open');
+    expect(scene({ x: 900, y: 700 }, others, { stages: outdoor }).heard).toEqual([
+      'in the hall',
+      'speaker',
+    ]);
     expect(scene(corridor(0), others, { stages: outdoor }).heard).toEqual([
       'on the floor',
       'speaker',
@@ -360,7 +364,6 @@ describe('raised hands let speak', () => {
     expect(s).toEqual({
       self: false,
       speakers: new Set(['asker']),
-      audience: new Set(),
       unseen: new Set(['asker']),
     });
     const z = { ...zoning(corridor(100), walkers, zones), stage: s! };

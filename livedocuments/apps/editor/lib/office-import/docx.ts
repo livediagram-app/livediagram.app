@@ -4,9 +4,11 @@
 // opened package.
 
 import {
+  ARTICLE_FOOTNOTE_REF,
   ARTICLE_LIST_MAX_LEVEL,
   MAX_ARTICLE_BLOCK_TEXT,
   MAX_ARTICLE_BLOCKS,
+  cleanFootnoteText,
   isSafeArticleHref,
   nextArticleBlockId,
   normaliseRuns,
@@ -28,7 +30,7 @@ import {
 import { EMU_PER_PX } from './limits';
 import type { OfficePackage, OfficeRel } from './package';
 import { addSkip, type SkipTally } from './tally';
-import { child, find, intAttr, kids, textOf, type XmlElement } from './xml';
+import { child, find, findAll, intAttr, kids, textOf, type XmlElement } from './xml';
 
 /** A picture inside the file an element shows. */
 export type OfficePicture = {
@@ -112,11 +114,18 @@ class DocxWalker {
   private readonly styles: DocxStyles;
   private readonly numbering: DocxNumbering;
   private readonly rels: Map<string, OfficeRel>;
+  private readonly footnotes: ReadonlyMap<string, string>;
 
-  constructor(styles: DocxStyles, numbering: DocxNumbering, rels: Map<string, OfficeRel>) {
+  constructor(
+    styles: DocxStyles,
+    numbering: DocxNumbering,
+    rels: Map<string, OfficeRel>,
+    footnotes: ReadonlyMap<string, string> = new Map(),
+  ) {
     this.styles = styles;
     this.numbering = numbering;
     this.rels = rels;
+    this.footnotes = footnotes;
   }
 
   body(body: XmlElement | undefined): void {
@@ -373,7 +382,13 @@ class DocxWalker {
         case 'w:object':
           addSkip(this.tally, 'embedded');
           break;
-        case 'w:footnoteReference':
+        case 'w:footnoteReference': {
+          // A footnote comes in as one (docs/specs/007-editor/article-pages.md "Footnotes"), its note plain text.
+          const note = this.footnotes.get(c.attrs['w:id'] ?? '');
+          if (note === undefined) addSkip(this.tally, 'footnotes');
+          else this.runs.push({ text: ARTICLE_FOOTNOTE_REF, fn: note });
+          break;
+        }
         case 'w:endnoteReference':
           addSkip(this.tally, 'footnotes');
           break;
@@ -561,6 +576,20 @@ function vmlSize(style: string): { width: number; height: number } {
   return { width: read('width'), height: read('height') };
 }
 
+/** A document's footnotes by id, each its paragraphs' text as one plain line (the separators Word keeps there are
+ *  left out). */
+export function readFootnotes(root: XmlElement | undefined): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const note of kids(root)) {
+    const id = note.attrs['w:id'];
+    if (note.name !== 'w:footnote' || !id || note.attrs['w:type']) continue;
+    const paragraphs = findAll(note, 'w:p').map((p) => findAll(p, 'w:t').map(textOf).join(''));
+    const text = cleanFootnoteText(paragraphs.join(' ').trim());
+    out.set(id, text);
+  }
+  return out;
+}
+
 export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
   const root = await pkg.readXml(pkg.mainPath);
   const rels = await pkg.rels(pkg.mainPath);
@@ -570,7 +599,7 @@ export async function readDocx(pkg: OfficePackage): Promise<DocxRead> {
   };
   const styles = readStyles(await partOf('styles'));
   const numbering = readNumbering(await partOf('numbering'));
-  const walker = new DocxWalker(styles, numbering, rels);
+  const walker = new DocxWalker(styles, numbering, rels, readFootnotes(await partOf('footnotes')));
   walker.body(child(root, 'w:body'));
   if (walker.overflow) throw new OfficeImportError('too-many-blocks', walker.blocks.length);
   return { blocks: walker.blocks, pictures: walker.pictures, tally: walker.tally };

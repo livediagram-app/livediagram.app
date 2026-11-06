@@ -5,7 +5,8 @@
 // the target of painting, ringed), the name (double-click to rename), and the clip, lock, effects and
 // fold marks; a press makes it active, Shift and Ctrl/Cmd add it to the chosen; its menu holds the
 // layer's operations. 48 px high, the name over a line saying what it is (its kind, its blend mode and opacity
-// when not the usual, Hidden); a group's layers indented under it.
+// when not the usual, Hidden); a group's layers indented under it. A list item, never an option: it holds buttons
+// (photo-tools.md "Accessibility"), so its name is the row's own button, the list's tab stop on the active row.
 import { useMemo, useState, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { RowDropAt } from '@/components/primitives/useRowPointerDrag';
 import { GripIcon } from '@/components/panels/layers-panel-icons';
@@ -222,6 +223,7 @@ export function PhotoLayerRow({
   version,
   active,
   chosen,
+  tabStop,
   editable,
   others,
   onPress,
@@ -240,6 +242,8 @@ export function PhotoLayerRow({
   version: number;
   active: boolean;
   chosen: boolean;
+  // Whether the row's name is the list's one tab stop (the active row's, or the first row's while none is listed).
+  tabStop: boolean;
   editable: boolean;
   // Others on this layer now (their initials and colours), up to three.
   others: readonly { name: string; colour: string }[];
@@ -278,11 +282,8 @@ export function PhotoLayerRow({
   const target = active ? session.target : 'layer';
   const pct = Math.round((layer.opacity ?? 1) * 100);
   return (
-    <div
-      role="option"
-      aria-selected={active || chosen}
-      aria-label={`${layer.name}, ${KIND_NAME[layer.layerKind]}, ${shown ? 'visible' : 'hidden'}, ${pct}%`}
-      tabIndex={active ? 0 : -1}
+    <li
+      aria-current={active || undefined}
       data-layer-id={layer.id}
       {...(editable && !renaming && drag ? drag : {})}
       onClick={onPress}
@@ -402,19 +403,29 @@ export function PhotoLayerRow({
           onCancel={() => setRenaming(false)}
         />
       ) : (
-        <span
-          className="flex min-w-0 flex-1 flex-col"
+        // The row's own button: a press (or Enter or Space) reaches the row's and makes the layer active, and a drag
+        // from it restacks the layer as from the row's body (data-row-drag).
+        <button
+          type="button"
+          data-layer-select=""
+          data-row-drag=""
+          tabIndex={tabStop ? 0 : -1}
+          aria-current={active || undefined}
+          aria-label={`${layer.name}, ${KIND_NAME[layer.layerKind]}, ${shown ? 'visible' : 'hidden'}, ${pct}%${chosen && !active ? ', chosen' : ''}`}
+          className="flex min-w-0 flex-1 cursor-pointer flex-col self-stretch justify-center rounded-md text-left focus-visible:outline-2 focus-visible:outline-brand-600"
           onDoubleClick={(e) => {
             if (!editable) return;
             e.stopPropagation();
             setRenaming(true);
           }}
         >
-          <span className="truncate text-[12.5px] font-medium leading-tight">{layer.name}</span>
-          <span className="truncate text-[11px] leading-tight text-slate-500 dark:text-slate-400">
+          <span className="w-full truncate text-[12.5px] font-medium leading-tight">
+            {layer.name}
+          </span>
+          <span className="w-full truncate text-[11px] leading-tight text-slate-500 dark:text-slate-400">
             {describeLayer(layer, pct, shown)}
           </span>
-        </span>
+        </button>
       )}
       {layer.locks && Object.keys(layer.locks).length ? (
         <span
@@ -499,6 +510,6 @@ export function PhotoLayerRow({
           ))}
         </PortalMenu>
       ) : null}
-    </div>
+    </li>
   );
 }

@@ -17,9 +17,7 @@ import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 // This used to be a hand-written list of the shapes themselves, and it had
 // silently fallen 22 kinds behind the palette: every Devices, Data, Media and
 // Behaviour element was unfindable from the search panel.
-// 'estimate' (retired in Work Tracker #423 part 4) keeps its row until open PR #1310, which adds the stage beside it,
-// merges; the row matches no tile, so it finds nothing.
-export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
+export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   square: 'square box rect node',
   circle: 'oval ellipse round node',
   diamond: 'decision rhombus flowchart',
@@ -86,6 +84,13 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
   'garden-umbrella': 'garden umbrella parasol shade sun patio outdoor',
   fountain: 'fountain water stone basin garden park outdoor',
   pond: 'pond water lily pads lake garden park outdoor',
+  'pool-table': 'pool table snooker billiards cue balls pockets game play recreation games room',
+  'foosball-table':
+    'foosball table football soccer table football rods game play recreation games room',
+  dartboard: 'dartboard darts board wall game pub play recreation games room',
+  'vending-machine': 'vending machine snacks drinks cans soda break room kitchen lit glow',
+  'bean-bag': 'bean bag beanbag seat sit lounge relax breakout chill',
+  'reading-nook': 'reading nook armchair lamp books quiet corner seat sit lounge library breakout',
   screen:
     'screen tv television monitor display wall screen share presentation video youtube meeting room',
   'room-sign':
@@ -94,7 +99,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind | 'estimate', string>> = {
   rug: 'rug carpet mat floor lounge reception office',
   stage:
     'stage platform podium all-hands all hands town hall keynote presenter speaker speak broadcast audience',
-  estimate: 'points sizing poker fist estimate vote',
   'focus-button':
     'look here attention bring everyone jump navigate spotlight point show gather focus',
   actor: 'person stick figure user role uml',

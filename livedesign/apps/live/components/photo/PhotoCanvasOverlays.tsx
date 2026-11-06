@@ -60,6 +60,14 @@ export const typingSomewhere = (): boolean => {
   return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
 };
 
+// The keys the Layers list takes while one of its rows has focus (photo-tools.md "Accessibility").
+const LIST_KEYS: ReadonlySet<string> = new Set(['Delete', 'Backspace', 'ArrowUp', 'ArrowDown']);
+
+/** Whether a key is the Layers list's own: a row has focus and the key steps or deletes the active layer, so
+ *  neither the tool in hand (the Move tool's nudge) nor a photo command takes it. */
+export const layerListKey = (e: KeyboardEvent): boolean =>
+  LIST_KEYS.has(e.key) && !!(e.target as Element | null)?.closest?.('[data-photo-layer-list]');
+
 // Open menus and popovers that take the keys while they are up (Escape closes them, the arrows walk them), wherever
 // the focus is: a menu opened with the pointer leaves the focus on the page.
 const KEY_TAKERS =
@@ -138,7 +146,7 @@ export function PhotoCanvasOverlays({
   useEffect(() => {
     if (!active || !handler?.key) return;
     const key = (e: KeyboardEvent) => {
-      if (keysElsewhere()) return;
+      if (keysElsewhere() || layerListKey(e)) return;
       if (handler.key!(e.key, { shift: e.shiftKey, alt: e.altKey, mod: e.metaKey || e.ctrlKey })) {
         e.preventDefault();
         e.stopPropagation();

@@ -1386,6 +1386,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
     activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+  // What a picture swap answers to (docs/specs/009-elements/images.md "Locked images"): all of the above but the
+  // tab's lock, which holds every element's place, not an image's picture.
+  const pictureBlocked =
+    (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
   // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
@@ -1409,8 +1413,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openComments,
   });
 
-  const commit = (mapElements: (els: Element[]) => Element[]) => {
-    if (editsBlocked) return;
+  // A picture swap passes `{ picture: true }` and answers to `pictureBlocked` instead of `editsBlocked`.
+  const commit = (mapElements: (els: Element[]) => Element[], opts?: { picture?: boolean }) => {
+    if (opts?.picture ? pictureBlocked : editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
     // closure. A deferred caller can run long after the render that created
     // this `commit` — e.g. the link-card unfurl resolves a few seconds
@@ -1557,6 +1562,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Selection + placement + format helpers. See useElementHelpers.
   const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
+      layerInertIds,
       readSelection,
       activeId,
       activeTab,
@@ -1772,6 +1778,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
+    // A locked tab still takes a picture swap (docs/specs/009-elements/images.md "Locked images").
+    pictureBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: pictureBlocked,
+      structureBlocked: pictureBlocked || isReadOnly,
+    }),
+    commitPicture: (mapElements) => commit(mapElements, { picture: true }),
     getViewportCenter,
     commit,
     setSelectedId,

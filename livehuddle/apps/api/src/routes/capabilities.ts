@@ -6,27 +6,13 @@ import { emailEnabled } from '../email/client';
 import { json, methodNotAllowed, notFound } from '../responses';
 import type { RouteContext } from './context';
 
-const VERSION = /^\d+\.\d+\.\d+$/;
-
-// What the CLI learns about a host (docs/specs/015-api/blueprints/cli.md "Capabilities", CLI9 to CLI13): where
-// the api answers, whether sign-in exists, the OAuth server when it is an https origin, the document format
-// stored, and the version floor when one is set.
-function cliCapabilities({ env, url }: RouteContext) {
-  const issuer = (() => {
-    try {
-      const parsed = env.OAUTH_ISSUER ? new URL(env.OAUTH_ISSUER) : null;
-      return parsed?.protocol === 'https:' ? parsed.origin : undefined;
-    } catch {
-      return undefined;
-    }
-  })();
-  const minVersion = env.CLI_MIN_VERSION?.trim();
+// What a script learns about a host (docs/specs/015-api/api.md "Capabilities"): where the api answers, whether
+// sign-in exists, and the document format stored.
+function hostCapabilities({ env, url }: RouteContext) {
   return {
     apiBase: `${url.origin}/api`,
     authEnabled: Boolean(env.ACCOUNTS_URL && env.API_RESOURCE),
-    ...(issuer ? { oauthIssuer: issuer } : {}),
     documentFormat: DOCUMENT_FORMAT,
-    ...(minVersion && VERSION.test(minVersion) ? { cli: { minVersion } } : {}),
   };
 }
 
@@ -58,6 +44,6 @@ export async function handleCapabilities(ctx: RouteContext): Promise<Response> {
       : calls.reason === 'paused'
         ? { callsMode: 'off' as const }
         : {}),
-    ...cliCapabilities(ctx),
+    ...hostCapabilities(ctx),
   });
 }

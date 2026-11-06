@@ -4,6 +4,7 @@
 // block keeps its identity and the block diff (diffArticleFlow) only ever sees real changes.
 import type { Mark, Node as PMNode } from 'prosemirror-model';
 import {
+  ARTICLE_FOOTNOTE_REF,
   MAX_ARTICLE_CELL_RUNS,
   MAX_ARTICLE_CELL_TEXT,
   isArticleHex,
@@ -51,6 +52,12 @@ function inlineOf(runs: readonly ArticleRun[]): PMNode[] {
   const out: PMNode[] = [];
   for (const run of runs) {
     const marks = marksOf(run);
+    // A footnote's run: each of its characters one reference, carrying the note.
+    if (run.fn !== undefined) {
+      for (let i = 0; i < run.text.length; i++)
+        out.push(S.nodes.footnote.create({ text: run.fn }, null, marks));
+      continue;
+    }
     // A '\n' in a run is a line break in the block.
     run.text.split('\n').forEach((part, i) => {
       if (i > 0) out.push(S.nodes.hard_break.create());
@@ -129,12 +136,18 @@ function runsOf(node: PMNode, limit?: number, maxRuns?: number): ArticleRun[] {
     if (child.type === S.nodes.hard_break) {
       // A line break takes the format of the text before it, so it merges into that run (stored
       // as one run "a\nb") and reads back the same.
+      // Never a footnote's, which would make the break a reference.
       const prev = runs[runs.length - 1];
-      runs.push(prev ? { ...prev, text: '\n' } : { text: '\n' });
+      const format = prev && { ...prev };
+      if (format) delete format.fn;
+      runs.push(format ? { ...format, text: '\n' } : { text: '\n' });
       return;
     }
-    if (!child.isText || !child.text) return;
-    const run: ArticleRun = { text: child.text };
+    const isNote = child.type === S.nodes.footnote;
+    if (!isNote && (!child.isText || !child.text)) return;
+    const run: ArticleRun = isNote
+      ? { text: ARTICLE_FOOTNOTE_REF, fn: child.attrs.text as string }
+      : { text: child.text! };
     for (const mark of child.marks) {
       const name = mark.type.name;
       if (name === 'link') run.href = mark.attrs.href as string;

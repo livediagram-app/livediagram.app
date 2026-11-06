@@ -43,18 +43,20 @@ describe('telemetry worker', () => {
     await send('liveplanner.app');
     await send('livedocuments.app');
     await send('livedesign.app');
+    await send('livehuddle.app');
     await send('liveworkspace.app');
 
     const all = (await (
       await worker.fetch(get('/api/telemetry/summary'), env, ctx)
     ).json()) as TelemetrySummary;
     expect(all.app).toBe('all');
-    expect(all.windows.today.total).toBe(6);
+    expect(all.windows.today.total).toBe(7);
     expect(all.windows.today.byApp).toEqual({
       'livediagram.app': 1,
       'liveplanner.app': 2,
       'livedocuments.app': 1,
       'livedesign.app': 1,
+      'livehuddle.app': 1,
       // The Explorer on liveworkspace.app, filtered to All Apps.
       'liveworkspace.app': 1,
     });

@@ -371,25 +371,26 @@ account)` (`mergeMediaOwner`; idempotent, and a failure keeps the notice to ask 
 
 ## Errors and edge cases
 
-| #   | Case                                              | Handling                                                                                           |
-| --- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| E1  | SVG, HTML or other bytes declared as PNG          | Sniff mismatch, 415 `unsupported_type`                                                             |
-| E2  | Truncated or malformed JPEG                       | The service answers 415 `malformed_jpeg`; nothing stored                                           |
-| E3  | Lying `Content-Length`                            | Body re-checked after read, 413                                                                    |
-| E4  | Forged `X-Image-Sha256`                           | The service's early dedupe is per person; a stored body's hash is its own                          |
-| E4a | Workbench or token probing the gallery by hash    | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row    |
-| E5  | Same bytes uploaded concurrently                  | The service answers the existing image, `deduped: true`                                            |
-| E5a | Racing uploads that together pass a cap           | The service refuses the later insert: 403 `gallery_full`, or 409 when room returned                |
-| E6  | Service refuses the key or is down                | 401 or 5xx logged `[images] media service answered`; 503 `images_unavailable`                      |
-| E7  | Image uploaded in another app, placed here        | First read asks the service whose it is and remembers it; served by the owner's designs and grants |
-| E8  | Delete of a referenced image                      | 200; references render **broken**                                                                  |
-| E9  | Referenced id the service does not have           | Read 404 (remembered as `''`); canvas **broken**; export and snapshot keep the placeholder         |
-| E10 | Snapshot images over the budget                   | Placeholder for each that does not fit                                                             |
-| E11 | Offline `data:` id sent to the api                | Not servable, placeholder in snapshots; canvas and client export use it directly                   |
-| E12 | Reference edge cases                              | [Image reference index](image-reference-index.md#errors-and-edge-cases)                            |
-| E13 | Share read of a design in the Trash               | `getDesign` misses it; 404                                                                         |
-| E15 | Picker opened while the tab is locked / view role | `openImagePickerFor` no-ops; placeholder shows "No image"                                          |
-| E16 | Image with zero natural height                    | `readImageDimensions` fails, "Could not read image dimensions."                                    |
+| #    | Case                                            | Handling                                                                                                      |
+| ---- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| E1   | SVG, HTML or other bytes declared as PNG        | Sniff mismatch, 415 `unsupported_type`                                                                        |
+| E2   | Truncated or malformed JPEG                     | The service answers 415 `malformed_jpeg`; nothing stored                                                      |
+| E3   | Lying `Content-Length`                          | Body re-checked after read, 413                                                                               |
+| E4   | Forged `X-Image-Sha256`                         | The service's early dedupe is per person; a stored body's hash is its own                                     |
+| E4a  | Workbench or token probing the gallery by hash  | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row               |
+| E5   | Same bytes uploaded concurrently                | The service answers the existing image, `deduped: true`                                                       |
+| E5a  | Racing uploads that together pass a cap         | The service refuses the later insert: 403 `gallery_full`, or 409 when room returned                           |
+| E6   | Service refuses the key or is down              | 401 or 5xx logged `[images] media service answered`; 503 `images_unavailable`                                 |
+| E7   | Image uploaded in another app, placed here      | First read asks the service whose it is and remembers it; served by the owner's designs and grants            |
+| E8   | Delete of a referenced image                    | 200; references render **broken**                                                                             |
+| E9   | Referenced id the service does not have         | Read 404 (remembered as `''`); canvas **broken**; export and snapshot keep the placeholder                    |
+| E10  | Snapshot images over the budget                 | Placeholder for each that does not fit                                                                        |
+| E11  | Offline `data:` id sent to the api              | Not servable, placeholder in snapshots; canvas and client export use it directly                              |
+| E12  | Reference edge cases                            | [Image reference index](image-reference-index.md#errors-and-edge-cases)                                       |
+| E13  | Share read of a design in the Trash             | `getDesign` misses it; 404                                                                                    |
+| E15  | Picker opened by a view role                    | `openImagePickerFor` no-ops; placeholder shows "No image"                                                     |
+| E15a | Picker opened on a locked image or a locked tab | Opens; the pick commits through `commit(…, { picture: true })`, which holds to `pictureBlocked` (no tab lock) |
+| E16  | Image with zero natural height                  | `readImageDimensions` fails, "Could not read image dimensions."                                               |
 
 ## Security and trust
 

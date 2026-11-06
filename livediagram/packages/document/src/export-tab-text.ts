@@ -3,6 +3,7 @@
 
 import { isBoxed, type ArrowElement, type BoxedElement, type Tab } from './index';
 import { visibleLayerElements } from './layers';
+import { chartTextLines } from './chart-text';
 
 // ---------------------------------------------------------------------
 // File (JSON)
@@ -79,14 +80,18 @@ export function tabToMarkdownText(tab: Tab): string {
     (e): e is ArrowElement =>
       e.type === 'arrow' && !pinnedToHidden(e.from) && !pinnedToHidden(e.to),
   );
-  const labelledBoxed = boxed.filter((b) => b.label && b.label.trim().length > 0);
-  labelledBoxed.sort((a, b) => a.y - b.y || a.x - b.x);
-  if (labelledBoxed.length > 0) {
+  // A chart, legend or Sankey diagram has no label: it is listed by what it shows, its type over its rows
+  // (docs/specs/009-elements/pie-chart.md), so a tab holding only charts is not "no labelled content".
+  const listed = boxed.filter((b) => (b.label && b.label.trim().length > 0) || chartTextLines(b));
+  listed.sort((a, b) => a.y - b.y || a.x - b.x);
+  if (listed.length > 0) {
     lines.push('## Elements');
     lines.push('');
-    for (const b of labelledBoxed) {
+    for (const b of listed) {
       const tag = b.type === 'shape' ? `(${b.shape})` : `(${b.type})`;
-      lines.push(`- **${b.label}** ${tag}`);
+      const chart = chartTextLines(b);
+      lines.push(`- **${b.label?.trim() || chart?.heading}** ${tag}`);
+      for (const row of chart?.rows ?? []) lines.push(`  - ${row}`);
     }
     lines.push('');
   }
@@ -110,7 +115,7 @@ export function tabToMarkdownText(tab: Tab): string {
     lines.push('');
   }
 
-  if (labelledBoxed.length === 0 && connections.length === 0) {
+  if (listed.length === 0 && connections.length === 0) {
     lines.push('_No labelled content._');
   }
   return lines.join('\n');

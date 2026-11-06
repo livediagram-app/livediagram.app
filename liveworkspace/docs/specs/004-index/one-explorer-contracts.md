@@ -274,6 +274,11 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
   Default Folders lists the app's entry, the app's modes and kinds (`defaultFolderOptions`), then its template
   families. An explicit
   `folderId: null` is the root chosen on purpose and wins over any default.
+- **Retired default keys** (`RETIRED_PLACEMENT_KEYS`): a key an app no longer offers an entry for (livehuddle's
+  `livehuddle:mode:workshop`, which repeated its app entry, and `livehuddle:template:retrospective`, whose templates
+  left) is never dropped. It reads as the app's own key: a create tries it after the app's key, in the list's order,
+  and the Explorer shows it as the app's entry while that holds none. Clearing the app's entry clears its retired
+  keys too, so the entry says what a create does; setting it leaves them, since the app's key wins.
 
 ## Sharing and access
 
@@ -310,6 +315,8 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   lists), and the app is told to reload every link's sessions (`revoke`, `reason: "rescoped"`, below), so they meet
   the password; entering it records them again. Saving the same password, or removing it, sends no one away.
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
+- A connected tab's pass is a share link like these, made by `POST /items/:id/connections` and handed out only by
+  `GET /connections/:id` ([connected-tabs.md](connected-tabs.md)).
 
 Who gets what, the rule the grant applies: the owner of a personal item, and every joined member of a team item's
 team, edit everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). A team

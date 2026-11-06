@@ -87,7 +87,7 @@ export function SplitViewFrame({
     hydrated,
     loadedTabIds,
     loadTabs: loadAllTabs,
-    // Embeds and the workbench frame (no app chrome) keep one tab, like a phone.
+    // Embeds (no app chrome) keep one tab, like a phone.
     suspended: isMobile || embedMode || !appChrome,
   });
   const { pair, editorSide } = split;

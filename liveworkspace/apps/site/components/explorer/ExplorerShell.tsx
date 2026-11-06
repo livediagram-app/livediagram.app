@@ -37,6 +37,7 @@ import {
   createExplorerAccounts,
   createTeamsHost,
   Explorer,
+  ExplorerSkeleton,
   viewFromLocation,
   type AppFilter,
   type ExplorerView,
@@ -609,13 +610,16 @@ export function ExplorerShell() {
       ) : (
         <>
           <ExplorerHeader app={arrived.app} search={null} settings={settingsControl} />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-16 sm:px-6" aria-busy={!failed}>
-            {failed ? (
+          {/* Until the person is known (seconds on a slow session), the Explorer's own shape rather than a blank page. */}
+          {failed ? (
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-16 sm:px-6">
               <p className="text-center text-sm text-slate-600 dark:text-slate-400">
                 The Explorer couldn’t reach your account just now. Reload the page to try again.
               </p>
-            ) : null}
-          </main>
+            </main>
+          ) : (
+            <ExplorerSkeleton />
+          )}
         </>
       )}
       <ExplorerBottomBar

@@ -1,4 +1,4 @@
-// Groups keep their lines clear (docs/specs/015-api/mcp-server.md §4.7 "The graph look"). The clustered layout
+// Groups keep their lines clear (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"). The clustered layout
 // (auto-layout-clusters.ts) places each group as one contracted box, so a node outside a group that a member links
 // to was placed against the middle of the whole group: every database of a row of services packed under the
 // group's centre, its line jogging across its neighbours'. And an edge to or from the group itself left the frame's

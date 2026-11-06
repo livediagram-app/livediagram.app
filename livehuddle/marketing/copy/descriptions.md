@@ -153,8 +153,8 @@ detailed GitHub / Product Hunt write-up.
 >
 > livehuddle is MIT-licensed and publicly viewable. The hosted version at
 > livehuddle.app is free for everyone, with no paid tier and no plan to
-> introduce one. An MCP server lets AI assistants set up and share Spaces for
-> you, and a command line and a REST API cover scripts. Export any tab as PNG,
+> introduce one. A REST API lets your own scripts set up and share Spaces for
+> you. Export any tab as PNG,
 > SVG, PDF or JSON.
 >
-> Open a link, walk in, meet your team. That is the whole pitch. [514 words]
+> Open a link, walk in, meet your team. That is the whole pitch. [505 words]

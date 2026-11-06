@@ -267,10 +267,6 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.
-  - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
-    SDK), tool registration + telemetry, graph input, element normalising, tab
-    builders, the find-diagrams search, OAuth state handling, the request scope,
-    and the api service-binding client.
   - `apps/router`: the dispatch table (prefix strips, clean live
     routes, origin fallback, 503) plus the drift guard that every top-level
     `apps/editor/app` segment routes to the editor worker rather than falling

@@ -51,7 +51,8 @@ A Participant changes the board's **content**, never its **shape**.
 - **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
   them. Shapes, frames, connectors and someone else's text boxes (which often label the structure) stay where
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it,
-  and a mind node grows to fit the label a Participant writes on it (taller only, in the same change).
+  a mind node grows to fit the label a Participant writes on it (taller only, in the same change), and so does a
+  table row the words a Participant writes in its cells ([Table rows grow to fit their text](../009-elements/table-rows-fit-text.md)).
 - **A Participant's pictures show for everyone.** The pictures a Participant places are their own uploads, and
   their editor claims each one for the document as it places it, so every reader (Editor, Participant, Viewer, a link
   guest) sees it, never the placeholder ([Images](../009-elements/images.md#placement-grants)). A Viewer places

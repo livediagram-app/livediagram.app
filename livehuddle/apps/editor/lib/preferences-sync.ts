@@ -12,7 +12,6 @@
 //   local cache win over the server's (now older) blob and sends it again, rather than the
 //   server reverting the settings it never received.
 
-import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { UserPreferences } from './user-preferences';
 import { apiPutPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
 import {
@@ -35,12 +34,12 @@ export function preferencesBodyLength(prefs: UserPreferences): number {
   return JSON.stringify({ prefs }).length;
 }
 
-type PickEntry = [WhiteboardShapeKey, readonly [number, number]];
+type PickEntry = [string, readonly [number, number]];
 
 // An old blob's list of canvases hidden from Recent: nothing reads it, so it is the first to go.
 const DEAD_HIDDEN_KEY = 'recentExcludedIds';
 
-// The shape picks, least recently used first.
+// livediagram's whiteboard shape picks (unread here), least recently used first.
 function picksOldestFirst(picks: UserPreferences['whiteboardShapePicks']): PickEntry[] {
   return (Object.entries(picks ?? {}) as PickEntry[]).sort((x, y) => x[1][1] - y[1][1]);
 }

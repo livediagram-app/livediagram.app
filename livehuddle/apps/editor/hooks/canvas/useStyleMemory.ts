@@ -25,8 +25,8 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 export const STYLE_MEMORY_WRITE_DEBOUNCE_MS = 250;
 
 export type StyleMemoryApi = {
-  // Which memory this is: the document and whether it is a whiteboard's. A consumer that memoises
-  // something dressed from memory keys it on this, so a document or tab-kind switch re-dresses it.
+  // Which memory this is: the document's. A consumer that memoises something dressed from memory keys it on this, so a
+  // document switch re-dresses it.
   scope: string;
   // Record one style commit: the active tab's elements before and after it.
   recordEdit: (before: readonly Element[], after: readonly Element[]) => void;
@@ -38,13 +38,9 @@ export type StyleMemoryApi = {
 export function useStyleMemory({
   documentId,
   theme,
-  board = false,
 }: {
   documentId: string | null;
   theme: ThemeDefinition;
-  // The active tab is a whiteboard: it records and applies its own memory
-  // (docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays").
-  board?: boolean;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
   const loadedFor = useRef<string | null>(null);
@@ -97,16 +93,16 @@ export function useStyleMemory({
   };
 
   return {
-    scope: `${documentId ?? ''}:${board ? 'board' : 'diagram'}`,
+    scope: documentId ?? '',
     recordEdit: (before, after) => {
       if (!ensureLoaded()) return;
-      const next = recordStyleEdit(memoryRef.current, before, after, theme, board);
+      const next = recordStyleEdit(memoryRef.current, before, after, theme);
       commit(next, 'recorded', Object.keys(next));
     },
     styleNewElement: <T extends Element>(el: T): T => {
       if (!ensureLoaded()) return el;
-      const dressed = applyStyleMemory(el, memoryRef.current, theme, board);
-      if (dressed !== el) debugLog('[style-memory] applied', styleKindOf(el, board));
+      const dressed = applyStyleMemory(el, memoryRef.current, theme);
+      if (dressed !== el) debugLog('[style-memory] applied', styleKindOf(el));
       return dressed;
     },
     forget: (kinds) => {

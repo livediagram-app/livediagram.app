@@ -329,7 +329,7 @@ drawn when a `/new?folder=` / `?team=` context names a server place.
 ### A choice before hydration
 
 `/new` is a static export, so the mode cards are on screen before React attaches their handlers. A card clicked in
-that gap is **kept, not lost**: an inline script in the page (`app/new/early-mode-choice.ts`), running as the HTML
+that gap is **kept, not lost**: an inline script (`app/new/early-mode-choice.ts`, rendered by the server layout `app/new/layout.tsx`), running as the HTML
 parses, takes a click on a mode card until the wizard mounts, remembers the mode, and shows the progress cursor. The
 wizard's first layout effect turns the script off and creates the remembered mode, exactly as if the click had landed
 after hydration. The script listens on `window` in the capture phase, ahead of React's root listener, so a click it
@@ -397,8 +397,8 @@ default document name) without walking the wizard:
     the query param is only knowable in the browser. A React-side check
     alone runs after hydration: the static wizard HTML would flash first
     (and a window-reading state initializer would additionally make the
-    hydration render disagree with the server HTML). So the page ships a
-    tiny inline script ahead of the wizard markup that reads
+    hydration render disagree with the server HTML). So the route ships a
+    tiny inline script (in the server layout, ahead of the wizard markup) that reads
     `location.search` **before first paint** and flags
     `<html data-just-draw>`; a matching style rule hides the wizard-only
     content under that flag, and React then swaps in the opening screen at

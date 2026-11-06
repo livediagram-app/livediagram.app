@@ -40,7 +40,11 @@ Three siblings, built the same way (`template-office-parts.ts`: rooms first, rug
   **phone booths** along the right, small rooms with one chair each for a call away from the floor.
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
   machine, a plant and a bookshelf, and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
-  Questions).
+  Questions). Its Walk In waits **beside the pod, under the Team Board**, level with the pod's lower half, its how-to
+  line wrapped beside it in the board's column, not under the plan like the other Spaces' (Work Tracker #580). Seen
+  at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where the bottom-right
+  cluster floats, and a button under the pod sat under the cluster. Open floor lies under the button, and the door is
+  a short walk round the pod's corner.
 - **All-Hands Hall**: one big room with a **Stage** (a rug, with a "Stage" text over it: a rug has nothing to write
   on) and a [Bring Focus](bring-focus.md) button
   for the presenter, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants and a

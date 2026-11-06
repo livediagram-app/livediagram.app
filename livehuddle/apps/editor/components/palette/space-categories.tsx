@@ -40,7 +40,7 @@ export type SpaceCategory = {
   band?: number;
 };
 
-// The bands the Space categories sit in (palette-category-bands): Meet for the pieces a Space is furnished with,
+// The bands the Space categories sit in: Meet for the pieces a Space is furnished with,
 // Travel's own for Travel.
 export const MEET_BAND = 6;
 export const TRAVEL_BAND = 7;
@@ -67,7 +67,8 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     id: 'collab-seating',
     tileGroup: 'seating',
     label: 'Seating',
-    description: 'What people sit at: a chair, a desk, a sofa and a meeting table.',
+    description:
+      'What people sit at: a chair, a desk, a sofa, a meeting table, a bean bag and a reading nook.',
     tagline: 'Somewhere to sit, alone or together.',
     icon: lucide(lucideArmchair),
   },
@@ -76,7 +77,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'amenities',
     label: 'Amenities',
     description:
-      'What makes a Space feel like a place: plants, a bookshelf, a water cooler and a coffee machine.',
+      'What makes a Space feel like a place: plants, a bookshelf, a water cooler, a coffee machine and a vending machine.',
     tagline: 'The touches that make it feel like a place.',
     icon: lucide(lucideCoffee),
   },
@@ -94,7 +95,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'recreation',
     label: 'Recreation',
     description:
-      'Somewhere to unwind: a jukebox, a ping-pong table, an arcade machine and a fireplace.',
+      'Somewhere to unwind: a jukebox, ping-pong, pool and foosball tables, an arcade machine, a dartboard and a fireplace.',
     tagline: 'Somewhere to unwind between meetings.',
     icon: lucide(lucideGamepad2),
   },

@@ -15,6 +15,7 @@ describe('slash menu telemetry', () => {
     expect(eventOf('code')).toBe('ArticleCode');
     expect(eventOf('table')).toBe('ArticleTable');
     expect(eventOf('toc')).toBe('ArticleContents');
+    expect(eventOf('footnote')).toBe('ArticleFootnote');
   });
 
   it('leaves text styles, lists and object inserts to their own counts', () => {

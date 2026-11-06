@@ -60,8 +60,8 @@ votes freely. A guest's vote that **adds** a vote (`{ type: 'vote', on: true }`)
 only if the guest has already voted in this document from this network, or the network has fewer than
 `GUEST_VOTERS_PER_NETWORK` guest voters in it. Withdrawing is never refused.
 
-The ledger is `guest_voters (document_id, network_tag, person_tag)` in the document's own store (its Durable
-Object, `apps/api/src/document-room/document-schema.ts`), one row per guest voter per network, removed with the
+The ledger was `guest_voters (document_id, network_tag, person_tag)` in the document's own store (its Durable
+Object, `apps/api/src/document-room/document-schema.ts`; a new room no longer creates it, Work Tracker #514), one row per guest voter per network, removed with the
 document. `person_tag` is `personTagFor(documentId, ownerId)`; no owner id is stored. Admission is one batch: a
 conditional insert, then a read of the caller's row.
 

@@ -15,11 +15,9 @@ const from = (tiles: PaletteTileDef[], prefix: string) =>
 
 describe('searchCatalogueTiles', () => {
   it('lists no Technology mark, matched or already on the tab (livehuddle offers none)', () => {
-    const workshop = searchCatalogueTiles({ query: 'database', mode: 'workshop' });
-    expect(from([...workshop.here, ...workshop.elsewhere], 'tech:')).toEqual([]);
+    expect(from(searchCatalogueTiles({ query: 'database' }), 'tech:')).toEqual([]);
     const onTab = searchCatalogueTiles({
       query: '',
-      mode: 'workshop',
       tabElements: [
         {
           id: 't',
@@ -33,18 +31,15 @@ describe('searchCatalogueTiles', () => {
         },
       ] as never,
     });
-    expect([...onTab.here, ...onTab.elsewhere]).toEqual([]);
+    expect(onTab).toEqual([]);
   });
 
   it('lists no line-art icon, matched or already on the tab (no Icons in livehuddle)', () => {
-    const matched = searchCatalogueTiles({ query: 'heart', mode: 'workshop' });
-    expect(ids([...matched.here, ...matched.elsewhere]).some((id) => id.startsWith('icon:'))).toBe(
-      false,
-    );
-    expect(from(matched.here, 'sticker:').length).toBeGreaterThan(0);
+    const matched = searchCatalogueTiles({ query: 'heart' });
+    expect(ids(matched).some((id) => id.startsWith('icon:'))).toBe(false);
+    expect(from(matched, 'sticker:').length).toBeGreaterThan(0);
     const onTab = searchCatalogueTiles({
       query: '',
-      mode: 'workshop',
       tabElements: [
         {
           id: 'i',
@@ -58,6 +53,13 @@ describe('searchCatalogueTiles', () => {
         },
       ] as never,
     });
-    expect([...onTab.here, ...onTab.elsewhere]).toEqual([]);
+    expect(onTab).toEqual([]);
+  });
+});
+
+// Before the catalogues load there is nothing to list (useIconCatalogs).
+describe('searchCatalogueTiles before the catalogues load', () => {
+  it('lists nothing', () => {
+    expect(searchCatalogueTiles({ query: 'heart', loaded: false })).toEqual([]);
   });
 });

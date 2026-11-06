@@ -96,8 +96,6 @@ type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
   preferences?: UserPreferences;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  workbench?: boolean;
   // The tab on screen draws other people's cursors (docs/specs/012-collaboration/collaborator-enhancements.md
   // "Only where cursors are drawn"); absent reads as drawn.
   cursorsDrawn?: boolean;
@@ -707,54 +705,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         {
           label: 'Show Me on Every Element',
           event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element timeline chart how to use learn replay',
+          keywords: 'tour walkthrough tutorial element portal how to use learn replay',
           description: 'Every element’s Show Me at once.',
         },
         ELEMENT_TOURS_SECTION,
       ),
-      elementTourSwitch('timeline', {
-        label: 'Timeline',
-        event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
-        description: 'With a timeline selected.',
-        helpArticle: 'timelineRail',
-      }),
-      elementTourSwitch('chart', {
-        label: 'Chart',
-        event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
-        keywords: 'chart pie bar column line area scatter doughnut data graph tour',
-        description: 'With a chart selected.',
-        helpArticle: 'dataElements',
-      }),
-      elementTourSwitch('stack', {
-        label: 'Stack',
-        event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
-        keywords: 'stack row column grid layout container reflow tour',
-        description: 'With a stack selected.',
-        helpArticle: 'stacks',
-      }),
-      elementTourSwitch('lane', {
-        label: 'Lane',
-        event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
-        keywords: 'lane swimlane band gutter seam column tour',
-        description: 'With a lane selected.',
-        helpArticle: 'lanes',
-      }),
-      elementTourSwitch('boundary', {
-        label: 'Boundary',
-        event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
-        keywords: 'boundary zone region vpc cluster c4 container tour',
-        description: 'With a boundary selected.',
-        helpArticle: 'boundaries',
-      }),
-      elementTourSwitch('diagram-key', {
-        label: 'Diagram Key',
-        event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
-        keywords: 'diagram key legend line styles tag colours meanings tour',
-        description: 'With a diagram key selected.',
-        helpArticle: 'diagramKeys',
-      }),
       elementTourSwitch('portal', {
         label: 'Portal',
         event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
@@ -794,9 +749,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Default Folders',
         label: 'Where New Spaces Go',
         keywords:
-          'default folder where new spaces canvases documents go save location place file automatically always save placement template retrospective kanban',
-        description:
-          'New spaces you make without choosing a place are saved in these folders: one for every space, and one for each template family.',
+          'default folder where new spaces canvases documents go save location place file automatically always save placement',
+        description: 'New spaces you make without choosing a place are saved in this folder.',
       },
     ],
   },
@@ -833,7 +787,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'pages boards designs slides articles sheets forms logos wireframes move livedocuments liveplanner livedesign old this browser local',
         description:
           'Pages, boards and designs from this browser that now belong in livedocuments, liveplanner or livedesign. They wait here until you move them.',
-        available: (ctx) => (ctx.retiredParts ?? 0) > 0 && !ctx.workbench,
+        available: (ctx) => (ctx.retiredParts ?? 0) > 0,
       },
       {
         kind: 'deleteAccount',
@@ -930,10 +884,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'tokens',
         key: 'apiTokens',
-        keywords: 'api token key mcp integration script developer access create revoke secret',
+        keywords: 'api token key integration script developer access create revoke secret',
         label: 'API Tokens',
         description:
-          'Let your scripts, and AI tools connected over MCP, use livehuddle as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
+          'Let your scripts use livehuddle as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
       },
     ],
@@ -988,30 +942,12 @@ export function settingsSectionId(section: string): string {
 // those that apply. A category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
 export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec[] {
-  return SETTINGS_CATEGORIES.filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
-    .map((c) => ({
-      ...c,
-      rows: c.rows.filter(
-        (r) =>
-          (!r.available || r.available(ctx)) &&
-          parentSwitchOn(c, r, ctx.preferences) &&
-          // The workbench sets the frame's scheme (WB15), so the frame offers no choice of its own.
-          !(ctx.workbench && r.kind === 'appearance'),
-      ),
-    }))
-    .filter((c) => c.rows.length > 0);
-}
-
-// What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-// Surface table): the account and everything beyond the one document. A category nested under one
-// goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens', 'webhooks']);
-
-function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
-  return (
-    WORKBENCH_HIDDEN_CATEGORIES.has(category.id) ||
-    (category.parent !== undefined && WORKBENCH_HIDDEN_CATEGORIES.has(category.parent))
-  );
+  return SETTINGS_CATEGORIES.map((c) => ({
+    ...c,
+    rows: c.rows.filter(
+      (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+    ),
+  })).filter((c) => c.rows.length > 0);
 }
 
 // A row nested under a switch (`parent`) is offered only while that switch is

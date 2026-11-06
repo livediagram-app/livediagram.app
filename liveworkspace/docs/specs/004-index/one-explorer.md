@@ -389,8 +389,15 @@ The journeys, one way each:
      pinned (no select, no ×), with why.
    - **The ⋯ menu**: Edit Team (name and organisation; admins), Leave Team (anyone but the only admin while
      others remain; leaving alone deletes the team, and says so), Delete Team (admins). Each asks once. Leaving
-     or deleting goes to My Work, with a toast.
-     In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog.
+     or deleting goes to My Work, with a toast, and the keyboard lands on My Work's row in the sidebar (the
+     team's card, and the button that was focused, are gone).
+   - **Removed elsewhere.** A team the person is removed from (by an admin, or from another device) leaves the
+     sidebar without a reload: the page reads the person's teams again when they come back to the tab (at most
+     once in 30 seconds, as the Inbox does), and a team's view that finds they are no longer in it drops the team
+     from the sidebar there and then, showing Team not found. A team left here comes back only when a read of the
+     list made after the leave names it again (the person was added back elsewhere).
+     In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog; leaving
+     or deleting there closes it, goes Home and puts the keyboard on the rail's Home.
 3. **Answer an invitation.** Sidebar › Spaces › **Invites** (shown while any wait, with their count): a card per
    invitation with **Accept** and **Decline**. Accepting opens the team; declining takes the card away. Each says
    so in a toast. With none waiting it says where the teams are (Spaces) and offers **New Team**. When the teams

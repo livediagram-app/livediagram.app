@@ -17,9 +17,7 @@ flyout of its tiles:
 ```
 
 - **Top left, before the strip: the menu button**, then the tab's name, in one card. There is no mode switch
-  ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
-  workbench frame, which has no Explorer button, the card holds **Back** instead
-  ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
+  ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker, in three named bands: **Build** (Select, Hand), **Edit** (Eraser, Format)
   and **Interact** (Avatar) ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
@@ -149,7 +147,8 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 
 > **In livehuddle** (Work Tracker #423, part 3): Search finds only what the meeting palette offers, its element
 > tiles plus Icons and Stickers. There is no **Elsewhere** accordion, no search-only tile (`SEARCH_ONLY_TILE_IDS` is
-> empty) and no Draw markers: an element livehuddle no longer offers is placed from nowhere. The hover text reads
+> empty) and no Draw markers (their code went in Work Tracker #329: the Search takes no editor mode and returns one
+> list): an element livehuddle no longer offers is placed from nowhere. The hover text reads
 > "Find any element in the palette by name. Shortcut: S." The `ToolbarSearchOtherModes` and
 > `ToolbarSearchUnavailable` events no longer fire. Everything else below holds.
 
@@ -224,7 +223,9 @@ A strip shows one category at a time, so finding an element means knowing which 
 ## More: the rest of the category
 
 More belonged to Plan's strip, which went to liveplanner with Plan mode: the category bar has no More, since every
-category's whole body is its flyout. The rest of this section is kept as the record of how it worked.
+category's whole body is its flyout. Its code (the tile rail, `ToolbarStripRail`, the measured tile limit,
+`useStripTileLimit`, and the category picker) went in Work Tracker #329. The rest of this section is kept as the
+record of how it worked.
 
 A strip has room for about a dozen tiles. Shapes fits; Icons (~180),
 Stickers do not. More opens the current
@@ -420,6 +421,9 @@ its bottom-row button. What changes to fit the width:
 
 ## Motion
 
+The first three points were the tile rail's, which went with More (Work Tracker #329); the category bar's own motion
+is its flyout's ("Opening a flyout").
+
 - **A change to the strip's tiles animates** (`ToolbarStripRail`, FLIP; a category switched, or the window letting more or fewer tiles on): tiles that moved slide
   from their old slot to their new one over 200ms (the `short` token of [Motion](../004-interface-design/motion.md)), a tile new to the strip
   pops in, and the one pushed off the end pops out where it stood. Reduced
@@ -462,7 +466,7 @@ its bottom-row button. What changes to fit the width:
   ([Editor modes](editor-modes.md#the-palette)). It does not remember the last category across documents.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
   Popular short). Below that, the strip shows as many as fit, **measured**
-  rather than estimated (`useStripTileLimit`): its own chrome (the pickers,
+  rather than estimated (`useStripTileLimit`, gone with the rail in Work Tracker #329): its own chrome (the pickers,
   More, dividers and padding, whatever they measure in the current category),
   one tile's pitch, and the room the centred strip may take (the window less
   the Explorer menu button on both sides; on a phone, less its gutters and the menu card). The

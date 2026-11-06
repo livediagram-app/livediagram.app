@@ -47,6 +47,10 @@ const LivedesignBody = dynamic(() => import('./livedesign/Body').then((m) => m.B
   ssr: false,
   loading: appSkeleton,
 });
+const LivehuddleBody = dynamic(() => import('./livehuddle/Body').then((m) => m.Body), {
+  ssr: false,
+  loading: appSkeleton,
+});
 
 type Loaded = TelemetrySummary | TelemetryDisabled;
 
@@ -166,6 +170,8 @@ export default function TelemetryDashboard() {
             <LivedocumentsBody summary={loaded} />
           ) : app === 'livedesign.app' ? (
             <LivedesignBody summary={loaded} />
+          ) : app === 'livehuddle.app' ? (
+            <LivehuddleBody summary={loaded} />
           ) : (
             <AllApps summary={loaded} onPickApp={pick} />
           )}
