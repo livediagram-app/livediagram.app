@@ -111,7 +111,8 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 ## Presentation and UX
 
 - **Wrapping** (#487). `layoutBubbles(boxes, prevOrder, view)` takes the visible canvas across (`BubbleView`, from
-  the call's snapped view rect, half a snap step in from each edge). A row wider than it is cut, in its stable order,
+  the call's snapped view rect, half a snap step in from each edge; each edge is snapped on its own, so the
+  right one never lands past the screen's, #503). A row wider than it is cut, in its stable order,
   into runs that fit (a person's group never splits; one wider than the view gets a run alone); each further run is
   lifted its height plus `BUBBLE_GAP_PX`, and a lifted group's tail is hidden. Every run, wrapped or not (#503), is
   held inside the view by `keepInside`: each box's left is clamped between the view's left plus the run before it and

@@ -172,10 +172,12 @@ function useViewRect(
   viewport: { offset: Point; zoom: number; width: number; height: number } | undefined,
 ): ViewRect | null {
   const measured = !!viewport && viewport.width > 0 && viewport.height > 0 && viewport.zoom > 0;
+  // Each edge is snapped on its own (#503), not the size: a snapped size could put the right or bottom edge up to half a
+  // step past the screen's, and the bubbles kept inside it would run off by that much.
   const x = measured ? snap(-viewport.offset.x) : 0;
   const y = measured ? snap(-viewport.offset.y) : 0;
-  const width = measured ? snap(viewport.width / viewport.zoom) : 0;
-  const height = measured ? snap(viewport.height / viewport.zoom) : 0;
+  const width = measured ? snap(-viewport.offset.x + viewport.width / viewport.zoom) - x : 0;
+  const height = measured ? snap(-viewport.offset.y + viewport.height / viewport.zoom) - y : 0;
   return useMemo(
     () => (measured ? { x, y, width, height } : null),
     [measured, x, y, width, height],
