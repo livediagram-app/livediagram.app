@@ -1,7 +1,5 @@
 'use client';
 
-import { trustedHtml } from '@livediagram/ui';
-
 import dynamic from 'next/dynamic';
 import {
   useEffect,
@@ -19,7 +17,6 @@ import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
-import { EARLY_MODE_SCRIPT, EARLY_MODE_STYLE } from './early-mode-choice';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
@@ -487,24 +484,6 @@ export default function NewDocumentPage() {
 
   return (
     <div className="flex h-dvh flex-col">
-      {/* Bypass pre-hydration guard (docs/specs/007-editor/new-document-route.md): this static page's
-          prerendered HTML is the wizard, and React only learns about
-          ?blank=1 / ?template= at hydration — without this, the wizard paints for the
-          beat until then. The script runs as the HTML parses, BEFORE the
-          wizard markup below paints, and flags the root element; the style
-          rule hides the wizard-only content under that flag until React
-          swaps in the opening screen. */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: trustedHtml(
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
-          ),
-        }}
-      />
-      <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>
-      {/* A mode card chosen before hydration is kept, not lost (early-mode-choice.ts). */}
-      <script dangerouslySetInnerHTML={{ __html: trustedHtml(EARLY_MODE_SCRIPT) }} />
-      <style>{EARLY_MODE_STYLE}</style>
       <EditorHeader
         documentName="New canvas"
         hideTitle
