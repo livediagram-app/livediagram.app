@@ -53,6 +53,8 @@ export type DocumentRoomClient = {
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
   // endpoint's share check.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
+  // A Participant's placement claim: grants the images of `ids` that `personId` uploaded; answers how many.
+  grantOwnImages(ids: string[], personId: string): Promise<number>;
   // A copy's two halves (document-content.ts): the source as `copier` may take it, and whether it went through the
   // canvas's open Community post's link.
   exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
@@ -103,6 +105,7 @@ export function documentRoom(
     exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
+    grantOwnImages: (ids, personId) => room.grantOwnImages(documentId, ids, personId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(documentId, copy),
     importMigrated: (payload) => room.importMigrated(documentId, payload),
@@ -131,6 +134,7 @@ export type DocumentRoomRpc = {
   exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
+  grantOwnImages(documentId: string, ids: string[], personId: string): Promise<number>;
   exportCopy(
     documentId: string,
     onlyTabId: string | null,
