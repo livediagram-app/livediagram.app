@@ -70,7 +70,7 @@ Scope, by file:
 | `apps/editor/components/canvas/ChangesetRevealOverlay.tsx`, `CanvasElementsLayer`         | The outline in the author's colour; `ChangesetRevealContext` provided by `EditorView`                                              |
 | `apps/editor/e2e/signed-in/agent-changesets.spec.ts`                                      | The end-to-end spec, signed in (only an account mints a token)                                                                     |
 | `apps/editor/hooks/ui/useToast.tsx`                                                       | `toast.action`: a keyed info toast with buttons, upserted by key, no timeout                                                       |
-| `../liveworkspace/apps/site/app/telemetry/livediagram/catalogue/collaboration.ts`         | The `Agent` stack                                                                                                                  |
+| `../liveworkspace/apps/site/app/telemetry/livehuddle/catalogue/collaboration.ts`          | The `Agent` stack                                                                                                                  |
 
 ## Domain and naming
 
