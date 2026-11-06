@@ -1443,7 +1443,8 @@ export class DocumentRoom extends DurableObject<Env> {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       const batches = (msg as { batches?: unknown }).batches === true;
-      const hello = { ...session, presence, batches } satisfies SessionAttachment;
+      const leanAvatars = (msg as { leanAvatars?: unknown }).leanAvatars === true;
+      const hello = { ...session, presence, batches, leanAvatars } satisfies SessionAttachment;
       ws.serializeAttachment(hello);
       this.presenceRelay.noteSession(ws, relaySessionOf(hello));
       // Where the ordered stream stands as this session joins, so a later
@@ -1452,7 +1453,13 @@ export class DocumentRoom extends DurableObject<Env> {
       // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
       // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
       const build = parseBuildId(this.roomEnv?.BUILD_ID);
-      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
+      // `leanAvatars`: this room fills lean avatar packets back out for an older editor, so a new one may send them.
+      this.sendTo(ws, {
+        kind: 'format',
+        format: DOCUMENT_FORMAT,
+        ...(build ? { build } : {}),
+        leanAvatars: true,
+      });
       // The running poll, and every answer so far (docs/specs/012-collaboration/collab-race-hardening.md).
       for (const op of this.poll.replayOps()) this.sendTo(ws, { kind: 'op', from: 'system', op });
       this.broadcastPresence();
@@ -1892,7 +1899,8 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 }
 
-// What the presence relay reads of a session: its tab, the other pane of a split, and whether it batches.
+// What the presence relay reads of a session: its tab, the other pane of a split, whether it batches, and whether it
+// reads lean avatar packets.
 function relaySessionOf(session: SessionAttachment | null): RelaySession | null {
   const presence = session?.presence;
   if (!presence) return null;
@@ -1900,5 +1908,6 @@ function relaySessionOf(session: SessionAttachment | null): RelaySession | null 
     ...(presence.tabId ? { tabId: presence.tabId } : {}),
     ...(presence.besideTabId ? { besideTabId: presence.besideTabId } : {}),
     batches: session.batches === true,
+    leanAvatars: session.leanAvatars === true,
   };
 }

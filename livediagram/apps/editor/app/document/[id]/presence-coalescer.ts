@@ -1,5 +1,9 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { AvatarPresence } from '@livediagram/api-schema';
+import {
+  expandAvatarPacket,
+  type AvatarPacket,
+  type AvatarPresence,
+} from '@livediagram/api-schema';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
 
@@ -7,7 +11,9 @@ export type CursorPos = { tabId: string; x: number; y: number } | null;
 // The pen (docs/specs/008-canvas/laser-panel.md) rides along with the samples so peers render the
 // sender's laser rather than their own default.
 export type LaserTrail = { tabId: string; points: LaserPoint[]; config?: LaserConfig };
-export type AvatarEntry = { tabId: string; avatar: AvatarPresence } | null;
+// A character as it arrives: full or lean (docs/specs/008-canvas/avatar-mode.md "The costume rides only when it is
+// needed"). The flush fills a lean one back out with the costume last seen from that peer.
+export type AvatarEntry = { tabId: string; avatar: AvatarPacket } | null;
 
 // Presence-packet coalescing: cursor / laser ops arrive at up to
 // 30 Hz per peer, and committing state per packet re-rendered the
@@ -75,8 +81,11 @@ export function createPresenceCoalescer({
           // Leaving the mode DELETES the entry rather than storing a null:
           // nothing renders a character that isn't there, so the map stays
           // exactly as big as the number of people walking around.
-          if (entry) next.set(id, entry);
-          else next.delete(id);
+          // A packet that carries no costume keeps the one we last saw from them, and its resting values back.
+          if (entry) {
+            const known = prev.get(id)?.avatar.config;
+            next.set(id, { tabId: entry.tabId, avatar: expandAvatarPacket(entry.avatar, known) });
+          } else next.delete(id);
         }
         return next;
       });
@@ -143,7 +152,15 @@ export function createPresenceCoalescer({
     avatar(from, entry) {
       // Latest-wins per peer (no accumulation, unlike laser points): the
       // character has one position at a time.
-      pendingAvatars.set(from, entry);
+      // A costume a packet held back this frame carried is kept, should the newer one carry none.
+      const held = pendingAvatars.get(from);
+      const config = entry?.avatar.config ?? held?.avatar.config;
+      pendingAvatars.set(
+        from,
+        entry && config && !entry.avatar.config
+          ? { tabId: entry.tabId, avatar: { ...entry.avatar, config } }
+          : entry,
+      );
       schedule();
     },
     prune(present) {

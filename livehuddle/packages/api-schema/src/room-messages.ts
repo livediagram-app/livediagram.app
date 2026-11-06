@@ -19,8 +19,8 @@ import type { ChangesetRoomOp } from './changesets';
 
 // One participant's Avatar-mode character and its statuses (docs/specs/008-canvas/avatar-mode.md) are every
 // product's wire shapes, in @liveworkspace/api-schema/avatar; re-exported so this package's surface is unchanged.
-export { AVATAR_STATUS_IDS } from '@liveworkspace/api-schema/avatar';
-export type { AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/avatar';
+export { AVATAR_STATUS_IDS, expandAvatarPacket } from '@liveworkspace/api-schema/avatar';
+export type { AvatarPacket, AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/avatar';
 
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
@@ -325,7 +325,14 @@ export function isRoomOpRef(ref: unknown): ref is number {
 // The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
 // `build`: the live build id when the deploy set one (docs/specs/016-platform/stale-builds.md).
-export type FormatMessage = { kind: 'format'; format: number; build?: string };
+// `leanAvatars`: the room takes lean avatar packets and fills them back out for an older editor
+// (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"); an editor sends them only when it says so.
+export type FormatMessage = {
+  kind: 'format';
+  format: number;
+  build?: string;
+  leanAvatars?: boolean;
+};
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
@@ -336,11 +343,14 @@ export type ClientMessage =
   // hands the baton to this new socket. Absent on every ordinary hello.
   // `batches`: this editor takes a busy room's coalesced `batch` frames (docs/specs/015-api/api.md "A busy room
   // bounds its presence fan-out"); a room never sends one to a session that did not say so.
+  // `leanAvatars`: this editor reads lean avatar packets (AvatarPacket), filling in the costume it last saw; a room
+  // fills them back out for a session that did not say so.
   | {
       kind: 'hello';
       participant: ParticipantPresence;
       facilitatorToken?: string;
       batches?: boolean;
+      leanAvatars?: boolean;
     }
   // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
   | { kind: 'op'; op: unknown; ref?: number }
@@ -536,6 +546,7 @@ export type RoomOutgoing =
       participant: ParticipantPresence;
       facilitatorToken?: string;
       batches?: boolean;
+      leanAvatars?: boolean;
     }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
