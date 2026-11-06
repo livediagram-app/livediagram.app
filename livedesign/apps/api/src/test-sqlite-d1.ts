@@ -301,6 +301,8 @@ function testDesignRooms(
         (await import('./db/photo-blobs')).heldBlobs(env, tabId, ids),
       servesImage: async (designId: string, imageId: string, onlyTabId: string | null) =>
         (await import('./db/image-grants')).designServesImage(env, designId, imageId, onlyTabId),
+      grantOwnImages: async (_designId: string, ids: string[], personId: string) =>
+        (await import('./db/image-grants')).grantOwnImages(env, ids, personId, Date.now()),
       // The Drive file's two halves (design-room.ts exportFile and importFile).
       exportFile: async (designId: string, query: { ifVersion: number | null }) =>
         (await import('./design-room/design-file')).exportDesignFile(

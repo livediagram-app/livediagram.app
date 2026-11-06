@@ -1,6 +1,7 @@
 // Image gallery calls (docs/specs/009-elements/images.md): list, upload, delete, usage index, and
 // the authenticated blob-URL fetch for rendering.
 import type { ImageSummary } from '@livedesign/api-schema';
+import { createImageClaims } from '@liveworkspace/media';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   API_BASE,
@@ -77,6 +78,28 @@ export async function apiUploadImage(
   // `unsupported_type`, `file_too_large`, …) so the caller can map it to
   // a friendly message rather than show a raw status.
   return expectOk<{ image: ImageSummary; deduped: boolean }>(res, 'upload image');
+}
+
+// A Participant's placement claim (docs/specs/009-elements/images.md "Placement grants"): the design is granted
+// the caller's own images of `ids`, so everyone who reads it sees them. Sent before the element ops that place
+// them go to the room; each image is claimed once per page (@liveworkspace/media createImageClaims), and a failure
+// is not thrown (the placement still goes; the next save carrying the image claims it again).
+const imageClaims = createImageClaims();
+
+export function apiClaimPlacedImages(
+  ownerId: string,
+  designId: string,
+  imageIds: readonly string[],
+  shareCode: string | null,
+): Promise<void> {
+  return imageClaims.claim(designId, imageIds, async (ids) => {
+    const res = await apiFetch(`${API_BASE}/images/grants?d=${encodeURIComponent(designId)}`, {
+      method: 'POST',
+      headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
+      body: JSON.stringify({ ids }),
+    });
+    await expectOk<{ granted: number }>(res, 'claim images');
+  });
 }
 
 export async function apiDeleteImage(ownerId: string, imageId: string): Promise<void> {

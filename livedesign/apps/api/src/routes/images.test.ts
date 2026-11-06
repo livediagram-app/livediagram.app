@@ -291,6 +291,110 @@ describe('handleImages', () => {
     });
   });
 
+  // docs/specs/009-elements/images.md "Placement grants": a Participant's placement goes through the room, which
+  // knows no person, so their editor claims the images it places; the design grants the caller's own.
+  describe("a Participant's placement claim", () => {
+    const VIEW = { item: 'd1', level: 'view', tab: null };
+    const PARTICIPATE = { item: 'd1', level: 'participate', tab: null };
+    const EDIT = { item: 'd1', level: 'edit', tab: null };
+    const claim = (ids: unknown, opts: Opts = {}, d = 'd1') =>
+      call('POST', `/api/images/grants${d ? `?d=${d}` : ''}`, opts, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+    const read = (id: string, owner: string | null, d = 'd1') =>
+      call('GET', `/api/images/${id}?d=${d}`, { owner });
+
+    // Ada owns d1; Bob joined it as a Participant and placed his own picture.
+    async function bobsPlacement(): Promise<string> {
+      const id = await uploaded(PNG, { owner: 'user_bob' });
+      start('d1', 'user_ada');
+      await upsertTab(db.env, 'd1', tabWith('t1', id), 0);
+      return id;
+    }
+
+    it("shows a Participant's image to an Editor, a Viewer and a link guest once claimed", async () => {
+      const id = await bobsPlacement();
+      resolveDesignGrant.mockResolvedValue(VIEW);
+      expect((await read(id, 'user_cy')).status).toBe(404);
+      resolveDesignGrant.mockResolvedValue(PARTICIPATE);
+      const res = await claim([id], { owner: 'user_bob' });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ granted: 1 });
+      resolveDesignGrant.mockResolvedValue(EDIT);
+      expect((await read(id, 'user_ada')).status).toBe(200);
+      resolveDesignGrant.mockResolvedValue(VIEW);
+      expect((await read(id, 'user_cy')).status).toBe(200);
+      expect((await read(id, null)).status).toBe(200);
+    });
+
+    it("claims a guest Participant's image, named as the service names guests", async () => {
+      const id = await uploaded(PNG, { owner: 'guest-1' });
+      start('d1', 'user_ada');
+      await upsertTab(db.env, 'd1', tabWith('t1', id), 0);
+      resolveDesignGrant.mockResolvedValue(PARTICIPATE);
+      expect(await (await claim([id], { owner: 'guest-1' })).json()).toEqual({ granted: 1 });
+      resolveDesignGrant.mockResolvedValue(VIEW);
+      expect((await read(id, null)).status).toBe(200);
+    });
+
+    it('refuses a Viewer, and grants nothing', async () => {
+      const id = await bobsPlacement();
+      resolveDesignGrant.mockResolvedValue(VIEW);
+      expect((await claim([id], { owner: 'user_bob' })).status).toBe(403);
+      expect((await read(id, 'user_cy')).status).toBe(404);
+    });
+
+    it('refuses a design in the Trash, and a caller the index lets in to nothing', async () => {
+      const id = await bobsPlacement();
+      resolveDesignGrant.mockResolvedValue({ ...PARTICIPATE, trashed: true });
+      expect((await claim([id], { owner: 'user_bob' })).status).toBe(403);
+      resolveDesignGrant.mockResolvedValue(null);
+      expect((await claim([id], { owner: 'user_bob' })).status).toBe(404);
+      resolveDesignGrant.mockResolvedValue(new Response(null, { status: 401 }));
+      expect((await claim([id], { owner: 'user_bob' })).status).toBe(401);
+      resolveDesignGrant.mockResolvedValue(VIEW);
+      expect((await read(id, 'user_cy')).status).toBe(404);
+    });
+
+    it("grants only the caller's own images: never another person's, nor an unknown id", async () => {
+      const others = await uploaded(PNG, { owner: 'user_mallory' });
+      start('d1', 'user_ada');
+      await upsertTab(db.env, 'd1', tabWith('t1', others), 0);
+      resolveDesignGrant.mockResolvedValue(PARTICIPATE);
+      expect(await (await claim([others, 'nope'], { owner: 'user_bob' })).json()).toEqual({
+        granted: 0,
+      });
+      resolveDesignGrant.mockResolvedValue(VIEW);
+      expect((await read(others, 'user_cy')).status).toBe(404);
+    });
+
+    // Each design's grants live in its own object (one SQLite per Durable Object, which this test's single database
+    // stands in for), so a claim reaches only the design it names, judged by Bob's level there.
+    it('claims on the design it names only, at the level Bob holds there', async () => {
+      const id = await uploaded(PNG, { owner: 'user_bob' });
+      start('d2', 'user_mallory');
+      await upsertTab(db.env, 'd2', tabWith('t2', id), 0);
+      resolveDesignGrant.mockImplementation(async (_ctx: unknown, d: string) =>
+        d === 'd1' ? PARTICIPATE : { ...VIEW, item: d },
+      );
+      expect((await claim([id], { owner: 'user_bob' }, 'd2')).status).toBe(403);
+      expect(resolveDesignGrant).toHaveBeenLastCalledWith(expect.anything(), 'd2');
+      expect((await read(id, 'user_cy', 'd2')).status).toBe(404);
+    });
+
+    it('refuses a bad claim before asking the index', async () => {
+      expect((await claim(['a'], { owner: null })).status).toBe(400);
+      expect((await claim(['a'], { owner: 'user_bob' }, '')).status).toBe(400);
+      expect((await claim([], { owner: 'user_bob' })).status).toBe(400);
+      expect((await claim('a', { owner: 'user_bob' })).status).toBe(400);
+      const workbench = { scope: 'design', designId: 'd1', ownerId: 'user_bob' };
+      expect((await claim(['a'], { workbench })).status).toBe(404);
+      expect(resolveDesignGrant).not.toHaveBeenCalled();
+    });
+  });
+
   describe('usage', () => {
     // Images the owner keeps in the service, and the items, in any app, that place them.
     const placed = (refs: [app: string, document: string, image: string][]) => {
