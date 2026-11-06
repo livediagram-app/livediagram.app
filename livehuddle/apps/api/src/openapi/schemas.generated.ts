@@ -6762,10 +6762,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "TemplateFamily": {
-    "const": "retrospective",
-    "type": "string"
-  },
+  "TemplateFamily": {},
   "TextAlignX": {
     "enum": [
       "left",
