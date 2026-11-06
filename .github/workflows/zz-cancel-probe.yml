@@ -1,0 +1,52 @@
+name: Cancel probe
+
+# Throwaway (removed before merge): does cancelling its own run from a failing job hide the failure?
+on:
+  pull_request:
+    paths: [.github/workflows/zz-cancel-probe.yml]
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  fails:
+    name: Fails
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+      - name: Wait for the sibling to start
+        run: sleep 30
+      - name: Fail
+        run: exit 1
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+        with:
+          workflows: zz-cancel-probe.yml
+
+  sleeps:
+    name: Sleeps
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Sleep
+        run: sleep 300
+
+  gate:
+    name: Gate
+    needs: [fails, sleeps]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Result
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: ${RESULTS}"
+          case " ${RESULTS} " in
+            *" failure "*|*" cancelled "*) exit 1 ;;
+          esac

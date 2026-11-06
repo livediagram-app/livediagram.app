@@ -1,0 +1,26 @@
+name: Cancel on failure
+description: >-
+  Fail fast on a pull request (docs/ci.md "Fail fast"): a job's last step, run when the job has failed,
+  that cancels the pull request commit's other CI and E2E runs still going. It acts on pull requests
+  only, never fails the job further, and needs `actions: write`.
+
+inputs:
+  workflows:
+    description: The workflow files whose runs of this commit it cancels, space-separated.
+    default: ci.yml e2e.yml
+  cancel-own-run:
+    description: Whether it also cancels the run it is in, which stops that run's other jobs.
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Cancel the commit's other runs
+      if: github.event_name == 'pull_request'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        WORKFLOWS: ${{ inputs.workflows }}
+        CANCEL_OWN_RUN: ${{ inputs.cancel-own-run }}
+      run: node "${GITHUB_WORKSPACE}/.github/scripts/cancel-on-failure.mjs" || true
