@@ -38,6 +38,8 @@ import {
 // The floor under the calls to action (Hero.tsx FLOOR_ROOM) and the copy's height from lg, badges to calls to action.
 const FLOOR_ROOM = 316;
 const LG_COPY = 352;
+// The narrowest window that shows the wide stage's floor (Tailwind's sm); below it the phone's stage takes over.
+const SM = 640;
 
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
@@ -233,10 +235,18 @@ describe('the hero floor between sm and lg', () => {
       const sides = new Set(moments.map((t) => side(figureRect(walker, positionAt(walker, t)))));
       expect([...sides]).not.toContain('cut');
       expect(sides.size, `${walker.name} crosses the clip line`).toBe(1);
-      // A line said on the floor is said wholly on it, never cut by the clip.
+      // A line said on the floor is said wholly on it, never cut by the clip, and inside the middle of the stage the
+      // narrowest of these windows (sm, 640px) shows, so no line runs off the window's edge.
       const stage = FLOOR_ONLY.cast.includes(walker) ? FLOOR_ONLY : wide;
+      const shown = { x: (wide.width - SM) / 2, y: 0, width: SM, height: wide.height };
       if (sides.has('floor'))
-        for (const { rect } of bubbleRects(stage, walker)) expect(side(rect)).toBe('floor');
+        for (const { seg, rect } of bubbleRects(stage, walker)) {
+          expect(side(rect)).toBe('floor');
+          expect(
+            inside(rect, shown),
+            `${walker.name}’s “${seg.say}” runs off a ${SM}px window`,
+          ).toBe(true);
+        }
     },
   );
 

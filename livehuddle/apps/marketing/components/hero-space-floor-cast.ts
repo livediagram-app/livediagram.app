@@ -207,12 +207,13 @@ const WIDE: FloorStage = {
         { stay: 3, face: 'up' },
       ],
       // Below lg the coffee corner is clipped away, so Leo stays on the floor: he steps out from his desks towards
-      // the table as Sam heads off to stand-up, and goes back to his desk.
+      // the table as Sam heads off to stand-up, and goes back to his desk. He stops between the plant and Maya, inside
+      // the narrowest (sm) window, with a line short enough to fit between them.
       floorBeats: [
-        { stay: 14.5, face: 'up' },
-        { to: { x: 440, y: 1072 } },
-        { stay: 7.2, face: 'right' },
-        { stay: 3, face: 'right', say: 'Right behind you' },
+        { stay: 14.3, face: 'up' },
+        { to: { x: 602, y: 1072 } },
+        { stay: 5.4, face: 'right' },
+        { stay: 3, face: 'right', say: 'Coming!' },
         { to: { x: 282, y: 1072 } },
         { stay: 0.1, face: 'up' },
       ],
