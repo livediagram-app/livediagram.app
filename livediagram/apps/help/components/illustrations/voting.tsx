@@ -50,7 +50,7 @@ function Pips({ x, y, spent, budget }: { x: number; y: number; spent: number; bu
 }
 
 /** Setting a vote up, as the Vote popover lays it out (VotePane): the dot budget drawn as the dots,
- *  Dots per item, and the two Privacy cards, over Start vote. */
+ *  Dots per item, the Votable items card, and the two Privacy cards, over Start vote. */
 export function VoteSetup() {
   const x = 86;
   const y = 12;
@@ -76,8 +76,8 @@ export function VoteSetup() {
     </g>
   );
   return (
-    <Scene w={420} h={300} bg="plain">
-      <Panel x={x} y={y} w={248} h={278} title="Vote">
+    <Scene w={420} h={356} bg="plain">
+      <Panel x={x} y={y} w={248} h={334} title="Vote">
         <Label x={x + 14} y={y + 42} size={10} weight={600} tone="body">
           Dots per person
         </Label>
@@ -115,11 +115,15 @@ export function VoteSetup() {
           One each
         </Label>
         <Label x={x + 14} y={y + 136} size={10} weight={600} tone="body">
+          Votable items
+        </Label>
+        {card(y + 144, 'Only items with text', "Blank notes and shapes can't take a dot.", false)}
+        <Label x={x + 14} y={y + 192} size={10} weight={600} tone="body">
           Privacy
         </Label>
-        {card(y + 144, 'Hide cursors', 'Nobody can watch where others are pointing.', true)}
-        {card(y + 188, 'Hide running counts', 'Totals stay secret until you reveal them.', false)}
-        <Button x={x + 14} y={y + 238} w={220} h={26} label="Start vote" variant="primary" />
+        {card(y + 200, 'Hide cursors', 'Nobody can watch where others are pointing.', true)}
+        {card(y + 244, 'Hide running counts', 'Totals stay secret until you reveal them.', false)}
+        <Button x={x + 14} y={y + 294} w={220} h={26} label="Start vote" variant="primary" />
       </Panel>
     </Scene>
   );
