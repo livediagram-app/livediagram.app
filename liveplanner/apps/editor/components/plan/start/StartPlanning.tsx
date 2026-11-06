@@ -41,8 +41,9 @@ import {
   type StartItem,
 } from './start-planning-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
+import { ImportPicture } from './ImportPicture';
 
-const RAIL_ICONS: Record<StartCategory, ReturnType<typeof lucideGlyph>> = {
+const RAIL_ICONS: Record<Exclude<StartCategory, 'import'>, ReturnType<typeof lucideGlyph>> = {
   recommended: lucideGlyph(lucideStar, 16),
   boards: lucideGlyph(lucideSquareKanban, 16),
   sheets: lucideGlyph(lucideGrid3x3, 16),
@@ -55,6 +56,7 @@ const RAIL_ICONS: Record<StartCategory, ReturnType<typeof lucideGlyph>> = {
 const CHIPS_MAX = 3;
 
 function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
+  if (item.kind === 'import') return <ImportPicture palette={palette} />;
   if (item.kind === 'board') return <BoardPreview preset={item.preset} palette={palette} />;
   // A template's preview is light-canvas art, on a re-lit tile, as every start draws one.
   if (item.kind === 'template') return <TemplatePicture kind={item.template} />;
@@ -81,19 +83,17 @@ function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
 function toCard(item: StartItem, palette: PlanPalette, showKind: boolean): StartPanelCard {
   const chips = item.types?.slice(0, CHIPS_MAX) ?? [];
   const more = (item.types?.length ?? 0) - chips.length;
+  // Import is its own name: no badge, or kind read out, saying it again.
+  const kind = showKind && item.kind !== 'import';
   const badge =
-    item.kind === 'dashboard' && item.suggestion
-      ? 'For You'
-      : showKind
-        ? KIND_NAMES[item.kind]
-        : undefined;
+    item.kind === 'dashboard' && item.suggestion ? 'For You' : kind ? KIND_NAMES[item.kind] : undefined;
   return {
     id: item.id,
     name: item.name,
     line: item.line,
     picture: <Picture item={item} palette={palette} />,
     ...(badge ? { badge } : {}),
-    ...(showKind ? { ariaKind: KIND_NAMES[item.kind] } : {}),
+    ...(kind ? { ariaKind: KIND_NAMES[item.kind] } : {}),
     ...(item.tabs ? { tag: `${item.tabs} ${item.tabs === 1 ? 'Tab' : 'Tabs'}` } : {}),
     footer:
       chips.length || item.typesNote ? (
@@ -151,6 +151,7 @@ export function StartPlanning({
   onSuggestedDashboard,
   onVisualisation,
   onForm,
+  onImport,
 }: {
   onPickBoard: (preset: string) => void;
   // Absent where sheets cannot be placed: Spreadsheets is left out.
@@ -168,6 +169,8 @@ export function StartPlanning({
   onVisualisation?: ((view: PlanVisualisation, name: string) => void) | undefined;
   // Makes the tab a Form tab from a starter (Forms); absent, Forms is left out.
   onForm?: ((starter: StarterId) => void) | undefined;
+  // Opens the Import dialog on its list (an Editor's: plan-tabs.md "The Import dialog"); absent, no Import card.
+  onImport?: (() => void) | undefined;
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
@@ -190,9 +193,19 @@ export function StartPlanning({
           (i.kind !== 'dashboard' || !!onDashboard) &&
           (i.kind !== 'template' || !!onTemplate) &&
           (i.kind !== 'visualisation' || !!onVisualisation) &&
-          (i.kind !== 'form' || !!onForm),
+          (i.kind !== 'form' || !!onForm) &&
+          (i.kind !== 'import' || !!onImport),
       ),
-    [hasCards, suggestions, onPickSheet, onDashboard, onTemplate, onVisualisation, onForm],
+    [
+      hasCards,
+      suggestions,
+      onPickSheet,
+      onDashboard,
+      onTemplate,
+      onVisualisation,
+      onForm,
+      onImport,
+    ],
   );
   const categories = START_CATEGORIES.filter((c) => itemsIn(items, c.id).length > 0).map((c) => ({
     ...c,
@@ -207,11 +220,12 @@ export function StartPlanning({
     else if (item.kind === 'template') onTemplate?.(item.template);
     else if (item.kind === 'visualisation') onVisualisation?.(item.view, item.name);
     else if (item.kind === 'form') onForm?.(item.starter);
+    else if (item.kind === 'import') onImport?.();
     else if (item.suggestion) onSuggestedDashboard?.(item.suggestion);
     else if (item.layout) onDashboard?.(item.layout);
   };
   return (
-    <StartPanel
+    <StartPanel<StartCategory>
       titleId="start-planning-title"
       title="Start Planning"
       line="Pick how to run the work. You can add more boards, sheets, forms and dashboards later."
@@ -227,6 +241,8 @@ export function StartPlanning({
       search={(query) =>
         searchStartItems(items, query).map((g) => ({
           category: g.category,
+          // Import has no rail entry to name its group.
+          ...(g.category === 'import' ? { name: KIND_NAMES.import } : {}),
           cards: g.items.map((item) => toCard(item, palette, false)),
         }))
       }

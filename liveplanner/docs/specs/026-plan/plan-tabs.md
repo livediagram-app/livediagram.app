@@ -59,9 +59,12 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 ## The Import dialog
 
 **One dialog holds every way in.** The tab menu's **Import…** row (on every tab, from its **⋯** and the canvas
-right-click menu alike) and the command palette's **Import…** both open it; nothing else in the editor offers an
+right-click menu alike), the command palette's **Import…** and Start Planning's **Import** card (an empty tab,
+[Starting a board](plan-mode.md#starting-a-board)) open it; nothing else in the editor offers an
 import of its own beside it. It is headed **Import**, "Choose what to bring in, or drop a file here.", with the
-Import Tabs help link and Close, and opens on its list:
+Import Tabs help link and Close, and opens on its list, focus on the list's first row that can be pressed (Into This
+Tab, or Trello when that row is dimmed): the format is the first decision. On a touch screen focus stays on the panel,
+as every dialog's does, so no row lights up unasked.
 
 - **Into This Tab**: what the tab itself takes, one row.
   - A **Board tab**: **CSV**, "A .csv or .tsv, each row a new card on this board." Pressing it closes the dialog and

@@ -130,6 +130,8 @@ fits, reason?, summary }` with `summary` the footer line.
 false`, `updatedAt` the last comment's; comments past `THREAD_BYTES` are dropped (none, given the plan's budget).
 - `withImportedThreads(creates, { home, sourceName, random })`: each create's `comments` become `threads: [thread]`
   (none when empty); the `comments` key is dropped. Shared by the editor and agents.
+- Caps: the thread is an ordinary `CardThread`, one per create, so `threadsOnCard` counts it toward `CARD_THREADS_MAX`
+  (50) like any other; nothing exempts it or caps it apart (`imported-thread.test.ts` "counts as an ordinary thread").
 
 ## api (`apps/api/src/routes/item-routes.ts`)
 
@@ -199,7 +201,11 @@ fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a
   `TOOL_ROWS` (`import-options.tsx`: source, file type, the line naming the file and where it lives, `ToolMark` from
   `tool-marks.tsx`), each `aria-label` "<Tool>: <line>". A row calls `flow.pick(source)`; the row being read says
   "Reading the File…" (`flow.reading`).
-- The dialog (`ariaLabel="Import"`, `initialFocus="container"` so focus starts on the panel, not the help link) is
+- The dialog (`ariaLabel="Import"`, `initialFocus="container"`, the fallback) is opened from the tab menu, the command
+  palette's `openImport` and Start Planning's Import card (`StartPlanning` `onImport`, given by `EditorStartPanels`
+  only when `trackerImport.canImport`). On a fine pointer `ImportChooseView` focuses its first enabled row as it
+  mounts (before the trap's effect, which keeps a focus already inside), never the help link; on a coarse pointer
+  the panel keeps it. It is
   headed **Import**, "Choose what to bring in, or drop a file here." (the drop clause `pointer-coarse:hidden`). Each
   section's `OptionRows` roves (one row in the Tab order, ArrowUp / ArrowDown / Home / End), its hint a wrapping
   line; the tool list is `aria-busy` while a file is read. A dimmed Into This Tab row's reason is a full-contrast line
