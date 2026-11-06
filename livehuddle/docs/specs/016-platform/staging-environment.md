@@ -89,7 +89,7 @@ Durable Object makes its own schema the first time it is used, so the staging de
 rehearses the same Workers and Durable Object classes production will run.
 
 A deploy that fails stops the staging run, and the Worker is retried on the next deploy
-(the `deployed/staging` tag moves only when every Worker succeeded,
+(staging's deploy record moves only when every Worker succeeded,
 [Deployment](deployment.md) "Deploy").
 
 ## noindex, at the edge

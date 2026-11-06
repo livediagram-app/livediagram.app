@@ -2,14 +2,15 @@ name: Deploy (reusable)
 
 # Deploys one environment (docs/ci.md "Deploys"), called by deploy-staging.yml and
 # deploy-production.yml. Only the Workers a change reaches are built and deployed: the plan compares
-# the commit being deployed with the one this environment last deployed (the `deployed/<environment>`
-# tag), asks Turborepo which workspaces that reaches, dependencies included, and keeps the ones with a
+# the commit being deployed with the one this environment last deployed (its deploy record, a GitHub
+# deployment with the task `record`: deploy-record.mjs), asks Turborepo which workspaces that reaches, dependencies included, and keeps the ones with a
 # wrangler.toml. They deploy in three tiers, each waiting for the one before: the services and apis
 # (D1 migrations first), then the sites, then the routers in front. Each tier runs a few jobs, not one
 # per Worker (deploy-group.yml): one for the services and apis, one per product's sites, one for the
 # routers, so a deploy waits for a runner a handful of times rather than once per Worker. When every
-# tier has succeeded, the tag moves to the deployed commit, so a failed or skipped Worker is retried
-# next time.
+# tier has succeeded, the record moves to the deployed commit, so a failed or skipped Worker is retried
+# next time. The record is a deployment, not a tag, because GITHUB_TOKEN may not move a ref across a
+# change to .github/workflows/ (production went red there on 2026-11-06).
 #
 # Deploys write code and plain vars only. Each Worker's secrets were set on it with `wrangler secret
 # put` and survive a deploy; the only credential here is CLOUDFLARE_API_TOKEN (every wrangler.toml
@@ -47,9 +48,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # The environment's gate, once per deploy: production's required reviewers, if it has any, approve
-    # here. GitHub records the deployment against it.
+    # here. GitHub records a deployment against it too, of the workflow's commit (task `deploy`); that
+    # is not the deploy record, which the record job writes once every Worker is up.
     environment:
       name: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      deployments: read
     outputs:
       tier0: ${{ steps.plan.outputs.deploys0 }}
       tier1: ${{ steps.plan.outputs.deploys1 }}
@@ -75,34 +80,13 @@ jobs:
         with:
           node-version: 22
 
-      # The commit this environment last deployed. With none, with `all`, or when it isn't an ancestor
-      # of the commit being deployed (a rollback), every Worker deploys.
-      - name: Find the last deploy
-        id: base
-        env:
-          TAG: deployed/${{ inputs.environment }}
-          ALL: ${{ inputs.all }}
-        run: |
-          set -euo pipefail
-          base="$(git rev-parse -q --verify "refs/tags/${TAG}^{commit}" || true)"
-          if [ "${ALL}" = 'true' ] || [ -z "${base}" ] || ! git merge-base --is-ancestor "${base}" HEAD; then
-            echo "[deploy] ${TAG}: ${base:-none}; deploying every Worker"
-            base=''
-          else
-            echo "[deploy] ${TAG}: ${base}; deploying what changed since"
-          fi
-          echo "sha=${base}" >> "${GITHUB_OUTPUT}"
-
       # The plan's outputs are this workflow's contract, so it runs this workflow's own scripts (from
       # github.workflow_sha) over the commit being deployed. Run from that commit instead, a deploy of a
       # commit older than a change to both planned no groups and failed (2026-11-04). Unpacked outside the
       # checkout, so they don't count as a change to it.
-      - name: Plan
-        id: plan
+      - name: Unpack this workflow's scripts
+        id: scripts
         env:
-          PLAN_MODE: deploy
-          BASE: ${{ steps.base.outputs.sha }}
-          HEAD: ${{ inputs.ref }}
           WORKFLOW_SHA: ${{ github.workflow_sha }}
         run: |
           set -euo pipefail
@@ -110,7 +94,37 @@ jobs:
           mkdir -p "${scripts}"
           git cat-file -e "${WORKFLOW_SHA}^{commit}" 2>/dev/null || git fetch -q --depth=1 origin "${WORKFLOW_SHA}"
           git archive "${WORKFLOW_SHA}" .github/scripts | tar -x -C "${scripts}"
-          node "${scripts}/.github/scripts/ci-plan.mjs" > /dev/null
+          echo "dir=${scripts}/.github/scripts" >> "${GITHUB_OUTPUT}"
+
+      # The commit this environment last deployed (its record, or the old tag before the first one).
+      # With none, with `all`, or when it isn't an ancestor of the commit being deployed (a rollback),
+      # every Worker deploys. A record that can't be read stops the deploy here.
+      - name: Find the last deploy
+        id: base
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          ALL: ${{ inputs.all }}
+          SCRIPTS: ${{ steps.scripts.outputs.dir }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          base="$(node "${SCRIPTS}/deploy-record.mjs" read "${ENVIRONMENT}")"
+          if [ "${ALL}" = 'true' ] || [ -z "${base}" ] || ! git merge-base --is-ancestor "${base}" HEAD; then
+            echo "[deploy] ${ENVIRONMENT} last deployed ${base:-nothing}; deploying every Worker"
+            base=''
+          else
+            echo "[deploy] ${ENVIRONMENT} last deployed ${base}; deploying what changed since"
+          fi
+          echo "sha=${base}" >> "${GITHUB_OUTPUT}"
+
+      - name: Plan
+        id: plan
+        env:
+          PLAN_MODE: deploy
+          BASE: ${{ steps.base.outputs.sha }}
+          HEAD: ${{ inputs.ref }}
+          SCRIPTS: ${{ steps.scripts.outputs.dir }}
+        run: node "${SCRIPTS}/ci-plan.mjs" > /dev/null
 
   tier0:
     name: ${{ matrix.label }}
@@ -177,7 +191,8 @@ jobs:
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
-  # Every tier succeeded or had nothing to do: this environment now runs `ref`.
+  # Every tier succeeded or had nothing to do: this environment now runs `ref`. Recorded as a
+  # deployment, which never fails the run (deploy-record.mjs warns instead): the Workers are up.
   record:
     name: Record the deploy
     needs: [plan, tier0, tier1, tier2]
@@ -187,19 +202,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read
+      deployments: write
     steps:
-      - name: Check out
+      - name: Check out this workflow's scripts
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ github.workflow_sha }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
 
-      - name: Move the tag
+      - name: Record the deployment
         env:
-          TAG: deployed/${{ inputs.environment }}
+          ENVIRONMENT: ${{ inputs.environment }}
           REF: ${{ inputs.ref }}
-        run: |
-          set -euo pipefail
-          git tag -f "${TAG}" "${REF}"
-          git push -f origin "refs/tags/${TAG}"
-          echo "${{ inputs.environment }} runs \`${REF}\`." >> "${GITHUB_STEP_SUMMARY}"
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/deploy-record.mjs write "${ENVIRONMENT}" "${REF}"
