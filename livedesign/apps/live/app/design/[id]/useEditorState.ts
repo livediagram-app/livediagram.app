@@ -1557,6 +1557,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Selection + placement + format helpers. See useElementHelpers.
   const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
+      layerInertIds,
       readSelection,
       activeId,
       activeTab,
