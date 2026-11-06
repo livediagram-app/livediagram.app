@@ -79,6 +79,13 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
   // The Door (docs/specs/009-elements/room-builder.md): walked through.
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.

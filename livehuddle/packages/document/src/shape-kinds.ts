@@ -101,6 +101,14 @@ export const SHAPE_KINDS = new Set<string>([
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
   // Door (docs/specs/009-elements/room-builder.md "Door").
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
