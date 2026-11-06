@@ -6,10 +6,11 @@
 import type { WhiteboardPenId } from './whiteboard-prefs';
 
 export type DrawingTool = 'select' | WhiteboardPenId | 'text' | 'path' | 'fill' | 'eraser';
-export type FoldableTool = Exclude<DrawingTool, 'select' | 'main'>;
+export type FoldableTool = Exclude<DrawingTool, 'select'>;
 
 // The least-used first: the specialist tools before the everyday ones (blueprints/DEFAULTS.md D39).
-// Select and Marker 1 never fold.
+// Marker 1 folds last of all, only where nothing else is left to fold (a large toolbar UI scale in a
+// narrow window); Select, Shapes and Settings never fold.
 export const DOCK_FOLD_ORDER: readonly FoldableTool[] = [
   'path',
   'fill',
@@ -17,6 +18,7 @@ export const DOCK_FOLD_ORDER: readonly FoldableTool[] = [
   'eraser',
   'second',
   'text',
+  'main',
 ];
 
 const NOTHING_FOLDED: ReadonlySet<FoldableTool> = new Set();
@@ -37,7 +39,7 @@ export function drawingRuns(
 ): DrawingTool[][] {
   const runs: DrawingTool[][] = [['select'], [...pens], ['text', 'path'], ['fill', 'eraser']];
   return runs
-    .map((run) => run.filter((tool) => tool === 'select' || !folded.has(tool as FoldableTool)))
+    .map((run) => run.filter((tool) => tool === 'select' || !folded.has(tool)))
     .filter((run) => run.length > 0);
 }
 
@@ -122,5 +124,43 @@ export function fitDock({
   return { pins: 0, folded };
 }
 
-const isPen = (tool: FoldableTool): tool is 'second' | 'third' =>
-  tool === 'second' || tool === 'third';
+const isPen = (tool: FoldableTool): tool is WhiteboardPenId =>
+  tool === 'main' || tool === 'second' || tool === 'third';
+
+// How far a fit folded: the pins it took off the bar and the tools it folded.
+const depthOf = (fit: DockFit, pins: number) => pins - fit.pins + fit.folded.size;
+
+/**
+ * Where a top dock sits and what it shows (docs/specs/023-draw-mode/draw-mode.md "Where the dock
+ * sits"): from `wide` (lg, 1024 px) it is centred, with the menu card's clearance on both sides, only
+ * when that folds no more than beside the menu card would; otherwise it stays beside the card, whose
+ * room is larger by the clearance less the 12 px right margin. `leftRoom` is the room beside the card
+ * and `clear` the clearance, both in dock px; with no room measured it centres from `wide`, folding
+ * nothing, as before measuring.
+ */
+export function placeTopDock({
+  leftRoom,
+  clear,
+  wide,
+  pens,
+  pins,
+  canDrag,
+}: {
+  leftRoom: number | null;
+  clear: number;
+  wide: boolean;
+  pens: readonly WhiteboardPenId[];
+  pins: number;
+  canDrag: boolean;
+}): { centred: boolean; fit: DockFit } {
+  const beside = fitDock({ room: leftRoom, pens, pins, canDrag });
+  if (!wide || leftRoom === null) return { centred: wide, fit: beside };
+  const centredRoom = leftRoom - clear + DOCK_RIGHT_MARGIN_PX;
+  const centred = fitDock({ room: centredRoom, pens, pins, canDrag });
+  return depthOf(centred, pins) <= depthOf(beside, pins)
+    ? { centred: true, fit: centred }
+    : { centred: false, fit: beside };
+}
+
+// A top dock beside the menu card keeps 12 px (0.75rem) from the right edge.
+export const DOCK_RIGHT_MARGIN_PX = 12;

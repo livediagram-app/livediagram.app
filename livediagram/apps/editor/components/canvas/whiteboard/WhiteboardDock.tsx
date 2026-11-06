@@ -18,9 +18,8 @@ import {
 } from 'react';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
-import type { WhiteboardDockPosition } from '@/lib/whiteboard-dock-prefs';
 import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
-import { fitDock } from '@/lib/whiteboard-dock-fold';
+import { fitDock, placeTopDock } from '@/lib/whiteboard-dock-fold';
 import {
   pinFromMenu,
   resolveSlotDrop,
@@ -62,16 +61,21 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 const HINT_MS = 4000;
 
 // Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left): beside it on a phone or a
-// tablet, centred with the same clearance on both sides from lg (D33), so a tablet in portrait still shows the whole
-// dock. The dock is one card that scrolls inside itself, with no bleed. The clearance is the card's measured right
-// edge plus 8 px (`--dock-clear`, useMenuCardClearance): the card holds the menu button, the editor mode switch and
-// on a computer the tab's name, so its width varies. Until measured, the old guesses hold: 7.5rem on a tablet,
-// 4.125rem on a phone. The 12 px margin on the right is kept.
-const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[var(--dock-clear,7.5rem)] max-w-[calc(100%-var(--dock-clear,7.5rem)-0.75rem)] phone:left-[var(--dock-clear,4.125rem)] phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-2*var(--dock-clear,7.5rem))]',
-  bottom:
-    'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
-};
+// tablet, and from lg centred with the same clearance on both sides (D33) when that folds no more of the bar than
+// beside the card would (placeTopDock), so a tablet in portrait still shows the whole dock. The dock is one card that
+// scrolls inside itself, with no bleed. The clearance is the card's measured right edge plus 8 px (`--dock-clear`,
+// useMenuCardClearance): the card holds the menu button, the editor mode switch and on a computer the tab's name, so
+// its width varies. Until measured, the old guesses hold: 7.5rem on a tablet, 4.125rem on a phone. The 12 px margin
+// on the right is kept.
+const TOP_BESIDE_CARD =
+  'top-3 left-[var(--dock-clear,7.5rem)] max-w-[calc(100%-var(--dock-clear,7.5rem)-0.75rem)] phone:left-[var(--dock-clear,4.125rem)] phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)]';
+const TOP_CENTRED = 'top-3 left-1/2 -translate-x-1/2 max-w-[calc(100%-2*var(--dock-clear,7.5rem))]';
+const BOTTOM =
+  'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4';
+// The clearance until measured, in dock px (7.5rem).
+const CLEAR_FALLBACK_PX = 120;
+// lg: where a top dock may centre.
+const CENTRED_DOCK_MEDIA_QUERY = '(min-width: 1024px)';
 
 type WhiteboardDockProps = {
   model: WhiteboardDockModel;
@@ -99,14 +103,22 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
   const split = splitBarPins(model.pinnedShapes, narrow);
   // A bar too wide for its room (not on a phone, whose dock scrolls) sheds pins into the Shapes
   // flyout, then folds the least-used drawing tools into More Tools ("When the bar is too wide").
+  // The probe measures the room beside the menu card at the top (or the bottom's room); a top dock
+  // centres from lg only where that folds no more (placeTopDock).
   const probe = useRef<HTMLDivElement>(null);
   const room = useDockRoom(probe, scale, !phone);
-  const fit = fitDock({
-    room,
+  const wide = useMediaQuery(CENTRED_DOCK_MEDIA_QUERY);
+  const top = model.position === 'top';
+  const fitArgs = {
     pens: model.prefs.pens.map((p) => p.id),
     pins: split.onBar.length,
     canDrag: !narrow,
-  });
+  };
+  const placed = top
+    ? placeTopDock({ ...fitArgs, leftRoom: room, clear: clear ?? CLEAR_FALLBACK_PX, wide })
+    : { centred: true, fit: fitDock({ ...fitArgs, room }) };
+  const { fit } = placed;
+  const placement = top ? (placed.centred ? TOP_CENTRED : TOP_BESIDE_CARD) : BOTTOM;
   const pins = {
     onBar: split.onBar.slice(0, fit.pins),
     inMenu: [...split.onBar.slice(fit.pins), ...split.inMenu],
@@ -320,7 +332,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
         aria-hidden
         data-dock-room=""
         style={{ ...clearStyle, ...zoom }}
-        className={`pointer-events-none invisible absolute h-0 w-full ${WRAPPER_PLACEMENT[model.position]}`}
+        className={`pointer-events-none invisible absolute h-0 w-full ${top ? TOP_BESIDE_CARD : BOTTOM}`}
       />
       <div
         data-floating-panel=""
@@ -343,7 +355,8 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
                 ...(model.position === 'top' ? { top: toSurfacePx(12, scale) } : {}),
               }),
         }}
-        className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${WRAPPER_PLACEMENT[model.position]}`}
+        data-dock-centred={placed.centred ? '' : undefined}
+        className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${placement}`}
       >
         <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} />
       </div>

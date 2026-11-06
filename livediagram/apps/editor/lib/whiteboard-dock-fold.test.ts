@@ -7,6 +7,7 @@ import {
   dockBarWidth,
   drawingRuns,
   fitDock,
+  placeTopDock,
   foldedInBarOrder,
   type FoldableTool,
 } from './whiteboard-dock-fold';
@@ -97,14 +98,27 @@ describe('fitDock', () => {
     expect([...fit.folded]).toEqual(['path', 'fill']);
   });
 
-  it('folds in order down to Select, Marker 1 and More Tools', () => {
+  it('folds in order down to Select and More Tools, Marker 1 last of all', () => {
     const fit = fitDock({ room: 10, pens: PENS, pins: 1, canDrag: false });
     expect([...fit.folded]).toEqual([...DOCK_FOLD_ORDER]);
-    expect(drawingRuns(PENS, fit.folded)).toEqual([['select'], ['main']]);
+    expect(DOCK_FOLD_ORDER.at(-1)).toBe('main');
+    expect(drawingRuns(PENS, fit.folded)).toEqual([['select']]);
+  });
+
+  it('folds Marker 1 only when everything else is folded and it still does not fit', () => {
+    const allButMain = new Set(DOCK_FOLD_ORDER.filter((t) => t !== 'main'));
+    const width = dockBarWidth(PENS, 0, allButMain);
+    expect(fitDock({ room: width, pens: PENS, pins: 0, canDrag: false }).folded.has('main')).toBe(
+      false,
+    );
+    expect(
+      fitDock({ room: width - 1, pens: PENS, pins: 0, canDrag: false }).folded.has('main'),
+    ).toBe(true);
   });
 
   it('never folds a marker the bar does not show', () => {
     const fit = fitDock({ room: 10, pens: ['main'], pins: 0, canDrag: false });
+    expect(fit.folded.has('main')).toBe(true);
     expect(fit.folded.has('second')).toBe(false);
     expect(fit.folded.has('third')).toBe(false);
   });
@@ -115,5 +129,38 @@ describe('fitDock', () => {
       const width = dockBarWidth(PENS, fit.pins, fit.folded);
       if (fit.folded.size < DOCK_FOLD_ORDER.length) expect(width).toBeLessThanOrEqual(room + 0.5);
     }
+  });
+});
+
+describe('placeTopDock', () => {
+  const args = { pens: PENS, pins: 1, canDrag: false, clear: 243 };
+
+  it('stays beside the menu card below lg', () => {
+    expect(placeTopDock({ ...args, leftRoom: 900, wide: false }).centred).toBe(false);
+  });
+
+  it('centres from lg before measuring, folding nothing', () => {
+    const placed = placeTopDock({ ...args, leftRoom: null, wide: true });
+    expect(placed.centred).toBe(true);
+    expect(placed.fit).toEqual({ pins: 1, folded: new Set() });
+  });
+
+  it('centres from lg where the whole bar fits centred', () => {
+    // Centred room: 731 - 243 + 12 = 500.
+    expect(placeTopDock({ ...args, leftRoom: 731, wide: true }).centred).toBe(true);
+  });
+
+  it('centres where centring folds no more than beside the card would', () => {
+    // Beside 440 and centred 440 - 20 + 12 = 432 both take the pin off (423) and nothing else.
+    const placed = placeTopDock({ ...args, clear: 20, leftRoom: 440, wide: true });
+    expect(placed.centred).toBe(true);
+    expect(placed.fit.pins).toBe(0);
+  });
+
+  it('stays beside the card where centring would fold more of the bar', () => {
+    // Beside: 600, the whole bar. Centred: 369, which folds.
+    const placed = placeTopDock({ ...args, leftRoom: 600, wide: true });
+    expect(placed.centred).toBe(false);
+    expect(placed.fit).toEqual({ pins: 1, folded: new Set() });
   });
 });
