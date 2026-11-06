@@ -15,27 +15,28 @@ Scope, by file:
 | `packages/api-kit/src/d1-compound.ts`          | `unionAll` within D1's compound-select limit (5), shared with the Durable Objects                                                                                                                         |
 | `liveworkspace/apps/index/src/fresh-teams.ts`  | `inTeamNow`: a Team Activity read checked against accounts                                                                                                                                                |
 | `packages/index-app/src/person-events.ts`      | An app's `image_uploaded` report                                                                                                                                                                          |
+| `liveworkspace/apps/index/src/team-audit.ts`   | The team audit log's statement each team-level event adds to its batch ([team-audit-log.md](team-audit-log.md))                                                                                           |
 
 ## Domain and naming
 
-| Type                                               | Source                              | Id                                               | Seen by                               |
-| -------------------------------------------------- | ----------------------------------- | ------------------------------------------------ | ------------------------------------- |
-| `created`, `synced`                                | `insertItem`                        | a UUID                                           | the item's scope                      |
-| `renamed { from }`, `moved { folderName, teamId }` | `PATCH /items/:id`                  | a UUID                                           | the item's scope                      |
-| `trashed`, `restored`                              | delete, restore                     | a UUID                                           | the item's scope                      |
-| `shared { level }`, `unshared`                     | link routes                         | a UUID                                           | the item's scope                      |
-| `favourited`                                       | `PUT /favourites/:id`               | a UUID                                           | the person only                       |
-| `taken_offline`                                    | `DELETE ?reason=offline`            | `off:<item>:<now>`, no item                      | the person only                       |
-| `edited`                                           | `PUT /app/items/:id/events`         | `ed:<item>:<person>:<day>`                       | the item's scope                      |
-| `image_uploaded { count }`                         | `PUT /app/people/events`            | `im:<app>:<person>:<day>`, no item               | the person only                       |
-| `commented { reply? }`                             | collab push                         | `cm:<item>:<tab>:<element>:<count>`              | the item's scope                      |
-| `comment_resolved`                                 | collab push                         | `cr:<item>:<tab>:<element>:<count>`              | the item's scope                      |
-| `action_assigned`                                  | collab push                         | `aa:<item>:<tab>:<element>:<action>:<assignee>`  | the item's scope and the assignee     |
-| `action_done`                                      | collab push                         | `ad:<item>:<tab>:<element>:<action>:<updatedAt>` | the item's scope                      |
-| `opened_by_visitor`                                | a grant through a link              | `vo:<item>:<visitor>:<day>`                      | the owner only                        |
-| `copied_by_visitor`                                | a copy through a link               | `vc:<item>:<visitor>`                            | the owner only                        |
-| `share_link_expiring`                              | link changes, daily pass            | `sx:<item>`                                      | the owner only                        |
-| `team_*`, `token_*`                                | accounts, `POST /internal/timeline` | accounts' own                                    | the scopes named; app `liveworkspace` |
+| Type                                                            | Source                              | Id                                               | Seen by                               |
+| --------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------ | ------------------------------------- |
+| `created`, `synced`                                             | `insertItem`                        | a UUID                                           | the item's scope                      |
+| `renamed { from }`, `moved { folderName, teamId, fromTeamId? }` | `PATCH /items/:id`                  | a UUID                                           | the item's scope                      |
+| `trashed`, `restored`                                           | delete, restore                     | a UUID                                           | the item's scope                      |
+| `shared { level, public? }`, `unshared`                         | link routes                         | a UUID                                           | the item's scope                      |
+| `favourited`                                                    | `PUT /favourites/:id`               | a UUID                                           | the person only                       |
+| `taken_offline`                                                 | `DELETE ?reason=offline`            | `off:<item>:<now>`, no item                      | the person only                       |
+| `edited`                                                        | `PUT /app/items/:id/events`         | `ed:<item>:<person>:<day>`                       | the item's scope                      |
+| `image_uploaded { count }`                                      | `PUT /app/people/events`            | `im:<app>:<person>:<day>`, no item               | the person only                       |
+| `commented { reply? }`                                          | collab push                         | `cm:<item>:<tab>:<element>:<count>`              | the item's scope                      |
+| `comment_resolved`                                              | collab push                         | `cr:<item>:<tab>:<element>:<count>`              | the item's scope                      |
+| `action_assigned`                                               | collab push                         | `aa:<item>:<tab>:<element>:<action>:<assignee>`  | the item's scope and the assignee     |
+| `action_done`                                                   | collab push                         | `ad:<item>:<tab>:<element>:<action>:<updatedAt>` | the item's scope                      |
+| `opened_by_visitor`                                             | a grant through a link              | `vo:<item>:<visitor>:<day>`                      | the owner only                        |
+| `copied_by_visitor`                                             | a copy through a link               | `vc:<item>:<visitor>`                            | the owner only                        |
+| `share_link_expiring`                                           | link changes, daily pass            | `sx:<item>`                                      | the owner only                        |
+| `team_*`, `token_*`                                             | accounts, `POST /internal/timeline` | accounts' own                                    | the scopes named; app `liveworkspace` |
 
 `<day>` is the UTC day number (`ms / 86,400,000`). A visitor with no identity is `link:<code>`.
 
@@ -51,6 +52,10 @@ Scope, by file:
 - `bulkEventStatements`: any number of events in three statements through `json_each` (events, scope rows, times);
   the same id again moves its time and takes the newest title and detail.
 - A push from further ahead than 5 minutes is dated now (`FUTURE_SLACK_MS`).
+- Team audit ([team-audit-log.md](team-audit-log.md)): `eventStatements` adds one `itemAuditStatement` for a
+  `shared`, `unshared`, `moved`, `trashed` or `restored` (the item's team, or a move's `auditTeams`), and
+  `bulkEventStatements` one `accountAuditStatement` for the batch's team events with a `t:` scope; each copies the
+  event it follows. So `POST /internal/timeline` is four statements when it carries a team event, three otherwise.
 
 ### Reports from apps and accounts
 
