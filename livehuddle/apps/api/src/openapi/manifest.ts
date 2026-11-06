@@ -332,12 +332,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           properties: {
             mode: ref('EditorMode'),
             tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },
-            templateFamily: {
-              type: ['string', 'null'],
-              description:
-                'No template family is offered today; the retired retrospective reads as none, ' +
-                'any other value is intent_invalid.',
-            },
+            templateFamily: { anyOf: [ref('TemplateFamily'), { type: 'null' }] },
           },
           required: ['mode'],
         },
