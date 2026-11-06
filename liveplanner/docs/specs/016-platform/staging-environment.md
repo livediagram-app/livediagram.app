@@ -14,7 +14,7 @@ plan schema step runs in real remote Durable Objects before it runs in the ones 
 | MCP host     | `mcp.liveplanner.app`                                 | `mcp-staging.liveplanner.app`                         |
 | Trigger      | Manual (`workflow_dispatch`)                          | Automatic, after CI passes for a push to `main`       |
 | Workflow     | `deploy-production.yml` (**Deploy Production**)       | `deploy-staging.yml` (**Deploy Staging**)             |
-| Ships        | What staging runs (the `deployed/staging` tag)        | `main`'s tip                                          |
+| Ships        | What staging runs (its deploy record)                 | `main`'s tip                                          |
 | Worker names | `liveplanner-<app>`                                   | `liveplanner-<app>-staging`                           |
 | Indexable    | Yes                                                   | **No**: `X-Robots-Tag: noindex, nofollow`             |
 | Platform     | liveworkspace.app (index, accounts, media, telemetry) | staging.liveworkspace.app, the platform's own staging |

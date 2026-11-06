@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { createShape, type BoxedElement, type TabVote } from '@livediagram/document';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
@@ -78,5 +78,90 @@ describe('ElementVoteOverlay', () => {
       expect(fills.length).toBe(2);
       for (const fill of fills) expect(fill).not.toMatch(/\/\d+$/);
     }
+  });
+});
+
+// docs/specs/012-collaboration/session-tools.md "On a small note when zoomed out it folds to a badge".
+describe('ElementVoteOverlay on a small element zoomed out', () => {
+  function small(zoom: number, opts: { votes?: string[]; onCast?: () => void } = {}) {
+    const v: TabVote = { ...vote(true), votes: { [el.id]: opts.votes ?? ['me'] } };
+    return render(
+      <CanvasZoomProvider zoom={zoom}>
+        <ElementVoteOverlay
+          voteKey={el.id}
+          name="Square"
+          vote={v}
+          selfId="me"
+          voteMax={1}
+          votableInVote
+          box={{ width: 120, height: 80 }}
+          onCastVote={opts.onCast ?? (() => {})}
+        />
+        <span data-testid="elsewhere" />
+      </CanvasZoomProvider>,
+    );
+  }
+  const badgeOf = (c: HTMLElement) =>
+    c.querySelector<HTMLButtonElement>('.lvd-vote-badge button[aria-expanded="false"]');
+
+  it('keeps the stepper at 100%, even on a small element', () => {
+    const c = small(1).container;
+    expect(c.querySelector('.lvd-vote-stepper')).not.toBeNull();
+    expect(badgeOf(c)).toBeNull();
+  });
+
+  it('folds to a counter-scaled badge with the count, brand-filled while it holds your dots', () => {
+    const c = small(0.4).container;
+    expect(c.querySelector('.lvd-vote-stepper')).toBeNull();
+    const badge = badgeOf(c)!;
+    expect(badge.getAttribute('aria-label')).toBe('1 vote on Square. Open the vote stepper');
+    expect(badge.textContent).toBe('1+');
+    expect(badge.className).toContain('bg-brand-700');
+    expect(badge.closest<HTMLElement>('.lvd-vote-badge')!.style.transform).toBe('scale(2.5)');
+    const none = small(0.4, { votes: [] }).container;
+    expect(badgeOf(none)!.className).not.toContain('bg-brand-700');
+  });
+
+  it('opens the stepper on a tap and casts from it, closing on a press elsewhere', () => {
+    let cast = 0;
+    const r = small(0.4, { onCast: () => cast++ });
+    fireEvent.click(badgeOf(r.container)!, { detail: 1 });
+    const stepper = r.container.querySelector('.lvd-vote-stepper-open');
+    expect(stepper).not.toBeNull();
+    fireEvent.click(r.getByRole('button', { name: 'Add a dot to Square' }));
+    expect(cast).toBe(1);
+    // A tap on its own buttons keeps it open; the badge's own press never reaches the element.
+    fireEvent.pointerDown(r.getByRole('button', { name: 'Add a dot to Square' }));
+    expect(r.container.querySelector('.lvd-vote-stepper-open')).not.toBeNull();
+    fireEvent.pointerDown(r.getByTestId('elsewhere'));
+    expect(badgeOf(r.container)).not.toBeNull();
+  });
+
+  it('opened from the keyboard, puts focus on the plus', () => {
+    const r = small(0.4);
+    fireEvent.click(badgeOf(r.container)!, { detail: 0 });
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Add a dot to Square');
+  });
+
+  it('stops the press on the badge reaching the element', () => {
+    let reached = 0;
+    const r = render(
+      <CanvasZoomProvider zoom={0.4}>
+        <div onPointerDown={() => reached++}>
+          <ElementVoteOverlay
+            voteKey={el.id}
+            name="Square"
+            vote={vote(true)}
+            selfId="me"
+            voteMax={1}
+            votableInVote
+            box={{ width: 120, height: 80 }}
+            onCastVote={() => {}}
+          />
+        </div>
+      </CanvasZoomProvider>,
+    );
+    fireEvent.pointerDown(badgeOf(r.container)!);
+    expect(reached).toBe(0);
   });
 });

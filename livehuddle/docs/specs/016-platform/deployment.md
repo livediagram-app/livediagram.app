@@ -67,9 +67,9 @@ Until 2026-11-06 every commit on `main` ran to the end in a group of its own. On
 The root `deploy.yml` (reusable) deploys one environment, and two thin callers run it, so both environments run identical steps:
 
 - `deploy-staging.yml` runs when CI passes for a push to `main`, and deploys that commit to every Worker's `[env.staging]`.
-- `deploy-production.yml` is run by hand: **Deploy Production** in the Actions tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs (the `deployed/staging` tag); a `ref` ships another commit.
+- `deploy-production.yml` is run by hand: **Deploy Production** in the Actions tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs (its deploy record); a `ref` ships another commit.
 
-**Only what changed.** Each environment remembers the commit it last deployed in full, as the tag `deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since then, with everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and deploys the Workers among them. A livehuddle Worker none of whose files or dependencies changed is left as it is. With no tag yet, with **all**, or on a rollback, every Worker deploys. The tag moves only when every Worker succeeded, so a failed one is retried by the next deploy.
+**Only what changed.** Each environment remembers the commit it last deployed in full, as a GitHub deployment to its environment with the task `record` ([docs/ci.md](../../../../docs/ci.md) "Deploys"). A deploy asks Turborepo which workspaces changed since then, with everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and deploys the Workers among them. A livehuddle Worker none of whose files or dependencies changed is left as it is. With no record yet, with **all**, or on a rollback, every Worker deploys. The record moves only when every Worker succeeded, so a failed one is retried by the next deploy.
 
 **Order.** Three tiers, each waiting for the one before, and a failing tier stops the ones after it:
 

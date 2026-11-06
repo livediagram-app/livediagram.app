@@ -69,7 +69,7 @@ for reproducing a specific person's document.
 The api has no SQL migration step: each Durable Object makes its own schema on first use, so a schema change ships in
 the worker's code. Every push to `main` deploys that code to staging one manual deploy before production.
 
-A deploy that fails stops the staging run, and the Worker is retried on the next deploy (the `deployed/staging` tag
+A deploy that fails stops the staging run, and the Worker is retried on the next deploy (staging's deploy record
 moves only when every Worker succeeded, [Deployment](deployment.md) "Deploy").
 
 ## noindex, at the edge

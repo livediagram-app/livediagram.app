@@ -68,12 +68,13 @@ One reusable workflow, the root `deploy.yml`, deploys an environment; `deploy-st
 
 - **Staging** deploys when CI passes for a push to `main`.
 - **Production** is manual: **Deploy Production** in the Actions tab, or `gh workflow run deploy-production.yml`. By
-  default it ships exactly what staging runs (the `deployed/staging` tag); a `ref` ships another commit, and one
+  default it ships exactly what staging runs (its deploy record); a `ref` ships another commit, and one
   older than production's own (a rollback) redeploys every Worker.
 
-**Only what changed.** The plan compares the commit with the environment's `deployed/<environment>` tag, asks
-Turborepo which workspaces that reaches, and deploys only those with a `wrangler.toml`. With no tag, with **all**, or
-on a rollback, every Worker deploys. The tag moves only when every tier succeeded, so a failed Worker is retried
+**Only what changed.** The plan compares the commit with the environment's deploy record (a GitHub deployment, task
+`record`; [docs/ci.md](../../../../docs/ci.md) "Deploys"), asks Turborepo which workspaces that reaches, and deploys
+only those with a `wrangler.toml`. With no record, with **all**, or on a rollback, every Worker deploys. The record
+moves only when every tier succeeded, so a failed Worker is retried
 next time.
 
 **Order.** Three tiers, each waiting for the one before: the services and apis (`livedesign-api`), then the sites
@@ -116,7 +117,7 @@ Some configuration is what **livedesign.app** runs with, not what the software d
 
 ## First deploy
 
-With no `deployed/<environment>` tag yet, every Worker deploys, tier by tier, so each router's service-binding
+With no deploy record for the environment yet, every Worker deploys, tier by tier, so each router's service-binding
 targets exist before the router does. Later deploys are idempotent updates.
 
 ## Custom domain

@@ -257,8 +257,8 @@ each product's api, sites, MCP and router, and the platform's services and site.
   commit on `main` whose CI passed deploys to every Worker's `[env.staging]`, whichever run finished, so
   a steady stream of merges never holds staging back. A run is skipped only when staging already runs
   that commit or a newer one. Runs queue rather than cancel, so a deploy is never cut off halfway. It can also be run by hand, with **all** to redeploy every Worker. A run by hand skips the
-  check for `main`'s tip and deploys the head of the branch it was started on, moving
-  `deployed/staging` there, so production's default then ships that commit.
+  check for `main`'s tip and deploys the head of the branch it was started on, recording it as what
+  staging runs, so production's default then ships that commit.
 - **Production** is a manual gate (`deploy-production.yml`): run **Deploy Production** from the Actions
   tab, or `gh workflow run deploy-production.yml`. By default (**Deploy Staging Tip**) it ships
   exactly what staging runs; **Deploy Latest Main** ships `main`'s tip instead, to move faster than
@@ -267,14 +267,33 @@ each product's api, sites, MCP and router, and the platform's services and site.
   **all** does. Required reviewers on the `production` environment, if set in the repository's
   settings, add a second gate before anything deploys.
 
-**Only what changed.** Each environment remembers the commit it last deployed in full, as the tag
-`deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since
+**Only what changed.** Each environment remembers the commit it last deployed in full, as a GitHub
+deployment of that commit to the `staging` or `production` environment with the task `record` and a
+`success` status (`deploy-record.mjs`, which every reader goes through). A deploy asks Turborepo which workspaces changed since
 then, with everything depending on them, using the plan CI uses (`ci-plan.mjs`, `PLAN_MODE=deploy`).
 The Workers among them build and deploy, and the rest are left as they are; a held product's Workers (none today)
 are never among them, even with **all**. A Worker none of whose
 files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
-config alone deploys nothing. The tag moves only when every Worker in the deploy succeeded, so a
-failed one is retried by the next deploy. With no tag yet, everything deploys.
+config alone deploys nothing. The record is written only when every Worker in the deploy succeeded, so a
+failed one is retried by the next deploy. With no record yet, everything deploys.
+
+- **Why a deployment, not a tag.** Until 2026-11-06 the record was the tag `deployed/<environment>`,
+  force-pushed with the workflow's `GITHUB_TOKEN`. GitHub refuses that token a ref update it counts as
+  changing a file under `.github/workflows/`, and the token can never hold the `workflows` permission:
+  production's run of that day deployed its Workers, then went red at the tag. A deployment is not a
+  ref, so it never meets that check; the record job needs only `deployments: write`.
+- **Not the environment's own deployments.** The plan job names the environment (for its reviewers),
+  so GitHub also records a deployment there, of the workflow's commit with the task `deploy`, marked a
+  success once the plan finishes. That is neither the commit deployed nor proof the Workers deployed,
+  so the readers take only `record` deployments: the newest one with a `success` status among its
+  statuses (a newer deployment can mark it `inactive` afterwards).
+- **The old tags.** A reader that finds no `record` deployment for an environment falls back to its
+  `deployed/<environment>` tag, so the first deploy after the switch still plans from the right
+  commit. Nothing moves the tags any more; once both environments have a record they are history.
+- **A failed record is a warning, not a red run.** The Workers have deployed by then, so the record
+  job never fails the run: it writes a warning and the summary says the record is missing. The next
+  deploy then plans from the older record and redeploys a little more, which is safe. Reading the
+  record is different: a deploy that can't read it stops before deploying anything.
 
 **Order.** Three tiers, each waiting for the one before: first each product's api and every
 liveworkspace Worker but the site (with D1, migrations apply before the code: `wrangler d1 migrations
@@ -302,7 +321,7 @@ minutes for any one command.
   lists every Worker with its result, the step it failed at, and its time.
 - **One failure doesn't hide the rest.** A Worker whose step fails stops there (a failing migration
   never deploys the code after it), and the group goes on with its other Workers. The job fails at the
-  end when any Worker failed, which stops the tiers after it, as before, and leaves the tag where it was.
+  end when any Worker failed, which stops the tiers after it, as before, and leaves the record where it was.
 - **A retry is safe.** Re-running a failed job deploys its whole group again, the Workers that
   succeeded included. That is harmless: `wrangler deploy` of the same commit puts up the same code and
   vars again, and `wrangler d1 migrations apply` skips the migrations already applied.
