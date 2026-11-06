@@ -109,7 +109,7 @@ describe('FootnoteNotes', () => {
     expect(on.commit).toHaveBeenCalledWith(1, 'One more');
   });
 
-  it('leaves a note on Enter, and on Escape goes back to its reference', () => {
+  it('on Enter or Escape commits a note and goes back to its reference', () => {
     const { notes, on } = notesOf();
     notes.render([page(0, [{ n: 4, text: 'Four' }])]);
     notes.focus(4);
@@ -117,8 +117,9 @@ describe('FootnoteNotes', () => {
     const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
     text.dispatchEvent(enter);
     expect(enter.defaultPrevented).toBe(true);
-    expect(document.activeElement).not.toBe(text);
     expect(on.commit).toHaveBeenCalledWith(4, 'Four');
+    expect(on.leave).toHaveBeenCalledWith(4);
+    on.leave.mockClear();
     notes.focus(4);
     const outside = vi.fn();
     document.body.addEventListener('keydown', outside);

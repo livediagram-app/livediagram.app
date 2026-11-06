@@ -431,8 +431,8 @@ undoes and copies with the text it sits in.
   writing's own layout is.
 - **The note's text** is plain text, at most 1,000 characters (`MAX_ARTICLE_FOOTNOTE_TEXT`), no
   line breaks, edited in place at the foot of the page by anyone who may write: a press on it puts the
-  caret there; Enter or Escape, or a press elsewhere, leaves it (the change is one edit), Escape
-  putting the caret back after its reference. An empty note says "Footnote" to someone writing.
+  caret there; Enter or Escape, or a press elsewhere, leaves it (the change is one edit), Enter
+  and Escape putting the caret back after its reference. An empty note says "Footnote" to someone writing.
   A press on a reference puts the caret in its note.
 - **Removing one**: deleting its reference (Backspace after it, Delete before it, or a selection
   holding it) removes the note with it. Emptying the note keeps an empty note.

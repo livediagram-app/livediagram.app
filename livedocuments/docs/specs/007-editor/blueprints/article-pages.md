@@ -484,7 +484,7 @@ pagesNeeded)` (adds pages like the last; removes trailing pages with no elements
   `FOOTNOTE_MAX_SHARE` tall, overflow hidden: an `hr` a third wide, an `ol` of `li[data-n]` (number, then a
   `contenteditable` `plaintext-only` text; for a writer `role="textbox"` and `aria-label` "Footnote n", the number hidden; placeholder "Footnote").
   Heights are measured in a hidden probe once per text, width and look. Boxes and items are reused; the note being
-  typed in is never rewritten. Enter or focus leaving commits (`setNodeAttribute(pos, 'text')` then a flush), Escape
+  typed in is never rewritten. Focus leaving commits (`setNodeAttribute(pos, 'text')` then a flush); Enter or Escape
   commits and puts the caret after the reference; a line break is never typed; input past the cap is cut; a key or
   press in a note never reaches the canvas.
 - **Exports**: `handle.snapshot` adds each box's `snapshotWriting` (text cut at the box's foot), so PDF, PNG and SVG

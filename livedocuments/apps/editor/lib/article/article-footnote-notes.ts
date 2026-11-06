@@ -20,7 +20,7 @@ export type NotesHost = {
   editable: () => boolean;
   // A note's text as left: written to its reference when it changed.
   commit: (n: number, text: string) => void;
-  // Escape: the caret back after the reference.
+  // Enter or Escape: the caret back after the reference.
   leave: (n: number) => void;
   // A note's text changed as typed: its height may have.
   resize: () => void;
@@ -232,10 +232,9 @@ export class FootnoteNotes {
     if (!text) return;
     // The canvas's shortcuts never see a key typed into a note.
     e.stopPropagation();
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      text.blur();
-    } else if (e.key === 'Escape') {
+    // Enter or Escape: done with the note, the writing goes on after its reference (a blur alone
+    // left the focus on the page, where the next letters typed ran the canvas's shortcuts).
+    if (e.key === 'Enter' || e.key === 'Escape') {
       e.preventDefault();
       const n = numberOf(text);
       this.on.commit(n, cleanFootnoteText(text.textContent ?? ''));

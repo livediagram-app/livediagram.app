@@ -417,6 +417,11 @@ html[data-presenting] .article-flow .article-note {
   color: var(--article-accent);
   cursor: pointer;
 }
+/* ProseMirror puts a zero-width image after an uneditable inline (a reference) that ends a block; preflight makes
+   every img a block, which opened an empty line under a paragraph ending in a footnote. */
+.article-flow img.ProseMirror-separator {
+  display: inline;
+}
 .article-flow .article-footnote-ref.ProseMirror-selectednode {
   border-radius: 2px;
   outline: 2px solid color-mix(in srgb, var(--article-accent) 45%, transparent);
