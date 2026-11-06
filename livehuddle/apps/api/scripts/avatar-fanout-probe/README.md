@@ -23,7 +23,8 @@ workerd`).
    `PROBE_EVERY` is the client's send interval in ms (`33` was every editor's before the bound, `auto` is the stepped
    cadence), `PROBE_TALK=1` makes every walker talk the whole time as well (a new `avatar-voice` level every 250 ms,
    [Proximity audio](../../../../docs/specs/012-collaboration/proximity-audio.md#the-talking-equaliser)'s ceiling),
-   `PROBE_BATCHES=0` makes the clients editors that do not take batches, `PROBE_TABS` spreads the walkers
+   `PROBE_BATCHES=0` makes the clients editors that do not take batches, `PROBE_LEAN=0` editors from before lean avatar
+   packets (every packet carrying the costume, [A busy room](../../../../docs/specs/008-canvas/avatar-mode.md#a-busy-room)), `PROBE_TABS` spreads the walkers
    over several tabs and `PROBE_SECONDS` sets the measured window (10 by default, after 2 seconds of warm-up).
 
 It prints one line: the packets the walkers sent a second, the frames and relayed ops their sockets received a second,

@@ -7,6 +7,8 @@
 // PROBE_BATCHES=0: clients that do not take batched frames. PROBE_TABS: how many tabs the walkers spread over.
 // PROBE_TALK=1: every walker also talks the whole time, a new `avatar-voice` level every 250 ms, proximity audio's
 // ceiling (docs/specs/012-collaboration/proximity-audio.md "The wire").
+// PROBE_LEAN=0: editors from before lean avatar packets, every packet carrying the costume and its resting values
+// (docs/specs/008-canvas/avatar-mode.md "The costume rides only when it is needed").
 // The sockets are spread over PROBE_THREADS threads (default 6), so the driver keeps up with what the room sends.
 import { execFileSync } from 'node:child_process';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
@@ -14,6 +16,8 @@ import { Worker, isMainThread, parentPort, workerData } from 'node:worker_thread
 // The editors' stepped cadence (@liveworkspace/avatar/relay `avatarSendIntervalMs`), mirrored so the driver needs
 // no build step: the room holds `walkers` connections.
 const stepped = (n) => (n <= 10 ? 33 : n <= 32 ? 50 : 66);
+// The costume's refresh (@liveworkspace/api-schema/avatar `AVATAR_COSTUME_REFRESH_MS`), mirrored the same way.
+const COSTUME_REFRESH_MS = 2000;
 
 if (isMainThread) {
   const walkers = Number(process.argv[2] ?? 10);
@@ -29,6 +33,7 @@ if (isMainThread) {
     batches: process.env.PROBE_BATCHES !== '0',
     tabs: Number(process.env.PROBE_TABS ?? 1),
     talk: process.env.PROBE_TALK === '1',
+    lean: process.env.PROBE_LEAN !== '0',
   };
   // The workerd process's CPU time so far (user + system), in seconds.
   const cpuSeconds = () => {
@@ -64,6 +69,7 @@ if (isMainThread) {
       tabs: shared.tabs,
       batches: shared.batches,
       talking: shared.talk,
+      lean: shared.lean,
       sentPerSecond: Math.round((walkers * 1000) / every),
       framesPerSecond: Math.round(sum('frames') / elapsed),
       opsPerSecond: Math.round(sum('ops') / elapsed),
@@ -73,7 +79,33 @@ if (isMainThread) {
   );
   for (const w of workers) await w.terminate();
 } else {
-  const { port, room, every, batches, tabs, talk, ids } = workerData;
+  const { port, room, every, batches, tabs, talk, lean, ids } = workerData;
+  const costume = { gender: 'female', clothing: 'hoodie', hair: 'bun', size: 'regular' };
+  // One walker's character this step: the full packet every editor sent before, or the lean one
+  // (@liveworkspace/api-schema/avatar `leanAvatarPacket`): the position to a hundredth of a px, the resting values
+  // left out, and the costume on the first packet and every COSTUME_REFRESH_MS after.
+  const character = (x, y, stepFrame, withCostume) =>
+    lean
+      ? {
+          x: Math.round(x * 100) / 100,
+          y: Math.round(y * 100) / 100,
+          facing: 'right',
+          walking: true,
+          ...(stepFrame ? { stepFrame } : {}),
+          ...(withCostume ? { config: costume } : {}),
+        }
+      : {
+          x,
+          y,
+          facing: 'right',
+          config: costume,
+          walking: true,
+          stepFrame,
+          lift: 0,
+          wave: null,
+          seatedOn: null,
+          holding: null,
+        };
   const counts = { frames: 0, ops: 0, bytes: 0 };
   let counting = false;
   const sockets = [];
@@ -109,6 +141,7 @@ if (isMainThread) {
                 kind: 'hello',
                 participant: { name: `Walker ${i}`, color: '#0ea5e9', tabId: `t${i % tabs}` },
                 ...(batches ? { batches: true } : {}),
+                ...(lean ? { leanAvatars: true } : {}),
               }),
             );
             resolve();
@@ -120,34 +153,27 @@ if (isMainThread) {
   const walk = () => {
     let step = 0;
     for (const [i, ws] of sockets) {
+      let costumeAt = -Infinity;
       timers.push(
         setTimeout(() => {
           timers.push(
             setInterval(() => {
               step++;
+              const now = Date.now();
+              const withCostume = now - costumeAt >= COSTUME_REFRESH_MS;
+              if (withCostume) costumeAt = now;
               ws.send(
                 JSON.stringify({
                   kind: 'op',
                   op: {
                     kind: 'avatar',
                     tabId: `t${i % tabs}`,
-                    avatar: {
-                      x: 400 + (step % 200) * 8.7,
-                      y: 300 + i * 10,
-                      facing: 'right',
-                      config: {
-                        gender: 'female',
-                        clothing: 'hoodie',
-                        hair: 'bun',
-                        size: 'regular',
-                      },
-                      walking: true,
-                      stepFrame: step % 2,
-                      lift: 0,
-                      wave: null,
-                      seatedOn: null,
-                      holding: null,
-                    },
+                    avatar: character(
+                      400 + (step % 200) * 8.7,
+                      300 + i * 10,
+                      step % 2,
+                      withCostume,
+                    ),
                   },
                 }),
               );
