@@ -102,9 +102,55 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Mcp', 'Used', 'ReadDocument')).toBe(true);
     expect(isRetiredEvent('Mcp', 'Used', null)).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'TabView')).toBe(true);
-    // The token a CLI or an AI tool signed in with is counted by accounts, and an agent's changes carry on.
-    expect(isRetiredEvent('Token', 'Created', 'Cli')).toBe(false);
+    // The tokens a CLI or an AI tool signed in with go too (Work Tracker #586); a token made by hand and an
+    // agent's changes carry on.
+    expect(isRetiredEvent('Token', 'Created', 'Cli')).toBe(true);
+    expect(isRetiredEvent('Token', 'Created', 'MCP')).toBe(true);
+    expect(isRetiredEvent('Token', 'Created', 'Manual')).toBe(false);
+    expect(isRetiredEvent('Token', 'Removed', null)).toBe(false);
     expect(isRetiredEvent('Agent', 'Applied', 'Api')).toBe(false);
+  });
+
+  it('retires the Diagram, Workshop and Draw tours, not the Avatar, element or Show Me tours', () => {
+    for (const type of ['Tour', 'TourOffer', 'TourStepPalette', 'TourCompleted', 'TourSeenOn'])
+      expect(isRetiredEvent('UI', 'Started', type), type).toBe(true);
+    for (const type of [
+      'WorkshopTour',
+      'WorkshopTourFromWelcome',
+      'DrawTourStepShapes',
+      'DrawTourSeenOff',
+    ])
+      expect(isRetiredEvent('UI', 'View', type), type).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'AvatarTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'AvatarTourOffer')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'PortalTourStepOpen')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOff')).toBe(false);
+  });
+
+  it('retires the Show Me tours of surfaces livehuddle lacks, not Share or Tab Style', () => {
+    for (const type of [
+      'CardTypeTour',
+      'DashboardTourOffer',
+      'PhotoReviewTourSkipped',
+      'SankeyFlowsTour',
+    ])
+      expect(isRetiredEvent('UI', 'Started', type), type).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Ended', 'TabStyleTourCompleted')).toBe(false);
+  });
+
+  it('retires the Laser, Spotlight and Diagram or Draw opening modes, not the other tools', () => {
+    expect(isRetiredEvent('Canvas', 'Used', 'Laser')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Spotlight')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'LaserColour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'SpotlightDim')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInDiagram')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInDraw')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Eraser')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'EraserMode')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'Laser')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'Renamed')).toBe(false);
+    expect(isRetiredEvent('Draw', 'Toggled', 'BreakShapeChip')).toBe(false);
   });
 
   it('keeps everything that still exists', () => {
@@ -154,7 +200,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Element', 'Added', 'Page')).toBe(false);
   });
 
-  it('retires Plan mode, not the other modes, the Slide Deck or the Workshop Q&A board', () => {
+  it('retires Plan mode, not the other modes or the Slide Deck', () => {
     expect(isRetiredEvent('Plan', 'Added', 'Task')).toBe(true);
     expect(isRetiredEvent('Sheet', 'Changed', 'Cell')).toBe(true);
     expect(isRetiredEvent('Form', 'Created', 'Feedback')).toBe(true);
@@ -169,9 +215,9 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Cli', 'Used', 'ItemAdd')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'plan-mode')).toBe(true);
     expect(isRetiredEvent('Editor', 'Changed', 'ModeWorkshop')).toBe(false);
-    expect(isRetiredEvent('Tab', 'Changed', 'OpensInDraw')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'Locked')).toBe(false);
     expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
-    expect(isRetiredEvent('UI', 'View', 'WorkshopTourStepTimer')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'AvatarTourStepPick')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'editor-modes')).toBe(false);
   });
 });
