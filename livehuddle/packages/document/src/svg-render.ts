@@ -1,4 +1,4 @@
-// Headless SVG renderer for a tab's elements (docs/specs/015-api/mcp-server.md §5). Extracted from the
+// Headless SVG renderer for a tab's elements (livediagram/docs/specs/015-api/mcp-server.md §5). Extracted from the
 // editor's export pipeline (apps/editor/lib/export-tab.ts) so the SAME element
 // drawing serves both the in-app SVG/PNG export AND the MCP worker's inline
 // render — one renderer, two callers, no DOM. The per-element drawers

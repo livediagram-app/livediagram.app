@@ -2,10 +2,10 @@
 
 Follow the references below only as needed; never upfront.
 
-An **agent** is a program acting for a person through an API token: an MCP client, a CLI caller, a script
+An **agent** is a program acting for a person through an API token: a script, or any client of the REST API
 ([Domain language](../003-system-architecture/domain-language.md#agents)). These specs define how an agent reads,
-changes and discusses a document, alone or beside people editing it live. The front doors are the
-[CLI](../015-api/cli.md) and the [MCP server](../015-api/mcp-server.md); the research behind them is in
+changes and discusses a document, alone or beside people editing it live. The front door is the REST API (livehuddle has no MCP server or CLI,
+[Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)); the research behind them is in
 `docs/research/agent-cli/`.
 
 - ./agent-changesets.md - when an agent writes a tab: the changeset path through the api and room, conflicts, revert

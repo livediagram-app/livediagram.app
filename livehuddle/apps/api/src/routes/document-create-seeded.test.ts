@@ -129,7 +129,7 @@ describe('compileSeededTabs', () => {
   });
 });
 
-// A tree takes a direction as a flow does (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
+// A tree takes a direction as a flow does (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
 describe('a seeded tree graph', () => {
   const tree = (direction?: 'down' | 'right') => ({
     id: 't1',

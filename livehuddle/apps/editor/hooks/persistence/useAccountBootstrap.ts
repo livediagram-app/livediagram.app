@@ -4,10 +4,6 @@ import {
   DEFERRED_AUTH_PENDING,
   useDeferredAuth,
 } from '@liveworkspace/workbench/components/providers/deferred-auth';
-import {
-  useWorkbenchSession,
-  type WorkbenchSession,
-} from '@/components/providers/workbench-session-context';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { registerTokenProvider } from '@/lib/api-client';
 import { clearGuestToken } from '@/lib/guest-token';
@@ -42,21 +38,7 @@ type BootstrapResult = {
   accountDisplayName: string | null;
 };
 
-// The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
-// workbench", I9) is the session's person, settled at once: no timeout, no token
-// provider here (WorkbenchAuthBridge registers the session's).
-function workbenchResult(session: WorkbenchSession): BootstrapResult {
-  return {
-    isSignedIn: true,
-    authLoaded: true,
-    sessionAnswered: true,
-    accountUserId: session.person.id,
-    accountDisplayName: session.person.name,
-  };
-}
-
-// Above the workbench page's editor the auth is held (DEFERRED_AUTH_PENDING): never settled, never a
-// guest, however long it waits.
+// While the auth is held (DEFERRED_AUTH_PENDING): never settled, never a guest, however long it waits.
 const HELD: BootstrapResult = {
   isSignedIn: false,
   authLoaded: false,
@@ -66,9 +48,8 @@ const HELD: BootstrapResult = {
 };
 
 export function useAccountBootstrap(): BootstrapResult {
-  const workbench = useWorkbenchSession();
   const auth = useDeferredAuth();
-  const held = workbench !== null || auth === DEFERRED_AUTH_PENDING;
+  const held = auth === DEFERRED_AUTH_PENDING;
   const { getToken, isSignedIn, authLoaded: sessionLoaded, userId: accountUserId, user } = auth;
 
   // If the session hasn't reported its state within 5 s, treat it as
@@ -124,16 +105,11 @@ export function useAccountBootstrap(): BootstrapResult {
 
   // 3. Who the Inbox's This Browser snapshot is for, once settled (lib/offline/inbox-snapshot.ts): the page on this
   // address lists those rows only to them.
-  const settledAccount = workbench
-    ? workbench.person.id
-    : held || !authLoaded
-      ? undefined
-      : (accountUserId ?? null);
+  const settledAccount = held || !authLoaded ? undefined : (accountUserId ?? null);
   useEffect(() => {
     if (settledAccount !== undefined) inboxSnapshot.setAccount(settledAccount);
   }, [settledAccount]);
 
-  if (workbench) return workbenchResult(workbench);
   if (held) return HELD;
   return {
     isSignedIn,

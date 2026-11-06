@@ -113,15 +113,6 @@ The words for how elements are drawn, apart from their colours ([Finish](../008-
 | **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional, Sketch or Marker | tone, look, style, render mode |
 | **Follow Tab** | An element with no finish of its own, drawn in its tab's                                        | inherit, default               |
 
-## Workbenches
-
-The words for a board open beside code ([Workbench embeds](../013-workspace/workbench-embeds.md)).
-
-| Term                    | Means                                                                                 | Never called                           |
-| ----------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
-| **workbench**           | A developer tool that frames the editor beside an agent (an agent workbench, VS Code) | host (that is a profile's server), IDE |
-| **selection reference** | The text naming what was selected, attached to a person's message to their agent      | context, selection payload             |
-
 ## Community
 
 The words for the public gallery of published documents ([Community](../025-community/community.md)).

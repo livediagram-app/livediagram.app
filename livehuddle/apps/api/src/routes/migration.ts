@@ -1,7 +1,7 @@
 // A This Browser document moved by product, the browser's one-time door after the move from the old livehuddle.app
 // (docs/migration.md step 6; docs/specs/015-api/api.md "Migration"): `POST /api/migration/local-parts`, body a
-// LocalPartsRequest, as the caller's guest or account (an account access token or a guest token: an API token or a
-// workbench session is a script's, never a browser returning). Its Pages, Plan and design tabs move to their apps as
+// LocalPartsRequest, as the caller's guest or account (an account access token or a guest token: an API token is a
+// script's, never a browser returning). Its Pages, Plan and design tabs move to their apps as
 // the caller's (migration/local-parts.ts). The other door, the legacy guest claim, is routes/legacy-guest.ts.
 
 import type { LocalDocumentInput } from '@liveworkspace/migration';
@@ -19,7 +19,7 @@ const MAX_LOCAL_ID = 200;
 
 // The browser's own guest or account, never a script's credential.
 export function browserCaller(ctx: RouteContext): string | null {
-  if (ctx.token || ctx.workbench) return null;
+  if (ctx.token) return null;
   return ctx.resolveOwner();
 }
 

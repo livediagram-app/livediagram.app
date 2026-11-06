@@ -1,5 +1,4 @@
-// Feature illustrations for livehuddle's open edges: the REST API from your own scripts, an AI
-// tool building a diagram over MCP, and export that is a faithful picture of the canvas. Same
+// Feature illustrations for livehuddle's open edges: the REST API from your own scripts. Same
 // vocabulary as ./features (panel chrome with a light and a dark half, the Default canvas, the
 // fa-b-* loops); under reduced motion each shows its finished state.
 //

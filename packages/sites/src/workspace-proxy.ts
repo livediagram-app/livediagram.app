@@ -205,16 +205,20 @@ export const WORKBENCH_ROUTE: WorkspaceRoute = {
   cookies: 'drop',
 };
 
+// The apps that pair no workbench: livehuddle has no CLI to pair one (liveworkspace/docs/specs/011-workbench/workbench.md
+// "Addresses"), so its router leaves `/api/workbench/*` to its api, which answers 404.
+const NO_WORKBENCHES: ReadonlySet<AppName> = new Set(['livehuddle']);
+
 /** The routes an app's router forwards to liveworkspace.app: the Explorer and its account reads, signing in (and the
- *  site's assets) and workbenches. The same for every app. */
-export function workspaceRoutes(_app: AppName): readonly WorkspaceRoute[] {
+ *  site's assets) and, for an app that has them, workbenches. */
+export function workspaceRoutes(app: AppName): readonly WorkspaceRoute[] {
   return [
     EXPLORER_ROUTE,
     ACCOUNT_ROUTE,
     ...SIGN_IN_PAGE_ROUTES,
     ACCOUNTS_ROUTE,
     SITE_ASSETS_ROUTE,
-    WORKBENCH_ROUTE,
+    ...(NO_WORKBENCHES.has(app) ? [] : [WORKBENCH_ROUTE]),
   ];
 }
 

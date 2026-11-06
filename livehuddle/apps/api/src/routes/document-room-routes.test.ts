@@ -15,7 +15,6 @@ import { adderKeyFor } from '../adder-key';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
-import type { WorkbenchContext } from './context';
 
 const NOW = Math.floor(Date.now() / 1000);
 
@@ -154,14 +153,16 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Role')).toBe('participate');
   });
 
-  it('caps a workbench ticket at its sealed level and stamps its pairing', async () => {
+  // livehuddle has no workbenches (docs/specs/002-project-scope/not-in-livehuddle.md): the shared ticket's level cap
+  // still holds, and no session is ever stamped as a pairing's.
+  it('caps a ticket sealed with a cap at that level, and stamps no pairing', async () => {
     const { env, seen } = roomEnv();
     const grant = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
     const ticket = await sealRoomTicket(env, grant, { pairing: 'wp-1', cap: 'view' });
     await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
     const h = seen[0]!.headers;
     expect(h.get('X-Verified-Role')).toBe('view');
-    expect(h.get('X-Verified-Workbench-Pairing')).toBe('wp-1');
+    expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
   });
 
   it('refuses a workbench ticket whose pairing or cap was changed', async () => {
@@ -212,36 +213,6 @@ describe('POST room-ticket', () => {
       makeTestRouteContext('POST', '/api/documents/p1/room-ticket', { env, grant: null }),
     );
     expect(res?.status).toBe(404);
-  });
-
-  it('seals a workbench session ticket to its pairing and cap', async () => {
-    const { env, seen } = roomEnv();
-    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
-    const workbench = {
-      sessionId: 'ws-1',
-      ownerId: 'user_a',
-      tokenId: 'tok',
-      pairingId: 'wp-1',
-      tabId: null,
-      origin: 'https://w.example',
-      level: 'participate',
-      expiresAt: Date.now() + 60_000,
-      scope: 'document',
-      documentId: 'p1',
-    } as unknown as WorkbenchContext;
-    const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/documents/p1/room-ticket', {
-        env,
-        workbench,
-        headers: { [ITEM_GRANT_HEADER]: t },
-        grant: null,
-      }),
-    );
-    const { ticket } = (await res!.json()) as { ticket: string };
-    expect(ticket.split('~')).toHaveLength(4);
-    await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
-    expect(seen[0]!.headers.get('X-Verified-Role')).toBe('participate');
-    expect(seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('wp-1');
   });
 });
 

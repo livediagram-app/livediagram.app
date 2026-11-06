@@ -46,7 +46,7 @@ import {
   clearAgentsForOp,
   RoomAgentPresence,
 } from '@liveworkspace/api-kit/room-agent-presence';
-import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
+import { armRoomAlarm, disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import type { ClientMessage, Env, DesignEnv, ParticipantPresence, ServerMessage } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import { multiplayerDecision } from '@liveworkspace/api-kit/room-multiplayer';
@@ -1167,7 +1167,7 @@ export class DesignRoom extends DurableObject<Env> {
     const env = this.roomEnv;
     const id = this.designId;
     const blobs = env && this.schemaReady ? await designBlobIds(env) : [];
-    await this.state.storage.deleteAlarm();
+    await disarmRoomAlarm(this.state.storage);
     await this.state.storage.deleteAll();
     if (env && id) {
       await releaseBlobs(env, id, blobs);

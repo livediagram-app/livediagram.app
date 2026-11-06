@@ -107,10 +107,10 @@ each app's router and MCP Worker.
 
 The MCP server is optional per app: an app is checked for one only when it ships one (it has an MCP Worker's local
 port in `MCP_DEV_PORTS`). An app without one has no MCP row at all, rather than a row that is always down or
-skipped. Every app ships one, livehuddle's included (its MCP Worker on `9088` locally; owner, 2026-11-02), and every
+skipped. Every app ships one except livehuddle, which removed its MCP server (owner, Work Tracker #562), and every
 launched app is on the page, livehuddle's group last. A held app
 ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)) is not on the page
-until it launches; none is held today. One round is 32 requests in production (27 on staging, which has no public
+until it launches; none is held today. One round is 31 requests in production (27 on staging, which has no public
 MCP host), under a Worker's 50 subrequests.
 
 ## The database

@@ -66,6 +66,7 @@ export function PageNotesButton({
             key={slide.id}
             cards={slide.noteCards}
             onChange={(cards) => deck.setNoteCards(slide.id, cards)}
+            onSettle={deck.flushNotes}
             takeEscape={takeEscape}
           />
           <span className="px-0.5 text-[11px] text-slate-500 dark:text-slate-400">

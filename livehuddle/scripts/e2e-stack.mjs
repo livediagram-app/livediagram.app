@@ -51,10 +51,6 @@ import {
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
 import { createTokenStandIn } from '../../packages/auth-client/src/e2e-token-stand-in.ts';
-import {
-  isWorkspaceFramePath,
-  WORKSPACE_FRAME_PAGE,
-} from '../apps/editor/lib/workbench/workbench-frame-path.ts';
 // Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
 // against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
@@ -165,12 +161,6 @@ const EDITOR_ONLY = process.env.E2E_EDITOR_ONLY === '1';
 //                    its own records, which the signed-in specs fill through /e2e/accounts/__seed/*
 //                    (e2e/accounts-stub.ts). Test-only: nothing outside this stack trusts the key
 //                    or the records.
-//   E2E_WORKBENCH=1  the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-//                    "Testing"): the stack acts as the accounts Worker (its stand-in, above),
-//                    for the signed-in pairing page and the api calls the CLI makes, and the api
-//                    builds its workbench and pairing URLs on this live origin (APP_BASE_URL). The
-//                    live build must carry NEXT_PUBLIC_E2E_AUTH=1.
-const WORKBENCH = process.env.E2E_WORKBENCH === '1';
 const accountsKey = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const ACCOUNTS_KID = 'e2e-accounts-stub';
 // What the api worker is started with (below): its issuer is `${ACCOUNTS_URL}/api/auth`, and the
@@ -663,8 +653,6 @@ function resolveStatic(pathname, out) {
   // So does every form link, /form/<code> (apps/editor/lib/form-path.ts, as the editor worker rewrites it): without this
   // the stack answered a published form's link with the 404 page, so no spec could open one.
   if (p === '/form' || p.startsWith('/form/')) p = '/form/placeholder';
-  // So does every place inside a workspace frame, as the editor worker serves them (lib/workbench/workbench-frame-path.ts).
-  if (isWorkspaceFramePath(p)) p = WORKSPACE_FRAME_PAGE;
   if (p === '/') p = '/index';
   const candidates = [
     path.join(out, p), // exact file (assets)
@@ -1003,7 +991,6 @@ async function main() {
       `MEDIA_URL:${mediaUrl}`,
       '--var',
       `MEDIA_KEY:${e2eMediaKey(MEDIA_APP)}`,
-      ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${EDITOR_PORT}`] : []),
       // More vars for the api, space-separated `KEY:value` pairs: E2E_API_VARS="REALTIME_APP_ID:x …" turns on
       // what a stack has no secrets for, such as proximity audio's calls (docs/specs/012-collaboration/proximity-audio.md).
       ...(process.env.E2E_API_VARS ?? '')

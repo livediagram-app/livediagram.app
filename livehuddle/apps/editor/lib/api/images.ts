@@ -2,14 +2,7 @@
 // the authenticated blob-URL fetch for rendering.
 import type { ImageSummary } from '@livehuddle/api-schema';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
-import {
-  API_BASE,
-  apiDelete,
-  apiHeaders,
-  expectOk,
-  apiFetch,
-  getWorkbenchConfinement,
-} from './core';
+import { API_BASE, apiDelete, apiHeaders, expectOk, apiFetch } from './core';
 import { blobToDataUrl } from '@liveworkspace/workbench/lib/blob-data-url';
 import {
   cachedDisplayCopy,
@@ -138,9 +131,7 @@ async function fetchImage(
   opts: { documentId?: string; shareCode?: string | null },
 ): Promise<Response | null> {
   const params = new URLSearchParams();
-  // A workbench session reads images by its own document's path only (no owner shortcut).
-  const documentId = getWorkbenchConfinement()?.documentId ?? opts.documentId;
-  if (documentId) params.set('d', documentId);
+  if (opts.documentId) params.set('d', opts.documentId);
   const url = `${API_BASE}/images/${encodeURIComponent(imageId)}${
     params.toString() ? `?${params.toString()}` : ''
   }`;

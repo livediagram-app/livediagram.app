@@ -11,6 +11,7 @@ import {
 } from '@liveplanner/project';
 import { useDashboard } from './dashboard-context';
 import { useSlotDraft } from './useSlotDraft';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 const HEADING =
   'w-full truncate bg-transparent text-[22px] font-semibold leading-tight tracking-tight text-slate-900 @md:text-[30px] dark:text-slate-50';
@@ -35,7 +36,9 @@ export function DashboardTitle({
   if (!canEdit)
     return (
       <div className="@container flex h-full flex-col justify-center gap-1 overflow-hidden px-2 py-2">
-        <h2 className={HEADING}>{stored.title}</h2>
+        <h2 style={PLAN_HEADING_STYLE} className={HEADING}>
+          {stored.title}
+        </h2>
         {stored.text ? (
           <p className={`${DESCRIPTION} line-clamp-3 whitespace-pre-wrap`}>{stored.text}</p>
         ) : null}
@@ -50,6 +53,7 @@ export function DashboardTitle({
         onChange={(e) => setTitle(e.target.value)}
         onBlur={save}
         placeholder="Section Title"
+        style={PLAN_HEADING_STYLE}
         className={`${HEADING} outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600`}
       />
       <textarea

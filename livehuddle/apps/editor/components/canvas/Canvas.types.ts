@@ -22,7 +22,6 @@ import type { ArrowEnd, DragMode } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import type { WorkspaceFrameHooks } from '@/components/providers/workbench-session-context';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -571,10 +570,6 @@ export type CanvasProps = {
   // An embed (docs/specs/013-workspace/embeds.md): CanvasChrome hides every floating panel, the history dock and
   // the owner badge, keeping only the canvas content and the zoom controls.
   chromeAway?: boolean;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
-  // has no Explorer: neither the floating panel nor the Toolbar layout's menu button.
+  // No Explorer: neither the floating panel nor the Toolbar layout's menu button (a phone held sideways).
   explorerHidden?: boolean;
-  // A workspace frame's Back (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB59), in the menu button's
-  // place at the canvas's top left.
-  workbenchBack?: Pick<WorkspaceFrameHooks, 'back' | 'backTitle'> | null;
 };

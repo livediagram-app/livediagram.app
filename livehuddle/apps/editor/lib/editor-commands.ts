@@ -49,7 +49,7 @@ export type CommandContext = {
   // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table):
+  // The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table; livehuddle no longer passes it):
   // no ownership powers, so neither Share nor Delete document.
   workbench?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
@@ -206,9 +206,12 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
 
   if (!ctx.tabLocked) out.push(...selectionCommands(ctx, h));
 
+  // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): no history and no Tab Style.
+  const walking = ctx.canvasTool === 'avatar';
+
   // History. Offered only when there's actually something to un/redo, so
   // the palette never lists a dead verb.
-  if (ctx.canUndo) {
+  if (ctx.canUndo && !walking) {
     out.push({
       id: 'undo',
       name: 'Undo',
@@ -216,7 +219,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.undo,
     });
   }
-  if (ctx.canRedo) {
+  if (ctx.canRedo && !walking) {
     out.push({
       id: 'redo',
       name: 'Redo',
@@ -254,19 +257,21 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.deleteDocument,
     });
   }
-  out.push({
-    id: 'open-theme',
-    name: 'Open Theme',
-    keywords: 'theme colour color scheme style appearance palette',
-    run: h.openTheme,
-  });
-  out.push({
-    id: 'open-canvas',
-    name: 'Open Canvas Options',
-    keywords:
-      'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
-    run: h.openCanvasOptions,
-  });
+  if (!walking) {
+    out.push({
+      id: 'open-theme',
+      name: 'Open Theme',
+      keywords: 'theme colour color scheme style appearance palette',
+      run: h.openTheme,
+    });
+    out.push({
+      id: 'open-canvas',
+      name: 'Open Canvas Options',
+      keywords:
+        'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
+      run: h.openCanvasOptions,
+    });
+  }
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',

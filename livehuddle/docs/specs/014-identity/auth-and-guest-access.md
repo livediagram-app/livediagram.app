@@ -117,7 +117,7 @@ the marketing site's "No Catch" night section:
   connect pages), one row under another at every width. Each row is a tinted icon, one title in its tone's colour and
   a line under it, as on liveworkspace.app's sign-in pitch (`liveworkspace/apps/site/components/account/Pitch.tsx`):
   the title stands alone, with no lead word or second title beside it. The account pages say what an account adds
-  ("No catch": your canvases sync on every device, create and join teams, connect your AI assistant, still completely
+  ("No catch": your canvases sync on every device, create and join teams, use the API, still completely
   free); the connect pages say what connecting means ("Connect": changes show live, you approve every connection,
   revoke access any time). The pitch holds no controls. Its frame is shared by every editor, `AuthPitch`
   (`../packages/workbench/src/components/chrome/AuthPitch.tsx`); the rows are this app's

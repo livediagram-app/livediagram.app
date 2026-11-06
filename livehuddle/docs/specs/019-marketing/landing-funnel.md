@@ -92,7 +92,7 @@ The slots:
   (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Space
   (`/new?template=blank-session`). The help centre's header has one
   Open a Space button, its `Header`.
-- `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
+- `Ai` was the Build with AI page's (`/ai`), gone with the MCP server ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)); its header slots stay so the clicks it recorded still parse.
 - `Community` ([Community](../025-community/community.md)) has the header slots only: its Share Your Own buttons open
   Explorer Home rather than `/new`, so they are not funnel sources.
 - `Hero`: the landing hero's **Open a Space** (`/new`); on a feature page, the category hero's Open a Space. Its

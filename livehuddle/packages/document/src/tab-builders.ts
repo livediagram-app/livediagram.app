@@ -1,6 +1,6 @@
-// Pure tab builders (docs/specs/015-api/mcp-server.md, docs/specs/024-agents/edit-operations.md):
-// validated elements or a node/edge graph turned into a finished, themed, persistable Tab. Render-free, so the MCP, the api and the CLI
-// all build tabs the same way. Template tabs are `buildTemplateTab` in @livehuddle/templates.
+// Pure tab builders (livediagram/docs/specs/015-api/mcp-server.md, docs/specs/024-agents/edit-operations.md):
+// validated elements or a node/edge graph turned into a finished, themed, persistable Tab. Render-free, so every caller
+// builds tabs the same way. Template tabs are `buildTemplateTab` in @livehuddle/templates.
 
 import { withFacingBends } from './arrow-orthogonal';
 import { settleDiagramKeys } from './diagram-key';
@@ -11,7 +11,7 @@ import { getBuiltInTheme } from './themes';
 import { coerceShapeKind } from './validate';
 import type { Element, Tab } from './index';
 
-// Layout is the model's call (docs/specs/015-api/mcp-server.md §4.3). 'preserve' keeps the coordinates
+// Layout is the model's call (livediagram/docs/specs/015-api/mcp-server.md §4.3). 'preserve' keeps the coordinates
 // it gave (a ring for a cycle, a tree, a grid); 'auto' forces a clean server
 // layout; omitted = preserve a real arrangement, but auto-lay-out when the
 // model left everything piled at one spot. Either way the connected graph is
@@ -27,7 +27,7 @@ export function applyLayout(
 
 // Build a finished, persistable Tab from validated elements: apply the layout,
 // then paint the chosen preset theme onto the elements + the canvas backdrop —
-// the same engine the editor uses (docs/specs/015-api/mcp-server.md). `themeId` defaults to brand;
+// the same engine the editor uses (livediagram/docs/specs/015-api/mcp-server.md). `themeId` defaults to brand;
 // unknown ids fall back to it. `elements` must already be a valid Element[].
 export function buildTab(
   tabId: string,
@@ -57,7 +57,7 @@ export function buildTab(
   };
 }
 
-// Build a tab from a node/edge graph (docs/specs/015-api/mcp-server.md §4.7): capped, laid out in its
+// Build a tab from a node/edge graph (livediagram/docs/specs/015-api/mcp-server.md §4.7): capped, laid out in its
 // chosen style and direction, arrows routed (graph-input.ts), then themed. The
 // layout is already done, so buildTab keeps it.
 export function buildGraphTab(

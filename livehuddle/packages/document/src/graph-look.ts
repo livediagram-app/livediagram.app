@@ -1,4 +1,4 @@
-// The graph look (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): what turns a laid-out graph into
+// The graph look (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"): what turns a laid-out graph into
 // something that reads like the flowchart template. Pure passes over a graph and its laid-out elements:
 //
 //   - sideStepEdges: which decision exits sit level with their decision (fed to the layout as flat edges);
@@ -224,7 +224,7 @@ export function routeLoops(
   // The solid boxes by place, so each arrow is tested against the boxes near its path, not every box.
   const solidGrid = rectGrid(solid, 0);
   // A group's frame is a wall to a route between two nodes outside it: threaded through the gaps between its
-  // members, the line read as one of the group's own (docs/specs/015-api/mcp-server.md "Groups keep their lines
+  // members, the line read as one of the group's own (livediagram/docs/specs/015-api/mcp-server.md "Groups keep their lines
   // clear").
   const frames = [...boxes.values()].filter((b) => b.type === 'shape' && b.shape === 'boundary');
   const holds = (f: BoxedElement, b: BoxedElement) =>
@@ -551,7 +551,7 @@ function singleBend(
   return turned;
 }
 
-// The spine straightened (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): the main path, from
+// The spine straightened (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): the main path, from
 // the first node nothing enters along each node's furthest-leading exit (side steps and loops aside), shares one
 // centre line, as the template's happy path runs straight down one column. Each side step moves with the node that
 // sends it out. A node that would then overlap another box stays where the layout put it.
@@ -691,7 +691,7 @@ export function sideRejoins(elements: Element[], axis: 'TB' | 'LR', routes: Rout
 const CHANNEL_GAP = 14;
 const CHANNEL_BIN = 24;
 
-// Elbows given channels of their own (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): every elbow
+// Elbows given channels of their own (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): every elbow
 // between the same two ranks bent at the gap's middle, so arrows from different nodes ran down one line and read as
 // joined. Within each gap the arrows of one source drawn alike share a slot (its trunk) and so do the arrows into one
 // target (its bus); every other arrow gets a slot of its own, CHANNEL_GAP apart around the middle, ordered so runs going the
@@ -787,7 +787,7 @@ export function spreadChannels(elements: Element[], axis: 'TB' | 'LR'): Element[
 }
 
 // The parents in a tree whose children are all leaves, two or more, below the root: their leaves stack in a column
-// under them, the compact org chart (docs/specs/015-api/mcp-server.md §4.7 "Layout choices"), instead of a row that
+// under them, the compact org chart (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Layout choices"), instead of a row that
 // makes a wide company four times wider than tall.
 export function stackedParents(
   nodes: readonly LookNode[],

@@ -9,6 +9,7 @@ import {
 } from '@liveplanner/project';
 import { useDashboard } from './dashboard-context';
 import { useSlotDraft } from './useSlotDraft';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 export function DashboardNote({
   slotId,
@@ -28,7 +29,10 @@ export function DashboardNote({
   if (!canEdit)
     return (
       <div className="flex h-full flex-col gap-1.5 overflow-y-auto p-4">
-        <h3 className="text-[15px] font-semibold text-slate-800 dark:text-slate-100">
+        <h3
+          style={PLAN_HEADING_STYLE}
+          className="text-[15px] font-semibold text-slate-800 dark:text-slate-100"
+        >
           {note.title}
         </h3>
         <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
@@ -45,6 +49,7 @@ export function DashboardNote({
         onChange={(e) => setTitle(e.target.value)}
         onBlur={save}
         placeholder="Heading"
+        style={PLAN_HEADING_STYLE}
         className="w-full bg-transparent text-[15px] font-semibold text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
       />
       <textarea

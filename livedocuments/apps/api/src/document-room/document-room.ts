@@ -48,7 +48,7 @@ import {
   clearAgentsForOp,
   RoomAgentPresence,
 } from '@liveworkspace/api-kit/room-agent-presence';
-import { armRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
+import { armRoomAlarm, disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import type { ClientMessage, DocumentEnv, Env, ParticipantPresence, ServerMessage } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import { multiplayerDecision } from '@liveworkspace/api-kit/room-multiplayer';
@@ -1177,7 +1177,7 @@ export class DocumentRoom extends DurableObject<Env> {
     if (this.documentId !== null && this.storedSchema())
       await leaveCommunity(this.requireEnv(), this.documentId);
     await this.ledger.settled();
-    await this.state.storage.deleteAlarm();
+    await disarmRoomAlarm(this.state.storage);
     await this.state.storage.deleteAll();
     this.schemaReady = false;
     this.documentRowReady = false;
