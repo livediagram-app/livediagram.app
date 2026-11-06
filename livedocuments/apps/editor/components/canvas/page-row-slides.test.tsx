@@ -19,6 +19,7 @@ const deck = (slide?: { hidden: boolean }) =>
     add: vi.fn(),
     toggleHidden: vi.fn(),
     setNoteCards: vi.fn(),
+    flushNotes: vi.fn(),
     present: vi.fn(),
   }) satisfies PageDeckControls;
 const labels = (actions: ReturnType<typeof pageRowSlides>) => actions.map((a) => a.label);
