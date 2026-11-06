@@ -274,6 +274,11 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
   Default Folders lists the app's entry, the app's modes and kinds (`defaultFolderOptions`), then its template
   families. An explicit
   `folderId: null` is the root chosen on purpose and wins over any default.
+- **Retired default keys** (`RETIRED_PLACEMENT_KEYS`): a key an app no longer offers an entry for (livehuddle's
+  `livehuddle:mode:workshop`, which repeated its app entry, and `livehuddle:template:retrospective`, whose templates
+  left) is never dropped. It reads as the app's own key: a create tries it after the app's key, in the list's order,
+  and the Explorer shows it as the app's entry while that holds none. Clearing the app's entry clears its retired
+  keys too, so the entry says what a create does; setting it leaves them, since the app's key wins.
 
 ## Sharing and access
 

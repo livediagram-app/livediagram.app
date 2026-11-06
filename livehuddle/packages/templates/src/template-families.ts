@@ -1,12 +1,12 @@
 // The template family each template belongs to (docs/specs/013-workspace/default-folders.md
-// "Creation intent"): the one map that routes a new retrospective to its default
-// folder. A family is a set of ordinary diagram templates. A Record over
-// TemplateKind, so a new template kind does not compile until it is mapped.
+// "Entries"): the one map that routes a new space made from a family to its
+// default folder. A family is a set of ordinary templates; none has one today.
+// A Record over TemplateKind, so a new template kind does not compile until it is mapped.
 
-import type { TemplateFamily } from '@livehuddle/api-schema';
+import type { TemplateFamilyOrNone } from '@livehuddle/api-schema';
 import type { TemplateKind } from './templates';
 
-const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
+const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamilyOrNone> = {
   'blank-session': null,
   'virtual-office': null,
   'coworking-space': null,
@@ -29,6 +29,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */
-export function templateFamilyOf(kind: TemplateKind | null): TemplateFamily | null {
+export function templateFamilyOf(kind: TemplateKind | null): TemplateFamilyOrNone {
   return kind === null ? null : TEMPLATE_FAMILY[kind];
 }

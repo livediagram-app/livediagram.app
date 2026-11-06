@@ -2,7 +2,7 @@
 // Folders with its picker, the delete confirmation's warning, and the template-pick move.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Folder } from '@liveworkspace/index-client';
+import { IndexError, type Folder } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
 import { kindWords } from '../words';
@@ -240,6 +240,36 @@ describe('Default Folders for a host’s Settings', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for plans' }));
     await waitFor(() => expect(index.placementDefaults.has('liveplanner')).toBe(false));
     expect(row('liveplanner').textContent).toContain('My Work');
+  });
+
+  // A key the app retired (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Retired default keys")
+  // reads as the app's own entry, and Clear clears it with the entry; nothing is dropped before then.
+  it('shows a retired default as the app’s entry, and clears it with the entry', async () => {
+    const index = createFakeIndex({
+      folders: [folder('Retros')],
+      defaults: { 'livehuddle:template:retrospective': 'Retros' },
+    });
+    render(<DefaultFoldersSettings client={index.client} app="livehuddle" templates={[]} />);
+    const entries = () => document.querySelectorAll('[data-default-entry]');
+    const destination = () =>
+      document.querySelector('[data-default-entry="livehuddle"] [data-default-destination]')
+        ?.textContent;
+    await waitFor(() => expect(destination()).toBe('Retros'));
+    expect(entries()).toHaveLength(1);
+
+    index.fail.set('clearPlacementDefault', new IndexError(503, 'storage_unavailable'));
+    fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for spaces' }));
+    await screen.findByText('Couldn’t change your default folder. Try again.');
+    expect(destination()).toBe('Retros');
+    expect(index.placementDefaults.get('livehuddle:template:retrospective')).toBe('Retros');
+
+    index.fail.delete('clearPlacementDefault');
+    fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for spaces' }));
+    await waitFor(() =>
+      expect(index.placementDefaults.has('livehuddle:template:retrospective')).toBe(false),
+    );
+    expect(destination()).toBe('My Work');
+    expect(index.placementDefaults.size).toBe(0);
   });
 });
 

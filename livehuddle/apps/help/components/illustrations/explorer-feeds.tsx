@@ -261,7 +261,7 @@ function BigGlyph({ kind, tone }: { kind: 'team' | 'pencil'; tone: Tone }) {
 export function HomeOverview() {
   const tiles = [
     ['Roadmap', 'Payments', 'Onboarding', 'Data model'],
-    ['Retro', 'Auth flow', 'Sprint 12', 'Brainstorm'],
+    ['Stand-up', 'Auth flow', 'Sprint 12', 'Brainstorm'],
   ];
   return (
     <Scene w={420} h={262} bg="plain">
