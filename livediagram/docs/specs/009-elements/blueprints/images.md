@@ -179,7 +179,12 @@ save's ops (`placedImageIds`: each `add` or `update` of an image element with a 
 `apiClaimPlacedImages` (`lib/api/images.ts`, over `createImageClaims`: each `(document, id)` sent until one claim
 succeeds, then never again on the page; at most 2,000 remembered; a failure swallowed), then relays the ops to
 the room it reads again (closed meanwhile: the hold is released and the save fails, so the autosave retries).
-The unload flush relays without a claim: it cannot wait.
+The unload flush (`useUnloadFlush.ts`) cannot wait: for each changed tab it first calls
+`claimPlacedImagesOnUnload` (`lib/api/images.ts`) with the same ids, which builds its headers synchronously
+(`unloadHeaders` in `lib/api/tabs.ts`, the beacon's identity, share link, held grant and share password; none for a
+signed-in owner with no cached token) and sends the claim with `keepalive: true` and no grant wait, then relays the
+ops unawaited. A claim body is at most 100 ids, a few KB, inside the browser's 64 KB keepalive allowance; a
+Participant sends no beacon, so nothing else shares it.
 
 ### Delete, list, usage
 
