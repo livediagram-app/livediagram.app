@@ -59,7 +59,7 @@ export function AvatarWalker({
   shirt,
   standingOn,
   name,
-  onStand,
+  self = false,
   status = null,
   glideMs = 0,
 }: {
@@ -91,8 +91,8 @@ export function AvatarWalker({
   // Peer name, rendered as a small chip above the head. Omitted for your own
   // character (you know who you are).
   name?: string;
-  // Stand up from a chair (docs/specs/009-elements/chair.md). Absent for peers' characters.
-  onStand?: () => void;
+  // Your own character rather than a peer's (the e2e and the Avatar tour find it by `data-avatar="self"`).
+  self?: boolean;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
   status?: AvatarStatus | null;
   // A peer's character in a busy room (docs/specs/008-canvas/avatar-mode.md "A busy room"): how long it slides to
@@ -142,9 +142,9 @@ export function AvatarWalker({
       <div
         ref={placed}
         aria-hidden
-        data-avatar={onStand ? 'self' : 'peer'}
+        data-avatar={self ? 'self' : 'peer'}
         // Your own character is the Avatar tour's push step's anchor (docs/specs/008-canvas/avatar-tour.md).
-        data-tour-id={onStand ? 'avatar-self' : undefined}
+        data-tour-id={self ? 'avatar-self' : undefined}
         data-seated={seated ? '' : undefined}
         className="pointer-events-none absolute"
         style={{
@@ -219,23 +219,6 @@ export function AvatarWalker({
             scale={scale}
           />
         </div>
-        {/* Stand (docs/specs/009-elements/chair.md). Arrow keys and a double-click both get you out of
-            a chair, and neither exists on a touch device — so the seat carries
-            its own press. Only for your OWN character: you cannot stand
-            somebody else up. */}
-        {seated && onStand ? (
-          <button
-            type="button"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onStand();
-            }}
-            className="pointer-events-auto absolute left-1/2 top-full -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm"
-          >
-            Stand
-          </button>
-        ) : null}
       </div>
     </>
   );

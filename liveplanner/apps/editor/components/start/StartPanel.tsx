@@ -62,7 +62,12 @@ type StartPanelCategory<C extends string> = {
 
 export type { StartPanelCard } from './StartCard';
 
-type StartPanelResult<C extends string> = { category: C; cards: readonly StartPanelCard[] };
+// A result group, headed by its category's rail name, or `name` for a group the rail doesn't show.
+type StartPanelResult<C extends string> = {
+  category: C;
+  name?: string;
+  cards: readonly StartPanelCard[];
+};
 
 export function StartPanel<C extends string>({
   titleId,
@@ -400,7 +405,7 @@ export function StartPanel<C extends string>({
               ) : (
                 <>
                   {best.length > 0 ? section('best-match', 'Best Match', best) : null}
-                  {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
+                  {results.map((g) => section(g.category, g.name ?? nameOf(g.category), g.cards))}
                 </>
               )
             ) : (

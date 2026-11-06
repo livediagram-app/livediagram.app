@@ -107,7 +107,7 @@ export function PhotoLayersTab({
   const s = photo.session!;
   const editable = photo.canEdit;
   // Rows restack by the shared pointer drag (useRowPointerDrag); a group takes a drop into it.
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const drag = useRowPointerDrag({
     listRef,
     renamingId: null,
@@ -135,6 +135,8 @@ export function PhotoLayersTab({
   const layers = s.photo.layers;
   const active = s.layer(s.active);
   const rows = listedLayers(layers);
+  // The list's one tab stop: the active layer's row, or the first row while the active layer is not listed.
+  const stopId = rows.some((r) => r.layer.id === s.active) ? s.active : rows[0]?.layer.id;
 
   const press = (l: PhotoLayer, e: MouseEvent) => {
     // The chosen layers are the session's, so the menus, the keys and the Move tool act on them too.
@@ -246,32 +248,7 @@ export function PhotoLayersTab({
       (active.layerKind === 'pixel' || active.layerKind === 'text') ? (
         <PhotoEffectsEditor photo={photo} layer={active} onClose={() => setEffectsOpen(false)} />
       ) : null}
-      <div
-        role="listbox"
-        aria-label="Layers"
-        ref={listRef}
-        className="mx-2 min-h-0 flex-1 overflow-y-auto py-0.5"
-        onKeyDown={(e) => {
-          // The list's own keys while a row has focus (photo-layers.md "The Layers tab"): the arrows
-          // step the active layer (the top layer is first), Delete and Backspace delete it.
-          if ((e.target as HTMLElement).closest('input, textarea')) return;
-          const list = e.currentTarget;
-          const refocus = () =>
-            requestAnimationFrame(() =>
-              list.querySelector<HTMLElement>('[role="option"][tabindex="0"]')?.focus(),
-            );
-          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            e.preventDefault();
-            stepActive(s, e.key === 'ArrowUp' ? 1 : -1);
-            refocus();
-          } else if (editable && (e.key === 'Delete' || e.key === 'Backspace')) {
-            e.preventDefault();
-            e.stopPropagation();
-            act('delete-layer');
-            refocus();
-          }
-        }}
-      >
+      <div className="mx-2 min-h-0 flex-1 overflow-y-auto py-0.5">
         {rows.length === 0 ? (
           <CompactEmptyState
             icon={<LayersIcon />}
@@ -290,56 +267,86 @@ export function PhotoLayersTab({
             }
           />
         ) : (
-          rows.map(({ layer, depth }) => (
-            <PhotoLayerRow
-              key={layer.id}
-              layer={layer}
-              depth={depth}
-              session={s}
-              version={photo.version}
-              active={layer.id === s.active}
-              chosen={s.chosen.has(layer.id)}
-              editable={editable}
-              others={others(layer.id)}
-              onPress={(e) => press(layer, e)}
-              onEye={(alt) => {
-                if (alt) {
-                  s.setSolo(s.solo === layer.id ? null : layer.id);
-                  return;
-                }
-                commit(
-                  setLayer(s.photo, layer.id, {
-                    visible: layer.visible === false ? undefined : false,
-                  }),
-                  layer.visible === false ? 'Show Layer' : 'Hide Layer',
+          // A plain list, never a listbox: a row holds buttons (photo-tools.md "Accessibility").
+          <ul
+            aria-label="Layers"
+            data-photo-layer-list=""
+            ref={listRef}
+            onKeyDown={(e) => {
+              // The list's own keys while a row has focus (photo-layers.md "The Layers tab"): the arrows
+              // step the active layer (the top layer is first), Delete and Backspace delete it. A key in a
+              // row's menu (portalled out of the list, its events still bubbling here) is the menu's.
+              const t = e.target as HTMLElement;
+              if (!e.currentTarget.contains(t) || t.closest('input, textarea')) return;
+              const list = e.currentTarget;
+              const refocus = () =>
+                requestAnimationFrame(() =>
+                  list.querySelector<HTMLElement>('[data-layer-select][tabindex="0"]')?.focus(),
                 );
-              }}
-              onTarget={(t) => s.choose(layer.id, t)}
-              onRename={(name) => commit(setLayer(s.photo, layer.id, { name }), 'Rename Layer')}
-              onFold={() =>
-                // A fold is the view of the stack, not an edit to undo.
-                s.commitStack(
-                  setLayer(s.photo, layer.id, {
-                    collapsed: layer.layerKind === 'group' && layer.collapsed ? undefined : true,
-                  }),
-                  'Fold',
-                  { undoable: false },
-                )
+              if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                stepActive(s, e.key === 'ArrowUp' ? 1 : -1);
+                refocus();
+              } else if (editable && (e.key === 'Delete' || e.key === 'Backspace')) {
+                e.preventDefault();
+                e.stopPropagation();
+                act('delete-layer');
+                refocus();
               }
-              onAction={(id) => {
-                s.choose(layer.id, s.target);
-                if (id === 'export-layer') return void exportLayerPng(s, layer.id);
-                act(id);
-              }}
-              dropAt={drag.dragId && drag.over?.id === layer.id ? drag.over.at : null}
-              drag={{
-                onPointerDown: drag.rowPointerDown(layer.id),
-                onPointerMove: drag.rowPointerMove,
-                onPointerUp: drag.rowPointerUp,
-                onPointerCancel: drag.rowPointerCancel,
-              }}
-            />
-          ))
+            }}
+          >
+            {rows.map(({ layer, depth }) => (
+              <PhotoLayerRow
+                key={layer.id}
+                layer={layer}
+                depth={depth}
+                session={s}
+                version={photo.version}
+                active={layer.id === s.active}
+                chosen={s.chosen.has(layer.id)}
+                tabStop={layer.id === stopId}
+                editable={editable}
+                others={others(layer.id)}
+                onPress={(e) => press(layer, e)}
+                onEye={(alt) => {
+                  if (alt) {
+                    s.setSolo(s.solo === layer.id ? null : layer.id);
+                    return;
+                  }
+                  commit(
+                    setLayer(s.photo, layer.id, {
+                      visible: layer.visible === false ? undefined : false,
+                    }),
+                    layer.visible === false ? 'Show Layer' : 'Hide Layer',
+                  );
+                }}
+                onTarget={(t) => s.choose(layer.id, t)}
+                onRename={(name) => commit(setLayer(s.photo, layer.id, { name }), 'Rename Layer')}
+                onFold={() =>
+                  // A fold is the view of the stack, not an edit to undo.
+                  s.commitStack(
+                    setLayer(s.photo, layer.id, {
+                      collapsed: layer.layerKind === 'group' && layer.collapsed ? undefined : true,
+                    }),
+                    'Fold',
+                    { undoable: false },
+                  )
+                }
+                onAction={(id) => {
+                  s.choose(layer.id, s.target);
+                  if (id === 'export-layer') return void exportLayerPng(s, layer.id);
+                  act(id);
+                }}
+                dropAt={drag.dragId && drag.over?.id === layer.id ? drag.over.at : null}
+                drag={{
+                  onPointerDown: drag.rowPointerDown(layer.id),
+                  onPointerMove: drag.rowPointerMove,
+                  onPointerUp: drag.rowPointerUp,
+                  onPointerCancel: drag.rowPointerCancel,
+                }}
+              />
+            ))}
+          </ul>
         )}
       </div>
       {editable ? (

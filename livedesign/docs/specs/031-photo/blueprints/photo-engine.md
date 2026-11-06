@@ -361,7 +361,10 @@ As the specs state. Sizes: rail 44 px wide (tile 36), options flyout 360 px wide
 ## Accessibility
 
 As [Photo tools](../photo-tools.md) "Accessibility": `role="toolbar"` rail with roving tab index; options are
-labelled inputs; the Layers list is a `listbox` with `aria-multiselectable`, rows `option`s with the stated names;
+labelled inputs; the Layers list is a `ul` (`data-photo-layer-list`, labelled Layers) of `li` rows (`data-layer-id`, `aria-current`
+on the active one), never a `listbox`, since a row holds buttons (axe `nested-interactive`); a row's name is a button
+(`data-layer-select`, the stated name, `aria-current` on the active, ", chosen" added for the other chosen) with a
+roving tab index (0 on the active row); a press on it starts a row drag like the row's body (`data-row-drag`);
 dialogs are the app's `Dialog`; contrast of chrome text 4.5:1 in both themes; reduced motion stills the ants.
 
 ## Web Experience

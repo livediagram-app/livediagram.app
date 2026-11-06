@@ -67,7 +67,7 @@ const GROUPS = [
     dirs: ['livehuddle/'],
     editor: '@livehuddle/editor',
     editorDir: 'livehuddle/apps/editor',
-    cli: 'livehuddle/apps/cli',
+    cli: null,
   },
   {
     group: 'platform',

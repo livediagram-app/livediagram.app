@@ -4,16 +4,14 @@ The frontend-only prototype phase ended once the API app landed. This spec captu
 
 ## Where we are now
 
-Eight apps, seven deployed as Cloudflare Workers (with Static Assets for the four Next.js sites) and one, the CLI, published to npm:
+Six apps, each deployed as a Cloudflare Worker (with Static Assets for the four Next.js sites). The MCP server and the CLI went later, with workbenches ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 
 - **marketing**: static landing site at `/`.
 - **editor**: the space editor (clean routes, no prefix). Statically exported Next.js.
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
 - **community**: the public gallery of shared spaces at `/community`. Statically exported Next.js. See [Community](../025-community/community.md).
 - **api**: Cloudflare Worker holding the REST endpoints + one Durable Object per document, its realtime room and its durable store. liveworkspace's index files documents and decides who may open them.
-- **mcp**: Cloudflare Worker at its own host, `mcp.livehuddle.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
 - **router**: Worker that stitches marketing, editor, help, community and api under one hostname, and sends `/telemetry` to liveworkspace's dashboard filtered to livehuddle ([Telemetry](../017-telemetry/telemetry.md)).
-- **cli**: the `livehuddle` command line ([CLI](../015-api/cli.md)).
 
 The editor is real:
 
@@ -50,19 +48,9 @@ The editor is real:
 - **Teams**: teams with Admin / Member roles and email invites in the Explorer, plus a per-team shared library of documents. See [Teams](../013-workspace/teams.md) and [Team shared documents](../013-workspace/team-shared-documents.md).
 - **Assigned actions**: a named, described piece of work attached to any element and assigned to a teammate, optionally by email. Actions live beside comments in the Collaborate panel, so a document carries the follow-ups it generated instead of them leaking into a separate tracker. See [Assigned actions](../012-collaboration/assigned-actions.md).
 - **API tokens + public API**: signed-in users mint `lwt_` tokens and drive the REST API from outside the editor: scripts, CI, anything that can send a header. See [Public API and API tokens](../015-api/public-api-and-tokens.md).
-- **MCP server**: `mcp.livehuddle.app` connects the editor to AI tools over OAuth, so an assistant can find, read, create, and edit your documents directly. It is an OAuth front door onto the same API tokens, not a second permission model. See [MCP server](../015-api/mcp-server.md).
-- **Agent changesets** ([Agent changesets](../024-agents/agent-changesets.md)): the MCP server and API-token scripts change tabs with changesets that reach anyone with the tab open, live, outlined in their author's colour with a toast offering Show and Undo, survive a person's next save, refuse an element a person has selected, and revert as one unit for 30 days; every server-stored document, personal ones included, has a room. Closed livediagram-app/livediagram.app#343.
+- **Agent changesets** ([Agent changesets](../024-agents/agent-changesets.md)): API-token scripts change tabs with changesets that reach anyone with the tab open, live, outlined in their author's colour with a toast offering Show and Undo, survive a person's next save, refuse an element a person has selected, and revert as one unit for 30 days; every server-stored document, personal ones included, has a room. Closed livediagram-app/livediagram.app#343.
 - **Document views and edit operations** ([Document views](../024-agents/document-views.md), [Edit operations](../024-agents/edit-operations.md)): agents read a tab as compact text (outline, graph, layout, comments, show, find) addressed by refs, and change it with twelve intent-level operations (`add set rm move connect rewire insert wrap unwrap order layout test`) in the line form or JSON, by ref or selector, placed beside what they name, making room on insert, and answered with one result line per element. The [diagram lint](../024-agents/diagram-lint.md) checks every
   changeset's result (overlaps, crossings, arrows behind boxes, overflowing labels) and names a fix for each finding.
-- **The CLI** ([CLI](../015-api/cli.md)): `livehuddle` signs in through the browser, with a code on another device
-  (`--device`) or with a token, keeping it in the system's own keychain; reads every view, lint and diff; edits with
-  edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
-  presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
-  document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@livehuddle/cli`, by hand outside CI.
-- **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
-  person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
-  frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
 - **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
   doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
   people use.
@@ -92,7 +80,7 @@ The editor is real:
 
 **Status: Planned.** Not built yet; each item's spec marks what exists today.
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), and presence built.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md), and livediagram's [Later](../../../../livediagram/docs/specs/013-workspace/share-roles.md#later), which both products share): Participant links and the look-only Viewer are built; token levels, ownership as separate powers, server-derived collaboration keys and an answers route are next.
 
 ## Later

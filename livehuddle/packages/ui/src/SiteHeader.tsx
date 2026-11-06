@@ -12,7 +12,7 @@ import { StartBlankLink } from './StartBlankLink';
 // The public site header (docs/specs/019-marketing/marketing-site.md "Header"), shared by the marketing
 // pages, the help centre and the dashboard so they read as one product: @liveworkspace/ui's, with this
 // product's logo and switcher, its CTA links on its funnel vocabulary, its Explorer link, rail and account
-// menu. Its props (ctaSurface, center, actions, buildWithAi, shareRail, wide, account) are described there.
+// menu. Its props (ctaSurface, center, actions, marketing, shareRail, wide, account) are described there.
 export const SiteHeader = /* @__PURE__ */ createSiteHeader<CtaSurface, typeof SITE_ID>({
   siteId: SITE_ID,
   SiteSwitcher,

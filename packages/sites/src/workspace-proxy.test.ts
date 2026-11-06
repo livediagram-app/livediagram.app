@@ -51,12 +51,20 @@ describe('which paths go to liveworkspace', () => {
     expect(workspaceRouteFor(path, ROUTES)).toBe(route);
   });
 
-  it('is the Explorer and its account reads, signing in and workbenches, for every app', () => {
-    const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE, WORKBENCH_ROUTE];
+  it('is the Explorer and its account reads, signing in and workbenches, for every app but livehuddle', () => {
+    const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE];
     for (const app of APP_NAMES) {
-      expect(workspaceRoutes(app)).toEqual([...ROUTES, ...signIn]);
+      const workbenches = app === 'livehuddle' ? [] : [WORKBENCH_ROUTE];
+      expect(workspaceRoutes(app)).toEqual([...ROUTES, ...signIn, ...workbenches]);
       expect(explorerHomeHref(app)).toBe('/explorer/home');
     }
+  });
+
+  it('leaves /api/workbench/* to livehuddle’s own api, which has no workbenches', () => {
+    expect(workspaceRouteFor('/api/workbench/pairings', workspaceRoutes('livehuddle'))).toBeNull();
+    expect(workspaceRouteFor('/api/workbench/pairings', workspaceRoutes('livediagram'))).toBe(
+      WORKBENCH_ROUTE,
+    );
   });
 
   it('sends /api/workbench/* to the accounts Worker, naming the app, with no cookies', async () => {

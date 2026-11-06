@@ -58,9 +58,11 @@ function world(
 }
 
 describe('hearingVerdict', () => {
-  it('lets a shared room hear whatever the distance, and nobody through a wall', () => {
-    const w = world({ a: [500, 500], b: [950, 50], c: [1300, 300], d: [200, 200] });
+  it('lets a shared room hear by distance, and nobody through a wall', () => {
+    const w = world({ a: [500, 500], b: [700, 400], e: [950, 50], c: [1300, 300], d: [200, 200] });
     expect(hearingVerdict(w, 'a', 'b')).toBe('heard');
+    // The boardroom's far corner is out of earshot.
+    expect(hearingVerdict(w, 'a', 'e')).toBe('apart');
     // The kitchen beside the boardroom, and the booth inside it, are calls of their own.
     expect(hearingVerdict(w, 'a', 'c')).toBe('apart');
     expect(hearingVerdict(w, 'a', 'd')).toBe('apart');

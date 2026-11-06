@@ -84,6 +84,13 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'garden-umbrella': 'garden umbrella parasol shade sun patio outdoor',
   fountain: 'fountain water stone basin garden park outdoor',
   pond: 'pond water lily pads lake garden park outdoor',
+  'pool-table': 'pool table snooker billiards cue balls pockets game play recreation games room',
+  'foosball-table':
+    'foosball table football soccer table football rods game play recreation games room',
+  dartboard: 'dartboard darts board wall game pub play recreation games room',
+  'vending-machine': 'vending machine snacks drinks cans soda break room kitchen lit glow',
+  'bean-bag': 'bean bag beanbag seat sit lounge relax breakout chill',
+  'reading-nook': 'reading nook armchair lamp books quiet corner seat sit lounge library breakout',
   screen:
     'screen tv television monitor display wall screen share presentation video youtube meeting room',
   'room-sign':

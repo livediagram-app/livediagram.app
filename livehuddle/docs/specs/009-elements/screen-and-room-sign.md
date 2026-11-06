@@ -41,8 +41,9 @@ A flat wall screen: a dark panel in a thin bezel, a small status light on its lo
      for every embed.
   3. **The idle face**: the panel dark, a faint screen glyph and **No one is sharing**.
 - **Who receives the share** is the call's own rule, unchanged ([Who sees
-  what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)): everyone in the room hears the sharer, so
-  everyone in the room can receive the share; someone outside the room never does, and sees the video link or the idle
+  what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)): whoever in the room hears the sharer
+  (within earshot, [Rooms are calls](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built))
+  can receive the share; someone outside the room never does, and sees the video link or the idle
   face. The share's bubble rules still apply (the sharer's character is on screen, at most two screens, a hidden tab
   receives none), so the Screen costs no extra traffic: it shows a stream this viewer already receives.
 - **Pressing it** (a click that is not a drag, `usePressWithoutDrag`) opens it large:

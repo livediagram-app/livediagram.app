@@ -41,7 +41,6 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useTimerPieceControls } from '@/lib/timer-piece-controls';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
-import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -156,7 +155,6 @@ export function EditorCanvasHost() {
     editCursorAtEnd,
     editingId,
     embedMode,
-    workbenchMode,
 
     exitFormatTool,
     fitToScreen,
@@ -275,8 +273,6 @@ export function EditorCanvasHost() {
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   const landscapePhone = useIsLandscapePhone();
-  // A workspace frame's hooks: its Back, at the canvas's top left (WB59).
-  const workbenchFrame = useWorkbenchSession()?.frame ?? null;
   // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md).
   const openEditDialog = (id: string) => {
     const el = activeTab.elements.find((e) => e.id === id);
@@ -763,8 +759,7 @@ export function EditorCanvasHost() {
           chromeAway={embedMode}
           // A phone held sideways has no Explorer at all (docs/specs/007-editor/editor-app.md "A phone
           // held sideways"): too short for it, and no way to bring it back; turn the phone upright.
-          explorerHidden={workbenchMode || landscapePhone}
-          workbenchBack={workbenchFrame}
+          explorerHidden={landscapePhone}
         />
         {lockedMenu ? (
           <LockedElementMenu

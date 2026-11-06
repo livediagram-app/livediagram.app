@@ -110,7 +110,6 @@ export function useEditorCommands(open: boolean): {
     openSettingsOn,
     canvasTool,
     setCanvasTool,
-    workbenchMode,
   } = ctx;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
@@ -153,7 +152,6 @@ export function useEditorCommands(open: boolean): {
       marker,
       canShare: canShareDocument,
       isOffline,
-      workbench: workbenchMode,
       canvasTool,
       // Same emptiness test the palette's tool dropdown uses to disable the
       // content-dependent tools, so search can never offer a tool the palette
@@ -174,7 +172,6 @@ export function useEditorCommands(open: boolean): {
       marker,
       canShareDocument,
       isOffline,
-      workbenchMode,
       canvasTool,
       canvasEmpty,
       tabLocked,

@@ -136,6 +136,7 @@ function makeCall(
     getDisplayMedia?: () => Promise<MediaStream>;
     visible?: () => boolean;
     preview?: LocalPreview;
+    onShareStopped?: (by: string) => void;
   } = {},
 ) {
   const sent: CallSignal[] = [];
@@ -153,6 +154,7 @@ function makeCall(
     caller,
     canSpeak: opts.canSpeak ?? true,
     canShare: opts.canShare ?? false,
+    onShareStopped: opts.onShareStopped,
     context,
     send: (s) => (s.kind === 'call-session' ? proved : sent).push(s),
     getUserMedia,
@@ -596,7 +598,8 @@ describe('ProximityCall video and screens', () => {
       { id: 'pt', role: 'participate' },
       { id: 'vw', role: 'view' },
     ]);
-    const { call, sent } = makeCall({ canShare: true });
+    const onShareStopped = vi.fn();
+    const { call, sent } = makeCall({ canShare: true, onShareStopped });
     await call.start();
     await call.toggleScreen();
     const stop = { kind: 'call-stop-share', tabId: 't1', targetId: 'me' };
@@ -604,13 +607,17 @@ describe('ProximityCall video and screens', () => {
     receiveStopShare('vw', stop);
     receiveStopShare('ed', { kind: 'call-stop-share' });
     expect(callSelf().screen).toBe('on');
+    expect(onShareStopped).not.toHaveBeenCalled();
     receiveStopShare('ed', stop);
     expect(callSelf().screen).toBe('off');
+    // The sharer is told who stopped it (#504), once.
+    expect(onShareStopped).toHaveBeenCalledExactlyOnceWith('ed');
     expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), screen: null });
     // Nothing to stop: nothing said.
     const count = sent.length;
     receiveStopShare('ed', stop);
     expect(sent).toHaveLength(count);
+    expect(onShareStopped).toHaveBeenCalledTimes(1);
     call.stop();
     // A call that has ended ignores it.
     receiveStopShare('ed', stop);
@@ -813,10 +820,10 @@ describe('ProximityCall in rooms', () => {
     zones,
   });
 
-  it('hears and sees the whole room at full volume, and nobody outside it, however close', async () => {
+  it('hears and sees the room by distance, and nobody outside it, however close', async () => {
     const { call } = makeCall();
     await call.start();
-    for (const id of ['far', 'outside']) {
+    for (const id of ['near', 'far', 'outside']) {
       receiveCallOp(id, {
         kind: 'call-track',
         tabId: 't1',
@@ -824,27 +831,22 @@ describe('ProximityCall in rooms', () => {
         video: loc(id, 'cam'),
       });
     }
-    // You in one corner, a colleague in the opposite one, somebody just past the front wall in the corridor.
-    call.update(
-      roomScene({ x: 20, y: 380 }, [
-        ['far', 580, 50],
-        ['outside', 20, 420],
-      ]),
-    );
+    // You in one corner, a colleague a step away, another in the opposite corner, somebody just past the front wall.
+    const others: [string, number, number][] = [
+      ['near', 60, 380],
+      ['far', 580, 50],
+      ['outside', 20, 420],
+    ];
+    call.update(roomScene({ x: 20, y: 380 }, others));
     const s = sfu.instances[0]!;
-    expect(callSelf().heard).toEqual(new Set(['far']));
+    expect(callSelf().heard).toEqual(new Set(['near']));
     expect(callSelf().someoneNear).toBe(true);
-    expect(s.want).toHaveBeenLastCalledWith([loc('far', 'mic'), loc('far', 'cam')]);
-    s.events.onTrack('fars', 'mic', {});
-    expect(graph.place).toHaveBeenLastCalledWith('far', 1, expect.any(Number));
+    expect(s.want).toHaveBeenLastCalledWith([loc('near', 'mic'), loc('near', 'cam')]);
+    s.events.onTrack('nears', 'mic', {});
+    expect(graph.place).toHaveBeenLastCalledWith('near', 1, expect.any(Number));
 
     // Stepping out into the corridor: the room goes, the neighbour comes, by distance.
-    call.update(
-      roomScene({ x: 60, y: 420 }, [
-        ['far', 580, 50],
-        ['outside', 20, 420],
-      ]),
-    );
+    call.update(roomScene({ x: 60, y: 420 }, others));
     expect(callSelf().heard).toEqual(new Set(['outside']));
     expect(s.want).toHaveBeenLastCalledWith([loc('outside', 'mic'), loc('outside', 'cam')]);
     s.events.onTrack('outsides', 'mic', {});
@@ -924,7 +926,7 @@ describe('ProximityCall with a stage', () => {
     call.update(
       hallScene({ x: 1320, y: 50 }, [
         ['speaker', 600, 120],
-        ['colleague', 1680, 280],
+        ['colleague', 1500, 150],
       ]),
     );
     const s = sfu.instances[0]!;
@@ -943,7 +945,7 @@ describe('ProximityCall with a stage', () => {
         { x: 1320, y: 50 },
         [
           ['speaker', 600, 120],
-          ['colleague', 1680, 280],
+          ['colleague', 1500, 150],
         ],
         stageAt({ stageCameras: true }),
       ),

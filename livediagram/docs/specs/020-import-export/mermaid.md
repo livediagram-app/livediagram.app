@@ -268,6 +268,9 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL:
     a blank quoted label (`n1[" "]`, `subgraph s1[" "]`), never its id: the id
     came back as a label on import, so a 28 px dot returned as a 96 px circle
     reading "n18". On import a blank label (only spaces) is no label.
+  - **A chart says what it shows.** A chart, a legend or a Sankey diagram has no label, so it is written as a
+    square box labelled with its type and its rows of data, one line each (`n1["Pie Chart<br/>Apples: 30"]`,
+    [Data charts](../009-elements/pie-chart.md)), never a blank box. It reads back as a labelled square.
 
 ## Limits
 

@@ -30,6 +30,7 @@ import {
 import { CATALOGUE as LIVEDESIGN_SETTINGS } from '@liveworkspace/settings/catalogues/livedesign';
 import { CATALOGUE as LIVEDIAGRAM_SETTINGS } from '@liveworkspace/settings/catalogues/livediagram';
 import { CATALOGUE as LIVEDOCUMENTS_SETTINGS } from '@liveworkspace/settings/catalogues/livedocuments';
+import { CATALOGUE as LIVEHUDDLE_SETTINGS } from '@liveworkspace/settings/catalogues/livehuddle';
 import { CATALOGUE as LIVEPLANNER_SETTINGS } from '@liveworkspace/settings/catalogues/liveplanner';
 import {
   isExplorerTelemetryEvent,
@@ -96,6 +97,7 @@ const CATALOGUES = [
   LIVEPLANNER_SETTINGS,
   LIVEDOCUMENTS_SETTINGS,
   LIVEDESIGN_SETTINGS,
+  LIVEHUDDLE_SETTINGS,
 ];
 const SITE_SETTINGS: Partial<Record<TelemetrySender, Set<string>>> = {
   // A shared switch flipped on the settings page opened for no app: once, in liveworkspace.app's own name.
@@ -104,6 +106,7 @@ const SITE_SETTINGS: Partial<Record<TelemetrySender, Set<string>>> = {
   'liveplanner.app': settingsSet(LIVEPLANNER_SETTINGS),
   'livedocuments.app': settingsSet(LIVEDOCUMENTS_SETTINGS),
   'livedesign.app': settingsSet(LIVEDESIGN_SETTINGS),
+  'livehuddle.app': settingsSet(LIVEHUDDLE_SETTINGS),
 };
 
 export function isSiteSettingsEvent(app: TelemetrySender, event: TelemetryWireEvent): boolean {

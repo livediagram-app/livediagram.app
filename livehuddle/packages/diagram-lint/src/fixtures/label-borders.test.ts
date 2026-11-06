@@ -1,4 +1,4 @@
-// A label's plate keeps clear of every frame's border (docs/specs/015-api/mcp-server.md "Groups keep their lines
+// A label's plate keeps clear of every frame's border (livediagram/docs/specs/015-api/mcp-server.md "Groups keep their lines
 // clear"): on the architecture with an event bus (an evaluator's D2), "publish" sat on the Services frame's edge.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

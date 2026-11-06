@@ -355,7 +355,7 @@ Missing key === undefined === default behaviour. Concretely:
   `infographicModeEnabled` and `planModeEnabled` (there is one editor mode, [Editor modes](editor-modes.md)), `skipLocationStep` (the New Document wizard never asks
   where a document goes, [New document route](new-document-route.md#no-welcome-screen)), and `aiAssistanceEnabled` and
   `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
-  [MCP server](../015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
+  [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
   `powerUserOfferShown` ([Power user mode](power-user-mode.md) is retired). Dropping them reverts nothing: whatever
   the mode's preset wrote (alignment guides, the tours' seen flags) stays as it is, and only Minimal chrome, which
   nothing reads any more, goes. Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,

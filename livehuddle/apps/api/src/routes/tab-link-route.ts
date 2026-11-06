@@ -6,7 +6,7 @@
 //
 // Runs in this document's room. The rules and steps are @liveworkspace/index-app's (tab-link.ts `linkSharedTab`):
 // the caller must edit this document AND `from` as their own (an edit grant the index gives them on each, not a
-// share link's, not one tab's, not a workbench's), and `from` must hold the tab. The second half stops anyone
+// share link's, not one tab's), and `from` must hold the tab. The second half stops anyone
 // grafting in a tab they cannot edit.
 
 import { linkSharedTab, type TabLinkAccess } from '@liveworkspace/index-app';
@@ -50,7 +50,7 @@ export async function handleTabLink(ctx: DocumentRouteContext): Promise<Response
     targetId: id,
     tabId,
     from: body.from,
-    workbench: !!ctx.workbench,
+    workbench: false,
     target: accessOf(ctx, id),
     // The request carries the grant on this document alone: the caller's on `from` is the index's to give.
     source: async (from) => {

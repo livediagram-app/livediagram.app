@@ -68,15 +68,15 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   components: 11,
   data: 7,
   // The meeting elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md
-  // "The Space categories"): 33 tiles between them.
+  // "The Space categories"): 53 tiles between them.
   // Travel holds the Avatar Selection Mode button too (docs/specs/009-elements/mode-button.md "Only Avatar").
   'collab-travel': 6,
-  'collab-seating': 4,
+  'collab-seating': 6,
   'collab-rooms': 7,
-  'collab-amenities': 4,
+  'collab-amenities': 5,
   'collab-bar': 4,
   // Recreation and the outdoor pieces (docs/specs/009-elements/social-pieces.md).
-  'collab-recreation': 4,
+  'collab-recreation': 7,
   'collab-garden': 12,
   'collab-meeting': 6,
   // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).

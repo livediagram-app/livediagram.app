@@ -5,7 +5,7 @@ import { frameHeadingRect } from './auto-layout-cluster-seats';
 import { arrowRoutePoints } from './arrow-label-layout';
 import type { Anchor, ArrowElement, BoxedElement, Element } from './index';
 
-// docs/specs/015-api/mcp-server.md §4.7 "The graph look": trunks and buses, and a step's exits by side.
+// livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look": trunks and buses, and a step's exits by side.
 
 const box = (id: string, x: number, y: number, w = 100, h = 60): BoxedElement => ({
   id,
@@ -459,7 +459,7 @@ describe('labels off other lines', () => {
   });
 });
 
-// docs/specs/015-api/mcp-server.md §4.7: a bus says its label once, on the drop its arrows share.
+// livediagram/docs/specs/015-api/mcp-server.md §4.7: a bus says its label once, on the drop its arrows share.
 describe('a bus says it once', () => {
   const graph = (labels: string[], direction: 'down' | 'right' = 'down') =>
     layoutGraph(

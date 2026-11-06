@@ -15,7 +15,7 @@ reach a deployed artefact, and nothing else.
 - **Bundle truth.** What ships is read from the bundler, not inferred from `package.json`. The
   static apps (live, marketing, help, telemetry, community) are analysed with Next's `experimental-analyze`
   (Turbopack), and only the modules it places in client output count: a static export has no server
-  at runtime, so server chunks never leave the build. The workers (api, mcp, router) are bundled
+  at runtime, so server chunks never leave the build. The workers (api, router) are bundled
   with `wrangler deploy --dry-run --metafile`, and every module in the metafile counts.
 - **Why not the lockfile closure.** The production closure of a Next app lists its build machinery
   (sharp and its LGPL libvips, Playwright, `onnxruntime-node`, the MDX toolchain) as if it shipped.
@@ -23,10 +23,9 @@ reach a deployed artefact, and nothing else.
 - **Versions.** A work's version is its installed `package.json` version, cross-checked against the
   pnpm store path it was bundled from; the store path is the lockfile's resolution, so the page
   always names the locked version.
-- **Distributed apps carry their own notices.** The CLI (`apps/cli`) is published as a package, not
-  deployed; its bundle ships its own `THIRD_PARTY_LICENSES` beside the code, generated from its
-  esbuild metafile ([CLI blueprint](../015-api/blueprints/cli.md)), so the page leaves it out.
-  `DISTRIBUTED_APPS` names it, so every directory in `apps/` is still accounted for.
+- **Distributed apps carry their own notices.** None today: the CLI, the one livehuddle published as a package, went
+  ([Not in livehuddle](not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)). `DISTRIBUTED_APPS` would name one,
+  so every directory in `apps/` is still accounted for.
 - **First-party code is not listed.** The `@livehuddle/*` workspaces are this repo, under its MIT
   licence.
 - **Vendored works.** A directory inside a package that carries its own `package.json` name and its
@@ -37,7 +36,8 @@ reach a deployed artefact, and nothing else.
   one entry of the reviewed **embedded-works table**, which names the libraries inside it with their
   own licence texts: XNNPACK and its helpers plus the Emscripten runtime inside the TensorFlow.js
   WASM backend, ONNX Runtime's third-party notices inside its WASM, libwebp inside `@jsquash/webp`,
-  resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font inside the mcp worker. The same
+  resvg and tiny-skia inside `@resvg/resvg-wasm`, and the Inter font (both bundled by no livehuddle app since the MCP
+  server went, kept for when one does). The same
   table covers material vendored into our own source (Lucide and Feather icon geometry, draw.io's
   view geometry ported into the draw.io importer), triggered by the first-party source file that
   carries it being bundled.
@@ -69,7 +69,7 @@ reach a deployed artefact, and nothing else.
   the app boundaries. Each entry names the apps that ship it.
 - **Two sections.** "In your browser" lists the works sent to people's browsers by the editor, the
   website, the help centre, the Community and the telemetry dashboard. "On our servers" lists the works bundled
-  into the api, MCP and router workers; they run on Cloudflare, not on anyone's device, and are
+  into the api and router workers; they run on Cloudflare, not on anyone's device, and are
   listed in full all the same. A work shipped on both sides appears in both, with each side's apps.
 - **Entries are collapsed.** Each is a native disclosure showing the name, version, licence id and
   apps; opening it loads its texts. A vendored or embedded work also says what carries it. The
@@ -113,7 +113,7 @@ reach a deployed artefact, and nothing else.
   strictly and fails loudly when it changes; it never guesses.
 - An embedded-works entry names the libraries the upstream build declares (its build manifest or its
   own notices file). Rust crates inside resvg's WASM beyond resvg and tiny-skia are not enumerated;
-  it runs only in our mcp worker.
+  no livehuddle app bundles it today.
 - `THIRD_PARTY_NOTICES.md` at the repo root stays the notice for material vendored into the source
   tree (Lucide, Feather, draw.io); the page is the notice for what the deployed apps carry.
 

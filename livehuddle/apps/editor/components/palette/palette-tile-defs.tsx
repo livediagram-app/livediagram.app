@@ -42,9 +42,12 @@ import {
 import { RoomSignIcon, ScreenIcon } from './palette-icons-meeting';
 import {
   ArcadeMachineIcon,
+  BeanBagIcon,
   BenchIcon,
   CampfireIcon,
+  DartboardIcon,
   FireplaceIcon,
+  FoosballTableIcon,
   FountainIcon,
   GardenUmbrellaIcon,
   HammockIcon,
@@ -53,8 +56,11 @@ import {
   PicnicTableIcon,
   PingPongTableIcon,
   PondIcon,
+  PoolTableIcon,
+  ReadingNookIcon,
   StopwatchIcon,
   TimerPieceIcon,
+  VendingMachineIcon,
   WorldClockIcon,
 } from './palette-icons-social';
 import {
@@ -825,6 +831,35 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <MeetingTableIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Social pieces (docs/specs/009-elements/social-pieces.md).
+    id: 'tools:bean-bag',
+    tileGroup: 'seating',
+    blurb: 'A slouchy seat for one',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Bean Bag',
+    caption: 'Bean Bag',
+    description: 'A coral bean bag for a breakout corner. Walk onto it to sink in; it seats one.',
+    filled: true,
+    action: { type: 'shape', kind: 'bean-bag' },
+    icon: <BeanBagIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Social pieces (docs/specs/009-elements/social-pieces.md).
+    id: 'tools:reading-nook',
+    tileGroup: 'seating',
+    blurb: 'An armchair, a lamp and books',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Reading Nook',
+    caption: 'Reading Nook',
+    description:
+      'A wingback armchair on a rug, with a side table of books and a floor lamp that glows on dark paper. Walk onto it to sit.',
+    filled: true,
+    action: { type: 'shape', kind: 'reading-nook' },
+    icon: <ReadingNookIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Plant (docs/specs/009-elements/office.md).
     id: 'tools:plant',
     tileGroup: 'amenities',
@@ -883,6 +918,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'coffee-machine' },
     icon: <CoffeeMachineIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Social pieces (docs/specs/009-elements/social-pieces.md).
+    id: 'tools:vending-machine',
+    tileGroup: 'amenities',
+    blurb: 'A lit machine of snacks and cans',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Vending Machine',
+    caption: 'Vending Machine',
+    description:
+      'A vending machine for a break room, its window lit and glowing on dark paper. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'vending-machine' },
+    icon: <VendingMachineIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Office Pod (docs/specs/009-elements/office.md).
@@ -1066,6 +1116,35 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   },
   {
     // Social pieces (docs/specs/009-elements/social-pieces.md).
+    id: 'tools:pool-table',
+    tileGroup: 'recreation',
+    blurb: 'A table racked for a game',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Pool Table',
+    caption: 'Pool Table',
+    description:
+      'A pool table with the balls racked and a cue on the cloth. Characters walk round it.',
+    filled: true,
+    action: { type: 'shape', kind: 'pool-table' },
+    icon: <PoolTableIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Social pieces (docs/specs/009-elements/social-pieces.md).
+    id: 'tools:foosball-table',
+    tileGroup: 'recreation',
+    blurb: 'A table football game',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Foosball Table',
+    caption: 'Foosball Table',
+    description: 'A foosball table with its rods, players and ball. Characters walk round it.',
+    filled: true,
+    action: { type: 'shape', kind: 'foosball-table' },
+    icon: <FoosballTableIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Social pieces (docs/specs/009-elements/social-pieces.md).
     id: 'tools:arcade-machine',
     tileGroup: 'recreation',
     blurb: 'A glowing arcade cabinet',
@@ -1078,6 +1157,20 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'arcade-machine' },
     icon: <ArcadeMachineIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Social pieces (docs/specs/009-elements/social-pieces.md).
+    id: 'tools:dartboard',
+    tileGroup: 'recreation',
+    blurb: 'A board for the wall',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Dartboard',
+    caption: 'Dartboard',
+    description: 'A dartboard with three darts in it, to hang on a wall. Characters walk past it.',
+    filled: true,
+    action: { type: 'shape', kind: 'dartboard' },
+    icon: <DartboardIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Social pieces (docs/specs/009-elements/social-pieces.md).

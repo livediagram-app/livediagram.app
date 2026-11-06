@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { UNTITLED_DOCUMENT_NAME } from '@livedocuments/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
+import { SAVE_FORBIDDEN_MESSAGE, SAVE_SIGNED_OUT_MESSAGE } from './save-failure';
 
 // Persistence-facing state for the editor: the autosave status pill, the
 // document name (mirrored into the browser tab title) and the transient import-error toast. The Explorer's lists
@@ -63,7 +64,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     // The network is fine here: the server couldn't tie the save to the
     // signed-in account. Blaming the connection sent people checking a cable.
     if (saveStatus === 'unauthenticated') {
-      toast.error('Your sign-in has lapsed, so changes aren’t saving. Sign in again.');
+      toast.error(SAVE_SIGNED_OUT_MESSAGE);
     }
     // A refusal, not a failure: retrying is pointless and the autosave has
     // already stopped, so this fires once and has to carry the whole message.
@@ -75,7 +76,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
       toast.error('This tab is too big to save. Move some of it to another tab.');
     }
     if (saveStatus === 'forbidden') {
-      toast.error('You can no longer edit this. Export a copy to keep your changes.');
+      toast.error(SAVE_FORBIDDEN_MESSAGE);
     }
   }, [saveStatus, toast]);
 

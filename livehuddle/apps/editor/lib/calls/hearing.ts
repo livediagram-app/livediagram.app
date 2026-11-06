@@ -1,8 +1,8 @@
 // Who you hear, and how loudly (docs/specs/012-collaboration/proximity-audio.md "Hearing"; blueprint "Hearing"):
 // pure geometry over the positions the room already shares, so the subscriptions, the audio graph and the equaliser
-// all read one answer. Rooms come first (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls"):
-// a room is one call, its walls block sound, and distance decides only in the open. A stage reaches the whole tab, and
-// its room becomes an audience that hears by distance (the same spec's "The stage").
+// all read one answer. Walls come first (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls"):
+// a room's walls block sound, and inside a room, as in the open, distance decides. A stage reaches the whole tab, and
+// its speakers hear each other as one call (the same spec's "The stage").
 import { CALL_RELEASE_RADIUS_PX } from '@livehuddle/document';
 import type { CallZoning } from './zones';
 
@@ -24,9 +24,9 @@ export type Point = { x: number; y: number };
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 
 /**
- * Where a peer stands relative to you: 'room' shares your room (or your stage), 'open' shares the open floor (or a
- * stage's audience), 'apart' is walled off (or is the audience of the stage you speak from), 'stage' speaks to the
- * whole tab from a stage you are not on.
+ * Where a peer stands relative to you: 'room' speaks from the stage you speak from (one call, full volume), 'open'
+ * shares your room or the open floor (by distance), 'apart' is walled off (or is the audience of the stage you speak
+ * from), 'stage' speaks to the whole tab from a stage you are not on.
  */
 export type Together = 'room' | 'open' | 'apart' | 'stage';
 
@@ -41,16 +41,14 @@ export function togetherWith(id: string, zoning: CallZoning | undefined): Togeth
   }
   const mine = zoning?.self ?? null;
   const theirs = zoning?.of.get(id) ?? null;
-  if (mine !== theirs) return 'apart';
-  if (mine === null) return 'open';
-  // A live stage's room is its audience: neighbours whisper by distance.
-  return stage?.audience.has(mine) ? 'open' : 'room';
+  // Walls block sound; inside them, as in the open, distance decides.
+  return mine === theirs ? 'open' : 'apart';
 }
 
 /**
- * The speakers heard next. A room is one call: everyone in your room is heard whatever the distance, nobody across
- * a wall ever is. In the open, one already heard stays while within the release radius, a new one joins within the
- * hearing radius. `peers` maps a presence id to its feet; only peers in it (walking, on this tab, with a microphone
+ * The speakers heard next. Nobody across a wall is ever heard; in your room or the open floor, one already heard
+ * stays while within the release radius, a new one joins within the hearing radius, and a stage's speakers are heard
+ * wherever they stand. `peers` maps a presence id to its feet; only peers in it (walking, on this tab, with a microphone
  * to hear) are candidates. Returns `prev` itself when nothing changed, so a caller can compare by identity.
  */
 export function nextHeard(
@@ -98,8 +96,8 @@ export function someoneHears(
 }
 
 /**
- * How a heard speaker is placed: full volume in a shared room, by distance in the open, panned by side either way; a
- * stage speaker at full volume, centred.
+ * How a heard speaker is placed: by distance in your room or the open, full volume beside you on a stage, panned by
+ * side either way; a stage speaker you are not beside at full volume, centred.
  */
 export function placeFor(
   self: Point,

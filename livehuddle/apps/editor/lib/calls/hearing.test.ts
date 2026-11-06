@@ -83,7 +83,7 @@ describe('walkTowards', () => {
 
 // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls" (Work Tracker #319, #436): two rooms side
 // by side along a corridor. Each room is 600 wide; their shared wall is at x = 600.
-describe('rooms are calls', () => {
+describe('rooms keep their walls', () => {
   const room = (id: string, x: number) => ({
     id,
     type: 'shape',
@@ -100,15 +100,28 @@ describe('rooms are calls', () => {
     return [...nextHeard(new Set(), self, walkers, zoning(self, walkers, zones))];
   };
 
-  it('hears everyone in the same room from opposite corners, at full volume', () => {
+  it('hears by distance inside a room: a neighbour, not the opposite corner', () => {
     const self = { x: 20, y: 50 };
     const corner = { x: 580, y: 390 };
-    expect(hear(self, [['sam', corner]])).toEqual(['sam']);
-    const z = zoning(self, new Map([['sam', corner]]), zones);
-    expect(togetherWith('sam', z)).toBe('room');
-    expect(placeFor(self, corner, 'room').gain).toBe(1);
-    expect(placeFor(self, corner, 'room').pan).toBe(MAX_PAN);
-    expect(inEarshot(self, corner, 'room')).toBe(true);
+    const beside = { x: 220, y: 50 };
+    expect(
+      hear(self, [
+        ['far', corner],
+        ['near', beside],
+      ]),
+    ).toEqual(['near']);
+    const z = zoning(self, new Map([['near', beside]]), zones);
+    expect(togetherWith('near', z)).toBe('open');
+    expect(placeFor(self, { x: 215, y: 50 }, 'open').gain).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(placeFor(self, beside, 'open').pan).toBeGreaterThan(0);
+    expect(inEarshot(self, beside, 'open')).toBe(true);
+    expect(inEarshot(self, corner, 'open')).toBe(false);
+  });
+
+  it('places a fellow stage speaker at full volume, by side', () => {
+    expect(placeFor(at(0), at(580), 'room').gain).toBe(1);
+    expect(placeFor(at(0), at(580), 'room').pan).toBe(MAX_PAN);
+    expect(inEarshot(at(0), at(580), 'room')).toBe(true);
   });
 
   it('hears nothing through the wall from the room next door, however close', () => {
@@ -164,7 +177,7 @@ describe('rooms are calls', () => {
         }),
       ),
     );
-    expect([...heard]).toEqual(['p0', 'p1']);
+    expect([...heard]).toEqual(['p0']);
     // 60 scenes, a second of walking: well under a frame each.
     expect(best).toBeLessThan(cpuBudgetMs(30));
   });

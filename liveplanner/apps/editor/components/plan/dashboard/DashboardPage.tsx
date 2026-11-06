@@ -29,7 +29,7 @@ import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-select
 import { elementFontId, resolveFinish, resolveFontStack } from '@liveplanner/project';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
-import { planFontStyle } from '@/lib/plan-font';
+import { planBoardFontStyle } from '@/lib/plan-font';
 
 export function DashboardPage({
   tab,
@@ -219,7 +219,9 @@ export function DashboardPage({
                 <FaceFinishProvider finish={finish}>
                   <div
                     data-face-finish={faceFinish}
-                    style={planFontStyle(fontStack)}
+                    // The UI face, the tab's face handed to the headings in its slots only (fonts.md "On Dashboards
+                    // and views"): a figure, a chart's axis or a Sheet's cell reads in it whatever the tab's face.
+                    style={planBoardFontStyle(fontStack)}
                     role="region"
                     aria-label={`${tab.name} dashboard`}
                     ref={pageRef}

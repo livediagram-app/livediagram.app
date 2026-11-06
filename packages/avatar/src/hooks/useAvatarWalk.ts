@@ -462,10 +462,12 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // shoves them (docs/specs/008-canvas/avatar-mode.md), and the shove has to land on arrival, not on click.
   const walkTo = (point: AvatarPoint, onArrive?: () => void) => {
     if (arrowDirection(heldRef.current)) return;
-    // Seated (docs/specs/009-elements/chair.md): clicking elsewhere on the canvas must not drag the
-    // character out of its chair by accident. Standing up is a deliberate act
-    // — an arrow key, or the seat's own Stand press.
-    if (seatedRef.current) return;
+    // Seated (docs/specs/009-elements/chair.md "Any movement stands you up", Work Tracker #560): a walk anywhere but the
+    // piece you sit on stands you up and walks on, in the one gesture. A press on your own seat keeps you in it.
+    if (seatedRef.current) {
+      if (elementUnderFeet(elements, point) === seatedRef.current) return;
+      standUp();
+    }
     // Routed round the walls in the way (findWalkPath); with nothing in the way, the straight line it always was.
     const from = posRef.current;
     const route = from ? findWalkPath(navGrid(), from, point) : [point];
@@ -599,9 +601,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     // directions.
     onSteer: () => {
       stopWalk();
-      // An arrow key is how you stand up (docs/specs/009-elements/chair.md): a deliberate act, and one
-      // that leaves the character where the chair put it, free to walk off.
-      if (seatedRef.current) unseat();
+      // An arrow key stands you up and walks on (docs/specs/009-elements/chair.md "Any movement stands you up"); keys
+      // typed into a field never reach here (useAvatarKeys' isTypingTarget guard).
+      standUp();
     },
     onJump: jump,
   });

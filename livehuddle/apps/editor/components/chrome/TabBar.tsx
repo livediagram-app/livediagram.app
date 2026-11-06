@@ -60,9 +60,6 @@ type TabBarProps = {
   canvasMenu?: CanvasMenuTarget | null;
   onCloseCanvasMenu?: () => void;
   canvasActions?: CanvasMenuActions;
-  // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in
-  // livehuddle link at the bar's right end, and no Appearance control (the workbench sets the scheme).
-  workbenchLink?: (labelled: boolean) => ReactNode;
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
@@ -173,7 +170,6 @@ export function TabBar({
   canvasMenu,
   onCloseCanvasMenu,
   canvasActions,
-  workbenchLink,
 }: TabBarProps) {
   // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
   const labelled = useButtonLabelsSetting();
@@ -352,9 +348,7 @@ export function TabBar({
           // titled with its name.
           labelled={labelled}
           github={false}
-          appearance={!workbenchLink}
         />
-        {workbenchLink?.(labelled)}
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
         // A fault inside the menu closes the menu, not the editor.

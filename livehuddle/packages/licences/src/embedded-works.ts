@@ -32,7 +32,8 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: WEBP_WASM },
     texts: text('emscripten-3.1.28-LICENSE.txt'),
   },
-  // The mcp worker's SVG renderer: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2.
+  // An SVG renderer a Worker may bundle: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2. No livehuddle
+  // app bundles it since the MCP server went, so the page lists it only if one does again.
   {
     id: 'resvg',
     name: 'resvg',
@@ -53,7 +54,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: /(^|-)index_bg\.wasm$/ },
     texts: text('tiny-skia-0.10.0-LICENSE.txt'),
   },
-  // The typeface the MCP server and the CLI render PNG previews with (packages/render-png/fonts).
+  // The typeface PNG previews render with (packages/render-png/fonts), listed only when an app bundles it.
   {
     id: 'inter',
     name: 'Inter',

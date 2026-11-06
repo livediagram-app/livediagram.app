@@ -37,8 +37,6 @@ export const HELP_ARTICLES = {
   avatarMode: 'selection-modes/avatar-mode',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  // AI
-  connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
   exportingSpaces: 'account-and-data/exporting-spaces',
   apiTokens: 'account-and-data/api-tokens',
@@ -146,10 +144,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  connectAiTool: {
-    title: 'Learn about connecting AI tools',
-    description: 'Drive your spaces from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingSpaces: {
     title: 'Learn about exporting',

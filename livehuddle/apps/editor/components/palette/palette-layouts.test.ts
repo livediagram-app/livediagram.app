@@ -93,6 +93,8 @@ describe('palette layouts', () => {
       'tools:desk',
       'tools:sofa',
       'tools:meeting-table',
+      'tools:bean-bag',
+      'tools:reading-nook',
     ]);
     // Rooms opens on Build (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): Room,
     // Room Builder and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
@@ -114,11 +116,15 @@ describe('palette layouts', () => {
       'tools:bookshelf',
       'tools:water-cooler',
       'tools:coffee-machine',
+      'tools:vending-machine',
     ]);
     expect(tileIds('collab-recreation')).toEqual([
       'tools:jukebox',
       'tools:ping-pong-table',
+      'tools:pool-table',
+      'tools:foosball-table',
       'tools:arcade-machine',
+      'tools:dartboard',
       'tools:fireplace',
     ]);
     expect(tileIds('collab-meeting')).toEqual([

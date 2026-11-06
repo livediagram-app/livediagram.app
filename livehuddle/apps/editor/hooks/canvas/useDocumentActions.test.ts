@@ -11,7 +11,6 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const { useDocumentActions } = await import('./useDocumentActions');
 const { isDocumentDeleted } = await import('@/lib/document-tombstones');
-const { takeDeleteUndo } = await import('@/lib/document-delete-undo');
 
 const assign = vi.fn();
 
@@ -64,7 +63,6 @@ describe('useDocumentActions', () => {
     expect(tombstonedAtDelete).toBe(true);
     expect(isDocumentDeleted('p1')).toBe(true);
     expect(assign).toHaveBeenCalledWith('/explorer?trashed=p1&title=Roadmap');
-    expect(takeDeleteUndo()).toEqual({ id: 'p1', title: 'Roadmap' });
   });
 
   it('lets a refused delete save again and stay open', async () => {

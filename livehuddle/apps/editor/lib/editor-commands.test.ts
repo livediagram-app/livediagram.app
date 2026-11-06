@@ -87,7 +87,7 @@ describe('buildEditorCommands — document/tab commands', () => {
   });
 });
 
-// The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+// The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
 describe('buildEditorCommands — in a workbench', () => {
   it('offers neither Share nor Delete document, and keeps the rest', () => {
     const inWorkbench = ids({ ...base, canShare: true, workbench: true });
@@ -228,6 +228,18 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(ids(base)).not.toContain('redo');
     expect(ids({ ...base, canUndo: true })).toContain('undo');
     expect(ids({ ...base, canRedo: true })).toContain('redo');
+  });
+
+  // docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking".
+  it('offers no Undo, Redo or Tab Style while walking, and brings them back after', () => {
+    const history = { ...base, canUndo: true, canRedo: true };
+    const walking = ids({ ...history, canvasTool: 'avatar' });
+    for (const id of ['undo', 'redo', 'open-theme', 'open-canvas'])
+      expect(walking).not.toContain(id);
+    expect(walking).toContain('share');
+    expect(ids(history)).toEqual(
+      expect.arrayContaining(['undo', 'redo', 'open-theme', 'open-canvas']),
+    );
   });
 
   it('read-only sessions get exactly the view-safe subset', () => {

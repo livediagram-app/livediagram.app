@@ -8,6 +8,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import { avatarBox } from '@liveworkspace/avatar/walk';
 import { FONT } from '../art-tokens';
+import { RoomArt } from '../room-art';
 import {
   SPACE_AVATAR_SCALE,
   castHref,
@@ -143,21 +144,13 @@ export function SpaceShot({
         preserveAspectRatio="xMidYMid slice"
         className="absolute inset-0 h-full w-full"
       >
-        <image
-          href={roomHref(spec, 'light')}
+        <RoomArt
+          light={roomHref(spec, 'light')}
+          dark={roomHref(spec, 'dark')}
           x={x}
           y={y}
           width={width}
           height={height}
-          className="dark:hidden"
-        />
-        <image
-          href={roomHref(spec, 'dark')}
-          x={x}
-          y={y}
-          width={width}
-          height={height}
-          className="hidden dark:inline"
         />
         {under}
         {placed.map(({ c, m, p }) => (

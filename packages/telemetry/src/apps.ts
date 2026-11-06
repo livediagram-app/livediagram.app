@@ -7,12 +7,13 @@ export const TELEMETRY_APPS = [
   'liveplanner.app',
   'livedocuments.app',
   'livedesign.app',
+  'livehuddle.app',
 ] as const;
 
 // Apps registered before their launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md "Registered
 // before launch"): their events are taken and stored, and the dashboard, which lists TELEMETRY_APPS, shows none of
-// them until launch moves them there.
-export const HELD_TELEMETRY_APPS = ['livehuddle.app'] as const;
+// them until launch moves them there. None is held today: livehuddle was, until its dashboard (Work Tracker #400).
+export const HELD_TELEMETRY_APPS = [] as const;
 
 export type TelemetryApp = (typeof TELEMETRY_APPS)[number] | (typeof HELD_TELEMETRY_APPS)[number];
 

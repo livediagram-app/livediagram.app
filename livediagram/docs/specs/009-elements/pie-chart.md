@@ -160,6 +160,13 @@ groups all three (they're all in `isSelfDrawingShape` too).
   `packages/document/src/chart-frame.ts` (re-exported from `apps/editor/lib/chart.ts`,
   which holds `chartAnim`); the frame, readout and legend are drawn by
   `ChartSurface`; hover wiring in `useChartHover` + `ChartReadout`.
+- **The text exports say what a chart shows** (`chartTextLines`, `packages/document/src/chart-text.ts`), since a
+  chart has no label: its type as a heading ("Pie Chart", "Column Chart", "Area Chart") over one line per row of data,
+  a slice or bar as `Label: value`, a line chart's series as `Name: Jan 10, Feb 25, ...`. A legend reads as its rows,
+  a Sankey diagram as its flows (`From → To: value`). The Markdown export lists the heading under Elements with its
+  rows indented beneath it, so a tab holding only charts has content; the Mermaid export writes the same lines as the
+  node's label (`n1["Pie Chart<br/>Apples: 30<br/>Pears: 20"]`), never a blank box. A chart with no rows is its
+  heading alone.
 - CSV import (line): `parseCsvLineData` in `apps/editor/lib/csv.ts` (quoted-field
   aware) turns a pasted/uploaded CSV into categories + series.
 - Setters in `useChartSetters.ts`, exposed through `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),

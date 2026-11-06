@@ -24,7 +24,7 @@ export function StartSaveSwitch({ palette }: { palette: StartPalette }) {
     ready: ctx.hydrated && ctx.authLoaded && selfId !== 'self',
     isOwner: ctx.isOwner,
     canEdit: !ctx.isReadOnly,
-    embedded: ctx.embedMode || ctx.workbenchMode,
+    embedded: ctx.embedMode,
     tabCount: ctx.tabs.length,
     empty: ctx.activeTab.elements.length === 0,
     shared: ctx.documentShareable || !!ctx.documentTeamId || !!ctx.sessionShareCode,

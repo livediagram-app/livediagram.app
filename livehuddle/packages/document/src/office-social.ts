@@ -6,7 +6,8 @@
 // world clock shows and a jukebox's source are element fields, bounded and checked here. The geometry the walk needs
 // (the seats, the footprints) is @liveworkspace/avatar's. Pure: no React, no DOM.
 
-import type { FurnitureArt, FurnitureDrawing, FurniturePart, FurniturePartRole } from './seating';
+import type { FurnitureDrawing, FurniturePart } from './seating';
+import { allSides, ellipse, path, rect } from './furniture-parts';
 import {
   BENCH_SEATS,
   HAMMOCK_SEATS,
@@ -64,36 +65,6 @@ const T = SOCIAL_TONES;
 /** A pond's water when it has no fill of its own, and its deep twin on dark paper. */
 export const POND_FILL = '#7dd3fc';
 export const POND_FILL_DARK = '#1e4f6e';
-
-const rect = (
-  role: FurniturePartRole,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  rx: number,
-  fill?: string,
-): FurniturePart => ({ tag: 'rect', role, x, y, w, h, rx, ...(fill ? { fill } : {}) });
-const ellipse = (
-  role: FurniturePartRole,
-  cx: number,
-  cy: number,
-  rx: number,
-  ry: number,
-  fill?: string,
-): FurniturePart => ({ tag: 'ellipse', role, cx, cy, rx, ry, ...(fill ? { fill } : {}) });
-const path = (role: FurniturePartRole, d: string, fill?: string): FurniturePart => ({
-  tag: 'path',
-  role,
-  d,
-  ...(fill ? { fill } : {}),
-});
-
-const allSides = (view: FurnitureDrawing): FurnitureArt => ({
-  front: view,
-  back: view,
-  side: view,
-});
 
 // --- On the wall ----------------------------------------------------------------------------------------------
 

@@ -23,11 +23,11 @@ question somebody building a Space asks, in the Meet band (Travel in a band of i
 
 | Category       | id                  | Holds                                                                                                                          | The question                     |
 | -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
-| **Seating**    | `collab-seating`    | Chair, Desk, Sofa, Meeting Table                                                                                               | Where do people sit?             |
+| **Seating**    | `collab-seating`    | Chair, Desk, Sofa, Meeting Table, Bean Bag, Reading Nook                                                                       | Where do people sit?             |
 | **Rooms**      | `collab-rooms`      | **Build**: Room, Room Builder, Door; **Floor**: Fence, Stage, Office Pod, Rug                                                  | How is the floor laid out?       |
-| **Amenities**  | `collab-amenities`  | Plant, Bookshelf, Water Cooler, Coffee Machine                                                                                 | What makes it feel like a place? |
+| **Amenities**  | `collab-amenities`  | Plant, Bookshelf, Water Cooler, Coffee Machine, Vending Machine                                                                | What makes it feel like a place? |
 | **Bar**        | `collab-bar`        | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge                                                                                  | Where do people gather after?    |
-| **Recreation** | `collab-recreation` | Jukebox, Ping-Pong Table, Arcade Machine, Fireplace                                                                            | Where do people unwind?          |
+| **Recreation** | `collab-recreation` | Jukebox, Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace                                     | Where do people unwind?          |
 | **Garden**     | `collab-garden`     | Outdoor Plant, Tree, Garden Path, Grass, Garden Fence, Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire | Can we take it outside?          |
 | **Meeting**    | `collab-meeting`    | Screen, Room Sign, Notice Board, World Clock, Timer, Stopwatch                                                                 | What does a meeting room need?   |
 | **Travel**     | `collab-travel`     | Portal, Bring Focus, Avatar Pad, Directory, Elevator, Avatar Button                                                            | How do people get somewhere?     |

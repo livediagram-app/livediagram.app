@@ -13,7 +13,7 @@ standard people already have, so there is no bespoke text DSL.
 
 We support the diagram types that are **node/edge graphs at heart**, because
 they map onto livehuddle's model losslessly: `graphToElements`
-(packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
+(packages/document, [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 
 - **Flowcharts** (`graph TD`, `flowchart LR`, …): full import **and**
@@ -137,7 +137,7 @@ LR` line sets the layout direction (TB default).
 
 ## Layout
 
-The editor's import lays a graph out exactly as an agent's Mermaid is laid out ([MCP server](../015-api/mcp-server.md)
+The editor's import lays a graph out exactly as an agent's Mermaid is laid out ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)
 §4.7, `graphFromMermaid` then `layoutGraph`): the flowchart direction, subgraphs as boundaries, the template look, and
 lines that bend round the boxes, a line back to an earlier step going round the outside rather than straight behind
 the boxes between. One difference: an import keeps every label **as written** (`layoutGraph`'s `wholeLabels`),
@@ -212,7 +212,7 @@ took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119`
   kept by id and their members filtered once (20 000 composite states each named by a transition took 20 s while
   every cluster was scanned for each one; `mermaid-clusters-linear.test.ts` holds it under a CPU budget).
 - The MCP's `graph` input carries the same caps in its schema and in `resolveGraphInput`
-  ([MCP server](../015-api/mcp-server.md) §4.7).
+  ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.7).
 - draw.io's graph-only JSON export is truncated to the caps rather than refused
   ([draw.io import](drawio-import.md#the-json-export)).
 
@@ -283,7 +283,7 @@ those members rather than by the middle of the whole group (a database under the
 service that owns it), its rank kept in order with its gaps; an edge to or from a
 subgraph itself leaves the boundary facing its other end; and a boundary whose first
 member a line enters from above, down the page, is padded both sides so that line
-clears the header ([MCP server](../015-api/mcp-server.md) §4.7 "Groups keep their
+clears the header ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.7 "Groups keep their
 lines clear", the same layout).
 
 A subgraph's boundary carries its title as a **header**: top-left, bold, at the

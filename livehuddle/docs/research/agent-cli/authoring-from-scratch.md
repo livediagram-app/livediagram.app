@@ -5,7 +5,7 @@ builds a good diagram from nothing, how it then sees what it built, and how it c
 and ends with a recommended authoring flow, a `lint` design and a mock session.
 
 What the product does today is stated by the specs, chiefly
-[MCP server](../../specs/015-api/mcp-server.md) §4.3 to §4.7a and §5. This file records what
+[MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.3 to §4.7a and §5. This file records what
 was found and measured at the time; it is not a spec.
 
 ## Findings in brief
@@ -533,7 +533,7 @@ These are product decisions, not research conclusions:
 - MermaidSeqBench, arXiv 2511.14967: <https://arxiv.org/abs/2511.14967>
 - GenAI-DrawIO-Creator, arXiv 2601.05162: <https://arxiv.org/abs/2601.05162>
 - Anthropic image token estimate (width × height / 750): Claude vision documentation
-- In-repo: `packages/document/src/graph-input.ts`, `../packages/mcp-kit/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
-  `apps/mcp/src/prompts.ts`, `packages/document/src/graph-authoring.ts`, `auto-layout*.ts`,
+- In-repo: `packages/document/src/graph-input.ts`, `../packages/mcp-kit/src/render.ts`, `livediagram/packages/agent-verbs/src/mcp/schema.ts`,
+  `livediagram/apps/mcp/src/prompts.ts`, `packages/document/src/graph-authoring.ts`, `auto-layout*.ts`,
   `arrow-path-hits.ts`, `mermaid-serialise.ts`, `../packages/icons/src/tech-icon-ids.ts`,
   `packages/templates/src/templates.ts`

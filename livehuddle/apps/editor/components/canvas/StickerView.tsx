@@ -4,7 +4,7 @@ import { trustedHtml } from '@livehuddle/ui';
 //
 // Deliberately thin. Every pixel comes from `stickerArt` in
 // @liveworkspace/icons, the same builder the palette tile, the SVG / PNG / PDF
-// export, the share thumbnail and the MCP render all call — a sticker that
+// export, the share thumbnail and the api's render all call: a sticker that
 // looked one way in the editor and another in the export would defeat the
 // point of it being a sticker.
 //

@@ -18,8 +18,8 @@ import {
   type BoxedElement,
   type Tab,
 } from '@livehuddle/document';
-// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
-// MCP worker reuses the same element drawing. The canvas / backdrop
+// Shared SVG render helpers: in the document package so the api's
+// tab render reuses the same element drawing. The canvas / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
   canvasSurface,

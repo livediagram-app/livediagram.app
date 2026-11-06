@@ -90,15 +90,18 @@ there).
   (`n` down the canvas, `e` left, `s` up, `w` right: the same words the menu
   tiles use). The seat point turns with the chair, so the sitter lands on the
   seat rather than on the backrest of a sideways chair.
-- While seated it **ignores walk targets**: clicking elsewhere on the canvas
-  does not drag it out of the chair by accident.
+- **Any movement stands you up** (Work Tracker #560). While seated, a move is a move: an arrow key, a click or tap
+  on the floor, on a piece or on a peer, or a walk somebody else starts for you (a Directory's Walk There, a talker's
+  bars) stands the character up and starts that move in the same gesture, with no second press. Clicking **the piece
+  you are sitting on** keeps you in it. Keys typed into a field (a panel's search, the message composer) are the
+  field's, not movement, so typing never stands you up; nor do a pressed piece that acts in place, a reaction or a
+  wave.
 - **A taken seat is not sat in.** Walking into a chair somebody is already sitting in does not seat
   you: your character **stops beside it**, just outside the piece on the side it came from, and
   stays standing. A piece with more than one seat (a sofa, a meeting table) seats you on the **free
   seat nearest where you arrived**, and stops you beside it only when every seat is taken.
-- **Standing up** is any arrow key, or double-clicking the canvas. Both are
-  deliberate acts. The seated face also carries a small **Stand** press for
-  people using a touch device with no arrow keys.
+- **There is no Stand button.** Standing up is implied by moving, on a desktop and a touch screen alike, so the
+  seated character carries no press of its own and a double-click means nothing more than a click.
 - A seated character can still **wave and react** ([Avatar mode](../008-canvas/avatar-mode.md)). Sitting removes
   locomotion, not personality.
 - A seated character **cannot be pushed** ([Avatar mode](../008-canvas/avatar-mode.md) "You can push each other"):

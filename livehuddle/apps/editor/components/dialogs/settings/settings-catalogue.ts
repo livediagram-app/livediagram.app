@@ -96,8 +96,6 @@ type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
   preferences?: UserPreferences;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  workbench?: boolean;
   // The tab on screen draws other people's cursors (docs/specs/012-collaboration/collaborator-enhancements.md
   // "Only where cursors are drawn"); absent reads as drawn.
   cursorsDrawn?: boolean;
@@ -790,7 +788,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'pages boards designs slides articles sheets forms logos wireframes move livedocuments liveplanner livedesign old this browser local',
         description:
           'Pages, boards and designs from this browser that now belong in livedocuments, liveplanner or livedesign. They wait here until you move them.',
-        available: (ctx) => (ctx.retiredParts ?? 0) > 0 && !ctx.workbench,
+        available: (ctx) => (ctx.retiredParts ?? 0) > 0,
       },
       {
         kind: 'deleteAccount',
@@ -887,10 +885,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'tokens',
         key: 'apiTokens',
-        keywords: 'api token key mcp integration script developer access create revoke secret',
+        keywords: 'api token key integration script developer access create revoke secret',
         label: 'API Tokens',
         description:
-          'Let your scripts, and AI tools connected over MCP, use livehuddle as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
+          'Let your scripts use livehuddle as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
       },
     ],
@@ -945,30 +943,12 @@ export function settingsSectionId(section: string): string {
 // those that apply. A category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
 export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec[] {
-  return SETTINGS_CATEGORIES.filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
-    .map((c) => ({
-      ...c,
-      rows: c.rows.filter(
-        (r) =>
-          (!r.available || r.available(ctx)) &&
-          parentSwitchOn(c, r, ctx.preferences) &&
-          // The workbench sets the frame's scheme (WB15), so the frame offers no choice of its own.
-          !(ctx.workbench && r.kind === 'appearance'),
-      ),
-    }))
-    .filter((c) => c.rows.length > 0);
-}
-
-// What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-// Surface table): the account and everything beyond the one document. A category nested under one
-// goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens', 'webhooks']);
-
-function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
-  return (
-    WORKBENCH_HIDDEN_CATEGORIES.has(category.id) ||
-    (category.parent !== undefined && WORKBENCH_HIDDEN_CATEGORIES.has(category.parent))
-  );
+  return SETTINGS_CATEGORIES.map((c) => ({
+    ...c,
+    rows: c.rows.filter(
+      (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+    ),
+  })).filter((c) => c.rows.length > 0);
 }
 
 // A row nested under a switch (`parent`) is offered only while that switch is

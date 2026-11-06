@@ -21,10 +21,10 @@ import {
   onCallLevels,
   onCallMaximised,
   onCallsMode,
-  onCallTalkStart,
   onCallTracks,
   onStopShare,
   receiveStopShare,
+  shareStoppedNotice,
   pruneCallPeers,
   receiveCallOp,
   receiveCallsMode,
@@ -72,27 +72,6 @@ describe('calls store peers', () => {
     off();
   });
 
-  // meeting-rooms-and-stage.md "A big room hears its talkers" (#482).
-  it('notes when each peer last talked, and says when someone starts', () => {
-    const starts = vi.fn();
-    const off = onCallTalkStart(starts);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 0 });
-    expect(callPeers().get('p1')?.talkedAt).toBeUndefined();
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 3 });
-    const first = callPeers().get('p1')!.talkedAt!;
-    expect(starts).toHaveBeenCalledTimes(1);
-    vi.advanceTimersByTime(250);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 2 });
-    expect(callPeers().get('p1')!.talkedAt).toBeGreaterThan(first);
-    // Still talking: no new start. Silent, then again: one.
-    expect(starts).toHaveBeenCalledTimes(1);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 0 });
-    expect(callPeers().get('p1')!.talkedAt).toBeGreaterThan(first);
-    receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 1 });
-    expect(starts).toHaveBeenCalledTimes(2);
-    off();
-  });
-
   // video-and-screen-bubbles.md "Share roles" (#469).
   it('hands an addressed stop-share to the running call, ignoring anything malformed', () => {
     const heard = vi.fn();
@@ -103,6 +82,12 @@ describe('calls store peers', () => {
     off();
     receiveStopShare('ed', { kind: 'call-stop-share', tabId: 't1', targetId: 'me' });
     expect(heard).toHaveBeenCalledTimes(1);
+  });
+
+  it('names the Editor who stopped your share, or their role without a name (#504)', () => {
+    expect(shareStoppedNotice('  Alex   Lee ')).toBe('Alex Lee stopped your screen share');
+    expect(shareStoppedNotice(' ')).toBe('An Editor stopped your screen share');
+    expect(shareStoppedNotice(undefined)).toBe('An Editor stopped your screen share');
   });
 
   it('coalesces level notifications and tells a locator at once', () => {

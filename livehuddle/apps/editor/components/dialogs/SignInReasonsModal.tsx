@@ -53,8 +53,8 @@ const REASONS: Reason[] = [
   },
   {
     icon: <PlugIcon />,
-    title: 'Connect AI tools',
-    body: 'Mint API tokens and connect external AI assistants over MCP, so tools like Claude can read and build your spaces for you.',
+    title: 'Use the API',
+    body: 'Make API tokens so your own scripts can read and build your spaces for you.',
   },
   {
     icon: <BadgeIcon />,

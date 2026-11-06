@@ -868,8 +868,8 @@ in livedocuments.
   and Hide; the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
   so at once, as one undo step); there is no hover preview here, since drawn over the page it
   would cover the card's own tiles. The card goes as
-  soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
-  the tab is next opened; the title bar's Layout button still opens the layouts. It
+  soon as anything lands on the page, and **Hide** (in its corner), or Escape while anything in the card
+  has focus (its search, a chip, a tile), puts it away for that page until the tab is next opened; the title bar's Layout button still opens the layouts. It
   never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
   (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
   the tool is put down with the page still empty), in zen, or when the page is too small on

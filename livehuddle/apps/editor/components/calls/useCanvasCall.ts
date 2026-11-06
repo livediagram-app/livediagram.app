@@ -13,7 +13,13 @@ import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
 import { useProximityCall } from '@/lib/calls/useProximityCall';
 import { callStages, mayLetSpeakSelf } from '@/lib/calls/stage';
-import { callMaximised, noteLetSpeak, setCallMaximised } from '@/lib/calls/calls-store';
+import {
+  callMaximised,
+  noteLetSpeak,
+  setCallMaximised,
+  shareStoppedNotice,
+} from '@/lib/calls/calls-store';
+import { useToast } from '@/hooks/ui/useToast';
 import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import { useTimerEarshot } from '@/lib/office/timer-earshot';
@@ -87,6 +93,7 @@ export function useCanvasCall(deps: {
   // Who hears each Timer's chime: the people in its room (docs/specs/009-elements/timer-and-stopwatch.md "The chime").
   useTimerEarshot({ elements: props.elements, zones, inMode, self });
   const view = useViewRect(deps.viewport);
+  const toast = useToast();
   useProximityCall({
     inMode,
     caller,
@@ -102,6 +109,9 @@ export function useCanvasCall(deps: {
     zones,
     stages,
     doNotDisturb: deps.doNotDisturb,
+    // An Editor stopped your share (video-and-screen-bubbles.md "Share roles", #504): say who, by their presence name.
+    onShareStopped: (by) =>
+      toast.info(shareStoppedNotice(props.remoteAvatars.find((p) => p.id === by)?.name)),
   });
 
   // Let Speak (meeting-rooms-and-stage.md "Raise hand"): an Editor anywhere, or whoever speaks from a stage.
@@ -162,10 +172,12 @@ function useViewRect(
   viewport: { offset: Point; zoom: number; width: number; height: number } | undefined,
 ): ViewRect | null {
   const measured = !!viewport && viewport.width > 0 && viewport.height > 0 && viewport.zoom > 0;
+  // Each edge is snapped on its own (#503), not the size: a snapped size could put the right or bottom edge up to half a
+  // step past the screen's, and the bubbles kept inside it would run off by that much.
   const x = measured ? snap(-viewport.offset.x) : 0;
   const y = measured ? snap(-viewport.offset.y) : 0;
-  const width = measured ? snap(viewport.width / viewport.zoom) : 0;
-  const height = measured ? snap(viewport.height / viewport.zoom) : 0;
+  const width = measured ? snap(-viewport.offset.x + viewport.width / viewport.zoom) - x : 0;
+  const height = measured ? snap(-viewport.offset.y + viewport.height / viewport.zoom) - y : 0;
   return useMemo(
     () => (measured ? { x, y, width, height } : null),
     [measured, x, y, width, height],

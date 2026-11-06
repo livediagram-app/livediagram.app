@@ -64,7 +64,6 @@ export function EditorElementDialogs() {
     applyImageToElement,
     closeImagePicker,
     refreshRecentImages,
-    workbenchMode,
     can,
   } = useEditorContext();
 
@@ -234,7 +233,6 @@ export function EditorElementDialogs() {
         <ImagePicker
           ownerId={selfParticipant.id}
           documentId={documentId}
-          uploadOnly={workbenchMode}
           forElementId={imagePickerOpenFor.forElementId}
           currentImageId={(() => {
             const targetId = imagePickerOpenFor.forElementId;
