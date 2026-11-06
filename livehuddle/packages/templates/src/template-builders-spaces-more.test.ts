@@ -7,7 +7,8 @@ import {
   seatsACharacter,
   type Element,
 } from '@livehuddle/document';
-import { AVATAR_WIDTH } from '@liveworkspace/avatar/walk';
+import { AVATAR_WIDTH, avatarFigureHeight } from '@liveworkspace/avatar/walk';
+import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
 import { avatarScale } from '@liveworkspace/avatar/config';
 import { buildTemplate } from './build-template';
 import { templateFloors } from './template-floors';
@@ -15,9 +16,9 @@ import { templateCategory } from './template-categories';
 import { TEMPLATES, type TemplateKind } from './templates';
 
 // docs/specs/012-collaboration/virtual-office-template.md "Spaces", docs/specs/007-editor/templates-by-mode.md
-// "Testing": every Space is walkable. Its floors lie first, it has one Walk In, every piece in a room sits inside its
-// walls and every piece outside one stays clear of them, no seat stands in a doorway's first 80 px, and no two pieces
-// of furniture stand on each other.
+// "Testing": every Space is walkable. Its floors lie first, every tab has one Avatar Pad on open floor, every piece in a
+// room sits inside its walls and every piece outside one stays clear of them, no seat stands in a doorway's first
+// 80 px, and no two pieces of furniture stand on each other.
 
 type Box = { x: number; y: number; width: number; height: number };
 
@@ -50,7 +51,8 @@ type Shape = Extract<Element, { type: 'shape' }>;
 
 const SPACES = TEMPLATES.map((t) => t.kind).filter((k) => templateCategory(k) !== null);
 // Every Space's tabs: its first, then a building's other floors (docs/specs/007-editor/templates-by-mode.md "A
-// template with floors"), each held to the same rules; only the first has the Walk In.
+// template with floors"), each held to the same rules, and each with its own Avatar Pad (the first's at the entrance,
+// the others' by the Elevators).
 const TABS: [string, TemplateKind, () => Element[], boolean][] = SPACES.flatMap((kind) => [
   [kind, kind, () => buildTemplate(kind, 0, 0), true] as [
     string,
@@ -80,8 +82,9 @@ const SEATS = [
   'hammock',
   'ping-pong-table',
 ];
-// Shapes that are no furniture to bump into: the walls, their doors, the floors, the way in and the heading's sticker.
-const NOT_FURNITURE = ['room', 'door', 'mode-button', 'sticker', 'focus-button'];
+// Shapes that are no furniture to bump into: the walls, their doors, the floors (the Avatar Pad among them), Bring Focus
+// and the heading's sticker.
+const NOT_FURNITURE = ['room', 'door', 'sticker', 'focus-button'];
 
 const meets = (a: Box, b: Box) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
@@ -122,13 +125,53 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
     }
   });
 
-  it('lays every floor before anything else, and has one Walk In', () => {
+  // docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one": the pad replaced the Walk In button.
+  it('lays every floor before anything else, and has one Avatar Pad and no Selection Mode button', () => {
     const isFloor = (e: Element) => e.type === 'shape' && isFloorShape(e.shape);
     const firstOther = els.findIndex((e) => !isFloor(e));
     expect(els.slice(firstOther).some(isFloor)).toBe(false);
-    expect(all.filter((e) => e.shape === 'mode-button')).toEqual(
-      first ? [expect.objectContaining({ label: 'Walk In' })] : [],
-    );
+    expect(all.filter((e) => e.shape === 'avatar-pad')).toHaveLength(1);
+    expect(all.filter((e) => e.shape === 'mode-button')).toEqual([]);
+    // The first tab's how-to line names the pad it stands beside.
+    if (first)
+      expect(
+        els.some((e) => e.type === 'text' && /Avatar Pad/.test(e.label ?? '')),
+        'how-to line',
+      ).toBe(true);
+  });
+
+  // Everyone arrives on the pad, feet on its core: the pad and that standing character (Regular, the one size
+  // livehuddle draws) touch no wall, no fence and no piece of furniture.
+  it('stands its Avatar Pad on open floor, the character on it clear of every wall and piece', () => {
+    const pad = all.find((e) => e.shape === 'avatar-pad')!;
+    const feet = avatarPadCore(pad);
+    const scale = avatarScale('regular');
+    const figure = {
+      x: feet.x - (AVATAR_WIDTH * scale) / 2,
+      y: feet.y - avatarFigureHeight(scale),
+      width: AVATAR_WIDTH * scale,
+      height: avatarFigureHeight(scale),
+    };
+    const solid = [
+      ...els.filter((e) => e.type === 'sticky'),
+      ...all.filter((e) => !isFloorShape(e.shape) && e.shape !== 'sticker'),
+    ] as Box[];
+    for (const piece of solid) {
+      const at = JSON.stringify(piece).slice(0, 120);
+      expect(meets(pad, piece), `pad meets ${at}`).toBe(false);
+      expect(meets(figure, piece), `figure meets ${at}`).toBe(false);
+    }
+    for (const room of rooms)
+      for (const w of roomWalls(room)) {
+        const wall = {
+          x: Math.min(w.a.x, w.b.x) - 1,
+          y: Math.min(w.a.y, w.b.y) - 1,
+          width: Math.abs(w.a.x - w.b.x) + 2,
+          height: Math.abs(w.a.y - w.b.y) + 2,
+        };
+        expect(meets(pad, wall), `pad meets ${room.label}'s wall`).toBe(false);
+        expect(meets(figure, wall), `figure meets ${room.label}'s wall`).toBe(false);
+      }
   });
 
   it('keeps every piece in a room inside its walls, and every other piece clear of them', () => {
@@ -310,8 +353,8 @@ describe('the new Spaces furnish what they promise', () => {
     expect(path.x).toBeGreaterThanOrEqual(house.x + span[0]);
     expect(path.x + path.width).toBeLessThanOrEqual(house.x + span[1]);
     expect(path.y).toBe(house.y + house.height);
-    // The Walk In waits under the gate.
-    const walk = all.find((e) => e.shape === 'mode-button')!;
+    // The Avatar Pad waits under the gate.
+    const walk = all.find((e) => e.shape === 'avatar-pad')!;
     expect(walk.x + walk.width / 2).toBe(path.x + path.width / 2);
   });
 

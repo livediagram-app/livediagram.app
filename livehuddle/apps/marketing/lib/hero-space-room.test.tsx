@@ -46,11 +46,11 @@ const publicPath = (href: string) => fileURLToPath(new URL(`../public${href}`, i
 
 type Box = Element & { x: number; y: number; width: number; height: number; shape?: string };
 
-// What a room drawing leaves out: the plan's sticker, and its Walk In button and the hint beside it, are the
+// What a room drawing leaves out: the plan's sticker, and its Avatar Pad and the how-to line beside it, are the
 // canvas's, not the scene's (the title and description sit above every stage).
-const LEFT_OUT = new Set(['sticker', 'mode-button']);
+const LEFT_OUT = new Set(['sticker', 'avatar-pad']);
 const isHint = (e: Box) =>
-  e.type === 'text' && /Walk In/.test((e as { label?: string }).label ?? '');
+  e.type === 'text' && /Avatar Pad/.test((e as { label?: string }).label ?? '');
 
 /** The template's pieces on the stage (a room cut by its edge is drawn whole and clipped by the viewBox), and the
  *  light content the scene adds. */
@@ -229,6 +229,6 @@ describe('the Team Pod room', () => {
     }
     const labels = elements.map((e) => e.label);
     expect(labels).toEqual(expect.arrayContaining(['Team Board', 'This week', 'Wins']));
-    expect(shapes.has('mode-button')).toBe(false);
+    expect(shapes.has('avatar-pad')).toBe(false);
   });
 });

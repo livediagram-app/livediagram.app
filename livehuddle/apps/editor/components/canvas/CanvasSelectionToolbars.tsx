@@ -134,6 +134,13 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
+            // The Format painter's one way in (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): this
+            // element's look, painted onto the next ones pressed.
+            onFormatPainter={
+              !readOnly && selected && props.onStartFormatPainter
+                ? () => props.onStartFormatPainter?.(selected.id)
+                : undefined
+            }
             // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.

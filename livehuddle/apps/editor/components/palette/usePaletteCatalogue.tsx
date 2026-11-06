@@ -3,8 +3,7 @@ import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
-import type { CanvasTool, PaletteProps } from './palette.types';
-import { buildCanvasToolOptions } from './canvas-tool-options';
+import type { PaletteProps } from './palette.types';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
@@ -12,8 +11,8 @@ import { paletteCategories } from './palette-layouts';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
-// add-handler bundle, the category catalogue with each category's body, the
-// three searchable catalogues' state, and the canvas-tool picker's options.
+// add-handler bundle, the category catalogue with each category's body, and the
+// searchable catalogues' state.
 // The strip (docs/specs/007-editor/toolbar-layout.md), its More popover and its Search all read
 // from this one catalogue, so they never drift apart.
 //
@@ -23,9 +22,7 @@ import type { AddShapeOptions } from '@/lib/draw-mode';
 type Deps = Pick<
   PaletteProps,
   | 'canvasTool'
-  | 'onSetCanvasTool'
   | 'onExitAvatarMode'
-  | 'canvasEmpty'
   | 'pendingDraw'
   | 'onTileUsed'
 > &
@@ -33,9 +30,7 @@ type Deps = Pick<
 
 export function usePaletteCatalogue({
   canvasTool,
-  onSetCanvasTool,
   onExitAvatarMode,
-  canvasEmpty,
   onAddShape,
   onAddSticker,
   onAddText,
@@ -167,15 +162,9 @@ export function usePaletteCatalogue({
     stickerResults,
   });
 
-  // The canvas-tool picker's options (canvas-tool-options), and its change handler.
-  const canvasToolOptions = buildCanvasToolOptions({ canvasEmpty });
-  const onCanvasToolChange = (id: string) => onSetCanvasTool(id as CanvasTool);
-
   return {
     tileActions,
     tabs,
-    canvasToolOptions,
-    onCanvasToolChange,
     iconCatalogsLoaded,
   };
 }

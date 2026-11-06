@@ -84,11 +84,16 @@ describe('TEMPLATES catalogue', () => {
     }
   });
 
-  it('builds every kind, the blank empty and every Space furnished', () => {
+  // docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one": the blank holds only its Avatar Pad.
+  it('builds every kind, the blank its Avatar Pad alone and every Space furnished', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      if (kind === 'blank-session') expect(tab.elements, kind).toEqual([]);
-      else expect(tab.elements.length, kind).toBeGreaterThan(0);
+      if (kind === 'blank-session')
+        expect(
+          tab.elements.map((e) => e.type === 'shape' && e.shape),
+          kind,
+        ).toEqual(['avatar-pad']);
+      else expect(tab.elements.length, kind).toBeGreaterThan(1);
     }
   });
 });

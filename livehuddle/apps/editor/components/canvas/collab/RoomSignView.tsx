@@ -4,8 +4,6 @@
 // room's name and its state from presence, Free, In Use with how many and how long, or Do Not Disturb for a shut
 // pod, and a Knock button (docs/specs/012-collaboration/knock.md). Re-renders when its snapshot changes, and once a
 // minute while the room is in use; never on a step.
-import { useEffect, useState } from 'react';
-import { KNOCK_THROTTLE_MS } from '@livehuddle/api-schema';
 import {
   ROOM_SIGN_ART,
   ROOM_SIGN_TONES,
@@ -16,7 +14,8 @@ import {
 import { HoverCard } from '@livehuddle/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { useKnockedAt, useKnocker, useMeetingLive, type SignLive } from '@/lib/office/meeting-live';
+import { useKnocker, useMeetingLive, type SignLive } from '@/lib/office/meeting-live';
+import { useKnockedRecently, useMinuteClock } from './room-sign-clock';
 
 const A = ROOM_SIGN_ART;
 const FREE: SignLive = {
@@ -26,6 +25,8 @@ const FREE: SignLive = {
   count: 0,
   since: null,
   selfInside: false,
+  pod: false,
+  people: [],
 };
 
 /** A knuckle on a door, for the Knock button and the palette tile. */
@@ -47,38 +48,6 @@ export function KnockGlyph({ size = 12 }: { size?: number }) {
       <circle cx="15.5" cy="12.5" r="1" fill="currentColor" />
     </svg>
   );
-}
-
-// Now, ticking once a minute while `on`: the sign's "12 min" moves on without a per-frame clock.
-function useMinuteClock(on: boolean): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!on) return;
-    // The first tick comes at once (from a timer, not in the effect), so a room just in use reads from now.
-    const first = setTimeout(() => setNow(Date.now()), 0);
-    const timer = setInterval(() => setNow(Date.now()), 30_000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(timer);
-    };
-  }, [on]);
-  return now;
-}
-
-// Knocked for ten seconds after a knock, then the button comes back.
-function useKnockedRecently(): boolean {
-  const at = useKnockedAt();
-  // The knock time whose ten seconds have run out; a newer knock reads Knocked until its own timer passes.
-  const [expired, setExpired] = useState(0);
-  useEffect(() => {
-    if (!at) return;
-    const timer = setTimeout(
-      () => setExpired(at),
-      Math.max(0, at + KNOCK_THROTTLE_MS - Date.now()),
-    );
-    return () => clearTimeout(timer);
-  }, [at]);
-  return at > 0 && expired !== at;
 }
 
 export function RoomSignView({

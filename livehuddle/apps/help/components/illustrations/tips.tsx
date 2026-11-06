@@ -32,9 +32,9 @@ function KeyCap({ x, y, w = 24, label }: { x: number; y: number; w?: number; lab
  *  its Tools group open, each label as the editor words it with its key cap at the right. */
 export function KeyboardShortcuts() {
   const rows: [string, string][] = [
-    ['V', 'Select Tool (or 1)'],
-    ['H', 'Hand Tool'],
-    ['E', 'Eraser (click / drag to delete)'],
+    ['E', 'Edit (or V)'],
+    ['W', 'Walk'],
+    ['S', 'Search Elements'],
   ];
   return (
     <Scene w={420} h={236} bg="plain">

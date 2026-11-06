@@ -124,6 +124,46 @@ describe('add keys', () => {
   });
 });
 
+// The Edit | Walk toggle's keys (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"): E and V edit, W
+// walks, before the read-only gate; H is not a mode.
+describe('Edit and Walk keys', () => {
+  it('edits with E and V and walks with W', () => {
+    const { bag, spies } = deps({ selectedId: null });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('e');
+    press('v');
+    press('w');
+    expect(spies.setCanvasTool.mock.calls.map((c): unknown => c[0])).toEqual([
+      'select',
+      'select',
+      'avatar',
+    ]);
+  });
+
+  it("are a read-only session's too", () => {
+    const { bag, spies } = deps({ selectedId: null, isReadOnly: true });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('w');
+    expect(spies.setCanvasTool).toHaveBeenCalledWith('avatar');
+  });
+
+  it('binds nothing to H', () => {
+    const { bag, spies } = deps({ selectedId: null });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('h').defaultPrevented).toBe(false);
+    expect(spies.setCanvasTool).not.toHaveBeenCalled();
+  });
+
+  it('leaves W to the Wave while walking, and E still goes back to editing', () => {
+    const { bag, spies } = deps({ selectedId: null, canvasTool: 'avatar' });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('w');
+    expect(spies.setCanvasTool).not.toHaveBeenCalledWith('avatar');
+    press('e');
+    expect(spies.setCanvasTool).toHaveBeenCalledWith('select');
+  });
+});
+
 // docs/specs/004-interface-design/menus.md: while focus is inside a menu of either kind the
 // canvas's shortcuts stand down.
 describe('inside a menu', () => {

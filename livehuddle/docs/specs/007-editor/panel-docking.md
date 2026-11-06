@@ -23,8 +23,7 @@ theirs without adding a settings screen.
   from its button in the tab order, so Tab from the button never reached it. **Escape closes a popover** (Collaborate, the Trash, Find a Card, Card Types, the Explorer) while focus is in it or on its button, and focus goes
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it.
-- **Participating panels:** Minimap, Poll, and the tool panels (Avatar,
-  Eraser, Format), every corner panel built on the shared `MovablePanel`.
+- **Participating panels:** Minimap, Poll, and the Format panel (the Avatar and Eraser panels are retired), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; the body-height
   measurement relies on that pin). They are not dockable, and the
   **bottom-right corner zone is raised to sit above them** (`ZOOM_CLUSTER_HEIGHT_PX` plus `ZOOM_CLUSTER_GAP_PX`, at the UI scale, `apps/editor/lib/panel-layout.ts`) so a panel
@@ -54,7 +53,7 @@ When the user has never arranged panels, the corners match today's defaults:
 | `bottom-left`  | Minimap                                                   |
 | `bottom-right` | Tool panels, above the bottom cluster (zoom controls pin) |
 
-The tool panels (Eraser, Format) open bottom-right, stacked
+The Format panel opens bottom-right, stacked
 upwards from just above the bottom cluster, where the controls they set sit within reach of the canvas they
 act on, not top-right under the palette strip, where they hid its end and opened over a template's title. A panel
 the user has docked or placed keeps its spot; only the home moves.
@@ -121,12 +120,12 @@ type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 // 'collaborate' is the merged Comments + Actions panel, a popover over its
 // cluster button that takes no corner. The Poll panel is not a corner panel either: it
 // opens over the Session strip's buttons (docs/specs/012-collaboration/session-tools.md), and a stored
-// layout naming them is read like any unknown id, and so is the Avatar panel, a popover over its own button
-// (docs/specs/008-canvas/avatar-mode.md), and the retired AI assistant panel's 'ai'. Two panels are NOT always available: they exist only while
-// their mode is running, so they join and leave their
-// corner stack rather than sitting in it: 'eraser' (docs/specs/008-canvas/eraser-panel.md, the brush),
-// and 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
-type PanelId = 'collaborate' | 'minimap' | 'eraser' | 'format';
+// layout naming them is read like any unknown id, and so is the retired Avatar panel's 'avatar'
+// (docs/specs/008-canvas/avatar-mode.md: the avatar palette replaced it), and the retired AI assistant panel's 'ai'. One panel is NOT always available: it exists only while
+// its mode is running, so it joins and leaves its
+// corner stack rather than sitting in it: 'format' (docs/specs/008-canvas/format-panel.md, what the painter copies).
+// The retired Eraser panel's 'eraser' is read like any unknown id.
+type PanelId = 'collaborate' | 'minimap' | 'format';
 
 type PanelLayout = {
   // Ordered stack per corner. Order is top→bottom (top corners) /

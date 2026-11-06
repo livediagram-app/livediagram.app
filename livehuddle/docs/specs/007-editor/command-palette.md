@@ -25,6 +25,10 @@ forks, no drifted telemetry):
 
 - **History:** Undo, Redo, offered only when `canUndo` / `canRedo`, and not while walking ([Avatar mode](../008-canvas/avatar-mode.md#no-editing-chrome-while-walking)).
 - **View:** Fit to screen.
+- **Edit and Walk** (`tool:select`, `tool:avatar`): the two sides of the
+  [Edit | Walk toggle](../008-canvas/avatar-mode.md#the-edit--walk-toggle), the one not in force. There are no other
+  tool commands: Hand, Eraser and Format Painter left with the Selection Mode picker (owner, 2026-11-06); the Format
+  Painter is the selection toolbar's.
 - **Cleanup:** Auto-align (Auto Layout's commands left livehuddle in Work Tracker #423 part 4): its home
   beside the Tidy Up button, as the tab menu has no Cleanup category ([Layout cleanup](../008-canvas/layout-cleanup.md)); Renumber Steps, while the tab
   holds a step number ([The step number](../009-elements/step-number.md)).
@@ -35,14 +39,13 @@ forks, no drifted telemetry):
 
 The registry previously returned nothing for read-only views. Now it returns
 the **view-safe subset** (fit to screen, export, Collaborators, and
-the canvas tool switches that do not write to the document); mutating
-commands and the Eraser and Format painter tools stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
+Edit and Walk); mutating commands stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
 in the pure builder where it's unit-tested.
 
 ## Locked tabs
 
 The palette offers only what would do something. On a **locked tab** (`tabLocked`) the element
-verbs, layout cleanup and the Eraser and Format tools are withheld, since the
+verbs and layout cleanup are withheld, since the
 tab refuses every element edit; the document, tab and view commands stay.
 
 ## Unchanged on purpose

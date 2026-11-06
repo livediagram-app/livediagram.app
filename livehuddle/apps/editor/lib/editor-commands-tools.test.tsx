@@ -1,15 +1,23 @@
-import { describe, expect, it, vi } from 'vitest';
+// @vitest-environment jsdom
+import { cleanup, render, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { buildCanvasToolOptions } from '@/components/palette/canvas-tool-options';
-import { buildEditorCommands, type CommandContext, type CommandHandlers } from './editor-commands';
+import { EditWalkToggle } from '@/components/palette/EditWalkToggle';
+import {
+  CANVAS_TOOLS,
+  buildEditorCommands,
+  type CommandContext,
+  type CommandHandlers,
+} from './editor-commands';
 
-// Drift guard, in its own .tsx file because buildCanvasToolOptions returns
-// React icons and the rest of editor-commands.test.ts is plain TS.
+// Drift guard, in its own .tsx file because it renders the Edit | Walk toggle and the rest of
+// editor-commands.test.ts is plain TS.
 //
-// The tool commands restate the dropdown's ids. If a tool is renamed or added
-// in one place only, search either misses it or hands the setter an id that
-// does not exist and silently does nothing. This test is the reason that can't
-// happen quietly.
+// Search's tool commands restate the toggle's two sides (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk
+// toggle"). If a side is renamed in one place only, Search names it differently from the button it stands for. This
+// test is the reason that can't happen quietly.
+
+afterEach(cleanup);
 
 const ctx: CommandContext = {
   isReadOnly: false,
@@ -23,33 +31,26 @@ const ctx: CommandContext = {
   marker: null,
   canShare: true,
   isOffline: false,
-  // A tool nothing else uses, so every real tool is offered.
-  canvasTool: 'none',
-  canvasEmpty: false,
+  // A tool neither side is, so both are offered.
+  canvasTool: 'pan',
 };
 
 const noop = () => new Proxy({}, { get: () => vi.fn() }) as unknown as CommandHandlers;
 
-const toolIds = (c: CommandContext) =>
-  buildEditorCommands(c, noop())
-    .map((cmd) => cmd.id)
-    .filter((id) => id.startsWith('tool:'))
-    .map((id) => id.slice('tool:'.length))
-    .sort();
-
-describe('tool commands against the palette dropdown', () => {
-  it('covers every tool the dropdown offers', () => {
-    const dropdown = buildCanvasToolOptions({})
-      .map((o) => o.id)
-      .sort();
-    expect(toolIds(ctx)).toEqual(dropdown);
+describe('tool commands against the Edit | Walk toggle', () => {
+  it('names the two sides as the toggle does, Edit then Walk', () => {
+    render(<EditWalkToggle walking={false} onEdit={vi.fn()} onWalk={vi.fn()} />);
+    const sides = within(screen.getByRole('group', { name: 'Edit or Walk' }))
+      .getAllByRole('button')
+      .map((b) => b.getAttribute('aria-label'));
+    expect(CANVAS_TOOLS.map((t) => t.name)).toEqual(sides);
   });
 
-  it('matches the dropdown on which tools an empty canvas disables', () => {
-    const enabled = buildCanvasToolOptions({ canvasEmpty: true })
-      .filter((o) => !o.disabled)
-      .map((o) => o.id)
-      .sort();
-    expect(toolIds({ ...ctx, canvasEmpty: true })).toEqual(enabled);
+  it('switches to the tool each side stands for: Edit selects, Walk walks', () => {
+    const cmds = buildEditorCommands(ctx, noop()).filter((c) => c.id.startsWith('tool:'));
+    expect(cmds.map((c) => [c.name, c.id])).toEqual([
+      ['Edit', 'tool:select'],
+      ['Walk', 'tool:avatar'],
+    ]);
   });
 });

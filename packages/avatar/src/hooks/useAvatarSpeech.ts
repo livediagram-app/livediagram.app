@@ -9,9 +9,9 @@ import { addOwnBubble } from '../speech-store';
 import { headPoint, SPEECH_COOLDOWN_MS } from '../speech';
 import type { AvatarPoint } from '../walk';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { avatarBindings } from '../bindings';
 import { isEnterActivatedTarget, isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
+import { walkInputBlocked } from '../walk-guard';
 
 type SpeechSource = 'composer' | 'panel';
 
@@ -102,7 +102,7 @@ export function useAvatarSpeech({
   const onKeyDown = useEffectEvent((e: KeyboardEvent) => {
     if (e.key !== 'Enter' || e.repeat || e.shiftKey || e.altKey || e.metaKey || e.ctrlKey) return;
     if (!speaking || composerOpen) return;
-    if (isTypingTarget(e.target) || isEnterActivatedTarget(e.target) || anyModalOpen()) return;
+    if (isTypingTarget(e.target) || isEnterActivatedTarget(e.target) || walkInputBlocked()) return;
     e.preventDefault();
     e.stopPropagation();
     openComposer();

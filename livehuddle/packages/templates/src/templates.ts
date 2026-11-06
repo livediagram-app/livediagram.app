@@ -55,7 +55,8 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-session',
     title: 'Blank Space',
-    description: 'An empty space to meet in: build a room, leave a note, or run a timer.',
+    description:
+      'An empty space with an Avatar Pad to arrive on: build a room, leave a note, or run a timer.',
     extra: true,
   },
   {

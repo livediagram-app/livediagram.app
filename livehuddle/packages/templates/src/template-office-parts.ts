@@ -3,6 +3,7 @@
 // floors lie under everything. The Virtual Office and the space templates are tables of these.
 
 import {
+  AVATAR_PAD_DEFAULT_SIZE,
   createShape,
   createText,
   isFloorShape,
@@ -102,20 +103,43 @@ export function furnishRooms(
   return [...ground, ...walls, ...floor, ...doors, ...furniture];
 }
 
-export const WALK_IN_BUTTON_W = 104;
-const BUTTON_H = 96;
+// The Space's Avatar Pad, its size as placed: a way in tucked into a column sizes its hint round it.
+export const WAY_IN_PAD_W = AVATAR_PAD_DEFAULT_SIZE.width;
+const PAD_W = WAY_IN_PAD_W;
+const PAD_H = AVATAR_PAD_DEFAULT_SIZE.height;
 const HINT_W = 520;
 
+// Half a Space's Avatar Pad: a gate's pad centred under it has its right edge this far past the gate's middle.
+export const WAY_IN_HALF = PAD_W / 2;
+// How far a Space's pad stands below the wall, fence or site edge above it (docs/specs/009-elements/avatar-pad.md
+// "Every Space and blank tab has one", D215): the character standing on its core (32 px under the pad's top) is a
+// Regular figure 99 px tall, so its head stays 5 px clear of the wall.
+export const WAY_IN_CLEAR = 72;
+
 /**
- * The way in: a Selection Mode button labelled Walk In (it hands out Avatar mode and drops the character at it),
- * with a line saying what to do, right-aligned to `right` and centred on `cy`. A narrower `hintW` (a way in tucked
- * into a column beside the plan) wraps the line over the button's whole height.
+ * The way in (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): the Space's Avatar Pad, where
+ * everyone arrives, right-aligned to `right` and standing WAY_IN_CLEAR below `wallY` (the bottom of the wall, fence or
+ * site above it), with a line saying what to do, ending 20 px left of it and centred on it. It replaced the Walk In
+ * Selection Mode button that stood here.
  */
-export function walkIn(right: number, cy: number, hint: string, hintW = HINT_W): Element[] {
-  const hintH = hintW < HINT_W ? BUTTON_H : 64;
+export function wayIn(right: number, wallY: number, hint: string): Element[] {
+  return wayInBeside(right, wallY + WAY_IN_CLEAR + PAD_H / 2, hint);
+}
+
+// A tucked hint's height: a narrow column wraps the line over several rows.
+const TUCKED_HINT_H = 112;
+
+/**
+ * The way in centred on `cy` rather than hung below a wall: for a pad on open floor beside the plan, with nothing
+ * above it to keep clear of. A narrower `hintW` (a way in tucked into a column beside the plan, the Team Pod's under
+ * its board) wraps the line over TUCKED_HINT_H.
+ */
+export function wayInBeside(right: number, cy: number, hint: string, hintW = HINT_W): Element[] {
+  const padY = cy - PAD_H / 2;
+  const hintH = hintW < HINT_W ? TUCKED_HINT_H : 64;
   return [
     {
-      ...createText(right - WALK_IN_BUTTON_W - 20 - hintW, cy - hintH / 2),
+      ...createText(right - PAD_W - 20 - hintW, cy - hintH / 2),
       width: hintW,
       height: hintH,
       label: hint,
@@ -124,10 +148,7 @@ export function walkIn(right: number, cy: number, hint: string, hintW = HINT_W):
       // On the canvas beside the room: a slate that reads in either half (#475569 sank into the dark one).
       textColor: CANVAS_TONES.slate,
     },
-    {
-      ...createShape('mode-button', right - WALK_IN_BUTTON_W, cy - BUTTON_H / 2),
-      label: 'Walk In',
-    },
+    createShape('avatar-pad', right - PAD_W, padY),
   ];
 }
 
@@ -156,7 +177,8 @@ export function officePlan(
   ];
 }
 
-// A space's heading band above its plan, and the band under it the Walk In waits in.
+// A space's heading band above its plan, and the band under it the Avatar Pad waits in (its pad and how-to line run
+// a little past it: wayIn).
 export const SPACE_HEAD = 96;
 export const SPACE_BELOW = 120;
 

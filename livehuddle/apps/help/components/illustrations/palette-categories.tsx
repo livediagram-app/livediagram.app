@@ -5,9 +5,10 @@
 
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
+import { EditWalkToggle } from './palette-modes-parts';
 
-/** The palette body as a panel: its title bar, then the header band (selection mode on the
- *  left, the category picker on the right) the body hangs under. */
+/** The palette body as a panel: its title bar, then the header band (the Edit | Walk toggle on
+ *  the left, the category picker on the right) the body hangs under. */
 function PaletteFrame({
   category,
   h,
@@ -19,27 +20,8 @@ function PaletteFrame({
 }) {
   return (
     <Panel x={60} y={10} w={300} h={h} title="PALETTE">
-      {/* Selection mode picker */}
-      <rect
-        x={72}
-        y={42}
-        width={40}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-100"
-        strokeWidth={1}
-      />
-      <path
-        d="M80 48 L80 60 L83.5 57 L85.5 61 L87.5 60 L85.5 56 L89.5 55.5 Z"
-        className="fill-brand-600"
-      />
-      <path
-        d="M100 52 l3 3 l3 -3"
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
+      {/* The Edit | Walk toggle, Edit on */}
+      <EditWalkToggle x={72} y={42} on="edit" labels={false} />
       {/* Category picker */}
       <rect
         x={244}

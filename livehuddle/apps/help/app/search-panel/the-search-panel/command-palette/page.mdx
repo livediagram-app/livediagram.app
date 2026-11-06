@@ -5,7 +5,7 @@ import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'The Command Palette (⌘K)',
   description:
-    'Run any livehuddle editor command by name with Cmd/Ctrl+K: undo, auto-align, export, settings, canvas tools and more, straight from the search panel.',
+    'Run any livehuddle editor command by name with Cmd/Ctrl+K: undo, auto-align, export, settings, Edit and Walk and more, straight from the search panel.',
   path: '/help/search-panel/the-search-panel/command-palette/',
 });
 
@@ -48,13 +48,13 @@ The list follows what you're doing, so it only offers commands that apply right 
 - **Layout cleanup** (only here, not in any menu): Auto-align to Grid. See [Layout Cleanup](/help/tools/layout-cleanup/).
 - **Dialogs:** Export…, Import…, Open Settings, and Keyboard Shortcuts.
 - **View:** Fit to Screen, and Collaborators, which opens the [list of people in the space](/help/collaboration/live-presence/#collaborators).
-- **Tools:** pick up the Select Tool, Hand Tool, Avatar Mode, Eraser Tool or Format Painter without opening the palette. Type "eraser" and you get the eraser, not just the article about it.
+- **Edit and Walk:** the two sides of the [Edit | Walk toggle](/help/selection-modes/select/). Type "walk" and you start walking, not just read the article about it. The side you're already on isn't offered.
 
-A few rules keep the tool list honest, matching the palette's own tool menu: the tool you're already holding isn't offered; everything except Select and Hand needs something on the canvas first; and the Format painter isn't offered on a Draw whiteboard, whose dock replaces it.
+The [Format Painter](/help/selection-modes/format-painter/) isn't here: it is a button on the selection toolbar, above whatever you have selected.
 
 ## In read-only views
 
-When you're on a Viewer or Participant share link, the palette still offers the actions that don't change anything: Fit to Screen, Export…, Collaborators, and the tools that only change how you look at the canvas (Select and Hand). The Eraser, the Format Painter and every command that would change the canvas simply aren't listed.
+When you're on a Viewer or Participant share link, the palette still offers the actions that don't change anything: Fit to Screen, Export… and Collaborators. Edit and Walk aren't listed, since Participants and Viewers are always walking, and neither is any command that would change the canvas.
 
 <Tip>
   Forgotten a shortcut? Open the palette with `⌘K`, type the first few letters of what you want to

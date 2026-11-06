@@ -3,8 +3,20 @@ import { AVATAR_STATUS_IDS, type AvatarPresence, type AvatarStatus } from './ava
 
 // livediagram's docs/specs/008-canvas/avatar-mode.md "Status" and "Realtime".
 describe('avatar wire shapes', () => {
-  it('names the five statuses both ends of the wire read', () => {
-    expect(AVATAR_STATUS_IDS).toEqual(['available', 'focus', 'meeting', 'away', 'dnd']);
+  it('names every status both ends of the wire read, the original five first', () => {
+    expect(AVATAR_STATUS_IDS).toEqual([
+      'available',
+      'focus',
+      'meeting',
+      'away',
+      'dnd',
+      'help',
+      'lunch',
+      'angry',
+      'celebrating',
+      'thinking',
+      'sick',
+    ]);
   });
 
   it('carries a status on a presence packet', () => {

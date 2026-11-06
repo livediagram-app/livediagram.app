@@ -65,6 +65,7 @@ export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export {
   ACTIVE_SEGMENT,
   SEGMENT_TRACK,
+  SEGMENT_REST,
   SOLID_BRAND_DARK,
   SOLID_BRAND_DARK_CONTROL,
 } from './brand-classes';

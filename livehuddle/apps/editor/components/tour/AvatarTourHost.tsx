@@ -13,7 +13,6 @@ import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/sta
 import {
   avatarTourStepTelemetryType,
   avatarTourSteps,
-  tidyAvatarTour,
   type AvatarTourApi,
 } from './avatar-tour-steps';
 import { TourStage } from './TourStage';
@@ -77,7 +76,6 @@ export function AvatarTourHost() {
   };
 
   const endTour = (outcome: TourOutcome) => {
-    tidyAvatarTour();
     markTaken();
     debugLog('[avatar-tour] end', { outcome });
     track('UI', 'Ended', outcome === 'completed' ? 'AvatarTourCompleted' : 'AvatarTourSkipped');

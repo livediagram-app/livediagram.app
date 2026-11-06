@@ -76,8 +76,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 9h18M8 4v5" />
     </Glyph>
   ),
-  // Palette → Selection Modes.
-  // Selection-mode guides. Two of these are people, and the set already has five
+  // Edit or Walk (the selection-modes category).
+  // Its guides. Two of these are people, and the set already has five
   // person glyphs (`chairs`, `roll-calls`, `search-teams`, `profile`,
   // `done-checks`) — every one of them a head-and-shoulders bust. So these two are
   // whole figures mid-stride, which is also what the feature is: walking.
@@ -96,17 +96,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   select: (
     <Glyph>
       <path d="M5 3l6 16 2.5-6.5L20 10 5 3z" />
-    </Glyph>
-  ),
-  hand: (
-    <Glyph>
-      <path d="M8 11V5.5a1.5 1.5 0 013 0V10m0-.5V4.5a1.5 1.5 0 013 0V10m0-.5V6a1.5 1.5 0 013 0v6a7 7 0 01-7 7h-1a6 6 0 01-5-3l-2.5-4a1.6 1.6 0 012.7-1.7L8 13" />
-    </Glyph>
-  ),
-  eraser: (
-    <Glyph>
-      <path d="M4 14l6-6 7 7-4 4H8l-4-4a1 1 0 010-1.4z" />
-      <path d="M10 8l6 6M9 19h11" />
     </Glyph>
   ),
   'format-painter': (
@@ -1050,7 +1039,7 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
       <path d="M9.9 12.4L12 14.5" />
     </Glyph>
   ),
-  // A marquee with a pointer: choosing things is the whole category.
+  // A marquee with a pointer: Edit, the side of the toggle you build on.
   'selection-modes': (
     <Glyph>
       <path d="M4 7V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V7M20 15v3.5a1.5 1.5 0 01-1.5 1.5H16" />

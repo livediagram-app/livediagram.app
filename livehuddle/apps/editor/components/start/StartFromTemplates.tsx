@@ -56,10 +56,14 @@ export function StartFromTemplates({
   mode,
   tabId,
   onTemplate,
+  onStartBlank,
 }: {
   mode: TemplateStartMode;
   tabId: string;
   onTemplate: (kind: TemplateKind) => void;
+  // The × (and Escape, and the phone's drag down) starts from a blank space: it lands the blank's Avatar Pad as
+  // choosing the blank does, but is no pick (docs/specs/007-editor/start-diagramming.md "Bringing it back").
+  onStartBlank?: (kind: TemplateKind) => void;
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
@@ -75,8 +79,8 @@ export function StartFromTemplates({
       })),
     [start],
   );
-  // The × starts from nothing: the panel stays closed on this tab in this mode, for this person (empty-card-dismissed.ts),
-  // until the palette tray's Show Templates brings it back (StartAgainTray).
+  // The × starts from a blank space (its Avatar Pad, onStartBlank): the panel stays closed on this tab in this mode, for
+  // this person (empty-card-dismissed.ts), until the palette tray's Show Templates brings it back (StartAgainTray).
   const closedKey = startClosedKey(tabId, mode);
   const closed = useEmptyCardDismissed(closedKey);
   // On screen: the tours hold their offer until it goes (start-panel-open.ts).
@@ -88,6 +92,10 @@ export function StartFromTemplates({
   if (closed) return null;
   const close = () => {
     dismissEmptyCard(closedKey);
+  };
+  const closeToBlank = () => {
+    close();
+    onStartBlank?.(start.blank);
   };
   return (
     <StartPanel
@@ -106,11 +114,11 @@ export function StartFromTemplates({
         start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) }))
       }
       onChoose={(kind) => {
-        // The blank leaves the tab empty, so it closes the panel as the × does.
+        // The blank lands only its Avatar Pad, a tab still blank, so it closes the panel as the × does.
         if (kind === start.blank) close();
         onTemplate(kind as TemplateKind);
       }}
-      onClose={close}
+      onClose={closeToBlank}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}
     />

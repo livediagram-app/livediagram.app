@@ -28,6 +28,9 @@ describe('avatar style guards', () => {
   });
 
   it('keeps every chrome duration within the motion budget', () => {
-    expect(formatMotion(checkMotionBudget({ root }))).toBe('');
+    // The status signatures' loops are canvas motion (docs/specs/008-canvas/avatar-mode.md "Status"), not chrome.
+    expect(
+      formatMotion(checkMotionBudget({ root, canvasStylesheets: ['status-effects.css'] })),
+    ).toBe('');
   });
 });

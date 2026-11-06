@@ -49,13 +49,11 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   undo: '#0ea5e9',
   redo: '#06b6d4',
   'layout-cleanup': '#2563eb',
-  // Palette → Selection Modes
+  // Edit or Walk (the selection-modes category)
   'avatar-mode': '#ec4899',
   'avatar-tour': '#db2777',
   'walking-together': '#a855f7',
   select: '#0ea5e9',
-  hand: '#0891b2',
-  eraser: '#f43f5e',
   'format-painter': '#8b5cf6',
   // Palette → Elements
   write: '#0891b2',

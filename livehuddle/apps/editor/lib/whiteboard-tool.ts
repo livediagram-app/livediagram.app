@@ -2,20 +2,15 @@
 // which dock tool is in hand, derived from the editor's own canvas tool and
 // armed intent so the two can never disagree, plus the intents the dock arms
 // and the pen-versus-touch routing rule.
-import type { CanvasTool } from '@/components/palette/palette.types';
 import { INK_PEN_COLOUR, type Element } from '@livehuddle/document';
 import type { PendingDraw } from './draw-mode';
 import type { WhiteboardPen } from './whiteboard-prefs';
 
 // No highlighter: a whiteboard's pens are its markers (docs/specs/023-draw-mode/draw-mode.md).
 export type WhiteboardTool =
-  'select' | 'pen' | 'path' | 'fill' | 'eraser' | 'sticky' | 'text' | 'shape';
+  'select' | 'pen' | 'path' | 'fill' | 'sticky' | 'text' | 'shape';
 
-export function activeWhiteboardTool(
-  canvasTool: CanvasTool,
-  pendingDraw: PendingDraw | null,
-): WhiteboardTool {
-  if (canvasTool === 'eraser') return 'eraser';
+export function activeWhiteboardTool(pendingDraw: PendingDraw | null): WhiteboardTool {
   switch (pendingDraw?.type) {
     case 'freehand':
       return pendingDraw.variant === 'whiteboard' ? 'pen' : 'select';
@@ -48,12 +43,6 @@ export function whiteboardPenIntent(
     penId: pen.id,
   };
 }
-
-// The eraser's brush on a whiteboard, in screen px (docs/specs/023-draw-mode/draw-mode.md "Eraser").
-export const WHITEBOARD_ERASER_RADIUS_PX: Readonly<Record<'stroke' | 'partial', number>> = {
-  stroke: 10,
-  partial: 16,
-};
 
 export type WhiteboardShapeId = 'rectangle' | 'ellipse' | 'diamond' | 'cylinder' | 'line' | 'arrow';
 
@@ -108,8 +97,8 @@ export function whiteboardTakesTyping(el: Pick<Element, 'type'>): boolean {
 
 // Microsoft Whiteboard's rule (docs/specs/023-draw-mode/draw-mode.md "Touch and pen input"): once a
 // pen has been used on this device, a single finger pans rather than inks, so
-// a resting palm or a guiding finger never draws. `inking` is true while a pen,
-// the Path tool or the eraser is in hand.
+// a resting palm or a guiding finger never draws. `inking` is true while a pen
+// or the Path tool is in hand.
 export function whiteboardPointerRoute(input: {
   pointerType: string;
   penSeen: boolean;

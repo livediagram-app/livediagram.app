@@ -2,9 +2,9 @@
 // building on three floors, one tab each. The North Lift and the South Lift stand in the same place on every floor, at
 // the left by the stairs' wall, so riding one steps out where you expect.
 //
-// - Ground Floor (the first tab, Wood): Hot Desks (three islands of four), a Meeting Room and a Cafe; the Walk In at
+// - Ground Floor (the first tab, Wood): Hot Desks (three islands of four), a Meeting Room and a Cafe; the Avatar Pad at
 //   the entrance with the Directory beside it.
-// - Level 2 (Carpet Tiles): Phone Booths (six Office Pods in two rows), a Quiet Room and two meeting rooms.
+// - Level 2 (Carpet Tiles), arrived at by lift or on the Avatar Pad between the lifts: Phone Booths (six Office Pods in two rows), a Quiet Room and two meeting rooms.
 // - Level 3 (Parquet): the Event Floor (a Stage, two Screens, Bring Focus and twenty chairs either side of a centre
 //   aisle), a Green Room and a Roof Bar.
 //
@@ -23,6 +23,10 @@ const LIFTS: OfficePiece[] = [
   { kind: 'elevator', x: 60, y: 700, label: 'South Lift' },
 ];
 const LIFT_DIRECTORY: OfficePiece = { kind: 'directory', x: 190, y: 520 };
+// The upper floors' Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): between the
+// lifts, left of the Directory, so someone who changes floor from the tab bar arrives in the lift lobby. Clear of the
+// North Lift by more than a standing character (its head 67 px above the pad's top).
+const LIFT_PAD: OfficePiece = { kind: 'avatar-pad', x: 40, y: 560 };
 
 const stools = (xs: readonly number[], y: number): OfficePiece[] =>
   xs.map((x) => ({ kind: 'bar-stool' as const, x, y }));
@@ -126,7 +130,7 @@ export function buildTowerGround(cx: number, cy: number): Element[] {
         'Three floors to work on: hot desks and the cafe here, phone booths on Level 2, events on Level 3.',
     },
     gateAt: GROUND_MID,
-    hint: 'Press Walk In (or W) and come in at the entrance. The North and South Lifts go to every floor.',
+    hint: 'You arrive on the Avatar Pad by the entrance. The North and South Lifts go to every floor.',
   });
 }
 
@@ -183,7 +187,7 @@ export function buildTowerLevel2(cx: number, cy: number): Element[] {
     width: W,
     height: L2_H,
     rooms: L2_ROOMS,
-    open: [...LIFTS, LIFT_DIRECTORY, { kind: 'plant', x: 1200, y: 860 }],
+    open: [...LIFTS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 1200, y: 860 }],
     title: {
       text: 'Level 2',
       width: 160,
@@ -255,7 +259,7 @@ export function buildTowerLevel3(cx: number, cy: number): Element[] {
     width: W,
     height: L3_H,
     rooms: L3_ROOMS,
-    open: [...LIFTS, LIFT_DIRECTORY, { kind: 'plant', x: 1100, y: 960 }],
+    open: [...LIFTS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 1100, y: 960 }],
     title: {
       text: 'Level 3',
       width: 160,

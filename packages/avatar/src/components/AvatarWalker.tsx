@@ -17,13 +17,14 @@ import { AVATAR_FALLBACK_COLOUR, avatarScale, type AvatarConfig } from '../confi
 import type { AvatarFacing } from '../walk';
 import { AVATAR_HEIGHT, avatarBox } from '../walk';
 import { AvatarSprite } from './avatar-sprite';
+import { avatarStatusHeadroomPx } from './avatar-status-effects';
 
 // An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
 const AWAY_OPACITY = 0.5;
 
 // A status dot: a small circle in the status's colour with a white rim, so it reads on a name chip and on the canvas.
 // Do Not Disturb (livehuddle's calls status) is a touch larger with a white bar across it, the sign everyone knows.
-function StatusDot({ status }: { status: AvatarStatus }) {
+export function StatusDot({ status }: { status: AvatarStatus }) {
   if (status === 'dnd') {
     return (
       <span
@@ -101,6 +102,8 @@ export function AvatarWalker({
 }) {
   const scale = avatarScale(config.size);
   const box = avatarBox(scale);
+  // A status worn over the head (a party hat, a "?", a thought bubble) lifts the chip clear of it.
+  const headroom = avatarStatusHeadroomPx(status, config.hair, scale);
   // The glide is a CSS transition on the box, set (or cleared) before the browser styles the new position, so a
   // walking step slides and a jump (a portal, a pad, a seat) lands at once. Written to the element rather than the
   // style prop: whether a move glides depends on where the character stood before it.
@@ -166,7 +169,7 @@ export function AvatarWalker({
             // tracking the size choice so it hugs a small character too.
             style={{
               ...avatarBindings.identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
-              top: box.offsetY - AVATAR_HEIGHT * scale - 16,
+              top: box.offsetY - AVATAR_HEIGHT * scale - 16 - headroom,
             }}
           >
             {status ? <StatusDot status={status} /> : null}
@@ -184,7 +187,7 @@ export function AvatarWalker({
           <div
             data-own-status
             className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
-            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 }}
+            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 - headroom }}
           >
             <StatusDot status={status} />
             <span aria-hidden>{avatarStatusLabel(status)}</span>
@@ -206,6 +209,7 @@ export function AvatarWalker({
         <div style={status === 'away' ? { opacity: AWAY_OPACITY } : undefined}>
           <AvatarSprite
             headphones={status === 'focus'}
+            status={status}
             facing={facing}
             config={config}
             walking={walking}

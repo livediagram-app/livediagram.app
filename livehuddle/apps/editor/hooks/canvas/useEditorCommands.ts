@@ -135,7 +135,6 @@ export function useEditorCommands(open: boolean): {
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
-  const canvasEmpty = activeTab.elements.length === 0;
   const tabHasSteps = activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'step');
   const tabLocked = activeTab.locked === true;
   const cmdCtx = useMemo<CommandContext>(
@@ -153,10 +152,6 @@ export function useEditorCommands(open: boolean): {
       canShare: canShareDocument,
       isOffline,
       canvasTool,
-      // Same emptiness test the palette's tool dropdown uses to disable the
-      // content-dependent tools, so search can never offer a tool the palette
-      // has greyed out.
-      canvasEmpty,
       tabLocked,
     }),
     [
@@ -173,7 +168,6 @@ export function useEditorCommands(open: boolean): {
       canShareDocument,
       isOffline,
       canvasTool,
-      canvasEmpty,
       tabLocked,
     ],
   );

@@ -46,8 +46,8 @@ export function useCanvasTool({
     if (hold !== alwaysWalking) setAlwaysWalking(hold);
   };
   // User-facing tool picker (palette buttons + keyboard). Wraps the raw
-  // setter to emit telemetry when the user enters a distinct mode (Eraser,
-  // Avatar, Format). Pan / select switches stay untracked (high frequency),
+  // setter to emit telemetry when the user enters a distinct mode (Avatar,
+  // Format). Pan / select switches stay untracked (high frequency),
   // and internal auto-switches keep the raw setter so they don't count as a use.
   // The tool that was active before Avatar mode (docs/specs/008-canvas/avatar-mode.md) took over, so
   // picking a palette tile can put the user back exactly where they were
@@ -62,7 +62,6 @@ export function useCanvasTool({
     if (alwaysWalking) return;
     if (tool !== canvasTool) priorToolRef.current = canvasTool;
     if (tool === 'avatar' && canvasTool !== 'avatar') setPreAvatarTool(canvasTool);
-    if (tool === 'eraser' && canvasTool !== 'eraser') track('Canvas', 'Used', 'Eraser');
     // `AvatarMode`, not `Avatar` — the palette's Avatar photo tile already owns
     // the `Avatar` token on Element·Added (docs/specs/008-canvas/avatar-mode.md).
     if (tool === 'avatar' && canvasTool !== 'avatar') track('Canvas', 'Used', 'AvatarMode');

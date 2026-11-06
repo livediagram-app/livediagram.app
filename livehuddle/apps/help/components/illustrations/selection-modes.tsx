@@ -1,39 +1,15 @@
-// Selection-mode illustrations (docs/specs/018-help/help-app.md): the palette's canvas-tool picker
-// as the editor actually draws it (a trigger at the start of the palette strip that
-// opens a tile grid in three bands: Build, Edit and Interact), the panels each tool opens while it is
-// active, and the pixel character Avatar mode walks. The per-mode canvas scenes in palette-modes.tsx put PickerTrigger on
-// top, so every selection-mode article shows the same picker with its own tool
-// chosen.
+// Edit | Walk illustrations (docs/specs/018-help/help-app.md): the toggle at the very start of the palette strip
+// (docs/specs/007-editor/toolbar-layout.md) in both its states, the Format panel the Format Painter opens while its
+// brush is loaded, and the pixel characters Avatar mode walks. The toggle replaced the Selection Mode picker: Select,
+// Hand, Eraser and Format are no longer modes to pick.
 //
-// Labels are lifted from apps/editor: canvas-tool-options.tsx (tool names,
-// shortcuts, bands), the *-config.ts catalogues (panel rows and values), and
-// TopCenterChrome.tsx (the Format banner).
+// Labels are lifted from apps/editor: the toggle's sides (Edit, Walk), the avatar palette's call controls and
+// categories, and the format-config catalogue (the Format panel's rows and values).
 
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
-import {
-  AvatarGlyph,
-  EraserGlyph,
-  HandGlyph,
-  PainterGlyph,
-  SelectGlyph,
-} from './palette-modes-parts';
-
-// --- The picker -------------------------------------------------------------
-
-/** The palette's canvas tools, in the picker's own order and bands (canvas-tool-options.tsx). */
-const TOOLS = [
-  { key: 'select', label: 'Select', shortcut: 'V', band: 0, Glyph: SelectGlyph },
-  { key: 'hand', label: 'Hand', shortcut: 'H', band: 0, Glyph: HandGlyph },
-  { key: 'eraser', label: 'Eraser', shortcut: 'E', band: 1, Glyph: EraserGlyph },
-  { key: 'format', label: 'Format', shortcut: undefined, band: 1, Glyph: PainterGlyph },
-  { key: 'avatar', label: 'Avatar', shortcut: undefined, band: 2, Glyph: AvatarGlyph },
-] as const;
-
-type ToolKey = (typeof TOOLS)[number]['key'];
-
-const BANDS = ['BUILD', 'EDIT', 'INTERACT'] as const;
+import { EditWalkToggle, PainterGlyph } from './palette-modes-parts';
 
 function Chevron({ x, y }: { x: number; y: number }) {
   return (
@@ -48,147 +24,65 @@ function Chevron({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** The start of the palette strip across the top of the canvas: the canvas-tool picker on the
- *  left (showing the chosen tool) and the category picker beside it. Sits at the top of every
- *  mode scene. */
-export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number; tool: ToolKey }) {
-  const t = TOOLS.find((o) => o.key === tool) ?? TOOLS[0];
-  const w = 236;
+// --- The Edit | Walk toggle ---------------------------------------------------
+
+/** One strip in the toggle scene: its caption above, the toggle at its start, then the names that follow it on
+ *  that strip, faded off to the right. */
+function ToggleRow({
+  y,
+  caption,
+  on,
+  after,
+}: {
+  y: number;
+  caption: string;
+  on: 'edit' | 'walk';
+  after: string[];
+}) {
+  const x = 24;
+  // Each name's left edge: they start past the toggle's divider, about 6 a character apart at this size.
+  const lefts = after.map((_, i) =>
+    after.slice(0, i).reduce((at, name) => at + name.length * 6 + 16, x + 122),
+  );
   return (
     <g>
+      <Label x={x + 2} y={y - 12} size={10} weight={700} tone="muted">
+        {caption}
+      </Label>
       <rect
         x={x}
-        y={y + 22}
-        width={w}
-        height={36}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <rect
-        x={x + 8}
-        y={y + 28}
-        width={122}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-200"
-        strokeWidth={1.2}
-      />
-      <g transform={`translate(${x + 21} ${y + 40})`}>
-        <t.Glyph />
-      </g>
-      <Label x={x + 34} y={y + 41} size={11} weight={600} tone="strong">
-        {t.label}
-      </Label>
-      <Chevron x={x + 120} y={y + 40} />
-      <line
-        x1={x + 140}
-        y1={y + 30}
-        x2={x + 140}
-        y2={y + 50}
-        className="stroke-slate-200"
-        strokeWidth={1.2}
-      />
-      <Label x={x + 150} y={y + 41} size={11} weight={500} tone="body">
-        Popular
-      </Label>
-      <Chevron x={x + w - 16} y={y + 40} />
-    </g>
-  );
-}
-
-/** The canvas-tool picker opened: the trigger, and the tile grid hanging below
- *  it in its three named bands, with the current tool in its selected tone and
- *  the shortcut letters in the tiles' corners. */
-export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
-  const mx = 84;
-  const tileW = 80;
-  const tileH = 42;
-  const gap = 4;
-  const menuW = 3 * tileW + 2 * gap + 16;
-  const rows: { band: number; tools: (typeof TOOLS)[number][] }[] = [];
-  for (const b of [0, 1, 2]) {
-    const inBand = TOOLS.filter((t) => t.band === b);
-    for (let i = 0; i < inBand.length; i += 3)
-      rows.push({ band: b, tools: inBand.slice(i, i + 3) });
-  }
-  let cy = 84;
-  const body: ReactNode[] = [];
-  let lastBand = -1;
-  rows.forEach((row, r) => {
-    if (row.band !== lastBand) {
-      if (lastBand !== -1) {
-        body.push(
-          <line
-            key={`rule-${r}`}
-            x1={mx + 8}
-            y1={cy + 2}
-            x2={mx + menuW - 8}
-            y2={cy + 2}
-            className="stroke-slate-200"
-            strokeWidth={1}
-          />,
-        );
-        cy += 6;
-      }
-      body.push(
-        <Label key={`band-${r}`} x={mx + 12} y={cy + 8} size={10} weight={700} tone="muted">
-          {BANDS[row.band]}
-        </Label>,
-      );
-      cy += 18;
-      lastBand = row.band;
-    }
-    row.tools.forEach((t, i) => {
-      const tx = mx + 8 + i * (tileW + gap);
-      const on = t.key === active;
-      body.push(
-        <g key={t.key}>
-          <rect
-            x={tx}
-            y={cy}
-            width={tileW}
-            height={tileH}
-            rx={6}
-            className={on ? 'fill-brand-100' : row.band === 0 ? 'fill-slate-50' : 'fill-slate-100'}
-          />
-          <g transform={`translate(${tx + tileW / 2} ${cy + 14})`}>
-            <t.Glyph />
-          </g>
-          <Label
-            x={tx + tileW / 2}
-            y={cy + 32}
-            size={10.5}
-            weight={on ? 700 : 500}
-            anchor="middle"
-            tone={on ? 'accent' : 'body'}
-          >
-            {t.label}
-          </Label>
-          {t.shortcut && (
-            <Label x={tx + tileW - 5} y={cy + 8} size={10} weight={600} anchor="end" tone="muted">
-              {t.shortcut}
-            </Label>
-          )}
-        </g>,
-      );
-    });
-    cy += tileH + gap;
-  });
-  const menuH = cy - 80 + 6;
-  return (
-    <Scene w={420} h={menuH + 92}>
-      <PickerTrigger x={mx} y={10} tool={active} />
-      <rect
-        x={mx}
-        y={76}
-        width={menuW}
-        height={menuH}
+        y={y}
+        width={372}
+        height={40}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {body}
+      <EditWalkToggle x={x + 8} y={y + 8} on={on} labelSize={11} />
+      <path d={`M${x + 112} ${y + 11}v18`} className="stroke-slate-200" strokeWidth={1} />
+      {after.map((name, i) => (
+        <g key={name} opacity={Math.max(0.25, 1 - i * 0.22)}>
+          <Label x={lefts[i]!} y={y + 20.5} size={10.5} weight={500} tone="body">
+            {name}
+          </Label>
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** The Edit | Walk toggle in both its states: building, with Edit on and the palette's categories after it, and
+ *  walking, with Walk on at the start of the avatar palette, ahead of the call controls. */
+export function EditWalkToggleScene() {
+  return (
+    <Scene w={420} h={176}>
+      <ToggleRow
+        y={30}
+        caption="BUILDING"
+        on="edit"
+        after={['Write', 'Rooms', 'Seats', 'Travel']}
+      />
+      <ToggleRow y={112} caption="WALKING" on="walk" after={['Join Audio', 'Gender', 'Actions']} />
     </Scene>
   );
 }
@@ -197,7 +91,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
 
 type PanelRow = { label: string; value: string; amber?: boolean };
 
-/** A tool's own panel (Eraser, Format): a titled panel that
+/** A tool's own panel (Format): a titled panel that
  *  docks top-right while the tool is active, a preview strip at the
  *  top, then one collapsed row per setting naming its current value. */
 function ToolPanel({
@@ -259,74 +153,15 @@ function ToolPanel({
   );
 }
 
-/** The Eraser panel with a filter on: a Large brush set to Drawings, so the
- *  ring on the canvas (and in the preview) is amber, and a sweep through the
- *  pencil scribble leaves the shape under it alone. */
-export function EraserPanelScene() {
-  return (
-    <Scene w={420} h={230}>
-      <Shape x={34} y={70} w={110} h={56} label="Checkout" />
-      {/* A pencil scribble over the shape */}
-      <path
-        d="M30 150 q24 -40 52 -8 t52 -10 t44 6"
-        className="stroke-slate-500"
-        strokeWidth={2.5}
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* The brush ring, amber because a filter is on */}
-      <circle
-        cx={150}
-        cy={140}
-        r={26}
-        className="fill-amber-400/20 stroke-amber-500"
-        strokeWidth={2}
-      />
-      <ToolPanel
-        x={226}
-        y={20}
-        title="ERASER"
-        preview={
-          <g>
-            {[0, 1, 2, 3].map((i) => (
-              <rect
-                key={i}
-                x={242 + i * 38}
-                y={44}
-                width={28}
-                height={16}
-                rx={3}
-                className="fill-slate-300"
-              />
-            ))}
-            <circle
-              cx={314}
-              cy={52}
-              r={14}
-              className="fill-amber-400/25 stroke-amber-500"
-              strokeWidth={2}
-            />
-          </g>
-        }
-        rows={[
-          { label: 'Mode', value: 'Sweep' },
-          { label: 'Size', value: 'Large' },
-          { label: 'Erases', value: 'Drawings', amber: true },
-        ]}
-      />
-    </Scene>
-  );
-}
-
-/** The Format tool mid-job: the banner across the top, a source loaded in the
+/** The Format Painter mid-job: the message under the strip, a source loaded in the
  *  Format panel (its swatch drawn from the enabled parts only), and a target
  *  being painted. */
 export function FormatPanelScene() {
   return (
     <Scene w={420} h={240}>
-      {/* The mode banner */}
+      {/* The message under the strip, with Done to stop painting */}
       <rect x={14} y={12} width={300} height={28} rx={14} className="fill-brand-500" />
-      <g transform="translate(30 26)">
+      <g transform="translate(30 26)" className="help-art-as-drawn">
         <PainterGlyph on />
       </g>
       <Label x={44} y={27} size={10.5} weight={600} tone="onAccent">

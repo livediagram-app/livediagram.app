@@ -30,6 +30,9 @@ export type FlyoutCategory = {
   // Null for a catalogue, whose body is `content`.
   tiles: readonly PaletteTileDef[] | null;
   content: ReactNode;
+  // Its flyout's design width in px, for a flyout that lays out its own body (the avatar palette's); absent, the
+  // width follows its tiles.
+  width?: number;
 };
 
 /** Arrow keys walk the flyout's items by position (category-flyout-groups), across its groups. */
@@ -107,12 +110,7 @@ export function CategoryFlyout({
           <div className="flex flex-col gap-3 p-3">
             {flyoutGroups(category.id, tiles).map((group, gi) => (
               <section key={group.id} aria-label={group.title ?? category.label}>
-                {group.title ? (
-                  <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    {group.title}
-                    <span aria-hidden className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                  </h4>
-                ) : null}
+                {group.title ? <FlyoutGroupTitle>{group.title}</FlyoutGroupTitle> : null}
                 {flyoutLayout(category.id) === 'grid' ? (
                   <TileGrid
                     tiles={group.tiles}
@@ -172,5 +170,15 @@ export function FlyoutHeader({
       </div>
       {count ? <CountBadge count={count} className="shrink-0" /> : null}
     </header>
+  );
+}
+
+/** A flyout group's small heading with a hairline after it. */
+export function FlyoutGroupTitle({ children }: { children: ReactNode }) {
+  return (
+    <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+      {children}
+      <span aria-hidden className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+    </h4>
   );
 }

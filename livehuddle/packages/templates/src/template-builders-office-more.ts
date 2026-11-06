@@ -9,7 +9,7 @@ import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  walkIn,
+  wayIn,
   type OfficeRoom,
 } from './template-office-parts';
 
@@ -66,10 +66,10 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
       subtitle:
         'Somewhere quiet to get things done: take a desk, step into a pod for a call, or read on the sofa.',
     },
-    walkIn(
+    wayIn(
       x0 + width,
-      y0 + SPACE_HEAD + LIBRARY_H + SPACE_BELOW / 2,
-      'Press Walk In (or W) to come in. Sit at a desk to work, or step into an Office Pod to talk without disturbing anyone.',
+      y0 + SPACE_HEAD + LIBRARY_H,
+      'You arrive on the Avatar Pad. Sit at a desk to work, or step into an Office Pod to talk without disturbing anyone.',
     ),
   );
 }

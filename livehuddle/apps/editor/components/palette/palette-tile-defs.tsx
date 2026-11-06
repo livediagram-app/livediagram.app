@@ -751,7 +751,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'avatar' },
-    // Avatar's OWN glyph, the one the canvas-tool popover shows for it (buildCanvasToolOptions).
+    // Avatar's OWN glyph, the one the Edit | Walk toggle's Walk and Search's Walk show for it.
     icon: <AvatarModeIcon size={TILE_GLYPH_PX} />,
   },
   {
@@ -950,9 +950,10 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <OfficePodIcon size={TILE_GLYPH_PX} />,
   },
   {
-    // Bar (docs/specs/009-elements/office.md).
+    // Bar (docs/specs/009-elements/office.md). The bar pieces are Play's Bar group
+    // (docs/specs/010-palette/palette-top-level-categories.md "Play holds the Bar").
     id: 'tools:bar',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'A counter to gather at',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -967,7 +968,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Bar Stool (docs/specs/009-elements/office.md).
     id: 'tools:bar-stool',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'A seat at the bar',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -982,7 +983,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Drinks Cabinet (docs/specs/009-elements/office.md).
     id: 'tools:drinks-cabinet',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'Walk up for a juice',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -997,7 +998,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Drinks Fridge (docs/specs/009-elements/office.md).
     id: 'tools:drinks-fridge',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'Walk up for a soda',
     section: 'tools',
     toolGroup: 'behaviour',

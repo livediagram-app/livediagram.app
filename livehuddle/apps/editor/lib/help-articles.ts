@@ -31,11 +31,9 @@ export const HELP_ARTICLES = {
   embedElements: 'canvas/links',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
-  // One key per tool panel, so every mode's panel can point at the article
-  // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
-  // pointing at nothing is a bug, the same way an unregistered article is.
-  avatarMode: 'selection-modes/avatar-mode',
-  eraser: 'selection-modes/eraser',
+  // One key per tool panel, so every mode's panel can point at the article that explains it
+  // (docs/specs/018-help/contextual-help-links.md); Avatar mode has none, its panel being the avatar palette now.
+  // Each of these resolves to a real page: a key pointing at nothing is a bug, the same way an unregistered article is.
   formatPainter: 'selection-modes/format-painter',
   // Tabs / import-export
   exportingSpaces: 'account-and-data/exporting-spaces',
@@ -53,7 +51,7 @@ export const HELP_ARTICLES = {
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
-  // The call strip's `?` (CallClusterButton); the article links on to Cameras and Screen Sharing.
+  // The call group's article (CallStripGroup); it links on to Cameras and Screen Sharing.
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   // Standing panels.
@@ -132,14 +130,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   panelOpacity: {
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
-  },
-  avatarMode: {
-    title: 'Learn about Avatar mode',
-    description: 'Tips for walking the canvas as an avatar and leading a session.',
-  },
-  eraser: {
-    title: 'Learn about the Eraser',
-    description: 'Tips for rubbing out sketches and elements without selecting them first.',
   },
   formatPainter: {
     title: 'Learn about the Format Painter',

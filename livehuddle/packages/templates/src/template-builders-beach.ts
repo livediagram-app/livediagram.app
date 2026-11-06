@@ -1,8 +1,8 @@
 // The Beach Offsite (docs/specs/012-collaboration/virtual-office-template.md "More Spaces"): a team's day away on the
 // sand (the tab's Sand floor). Along the top, a lagoon (a Pond), a Tiki Bar and a Beach Hut to meet in, each closed
-// with a Door; a stone path along the beach in front of them meets the path up from the Walk In at a small round
+// with a Door; a stone path along the beach in front of them meets the path up from the Avatar Pad at a small round
 // junction; below it, hammocks under the palms, a campfire circle of benches and garden umbrellas. No fence: a beach
-// is open, and the Walk In waits where the path comes up off the road. Built with campusPlan
+// is open, and the Avatar Pad waits where the path comes up off the road. Built with campusPlan
 // (template-campus-parts.ts), spacious by the same rule as the campuses.
 //
 // Pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
@@ -107,6 +107,6 @@ export function buildBeachOffsite(cx: number, cy: number): Element[] {
         'A day away together: plan in the beach hut, then the tiki bar, the hammocks and the campfire.',
     },
     gateAt: GATE,
-    hint: 'Press Walk In (or W) and come up the path onto the beach. The Directory by it walks you to any hut.',
+    hint: 'You arrive on the Avatar Pad by the path up the beach. The Directory by it walks you to any hut.',
   });
 }

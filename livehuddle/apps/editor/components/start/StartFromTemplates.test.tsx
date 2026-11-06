@@ -42,6 +42,37 @@ describe('StartFromTemplates', () => {
     expect(screen.queryByRole('heading', { name: 'Start a Space' })).toBeNull();
   });
 
+  // docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one": the × starts from a blank space.
+  it('starts from the blank on a close, apart from a pick', () => {
+    const onTemplate = vi.fn();
+    const onStartBlank = vi.fn();
+    render(
+      <StartFromTemplates
+        mode="workshop"
+        tabId="t1"
+        onTemplate={onTemplate}
+        onStartBlank={onStartBlank}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onStartBlank).toHaveBeenCalledExactlyOnceWith('blank-session');
+    expect(onTemplate).not.toHaveBeenCalled();
+  });
+
+  it('starts from the blank on Escape too', () => {
+    const onStartBlank = vi.fn();
+    render(
+      <StartFromTemplates
+        mode="workshop"
+        tabId="t1"
+        onTemplate={vi.fn()}
+        onStartBlank={onStartBlank}
+      />,
+    );
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Find a template' }), { key: 'Escape' });
+    expect(onStartBlank).toHaveBeenCalledExactlyOnceWith('blank-session');
+  });
+
   it('remembers a close on its tab', () => {
     mount('workshop');
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));

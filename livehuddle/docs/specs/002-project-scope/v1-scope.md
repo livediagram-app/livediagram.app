@@ -41,15 +41,15 @@ the rules in [Avatar mode](../008-canvas/avatar-mode.md#where-it-lives)):
   diagram tool should not push a character at someone drawing. In a meeting app walking is the point, so the
   Selection Mode picker lists **Avatar** beside Select and Hand, and the Selection Mode button still works.
 - **A Spaces board opens walking.** A tab that offers the walk (it holds an
-  [Avatar Pad](../009-elements/avatar-pad.md) or a Selection Mode button set to
-  Avatar, as every Spaces template's **Walk In** button is) puts you in Avatar mode the first time it is shown in a
+  [Avatar Pad](../009-elements/avatar-pad.md), as every Spaces template does at its entrance, or a Selection Mode
+  button set to Avatar, and something besides its pads) puts you in Avatar mode the first time it is shown in a
   visit, for every role: on its pad when it has one, otherwise just below its first such button. Leaving the mode
   is yours to keep for the rest of the visit.
 - Everything else is livediagram's rule, read-only canvas while walking included.
 
 ### 2. The Space elements
 
-Every tile of the four Space categories (Travel, Seating, Rooms, Amenities; [The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): Portal
+Every tile of the four Space categories (Travel, Seats, Rooms, Perks; [The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): Portal
 ([Portal element](../009-elements/portal-element.md)), Bring Focus
 ([Bring Focus](../012-collaboration/bring-focus.md)), Chair, Desk and Sofa
 ([Chair](../009-elements/chair.md)), Fence
@@ -68,9 +68,9 @@ Outdoor and Recreation), with Blank Space, are the whole catalogue (Work Tracker
 Every tab is a meeting board, livehuddle's one editor mode, stored as `'workshop'`
 ([Workshop mode](../012-collaboration/workshop-mode.md)); the interface never names a mode.
 
-- **The palette** is the meeting palette: Popular; Write (Text, Sticky note); Rooms, Seating, Amenities, Bar,
-  Recreation, Garden, Meeting; Travel; Stickers ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
-- **The Timer and Stopwatch** pieces in the Meeting category ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md)).
+- **The palette** is the meeting palette: Popular; Write (Text, Sticky note); Rooms, Seats, Perks,
+  Play, Garden, Meet; Travel; Stickers ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)).
+- **The Timer and Stopwatch** pieces in the Meet category ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md)).
   The Session strip left: its Timer for these pieces ([Not in livehuddle](not-in-livehuddle.md#the-session-strips-timer)),
   its quick vote before it ([Not in livehuddle](not-in-livehuddle.md#the-vote)).
 - **Facilitation**: the [facilitator baton](../012-collaboration/facilitator.md), Bring Focus and follow-me.

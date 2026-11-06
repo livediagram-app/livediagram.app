@@ -195,7 +195,7 @@ export function buildConferenceVenue(cx: number, cy: number): Element[] {
         'A day of talks: the keynote in the main hall, sessions in the breakouts, and the foyer bar and courtyard between.',
     },
     gateAt: CV_MID,
-    hint: 'Press Walk In (or W) and come in through the gate. The Directory by it walks you to any room.',
+    hint: 'You arrive on the Avatar Pad by the gate. The Directory by it walks you to any room.',
     extra: (left, top) => [createShape('focus-button', left + 500 + 820, top + 40 + 64)],
   });
 }
@@ -337,7 +337,7 @@ export function buildStartupHq(cx: number, cy: number): Element[] {
         'Build it together: desks in the studio, the Friday demo in the town hall, and a garden to take calls in.',
     },
     gateAt: HQ_GATE,
-    hint: 'Press Walk In (or W) and come in through the gate. Step into an Office Pod on the lawn for a call.',
+    hint: 'You arrive on the Avatar Pad by the gate. Step into an Office Pod on the lawn for a call.',
     extra: (left, top) => [createShape('focus-button', left + 820 + 580, top + 60 + 60)],
   });
 }

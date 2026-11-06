@@ -1,6 +1,6 @@
 # Avatar speech blueprint
 
-Derived from [Avatar mode](../avatar-mode.md) "The Avatar Panel" (the button and popover) and "Speech bubbles",
+Derived from [Avatar mode](../avatar-mode.md) "The avatar palette" (its Say button and popover) and "Speech bubbles",
 and from [Avatar tour](../avatar-tour.md).
 
 ## Files
@@ -15,9 +15,8 @@ and from [Avatar tour](../avatar-tour.md).
 | `../packages/avatar/src/hooks/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
 | `../packages/avatar/src/components/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region                    |
 | `../packages/avatar/src/components/AvatarSpeechBubble.tsx`   | One bubble's look (tail, name, text), shared by the composer and a floating bubble                |
-| `../packages/avatar/src/components/AvatarClusterButton.tsx`  | The Avatar button in the bottom-right cluster                                                     |
-| `apps/editor/components/panels/AvatarPanel.tsx`              | The panel, now a popover, with Send a Message                                                     |
-| `../packages/avatar/src/components/AvatarMessagePopover.tsx` | The panel's message popover                                                                       |
+| `apps/editor/components/palette/AvatarPalette.tsx`           | The avatar palette, with Say                                                                      |
+| `../packages/avatar/src/components/AvatarMessagePopover.tsx` | The message popover, hung from Say                                                                |
 | `apps/editor/hooks/collab/useEditorBroadcast.ts`             | `broadcastAvatarSay`                                                                              |
 | `apps/editor/app/document/[id]/useRoomConnection.ts`         | Routes a received `avatar-say` to the speech hook                                                 |
 | `apps/editor/components/tour/avatar-tour-steps.ts`           | The tour's steps                                                                                  |
@@ -26,15 +25,14 @@ and from [Avatar tour](../avatar-tour.md).
 
 ## Domain and naming
 
-| Term           | Identifier           | Meaning                                                                    |
-| -------------- | -------------------- | -------------------------------------------------------------------------- |
-| Message        | `text`               | What someone typed, after `clampSayText`                                   |
-| Composer       | `composer`           | The open text box above your own head (`{ open: boolean; draft: string }`) |
-| Bubble         | `SpeechBubble`       | `{ id, from, text, x, y, tabId, bornAt, flightMs, own }`; speaker resolved |
-| Speaking       | `canSpeak`           | The session `can` speak: an Editor or a Participant, in Avatar mode        |
-| Say op         | `AvatarSayOp`        | `{ kind: 'avatar-say', tabId, id, text, x, y }`                            |
-| Head point     | `headPoint`          | Where a bubble starts: above the speaker's head, in canvas coordinates     |
-| Avatar popover | `DockPanel` `avatar` | The Avatar panel open over its button                                      |
+| Term       | Identifier     | Meaning                                                                    |
+| ---------- | -------------- | -------------------------------------------------------------------------- |
+| Message    | `text`         | What someone typed, after `clampSayText`                                   |
+| Composer   | `composer`     | The open text box above your own head (`{ open: boolean; draft: string }`) |
+| Bubble     | `SpeechBubble` | `{ id, from, text, x, y, tabId, bornAt, flightMs, own }`; speaker resolved |
+| Speaking   | `canSpeak`     | The session `can` speak: an Editor or a Participant, in Avatar mode        |
+| Say op     | `AvatarSayOp`  | `{ kind: 'avatar-say', tabId, id, text, x, y }`                            |
+| Head point | `headPoint`    | Where a bubble starts: above the speaker's head, in canvas coordinates     |
 
 Synonyms banned: "chat", "comment" (a different feature), "emote".
 
@@ -92,24 +90,21 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
 (above). A sender who leaves keeps their bubbles until they fade. Leaving the document empties the store
 (`resetSpeechBubbles`).
 
-### Panel and button
+### The avatar palette's Say
 
-- `DockPanel` gains `'avatar'` (width 256, the panel's). `AvatarClusterButton` shows while `canvasTool ===
-'avatar'`, before the Session strip, after Undo / Redo. `handleDockButtonClick('avatar', button, true)`.
-- `useCanvasChromePanels` closes the `avatar` popover when the tool changes away from Avatar. The Avatar panel
-  renders only as that popover (`asPopover`, `dismissOnOutside`), never in a corner; `'avatar'` leaves `PanelId`
-  and a stored layout naming it is read like any unknown id.
-- `AvatarPanel` gains `onSendMessage?: () => void` (absent for a Viewer: no button). Pressing it swaps the
-  panel's body for `AvatarMessagePopover` in place (same popover, same anchor); Cancel swaps back; Send calls
-  `send(text, 'panel')` and closes the dock popover.
+- The Avatar panel, its cluster button and `DockPanel` `'avatar'` are gone from livehuddle: while walking the strip is
+  the avatar palette ([Avatar mode](../avatar-mode.md#the-avatar-palette)), `apps/editor/components/palette/AvatarPalette.tsx`.
+- Its **Say** button (only where `onSendMessage` is given: an Editor or a Participant) toggles a strip popover
+  (`useStripPopover`, `data-avatar-say`) holding `AvatarMessagePopover`; Send calls `send(text, 'panel')` and closes
+  it; Cancel closes it. Opening it closes the category flyout, as any strip menu does.
 
 ### Tour
 
 As the Workshop tour's host (`WorkshopTourHost`), with: on offer on the footer's Start Tour button in Avatar mode, at
 `TOUR_OFFER_RANK.tool`; `canWork` without the
-`isReadOnly` and lock gates; steps filtered by `{ canSpeak, mobile }`; `prepare` of `character` clicks the Avatar
-button when the popover is closed and waits for `avatar-character`; `prepare` of `push` closes the popover;
-`cleanup` on leaving closes the popover if the tour opened it. Ends as skipped when the mode is left or the tab
+`isReadOnly` and lock gates; steps filtered by `{ canSpeak, mobile }`. Every step rings a part of the avatar palette that is always on screen
+while walking (`palette`, `avatar-character`, `avatar-actions`, `avatar-message`), so no step opens or closes
+anything and there is nothing to tidy on leaving. Ends as skipped when the mode is left or the tab
 changes.
 
 ## Interfaces and contracts
@@ -207,11 +202,17 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
   something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
   button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under
   the text. Pops in with `animate-dialog-in`.
-- Button: `ClusterPopoverButton` with label "Avatar", hover title "Avatar", description "Dress your character,
-  react, and say something." (Viewer: "Dress your character and react.").
-- Panel's button: full-width secondary `Button` "Send a Message", `kbd` "Enter" on a desktop.
-- Message popover: title "Send a Message", textarea (4 rows), counter, Cancel and Send (primary, disabled while
-  empty or cooling down).
+- Say: the avatar palette's last button, a speech-bubble glyph (named **Say** where the strip names its buttons),
+  hover title "Say Something", description "Type a message that floats above your head. Shortcut: Enter." (no
+  shortcut on a phone).
+- Message popover: a bare `StripPopover` named **Say Something** (`role="dialog"`), holding `AvatarMessagePopover`
+  with livehuddle's flyout parts passed in: `FlyoutHeader` (the speech glyph, "Say Something", "Words that float up
+  above your head."), the body at the flyout body's padding (`FLYOUT_BODY_CLASS`), the draft as `SpeechDraftField
+  framed` (the shared `TextArea`, compact, 3 to 6 lines), the hint "Up to 50 words." / "One moment…" and the counter
+  under it, and the actions in the flyout footer bar (`FLYOUT_FOOTER_CLASS`): Cancel (secondary) then Send (primary,
+  paper plane), disabled while blank or cooling down. Without a header (livediagram's Avatar panel) it keeps its small
+  title and stacked layout, the field framed the same way.
+- The composer's send button: a `Tooltip` "Send", `cursor-pointer` while it can send.
 
 ## Accessibility
 
@@ -224,8 +225,7 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 
 ## Web Experience
 
-The layer loads (`next/dynamic`) the first time a bubble or the composer is needed, the panel with the tool panels
-(`loadToolPanels`), the tour host once Avatar mode is first entered. The first-load script gains only the op wiring,
+The layer loads (`next/dynamic`) the first time a bubble or the composer is needed, the message popover with the avatar palette, the tour host once Avatar mode is first entered. The first-load script gains only the op wiring,
 the store and the hook. No layout shift: everything is absolutely positioned over the
 canvas. INP: Enter opens the composer in one render.
 
@@ -236,19 +236,18 @@ canvas. INP: Enter opens the composer in one render.
 
 ## Testing
 
-| Rule                                 | Test                                                           |
-| ------------------------------------ | -------------------------------------------------------------- |
-| Limits, word count, clamp            | `../packages/api-schema/src/avatar-say.test.ts`                |
-| Parser rejections                    | same                                                           |
-| Presence classification              | `room-messages` tests: `avatar-say` is presence                |
-| Room drops a Viewer's op             | `apps/api` document-room role test                             |
-| Flight time, motion, cap, seen ids   | `../packages/avatar/src/speech.test.ts`                        |
-| Enter opens; Escape cancels; send    | `../packages/avatar/src/hooks/useAvatarSpeech.test.tsx`        |
-| Viewer cannot open                   | same                                                           |
-| Composer and bubbles render          | `../packages/avatar/src/components/AvatarSpeechLayer.test.tsx` |
-| Panel button and message popover     | `AvatarPanel.test.tsx`, `AvatarMessagePopover.test.tsx`        |
-| Avatar button shows only in the mode | `AvatarClusterButton.test.tsx`                                 |
-| Tour steps filter, telemetry tokens  | `avatar-tour-steps.test.ts`, `AvatarTourHost.test.tsx`         |
+| Rule                                | Test                                                           |
+| ----------------------------------- | -------------------------------------------------------------- |
+| Limits, word count, clamp           | `../packages/api-schema/src/avatar-say.test.ts`                |
+| Parser rejections                   | same                                                           |
+| Presence classification             | `room-messages` tests: `avatar-say` is presence                |
+| Room drops a Viewer's op            | `apps/api` document-room role test                             |
+| Flight time, motion, cap, seen ids  | `../packages/avatar/src/speech.test.ts`                        |
+| Enter opens; Escape cancels; send   | `../packages/avatar/src/hooks/useAvatarSpeech.test.tsx`        |
+| Viewer cannot open                  | same                                                           |
+| Composer and bubbles render         | `../packages/avatar/src/components/AvatarSpeechLayer.test.tsx` |
+| Say and the message popover         | `AvatarPalette.test.tsx`                                       |
+| Tour steps filter, telemetry tokens | `avatar-tour-steps.test.ts`, `AvatarTourHost.test.tsx`         |
 
 ## Constants and configuration
 
@@ -257,10 +256,10 @@ canvas. INP: Enter opens the composer in one render.
 | `AVATAR_SAY_MAX_WORDS`      | 50    | The user's limit                          | fixed      |
 | `AVATAR_SAY_MAX_CHARS`      | 300   | 50 words × 6 characters (D107)            | 250–400    |
 | `SPEECH_COUNTER_FROM_WORDS` | 40    | Spec                                      | 30–49      |
-| `SPEECH_BASE_MS`            | 4000  | Spec                                      | fixed      |
-| `SPEECH_PER_WORD_MS`        | 150   | Spec                                      | fixed      |
-| `SPEECH_MAX_MS`             | 10000 | Spec                                      | fixed      |
-| `SPEECH_RISE_PX_PER_S`      | 18    | Spec                                      | 10–30      |
+| `SPEECH_BASE_MS`            | 7000  | Spec                                      | fixed      |
+| `SPEECH_PER_WORD_MS`        | 250   | Spec                                      | fixed      |
+| `SPEECH_MAX_MS`             | 16000 | Spec                                      | fixed      |
+| `SPEECH_RISE_PX_PER_S`      | 12    | Spec                                      | 10–30      |
 | `SPEECH_SWAY_PX`            | 6     | D108                                      | 0–12       |
 | `SPEECH_SWAY_PERIOD_MS`     | 2400  | D108                                      | 1500–4000  |
 | `SPEECH_FADE_FRACTION`      | 1/3   | Spec                                      | fixed      |

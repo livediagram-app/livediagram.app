@@ -6,6 +6,7 @@
 // Raised hands sit beside them, each a Let Speak button for whoever may press it, and Do Not Disturb hides others'
 // bars (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb").
 import { useMemo } from 'react';
+import { computeViewportCanvasRect } from '@liveworkspace/workbench/lib/viewport';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { CanvasTool } from '@/components/palette/palette.types';
@@ -89,6 +90,8 @@ export function useCanvasCall(deps: {
     doNotDisturb: deps.doNotDisturb === true,
     send: props.onCallSignal,
     standUp: avatar.standUp,
+    selfPerson: props.selfParticipant,
+    walkTo: avatar.walkTo,
   });
   // Who hears each Timer's chime: the people in its room (docs/specs/009-elements/timer-and-stopwatch.md "The chime").
   useTimerEarshot({ elements: props.elements, zones, inMode, self });
@@ -172,12 +175,18 @@ function useViewRect(
   viewport: { offset: Point; zoom: number; width: number; height: number } | undefined,
 ): ViewRect | null {
   const measured = !!viewport && viewport.width > 0 && viewport.height > 0 && viewport.zoom > 0;
+  // The canvas zooms about the screen's middle (Canvas.tsx's `origin-center`), so the area on screen is centred on it
+  // at any zoom: the same rect Fit and paste use. Anchored at `-offset` it was right only at 100%, and zoomed in it
+  // left everyone right of and below the middle unreceived (video-and-screen-bubbles.md "Who sees what").
+  const area = measured
+    ? computeViewportCanvasRect(viewport, viewport.offset, viewport.zoom)
+    : { x: 0, y: 0, width: 0, height: 0 };
   // Each edge is snapped on its own (#503), not the size: a snapped size could put the right or bottom edge up to half a
   // step past the screen's, and the bubbles kept inside it would run off by that much.
-  const x = measured ? snap(-viewport.offset.x) : 0;
-  const y = measured ? snap(-viewport.offset.y) : 0;
-  const width = measured ? snap(-viewport.offset.x + viewport.width / viewport.zoom) - x : 0;
-  const height = measured ? snap(-viewport.offset.y + viewport.height / viewport.zoom) - y : 0;
+  const x = snap(area.x);
+  const y = snap(area.y);
+  const width = snap(area.x + area.width) - x;
+  const height = snap(area.y + area.height) - y;
   return useMemo(
     () => (measured ? { x, y, width, height } : null),
     [measured, x, y, width, height],

@@ -78,7 +78,7 @@ export function useCanvasAvatar({
   // frame, its click-to-walk entry point, and the camera follow. Owns its own
   // rAF loop, dormant unless the tool is active.
   // The character's gender / clothing / hair / size (docs/specs/008-canvas/avatar-mode.md), persisted per
-  // browser. Owned here because both the sprite and the Avatar Panel (down in
+  // browser. Owned here because both the sprite and the avatar palette (down in
   // CanvasChrome) read it, and it outlives any one walk.
   const avatarLook = useAvatarConfig({ active: canvasTool === 'avatar' });
   // Where the next entry into Avatar mode should place the character, when it
@@ -188,7 +188,7 @@ export function useCanvasAvatar({
     avatarBurstSeq.current += 1;
     setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
   };
-  // The panel's Behaviour and Reactions on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
+  // The palette's Actions and React on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
   useAvatarActionKeys({
     active: canvasTool === 'avatar',
     onReaction: avatar.playReaction,

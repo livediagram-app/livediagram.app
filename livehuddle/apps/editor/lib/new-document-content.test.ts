@@ -29,4 +29,31 @@ describe('newDocumentTabs', () => {
     ).toHaveLength(1);
     expect(newDocumentTabs({ templateKind: null, themeId: 'brand', tabId: 'a' })).toHaveLength(1);
   });
+
+  // docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one".
+  it('makes a Start Blank Space with its Avatar Pad, and a Space that opens on its start empty', () => {
+    const [blank] = newDocumentTabs({
+      templateKind: 'blank-session',
+      themeId: 'brand',
+      tabId: 'a',
+    });
+    expect(blank!.elements.map((e) => e.type === 'shape' && e.shape)).toEqual(['avatar-pad']);
+    const [onStart] = newDocumentTabs({
+      templateKind: 'blank-session',
+      themeId: 'brand',
+      tabId: 'b',
+      blankOpensOnStart: true,
+    });
+    expect(onStart!.elements).toEqual([]);
+    expect(onStart!.id).toBe('b');
+    expect(onStart!.name).toBe('Tab 1');
+    // A template other than the blank is made whole either way.
+    const [pod] = newDocumentTabs({
+      templateKind: 'team-pod',
+      themeId: 'brand',
+      tabId: 'c',
+      blankOpensOnStart: true,
+    });
+    expect(pod!.elements.length).toBeGreaterThan(1);
+  });
 });

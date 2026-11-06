@@ -11,6 +11,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
+import { Tooltip } from '@liveworkspace/ui';
 import { avatarBindings } from '../bindings';
 import {
   bubbleMotion,
@@ -269,28 +270,30 @@ function Composer({
                   if (!draft.trim()) onCancel();
                 }}
               />
-              <button
-                type="button"
-                aria-label="Send message"
-                disabled={!canSend}
-                // Keep the text area's focus: a press on the button must not blur an empty-looking draft away.
-                onPointerDown={(e) => e.preventDefault()}
-                onClick={submit}
-                // Your colour, like the border, while it can send: through the identity fill, so dark mode deepens it
-                // under the white glyph as it does every name chip.
-                style={
-                  canSend
-                    ? avatarBindings.identityVars(colour || AVATAR_FALLBACK_COLOUR)
-                    : undefined
-                }
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition ${
-                  canSend
-                    ? `text-white ${IDENTITY_FILL}`
-                    : 'cursor-default bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-400'
-                }`}
-              >
-                <SendIcon />
-              </button>
+              <Tooltip label="Send">
+                <button
+                  type="button"
+                  aria-label="Send message"
+                  disabled={!canSend}
+                  // Keep the text area's focus: a press on the button must not blur an empty-looking draft away.
+                  onPointerDown={(e) => e.preventDefault()}
+                  onClick={submit}
+                  // Your colour, like the border, while it can send: through the identity fill, so dark mode deepens it
+                  // under the white glyph as it does every name chip.
+                  style={
+                    canSend
+                      ? avatarBindings.identityVars(colour || AVATAR_FALLBACK_COLOUR)
+                      : undefined
+                  }
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition ${
+                    canSend
+                      ? `cursor-pointer text-white ${IDENTITY_FILL}`
+                      : 'cursor-default bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-400'
+                  }`}
+                >
+                  <SendIcon />
+                </button>
+              </Tooltip>
             </div>
             {coolingDown || draft ? (
               <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-slate-500 dark:text-slate-400">

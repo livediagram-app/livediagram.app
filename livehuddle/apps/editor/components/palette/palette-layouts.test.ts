@@ -36,19 +36,17 @@ describe('palette layouts', () => {
     }
   });
 
-  it('is Popular; Write; the Space categories, Travel last; Stickers, Media (no Icons)', () => {
+  it('is Popular; Write; the Space categories, Travel last (no Icons, no Media; Stickers search-only)', () => {
     expect(ids()).toEqual([
       'popular',
       'write',
       'collab-rooms',
       'collab-seating',
       'collab-amenities',
-      'collab-bar',
       'collab-recreation',
       'collab-garden',
       'collab-meeting',
       'collab-travel',
-      'stickers',
     ]);
     expect(paletteLandingCategory()).toBe('popular');
     // No opener anywhere: every category is one level deep.
@@ -118,15 +116,47 @@ describe('palette layouts', () => {
       'tools:coffee-machine',
       'tools:vending-machine',
     ]);
+    // Play holds the Bar, and it and Garden list their named groups
+    // (docs/specs/010-palette/palette-top-level-categories.md "Groups in a flyout"), a divider ending each.
     expect(tileIds('collab-recreation')).toEqual([
-      'tools:jukebox',
+      'tools:bar',
+      'tools:bar-stool',
+      'tools:drinks-cabinet',
+      'tools:drinks-fridge',
       'tools:ping-pong-table',
       'tools:pool-table',
       'tools:foosball-table',
       'tools:arcade-machine',
       'tools:dartboard',
+      'tools:jukebox',
       'tools:fireplace',
     ]);
+    const dividers = (id: string) =>
+      paletteCategories()
+        .find((c) => c.id === id)!
+        .tiles!.filter((t) => t.dividerAfter)
+        .map((t) => t.id);
+    expect(dividers('collab-recreation')).toEqual(['tools:drinks-fridge', 'tools:dartboard']);
+    expect(tileIds('collab-garden')).toEqual([
+      'tools:outdoor-plant',
+      'tools:tree',
+      'tools:grass',
+      'tools:garden-path',
+      'tools:garden-fence',
+      'tools:bench',
+      'tools:picnic-table',
+      'tools:hammock',
+      'tools:garden-umbrella',
+      'tools:fountain',
+      'tools:pond',
+      'tools:campfire',
+    ]);
+    expect(dividers('collab-garden')).toEqual([
+      'tools:grass',
+      'tools:garden-fence',
+      'tools:garden-umbrella',
+    ]);
+    expect(paletteCategoryOffered('collab-bar')).toBe(false);
     expect(tileIds('collab-meeting')).toEqual([
       'tools:screen',
       'tools:room-sign',
@@ -148,6 +178,12 @@ describe('palette layouts', () => {
       .filter((c) => c.id.startsWith('collab-'))
       .flatMap((c) => (c.tiles ?? []).map((t) => t.id));
     expect([...offered].sort()).toEqual([...pieces].sort());
+  });
+
+  // docs/specs/010-palette/palette-top-level-categories.md "Stickers in search only".
+  it('keeps Stickers off the strip but offered to Search', () => {
+    expect(paletteCategories().map((c) => c.id)).not.toContain('stickers');
+    expect(paletteCategoryOffered('stickers')).toBe(true);
   });
 
   it('leaves a Space category off until it holds a tile', () => {

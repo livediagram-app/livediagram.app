@@ -1,4 +1,4 @@
-// Avatar-mode character customisation (docs/specs/008-canvas/avatar-mode.md): the four choices the Avatar
+// Avatar-mode character customisation (docs/specs/008-canvas/avatar-mode.md): the choices the Avatar
 // Panel offers, their option catalogues, and the per-browser persistence.
 //
 // Device-local by design, like the panel layout (docs/specs/007-editor/panel-docking.md): which character you walk around as is an ergonomic /
@@ -7,8 +7,9 @@
 // published to peers as part of the ephemeral presence snapshot, so they draw
 // the same character you see.
 //
-// Colour is deliberately NOT here: the shirt takes the participant's presence
-// colour so a character matches its owner's cursor and name chip.
+// Shirt colour is deliberately NOT here: the shirt takes the participant's presence
+// colour so a character matches its owner's cursor and name chip. Hair colour is a
+// plain look choice (AVATAR_HAIR_COLOURS).
 
 import {
   readLocalStorageSafe,
@@ -28,6 +29,7 @@ export type {
   AvatarConfig,
   AvatarGender,
   AvatarHair,
+  AvatarHairColour,
   AvatarSize,
 } from '@liveworkspace/api-schema/avatar';
 import type {
@@ -35,8 +37,10 @@ import type {
   AvatarConfig,
   AvatarGender,
   AvatarHair,
+  AvatarHairColour,
   AvatarSize,
 } from '@liveworkspace/api-schema/avatar';
+import { AVATAR_PALETTE } from './palette';
 
 // The fallback character: what a missing / unreadable FIELD falls back to.
 // Whole-config absence is different — a first-time visitor gets a RANDOM
@@ -50,6 +54,7 @@ export const DEFAULT_AVATAR_CONFIG: AvatarConfig = {
   clothing: 'tee',
   hair: 'short',
   size: 'regular',
+  hairColour: 'brown',
 };
 
 // The option catalogues, in panel order. Exported so the panel renders from
@@ -96,17 +101,44 @@ export const AVATAR_HAIR: readonly { id: AvatarHair; label: string }[] = [
   { id: 'topknot', label: 'Top knot' },
 ];
 
-// Which outfits swap trousers for bare legs, and which leave the arms bare.
-// Sets rather than per-branch checks so the sprite's three views (front, back,
-// profile) can't disagree about what an outfit implies.
+// Which outfits swap trousers for bare legs. A set rather than per-branch checks so the sprite's three views
+// (front, back, profile) can't disagree about what an outfit implies. Sleeves (long, short, white under a vest)
+// are the sprite's own outfitLook.
 export const BARE_LEG_CLOTHING: ReadonlySet<AvatarClothing> = new Set<AvatarClothing>([
   'dress',
   'skirt',
 ]);
-export const BARE_ARM_CLOTHING: ReadonlySet<AvatarClothing> = new Set<AvatarClothing>([
-  'vest',
-  'hawaiian',
-]);
+
+// Hair colours (docs/specs/008-canvas/avatar-mode.md "Hair Colour"), in swatch order: the natural ones (which a
+// random roll picks from), then a few bold ones. Brown is the palette's own hair, the one every character had before
+// the choice existed, so a config without the field looks exactly as it always did.
+export const AVATAR_HAIR_COLOURS: readonly {
+  id: AvatarHairColour;
+  label: string;
+  hex: string;
+  natural: boolean;
+}[] = [
+  { id: 'black', label: 'Black', hex: '#24201f', natural: true },
+  { id: 'dark-brown', label: 'Dark Brown', hex: '#3d2618', natural: true },
+  { id: 'brown', label: 'Brown', hex: AVATAR_PALETTE.hair, natural: true },
+  { id: 'auburn', label: 'Auburn', hex: '#8c3a22', natural: true },
+  { id: 'ginger', label: 'Ginger', hex: '#c8642c', natural: true },
+  { id: 'blonde', label: 'Blonde', hex: '#e2b85e', natural: true },
+  { id: 'platinum', label: 'Platinum', hex: '#eee2bf', natural: true },
+  { id: 'grey', label: 'Grey', hex: '#9a9ea6', natural: true },
+  { id: 'white', label: 'White', hex: '#f2f1ec', natural: true },
+  { id: 'blue', label: 'Blue', hex: '#3b7bea', natural: false },
+  { id: 'pink', label: 'Pink', hex: '#e8559c', natural: false },
+  { id: 'purple', label: 'Purple', hex: '#8a5ae6', natural: false },
+  { id: 'green', label: 'Green', hex: '#2fae5b', natural: false },
+];
+
+const NATURAL_HAIR_COLOURS = AVATAR_HAIR_COLOURS.filter((c) => c.natural);
+
+/** A hair colour token's hex; Brown (the palette's hair) for none or one this build does not know. */
+export function hairColourHex(id: AvatarHairColour | undefined): string {
+  return AVATAR_HAIR_COLOURS.find((c) => c.id === id)?.hex ?? AVATAR_PALETTE.hair;
+}
 
 export const AVATAR_SIZES: readonly { id: AvatarSize; label: string }[] = [
   { id: 'small', label: 'Small' },
@@ -130,7 +162,7 @@ export function avatarScale(size: AvatarSize): number {
   return SIZE_SCALE[avatarBindings.sizes ? size : 'regular'];
 }
 
-// A random character for a first-time visitor: gender, clothing, and hair are
+// A random character for a first-time visitor: gender, clothing, hair and a natural hair colour are
 // rolled from their catalogues so two people walking into a document don't
 // arrive as the same figure. SIZE is deliberately not rolled — it changes how
 // much of the canvas the character covers, so it starts Regular and stays a
@@ -141,6 +173,8 @@ export function randomAvatarConfig(): AvatarConfig {
     clothing: randomPick(AVATAR_CLOTHING)?.id ?? DEFAULT_AVATAR_CONFIG.clothing,
     hair: randomPick(AVATAR_HAIR)?.id ?? DEFAULT_AVATAR_CONFIG.hair,
     size: DEFAULT_AVATAR_CONFIG.size,
+    // Natural colours only: a bold one is a deliberate choice, like Size.
+    hairColour: randomPick(NATURAL_HAIR_COLOURS)?.id ?? 'brown',
   };
 }
 
@@ -160,6 +194,8 @@ export function parseAvatarConfig(raw: unknown): AvatarConfig {
     clothing: pickOption(o.clothing, AVATAR_CLOTHING, DEFAULT_AVATAR_CONFIG.clothing),
     hair: pickOption(o.hair, AVATAR_HAIR, DEFAULT_AVATAR_CONFIG.hair),
     size: pickOption(o.size, AVATAR_SIZES, DEFAULT_AVATAR_CONFIG.size),
+    // Absent (an older build's store or packet) or unknown: Brown, the hair every character had before.
+    hairColour: pickOption(o.hairColour, AVATAR_HAIR_COLOURS, 'brown'),
   };
 }
 

@@ -152,6 +152,33 @@ export function avatarClickIntent(kind: string | null | undefined): AvatarClickI
   );
 }
 
+/**
+ * The Use pieces that are only a control: a press of their main action is all they offer, so with none of yours right
+ * now (a Participant or a Viewer, who always walk; an Editor while someone else holds the baton; a Viewer's Timer) a
+ * click does nothing. Their reader would be the same face, larger and still not pressable (docs/specs/008-canvas/
+ * avatar-mode.md "Clicking a piece"; docs/specs/013-workspace/share-roles.md "Always walking").
+ */
+export const NO_READER_KINDS: ReadonlySet<AvatarClickKind> = new Set<AvatarClickKind>([
+  'focus-button',
+  'mode-button',
+  'timer',
+  'stopwatch',
+]);
+
+/** What a walking click on a piece does, once its intent and whether it has a main action right now are known. */
+export type AvatarPressOutcome = 'walk' | 'press' | 'read' | 'nothing';
+
+export function avatarPressOutcome(
+  kind: string | null | undefined,
+  hasMain: boolean,
+): AvatarPressOutcome {
+  const intent = avatarClickIntent(kind);
+  if (intent === 'walk') return 'walk';
+  if (intent === 'use' && hasMain) return 'press';
+  if (intent === 'use' && NO_READER_KINDS.has(kind as AvatarClickKind)) return 'nothing';
+  return 'read';
+}
+
 /** The kind a box carries for `ELEMENT_KIND_ATTR`. */
 export function elementClickKind(el: CanvasElement): AvatarClickKind {
   return el.type === 'shape' ? el.shape : el.type;

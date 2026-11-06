@@ -252,8 +252,14 @@ export default function NewDocumentPage() {
         debugLog(`[new] background identity failed: ${String(err)}`),
       );
     }
-    // The template's tab (a building's every floor, one tab each), or one blank tab (lib/new-document-content.ts).
-    const tabs = newDocumentTabs({ templateKind, themeId, tabId });
+    // The template's tab (a building's every floor, one tab each), or one blank tab (lib/new-document-content.ts): a
+    // blank that opens on Start a Space is made empty; Start Blank's carries the Blank Space's Avatar Pad.
+    const tabs = newDocumentTabs({
+      templateKind,
+      themeId,
+      tabId,
+      blankOpensOnStart: !explicitBlank.current,
+    });
     const tab = tabs[0]!;
     try {
       if (offline) {

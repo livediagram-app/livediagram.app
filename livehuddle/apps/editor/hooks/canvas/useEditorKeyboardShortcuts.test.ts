@@ -6,9 +6,8 @@ import { runModShortcut } from './editor-shortcut-keys';
 // this workspace's node-env vitest doesn't run (see docs/specs/003-system-architecture/testing.md).
 // What we CAN test in node is the pure key -> action mapping: the lookup
 // tables that the effect dispatches through. These assertions pin the
-// standards-aligned remap (V = Select, H = Hand, K = Laser, P = Pencil,
-// the shape letters, and the Excalidraw number-row aliases) so an
-// accidental swap or a dropped key is caught.
+// Edit | Walk toggle's keys (E and V edit, W walks), the add keys, and the keys that left livehuddle with their
+// tools (H, K, P, the shape letters and the eraser's E and 0) so an accidental swap or a dropped key is caught.
 
 // A spy `live` that records which deps method fired, so each action can
 // be invoked and asserted without a real editor.
@@ -35,15 +34,25 @@ function fired(table: Record<string, ShortcutAction>, key: string): string {
 }
 
 describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
-  it('binds Select to V, the legacy S alias, and number 1', () => {
+  // docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle".
+  it('binds Edit to E, V, the legacy S alias, and number 1', () => {
+    expect(fired(VIEW_TOOL_KEYS, 'e')).toBe('tool:select');
     expect(fired(VIEW_TOOL_KEYS, 'v')).toBe('tool:select');
     expect(fired(VIEW_TOOL_KEYS, 's')).toBe('tool:select');
     expect(fired(VIEW_TOOL_KEYS, '1')).toBe('tool:select');
   });
 
-  it('binds Hand to H (not P, which is now Pencil)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'h')).toBe('tool:pan');
-    expect(VIEW_TOOL_KEYS.p).toBeUndefined();
+  it('binds Walk to W', () => {
+    expect(fired(VIEW_TOOL_KEYS, 'w')).toBe('tool:avatar');
+    expect(EDIT_KEYS.w).toBeUndefined();
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes".
+  it('binds nothing to H, P or 0: Hand and the Eraser are not modes', () => {
+    for (const key of ['h', 'p', '0']) {
+      expect(VIEW_TOOL_KEYS[key], key).toBeUndefined();
+      expect(EDIT_KEYS[key], key).toBeUndefined();
+    }
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md "The presenting tools, Isometric and Zen".
@@ -53,11 +62,6 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(VIEW_TOOL_KEYS.i).toBeUndefined();
     expect(VIEW_TOOL_KEYS.z).toBeUndefined();
   });
-
-  it('has no key into Avatar mode (a Selection Mode button is its one way in)', () => {
-    expect(VIEW_TOOL_KEYS.w).toBeUndefined();
-    expect(EDIT_KEYS.w).toBeUndefined();
-  });
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
@@ -65,9 +69,9 @@ describe('EDIT_KEYS (mutating tools / element adds)', () => {
     expect(EDIT_KEYS.f).toBeUndefined();
   });
 
-  it('binds Eraser to E and number 0', () => {
-    expect(fired(EDIT_KEYS, 'e')).toBe('tool:eraser');
-    expect(fired(EDIT_KEYS, '0')).toBe('tool:eraser');
+  it('binds no Eraser: E is Edit and 0 nothing', () => {
+    expect(EDIT_KEYS.e).toBeUndefined();
+    expect(EDIT_KEYS['0']).toBeUndefined();
   });
 
   it('binds Text (T / 8) and Note (N)', () => {
@@ -82,7 +86,7 @@ describe('EDIT_KEYS (mutating tools / element adds)', () => {
       expect(EDIT_KEYS[key], key).toBeUndefined();
   });
 
-  it('no longer binds Hexagon to H (H is the Hand tool now)', () => {
+  it('binds no Hexagon to H', () => {
     // Hexagon is click-only; H must not add a shape from either table.
     expect(EDIT_KEYS.h).toBeUndefined();
   });

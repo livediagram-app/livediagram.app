@@ -54,26 +54,28 @@ const NO_ZONES: readonly CallZone[] = [];
 const NO_STAGES: readonly CallStage[] = [];
 
 // Whether this deployment has calls, paused or not; the kill switch's mode goes to the store (Calls Paused).
-function useCallsEnabled(wanted: boolean): boolean {
+function useCallsEnabled(wanted: boolean): { enabled: boolean; checked: boolean } {
   const [enabled, setEnabled] = useState(false);
+  const [checked, setChecked] = useState(false);
   useEffect(() => {
     if (!wanted) return;
     let live = true;
     void apiGetCapabilities().then((caps) => {
       if (!live) return;
       setEnabled(caps.callsEnabled === true);
+      setChecked(true);
       if (caps.callsMode) setCallsMode(caps.callsMode);
     });
     return () => {
       live = false;
     };
   }, [wanted]);
-  return enabled;
+  return { enabled, checked };
 }
 
 export function useProximityCall(deps: ProximityCallDeps): void {
   const roomOpen = deps.inMode && !!deps.send && !!deps.caller;
-  const callsEnabled = useCallsEnabled(roomOpen);
+  const { enabled: callsEnabled, checked: callsChecked } = useCallsEnabled(roomOpen);
   const available = roomOpen && callsEnabled;
 
   const callRef = useRef<ProximityCall | null>(null);
@@ -102,15 +104,25 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   const canShare = deps.canShare === true;
   // A preview sends nothing, so anyone who may take part has one, in the mode, where the browser can capture.
   const previewable = deps.inMode && deps.canSpeak;
+  // Why walking offers no call (proximity-audio.md "No call here"): no shared room (This Browser), or none on this
+  // server. Read once the capabilities answered, so a synced Space never flashes the reason while they load.
+  const unavailableReason = !deps.inMode
+    ? null
+    : !deps.send || !deps.caller
+      ? ('unsynced' as const)
+      : callsChecked && !callsEnabled
+        ? ('off' as const)
+        : null;
   useEffect(() => {
     setCallSelf({
       available,
+      unavailableReason,
       canSpeak: deps.canSpeak,
       canShare,
       canPreviewCamera: previewable && (!!deps.capture?.getUserMedia || canCapture('camera')),
       canPreviewScreen: previewable && (!!deps.capture?.getDisplayMedia || canCapture('screen')),
     });
-  }, [available, deps.canSpeak, canShare, previewable, deps.capture]);
+  }, [available, unavailableReason, deps.canSpeak, canShare, previewable, deps.capture]);
 
   // The buttons' actions, stable for the life of the canvas: each reads the latest props through the ref.
   useEffect(() => {

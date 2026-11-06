@@ -1,21 +1,20 @@
 // The Virtual Office template (docs/specs/012-collaboration/virtual-office-template.md): a whole office to walk
 // round in Avatar mode, built from the office pieces (docs/specs/009-elements/office.md) and the furniture
 // (docs/specs/009-elements/chair.md). A reception, a room of desks and a meeting room along the top of a corridor;
-// a kitchen, a lounge and a quiet focus room along the bottom; every doorway onto the corridor, and a Walk In
-// button at its end.
+// a kitchen, a lounge and a quiet focus room along the bottom; every doorway onto the corridor, and an Avatar Pad
+// at its end.
 //
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], rooms first so they lie behind the furniture.
 
 import type { Element } from '@livehuddle/document';
 import { heading } from './template-session-parts';
-import { officePlan, walkIn, type OfficeRoom } from './template-office-parts';
+import { officePlan, wayIn, type OfficeRoom } from './template-office-parts';
 
 // The office's footprint: two rows of rooms either side of a corridor.
 const ROW_H = 340;
-// Deep enough for the Walk In button and the figure that opens below it (see the test), without reaching a room.
+// Deep enough for the Avatar Pad and the figure standing on it (see the test), without reaching a room.
 const CORRIDOR = 270;
 const GAP = 60;
-const WALK_IN_TOP = 10;
 const HEAD = 96;
 const WIDTH = 1560;
 const HEIGHT = HEAD + ROW_H * 2 + CORRIDOR;
@@ -138,12 +137,12 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
       'Walk in, find a desk, meet round the table and grab a coffee together. Rename the rooms to fit your team.',
     ),
     [
-      // At the corridor's end: the way in, and what to do once you are. Its top sits WALK_IN_TOP under the top row, so
-      // the character that opens below it stands in the corridor, clear of the bottom row's walls and furniture.
-      ...walkIn(
+      // At the corridor's end: the way in, and what to do once you are. It stands under the top row's wall, so the
+      // character on it stands in the corridor, clear of both rows' walls and furniture.
+      ...wayIn(
         x0 + WIDTH - 20,
-        top + ROW_H + WALK_IN_TOP + 48,
-        'Press Walk In (or W) to walk round. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
+        top + ROW_H,
+        'You arrive on the Avatar Pad. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
       ),
     ],
   );

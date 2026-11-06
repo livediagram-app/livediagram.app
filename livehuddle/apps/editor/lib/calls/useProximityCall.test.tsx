@@ -109,6 +109,61 @@ describe('useProximityCall', () => {
     expect(callSelf().canSpeak).toBe(false);
   });
 
+  // docs/specs/012-collaboration/proximity-audio.md "No call here": why walking offers no call, for Join Audio to say.
+  describe('why there is no call', () => {
+    it('is unsynced in a Space with no shared room, without asking the server', async () => {
+      mount({ send: undefined });
+      await act(async () => {});
+      expect(callSelf().unavailableReason).toBe('unsynced');
+      expect(caps.apiGetCapabilities).not.toHaveBeenCalled();
+    });
+
+    it('is unsynced with no caller either', async () => {
+      mount({ caller: null });
+      await act(async () => {});
+      expect(callSelf().unavailableReason).toBe('unsynced');
+    });
+
+    it('is off once the capabilities say calls are off', async () => {
+      caps.apiGetCapabilities.mockResolvedValue({ emailEnabled: false, callsEnabled: false });
+      mount();
+      await waitFor(() => expect(callSelf().unavailableReason).toBe('off'));
+      expect(callSelf().available).toBe(false);
+    });
+
+    it('is none while the capabilities load, so a synced Space never flashes a reason', async () => {
+      let answer: (v: unknown) => void = () => {};
+      caps.apiGetCapabilities.mockReturnValue(
+        new Promise((resolve) => {
+          answer = resolve;
+        }),
+      );
+      mount();
+      await act(async () => {});
+      expect(callSelf().unavailableReason).toBeNull();
+      await act(async () => answer({ emailEnabled: false, callsEnabled: true }));
+      await waitFor(() => expect(callSelf().available).toBe(true));
+      expect(callSelf().unavailableReason).toBeNull();
+    });
+
+    it('is none when calls are on', async () => {
+      mount();
+      await waitFor(() => expect(callSelf().available).toBe(true));
+      expect(callSelf().unavailableReason).toBeNull();
+    });
+
+    it('is none out of the mode, room or not', async () => {
+      const noRoom = mount({ inMode: false, send: undefined });
+      await act(async () => {});
+      expect(callSelf().unavailableReason).toBeNull();
+      noRoom.unmount();
+      caps.apiGetCapabilities.mockResolvedValue({ emailEnabled: false, callsEnabled: false });
+      mount({ inMode: false });
+      await act(async () => {});
+      expect(callSelf().unavailableReason).toBeNull();
+    });
+  });
+
   it('joins on the press, feeds the call positions, and leaves with the mode', async () => {
     const hook = mount();
     await waitFor(() => expect(callSelf().available).toBe(true));

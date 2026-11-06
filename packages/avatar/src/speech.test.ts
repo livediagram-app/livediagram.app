@@ -41,16 +41,18 @@ const bubble = (over: Partial<SpeechBubble> = {}): SpeechBubble => ({
 });
 
 describe('flightMs (docs/specs/008-canvas/avatar-mode.md "Sending: the bubble floats away")', () => {
-  it('is 4 s for up to two words', () => {
-    expect(flightMs('hi')).toBe(4000);
-    expect(flightMs('hi there')).toBe(4000);
+  it('is 7 s for up to two words', () => {
+    expect(flightMs('hi')).toBe(7000);
+    expect(flightMs('hi there')).toBe(7000);
   });
-  it('adds 0.15 s for each further word', () => {
-    expect(flightMs(words(3))).toBe(4150);
-    expect(flightMs(words(12))).toBe(5500);
+  it('adds 0.25 s for each further word', () => {
+    expect(flightMs(words(3))).toBe(7250);
+    expect(flightMs(words(12))).toBe(9500);
   });
-  it('never passes 10 s, reached at 42 words', () => {
-    expect(flightMs(words(42))).toBe(SPEECH_MAX_MS);
+  it('never passes 16 s, reached at 38 words', () => {
+    expect(SPEECH_MAX_MS).toBe(16_000);
+    expect(flightMs(words(37))).toBeLessThan(SPEECH_MAX_MS);
+    expect(flightMs(words(38))).toBe(SPEECH_MAX_MS);
     expect(flightMs(words(50))).toBe(SPEECH_MAX_MS);
   });
 });

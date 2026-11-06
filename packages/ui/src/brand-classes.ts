@@ -22,3 +22,7 @@ export const ACTIVE_SEGMENT = `bg-brand-700 text-white shadow-sm ${SOLID_BRAND_D
  * at 3:1 against it (brand-600 on slate-950 is ~3.2:1; on slate-800 only ~2.7:1).
  */
 export const SEGMENT_TRACK = 'bg-slate-100 dark:bg-slate-950';
+
+/** A segment that is not selected, on a `SEGMENT_TRACK`: muted, deepening as it is pointed at. */
+export const SEGMENT_REST =
+  'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100';

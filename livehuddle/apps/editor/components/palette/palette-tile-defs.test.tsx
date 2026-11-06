@@ -74,9 +74,9 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-seating': 6,
   'collab-rooms': 7,
   'collab-amenities': 5,
-  'collab-bar': 4,
-  // Recreation and the outdoor pieces (docs/specs/009-elements/social-pieces.md).
-  'collab-recreation': 7,
+  // Play holds the bar and the social pieces, the Garden the outdoor ones (docs/specs/009-elements/social-pieces.md,
+  // docs/specs/010-palette/palette-top-level-categories.md "Play holds the Bar").
+  'collab-recreation': 11,
   'collab-garden': 12,
   'collab-meeting': 6,
   // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).

@@ -40,6 +40,41 @@ like them it is somewhere a character goes. The tile reads
 - **One drawing, on the canvas and in an export**: both paint the same vector table in `@livehuddle/document`.
   The export draws the pad as it stands, ring lit; the shimmer and the arrival are the canvas's.
 
+## Every Space and blank tab has one
+
+Walking is the default way to be in a Space (a Participant and a Viewer always walk; an Editor switches with the Walk
+button), so every board starts with an entrance (owner, 2026-11-06: "Make sure all templates and blank tabs gain an
+Avatar Pad - probably replace the old selection mode button").
+
+- **Every Spaces template** (all eighteen, in every category) places **one** pad at its entrance, where its **Walk
+  In** [Selection Mode button](mode-button.md) used to stand, which it replaces: at the end of the Virtual Office's
+  corridor, under the Team Pod's door, under a garden's or a campus's gate, under a building's front door, with the
+  how-to line beside it (`wayIn` in `packages/templates/src/template-office-parts.ts`). It stands on open floor,
+  `WAY_IN_CLEAR` (72 px) below the wall or fence above it, so neither the pad nor the Regular character standing on
+  its core overlaps a wall or a piece of furniture. A pad is a floor, so it comes first in the template's elements
+  with the other floors (`floorsFirst` in `build-template.ts`).
+- **A building's other floors** (the Hotel and Suites' Suites and Rooftop, the Co-working Tower's Level 2 and Level 3)
+  have one too, by their Elevators and Directory: a ride still steps you out beside the Elevator, and someone who
+  changes floor from the tab bar arrives on the pad.
+- **A blank tab gets one when it is started blank**: **Blank Space** chosen on Start a Space; the start's **×** (and
+  Escape, and the phone's drag down), which starts from a blank space; an explicit blank (`/new?blank=1`,
+  `/new?start=blank`); and an agent's blank tab (`buildTemplateTab` with `blank-session`). All of them are the Blank
+  Space template's one element (`buildTemplate('blank-session')`).
+- **Where on a blank tab**: centred across, a little below the middle of the view (its centre `BLANK_PAD_DROP`,
+  160 px, below it), so the middle stays free to build in and the pad is in view at 100% on a desktop and a phone.
+- **A new tab still opens on Start a Space, empty**: the tab bar's +, a new Space's first tab and a copy of an empty
+  tab hold nothing until something is chosen, and the pad lands with the choice (a template bringing its own). Start a
+  Space shows only on an empty tab, and the [empty-document clean-up](../013-workspace/empty-document-cleanup.md)
+  sweeps a Space nobody started, so a pad on every tab from birth would have hidden the start and kept every
+  abandoned Space forever.
+- **A tab with nothing but its pad is still blank.** It does not [open walking](../008-canvas/avatar-mode.md#opening-walking)
+  (there is nothing to walk round, and its Editor is about to build), and entering it does not fit the view to the
+  pad: the view is centred `BLANK_PAD_DROP` above the pad, at the zoom it already has, so the pad sits below the
+  middle just as it lands when the tab is started blank in the editor, wherever the tab was built (the `/new` route
+  and an agent build it round (0, 0)) ([Fit-to-screen](../008-canvas/canvas-and-palette.md)). Choosing Blank Space likewise leaves the view where it was,
+  selects nothing and keeps the tool in hand, as the empty blank did.
+- **The × is not a pick**: it lands the same pad but counts no `Template·Used`.
+
 ## Starting on the pad
 
 Entering Avatar mode on a tab that has a pad puts the character's **feet on the pad's bright core**, facing

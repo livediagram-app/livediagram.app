@@ -1,13 +1,14 @@
-// Calls illustrations (docs/specs/018-help/help-app.md): the call strip in the bottom-right cluster, the
+// Calls illustrations (docs/specs/018-help/help-app.md): the call group at the left of the avatar palette, the
 // microphone's states, earshot and the talking bars, and the camera and screen bubbles. Calls cannot run without
 // the Realtime secrets, so these are drawn rather than shot, from the call components' own words and tones:
-// apps/editor/components/calls/CallClusterButton.tsx (the strip and its hover cards), TalkingBars.tsx
+// apps/editor/components/calls/CallStripGroup.tsx (the strip and its hover cards), TalkingBars.tsx
 // ("Sam is talking, walk over"), MediaBubble.tsx ("Maximise Sam's Camera"), CallBubbles.tsx (a close group's row
 // and tails), MaximisedBubble.tsx (Restore) and
-// ScreenShareBar.tsx (Stop Sharing). Icons are the strip's own Lucide glyphs.
+// ScreenShareStripGroup.tsx (Sharing and Stop Sharing, in the look's place while you share). Icons are the strip's own Lucide glyphs.
 
 import type { ReactNode } from 'react';
 import {
+  lucideCircleDot,
   lucideHeadphoneOff,
   lucideMaximize2,
   lucideMic,
@@ -16,7 +17,6 @@ import {
   lucidePause,
   lucideScreenShare,
   lucideScreenShareOff,
-  lucideUser,
   lucideVideo,
   lucideVideoOff,
 } from '@liveworkspace/icons/lucide';
@@ -79,9 +79,12 @@ type Seg = {
   tone?: Tone;
   ring?: boolean;
   w?: number;
+  // The glyph alone, square: Join Audio, the microphone, the Camera and Share (avatar-mode.md "The avatar palette").
+  glyph?: boolean;
 };
 
-const segWidth = (s: Seg) => s.w ?? (s.icon ? Math.round(s.name.length * 6 + 36) : 28);
+const segWidth = (s: Seg) =>
+  s.w ?? (s.glyph ? SEG_H : s.icon ? Math.round(s.name.length * 6 + 36) : 28);
 
 /** A cluster strip: a white frame of segments parted by hairlines, each its icon and its name (a wide desktop's
  *  look). A segment with no icon is the strip's `?`. Returns the frame at (x, y). */
@@ -132,15 +135,17 @@ function Strip({ x, y, segs }: { x: number; y: number; segs: Seg[] }) {
             {s.icon ? (
               <>
                 <Icon prims={s.icon} cx={sx + 17} cy={y + SEG_H / 2} className={ink.stroke} />
-                <Label
-                  x={sx + 28}
-                  y={y + SEG_H / 2 + 1}
-                  size={10.5}
-                  weight={600}
-                  className={ink.fill}
-                >
-                  {s.name}
-                </Label>
+                {s.glyph ? null : (
+                  <Label
+                    x={sx + 28}
+                    y={y + SEG_H / 2 + 1}
+                    size={10.5}
+                    weight={600}
+                    className={ink.fill}
+                  >
+                    {s.name}
+                  </Label>
+                )}
               </>
             ) : (
               <Label
@@ -161,17 +166,96 @@ function Strip({ x, y, segs }: { x: number; y: number; segs: Seg[] }) {
   );
 }
 
-const HELP: Seg = { name: '?' };
-const AVATAR: Seg = { name: 'Avatar', icon: lucideUser };
-const stripWidth = (segs: Seg[]) => segs.map(segWidth).reduce((a, b) => a + b, 0);
-
-/** Right-aligns a strip and the Avatar button beside it at `right`, as the bottom-right cluster lays them out. */
-function ClusterRow({ y, segs, right = 404 }: { y: number; segs: Seg[]; right?: number }) {
-  const avatarX = right - segWidth(AVATAR);
+/** The avatar palette's row across the top of the canvas: the call group at its left, its buttons side by side, then a
+ *  divider and the start of the look's categories, faded where the strip runs on (avatar-mode.md "The avatar
+ *  palette"). */
+function PaletteRow({
+  y,
+  segs,
+  look: lookShown,
+}: {
+  y: number;
+  segs: Seg[];
+  // The look's categories after the group; while you share only Status is left.
+  look?: readonly string[];
+}) {
+  const x = 16;
+  const widths = segs.map(segWidth);
+  const lefts = widths.map((_, i) => x + 4 + widths.slice(0, i).reduce((a, b) => a + b, 0));
+  const groupEnd = x + 4 + widths.reduce((a, b) => a + b, 0);
+  const look = lookShown ?? ['Gender', 'Clothes', 'Hair', 'Status'];
   return (
     <g>
-      <Strip x={avatarX - 8 - stripWidth(segs)} y={y} segs={segs} />
-      <Strip x={avatarX} y={y} segs={[AVATAR]} />
+      <rect
+        x={x}
+        y={y}
+        width={404 - x}
+        height={SEG_H + 8}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.2}
+      />
+      {segs.map((s, i) => {
+        const sx = lefts[i] ?? x;
+        const w = widths[i] ?? 0;
+        // Say's tint under every call button; on (live) is the solid brand, its ink white.
+        const live = s.tone === 'live';
+        const ink = live
+          ? { stroke: 'stroke-white', fill: 'fill-white' }
+          : TONE_INK[s.tone ?? 'rest'];
+        return (
+          <g key={s.name}>
+            <rect
+              x={sx + 1}
+              y={y + 5}
+              width={w - 2}
+              height={SEG_H - 2}
+              rx={5}
+              className={
+                live
+                  ? 'fill-brand-600'
+                  : s.tone === 'muted'
+                    ? 'fill-rose-50 dark:fill-rose-500/15'
+                    : 'fill-brand-50'
+              }
+            />
+            {s.ring && (
+              <rect
+                x={sx + 3}
+                y={y + 7}
+                width={w - 6}
+                height={SEG_H - 6}
+                rx={4}
+                className="fill-none stroke-white"
+                strokeWidth={1.6}
+                opacity={0.7}
+              />
+            )}
+            <Icon prims={s.icon ?? []} cx={sx + 17} cy={y + 4 + SEG_H / 2} className={ink.stroke} />
+            <Label x={sx + 28} y={y + 5 + SEG_H / 2} size={10.5} weight={600} className={ink.fill}>
+              {s.name}
+            </Label>
+          </g>
+        );
+      })}
+      <line
+        x1={groupEnd + 4}
+        y1={y + 10}
+        x2={groupEnd + 4}
+        y2={y + SEG_H - 2}
+        className="stroke-slate-200"
+        strokeWidth={1}
+      />
+      {look.map((name, i) => {
+        const lx = groupEnd + 14 + i * 64;
+        return lx < 380 ? (
+          <g key={name} opacity={1 - i * 0.25}>
+            <Label x={lx} y={y + 5 + SEG_H / 2} size={10.5} weight={500} tone="muted">
+              {name}
+            </Label>
+          </g>
+        ) : null;
+      })}
     </g>
   );
 }
@@ -184,21 +268,28 @@ function RowLabel({ y, children }: { y: number; children: ReactNode }) {
   );
 }
 
-/** The call strip beside Avatar: Join Audio before you join, then the microphone, Camera, Share and Leave. */
+/** The call group at the left of the avatar palette: Join Audio before you join, then the microphone, Camera, Share
+ *  and Leave. */
 export function CallStrip() {
   return (
     <Scene w={420} h={168}>
       <RowLabel y={24}>Before you join</RowLabel>
-      <ClusterRow y={38} segs={[{ name: 'Join Audio', icon: lucideMic }, HELP]} />
+      <PaletteRow
+        y={38}
+        segs={[
+          { name: 'Join Audio', icon: lucideMic, glyph: true },
+          { name: 'Camera', icon: lucideVideoOff, glyph: true },
+          { name: 'Share', icon: lucideScreenShare, glyph: true },
+        ]}
+      />
       <RowLabel y={102}>Once you are in</RowLabel>
-      <ClusterRow
+      <PaletteRow
         y={116}
         segs={[
-          { name: 'Live', icon: lucideMic, tone: 'live', ring: true },
-          { name: 'Camera', icon: lucideVideoOff },
-          { name: 'Share', icon: lucideScreenShare },
+          { name: 'Live', icon: lucideMic, tone: 'live', ring: true, glyph: true },
+          { name: 'Camera', icon: lucideVideoOff, glyph: true },
+          { name: 'Share', icon: lucideScreenShare, glyph: true },
           { name: 'Leave', icon: lucideHeadphoneOff },
-          HELP,
         ]}
       />
     </Scene>
@@ -617,46 +708,26 @@ export function MaximisedBubble() {
  *  share pressed; under audio only, the strip's one calm Video Paused. */
 export function SharingAndVideoPaused() {
   return (
-    <Scene w={420} h={206}>
-      <g className="help-art-as-drawn">
-        <rect
-          x={70}
-          y={12}
-          width={280}
-          height={32}
-          rx={16}
-          className="fill-slate-900 stroke-white/10"
-          strokeWidth={1}
-        />
-        <circle cx={88} cy={28} r={4} className="fill-rose-500" />
-        <Label x={100} y={29} size={10.5} weight={600} className="fill-white">
-          You are sharing your screen
-        </Label>
-        <rect x={252} y={16} width={94} height={24} rx={12} className="fill-rose-500" />
-        <Icon prims={lucideScreenShareOff} cx={265} cy={28} size={11} className="stroke-white" />
-        <Label x={274} y={29} size={10} weight={700} className="fill-white">
-          Stop Sharing
-        </Label>
-      </g>
-      <RowLabel y={78}>Sharing, camera on</RowLabel>
-      <ClusterRow
-        y={90}
+    <Scene w={420} h={150}>
+      <RowLabel y={22}>While you share, camera on</RowLabel>
+      <PaletteRow
+        y={34}
         segs={[
-          { name: 'Live', icon: lucideMic, tone: 'live', ring: true },
-          { name: 'Camera', icon: lucideVideo, tone: 'live' },
-          { name: 'Sharing', icon: lucideScreenShareOff, tone: 'live' },
+          { name: 'Live', icon: lucideMic, tone: 'live', ring: true, glyph: true },
+          { name: 'Camera', icon: lucideVideo, tone: 'live', glyph: true },
           { name: 'Leave', icon: lucideHeadphoneOff },
-          HELP,
+          { name: 'Sharing', icon: lucideCircleDot, tone: 'muted' },
+          { name: 'Stop Sharing', icon: lucideScreenShareOff, tone: 'muted' },
         ]}
+        look={['Status']}
       />
-      <RowLabel y={146}>While video is paused</RowLabel>
-      <ClusterRow
-        y={158}
+      <RowLabel y={90}>While video is paused</RowLabel>
+      <PaletteRow
+        y={102}
         segs={[
-          { name: 'Live', icon: lucideMic, tone: 'live', ring: true },
+          { name: 'Live', icon: lucideMic, tone: 'live', ring: true, glyph: true },
           { name: 'Video Paused', icon: lucidePause },
           { name: 'Leave', icon: lucideHeadphoneOff },
-          HELP,
         ]}
       />
     </Scene>

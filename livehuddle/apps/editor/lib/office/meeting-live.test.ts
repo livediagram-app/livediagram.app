@@ -21,6 +21,8 @@ const sign = (over: Partial<SignLive> = {}): SignLive => ({
   count: 0,
   since: null,
   selfInside: false,
+  pod: false,
+  people: [],
   ...over,
 });
 
@@ -40,6 +42,19 @@ describe('the meeting pieces store', () => {
     expect(sameLive(a, { roomId: 'r', inside: [{ id: 'p1', name: 'Ana' }] })).toBe(false);
     expect(sameLive(a, sign())).toBe(false);
     expect(sameLive(undefined, sign())).toBe(false);
+  });
+
+  it("compares a sign's people and pod, so a face wakes when who is inside changes", () => {
+    const sam = { id: 'p1', name: 'Sam', color: '#0ea5e9', self: false };
+    expect(sameLive(sign({ people: [sam] }), sign({ people: [{ ...sam }] }))).toBe(true);
+    expect(sameLive(sign({ people: [sam] }), sign({ people: [{ ...sam, name: 'Ana' }] }))).toBe(
+      false,
+    );
+    expect(sameLive(sign({ people: [sam] }), sign({ people: [{ ...sam, color: '#000' }] }))).toBe(
+      false,
+    );
+    expect(sameLive(sign({ people: [sam] }), sign({ people: [] }))).toBe(false);
+    expect(sameLive(sign(), sign({ pod: true }))).toBe(false);
   });
 });
 

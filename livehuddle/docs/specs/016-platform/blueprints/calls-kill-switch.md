@@ -38,7 +38,7 @@ Derived from [Calls kill switch](../calls-kill-switch.md).
 | `apps/api/src/document-room/document-room.ts`        | Notes each relayed `avatar-voice` / `call-track`, and each consumed `calls-check`, to its `CallsModeWatch`; broadcasts the push |
 | `apps/editor/lib/calls/calls-store.ts`               | `CallSelf.mode`, `receiveCallsMode(op)`, `onCallsMode`                                                                          |
 | `apps/editor/lib/calls/proximity-call.ts`            | Ends the call into the paused state on a push or a `paused` refusal                                                             |
-| `apps/editor/components/calls/CallClusterButton.tsx` | The **Calls Paused** control                                                                                                    |
+| `apps/editor/components/calls/CallStripGroup.tsx`    | The **Calls Paused** control                                                                                                    |
 | `apps/api/src/calls/realtime-usage.ts`               | `fetchRealtimeEgressBytes`, `monthStartUtc`, `realtimeCostUsd`                                                                  |
 | `apps/api/src/calls/calls-budget.ts`                 | `budgetThresholds`, `budgetLevel`, `pollCallsBudget` and the trip record                                                        |
 | `apps/api/src/email/templates.ts`                    | `callsBudgetEmail`, kind `CallsBudget`                                                                                          |
@@ -104,7 +104,7 @@ from a Viewer or malformed, `room-op-gate.ts`), then noted and never relayed.
   (`VOICE_REFRESH_MS` plus two voice samples, 5.1 s: just past a talking speaker's level refresh, so a talker never
   checks). When it fires and the call still publishes a microphone, camera or screen, it sends
   `{ kind: 'calls-check' }`, which re-arms it. A listener never arms one. Teardown clears it.
-- `CallClusterButton` shows **Calls Paused** whenever the phase is `off` and the mode is `off`; pressing it runs
+- `CallStripGroup` shows **Calls Paused** whenever the phase is `off` and the mode is `off`; pressing it runs
   `join`, which tries a session. A stopped call (`ended`) never blocks a fresh join.
 - An `aria-live="polite"` region in the control says "Calls are paused" when the paused state appears.
 
@@ -131,4 +131,4 @@ store adds one listener set; the paused control is the same `Segment` as Join Au
 | Store: push sets the mode, only from the system                                                       | `apps/editor/lib/calls/calls-store.test.ts`               |
 | Call: a push or a paused refusal ends it into the paused state                                        | `apps/editor/lib/calls/proximity-call.test.ts`            |
 | Call: a silent publisher checks every 5 s, a talking one never; a flip lands within one check         | `apps/editor/lib/calls/proximity-call.test.ts`            |
-| Button: Calls Paused, press tries again                                                               | `apps/editor/components/calls/CallClusterButton.test.tsx` |
+| Button: Calls Paused, press tries again                                                               | `apps/editor/components/calls/CallStripGroup.test.tsx`    |

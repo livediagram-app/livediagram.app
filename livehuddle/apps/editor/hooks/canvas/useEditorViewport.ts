@@ -88,6 +88,9 @@ type EditorViewportApi = {
   // viewport. Idempotent (the lastFittedTabRef gate in
   // editor-page.tsx still controls WHEN this runs).
   fitToScreen: () => void;
+  // The same fit, glided to over `ms` from wherever the view is (an Editor switching from Walk to Edit,
+  // docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"); lands at once under reduced motion.
+  glideToFit: (ms?: number) => void;
   // Frame an ARBITRARY rectangle (a room, a selection) rather than the whole tab.
   fitToBounds: (
     bbox: { x: number; y: number; w: number; h: number },
@@ -299,6 +302,21 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     setViewportZoom(view.zoom);
     setViewportOffset(view.offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);
+  const glideToFit = useCallback(
+    (ms?: number) => {
+      const { activeTab } = depsRef.current;
+      const view = tabFitView(canvasMainRef.current, activeTab.elements);
+      if (!view) return;
+      lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
+      glideViewport(
+        { zoom: zoomRef.current, offset: viewportOffsetRef.current },
+        view,
+        { zoom: setViewportZoom, offset: setViewportOffset },
+        ms,
+      );
+    },
+    [depsRef, setViewportOffset, setViewportZoom, viewportOffsetRef, zoomRef],
+  );
   // docs/specs/008-canvas/minimap.md "Fit leaves the Map clear": a template's fit runs before the Map has a box.
   useEffect(
     () =>
@@ -397,6 +415,7 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     getViewportCenter,
     getViewportCanvasRect,
     fitToScreen,
+    glideToFit,
     fitToBounds,
     centreOn,
     isCentredOn,

@@ -337,6 +337,8 @@ These features left livehuddle on purpose, and their articles with them; each ol
 
 | Old address                                            | New address                          | Why                                                                                 |
 | ------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------- |
+| `/help/selection-modes/hand/`                          | `/help/canvas/the-canvas/pan-and-zoom/` | Hand is no longer a mode: Space-drag, the trackpad and the middle button pan      |
+| `/help/selection-modes/eraser/`                        | `/help/selection-modes/select/`      | The Eraser left livehuddle; Edit and Walk says to select and press Delete           |
 | `/help/canvas/themes/custom-themes/`                   | `/help/canvas/themes/`               | Custom themes were deleted; the built-in themes stay                                |
 | `/help/explorer/themes-library/`                       | `/help/canvas/themes/`               | The Explorer's Themes page went with custom themes                                  |
 | `/help/explorer/tags/`                                 | `/help/explorer/folders/`            | Tags were removed; folders are how documents are grouped now                        |

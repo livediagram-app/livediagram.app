@@ -72,7 +72,9 @@ holding the templates listed in it (primary or cross-listed), alphabetical by la
 with no change here.
 
 Every listed template has a primary category, so every one is reachable. The blank appears only in
-Recommended. Choosing the blank closes the panel, as the × does, since it leaves the tab empty.
+Recommended. Choosing the blank lands its [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
+a little below the middle of the view and closes the panel, leaving the view, the selection and the tool in hand as
+they were; the × does the same.
 
 ## When it shows
 
@@ -99,11 +101,12 @@ Blank's `/new?blank=1`, a blank's `/new?template=` link, or the public sites' St
 
 ## Bringing it back
 
-The × starts from a blank canvas: the start stays closed on that tab, for this person in this browser
+The × starts from a blank space: it lands the Blank Space's Avatar Pad, as choosing the blank does (but counts no
+`Template·Used`: a close is not a pick), and the start stays closed on that tab, for this person in this browser
 (`empty-card-dismissed.ts`, `startClosedKey`). On a phone, dragging the sheet's grab handle down
-closes it too.
+closes it too, and so does Escape with nothing to clear; each lands the pad.
 
-While a closed start's tab is still empty, the **palette tray** (the strip that hangs from the palette, as the mode
+While a closed start's tab is still empty (its pad taken away, or a close by someone whose pad never landed), the **palette tray** (the strip that hangs from the palette, as the mode
 banners do, [Toolbar layout](toolbar-layout.md)) reads "Tab 1 is empty" with **Show Templates**, which opens the
 start again (`StartAgainTray`). It goes with the emptiness: the first element ends it. It steps aside while a mode's message is up (an armed tool's Cancel, a modifier hint), as that takes the same place and says what the next click does. The closed list is shared state: the panel and the
 tray read the same key and follow each other as it changes.
@@ -119,6 +122,9 @@ picked after creation"). The move is `useTemplatePickMove` (`apps/editor/compone
 A tour never lands over a start: while one is on screen the Workshop and Avatar tours are not on
 offer, so the footer's Start Tour button does not show them, and they come onto it once a template is picked or the
 start closed (`start-panel-open.ts`, `useStartPanelOpen`).
+
+Walking waits the same way: while a start is open, Avatar mode cannot be entered and no walking input moves the
+character ([Avatar mode](../008-canvas/avatar-mode.md#not-over-a-start)).
 
 ## Search handed over
 
@@ -165,4 +171,5 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/StartFromTemplates.test.tsx`: the title, choosing, the blank closing, the close, scroll to top.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
+- `../packages/avatar/src/walk-guard.test.ts`, `components/palette/EditWalkToggle.test.tsx`: no walking over a start.
 - `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

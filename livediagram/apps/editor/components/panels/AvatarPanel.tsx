@@ -5,10 +5,7 @@
 // sitting there. Same width as the Palette it stacks under. Its body (the portrait, the choices, the action rows
 // and Send a Message) is @liveworkspace/avatar's; this editor wraps it in its own mode-panel chrome.
 
-import {
-  AvatarPanelBody,
-  type AvatarPanelBodyProps,
-} from '@liveworkspace/avatar/components/AvatarPanelBody';
+import { AvatarPanelBody, type AvatarPanelBodyProps } from './AvatarPanelBody';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
 export function AvatarPanel({

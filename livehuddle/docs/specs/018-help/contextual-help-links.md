@@ -112,7 +112,7 @@ Grouped by priority; each links the keyed article.
 - Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`
-- The call strip in the bottom-right cluster carries **no** help link (removed 2026-11-05 at the owner's request: the
+- The call group at the left of the avatar palette carries **no** help link (removed 2026-11-05 at the owner's request: the
   `?` segment made the strip longer for little use). The Proximity Audio article is reached from the help centre and
   search.
 
@@ -158,7 +158,7 @@ both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
 Wired: Palette, Explorer, Activity, Map, Collaborate, Poll, and
-the tool panels (Avatar, Eraser, Format) (the Highlighter's went when it became a Draw tile, and the Laser's,
+the Format tool panel (the Avatar Panel's went when it became the avatar palette, the Eraser's with the Eraser, the Highlighter's when it became a Draw tile, and the Laser's,
 the Spotlight's and the Slide Deck's when those left livehuddle). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.

@@ -309,7 +309,7 @@ async function measureZoom(
   tab: Tab,
   zoom: Measurement['zoom'],
 ): Promise<Measurement[]> {
-  // Fit first, which centres the board; 100% then zooms in on that centre (Mod+0; a bare 0 is the eraser).
+  // Fit first, which centres the board; 100% then zooms in on that centre (Mod+0; a bare 0 does nothing).
   const setView = async () => {
     await page.keyboard.press('Escape');
     await page.keyboard.press('v');
