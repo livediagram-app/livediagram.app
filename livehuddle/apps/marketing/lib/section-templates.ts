@@ -22,8 +22,8 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'cafe',
     'city-park',
   ],
-  // The workshop boards left the catalogue (Work Tracker #423): the Spaces a session runs in, and the blank.
-  workshops: ['all-hands-hall', 'training-room', 'team-pod', 'virtual-office', 'blank-session'],
+  // The Spaces a meeting is held in, and the blank to furnish your own (Work Tracker #423).
+  meetings: ['all-hands-hall', 'training-room', 'team-pod', 'virtual-office', 'blank-session'],
   collaboration: ['team-pod', 'coworking-space', 'virtual-office', 'all-hands-hall'],
 };
 

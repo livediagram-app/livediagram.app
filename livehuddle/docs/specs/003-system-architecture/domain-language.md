@@ -22,9 +22,9 @@ interchangeable. These are design decisions, taken before any feature that uses 
   tab kind or a stored thing; "Session" and "Collaborate" never name the mode.
 - The interface never says "Workshop" (Work Tracker #423): running a workshop is livediagram's Workshop mode
   ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Since part 3 the interface names no mode and no
-  template category after workshops; `EditorMode` stays `'workshop'` in the code and in storage. The community
-  categories (`workshops`, `retrospectives`) are the shared community package's stored values and stay until the
-  community's own spec changes them.
+  template category after workshops; `EditorMode` stays `'workshop'` in the code and in storage. No Community
+  category is about workshops either: a post stored under a retired one reads as Something Else
+  ([Community](../025-community/community.md#categories)).
 
 ### Kind
 

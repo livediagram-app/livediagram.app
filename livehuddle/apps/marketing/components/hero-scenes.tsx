@@ -1,13 +1,9 @@
-// The editor-window scenes (docs/specs/019-marketing/marketing-site.md "Hero" and "Story beats"):
-// one live document per mode at work, each in the editor window it is drawn in. The hero's stage
-// plays them in turn (HeroIllustration.tsx), and each landing beat and feature category page plays
-// the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
+// The editor-window scenes (docs/specs/019-marketing/marketing-site.md "Feature scenes"): one Space in use per
+// landing beat, each paired with its board, so a scene is declared once, here (hero-scene-data.ts holds the rest).
 
 import type { ComponentType } from 'react';
-import { DrawBoard } from './hero-draw-board';
 import { HERO_SCENE_DATA, type HeroSceneData, type HeroSceneKey } from './hero-scene-data';
-import { SpaceScene } from './hero-space-scene';
-import { TownHallBoard } from './hero-townhall-board';
+import { HallScene, OfficeScene, TeamPodScene } from './hero-space-scene';
 
 export type { HeroSceneKey } from './hero-scene-data';
 
@@ -15,9 +11,9 @@ export type { HeroSceneKey } from './hero-scene-data';
 type HeroScene = HeroSceneData & { Board: ComponentType<{ portrait?: boolean }> };
 
 const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
-  space: SpaceScene,
-  draw: DrawBoard,
-  townhall: TownHallBoard,
+  space: TeamPodScene,
+  office: OfficeScene,
+  hall: HallScene,
 };
 
 export const HERO_SCENES: HeroScene[] = HERO_SCENE_DATA.map((scene) => ({

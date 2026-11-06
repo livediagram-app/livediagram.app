@@ -68,6 +68,8 @@ jobs:
       smoke-explorer: true
       signed-in-explorer: true
       signed-in-cache: editor-signed-in
+      # Its smoke specs take about three minutes a shard on three: two would pass the 5-minute budget.
+      smoke-shards: '[1, 2, 3]'
 
   liveplanner:
     name: liveplanner

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Env } from '../types';
-import { callsConfigured, callsGate, isProductionDeployment } from './calls-gate';
+import { callsConfigured, callsGate } from './calls-gate';
 import { resetCallsModeCache } from './calls-mode';
 import { fakeKv } from './fake-kv';
 
@@ -16,20 +16,25 @@ const env = (e: Partial<Env>) => e as Env;
 beforeEach(() => resetCallsModeCache());
 
 describe('the calls gate', () => {
-  it('is shut on production whatever is set, the switch included', async () => {
-    for (const APP_BASE_URL of [
-      'https://www.livehuddle.app',
-      'https://livehuddle.app',
-      ' https://www.livehuddle.app/ ',
-    ]) {
+  it('is open on production once the secrets are set and the switch allows it', async () => {
+    for (const APP_BASE_URL of ['https://www.livehuddle.app', 'https://livehuddle.app']) {
       const CALLS_SWITCH = fakeKv({ 'calls-mode': 'on' });
       expect(await callsGate(env({ ...secrets, APP_BASE_URL, CALLS_SWITCH }))).toEqual({
-        open: false,
-        reason: 'production',
+        open: true,
+        mode: 'on',
       });
-      // Shut before the switch is ever read.
-      expect(CALLS_SWITCH.gets).toBe(0);
+      expect(await callsGate(env({ APP_BASE_URL, CALLS_SWITCH }))).toEqual({
+        open: false,
+        reason: 'unconfigured',
+      });
     }
+    resetCallsModeCache();
+    const paused = fakeKv({ 'calls-mode': 'off' });
+    expect(
+      await callsGate(
+        env({ ...secrets, APP_BASE_URL: 'https://www.livehuddle.app', CALLS_SWITCH: paused }),
+      ),
+    ).toEqual({ open: false, reason: 'paused' });
   });
 
   it('is shut while any secret is missing', async () => {
@@ -75,12 +80,5 @@ describe('the calls gate', () => {
       reason: 'unconfigured',
     });
     expect(unread.gets).toBe(0);
-  });
-
-  it('reads production from the hosted origin only', () => {
-    expect(isProductionDeployment({ APP_BASE_URL: 'https://www.livehuddle.app' })).toBe(true);
-    expect(isProductionDeployment({ APP_BASE_URL: 'https://staging.livehuddle.app' })).toBe(false);
-    expect(isProductionDeployment({ APP_BASE_URL: '' })).toBe(false);
-    expect(isProductionDeployment({})).toBe(false);
   });
 });

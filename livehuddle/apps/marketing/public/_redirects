@@ -1,0 +1,13 @@
+# Retired comparisons (packages/comparisons/README.md "livehuddle"). livehuddle compared itself with Miro and FigJam
+# for meetings and workshops until the meet-first refocus (Work Tracker #423); it now compares itself with virtual
+# offices, so each old /alternatives/<slug> moves permanently to the hub, and search results and old links keep
+# landing. Workers Static Assets reads this file from out/ (Next copies public/).
+# lib/comparison-redirects.test.ts pins each rule and checks none catches the hub or a live comparison.
+/alternatives/miro /alternatives 301
+/alternatives/miro/ /alternatives 301
+/alternatives/figjam /alternatives 301
+/alternatives/figjam/ /alternatives 301
+
+# The Meetings feature page was /features/workshops until the meet-first refocus (Work Tracker #423).
+/features/workshops /features/meetings 301
+/features/workshops/ /features/meetings/ 301

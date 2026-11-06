@@ -192,4 +192,4 @@ export type CallsErrorCode =
   | 'calls_upstream';
 // `paused` and `audio-only` are the calls kill switch's (docs/specs/016-platform/calls-kill-switch.md "The mint
 // route"): everything is paused, or this track's media is while calls are audio only.
-export type CallsOffReason = 'production' | 'unconfigured' | 'paused' | 'audio-only';
+export type CallsOffReason = 'unconfigured' | 'paused' | 'audio-only';

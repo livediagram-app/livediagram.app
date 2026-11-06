@@ -28,7 +28,7 @@ export const categories: Category[] = [
     slug: 'about',
     title: 'About livehuddle',
     description:
-      'Get to know livehuddle: what it is, who it helps, and the ideas behind a free, open canvas.',
+      'Get to know livehuddle: a free, open-source place where a team meets in a Space, and who it is for.',
     articleCount: 4,
   },
   {
@@ -101,7 +101,7 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Get your bearings in the editor: the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls, and power user mode.',
+      'Get your bearings in the editor: the panels, toolbar, context menus, the Map, zoom and tab bars, and quick controls.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -262,8 +262,9 @@ export const articles: Article[] = [
     slug: 'what-is-livehuddle',
     title: 'What is livehuddle?',
     description:
-      'An overview of livehuddle, the shared Spaces where teams meet and run workshops together.',
-    keywords: 'overview intro introduction about product whiteboard drawing tool app',
+      'An overview of livehuddle, the shared Spaces a team walks into as characters to meet.',
+    keywords:
+      'overview intro introduction about product meet meeting virtual office space avatar app',
     category: 'About livehuddle',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -271,8 +272,8 @@ export const articles: Article[] = [
   {
     slug: 'who-is-it-for',
     title: 'Who is livehuddle For?',
-    description: 'The teams and use cases that get the most out of livehuddle.',
-    keywords: 'audience use cases teams developers designers educators students',
+    description: 'The teams, hosts and communities that get the most out of meeting in a Space.',
+    keywords: 'audience use cases teams remote hybrid stand-up all-hands community events hosts',
     category: 'About livehuddle',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -280,7 +281,7 @@ export const articles: Article[] = [
   {
     slug: 'why-livehuddle',
     title: 'Why Use livehuddle?',
-    description: 'Free, open source, no sign-in wall, real-time collaboration. Here is why.',
+    description: 'Free, open source, no sign-in wall, and everyone in the room live. Here is why.',
     keywords: 'benefits reasons comparison alternatives features advantages',
     category: 'About livehuddle',
     categorySlug: 'about',
@@ -300,7 +301,7 @@ export const articles: Article[] = [
   {
     slug: 'your-first-space',
     title: 'Your First Space',
-    description: 'Open a Space, walk in as your character and put your first notes on the board.',
+    description: 'Open a Space, walk in as your character, say hello and invite your team.',
     keywords:
       'start begin new create tutorial beginner basics quickstart onboarding wizard document template location canvas space spaces',
     category: 'Getting Started',
@@ -317,8 +318,8 @@ export const articles: Article[] = [
   {
     slug: 'sharing-your-document',
     title: 'Sharing Your Space',
-    description: 'Hand a link to anyone and edit together in real time.',
-    keywords: 'share link collaborate invite send url realtime together diagram document',
+    description: 'Hand a link to anyone and meet in the same Space in real time.',
+    keywords: 'share link collaborate invite send url realtime together meet space document',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },

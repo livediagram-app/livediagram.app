@@ -5,35 +5,38 @@ Hunt. Ranked by how tightly they fit the product, then split by platform so you
 can paste the right set into each field.
 
 Built from [`facts.md`](facts.md). No tag may imply something the fact sheet
-says not to claim (conflict-free editing, a paid tier): that means no `crdt`
-or `conflict-free`.
+says not to claim: that means no `video-chat`, `voice-chat` or
+`proximity-chat` (calls are off in production), no `whiteboard`,
+`diagrams`, `workshops` or `retrospectives` (livediagram's now), and no
+`crdt` or `conflict-free`.
 
 ## Ranked by fit
 
 **Tier 1, core identity (use these first, almost everywhere)**
 
-`diagrams` · `diagramming` · `flowcharts` · `mindmaps` · `whiteboard` ·
-`collaboration` · `multiplayer` · `realtime`
+`virtual-office` · `remote-work` · `meetings` · `avatars` · `collaboration` ·
+`multiplayer` · `realtime`
 
 **Tier 2, strong supporting**
 
-`canvas` · `visualization` · `brainstorming` · `opensource` · `free`
+`remote-teams` · `hybrid-work` · `stand-ups` · `presence` · `opensource` ·
+`free`
 
 **Tier 3, context-dependent (when a directory wants more, or is dev-focused)**
 
-`teamwork` · `collaborative` · `architecture` · `mit` · `nextjs` ·
-`cloudflare` · `typescript`
+`pixel-art` · `teamwork` · `mcp` · `mit` · `nextjs` · `cloudflare` ·
+`typescript`
 
 ## Judgment calls
 
-- **`whiteboard`** matches the surface and pulls search traffic, but
-  [Purpose](../../docs/specs/001-project-vision/purpose.md) positions livehuddle _against_
-  general-purpose whiteboards (Miro / FigJam). Fine as a tag for reach; don't
-  lead with it in prose.
-- **Skip** `crdt` and `conflict-free`: same-element edits are last-writer-wins
-  by design.
-- Reserve the tech tags (`nextjs`, `cloudflare`, `typescript`) for developer
-  surfaces (GitHub, dev directories). They mean nothing to a general audience.
+- **`proximity-chat`** and **`video-chat`** pull search traffic for virtual
+  offices, but livehuddle has no voice or video in production yet. Add them
+  only once calls are on at livehuddle.app.
+- **`pixel-art`** describes the characters honestly and finds the right
+  crowd, but it isn't the product; keep it to directories that want more.
+- Reserve the tech tags (`mcp`, `nextjs`, `cloudflare`, `typescript`) for
+  developer surfaces (GitHub, dev directories). They mean nothing to a general
+  audience.
 
 ## By platform
 
@@ -41,26 +44,26 @@ or `conflict-free`.
 tags belong here):
 
 ```
-diagrams diagramming flowcharts mindmaps whiteboard collaboration
-multiplayer realtime canvas open-source nextjs cloudflare
-typescript durable-objects
+virtual-office remote-work meetings avatars collaboration multiplayer
+realtime presence open-source mcp nextjs cloudflare typescript
+durable-objects
 ```
 
 **Product Hunt topics** (pick from their fixed taxonomy; closest matches):
 
 ```
-Design Tools · Productivity · Open Source · Developer Tools · SaaS
+Remote Work · Meetings · Productivity · Open Source · SaaS
 ```
 
 **Generic directory keywords** (general audience; no tech jargon):
 
 ```
-diagrams diagramming flowcharts mindmaps whiteboard collaboration
-multiplayer realtime brainstorming visualization free open source
+virtual office remote work meetings stand-ups avatars collaboration
+multiplayer realtime remote teams hybrid work free open source
 ```
 
 **App store / short keyword field** (tightest, highest-fit only):
 
 ```
-diagrams, flowcharts, mindmaps, collaboration, multiplayer
+virtual office, meetings, remote work, avatars, collaboration
 ```

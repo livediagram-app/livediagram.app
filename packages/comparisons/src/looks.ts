@@ -1,5 +1,6 @@
 import {
   AppWindowIcon,
+  ArmchairIcon,
   BookOpenIcon,
   CircleCheckIcon,
   DatabaseIcon,
@@ -9,6 +10,7 @@ import {
   ListChecksIcon,
   ListTodoIcon,
   ListTreeIcon,
+  MapIcon,
   NetworkIcon,
   PencilIcon,
   PenToolIcon,
@@ -16,6 +18,7 @@ import {
   SquareKanbanIcon,
   StickyNoteIcon,
   TableIcon,
+  VideoIcon,
   WorkflowIcon,
 } from './icons';
 
@@ -125,6 +128,24 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: PenToolIcon,
     panel: 'from-violet-100 to-rose-50 dark:from-violet-500/15 dark:to-rose-500/5',
     glyph: 'text-violet-700 dark:text-violet-300',
+  },
+
+  // livehuddle's: virtual offices, each drawn as what it is (a walkable map, a video-first floor, an
+  // office's furniture).
+  gather: {
+    icon: MapIcon,
+    panel: 'from-lime-100 to-emerald-50 dark:from-lime-500/15 dark:to-emerald-500/5',
+    glyph: 'text-emerald-700 dark:text-emerald-200',
+  },
+  teamflow: {
+    icon: VideoIcon,
+    panel: 'from-cyan-100 to-sky-50 dark:from-cyan-500/15 dark:to-sky-500/5',
+    glyph: 'text-cyan-600 dark:text-cyan-300',
+  },
+  kumospace: {
+    icon: ArmchairIcon,
+    panel: 'from-purple-100 to-indigo-50 dark:from-purple-500/15 dark:to-indigo-500/5',
+    glyph: 'text-purple-600 dark:text-purple-300',
   },
 };
 

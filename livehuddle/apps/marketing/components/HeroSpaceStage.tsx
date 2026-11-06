@@ -118,8 +118,11 @@ export function HeroSpaceFloor({
     ...twins.map((walker) => ({ stage: FLOOR_ONLY, walker, shown: 'hsf-below-lg' as Shown })),
   ].sort((a, b) => a.walker.from.y - b.walker.from.y);
   return (
+    // Decorative and in motion (aria-hidden), so the optical audit skips it: a moving chip's text lands on a
+    // different sub-pixel each frame. The chips still centre their names (text-optical-line, #1273).
     <div
       aria-hidden
+      data-optical-ignore
       className={`hsf-stage pointer-events-none select-none ${className}`}
       style={{ width: stage.width, height: stage.height }}
     >

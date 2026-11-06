@@ -71,7 +71,7 @@ router). Wrangler does not inherit bindings into a named environment, so a bindi
 block, or a `service =` that lost its `-staging` suffix and points the staging router at **production**, is neither
 a type error nor a test failure. Without this step the first sign of either is a deploy.
 
-The root `e2e.yml` runs liveplanner's smoke build and three smoke shards, its sites audit and its signed-in specs through
+The root `e2e.yml` runs liveplanner's smoke build and two smoke shards, its sites audit and its signed-in specs through
 `e2e-product.yml` when a change reaches the editor ([E2E smoke](../003-system-architecture/e2e-smoke.md)).
 `canvas-perf.yml` runs the canvas performance probe nightly against `main`
 ([Canvas performance](../008-canvas/canvas-performance.md)). It never blocks anything: a miss opens or comments on
