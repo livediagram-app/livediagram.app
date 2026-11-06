@@ -8,6 +8,7 @@ import { ITEM_TYPES, metricBoard, type MetricKind } from '@liveplanner/items';
 import { BoardWidgetView, type WidgetContext } from '../widgets/BoardWidgetView';
 import type { PlanViewProps } from './PlanViewView';
 import { MetricTile } from './MetricTile';
+import { planBoardFontStyle } from '@/lib/plan-font';
 import { BOARD_WIDGET_INFO, metricModel, metricTier } from '@liveplanner/plan-art';
 
 const noop = () => {};
@@ -88,7 +89,7 @@ export function MetricView({
         borderColor: palette.border,
         backgroundColor: palette.surface,
         color: palette.text,
-        ...(fontFamily ? { fontFamily } : null),
+        ...planBoardFontStyle(fontFamily),
       }}
       role="group"
       aria-label={`${label}, every card`}
