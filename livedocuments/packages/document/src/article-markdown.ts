@@ -145,7 +145,7 @@ export function closesFence(line: string, fence: number): boolean {
   return bare.length >= fence && /^`+$/.test(bare);
 }
 
-// CommonMark's hard line break: a paragraph line ending in two or more spaces, or in an odd number of backslashes
+// CommonMark's hard line break: a paragraph's, a list item's or a quote's line ending in two or more spaces, or in an odd number of backslashes
 // (an even run is escaped backslashes). Found by a scan back from the line's end, never a regex such as ` {2,}$`,
 // which retries from every offset and is quadratic on a long run of spaces.
 type HardBreak = 'spaces' | 'slash' | undefined;
@@ -173,6 +173,30 @@ function joinParagraph(lines: readonly { text: string; brk: HardBreak }[]): stri
 }
 
 const levelOf = (indent: string) => Math.min(4, Math.floor(indent.replace(/\t/g, '  ').length / 2));
+
+const HEADING_LINE = /^(#{1,6})\s+(.*)$/;
+const DIVIDER_LINE = /^\s*(-{3,}|\*{3,}|_{3,})\s*$/;
+const TODO_LINE = /^(\s*)[-*+]\s+\[( |x|X)\]\s+(.*)$/;
+const BULLET_LINE = /^(\s*)[-*+]\s+(.*)$/;
+const NUMBERED_LINE = /^(\s*)\d+[.)]\s+(.*)$/;
+const QUOTE_LINE = /^>\s?(.*)$/;
+
+/** Whether `line` (with `next` after it) opens a block of its own, so it never carries on a list item's text after a
+ *  hard break. */
+function opensBlock(line: string, next: string): boolean {
+  const bare = line.trim();
+  return (
+    !bare ||
+    fenceOpening(line) > 0 ||
+    (isTableRow(line) && isTableRule(next)) ||
+    TOC_LINE.test(bare) ||
+    HEADING_LINE.test(line) ||
+    DIVIDER_LINE.test(line) ||
+    BULLET_LINE.test(line) ||
+    NUMBERED_LINE.test(line) ||
+    QUOTE_LINE.test(line)
+  );
+}
 
 /** Markdown as blocks. */
 export function parseMarkdownBlocks(text: string): ArticleBlock[] {
@@ -224,7 +248,7 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
       blocks.push({ id: id(), type: 'toc', ...(depth ? { depth } : {}) });
       continue;
     }
-    const heading = /^(#{1,6})\s+(.*)$/.exec(line);
+    const heading = HEADING_LINE.exec(line);
     if (heading) {
       flush();
       const n = heading[1]!.length;
@@ -232,33 +256,53 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
       blocks.push({ id: id(), type: 'paragraph', style, runs: parseInline(heading[2]!) });
       continue;
     }
-    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+    if (DIVIDER_LINE.test(line)) {
       flush();
       blocks.push({ id: id(), type: 'divider' });
       continue;
     }
-    const todo = /^(\s*)[-*+]\s+\[( |x|X)\]\s+(.*)$/.exec(line);
-    const bullet = /^(\s*)[-*+]\s+(.*)$/.exec(line);
-    const numbered = /^(\s*)\d+[.)]\s+(.*)$/.exec(line);
+    const todo = TODO_LINE.exec(line);
+    const bullet = BULLET_LINE.exec(line);
+    const numbered = NUMBERED_LINE.exec(line);
     const item = todo ?? bullet ?? numbered;
     if (item) {
       flush();
       const list: ArticleListKind = todo ? 'todo' : bullet ? 'bullet' : 'numbered';
       const level = levelOf(item[1]!);
+      // A hard break at the line's end carries the item on to the next line (indented under it, as the writer puts
+      // it), unless that line opens a block of its own.
+      const text = [hardBreakOf(todo ? todo[3]! : item[2]!)];
+      while (text[text.length - 1]!.brk && i + 1 < lines.length) {
+        if (opensBlock(lines[i + 1]!, lines[i + 2] ?? '')) break;
+        text.push(hardBreakOf(lines[++i]!));
+      }
       blocks.push({
         id: id(),
         type: 'list',
         list,
         ...(level > 0 ? { level } : {}),
         ...(todo && todo[2] !== ' ' ? { checked: true as const } : {}),
-        runs: parseInline(todo ? todo[3]! : item[2]!),
+        runs: parseInline(joinParagraph(text)),
       });
       continue;
     }
-    const quote = /^>\s?(.*)$/.exec(line);
+    const quote = QUOTE_LINE.exec(line);
     if (quote) {
       flush();
-      blocks.push({ id: id(), type: 'paragraph', style: 'quote', runs: parseInline(quote[1]!) });
+      // Each `>` line is a quote of its own, but one ending in a hard break goes on into the `>` line after it.
+      const text = [hardBreakOf(quote[1]!)];
+      while (text[text.length - 1]!.brk) {
+        const more = QUOTE_LINE.exec(lines[i + 1] ?? '');
+        if (!more) break;
+        text.push(hardBreakOf(more[1]!));
+        i++;
+      }
+      blocks.push({
+        id: id(),
+        type: 'paragraph',
+        style: 'quote',
+        runs: parseInline(joinParagraph(text)),
+      });
       continue;
     }
     para.push(hardBreakOf(line));

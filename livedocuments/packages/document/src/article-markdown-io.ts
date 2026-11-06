@@ -164,8 +164,8 @@ const escapeHref = (href: string) => href.replace(/[\\()]/g, '\\$&');
 
 function runMarkdown(run: ArticleRun): string {
   // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
-  // alone written. A line break inside a heading, quote, list item or code reads back as a space (a body paragraph's
-  // is held as LINE_BREAK and written as a hard break, paragraphMarkdown).
+  // alone written. A line break inside a heading or code reads back as a space (a body paragraph's, a quote's or a
+  // list item's is held as LINE_BREAK and written as a hard break, brokenMarkdown).
   let out = run.code
     ? codeSpan(run.text.replace(/\n/g, ' '))
     : escapeText(run.text).replace(/\n/g, ' ');
@@ -219,17 +219,18 @@ const frontValue = (value: string) =>
 
 const PARAGRAPH_PREFIX: Record<string, string> = { h1: '# ', h2: '## ', h3: '### ', quote: '> ' };
 
-// A line break inside a body paragraph, held while its runs are written, then written as CommonMark's backslash hard
-// break. Each line it starts is escaped as a block's first line is, so it never reads back as a heading or a list.
+// A line break inside a body paragraph, a quote or a list item, held while its runs are written, then written as
+// CommonMark's backslash hard break. Each line it starts is escaped as a block's first line is, so it never reads back
+// as a heading or a list, and opens with `lead`: a quote's `> `, or a list item's indent under its text.
 const LINE_BREAK = '\ue011';
-function paragraphMarkdown(runs: readonly ArticleRun[]): string {
+function brokenMarkdown(runs: readonly ArticleRun[], lead = ''): string {
   const held = runsMarkdown(
     runs.map((r) => (r.code ? r : { ...r, text: r.text.replace(/\n/g, LINE_BREAK) })),
   );
   const lines = held.split(LINE_BREAK);
-  // A break at the paragraph's end has no line after it to break to (it would read back as a literal backslash).
+  // A break at the block's end has no line after it to break to (it would read back as a literal backslash).
   while (lines.length > 1 && !lines[lines.length - 1]!.trim()) lines.pop();
-  return lines.map(escapeLineStart).join('\\\n');
+  return lines.map(escapeLineStart).join(`\\\n${lead}`);
 }
 
 /** An article's writing as Markdown, in the form articleFromMarkdown reads. */
@@ -257,11 +258,14 @@ export function articleToMarkdown(flow: ArticleFlow): string {
     if (!isList) numbers = [];
     switch (b.type) {
       case 'paragraph': {
+        // A heading is one line (CommonMark's are); a quote keeps its line breaks, each line its own `> `.
         const prefix = PARAGRAPH_PREFIX[b.style ?? ''];
         lines.push(
           prefix === undefined
-            ? paragraphMarkdown(b.runs)
-            : prefix + escapeLineStart(runsMarkdown(b.runs)),
+            ? brokenMarkdown(b.runs)
+            : b.style === 'quote'
+              ? prefix + brokenMarkdown(b.runs, prefix)
+              : prefix + escapeLineStart(runsMarkdown(b.runs)),
           '',
         );
         break;
@@ -277,7 +281,11 @@ export function articleToMarkdown(flow: ArticleFlow): string {
             : b.list === 'todo'
               ? `- [${b.checked ? 'x' : ' '}]`
               : '-';
-        lines.push(`${'  '.repeat(level)}${marker} ${escapeLineStart(runsMarkdown(b.runs))}`);
+        // A line break carries the item on to a line indented under its text.
+        const indent = '  '.repeat(level);
+        lines.push(
+          `${indent}${marker} ${brokenMarkdown(b.runs, indent + ' '.repeat(marker.length + 1))}`,
+        );
         break;
       }
       case 'code': {

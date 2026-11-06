@@ -157,7 +157,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   writing that opens with a heading, quote, list item or code takes the block's place, so it keeps
   its kind; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links, and a
-  paragraph line ending in two spaces or a backslash as a line break); other
+  paragraph's, a quote's or a list item's line ending in two spaces or a backslash as a line break); other
   plain text pastes as paragraphs, one per line. A pasted table (from a spreadsheet, a web page,
   Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones. A paste of
   canvas elements (copied from a canvas) lands as a drawing zone holding them. A whole Word
