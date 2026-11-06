@@ -813,10 +813,10 @@ describe('ProximityCall in rooms', () => {
     zones,
   });
 
-  it('hears and sees the whole room at full volume, and nobody outside it, however close', async () => {
+  it('hears and sees the room by distance, and nobody outside it, however close', async () => {
     const { call } = makeCall();
     await call.start();
-    for (const id of ['far', 'outside']) {
+    for (const id of ['near', 'far', 'outside']) {
       receiveCallOp(id, {
         kind: 'call-track',
         tabId: 't1',
@@ -824,27 +824,22 @@ describe('ProximityCall in rooms', () => {
         video: loc(id, 'cam'),
       });
     }
-    // You in one corner, a colleague in the opposite one, somebody just past the front wall in the corridor.
-    call.update(
-      roomScene({ x: 20, y: 380 }, [
-        ['far', 580, 50],
-        ['outside', 20, 420],
-      ]),
-    );
+    // You in one corner, a colleague a step away, another in the opposite corner, somebody just past the front wall.
+    const others: [string, number, number][] = [
+      ['near', 60, 380],
+      ['far', 580, 50],
+      ['outside', 20, 420],
+    ];
+    call.update(roomScene({ x: 20, y: 380 }, others));
     const s = sfu.instances[0]!;
-    expect(callSelf().heard).toEqual(new Set(['far']));
+    expect(callSelf().heard).toEqual(new Set(['near']));
     expect(callSelf().someoneNear).toBe(true);
-    expect(s.want).toHaveBeenLastCalledWith([loc('far', 'mic'), loc('far', 'cam')]);
-    s.events.onTrack('fars', 'mic', {});
-    expect(graph.place).toHaveBeenLastCalledWith('far', 1, expect.any(Number));
+    expect(s.want).toHaveBeenLastCalledWith([loc('near', 'mic'), loc('near', 'cam')]);
+    s.events.onTrack('nears', 'mic', {});
+    expect(graph.place).toHaveBeenLastCalledWith('near', 1, expect.any(Number));
 
     // Stepping out into the corridor: the room goes, the neighbour comes, by distance.
-    call.update(
-      roomScene({ x: 60, y: 420 }, [
-        ['far', 580, 50],
-        ['outside', 20, 420],
-      ]),
-    );
+    call.update(roomScene({ x: 60, y: 420 }, others));
     expect(callSelf().heard).toEqual(new Set(['outside']));
     expect(s.want).toHaveBeenLastCalledWith([loc('outside', 'mic'), loc('outside', 'cam')]);
     s.events.onTrack('outsides', 'mic', {});
@@ -924,7 +919,7 @@ describe('ProximityCall with a stage', () => {
     call.update(
       hallScene({ x: 1320, y: 50 }, [
         ['speaker', 600, 120],
-        ['colleague', 1680, 280],
+        ['colleague', 1500, 150],
       ]),
     );
     const s = sfu.instances[0]!;
@@ -943,7 +938,7 @@ describe('ProximityCall with a stage', () => {
         { x: 1320, y: 50 },
         [
           ['speaker', 600, 120],
-          ['colleague', 1680, 280],
+          ['colleague', 1500, 150],
         ],
         stageAt({ stageCameras: true }),
       ),
