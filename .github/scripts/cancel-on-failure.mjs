@@ -23,13 +23,16 @@ export function shouldAct(eventName) {
 // head commit that are not finished. This run comes last (cancelling it may stop this step), and only
 // when cancelOwnRun is set.
 export function runsToCancel(runs, { headSha, ownRunId, cancelOwnRun }) {
-  const own = String(ownRunId);
+  const own = ownRunId ? Number(ownRunId) : null;
   const pick = runs.filter(
-    (run) => run.event === 'pull_request' && run.head_sha === headSha && UNFINISHED.has(run.status),
+    (run) =>
+      run.event === 'pull_request' &&
+      run.head_sha === headSha &&
+      UNFINISHED.has(run.status) &&
+      run.id !== own,
   );
-  const others = pick.filter((run) => String(run.id) !== own).map((run) => run.id);
-  const ids = [...new Set(others)];
-  if (cancelOwnRun && own) ids.push(Number(own));
+  const ids = [...new Set(pick.map((run) => run.id))];
+  if (cancelOwnRun && own) ids.push(own);
   return ids;
 }
 

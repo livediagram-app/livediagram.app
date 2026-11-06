@@ -11,7 +11,8 @@ on:
   workflow_dispatch:
 
 # Least privilege: CI only checks out and verifies. The jobs that upload coverage add id-token: write,
-# the OIDC token Codecov accepts in place of a secret.
+# the OIDC token Codecov accepts in place of a secret, and every job that fails fast adds actions: write,
+# to cancel the commit's other runs (docs/ci.md "Fail fast").
 permissions:
   contents: read
 
@@ -30,10 +31,10 @@ jobs:
     name: Plan
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # actions: read, to list this workflow's runs on main.
+    # actions: read, to list this workflow's runs on main; write, to fail fast (docs/ci.md "Fail fast").
     permissions:
       contents: read
-      actions: read
+      actions: write
     outputs:
       groups: ${{ steps.plan.outputs.groups }}
       editors: ${{ steps.plan.outputs.editors }}
@@ -84,12 +85,20 @@ jobs:
         timeout-minutes: 1
         run: node .github/scripts/drift-report.mjs
 
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   checks:
     name: Checks (${{ matrix.group }})
     needs: plan
     if: needs.plan.outputs.any == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -134,6 +143,11 @@ jobs:
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   tests:
     name: Tests (${{ matrix.group }})
     needs: plan
@@ -142,6 +156,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      actions: write
       id-token: write
     strategy:
       fail-fast: false
@@ -206,6 +221,11 @@ jobs:
       - name: Save turbo cache
         uses: ./.github/actions/turbo-cache-save
 
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   editor-tests:
     name: Editor unit tests (${{ matrix.group }}) ${{ matrix.shard }}/${{ matrix.total }}
     needs: plan
@@ -214,6 +234,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      actions: write
       id-token: write
     strategy:
       # Every shard reports, so one failing shard never hides another's failures.
@@ -247,12 +268,20 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
+
   build:
     name: Build (${{ matrix.group }})
     needs: plan
     if: needs.plan.outputs.any == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -280,6 +309,11 @@ jobs:
       # rather than at a deploy.
       - name: Staging config check
         run: pnpm turbo run staging:check --continue ${{ matrix.filters }}
+
+      # Fail fast (docs/ci.md "Fail fast"): a red job cancels the rest of this commit's CI and E2E.
+      - name: Cancel on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: ./.github/actions/cancel-on-failure
 
   # The pull request's coverage report, in its description (docs/ci.md "Coverage report"): patch coverage
   # and each reached product against main, from the lcov files the jobs above kept. Informational: it is
