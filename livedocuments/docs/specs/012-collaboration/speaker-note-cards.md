@@ -123,6 +123,11 @@ The deck is saved whole, so the server merges the slide's cards **card by card**
 - A slide still holds at most 20 cards after a merge: past that, the stored list's extras are read off by the usual
   parse.
 - A save that carries no base (an older editor, a script) is written as sent, as before.
+- **A merge never stores a deck past the deck cap** (256 KB). When this editor's deck fits but the merged one would
+  not (the other person's cards on top of a deck near the cap), the save is refused and nothing is written: the stored
+  deck keeps the other person's cards, and this editor says its notes are too long to save (below), so the speaker
+  shortens some and the next save merges again. Keeping only the sender's deck would drop the other person's cards
+  without either of them knowing.
 - New card ids are unique to the editor that made them (a counter and a few random characters), so two people adding a
   card at once never make one id for two cards.
 
@@ -141,8 +146,26 @@ on screen, so nothing typed is lost to the wait:
   for another page of the app.
 
 Each save carries the deck and the deck it was built on (above), so a save is up to twice the deck. The api bounds
-each of the two by the deck cap (256 KB) on its own, never their sum, so a deck at the cap still saves with its base
-and is merged; the whole request stays far under the api's 8 MB body cap.
+the deck by the deck cap (256 KB) and the deck it was built on by four times that (1 MB), each on its own, never their
+sum, so a deck at the cap still saves with its base and is merged; the whole request stays far under the api's 8 MB
+body cap. The base's wider bound lets a deck that was stored past the cap (before merges were held to it) be saved
+again once the speaker has shortened it.
+
+**When the page goes with a large deck**, the save must still outlive the page. A browser lets a closing page send
+about 64 KB in all, so a deck past what is left of that goes as only **the slides this editor changed**, each with the
+cards it was built on, and the server merges each into the stored deck card by card exactly as above; the rest of the
+stored deck is left as it is. That holds while the slides are the same ones in the same order as the deck it was built
+on (typing notes, renaming or hiding a slide). A save that added, removed or moved slides goes whole, as before, and
+lands only if the page lives long enough.
+
+**A refused or failed save says so.** The editor keeps the speaker's cards on screen either way and shows a message:
+
+- Too big to save (past the deck cap, alone or merged): "Speaker notes are too long to save. Shorten some cards."
+- Any other failure (the connection, the server): "Couldn’t save your speaker notes. Check your connection."
+- No longer allowed to edit, or the sign-in lapsed: the same messages as a tab's save.
+
+The next save is still built on the deck that was last **stored**, not on the one that failed, so the cards in a failed
+save are sent again as this editor's changes rather than read as someone else's removals.
 
 ## PowerPoint
 
