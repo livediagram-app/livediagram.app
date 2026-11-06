@@ -81,4 +81,16 @@ describe('useRowPointerDrag', () => {
     expect(hook.result.current.dragId).toBeNull();
     expect(onDrop).not.toHaveBeenCalled();
   });
+
+  it('drags from a button that is the row’s own (data-row-drag), as from its body', () => {
+    const { hook, onDrop } = setup();
+    const name = document.createElement('button');
+    name.setAttribute('data-row-drag', '');
+    act(() => hook.result.current.rowPointerDown('pixel')({ ...ev(60), target: name }));
+    act(() => hook.result.current.rowPointerMove(ev(50)));
+    expect(hook.result.current.dragId).toBe('pixel');
+    act(() => hook.result.current.rowPointerMove(ev(5)));
+    act(() => hook.result.current.rowPointerUp());
+    expect(onDrop).toHaveBeenLastCalledWith('pixel', 'group', 'above');
+  });
 });

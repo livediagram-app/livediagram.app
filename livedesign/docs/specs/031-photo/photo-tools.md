@@ -210,6 +210,9 @@ act only while a photo page is in focus and no text is being typed.
 
 - Every photo tool button, option and Layers row is reachable by keyboard and named for a screen reader (a tool by its
   name and shortcut; a layer row as "<name>, <kind>, <visible or hidden>, <opacity>%").
+- The Layers list is a plain list of rows, never a listbox: a row holds buttons (the eye, the fold, the thumbnails,
+  the menu), which an option may not. Each row's name is its own button carrying the row's name above, marked current
+  on the active layer; the active row's is the list's one tab stop, and the arrows step the active layer from it.
 - Changes announce themselves through the canvas's live region ("Brush stroke on Layer 2", "Selection: 640 by 480").
 - The marching ants and the cursor ring meet 3:1 against both light and dark pixels (a black and white dash pair).
 - Under reduced motion the ants hold still and the photo tools open their groups without sliding.

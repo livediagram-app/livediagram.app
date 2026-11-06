@@ -20,6 +20,16 @@ import { PhotoToolFlyout } from './PhotoToolFlyout';
 import { PhotoQuickPanel } from './PhotoQuickPanel';
 import { usePhotoDropPaste } from './usePhotoDropPaste';
 import { usePhotoShortcuts } from './usePhotoShortcuts';
+import { usePressOutsideDismiss } from './useToolFlyoutDismiss';
+
+// A press in these is the Layers sheet's own (photo-pages.md "The Photo panel"): the sheet, its Layers button (which
+// toggles it), and the menus, popovers, pickers and dialogs it opens, portalled out of it. The tools row is outside:
+// taking a tool puts the sheet away for the photo.
+const LAYERS_SHEET_INSIDE =
+  '[data-photo-layers-sheet], [data-photo-layers-button], [data-anchored-popover], [data-colour-picker], [data-photo-gradient-editor], [role="menu"], [role="dialog"], [role="alertdialog"]';
+// Escape in a field (a layer's name being typed), a menu, a popover or a dialog is that one's.
+const LAYERS_SHEET_ESCAPE_ELSEWHERE =
+  'input, textarea, select, [contenteditable="true"], [data-anchored-popover], [role="menu"], [role="dialog"], [role="alertdialog"]';
 
 export function PhotoChrome({
   photo,
@@ -39,6 +49,13 @@ export function PhotoChrome({
   const inspect = !!photo?.session && !photo.canEdit && photo.canInspect;
   usePhotoShortcuts(live ? photo : null);
   usePhotoDropPaste(live ? photo : null);
+  // A tap outside the sheet (the photo, the canvas, the tools row) or Escape puts it away, as the options sheet.
+  usePressOutsideDismiss(
+    mobile && sheet,
+    LAYERS_SHEET_INSIDE,
+    () => setSheet(false),
+    LAYERS_SHEET_ESCAPE_ELSEWHERE,
+  );
   if (!photo || !(live || inspect)) return null;
   const top = toolbarTopClearancePx(scale);
   if (mobile)
@@ -55,7 +72,11 @@ export function PhotoChrome({
           style={{ top }}
         />
         {sheet ? (
-          <BottomSheet onClose={() => setSheet(false)} zClassName="z-[var(--z-popover)]">
+          <BottomSheet
+            onClose={() => setSheet(false)}
+            zClassName="z-[var(--z-popover)]"
+            data-photo-layers-sheet=""
+          >
             <PhotoPanelBody photo={photo} />
           </BottomSheet>
         ) : null}
@@ -70,7 +91,9 @@ export function PhotoChrome({
             </div>
             <button
               type="button"
-              onClick={() => setSheet(true)}
+              data-photo-layers-button=""
+              aria-expanded={sheet}
+              onClick={() => setSheet((open) => !open)}
               className={`${CLUSTER_STRIP} shrink-0 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200`}
             >
               {/* The strip stretches its children: the name held in the middle of the rail's height. */}
