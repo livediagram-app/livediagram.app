@@ -182,7 +182,7 @@ function VoteStepper({
     return (
       <CounterScaled
         // Hung a third off the element's corner, so a small note keeps nearly all of its text in view.
-        className="lvd-vote-badge absolute bottom-0 right-0 origin-bottom-right"
+        className="lvd-vote-badge absolute bottom-0 right-0 z-10 origin-bottom-right"
         // A press on the badge opens it; it must not reach the element, whose own press casts a dot.
         onPointerDown={(e) => e.stopPropagation()}
       >
