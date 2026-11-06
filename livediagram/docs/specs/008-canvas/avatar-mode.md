@@ -140,7 +140,7 @@ through it, and on to the point you clicked.
 
 **Everyone sees everyone.** The character rides the presence channel as an `avatar` `RoomOp` (alongside `cursor` / `select` / `laser` / `tab-focus` in `@livediagram/api-schema`), so a whole room can walk around one canvas at once.
 
-- The packet is deliberately tiny: feet position, facing, the four costume tokens, walking flag, step frame, hop height, wave frame, and goes out at the **same ~30 Hz throttle as the cursor**, stepped down in a room of more than 10 ([A busy room](#a-busy-room)) (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**, so a packet from an older client still parses; the receiver runs it through the same field-by-field parser as storage and falls back to the default character.
+- The packet is deliberately tiny: feet position (to a hundredth of a canvas px), facing, walking flag and step frame, the hop height, wave frame, seat, drink, status and reaction only while they are set, and the four costume tokens only when a peer may not have them yet ([A busy room](#a-busy-room), "The costume rides only when it is needed"). It goes out at the **same ~30 Hz throttle as the cursor**, stepped down in a room of more than 10 ([A busy room](#a-busy-room)) (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**: a receiver keeps the last costume it saw for each peer, runs it through the same field-by-field parser as storage, and falls back to the default character only for a peer whose costume it has never been sent.
 - It is **ephemeral presence, not a mutation**: `avatar` is in the room's `PRESENCE_OP_KINDS`, so it relays unordered, from any role (**including view-role**: an audience member walking around a canvas someone linked them to is as harmless as their cursor), is never persisted, and is never replayed to a reconnecting client.
 - **Leaving the mode publishes `avatar: null`**, which deletes the entry on every peer, and a peer who disconnects is pruned with the rest of their presence, so nobody is left standing on a canvas after they've gone.
 - **A character standing still repeats itself, but only to someone who can see it.** A walk is published as it goes; a character standing still republishes an idle snapshot every three seconds (`AVATAR_HEARTBEAT_MS`), so whoever arrives after it stopped still sees it, the worst case being a presenter standing still while they talk. The heartbeat is skipped while you are alone in the room (the roster holds nobody else) and while the tab is hidden, because each beat wakes the room's Durable Object: a lone walker left in Avatar mode cost about 480 requests and 3,600 GB-s of room time every 8 hours, and kept the room from ever hibernating. One beat goes out at once when someone joins (the roster grows, whether or not the tab is visible) and when the tab comes back into view with someone in the room, so a newcomer still sees a character that is standing still, even after the room hibernated and forgot it. `useAvatarWalk` takes the roster's size as `peers`; an editor that does not know it leaves it unset and keeps the plain heartbeat.
@@ -165,7 +165,7 @@ CPU is the room's workerd process as a share of one core (2026-11-03, an M-serie
 saturated the room: it relayed under 5% of what it owed and everyone's characters froze. Stepping the rate down alone
 still saturates it (99% at 100); the coalescing is what brings it back. Spread over four tabs, 100 walkers cost 29%.
 
-The room keeps a crowd affordable with three rules ([API](../015-api/api.md), "A busy room bounds its presence
+The room keeps a crowd affordable with four rules ([API](../015-api/api.md), "A busy room bounds its presence
 fan-out"), shared by every product with Avatar mode:
 
 - **The send rate steps down with the room**: every 33 ms in a room of up to 10, 50 ms up to 32, 66 ms above that
@@ -176,6 +176,23 @@ fan-out"), shared by every product with Avatar mode:
   jump still land at once.
 - **The room relays a character only to the sockets on its tab, and coalesces each socket's samples per step** into
   one frame.
+- **The costume rides only when it is needed** (`createAvatarPacker` in `@liveworkspace/avatar/relay`, with
+  `leanAvatarPacket` and `expandAvatarPacket` in `@liveworkspace/api-schema/avatar`). A character's packet carries
+  its four costume tokens on the first packet a socket sends, on its first packet on a tab, when the costume changes,
+  when someone new joins the roster, and every two seconds (`AVATAR_COSTUME_REFRESH_MS`) as the net for anything
+  missed; every other packet leaves the costume out, and leaves out each field at its resting value (no hop, no
+  wave, no seat, no drink, step frame 0), with the position rounded to a hundredth of a canvas px. A receiver keeps
+  the last costume it saw for each peer and fills the resting values back in, so a lean packet draws the same
+  character a full one does. A standing character's heartbeat (every three seconds) is always due one. Measured
+  with the probe (2026-11-06, everyone walking on one tab), what the room sends a second drops from 788 to 428 KB at
+  10 walkers, 5,270 to 2,900 KB at 32 and 32,814 to 19,673 KB at 100: 307 to 168 bytes a relayed packet, 45% less.
+- **Mixed versions keep working.** An editor asks for lean packets with `leanAvatars: true` in its `hello`, and
+  sends them only once the room's `format` frame says `leanAvatars: true`, so against a room from before it keeps
+  sending full ones. The room remembers each walker's last costume: a socket that did not ask (an editor from
+  before) is sent each lean packet filled back out, costume and resting values, so it draws the right character,
+  and the catch-up a tab switch sends always carries the costume. The one gap is a room that hibernated, which
+  forgets the costumes: until a walker's next full packet (two seconds at most while walking, the next heartbeat
+  while standing), an older editor draws that walker in the default costume.
 
 A test in each product's api (`document-room-fanout.test.ts`) walks 10, 32 and 100 characters through the room and
 holds the bound: the frames each socket is sent per second, and the room's CPU time.
@@ -303,7 +320,7 @@ Per the no-god-files rule (`../packages/…` paths are the monorepo's shared pac
 
 - **`../packages/avatar/src/walk.ts`**: the pure geometry: one frame's step toward a target, the arrow-key direction vector, the facing from a delta, the camera-follow correction, the view centring (`viewportOffsetCentredOn`, which portal travel re-exports), and the element-under-the-feet lookup. Unit-tested (`walk.test.ts`; this product's kinds under the feet in `apps/editor/lib/avatar-walk.test.ts`); no React, no DOM.
 - **`../packages/avatar/src/walk.ts`** also holds the jump integration (`jumpStep`), the flag-wave frame clock (`waveFrame`), and the sprite hit-test (`hitTestAvatar`) the right-click look toggle uses.
-- **`../packages/api-schema/src/avatar.ts`** (`@liveworkspace/api-schema/avatar`): the costume vocabulary itself: the four choices as closed sets of preset tokens, the statuses, the presence packet and the `avatar` / `avatar-push` ops. In the wire package because the presence packet carries a costume to peers, so both ends must agree on the tokens; it was written out twice (named types in the editor, inline in the presence message) until they were unified.
+- **`../packages/api-schema/src/avatar.ts`** (`@liveworkspace/api-schema/avatar`): the costume vocabulary itself: the four choices as closed sets of preset tokens, the statuses, the presence packet with its lean form (`leanAvatarPacket`, `expandAvatarPacket`) and the `avatar` / `avatar-push` ops. In the wire package because the presence packet carries a costume to peers, so both ends must agree on the tokens; it was written out twice (named types in the editor, inline in the presence message) until they were unified.
 - **`../packages/avatar/src/config.ts`**: everything the editor does with that vocabulary: the option catalogues (one source for the panel's rows AND the parser's validation, with their ids typed against the shared unions), the silhouette sets, the size scale, the random first-use roll, the field-by-field parser, and the localStorage read / write under the bound prefix. Re-exports the types so its importers keep one path. Unit-tested (including that every rolled value parses back, so the catalogues and the roll can't drift); no React.
 - **`../packages/workbench/src/components/primitives/AccordionSection.tsx`**: the shared single-open accordion row (header + chevron + grid-rows body), now used by the Avatar Panel and the Settings dialog (including its Keyboard category's shortcut groups).
 - **`../packages/avatar/src/reactions.ts`**: the five reactions, their durations, and `reactionPose(kind, elapsedMs)`: a pure timeline that turns "this reaction, this far in" into the pose inputs the sprite already draws (hop height, facing, arms, stance, lean). Unit-tested (five jack reps, two spin turns, no arms-up-two-ways-at-once, everything back to standing when done), and pure precisely so a peer can replay a performance from a kind + a clock.
