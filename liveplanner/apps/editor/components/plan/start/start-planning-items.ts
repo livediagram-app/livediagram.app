@@ -26,7 +26,8 @@ import { SHEET_TEMPLATES } from '@liveplanner/sheets';
 import { FORM_STARTERS, type StarterId } from '@liveplanner/forms';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 
-export type StartKind = 'board' | 'sheet' | 'form' | 'visualisation' | 'dashboard' | 'template';
+export type StartKind =
+  'board' | 'sheet' | 'form' | 'visualisation' | 'dashboard' | 'template' | 'import';
 
 export type StartItem = {
   id: string;
@@ -52,12 +53,26 @@ export type StartItem = {
   | { kind: 'visualisation'; view: PlanVisualisation }
   // A Plan template: a way of working set up across tabs (Inspiration).
   | { kind: 'template'; template: PlanTemplateKind }
+  // Opens the one Import dialog on its list (plan-tabs.md "The Import dialog"): every way in stays there.
+  | { kind: 'import' }
 );
 
 export type StartCategory =
-  'recommended' | 'boards' | 'sheets' | 'forms' | 'visualisations' | 'dashboards' | 'inspiration';
+  | 'recommended'
+  | 'boards'
+  | 'sheets'
+  | 'forms'
+  | 'visualisations'
+  | 'dashboards'
+  | 'inspiration'
+  // Not on the rail: Import is one card, in Recommended and in a search's results.
+  | 'import';
 
-export const START_CATEGORIES: readonly { id: StartCategory; name: string; line: string }[] = [
+export const START_CATEGORIES: readonly {
+  id: Exclude<StartCategory, 'import'>;
+  name: string;
+  line: string;
+}[] = [
   {
     id: 'recommended',
     name: 'Recommended',
@@ -209,7 +224,7 @@ const START_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
   'dashboard:report': ['metrics', 'charts', 'summary', 'stakeholders', 'update', 'kpi'],
 };
 
-// Recommended, in order.
+// Recommended, in order: Import last, for someone moving from another tool.
 const RECOMMENDED_IDS = [
   'board:roadmap',
   'board:kanban',
@@ -217,7 +232,33 @@ const RECOMMENDED_IDS = [
   'dashboard:overview',
   'sheet:blank',
   'form:feedback',
+  'import',
 ] as const;
+
+// The one Import card (docs/specs/026-plan/plan-mode.md "Starting a board"): found by the tools' names and what moving
+// work in is called.
+export const IMPORT_ITEM: StartItem = {
+  id: 'import',
+  kind: 'import',
+  name: 'Import',
+  line: 'Bring work in from Trello, Asana, Jira or Linear, or a file you exported.',
+  keywords: [
+    'trello',
+    'asana',
+    'jira',
+    'linear',
+    'csv',
+    'tsv',
+    'json',
+    'file',
+    'upload',
+    'migrate',
+    'move',
+    'switch',
+    'bring in',
+    'another tool',
+  ],
+};
 
 // The sheet starts, in Start Planning's order: the empty sheet, the card table (only with cards), then every sheet
 // template (docs/specs/029-sheets/sheet.md "Sheet templates").
@@ -341,6 +382,7 @@ export function startItems({
     ...suggested,
     ...dashboards,
     ...templates,
+    IMPORT_ITEM,
   ].map((i) => (START_KEYWORDS[i.id] ? { ...i, keywords: START_KEYWORDS[i.id] } : i));
 }
 
@@ -351,6 +393,7 @@ const KIND_OF: Record<Exclude<StartCategory, 'recommended'>, StartKind> = {
   visualisations: 'visualisation',
   dashboards: 'dashboard',
   inspiration: 'template',
+  import: 'import',
 };
 
 export const KIND_NAMES: Record<StartKind, string> = {
@@ -360,6 +403,7 @@ export const KIND_NAMES: Record<StartKind, string> = {
   visualisation: 'Chart',
   dashboard: 'Dashboard',
   template: 'Template',
+  import: 'Import',
 };
 
 // What a category shows.
@@ -394,7 +438,9 @@ export function searchStartItems(
       .join(' ')
       .toLowerCase();
   const found = items.filter((i) => words.every((w) => hay(i).includes(w)));
-  return (['boards', 'sheets', 'forms', 'visualisations', 'dashboards', 'inspiration'] as const)
+  return (
+    ['boards', 'sheets', 'forms', 'visualisations', 'dashboards', 'inspiration', 'import'] as const
+  )
     .map((category) => ({ category, items: found.filter((i) => i.kind === KIND_OF[category]) }))
     .filter((g) => g.items.length > 0);
 }

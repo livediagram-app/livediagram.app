@@ -18,9 +18,11 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 
 - Every tab is in **Plan**, the one editor mode ([Editor mode](../007-editor/editor-modes.md)); a stored `opensIn` is
   ignored. No tab menu lists modes.
-- The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), four tiles two by two:
-  **Dashboard** a Dashboard tab, **Board** (then a preset) a Board tab, **Spreadsheet** (then a start) a Sheet tab,
-  and a search reaches Plan's templates. The choice sets the tab's kind and adds its element in one change, one undo step.
+- The kind is chosen on **Start Planning** ([Plan mode](plan-mode.md#starting-a-board)), a rail of
+  categories beside a grid of cards: a board type makes a Board tab, a sheet start a Sheet tab, a form starter a Form
+  tab, a Visualisation one chart filling the tab, a layout (or one built from the plan's work) a Dashboard tab, and an
+  Inspiration template applies across tabs; its search reaches every one. Recommended ends with **Import**, which
+  places nothing: it opens [the Import dialog](#the-import-dialog). The choice sets the tab's kind and adds its element in one change, one undo step.
   A Dashboard started on a tab still on its default name ("Tab 5") is named **Dashboard**; a name someone gave the tab
   stays.
 - Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
@@ -59,9 +61,12 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
 ## The Import dialog
 
 **One dialog holds every way in.** The tab menu's **Import…** row (on every tab, from its **⋯** and the canvas
-right-click menu alike) and the command palette's **Import…** both open it; nothing else in the editor offers an
+right-click menu alike), the command palette's **Import…** and Start Planning's **Import** card (an empty tab,
+[Starting a board](plan-mode.md#starting-a-board)) open it; nothing else in the editor offers an
 import of its own beside it. It is headed **Import**, "Choose what to bring in, or drop a file here.", with the
-Import Tabs help link and Close, and opens on its list:
+Import Tabs help link and Close, and opens on its list, focus on the list's first row that can be pressed (Into This
+Tab, or Trello when that row is dimmed): the format is the first decision. On a touch screen focus stays on the panel,
+as every dialog's does, so no row lights up unasked.
 
 - **Into This Tab**: what the tab itself takes, one row.
   - A **Board tab**: **CSV**, "A .csv or .tsv, each row a new card on this board." Pressing it closes the dialog and

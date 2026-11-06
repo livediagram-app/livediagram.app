@@ -85,7 +85,12 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     card is a row (its picture 96 by 72 px at the left, its name, badge and line, two lines at most, beside it, no
     card-type chips), so a screen holds several.
     - **Recommended** ("The quickest ways to start, picked for most teams."): the Roadmap, Kanban and To-do List boards,
-      the Overview dashboard, the Empty Sheet, and the Feedback form.
+      the Overview dashboard, the Empty Sheet, and the Feedback form, then, for an Editor, **Import** ("Bring work in
+      from Trello, Asana, Jira or Linear, or a file you exported."; a picture of the four tools' marks flowing into a
+      board, no kind badge). Choosing it opens the one [Import dialog](plan-tabs.md#the-import-dialog) on its list
+      (nothing is placed; the tab stays empty until the import lands), so every way in stays in that dialog; there is
+      no row per tool here. It shows in no other category; a search finds it by "import", a tool's name, "csv",
+      "json", "migrate" and the like, under its own **Import** heading.
     - **Boards** ("Columns of cards for the work to move through."): every board type in `PLAN_BOARD_TILES`' order,
       Blank first, All Cards last, the Archive board left out.
     - **Spreadsheets** ("Cells, formulas and charts, beside your boards."): **Empty Sheet** ("A blank grid, ready to
@@ -140,7 +145,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     `templateKeywords`, the words every template search reads: what
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
-    grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**, after a **Best Match** of the choices whose name begins
+    grouped under **Boards**, **Spreadsheets**, **Dashboards**, **Inspiration** and **Import**, after a **Best Match** of the choices whose name begins
     with what was typed ([Start panel → A title match leads](../007-editor/start-panel.md#the-panel)); the rail shows no choice while a search is typed, and
     Escape clears it. It finds Plan's own choices only, never a template of a retired mode. Nothing
     found: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").

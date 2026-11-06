@@ -15,10 +15,26 @@ import {
 import type { TrackerImportActions, TrackerTarget } from '@/hooks/plan/useTrackerImport';
 import { ImportTabDialog } from '../ImportTabDialog';
 import { peopleLine } from './TrackerPreviewView';
-import { TRACKER_NOT_LOADED } from './useTrackerFlow';
+import { TRACKER_FILE_LOST, TRACKER_NOT_LOADED, TRACKER_UNREADABLE } from './useTrackerFlow';
 
 const picker = vi.hoisted(() => ({ pickTabFile: vi.fn() }));
 vi.mock('@/lib/import-tab', () => picker);
+// The worker's tasks, run on the page as they are without Workers; `lost` makes every plan fail, as one does when the
+// worker has let the board go.
+const worker = vi.hoisted(() => ({ lost: false }));
+vi.mock('@/lib/tracker-worker/tracker-worker-client', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/tracker-worker/tracker-worker-client')>();
+  const tasks = real.createTrackerTasks(null);
+  return {
+    ...real,
+    trackerTasks: () => ({
+      run: (task: Parameters<typeof tasks.run>[0]) =>
+        worker.lost && task.kind === 'plan'
+          ? Promise.reject(new Error('tracker board gone'))
+          : tasks.run(task),
+    }),
+  };
+});
 
 const JIRA = [
   'Summary,Issue key,Status,Assignee,Comment',
@@ -82,6 +98,7 @@ async function choose(row = 'Jira') {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  worker.lost = false;
 });
 
 describe('TrackerImportPanel: reading the file', () => {
@@ -253,6 +270,44 @@ describe('TrackerImportPanel: the preview', () => {
   });
 });
 
+describe('TrackerImportPanel: a board the worker let go', () => {
+  // The plan changed since the preview, so Import plans again, and that plan fails.
+  const changed = () => tracker({ tab: [ctx(), ctx({ boardId: 'b2', room: ITEMS_MAX - 1 })] });
+
+  it('dims the tab with its own reason and moves to the new plan already previewed', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const t = changed();
+    pick(JIRA);
+    open(t);
+    await choose();
+    // A new plan previewed, then back to the tab.
+    fireEvent.click(await screen.findByRole('radio', { name: /New Plan/ }));
+    await waitFor(() =>
+      expect(screen.getByRole('radio', { name: /New Plan/ })).toHaveProperty('ariaChecked', 'true'),
+    );
+    fireEvent.click(screen.getByRole('radio', { name: /New Board Tab/ }));
+    worker.lost = true;
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect((await screen.findByRole('status')).textContent).toContain(TRACKER_FILE_LOST);
+    expect(screen.getByRole('status').textContent).not.toContain(TRACKER_NOT_LOADED);
+    expect(screen.getByRole('radio', { name: /New Plan/ })).toHaveProperty('ariaChecked', 'true');
+    expect(t.importPlan).not.toHaveBeenCalled();
+  });
+
+  it('asks for the file again when no new plan was previewed', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const t = changed();
+    pick(JIRA);
+    open(t);
+    await choose();
+    await screen.findByRole('radio', { name: /New Board Tab/ });
+    worker.lost = true;
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect(await screen.findByText(TRACKER_UNREADABLE)).toBeTruthy();
+    expect(t.importPlan).not.toHaveBeenCalled();
+  });
+});
+
 describe('TrackerImportPanel: where it goes', () => {
   it('dims the tab choice with the reason when the plan has no room, and imports into a new plan', async () => {
     const t = tracker({ tab: [ctx({ room: 1 })] });
@@ -306,6 +361,33 @@ describe('TrackerImportPanel: the import', () => {
     await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
     expect(t.importPlan).toHaveBeenCalledWith(expect.objectContaining({ source: 'jira' }), 'tab');
     expect(t.contextFor.mock.calls.map((c) => c[0])).toEqual(['tab', 'tab']);
+  });
+
+  // The plan's board id tells them apart: the preview's (b1) when reused, the fresh context's (b2) when planned again.
+  it('imports the preview’s own plan while what it read of this plan is unchanged', async () => {
+    const t = tracker({ tab: [ctx(), ctx({ boardId: 'b2' })] });
+    pick(JIRA);
+    const { onDone } = open(t);
+    await choose();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
+    expect(t.importPlan).toHaveBeenCalledWith(
+      expect.objectContaining({ board: expect.objectContaining({ id: 'b1' }) }),
+      'tab',
+    );
+  });
+
+  it('plans again when cards came or went since the preview', async () => {
+    const t = tracker({ tab: [ctx(), ctx({ boardId: 'b2', room: ITEMS_MAX - 1 })] });
+    pick(JIRA);
+    const { onDone } = open(t);
+    await choose();
+    fireEvent.click(await screen.findByRole('button', { name: 'Import' }));
+    await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
+    expect(t.importPlan).toHaveBeenCalledWith(
+      expect.objectContaining({ board: expect.objectContaining({ id: 'b2' }) }),
+      'tab',
+    );
   });
 
   it('moves to a new plan, importing nothing, when the plan filled up since the preview', async () => {
