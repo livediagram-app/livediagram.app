@@ -100,7 +100,7 @@ out of one row.
 
 **Participants and Viewers cannot hold it.** The tools it governs write to the
 document, so a baton a read-only person cannot use would be a trap. The action
-is shown greyed with the reason ("Only Editors can run a session") rather than
+is shown greyed with the reason ("Only Editors can run a meeting") rather than
 hidden, so the rule is learnable. Nor can they hand a free baton to somebody
 else: on another person's row they see no verb, since the room would refuse it.
 
