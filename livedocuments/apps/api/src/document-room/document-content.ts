@@ -3,11 +3,14 @@
 // import. Runs inside the document's Durable Object, on `env.DOCUMENT_DB`.
 
 import {
+  applyDeckSlidePatch,
   mergePresentationNoteCards,
   parseStoredPresentation,
   remapTabLinks,
+  type DeckSlidePatch,
   type Element,
 } from '@livedocuments/document';
+import { MAX_DECK_LEN } from '../limits';
 import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { redactTabDataAuthors } from '../comments';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
@@ -219,6 +222,31 @@ export async function setDocumentPresentation(
     .run();
 }
 
+// What a merged deck write did: written, or refused because the merged deck is past the deck cap.
+export type DeckWrite = 'written' | 'too_large';
+
+async function readStoredPresentation(env: DocumentEnv, documentId: string) {
+  const row = await env.DOCUMENT_DB.prepare('SELECT presentation FROM document WHERE id = ?')
+    .bind(documentId)
+    .first<{ presentation: string | null }>();
+  return parseStoredPresentation(row?.presentation ?? null);
+}
+
+// A merge never stores a deck past the cap (speaker-note-cards.md "Two people writing at once"): refused whole, so the
+// stored deck keeps the other person's cards and the sender is told.
+async function writeMergedPresentation(
+  env: DocumentEnv,
+  documentId: string,
+  merged: string,
+): Promise<DeckWrite> {
+  if (merged.length > MAX_DECK_LEN) {
+    console.warn('[deck] merged deck refused past the cap', { length: merged.length });
+    return 'too_large';
+  }
+  await setDocumentPresentation(env, documentId, merged);
+  return 'written';
+}
+
 // A deck save that says what it was built on (docs/specs/012-collaboration/speaker-note-cards.md "Two people writing at
 // once"): each slide's note cards merged by card id with the stored deck, then written. The read and the write are
 // this object's own storage with no other I/O between them, so a second save cannot slip in between and be lost. A
@@ -228,18 +256,31 @@ export async function mergeDocumentPresentation(
   documentId: string,
   presentation: string,
   base: string | null,
-): Promise<void> {
-  const row = await env.DOCUMENT_DB.prepare('SELECT presentation FROM document WHERE id = ?')
-    .bind(documentId)
-    .first<{ presentation: string | null }>();
+): Promise<DeckWrite> {
+  const theirs = await readStoredPresentation(env, documentId);
   const mine = parseStoredPresentation(presentation);
-  const theirs = parseStoredPresentation(row?.presentation ?? null);
   const before = base === null ? null : parseStoredPresentation(base);
   const merged =
     mine && theirs && (base === null || before)
       ? JSON.stringify(mergePresentationNoteCards(mine, before, theirs))
       : presentation;
-  await setDocumentPresentation(env, documentId, merged);
+  return writeMergedPresentation(env, documentId, merged);
+}
+
+// The unload save of a large deck (speaker-note-cards.md "Saving"): only the slides the editor changed, each merged
+// into the stored deck card by card (applyDeckSlidePatch), the rest of the stored deck left as it is. The same one
+// read and one write as a merge, under the same cap.
+export async function patchDocumentPresentation(
+  env: DocumentEnv,
+  documentId: string,
+  patch: DeckSlidePatch,
+): Promise<DeckWrite> {
+  const stored = await readStoredPresentation(env, documentId);
+  return writeMergedPresentation(
+    env,
+    documentId,
+    JSON.stringify(applyDeckSlidePatch(stored, patch)),
+  );
 }
 
 // ---------- Copies --------------------------------------------------------------------------------------------

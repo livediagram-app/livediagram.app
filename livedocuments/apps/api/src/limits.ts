@@ -74,6 +74,11 @@ export const MAX_NAME_LEN = 500;
 // bound a hostile payload, not to constrain any real deck.
 export const MAX_DECK_LEN = 256 * 1024;
 
+// The deck a deck save was built on (docs/specs/012-collaboration/speaker-note-cards.md "Saving", blueprint NC6):
+// read only to merge against, so it may run past the deck cap, which lets a deck stored past it (before merges were
+// held to it) be saved again once it is shortened. Safe range: 1x to 8x MAX_DECK_LEN, under MAX_BODY_BYTES.
+export const MAX_DECK_BASE_LEN = 4 * MAX_DECK_LEN;
+
 // The client-claimed document-write key relayed on presence. Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.
