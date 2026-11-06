@@ -112,7 +112,17 @@ describe('session panes', () => {
       hideCounts: true,
       layerId: undefined,
       onePerElement: true,
+      onlyWithText: false,
     });
+  });
+
+  it('starts a text-only vote when Only items with text is switched on', () => {
+    const p = props();
+    render(<Vote {...p} />);
+    const card = screen.getByRole('button', { name: /Only items with text/ });
+    fireEvent.click(card);
+    fireEvent.click(screen.getByRole('button', { name: 'Start vote' }));
+    expect(p.onStartVote).toHaveBeenCalledWith(3, expect.objectContaining({ onlyWithText: true }));
   });
 
   it('hides the per-item choice when everyone has a single dot', () => {

@@ -197,12 +197,13 @@ function BoxedElementViewImpl({
   // skips the axis-aligned snap. `isRotated` drives the wrapper transform.
   const rotation = rotationOf(element);
   const isRotated = rotation % 360 !== 0;
-  // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md). Only while casting is OPEN: after End
+  // Layer-scoped or text-only vote (docs/specs/012-collaboration/vote-layer-scope.md, session-tools.md "Only items
+  // with text"): either narrows the votable set, so either shows it. Only while casting is OPEN: after End
   // vote the canvas goes back to normal so the results walkthrough reads
   // against the full canvas. `votableInVote` already folds in the kind
   // rule, so a text element on the votable layer dims too — correct, it
   // can't take a dot either.
-  const voteScoped = vote?.active === true && !!vote.voteLayerId;
+  const voteScoped = vote?.active === true && (!!vote.voteLayerId || vote.onlyWithText === true);
   const voteDimmed = voteScoped && !votableInVote;
   const voteHighlighted = voteScoped && votableInVote === true;
   const label = element.label ?? '';

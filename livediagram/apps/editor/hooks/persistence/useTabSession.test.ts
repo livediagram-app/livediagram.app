@@ -111,6 +111,18 @@ describe('extendTimer', () => {
   });
 });
 
+describe('only items with text', () => {
+  it('bakes the choice into the vote only when it is on', () => {
+    const on = harness();
+    on.session().startVote(3, { hideCursors: false, hideCounts: false, onlyWithText: true });
+    expect(on.tab().vote?.onlyWithText).toBe(true);
+
+    const off = harness();
+    off.session().startVote(3, { hideCursors: false, hideCounts: false, onlyWithText: false });
+    expect(off.tab().vote).not.toHaveProperty('onlyWithText');
+  });
+});
+
 describe('one dot per item', () => {
   it('bakes the choice into the vote only when it is on', () => {
     const on = harness();
