@@ -49,7 +49,10 @@ export function EditWalkToggle({
     run: () => void,
     blockedHere = false,
   ) => (
-    <HoverCard title={label} description={blockedHere ? walkBlockedReason : editWalkHint(id, mobile)}>
+    <HoverCard
+      title={label}
+      description={blockedHere ? walkBlockedReason : editWalkHint(id, mobile)}
+    >
       <button
         type="button"
         data-edit-walk={id}
@@ -63,7 +66,11 @@ export function EditWalkToggle({
           run();
         }}
         className={`${SEGMENT} ${named ? 'pl-2 pr-2.5' : 'w-9 phone:w-11'} ${
-          on ? 'cursor-default text-white' : blockedHere ? BLOCKED : `cursor-pointer ${SEGMENT_REST}`
+          on
+            ? 'cursor-default text-white'
+            : blockedHere
+              ? BLOCKED
+              : `cursor-pointer ${SEGMENT_REST}`
         }`}
       >
         <span aria-hidden className="flex h-4 w-4 items-center justify-center">
@@ -103,7 +110,12 @@ export function EditWalkStrip({ children }: { children: ReactNode }) {
         e.stopPropagation();
       }}
     >
-      <div data-tour-id="palette" data-floating-panel="" data-split-chrome="" className={CARD_CLASS}>
+      <div
+        data-tour-id="palette"
+        data-floating-panel=""
+        data-split-chrome=""
+        className={CARD_CLASS}
+      >
         {children}
       </div>
     </div>

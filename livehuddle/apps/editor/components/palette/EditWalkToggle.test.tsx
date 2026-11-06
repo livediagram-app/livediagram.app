@@ -108,7 +108,9 @@ describe('EditWalkToggle', () => {
 describe('editWalkHint', () => {
   it('names the key on a desktop', () => {
     expect(editWalkHint('edit', false)).toBe('Select and build the board. Shortcut: E.');
-    expect(editWalkHint('walk', false)).toBe('Walk round the board as your character. Shortcut: W.');
+    expect(editWalkHint('walk', false)).toBe(
+      'Walk round the board as your character. Shortcut: W.',
+    );
   });
 
   it('leaves the key out on a phone', () => {

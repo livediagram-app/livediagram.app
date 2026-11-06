@@ -299,9 +299,9 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 describe('canvas tool commands', () => {
   it('offers Walk while editing and Edit while walking', () => {
     expect(ids(base).filter((id) => id.startsWith('tool:'))).toEqual(['tool:avatar']);
-    expect(ids({ ...base, canvasTool: 'avatar' }).filter((id) => id.startsWith('tool:'))).toEqual(
-      ['tool:select'],
-    );
+    expect(ids({ ...base, canvasTool: 'avatar' }).filter((id) => id.startsWith('tool:'))).toEqual([
+      'tool:select',
+    ]);
   });
 
   it('names them Edit and Walk', () => {

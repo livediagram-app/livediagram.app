@@ -9,6 +9,7 @@ import { heading } from './template-session-parts';
 import {
   officePlan,
   wayIn,
+  padCentreClearBelow,
   wayInBeside,
   WAY_IN_PAD_W,
   type OfficePiece,
@@ -189,9 +190,10 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
       // the plan: seen at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where
       // the bottom-right cluster floats, and a way in under the pod sat under the cluster. Here the pad is level with
       // the pod's lower half, with open floor under it and a short walk round to the door.
+      // Never so high that someone standing on it would stand in the board.
       ...wayInBeside(
         x0 + width,
-        (boardBottom + y0 + HEAD + POD_H) / 2,
+        Math.max((boardBottom + y0 + HEAD + POD_H) / 2, padCentreClearBelow(boardBottom)),
         'You arrive on the Avatar Pad. Take a desk, and meet at the table for the stand-up.',
         BOARD_W - WAY_IN_PAD_W - 20,
       ),

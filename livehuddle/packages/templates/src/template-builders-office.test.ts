@@ -212,7 +212,11 @@ describe('the space templates', () => {
     const walk = els.find((e) => e.type === 'shape' && e.shape === 'avatar-pad') as Box;
     const stickies = els.filter((e) => e.type === 'sticky') as Box[];
     expect(walk.x).toBeGreaterThanOrEqual(pod.x + pod.width);
-    expect(walk.y + walk.height).toBeLessThanOrEqual(pod.y + pod.height);
+    // Level with the pod's lower half: it starts above the pod's bottom edge, low enough that a character on it
+    // stands clear of the board (the Spaces' pad rule).
+    expect(walk.y).toBeLessThan(pod.y + pod.height);
+    // And well above the plan's bottom edge (the pod's bottom plus the plan's 120 px margin), #580's cluster.
+    expect(walk.y + walk.height).toBeLessThanOrEqual(pod.y + pod.height + 120 / 2);
     expect(walk.y).toBeGreaterThanOrEqual(Math.max(...stickies.map((s) => s.y + s.height)));
     expect(count(els, 'desk')).toBe(4);
     expect(count(els, 'meeting-table')).toBe(1);

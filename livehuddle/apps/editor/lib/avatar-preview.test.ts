@@ -35,8 +35,11 @@ describe('previewView (docs/specs/008-canvas/avatar-mode.md "The preview, beside
 
   it('shows a status, None included', () => {
     expect(
-      previewView({ kind: 'status', status: 'focus', label: 'Focusing' }, DEFAULT_AVATAR_CONFIG, null)
-        .status,
+      previewView(
+        { kind: 'status', status: 'focus', label: 'Focusing' },
+        DEFAULT_AVATAR_CONFIG,
+        null,
+      ).status,
     ).toBe('focus');
     expect(
       previewView({ kind: 'status', status: null, label: 'None' }, DEFAULT_AVATAR_CONFIG, 'away')

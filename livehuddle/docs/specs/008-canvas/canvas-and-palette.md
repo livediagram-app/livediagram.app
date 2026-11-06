@@ -680,12 +680,12 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 
 **Tools** (plain key, no modifier; non-mutating tools work for view-role visitors too):
 
-| Key       | Tool                                                                            |
-| --------- | ------------------------------------------------------------------------------- |
+| Key       | Tool                                                                               |
+| --------- | ---------------------------------------------------------------------------------- |
 | `E` / `V` | Edit (`S` is a legacy alias of `V`; with the Toolbar strip's Search, `S` opens it) |
-| `W`       | Walk ([Avatar mode](avatar-mode.md#the-edit--walk-toggle)), from Edit            |
-| `P`       | Freehand pencil                                                                 |
-| `6`       | Shape Pen (the same stroke, recognised; [Stickers](../010-palette/stickers.md)) |
+| `W`       | Walk ([Avatar mode](avatar-mode.md#the-edit--walk-toggle)), from Edit              |
+| `P`       | Freehand pencil                                                                    |
+| `6`       | Shape Pen (the same stroke, recognised; [Stickers](../010-palette/stickers.md))    |
 
 **Add elements** (plain key: drops the element, mirroring the palette tile):
 

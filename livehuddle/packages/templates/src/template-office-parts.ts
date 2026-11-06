@@ -13,6 +13,9 @@ import {
   type RoomDoor,
   type ShapeKind,
 } from '@livehuddle/document';
+import { avatarScale } from '@liveworkspace/avatar/config';
+import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
+import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import { CANVAS_TONES } from './template-inks';
 import { heading } from './template-session-parts';
 
@@ -115,6 +118,15 @@ export const WAY_IN_HALF = PAD_W / 2;
 // "Every Space and blank tab has one", D215): the character standing on its core (32 px under the pad's top) is a
 // Regular figure 99 px tall, so its head stays 5 px clear of the wall.
 export const WAY_IN_CLEAR = 72;
+
+/**
+ * The least pad centre (canvas y) at which everyone arriving stands clear of `above` by `gap`: a Regular character,
+ * feet on the pad's core, its head and whatever it wears over it (avatarFigureHeight) below that edge.
+ */
+export function padCentreClearBelow(above: number, gap = 16): number {
+  const feet = avatarPadCore({ x: 0, y: 0, ...AVATAR_PAD_DEFAULT_SIZE }).y;
+  return above + gap + avatarFigureHeight(avatarScale('regular')) - feet + PAD_H / 2;
+}
 
 /**
  * The way in (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): the Space's Avatar Pad, where

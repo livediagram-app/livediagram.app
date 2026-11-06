@@ -208,7 +208,7 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 - Message popover: a bare `StripPopover` named **Say Something** (`role="dialog"`), holding `AvatarMessagePopover`
   with livehuddle's flyout parts passed in: `FlyoutHeader` (the speech glyph, "Say Something", "Words that float up
   above your head."), the body at the flyout body's padding (`FLYOUT_BODY_CLASS`), the draft as `SpeechDraftField
-  framed` (the shared `TextArea`, compact, 3 to 6 lines), the hint "Up to 50 words." / "One moment…" and the counter
+framed` (the shared `TextArea`, compact, 3 to 6 lines), the hint "Up to 50 words." / "One moment…" and the counter
   under it, and the actions in the flyout footer bar (`FLYOUT_FOOTER_CLASS`): Cancel (secondary) then Send (primary,
   paper plane), disabled while blank or cooling down. Without a header (livediagram's Avatar panel) it keeps its small
   title and stacked layout, the field framed the same way.

@@ -7,8 +7,7 @@ import type { PendingDraw } from './draw-mode';
 import type { WhiteboardPen } from './whiteboard-prefs';
 
 // No highlighter: a whiteboard's pens are its markers (docs/specs/023-draw-mode/draw-mode.md).
-export type WhiteboardTool =
-  'select' | 'pen' | 'path' | 'fill' | 'sticky' | 'text' | 'shape';
+export type WhiteboardTool = 'select' | 'pen' | 'path' | 'fill' | 'sticky' | 'text' | 'shape';
 
 export function activeWhiteboardTool(pendingDraw: PendingDraw | null): WhiteboardTool {
   switch (pendingDraw?.type) {

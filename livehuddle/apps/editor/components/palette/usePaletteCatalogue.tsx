@@ -19,13 +19,7 @@ import type { AddShapeOptions } from '@/lib/draw-mode';
 // `onTileUsed` is the host's hook into "a tile was used": the strip closes
 // its More popover. Every add-handler calls it, so a tile behaves the same
 // from any category and any surface.
-type Deps = Pick<
-  PaletteProps,
-  | 'canvasTool'
-  | 'onExitAvatarMode'
-  | 'pendingDraw'
-  | 'onTileUsed'
-> &
+type Deps = Pick<PaletteProps, 'canvasTool' | 'onExitAvatarMode' | 'pendingDraw' | 'onTileUsed'> &
   PaletteAddHandlers;
 
 export function usePaletteCatalogue({

@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion         |
 | `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Travel** (`tileGroup: 'travel'`)                  |
 | `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                           |
-| `apps/editor/components/palette/EditWalkToggle.tsx`               | Walk is always on the Edit | Walk toggle                                  |
+| `apps/editor/components/palette/EditWalkToggle.tsx`               | Walk is always on the Edit                                                | Walk toggle |
 | `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                  |
 | `packages/api-schema/src/telemetry-schema.ts`                     | `Avatar-pad` element type token                                           |
 | `packages/templates/src/template-office-parts.ts`                 | `wayIn`: a Space's pad and how-to line; `WAY_IN_CLEAR`, `WAY_IN_HALF`     |
@@ -239,36 +239,36 @@ Every Space and blank tab has one ([Avatar Pad](../avatar-pad.md#every-space-and
 
 ## Testing
 
-| Rule                                                   | Test                                                                                           |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| Drawn core on `avatarPadCore`, fixed nodes, tints      | `packages/document/src/avatar-pad.test.ts`                                                     |
-| Scale whole, centred; core and footprint; rotation     | same                                                                                           |
-| Kind registration, factory, export drawing             | same                                                                                           |
-| Spawn pad: nearest, tie by order, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                           |
-| Arrivals: new on a pad, not seen, cap, replace, expiry | same                                                                                           |
-| Entry order, recentre, telemetry, I1, every entry      | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                          |
-| Own and peer beams from presence, once, expiry         | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                       |
-| View nodes, theme stroke, shimmer; beam, colour        | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                     |
+| Rule                                                   | Test                                                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| Drawn core on `avatarPadCore`, fixed nodes, tints      | `packages/document/src/avatar-pad.test.ts`                                                 |
+| Scale whole, centred; core and footprint; rotation     | same                                                                                       |
+| Kind registration, factory, export drawing             | same                                                                                       |
+| Spawn pad: nearest, tie by order, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                       |
+| Arrivals: new on a pad, not seen, cap, replace, expiry | same                                                                                       |
+| Entry order, recentre, telemetry, I1, every entry      | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                      |
+| Own and peer beams from presence, once, expiry         | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                   |
+| View nodes, theme stroke, shimmer; beam, colour        | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                 |
 | I5: picker, key, command                               | `EditWalkToggle.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
-| A peer walks in from a board button                    | `apps/editor/e2e/realtime-peers.spec.ts`                                                       |
-| One pad per Space tab, on open floor, figure clear     | `packages/templates/src/template-builders-spaces-more.test.ts`                                 |
-| Floors first; Blank Space is one pad below the middle  | `packages/templates/src/build-template.test.ts`                                                |
-| A pad-only tab opens no walk                           | `apps/editor/lib/walk-entrance.test.ts`                                                        |
-| A new Space on its start is empty; Start Blank's pad   | `apps/editor/lib/new-document-content.test.ts`                                                 |
-| The × lands the pad uncounted                          | `apps/editor/components/start/StartFromTemplates.test.tsx`                                     |
+| A peer walks in from a board button                    | `apps/editor/e2e/realtime-peers.spec.ts`                                                   |
+| One pad per Space tab, on open floor, figure clear     | `packages/templates/src/template-builders-spaces-more.test.ts`                             |
+| Floors first; Blank Space is one pad below the middle  | `packages/templates/src/build-template.test.ts`                                            |
+| A pad-only tab opens no walk                           | `apps/editor/lib/walk-entrance.test.ts`                                                    |
+| A new Space on its start is empty; Start Blank's pad   | `apps/editor/lib/new-document-content.test.ts`                                             |
+| The × lands the pad uncounted                          | `apps/editor/components/start/StartFromTemplates.test.tsx`                                 |
 
 ## Constants and configuration
 
-| Constant                  | Value    | Provenance                                               | Safe range     |
-| ------------------------- | -------- | -------------------------------------------------------- | -------------- |
-| `AVATAR_PAD_GRID`         | 32 x 20  | Round platform proportions; the core geometry's units    | fixed          |
-| `AVATAR_PAD_VIEW`         | 128 x 80 | The grid at 4 a unit: a new pad draws 1:1                | fixed          |
-| `AVATAR_PAD_DEFAULT_SIZE` | 128 x 80 | 4 canvas px per grid pixel (D212)                        | 64 to 256 wide |
-| `AVATAR_PAD_ARRIVAL_MS`   | 900      | Under a second; matches `avatar-pad-beam`                | 600 to 1200    |
-| `AVATAR_PAD_MAX_ARRIVALS` | 8        | A full row of arrivals without filling the canvas (D213) | 4 to 16        |
+| Constant                  | Value    | Provenance                                                | Safe range     |
+| ------------------------- | -------- | --------------------------------------------------------- | -------------- |
+| `AVATAR_PAD_GRID`         | 32 x 20  | Round platform proportions; the core geometry's units     | fixed          |
+| `AVATAR_PAD_VIEW`         | 128 x 80 | The grid at 4 a unit: a new pad draws 1:1                 | fixed          |
+| `AVATAR_PAD_DEFAULT_SIZE` | 128 x 80 | 4 canvas px per grid pixel (D212)                         | 64 to 256 wide |
+| `AVATAR_PAD_ARRIVAL_MS`   | 900      | Under a second; matches `avatar-pad-beam`                 | 600 to 1200    |
+| `AVATAR_PAD_MAX_ARRIVALS` | 8        | A full row of arrivals without filling the canvas (D213)  | 4 to 16        |
 | `WAY_IN_CLEAR`            | 72       | A Regular figure on the core clears the wall above (D215) | 68 to 120      |
-| `WAY_IN_HALF`             | 64       | Half the pad's width, to centre it under a gate          | fixed          |
-| `BLANK_PAD_DROP`          | 160      | Below the middle, in view at 100% on a phone (D216)      | 120 to 200     |
+| `WAY_IN_HALF`             | 64       | Half the pad's width, to centre it under a gate           | fixed          |
+| `BLANK_PAD_DROP`          | 160      | Below the middle, in view at 100% on a phone (D216)       | 120 to 200     |
 
 ## Assets and external resources
 

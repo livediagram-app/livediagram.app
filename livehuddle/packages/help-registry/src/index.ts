@@ -725,8 +725,7 @@ export const articles: Article[] = [
   {
     slug: 'format-painter',
     title: 'Format Painter',
-    description:
-      "Copy one element's style from the selection toolbar and paint it onto others.",
+    description: "Copy one element's style from the selection toolbar and paint it onto others.",
     keywords:
       'copy style clone look paste formatting appearance brush selection toolbar paint match',
     category: 'Edit or Walk',

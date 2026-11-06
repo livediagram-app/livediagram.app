@@ -9,7 +9,11 @@ type CanvasPointerInput = Pick<CanvasProps, 'onCanvasPointerMove'> & {
 };
 
 // Where the pointer is over the canvas: the canvas-coords position broadcast to peers.
-export function useCanvasPointer({ onCanvasPointerMove, wrapperRef, viewportZoom }: CanvasPointerInput) {
+export function useCanvasPointer({
+  onCanvasPointerMove,
+  wrapperRef,
+  viewportZoom,
+}: CanvasPointerInput) {
   // Broadcast the local pointer position to peers (canvas-coords).
   // Throttling lives in page.tsx so the Canvas stays prop-driven.
   const handlePointerMoveCanvas = (e: React.PointerEvent) => {

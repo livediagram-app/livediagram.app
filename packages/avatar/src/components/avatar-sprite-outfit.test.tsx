@@ -10,7 +10,11 @@ import { lightness, outfitTones } from './avatar-sprite-palette';
 const mix = (hex: string, to: number, amount: number) => {
   const n = Number.parseInt(hex.slice(1), 16);
   return `#${[(n >> 16) & 255, (n >> 8) & 255, n & 255]
-    .map((v) => Math.round(v + (to - v) * amount).toString(16).padStart(2, '0'))
+    .map((v) =>
+      Math.round(v + (to - v) * amount)
+        .toString(16)
+        .padStart(2, '0'),
+    )
     .join('')}`;
 };
 beforeAll(() =>
@@ -73,16 +77,22 @@ describe('the sixteen outfits', () => {
         (['down', 'up', 'left'] as const).map((facing) => ({ shirt, gender, facing })),
       ),
     ),
-  )('are told apart by at least eight pixels: $gender, $facing, $shirt', ({ shirt, gender, facing }) => {
-    const drawn = AVATAR_CLOTHING.map((o) => ({ id: o.id, grid: draw(o.id, facing, shirt, gender) }));
-    for (let i = 0; i < drawn.length; i++) {
-      for (let j = i + 1; j < drawn.length; j++) {
-        const a = drawn[i]!;
-        const b = drawn[j]!;
-        expect(differing(a.grid, b.grid), `${a.id} vs ${b.id}`).toBeGreaterThanOrEqual(8);
+  )(
+    'are told apart by at least eight pixels: $gender, $facing, $shirt',
+    ({ shirt, gender, facing }) => {
+      const drawn = AVATAR_CLOTHING.map((o) => ({
+        id: o.id,
+        grid: draw(o.id, facing, shirt, gender),
+      }));
+      for (let i = 0; i < drawn.length; i++) {
+        for (let j = i + 1; j < drawn.length; j++) {
+          const a = drawn[i]!;
+          const b = drawn[j]!;
+          expect(differing(a.grid, b.grid), `${a.id} vs ${b.id}`).toBeGreaterThanOrEqual(8);
+        }
       }
-    }
-  });
+    },
+  );
 
   it('give the T-shirt short sleeves and the jumper long ones', () => {
     // Row 11 of the near arm is the forearm: skin under a short sleeve, cloth under a long one.

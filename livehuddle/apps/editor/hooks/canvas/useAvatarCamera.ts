@@ -67,7 +67,10 @@ export function useAvatarCamera({
         glideRef.current = glideViewport(
           viewport.get(),
           to,
-          { zoom: (zoom) => viewport.setZoom(zoom), offset: (offset) => viewport.setOffset(offset) },
+          {
+            zoom: (zoom) => viewport.setZoom(zoom),
+            offset: (offset) => viewport.setOffset(offset),
+          },
           glideMs,
         );
       } else viewport.setView(to);

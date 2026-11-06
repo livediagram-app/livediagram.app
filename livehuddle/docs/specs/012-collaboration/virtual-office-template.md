@@ -46,7 +46,7 @@ three (`template-builders-spaces.ts`):
   **phone booths** along the right, small rooms with one chair each for a call away from the floor.
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
   machine, a plant and a bookshelf, and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
-  Questions). Its Avatar Pad waits **beside the pod, under the Team Board**, level with the pod's lower half, its how-to
+  Questions). Its Avatar Pad waits **beside the pod, under the Team Board**, level with the pod's lower half and low enough that someone standing on it stands clear of the board, its how-to
   line wrapped beside it in the board's column, not under the plan like the other Spaces' (Work Tracker #580). Seen
   at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where the bottom-right
   cluster floats, and a way in under the pod sat under the cluster. Open floor lies under the pad, and the door is

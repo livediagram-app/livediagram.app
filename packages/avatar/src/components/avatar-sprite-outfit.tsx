@@ -74,7 +74,11 @@ export function outfitLook(clothing: Clothing, t: OutfitTones): OutfitLook {
       };
     case 'jumper':
     case 'hoodie':
-      return { body: shirt, sleeve: sleeve(false, [{ at: 3, fill: t.accent }]), legs: TROUSER_PAIR };
+      return {
+        body: shirt,
+        sleeve: sleeve(false, [{ at: 3, fill: t.accent }]),
+        legs: TROUSER_PAIR,
+      };
     case 'vest':
       // A waistcoat over a white shirt: the sleeves are the shirt's.
       return { body: shirt, sleeve: sleeve(false, [], WHITE_PAIR), legs: TROUSER_PAIR };
@@ -94,9 +98,17 @@ export function outfitLook(clothing: Clothing, t: OutfitTones): OutfitLook {
         legs: TROUSER_PAIR,
       };
     case 'polo':
-      return { body: shirt, sleeve: sleeve(true, [{ at: 1, fill: t.contrast }]), legs: TROUSER_PAIR };
+      return {
+        body: shirt,
+        sleeve: sleeve(true, [{ at: 1, fill: t.contrast }]),
+        legs: TROUSER_PAIR,
+      };
     case 'flannel':
-      return { body: shirt, sleeve: sleeve(false, [{ at: 2, fill: t.accent }]), legs: TROUSER_PAIR };
+      return {
+        body: shirt,
+        sleeve: sleeve(false, [{ at: 2, fill: t.accent }]),
+        legs: TROUSER_PAIR,
+      };
     case 'overalls':
       return { body: shirt, sleeve: sleeve(true), legs: DENIM_PAIR };
     case 'labcoat':
