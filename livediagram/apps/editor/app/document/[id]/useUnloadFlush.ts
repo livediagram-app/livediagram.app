@@ -9,12 +9,17 @@
 import { useEffect, useRef, type MutableRefObject, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
 import type { Tab } from '@livediagram/document';
-import { flushDocumentSavesBeacon, type connectRoom } from '@/lib/api-client';
+import {
+  claimPlacedImagesOnUnload,
+  flushDocumentSavesBeacon,
+  type connectRoom,
+} from '@/lib/api-client';
+import { placedImageIds } from '@liveworkspace/media';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 import { commitOpenEdit } from '@liveworkspace/workbench/lib/open-edit';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { computeTabSaveDiff } from './editor-page-helpers';
-import { relayParticipantChanges } from './tab-save-flow';
+import { participantElementOps, relayParticipantChanges } from './tab-save-flow';
 import { isSaveFailing, isTabTooLarge } from '@liveworkspace/workbench/lib/save-health';
 
 /** Whether leaving now asks first: changes the server has not taken, while the last save failed or the browser is
@@ -73,10 +78,17 @@ export function useUnloadFlush(opts: {
       if (!diff || !o.documentId) return;
       const { changedTabs, deletedIds, orderChanged, nameChanged } = diff;
       flushedRef.current = { tabs: o.tabs, name: o.documentName };
-      // A Participant's changes go to the open room at once; it has no beacon to send.
+      // A Participant's changes go to the open room at once; it has no beacon to send. The pictures they place are
+      // claimed first with a keepalive request, unawaited (docs/specs/009-elements/images.md "Placement grants").
       if (o.participant) {
         for (const t of changedTabs) {
           const before = o.lastSavedTabsRef.current.find((s) => s.id === t.id);
+          claimPlacedImagesOnUnload(
+            o.selfId,
+            o.documentId,
+            placedImageIds(participantElementOps(before, t)),
+            o.sessionShareCode,
+          );
           void relayParticipantChanges(before, t, () => o.roomRef.current).catch(() => {});
         }
         return;

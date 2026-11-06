@@ -11,6 +11,7 @@ import {
   apiFetch,
   getWorkbenchConfinement,
 } from './core';
+import { unloadHeaders } from './tabs';
 import { blobToDataUrl } from '@liveworkspace/workbench/lib/blob-data-url';
 import {
   cachedDisplayCopy,
@@ -98,6 +99,33 @@ export function apiClaimPlacedImages(
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
       body: JSON.stringify({ ids }),
     });
+    await expectOk<{ granted: number }>(res, 'claim images');
+  });
+}
+
+// The same claim from the unload flush, which cannot wait: the request leaves at once (headers built synchronously,
+// the held grant, `keepalive` so it outlives the page) and the ops go to the room straight after, unawaited. A
+// claim body is at most IMAGE_GRANT_IDS_MAX ids (a few KB), well inside the browser's keepalive allowance.
+export function claimPlacedImagesOnUnload(
+  ownerId: string,
+  designId: string,
+  imageIds: readonly string[],
+  shareCode: string | null,
+): void {
+  if (imageIds.length === 0) return;
+  const headers = unloadHeaders(ownerId, designId, shareCode);
+  if (!headers) return;
+  void imageClaims.claim(designId, imageIds, async (ids) => {
+    const res = await apiFetch(
+      `${API_BASE}/images/grants?d=${encodeURIComponent(designId)}`,
+      {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+        keepalive: true,
+      },
+      { designGrant: false },
+    );
     await expectOk<{ granted: number }>(res, 'claim images');
   });
 }

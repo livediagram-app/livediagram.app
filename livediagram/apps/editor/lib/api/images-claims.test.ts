@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiClaimPlacedImages } from './images';
+import { apiClaimPlacedImages, claimPlacedImagesOnUnload } from './images';
 
 vi.mock('../guest-token', () => ({
   readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
@@ -8,7 +8,13 @@ vi.mock('../guest-token', () => ({
 // A Participant's placement claim (docs/specs/009-elements/images.md "Placement grants"): the editor asks the
 // document to serve the pictures it places, once each, with its share link.
 
-type Seen = { method: string; url: string; headers: Headers; body: string | null };
+type Seen = {
+  method: string;
+  url: string;
+  headers: Headers;
+  body: string | null;
+  keepalive: boolean;
+};
 
 function stubFetch(status: number): Seen[] {
   const seen: Seen[] = [];
@@ -20,6 +26,7 @@ function stubFetch(status: number): Seen[] {
         url: String(url),
         headers: new Headers(init?.headers),
         body: typeof init?.body === 'string' ? init.body : null,
+        keepalive: init?.keepalive === true,
       });
       return Response.json(status === 200 ? { granted: 1 } : { error: 'forbidden' }, { status });
     }),
@@ -51,5 +58,28 @@ describe('apiClaimPlacedImages', () => {
     ).resolves.toBeUndefined();
     await apiClaimPlacedImages('guest_1', 'doc 2', ['img-3'], null);
     expect(seen).toHaveLength(2);
+  });
+});
+
+describe('claimPlacedImagesOnUnload', () => {
+  it('sends the claim at once, kept alive past the page, with the share link', () => {
+    const seen = stubFetch(200);
+    claimPlacedImagesOnUnload('guest_1', 'doc 3', ['img-4'], 'code-3');
+    // Synchronously: the page may be gone after this tick.
+    expect(seen).toHaveLength(1);
+    expect(seen[0]!).toMatchObject({ method: 'POST', keepalive: true });
+    expect(seen[0]!.url).toMatch(/\/api\/images\/grants\?d=doc%203$/);
+    expect(seen[0]!.headers.get('X-Share-Code')).toBe('code-3');
+    expect(seen[0]!.headers.get('Content-Type')).toBe('application/json');
+    expect(JSON.parse(seen[0]!.body!)).toEqual({ ids: ['img-4'] });
+  });
+
+  it('sends nothing for no pictures, or for one claimed already', async () => {
+    const seen = stubFetch(200);
+    claimPlacedImagesOnUnload('guest_1', 'doc 4', [], null);
+    expect(seen).toHaveLength(0);
+    await apiClaimPlacedImages('guest_1', 'doc 4', ['img-5'], null);
+    claimPlacedImagesOnUnload('guest_1', 'doc 4', ['img-5'], null);
+    expect(seen).toHaveLength(1);
   });
 });

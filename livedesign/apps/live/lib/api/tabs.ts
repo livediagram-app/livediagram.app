@@ -190,6 +190,32 @@ const KEEPALIVE_BUDGET_BYTES = 60 * 1024;
 // The unload flush's requests go at once, with the grant it holds (apiFetch `designGrant: false`).
 const NO_GRANT_WAIT = { designGrant: false } as const;
 
+/** The headers an unload request about one design carries, built synchronously (see above): identity, the share
+ *  link, the held grant and the share password. Null for a signed-in owner with no cached token, whose requests
+ *  would only 401. Shared with the Participant's unload claim (images.ts claimPlacedImagesOnUnload). */
+export function unloadHeaders(
+  ownerId: string,
+  designId: string,
+  shareCode: string | null,
+): Record<string, string> | null {
+  let base: Record<string, string>;
+  try {
+    base = identityHeaders(ownerId, getLastKnownToken());
+  } catch {
+    console.warn('[save] unload flush skipped: no session token for a signed-in owner');
+    return null;
+  }
+  if (shareCode) base['X-Share-Code'] = shareCode;
+  const grant = heldDesignGrant(designId, shareCode ? { code: shareCode } : null);
+  if (grant) base[INDEX_GRANT_HEADER] = grant;
+  // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
+  // without it an edit-role visitor's flush 403s on a protected
+  // design, losing the final debounce window's edits.
+  const sharePassword = getSessionSharePassword();
+  if (sharePassword) base['X-Share-Password'] = sharePassword;
+  return base;
+}
+
 export function flushDesignSavesBeacon(args: {
   ownerId: string;
   designId: string;
@@ -233,21 +259,8 @@ export function flushDesignSavesBeacon(args: {
   // so nothing here waits on the network. The rule is apiHeaders' own
   // (identityHeaders). A signed-in owner with no cached token has nothing the worker accepts, so
   // skip the flush rather than fire writes that are certain to 401.
-  let base: Record<string, string>;
-  try {
-    base = identityHeaders(args.ownerId, getLastKnownToken());
-  } catch {
-    console.warn('[save] unload flush skipped: no session token for a signed-in owner');
-    return;
-  }
-  if (args.shareCode) base['X-Share-Code'] = args.shareCode;
-  const grant = heldDesignGrant(args.designId, args.shareCode ? { code: args.shareCode } : null);
-  if (grant) base[INDEX_GRANT_HEADER] = grant;
-  // The share password (docs/specs/013-workspace/share-password.md) is a synchronous session read too —
-  // without it an edit-role visitor's flush 403s on a protected
-  // design, losing the final debounce window's edits.
-  const sharePassword = getSessionSharePassword();
-  if (sharePassword) base['X-Share-Password'] = sharePassword;
+  const base = unloadHeaders(args.ownerId, args.designId, args.shareCode);
+  if (!base) return;
   const jsonHeaders = { ...base, 'Content-Type': 'application/json' };
   // Browsers refuse keepalive bodies past 64 KB in all (per page), and the refusal was swallowed below, so a
   // large tab's last edits were lost on close. Keepalive while the bodies fit; past that, a plain request,
