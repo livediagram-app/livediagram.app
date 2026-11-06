@@ -108,12 +108,15 @@ slide's cards)` (so the `notes` mirror follows through `withNoteCards`); a slide
   while the body fits the page's shared keepalive budget (`takeKeepalive`, 60 KB per task, shared with the tab
   beacon). A whole body past what is left of the budget goes as `{ presentationPatch: deckSlidePatch(mine, base) }`
   when that is not null and fits (kept alive); otherwise the whole body as a plain request. The decks are parsed only
-  on that path. The base order holds: `sendDeckSave` moves `deckBaseRef` on before any request goes.
-- `saveDeck` (`useEditorState`) runs `sendDeckSave(deckBaseRef, serialised, send, toast.error)`
-  (`app/document/[id]/deck-save.ts`). A failed save (not an unload one, which never reports back) puts `deckBaseRef`
-  back to the base it sent when the ref still holds the deck that failed, and toasts `deckSaveFailureMessage(err)`.
-  The effect that seeds `deckBaseRef` from `documentPresentation` skips the deck this editor last sent
-  (`sentDeckRef`), so its own write coming back never undoes a put-back. Messages: 413 "Speaker notes are too long to save. Shorten some cards.", 403 and
+  on that path.
+- `saveDeck` (`useEditorState`) hands each save to one `deckSaveQueue(deckBaseRef, showError)`
+  (`app/document/[id]/deck-save.ts`, made on the first save). `deckBaseRef` is the deck last **stored** (or loaded).
+  One save is in flight at a time, sent on `deckBaseRef`; on success `deckBaseRef` becomes its deck (unless a load
+  moved it meanwhile), on failure it stays and `deckSaveFailureMessage(err)` is toasted. A save asked for while one is
+  in flight waits in a single slot (a newer one replaces it: each deck is whole) and goes when the one in flight
+  settles, on the base that outcome left. An unload save goes at once on `deckBaseRef` and never reports back. The
+  effect that seeds `deckBaseRef` from `documentPresentation` skips the deck this editor last sent (`sentDeckRef`),
+  so its own write coming back never moves the base before the save lands. Messages: 413 "Speaker notes are too long to save. Shorten some cards.", 403 and
   401 the tab save's own messages, a trashed document nothing (the autosave reports it), anything else
   "Couldn’t save your speaker notes. Check your connection.". The toast layer folds a streak of the same message.
 - A read-only session never commits the deck (`setDeck` only), so there is never anything to flush.
@@ -266,7 +269,7 @@ cards, one point each. You flip through them while you present.", "Add First Car
 | A merge past the cap is refused 413 and writes nothing; a base past the cap but under 1 MB is taken  | `apps/api/src/routes/deck-note-card-merge.test.ts`                                                                                    |
 | A changed-slides patch merges by card, keeps the rest, places a lost slide, holds the cap            | `apps/api/src/routes/deck-note-card-merge.test.ts`, `packages/document/src/slide-deck-patch.test.ts`, `slide-deck-patch.perf.test.ts` |
 | The unload save of a large deck sends the changed slides kept alive; a moved slide sends it whole    | `apps/editor/lib/api/unload-requests.test.ts`                                                                                         |
-| A failed deck save toasts and puts the base back                                                     | `app/document/[id]/deck-save.test.ts`                                                                                                 |
+| Deck saves one at a time: a failed save toasts and the next is built on the deck last stored         | `app/document/[id]/deck-save.test.ts`                                                                                                 |
 | A large deck's last typed card survives a tab close                                                  | `apps/editor/e2e/deck-save-on-close.spec.ts`                                                                                          |
 | Saving: debounce, flush after queued updates, pagehide and unmount as unload, read-only sends none   | `app/document/[id]/useSlideDeck.save-flush.test.ts`                                                                                   |
 | The list settles on a card's close and on unmount                                                    | `components/slide-notes/NoteCardList.test.tsx`                                                                                        |

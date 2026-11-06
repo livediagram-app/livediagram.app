@@ -165,7 +165,10 @@ lands only if the page lives long enough.
 - No longer allowed to edit, or the sign-in lapsed: the same messages as a tab's save.
 
 The next save is still built on the deck that was last **stored**, not on the one that failed, so the cards in a failed
-save are sent again as this editor's changes rather than read as someone else's removals.
+save are sent again as this editor's changes rather than read as someone else's removals. For that, an editor's deck
+saves go **one at a time**: a save asked for while another is on its way waits for it and is built on how it ended
+(the deck it stored, or, when it failed, the deck stored before it), and only the newest waiting deck goes. The save
+as the page goes cannot wait: it goes at once, built on the deck last stored.
 
 ## PowerPoint
 

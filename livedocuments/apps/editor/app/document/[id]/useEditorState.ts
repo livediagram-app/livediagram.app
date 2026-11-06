@@ -97,7 +97,7 @@ import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useSlideDeck } from './useSlideDeck';
-import { sendDeckSave } from './deck-save';
+import { deckSaveQueue, type DeckSaveQueue } from './deck-save';
 import { slideFitOptions } from '@/lib/presentation-config';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
@@ -1073,14 +1073,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
-  // The deck as this editor last saved or loaded it: what its next deck save was built on.
+  // The deck as this editor last stored or loaded it: what its next deck save is built on.
   const deckBaseRef = useRef<string | null>(documentPresentation);
-  // The deck this editor last sent: coming back through documentPresentation it is no new base (sendDeckSave moved
-  // the base already, or put it back when the save failed).
+  // The deck this editor last sent: coming back through documentPresentation it is no new base (the save queue moves
+  // the base itself, once the save lands).
   const sentDeckRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     if (documentPresentation !== sentDeckRef.current) deckBaseRef.current = documentPresentation;
   }, [documentPresentation]);
+  // Deck saves one at a time, each built on the outcome of the one before (deck-save.ts); made on the first save.
+  const toastRef = useLatest(toast);
+  const deckSavesRef = useRef<DeckSaveQueue | null>(null);
   const slideDeck = useSlideDeck({
     prefs: userPreferences,
     // Built on this render's preferences: moved onto the freshest before the whole blob is written.
@@ -1095,8 +1098,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       if (!hydrated || !documentId) return;
       sentDeckRef.current = serialised;
       setDocumentPresentation(serialised);
-      sendDeckSave(
-        deckBaseRef,
+      deckSavesRef.current ??= deckSaveQueue(deckBaseRef, (message) =>
+        toastRef.current.error(message),
+      );
+      deckSavesRef.current.save(
         serialised,
         (presentationBase) =>
           apiSaveDocumentMeta(
@@ -1105,7 +1110,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
             sessionShareCode,
             opts,
           ),
-        toast.error,
+        opts,
       );
     },
   });

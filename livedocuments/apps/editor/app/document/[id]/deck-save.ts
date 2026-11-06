@@ -26,22 +26,55 @@ export function deckSaveFailureMessage(err: unknown): string | null {
   }
 }
 
+/** Sends one deck save, built on the deck it is given; resolves when the save has landed, rejects when it failed. */
+export type DeckSend = (presentationBase: string | null) => Promise<void>;
+
+export type DeckSaveQueue = {
+  /** Saves `serialised`: at once when no save is in flight, else after it, on its outcome. `unload` goes at once. */
+  save(serialised: string | null, send: DeckSend, opts?: { unload?: boolean }): void;
+};
+
 /**
- * Sends `serialised` with the deck it was built on (`baseRef`), which it then becomes, before any request goes. A
- * failed save puts the base back while nothing newer has moved it, so the next save is built on the deck last stored
- * and sends this one's cards again as this editor's, rather than letting the merge read them as removed elsewhere.
+ * Deck saves one at a time (speaker-note-cards.md "Saving"). `baseRef` holds the deck last **stored**: a save is built
+ * on it and moves it on only once it lands, so a failed save leaves it where it was, and the next save sends the failed
+ * one's cards again as this editor's rather than letting the merge read them as removed elsewhere. A save asked for
+ * while one is in flight waits for it and is built on its outcome; only the newest waiting deck goes (each is whole).
+ * An unload save cannot wait (the page is going): it goes at once on the deck last stored, which at worst sends the
+ * in-flight save's cards again as this editor's.
  */
-export function sendDeckSave(
+export function deckSaveQueue(
   baseRef: { current: string | null },
-  serialised: string | null,
-  send: (presentationBase: string | null) => Promise<void>,
   showError: (message: string) => void,
-): void {
-  const presentationBase = baseRef.current;
-  baseRef.current = serialised;
-  void send(presentationBase).catch((err: unknown) => {
-    if (baseRef.current === serialised) baseRef.current = presentationBase;
-    const message = deckSaveFailureMessage(err);
-    if (message) showError(message);
-  });
+): DeckSaveQueue {
+  let inFlight = false;
+  let waiting: { serialised: string | null; send: DeckSend } | null = null;
+  const run = (serialised: string | null, send: DeckSend) => {
+    inFlight = true;
+    const builtOn = baseRef.current;
+    void send(builtOn)
+      .then(() => {
+        // Unless a load moved the base meanwhile (another document opened): that one is the newer.
+        if (baseRef.current === builtOn) baseRef.current = serialised;
+      })
+      .catch((err: unknown) => {
+        const message = deckSaveFailureMessage(err);
+        if (message) showError(message);
+      })
+      .finally(() => {
+        inFlight = false;
+        const next = waiting;
+        waiting = null;
+        if (next) run(next.serialised, next.send);
+      });
+  };
+  return {
+    save(serialised, send, opts = {}) {
+      if (opts.unload) {
+        void send(baseRef.current).catch(() => {});
+        return;
+      }
+      if (inFlight) waiting = { serialised, send };
+      else run(serialised, send);
+    },
+  };
 }
