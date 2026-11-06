@@ -166,8 +166,7 @@ The monorepo's root `deploy.yml` holds the whole deploy as a reusable workflow t
 environment whose deploy has drifted from production's tests nothing.
 
 `deploy-staging.yml` triggers on `workflow_run` (CI completing successfully for a push to `main`), not on `push`:
-deploying a red `main` would mean staging's state tells you nothing. Every commit on `main` runs CI to the end
-([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so those runs can finish out of order: a first job
+deploying a red `main` would mean staging's state tells you nothing. A newer push to `main` cancels an older CI run ([Deployment](deployment.md#runs-on-main-cancel-older-ones)), and the runs left can still finish out of order: a first job
 (**Still main's tip**) lets a run deploy only when its commit is still `main`'s tip. An older commit finishing last is
 skipped, and the tip's run deploys both, since the plan diffs against what staging last deployed. Runs queue rather
 than cancel (`cancel-in-progress: false`, for staging and production alike), so a deploy is never cut off halfway.

@@ -55,14 +55,17 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 | Take part in a session tool (answer, react)        | Yes    | Yes         | No     | as above                                                                                                      |
 | Hold the facilitator baton                         | Yes    | No          | No     | [Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)                            |
 | Add, write, arrange or delete stickies and text    | Yes    | No          | No     | [A Participant walks](#a-participant-walks)                                                                   |
-| A palette, Undo / Redo, paste, duplicate, delete   | Yes    | No          | No     | [A Participant walks](#a-participant-walks)                                                                   |
+| A palette, Undo / Redo, paste, duplicate, delete   | Yes¹   | No          | No     | [A Participant walks](#a-participant-walks)                                                                   |
 | Leave Avatar mode                                  | Yes    | No          | Yes    | [A Participant walks](#a-participant-walks)                                                                   |
 | Pin a note on a Notice Board, unpin your own       | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#notice-board)                                                |
 | Start, pause, reset or set a Timer or Stopwatch    | Yes    | Yes         | No     | [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)                                     |
 | Open or close a Door                               | Yes    | Yes         | No     | [Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)                                  |
 | Comment, reply, resolve                            | Yes    | Yes         | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
 | Pan, zoom, export                                  | Yes    | Yes         | Yes    | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
-| Change tabs, the theme, anything on the board else | Yes    | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
+| Change tabs, the theme, anything on the board else | Yes¹   | No          | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
+
+¹ Not while walking: an Editor in Avatar mode has no Undo, Redo or Tab Style, nor their shortcuts and commands
+([Avatar mode](../008-canvas/avatar-mode.md#no-editing-chrome-while-walking)). A Participant always walks, so never has them.
 
 - **Avatar first-class changes no gate.** The picker's Avatar entry and a Spaces board opening walking
   ([v1 scope](../002-project-scope/v1-scope.md) feature 1) are offered to every role, because walking writes

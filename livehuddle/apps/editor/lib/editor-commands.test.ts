@@ -230,6 +230,18 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(ids({ ...base, canRedo: true })).toContain('redo');
   });
 
+  // docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking".
+  it('offers no Undo, Redo or Tab Style while walking, and brings them back after', () => {
+    const history = { ...base, canUndo: true, canRedo: true };
+    const walking = ids({ ...history, canvasTool: 'avatar' });
+    for (const id of ['undo', 'redo', 'open-theme', 'open-canvas'])
+      expect(walking).not.toContain(id);
+    expect(walking).toContain('share');
+    expect(ids(history)).toEqual(
+      expect.arrayContaining(['undo', 'redo', 'open-theme', 'open-canvas']),
+    );
+  });
+
   it('read-only sessions get exactly the view-safe subset', () => {
     // The three view verbs plus the tools that only change how you LOOK at
     // the canvas. Nothing here writes to the document, which is the property

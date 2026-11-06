@@ -26,6 +26,7 @@ import {
   type StillKey,
 } from './hero-space-cast';
 import { HALL, OFFICE } from './hero-space-places';
+import { RoomArt } from './room-art';
 
 const BOX = avatarBox(SPACE_AVATAR_SCALE);
 // The drawn figure's height above its feet (its 24 grid rows; five fewer seated, Avatar mode's drop and folded legs),
@@ -277,21 +278,13 @@ export function SpaceScene({ spec }: { spec: SpaceSceneSpec }) {
   const cast = [...spec.cast].sort((a, b) => restOf(a).y - restOf(b).y);
   return (
     <g className="hs-scene">
-      <image
-        href={roomHref(spec, 'light')}
+      <RoomArt
+        light={roomHref(spec, 'light')}
+        dark={roomHref(spec, 'dark')}
         x={x}
         y={y}
         width={width}
         height={height}
-        className="dark:hidden"
-      />
-      <image
-        href={roomHref(spec, 'dark')}
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        className="hidden dark:inline"
       />
       {spec.board ? <NotesActivity board={spec.board} /> : null}
       {cast.map((member) => (

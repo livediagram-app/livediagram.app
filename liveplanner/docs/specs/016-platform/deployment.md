@@ -81,12 +81,13 @@ one issue, **Canvas performance budget: liveplanner**, which the first all-pass 
 `package.json` scripts and `vitest` to their `devDependencies`; turbo picks the task up. Tests live next to the
 source they cover as `*.test.ts` files.
 
-### Runs on main are never cancelled
+### Runs on main cancel older ones
 
-`ci.yml` and `e2e.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main`
-every commit runs to the end, each in a concurrency group of its own (keyed by the commit), so a failure can be
-pinned on its commit and every pull request has a base to compare coverage against. Runs on `main` finishing out of
-order are handled by the staging deploy, which skips a commit `main` has moved past.
+CI, E2E and CodeQL keep one run per branch: a newer push to a pull request, or to `main`, cancels the older run, which would otherwise hold runners for a result nobody reads. A run started by hand is never cancelled. So that a cancelled run's commits are still checked, a push to `main` is planned against the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit just before it: each run takes in every commit since the last green one, and with none (a first run, or a force-push) everything runs.
+
+A failure on `main` is therefore pinned on the commits since the last green one, not on a single commit. The [Coverage report](../003-system-architecture/testing.md#coverage-report) reads its base from the newest run on `main` that still holds each coverage artifact, so a cancelled run leaves it a slightly older base, never none. The staging deploy deploys the newest commit on `main` whose CI passed, whichever run that is ([Staging environment](staging-environment.md)).
+
+Until 2026-11-06 every commit on `main` ran to the end in a group of its own. On the free plan's 20 concurrent jobs, a burst of merges then queued ahead of open pull requests: jobs waited a median 16 minutes for a runner (p90 37) on 2026-11-05 and 06, against 3 to 4 minutes of work.
 
 ## Deploy
 

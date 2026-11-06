@@ -29,6 +29,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                                         |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`            | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
 | `apps/editor/app/globals.css`                                          | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`  |
+| `apps/editor/lib/canvas-busy.ts`                                       | `BUSY_CANVAS_ELEMENTS`, `canvasIsBusy(count)`: when a Tab Style change eases the canvas only                    |
 | `../packages/workbench/src/lib/sticky-peel-image.ts`                   | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
 | `../packages/workbench/src/lib/png-encode.ts`                          | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                 |
 | `apps/editor/hooks/canvas/useCanvasPinchZoom.ts`                       | Touch pinch: one view change a frame (`flushPinch`), the wrapper measured at the start, `pinchOffset`           |
@@ -229,6 +230,21 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   that starts entered arms nothing, so opening a board sets no timers and re-renders no view
   afterwards. An element mounted on a still canvas stays entered if the tab switches to Diagram
   mode.
+
+### A Tab Style change on a busy Space
+
+- `Canvas` sets `data-canvas-busy=""` on the `data-canvas-root` surface when `canvasIsBusy(elements.length)`
+  (`elements.length > BUSY_CANVAS_ELEMENTS`), and no attribute otherwise.
+- `globals.css`: under `:root.lvd-style-transition` (set for 300 ms by `easeNextStyleChange`,
+  `../packages/workbench/src/lib/tab-style-ease.ts`) the surface `[data-canvas-root]` always takes the colour
+  transition; its descendants take it only under `[data-canvas-root]:not([data-canvas-busy])`. A busy surface's parts
+  therefore snap to the new style in the first frame, the backdrop easing.
+- The state change is unchanged and stays one step: `useTabTheme.setTheme` calls `commitTabs` once (one undo entry),
+  and the autosave's `tabBroadcastOps` sends a theme repaint of more than `EL_OP_BROADCAST_LIMIT` elements as one
+  whole-`tab` op.
+- Tests: `lib/canvas-busy.test.ts` (the threshold), `app/canvas-motion.test.ts` (the busy gate on the parts rule, the
+  surface rule ungated), `lib/tab-theme-apply.perf.test.ts` (2,000 elements: one whole-`tab` op, within a CPU-time
+  budget), `hooks/canvas/useTabTheme.test.ts` (one commit a pick).
 
 ### The Map is one image
 
@@ -506,51 +522,53 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 
 ## Testing
 
-| Spec rule                                        | Test                                                                                                                                                                                                                |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A still canvas does nothing                      | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                                                                                                  |
-| An observer never notifies itself                | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                                                                                         |
-| A pan or zoom moves the canvas, not its elements | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                                                                                          |
-| No layout read in a gesture frame                | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                         |
-| Selection chrome hidden while moving             | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                         |
-| The Map redraws when a gesture ends              | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                                                                                             |
-| Questions about neighbours ask the index         | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                                                                                                 |
-| Whole-board passes linear and once               | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                   |
-| The canvas's cursor stays off the elements       | `CanvasElementsLayer.renders.test.tsx`: every element (boxed and arrow) sits in the one element plane; `app/canvas-motion.test.ts`: `globals.css` keeps the plane's `cursor: auto`                                  |
-| A move re-renders what moved                     | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change |
-| Gesture store semantics                          | `canvas-gesture.test.ts`                                                                                                                                                                                            |
-| Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                           |
-| Budget evaluation and table                      | `budget.test.ts`                                                                                                                                                                                                    |
-| Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                                                                                       |
-| Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                     |
-| Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                     |
-| The budget holds                                 | The nightly probe                                                                                                                                                                                                   |
-| Dragging a very large selection                  | `drag-affected-arrows.perf.test.ts` (CPU time); `CanvasElementsLayer.renders.test.tsx` (no element renders, 1,770 elements); `e2e/perf/large-selection-drag.perf.ts` (by hand)                                      |
+| Spec rule                                                          | Test                                                                                                                                                                                                                              |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A still canvas does nothing                                        | `e2e/canvas-still.spec.ts`: no frame requested over a still second; probe idle row                                                                                                                                                |
+| An observer never notifies itself                                  | `useQuickStylePlacement.test.tsx` (shipped)                                                                                                                                                                                       |
+| A pan or zoom moves the canvas, not its elements                   | `CanvasElementsLayer.renders.test.tsx`: re-render with the same inputs renders no view; a zoom renders zoom consumers only                                                                                                        |
+| No layout read in a gesture frame                                  | `useEdgeAwarePlacement.test.tsx`: no measure while suspended, one on resume                                                                                                                                                       |
+| Selection chrome hidden while moving                               | `CanvasSelectionToolbars.test.tsx`: stale under `move`, `resize`, `reshape`                                                                                                                                                       |
+| The Map redraws when a gesture ends                                | `useSettledElements.test.tsx`: frozen, released, throttled, trailing; `Minimap.test.tsx`: held mid-move                                                                                                                           |
+| Questions about neighbours ask the index                           | `element-grid.test.ts`; `arrow-behind.test.ts`: grid candidates give the same holes                                                                                                                                               |
+| Whole-board passes linear and once                                 | `useArrowLabelLayouts.hook.test.tsx`: `draftLayout` stable across element changes                                                                                                                                                 |
+| The canvas's cursor stays off the elements                         | `CanvasElementsLayer.renders.test.tsx`: every element (boxed and arrow) sits in the one element plane; `app/canvas-motion.test.ts`: `globals.css` keeps the plane's `cursor: auto`                                                |
+| A move re-renders what moved                                       | `CanvasElementsLayer.renders.test.tsx`: moving one element renders it; a preview frame renders no layer; `useLayerDragPreview.test.ts`; `useSnapGuideState.test.ts`: a guide set tells its readers only on a change               |
+| Gesture store semantics                                            | `canvas-gesture.test.ts`                                                                                                                                                                                                          |
+| Reference board deterministic, mix as specced                      | `reference-board.test.ts`                                                                                                                                                                                                         |
+| Budget evaluation and table                                        | `budget.test.ts`                                                                                                                                                                                                                  |
+| Opening counts every long frame                                    | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                                                                                                     |
+| Opening animates nothing across the board                          | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                                   |
+| Timings come from the trace, never a profiler                      | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                                   |
+| The budget holds                                                   | The nightly probe                                                                                                                                                                                                                 |
+| A Tab Style change on a busy Space eases the canvas, not its parts | `canvas-busy.test.ts`; `canvas-motion.test.ts`: the parts' transition is gated on `:not([data-canvas-busy])`; `tab-theme-apply.perf.test.ts` (CPU time, one whole-`tab` op on 2,000 elements); `useTabTheme.test.ts` (one commit) |
+| Dragging a very large selection                                    | `drag-affected-arrows.perf.test.ts` (CPU time); `CanvasElementsLayer.renders.test.tsx` (no element renders, 1,770 elements); `e2e/perf/large-selection-drag.perf.ts` (by hand)                                                    |
 
 ## Constants and configuration
 
-| Constant                             | Value        | Provenance                                         | Safe range                       |
-| ------------------------------------ | ------------ | -------------------------------------------------- | -------------------------------- |
-| `WHEEL_SETTLE_MS`                    | 150          | D62                                                | 100–300                          |
-| `MAP_REDRAW_MIN_MS`                  | 250          | Spec                                               | Spec-fixed                       |
-| `ELEMENT_GRID_CELL`                  | 256          | D63                                                | 128–1024                         |
-| `ELEMENT_GRID_MAX_CELLS`             | 64           | D64                                                | 16–1024                          |
-| `REFERENCE_SEED`                     | 1            | D65                                                | Any integer                      |
-| `REFERENCE_COUNT`                    | 1000         | Spec                                               | Spec-fixed                       |
-| `REFERENCE_AREA`                     | 5760 × 2700  | Spec: four 1440 px screens wide, three 900 px high | Spec-fixed                       |
-| `TARGET_SLOWDOWN`                    | 4            | Spec                                               | Spec-fixed                       |
-| `REFERENCE_BENCH_MS`                 | 13.6         | Measured on the reference machine, quiet (D70)     | Re-measured only with the budget |
-| `LONG_TASK_MS`                       | 50           | Spec                                               | Spec-fixed                       |
-| `DRAG_MEDIAN_FRAME_MS`               | 33           | Spec                                               | Spec-fixed                       |
-| `SELECT_TASK_MS`                     | 100          | Spec                                               | Spec-fixed                       |
-| `OPEN_INTERACTIVE_MS`                | 3000         | Spec                                               | Spec-fixed                       |
-| `OPEN_QUIET_MS`                      | 500          | D68                                                | Spec-fixed with D68              |
-| `OPEN_POLL_MS`                       | 1000         | D80                                                | 250–2000                         |
-| `OPEN_SETTLE_TIMEOUT_MS`             | 60000        | D80                                                | 30000–120000                     |
-| `IDLE_WORK_MS`                       | 5            | D66                                                | 0–16                             |
-| `schedule.cron` (`canvas-perf.yml`)  | `30 2 * * *` | D67                                                | Any off-peak time                |
-| `retention-days` (`canvas-perf.yml`) | 14           | Spec                                               | Spec-fixed                       |
+| Constant                             | Value        | Provenance                                                          | Safe range                       |
+| ------------------------------------ | ------------ | ------------------------------------------------------------------- | -------------------------------- |
+| `WHEEL_SETTLE_MS`                    | 150          | D62                                                                 | 100–300                          |
+| `MAP_REDRAW_MIN_MS`                  | 250          | Spec                                                                | Spec-fixed                       |
+| `ELEMENT_GRID_CELL`                  | 256          | D63                                                                 | 128–1024                         |
+| `ELEMENT_GRID_MAX_CELLS`             | 64           | D64                                                                 | 16–1024                          |
+| `REFERENCE_SEED`                     | 1            | D65                                                                 | Any integer                      |
+| `REFERENCE_COUNT`                    | 1000         | Spec                                                                | Spec-fixed                       |
+| `REFERENCE_AREA`                     | 5760 × 2700  | Spec: four 1440 px screens wide, three 900 px high                  | Spec-fixed                       |
+| `TARGET_SLOWDOWN`                    | 4            | Spec                                                                | Spec-fixed                       |
+| `REFERENCE_BENCH_MS`                 | 13.6         | Measured on the reference machine, quiet (D70)                      | Re-measured only with the budget |
+| `LONG_TASK_MS`                       | 50           | Spec                                                                | Spec-fixed                       |
+| `DRAG_MEDIAN_FRAME_MS`               | 33           | Spec                                                                | Spec-fixed                       |
+| `SELECT_TASK_MS`                     | 100          | Spec                                                                | Spec-fixed                       |
+| `OPEN_INTERACTIVE_MS`                | 3000         | Spec                                                                | Spec-fixed                       |
+| `OPEN_QUIET_MS`                      | 500          | D68                                                                 | Spec-fixed with D68              |
+| `OPEN_POLL_MS`                       | 1000         | D80                                                                 | 250–2000                         |
+| `OPEN_SETTLE_TIMEOUT_MS`             | 60000        | D80                                                                 | 30000–120000                     |
+| `IDLE_WORK_MS`                       | 5            | D66                                                                 | 0–16                             |
+| `BUSY_CANVAS_ELEMENTS`               | 20           | Spec (D125: measured about 7 ms of eased restyle per Space element) | 10–60                            |
+| `schedule.cron` (`canvas-perf.yml`)  | `30 2 * * *` | D67                                                                 | Any off-peak time                |
+| `retention-days` (`canvas-perf.yml`) | 14           | Spec                                                                | Spec-fixed                       |
 
 ## Defaults ledger
 
-Rows D62 to D68, D70 and D80 in [DEFAULTS.md](DEFAULTS.md).
+Rows D62 to D68, D70, D80 and D125 in [DEFAULTS.md](DEFAULTS.md).
