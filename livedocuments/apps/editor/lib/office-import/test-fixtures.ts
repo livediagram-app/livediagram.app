@@ -203,7 +203,8 @@ export async function makeDocx(opts: DocxOptions): Promise<Uint8Array> {
     rels.push({ id: 'rIdNumbering', type: 'numbering', target: 'numbering.xml' });
   }
   if (opts.footnotes !== undefined) {
-    files['word/footnotes.xml'] = `${XML}<w:footnotes xmlns:w="${NS_W}">${opts.footnotes}</w:footnotes>`;
+    files['word/footnotes.xml'] =
+      `${XML}<w:footnotes xmlns:w="${NS_W}">${opts.footnotes}</w:footnotes>`;
     rels.push({ id: 'rIdFootnotes', type: 'footnotes', target: 'footnotes.xml' });
   }
   files['word/_rels/document.xml.rels'] = relsXml(rels);

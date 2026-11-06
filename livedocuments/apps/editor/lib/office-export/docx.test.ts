@@ -234,7 +234,16 @@ describe('Word export', () => {
       runs: [{ text: 'Sales rose' }, { text: '*', fn: 'Q3 figures & more.' }, { text: '.' }],
     });
     expect(read.blocks[1]).toMatchObject({
-      rows: [{ cells: [[{ text: 'Cell', b: true }, { text: '**', fn: 'Twice' }]] }],
+      rows: [
+        {
+          cells: [
+            [
+              { text: 'Cell', b: true },
+              { text: '**', fn: 'Twice' },
+            ],
+          ],
+        },
+      ],
     });
     expect(read.tally).toEqual({});
   });

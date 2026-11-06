@@ -39,7 +39,8 @@ const docHasFootnotes = (doc: DocxDocument): boolean =>
   doc.blocks.some((b) =>
     'runs' in b
       ? b.runs.some((r) => r.fn !== undefined)
-      : b.type === 'table' && b.rows.some((row) => row.cells.some((c) => c.some((r) => r.fn !== undefined))),
+      : b.type === 'table' &&
+        b.rows.some((row) => row.cells.some((c) => c.some((r) => r.fn !== undefined))),
   );
 
 // The header and footer parts a document carries, by their relationship ids: the default ones, and the empty first-page

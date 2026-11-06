@@ -570,6 +570,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone inserted a table into an article's writing, as a table block of rows and cells.",
   'Element|Added|ArticleContents':
     "Someone inserted a table of contents into an article's writing, listing its headings with their pages.",
+  'Element|Added|ArticleFootnote':
+    "Someone put a footnote into an article's writing: a numbered reference, its note at the foot of the page.",
   'Element|Added|ArticleChart': "Someone inserted a chart at the caret in an article's writing.",
   'Element|Added|ArticleCallout':
     "Someone inserted a callout at the caret in an article's writing.",

@@ -311,8 +311,14 @@ export function parseMarkdownBlocks(text: string, given?: FootnoteNotes): Articl
       i -= 1;
       // A header line of empty cells is no header row: the table starts with its first body row.
       const header = head.some(Boolean);
-      const grid = (header ? [head, ...body] : body).map((row) => row.map((c) => cellRuns(c, notes)));
-      const table = tableFromGrid(id(), grid.length ? grid : [head.map((c) => cellRuns(c, notes))], header);
+      const grid = (header ? [head, ...body] : body).map((row) =>
+        row.map((c) => cellRuns(c, notes)),
+      );
+      const table = tableFromGrid(
+        id(),
+        grid.length ? grid : [head.map((c) => cellRuns(c, notes))],
+        header,
+      );
       if (table) blocks.push(table);
       continue;
     }
@@ -328,7 +334,12 @@ export function parseMarkdownBlocks(text: string, given?: FootnoteNotes): Articl
       flush();
       const n = heading[1]!.length;
       const style = n === 1 ? 'h1' : n === 2 ? 'h2' : 'h3';
-      blocks.push({ id: id(), type: 'paragraph', style, runs: parseInline(heading[2]!, {}, notes) });
+      blocks.push({
+        id: id(),
+        type: 'paragraph',
+        style,
+        runs: parseInline(heading[2]!, {}, notes),
+      });
       continue;
     }
     if (DIVIDER_LINE.test(line)) {

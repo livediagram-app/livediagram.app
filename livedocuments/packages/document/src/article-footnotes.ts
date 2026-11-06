@@ -15,7 +15,8 @@ export function cleanFootnoteText(v: string): string {
   let text = v.replace(/[\r\n\t\u2028\u2029]/g, ' ');
   if (text.length > MAX_ARTICLE_FOOTNOTE_TEXT) {
     const code = text.charCodeAt(MAX_ARTICLE_FOOTNOTE_TEXT - 1);
-    const end = code >= 0xd800 && code <= 0xdbff ? MAX_ARTICLE_FOOTNOTE_TEXT - 1 : MAX_ARTICLE_FOOTNOTE_TEXT;
+    const end =
+      code >= 0xd800 && code <= 0xdbff ? MAX_ARTICLE_FOOTNOTE_TEXT - 1 : MAX_ARTICLE_FOOTNOTE_TEXT;
     text = text.slice(0, end);
   }
   return text;
@@ -28,7 +29,11 @@ export const articleRunsText = (runs: readonly ArticleRun[]): string =>
 /** One footnote of an article: its number (1 first, through the article) and its note. */
 export type ArticleFootnote = { n: number; text: string };
 
-type RunsHolder = { type: string; runs?: readonly ArticleRun[]; rows?: readonly { cells: readonly (readonly ArticleRun[])[] }[] };
+type RunsHolder = {
+  type: string;
+  runs?: readonly ArticleRun[];
+  rows?: readonly { cells: readonly (readonly ArticleRun[])[] }[];
+};
 
 /** Every footnote of the writing in order, numbered 1, 2, 3: each block's runs, a table's cells row by row. */
 export function articleFootnotes(blocks: readonly RunsHolder[]): ArticleFootnote[] {
@@ -41,7 +46,8 @@ export function articleFootnotes(blocks: readonly RunsHolder[]): ArticleFootnote
   };
   for (const b of blocks) {
     if (b.runs) read(b.runs);
-    else if (b.type === 'table') for (const row of b.rows ?? []) for (const cell of row.cells) read(cell);
+    else if (b.type === 'table')
+      for (const row of b.rows ?? []) for (const cell of row.cells) read(cell);
   }
   return out;
 }
