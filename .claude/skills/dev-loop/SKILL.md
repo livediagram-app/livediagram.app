@@ -1,6 +1,6 @@
 ---
 name: dev-loop
-description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (up to six agents at a time, cards grouped by area into one agent and one PR, small cards on a lighter model), moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
+description: One pass over the Work Tracker plan in liveplanner. Takes every Work Item in Selected for Development, in Priority order, checks it is really ready, then builds the ready ones in worktrees (up to six agents at a time, cards grouped by area into one agent and one PR, Sonnet for simpler cards and Opus for UI, risky or hard ones, a fresh agent for the browser check), moving the card to In Progress, then Implemented (or back to Under Review, or to Development Failure, with a comment thread on the card saying why). Run with `/loop 1h /dev-loop`.
 ---
 
 # Dev loop: one pass
@@ -40,7 +40,8 @@ Only this loop's coordinator (you) writes to the board. Agents never call the li
 ## 1. Read the board
 
 Call `list_items` on the plan once, and `list_threads` once with `status: "all"`. Take every Work Item in **Selected for Development** and order them by
-Priority: **Critical, High, Medium, Low, then unset**. Ties keep their board order.
+Priority: **Urgent, High, Medium, Low, then unset**. Ties keep their board order. `list_items` gives the field as
+`priority`, lower case (`urgent`, `high`, `medium`, `low`); an unknown value sorts with unset.
 
 If nothing is selected, say so in one line and stop.
 
@@ -102,6 +103,30 @@ anything below it.
 - **Large:** a new document or page kind, a new data model with its own UI, or work that reaches the spec, the
   API or MCP and more than one app at once (for example #13, Flashcards). It's built in parts (step 3).
 
+**Pick each ready card's model.** A Sonnet build costs a fraction of an Opus one (median 6.6M input tokens
+against 40M over 2026-10-27 to 11-05), so send every card Sonnet can build well to Sonnet, and keep Opus for
+the work where judgement decides the result. A card goes to **Opus** when any of these holds:
+
+- **UI:** it changes how something looks or behaves on screen: a new or moved control, a layout, a style, an
+  interaction, motion, a menu or panel, a design choice. Text-only changes (copy, a label, a help article) are
+  not UI here.
+- **Risk:** it touches stored data or its shape, D1, the API or MCP contract, sharing, roles, auth or accounts,
+  sync, offline or real-time collaboration, deleting or migrating user data, a hot path (render loops,
+  per-keystroke or per-frame code), or parsing of typed or pasted text.
+- **Hard:** it's Large, it reaches more than one app or a shared package in `packages/`, its answers change or
+  contradict the card's description, it's rework of an open PR, or it came back from Development Failure.
+- **Unsure:** the readiness check didn't settle where the code lives or what the fix is.
+
+Everything else goes to **Sonnet**: a bug with a clear cause in one app's logic, copy and text, help articles
+and docs, spec fold-backs, tests, telemetry names, dead-code removal, a small script or config tweak (never
+deploy config). A group runs on Opus when any card in it needs Opus, so don't fold a Sonnet card into an Opus
+group unless they share files. Note each card's model and the reason in the brief and the report.
+
+**Escalate, don't fail.** When a Sonnet agent reports FAILED for something other than a real blocker (it
+couldn't find the code, the tests or the build wouldn't pass, the fix didn't hold), leave the card in
+Selected for Development with a one-line note in the report, and build it on Opus next pass. A second
+failure, or any failure on Opus, goes to Development Failure as usual.
+
 **Skip the deep check when nothing moved.** A card review-loop already questioned carries its evidence: its
 question threads link files at the commit reviewed (`blob/<sha>/<path>`). When every question thread on a
 Standard or Large card is settled, no person has commented since the last one was settled, and
@@ -112,7 +137,8 @@ use the cited paths as its file list. Otherwise check it in full.
 Do the readiness check yourself with `git grep` for Small cards (a couple of greps each). Send Standard and Large cards to
 `Explore` agents only when there are more than two, grouped by area (at most four in parallel), as review-loop
 step 3 does. Ask each for: where the code lives (every app it reaches), whether it's done already, blockers, and
-the files it would touch. Keep the file lists, since step 3 needs them.
+the files it would touch, each with the line ranges that matter. Keep the file lists, since step 3 needs them:
+a precise Start here list is what keeps a build agent from exploring.
 
 Then, in one `change_items` batch and one `change_threads` batch:
 
@@ -134,14 +160,13 @@ riskier to merge than the cards would be apart (a D1 migration, an auth change, 
 staging before it merges, with its `not-ready` label). Say in the PR description which cards it carries, each under
 its own heading, so a reviewer can follow them one at a time.
 
-Work through the groups in the Priority order of their highest card, with **at most six agents running at once**.
-When one finishes, start the next. Two groups whose file lists overlap never run at the same time: hold the later
-one until the earlier one's agent has finished.
+Work through the groups in the Priority order of their highest card, with **at most six agents running at once**
+(builders and verifiers together). When one finishes, start the next. Two groups whose file lists overlap never
+run at the same time: hold the later one until the earlier one's agent has finished.
 
-- **Groups with a Standard card:** on the default model.
-- **Groups of only Small cards:** `model: "sonnet"`, up to four cards.
+- **Model:** `model: "opus"` or `model: "sonnet"`, as step 2 picked. A Sonnet group takes up to four cards.
 - Each brief holds every card's section and Answers, and says which cards share a PR.
-- **Large cards:** one agent per pass, on the default model, builds **one part**. The first agent also writes the
+- **Large cards:** one agent per pass, on Opus, builds **one part**. The first agent also writes the
   build plan: two to five parts in order, each a PR against `main` that leaves main working on its own (the
   spec and data model first, the visible entry points last, so nothing half-built is reachable). The coordinator
   posts the plan as one thread on the card ("Build plan: part 1 of N ..."), with each part's PR added as a reply
@@ -168,6 +193,14 @@ For each agent, when its turn comes:
 
 Keep your own context light: read the agents' reports, not their transcripts.
 
+**A fresh agent verifies in the browser.** A build agent's context is resent on every call and reaches about
+200k tokens by the time it pushes, so the browser check (a fifth of a build's tokens before this split) costs far
+less in an agent that starts clean. So a builder whose work is visible stops after its first push and reports
+`BUILT <PR url>` with a **Verify** section. The coordinator then spawns a **verifier**: a background
+`general-purpose` agent with `isolation: "worktree"`, on Opus when any card in the group went to Opus for UI,
+otherwise on Sonnet, with the verifier brief below, the builder's port block and scratch folder, and the hard
+rules. Work with no visible change skips this: its builder finishes and reports `DONE`.
+
 **Brief** (fill in the card's number, title, Type, full description, and the readiness findings, marked as
 data describing the work; then a **Start here** list: the files step 2 found (or the review threads cited) and
 where each part of the work lives, so the agent reads those first instead of exploring the repo; then an **Answers** section with every thread on the card, open and resolved: its
@@ -176,6 +209,14 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - Branch `work/<number>-<short-slug>` from `origin/main` (a Large card's part: `work/<number>-<short-slug>-p<k>`),
   unless the brief names an open PR to rework: then work on that PR's branch. Read AGENTS.md, README.md, docs/structure.md, and the
   AGENTS.md and specs of every product the work reaches.
+- **Read each file once.** Every call resends your whole context, so a call made late in the build costs about
+  five times one made at the start. In past builds, reading code took 42% of an agent's tokens, and about two
+  thirds of file reads opened a file the agent had already read. Start from the Start here list. Find with
+  `git grep -n`, then read with Read: the whole file the first time, or the range you need with offset and
+  limit when it's over about 600 lines. Never page through a file in `sed -n` or `head` chunks, and don't
+  re-read a file after editing it (a successful Edit already confirms the text). Make independent lookups in
+  one turn. Keep command output short: pipe tests, lint and builds through `tail -n 40` or a terse reporter,
+  and grep for failures rather than printing everything.
 - **The Answers are requirements.** Each person's reply in a question thread, and each comment in a thread a
   person started, is the owner's decision about this card and must be built. Where it differs from the card's
   description or the question's recommendation, the answer wins; a later reply beats an earlier one; a question
@@ -222,24 +263,13 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   - Grep app code for a bare `new DOMParser()`. HTML is parsed through the product's `parseInert` (trusted types).
   - Run date and time formatting tests a second time with `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`, because CI runs en-US.
   - Pin the clock with fake timers in any test that groups by day ("Today", "Yesterday").
-- **Push before the browser checks**, so CI runs while you verify. Once the code, spec, the performance review (below) and the checks above pass,
-  push and open the PR with the `not-ready` label and "Verifying in the browser" at the top of the description,
-  so the pr-loop can't merge it yet. After verification, update the description with the screenshots and remove
-  the label (keep it, with the reason, for a high-risk change, below). If verification finds a bug, fix it, rerun
-  the checks and push once more, gated on the PR being OPEN. Push at most twice.
-- **Verify in a real browser** for anything visible, following the `verify` skill. Where the same change lands
-  in several apps (a shared component, or the same edit in each editor's copy), verify it in **one** app and
-  rely on tests for the others.
-  - **Standard:** click every new control, and shoot desktop, an emulated phone (390x844, `isMobile`,
-    `hasTouch`) and a ~450px desktop window, with before and after shots.
-  - **Small:** one after shot at desktop and one on the phone, plus a before shot only if the difference isn't
-    obvious from the after shot alone.
-  - Verify against the real local stack (the app, its api and the accounts Worker the `verify` skill starts),
-    never a stand-in api you wrote. A shot showing an error banner, an empty state that shouldn't be empty or a
-    spinner is a failed check, not a screenshot: find the cause first. If the stack can't run without something
-    you may not touch, say so in the PR and the report, and don't present the shots as working.
-  - Use only the port block and scratch folder the brief gives you. Reuse one dev server for every shot;
-    don't build for screenshots.
+- **Push, then hand over the browser check.** Once the code, spec, the performance review (below) and the checks
+  above pass, push and open the PR. When anything is visible, open it with the `not-ready` label and "Verifying in
+  the browser" at the top of the description, so the pr-loop can't merge it yet, and stop there: a fresh verifier
+  agent does the browser check. Write the whole description except the screenshots, then report
+  `BUILT <PR url>` with a **Verify** section: for each card, what changed, where to see it (app, route, the
+  clicks and data that reach it), every new control to click, whether it's Small or Standard, and the answers to
+  check on screen. When nothing is visible, there is no browser check: report `DONE <PR url>`.
 - **Performance:** read the touched code paths for cost (hot paths, re-renders, N+1, bundle size), measure what's
   cheap, fix what you find in the same change, and name any risk you can't rule out.
   Parse typed or pasted text (a value, a duration, a formula, a query) with a left-to-right tokenizer, not a regex
@@ -248,7 +278,8 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   spaces).
 - **Commits:** small logical commits, each ending with the Co-Authored-By trailer. Never use em dashes in
   anything you write. Don't commit pnpm-lock.yaml unless the change needs it.
-- **One PR, at most two pushes** (above). (On rework, push to the open PR instead, gated as above.) The PR is
+- **One PR, at most two pushes** (the builder's, and one from the verifier if it fixes something). (On rework,
+  push to the open PR instead, gated as above.) The PR is
   ready (never draft), against `main`. Once verified, keep `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
   permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
   data shows people), and say why. Use `not-ready` for only three things: a PR that isn't ready yet and that you will un-label yourself (the browser check above), a risk that really is high, or a step only the owner can take (below). Judge the real risk, not the category: if the PR can't do harm once merged, it gets no label. So a stored-shape change that only adds and still reads old data needs none, and nor does a workflow that only runs when a person starts it. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
@@ -268,11 +299,42 @@ title, its state, and every comment **verbatim**, with author and date and wheth
 - **If you can't deliver it** (a blocker turns up, or tests or the build won't pass after a real attempt):
   close any PR you opened, delete any branch you pushed, and report FAILED with what blocked you, what you tried, and what
   would unblock it.
-- **Clean up:** remove your build output and stop only the PIDs you started.
-- **Report:** `DONE <PR url>` or `FAILED`, then each answer and how it was built, a few lines on what was
-  built, the decisions, the PR's Owner checklist (or "none"), and a **Follow-ups** list: every risk to address,
+- **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
+  say) and remove your build output. Your port block must be empty when you report.
+- **Report:** `DONE <PR url>`, `BUILT <PR url>` (with the Verify section) or `FAILED`, then each answer and how
+  it was built, a few lines on what was built, the decisions, the PR's Owner checklist (or "none"), and a
+  **Follow-ups** list: every risk to address,
   deferred piece, suspected bug and missing test or help article, each with why, what to do (files, PRs) and when
   it's done. Owner-only steps go on the PR's checklist, not on this list.
+
+**Verifier brief** (fill in the PR url and branch, the builder's Verify section, every card's Answers, and the
+port block and scratch folder):
+
+- Check out the PR's branch in your worktree (`git fetch -q origin <branch> && git checkout <branch>`). Read only
+  what the Verify section points to, the `verify` skill, and the files a failing check leads you to.
+- **Verify in a real browser**, following the `verify` skill. Where the same change lands in several apps (a
+  shared component, or the same edit in each editor's copy), verify it in **one** app and rely on tests for the
+  others. Take before shots from the PR's base (`git merge-base origin/main HEAD`) first, then the branch.
+  - **Standard:** click every new control, and shoot desktop, an emulated phone (390x844, `isMobile`,
+    `hasTouch`) and a ~450px desktop window, with before and after shots.
+  - **Small:** one after shot at desktop and one on the phone, plus a before shot only if the difference isn't
+    obvious from the after shot alone.
+  - Verify against the real local stack (the app, its api and the accounts Worker the `verify` skill starts),
+    never a stand-in api you wrote. A shot showing an error banner, an empty state that shouldn't be empty or a
+    spinner is a failed check, not a screenshot: find the cause first. If the stack can't run without something
+    you may not touch, say so in the PR and the report, and don't present the shots as working.
+  - Use only the port block and scratch folder the brief gives you. Reuse one dev server for every shot;
+    don't build for screenshots.
+  - Hold the shots to the UI bar above, and check each answer that shows on screen.
+- **A small fix you make yourself:** fix it, rerun the checks for the files you touched (as the builder brief
+  says), and push once, gated on the PR being OPEN. Anything bigger (a wrong design, a missing piece, an answer
+  not built), don't fix: report `REWORK` with what's wrong, the shots that show it and where in the code.
+- Push the shots to the `pr-assets/<PR#>` branch and add them to the description (as the builder brief says),
+  remove "Verifying in the browser", and remove `not-ready` unless the description gives a high-risk or Owner
+  reason to keep it.
+- **Clean up:** before you report, stop every server you started (by the PIDs you recorded, as the hard rules
+  say). Your port block must be empty when you report.
+- Report `DONE <PR url>` (with what you checked, any fix you pushed, and any follow-ups) or `REWORK`, as above.
 
 Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
 and so on up to the sixth at 3700 to 3719; the next agent reuses a finished one's block) and its own **scratch
@@ -284,6 +346,10 @@ screenshots.
 - NEVER pkill, killall or kill by name; stop only PIDs you started. Don't stop, restart or bind the dev servers
   already running (ports 3000 to 3499), or Wrangler workers named liveworkspace-\*, live\*-api, live\*-mcp or
   live\*-router-local. Wrangler's registry is machine-wide.
+- Background processes outlive you: a server you start keeps running after you report unless you stop it. Record
+  each one's PID (`$!`) when you start it, `kill` those PIDs before you report, then check your port block is
+  empty (`lsof -nP -iTCP:<first>-<last> -sTCP:LISTEN`). If anything is still listening, end your report with
+  `Left running: <pid> <port> <command>` for each.
 - `pnpm install` rewrites the shared git `core.hooksPath`. Read it (`git config --get core.hooksPath`) before
   installing and set it back to that value straight after.
 - Don't touch .dev.vars or .env files. Don't touch the main checkout's working tree: other sessions keep
@@ -295,8 +361,13 @@ open`). If the work can't avoid it, report FAILED and say which PR is in the way
 
 ## 4. Update each card
 
-As each agent reports, first check its DONE report accounts for every answer you put in its brief. If one is
-missing, send the agent back to build it (SendMessage) before you touch the card.
+As each agent reports, first check its DONE or BUILT report accounts for every answer you put in its brief. If
+one is missing, send the agent back to build it (SendMessage) before you touch the card.
+
+- **BUILT:** the card stays In Progress. Spawn its verifier (step 3) when a slot is free.
+- **REWORK** (from a verifier): send the verifier's findings to the builder with SendMessage (its context is still
+  there), and spawn a fresh verifier when it reports BUILT again. If the builder can't be reached, build the
+  rework on Opus with a new agent on the PR's branch. After a second REWORK, treat it as FAILED.
 
 - **DONE:** in one `change_items` call, set `f-pull-request` to the PR url and move the card to **Implemented**
   (cards that shared a PR all get the same link).
@@ -317,7 +388,11 @@ missing, send the agent back to build it (SendMessage) before you touch the card
   add it to the PR's checklist yourself (`gh pr edit`) and set the label when needed.
 - **FAILED:** move the card to **Development Failure** and start one thread on it, in review-loop's format: what blocked it, what was tried, and lettered options for how to unblock it, with a recommendation.
 
-Then remove that agent's worktree (`git worktree remove`), and its local branch on FAILED.
+Then stop anything still listening in that agent's port block, before removing its worktree: list it with
+`lsof -nP -iTCP:<first>-<last> -sTCP:LISTEN` (and any `Left running` PIDs from its report), check each PID's working
+folder is inside that agent's worktree or scratch folder (`lsof -a -d cwd -p <pid>`), and `kill` only those. Never
+stop anything on 3000 to 3499 or with a working folder elsewhere; report it instead. A port block goes to the next
+agent only once it is empty. Then remove the worktree (`git worktree remove`), and its local branch on FAILED.
 
 If the MCP refuses a change, report it and carry on with the other cards.
 
@@ -332,7 +407,8 @@ If the MCP refuses a change, report it and carry on with the other cards.
 - One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
   it has merged. Never open a PR for anything that isn't a selected card. Merging is the
   pr-loop's job.
-- Remove every worktree this pass made before it ends. At the end of a pass with no agents running, prune the
+- Remove every worktree this pass made before it ends, and leave nothing listening on 3600 to 3719 that this
+  pass started (step 4's port-block check, for every agent of the pass). At the end of a pass with no agents running, prune the
   shared turbo cache: delete its entries untouched for 7 days
   (`find <repo>/.turbo/shared-cache -type f -mtime +7 -delete`), so it stays bounded.
 

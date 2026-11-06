@@ -50,8 +50,9 @@ import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 
 // How long after the last deck edit the save fires. Deck edits arrive in
 // bursts (drag a row through four positions, type a sentence of notes), and
-// each one is a whole-document metadata PUT.
-const DECK_SAVE_DEBOUNCE_MS = 900;
+// each one is a whole-document metadata PUT. What is still waiting goes at once when the writing leaves the screen
+// (docs/specs/012-collaboration/speaker-note-cards.md "Saving").
+export const DECK_SAVE_DEBOUNCE_MS = 900;
 
 export type SlideDeckState = ReturnType<typeof useSlideDeck>;
 
@@ -73,8 +74,8 @@ export function useSlideDeck({
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
   isReadOnly: boolean;
-  /** Persists the serialised deck (null clears it). Absent before hydration. */
-  saveDeck?: (serialised: string | null) => void;
+  /** Persists the serialised deck (null clears it); `unload` when the page is going. Absent before hydration. */
+  saveDeck?: (serialised: string | null, opts?: { unload: true }) => void;
 }) {
   const [deck, setDeck] = useState<Deck>(EMPTY_DECK);
   // Non-null only while presenting: the slide on screen, by id (@liveworkspace/workbench/lib/presenting-position.ts), so a peer's edit to the
@@ -106,7 +107,25 @@ export function useSlideDeck({
   const hydratedRef = useRef(false);
   const tabsRef = useLatest(tabs);
   const saveTimer = useRef<number | null>(null);
+  // The deck the timer will save, until it does (or a flush takes it first).
+  const pendingRef = useRef<Deck | null>(null);
   const saveRef = useLatest(saveDeck);
+
+  // Saves the waiting deck now, if there is one. Serialised here, never per keystroke.
+  const sendPending = useCallback(
+    (unload: boolean) => {
+      if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+      const pending = pendingRef.current;
+      if (!pending) return;
+      pendingRef.current = null;
+      const stored = storePresentation(pending);
+      const serialised = stored ? JSON.stringify(stored) : null;
+      if (unload) saveRef.current?.(serialised, { unload: true });
+      else saveRef.current?.(serialised);
+    },
+    [saveRef],
+  );
 
   /** Seed from the loaded document. Never counts as an edit. */
   const hydrateDeck = useCallback((serialised: string | null | undefined) => {
@@ -122,23 +141,34 @@ export function useSlideDeck({
         const resolved = typeof next === 'function' ? next(prev) : next;
         // Nothing changed (a follow pass with the deck already in step): nothing to save.
         if (resolved === prev) return prev;
+        pendingRef.current = resolved;
         if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
-        saveTimer.current = window.setTimeout(() => {
-          const stored = storePresentation(resolved);
-          saveRef.current?.(stored ? JSON.stringify(stored) : null);
-        }, DECK_SAVE_DEBOUNCE_MS);
+        saveTimer.current = window.setTimeout(() => sendPending(false), DECK_SAVE_DEBOUNCE_MS);
         return resolved;
       });
     },
-    [saveRef],
+    [sendPending],
   );
 
-  useEffect(
-    () => () => {
-      if (saveTimer.current !== null) window.clearTimeout(saveTimer.current);
-    },
-    [],
-  );
+  // The writing left the screen (a card closed, the Notes popover closed or moved to another slide): what the
+  // debounce holds goes now. Asked for as a render, so the save runs after the commit of every deck update queued
+  // before it (the blank card a close removes rides the same save), from an effect rather than inside an updater.
+  const [flushAsked, setFlushAsked] = useState(0);
+  const flushDeckSave = useCallback(() => setFlushAsked((n) => n + 1), []);
+  useEffect(() => {
+    if (flushAsked > 0) sendPending(false);
+  }, [flushAsked, sendPending]);
+
+  // The page going, or the editor left for another page of the app: the waiting deck goes at once, kept alive past
+  // the page (apiSaveDocumentMeta's `unload`). A page the back-forward cache keeps has nothing left to send twice.
+  useEffect(() => {
+    const leave = () => sendPending(true);
+    window.addEventListener('pagehide', leave);
+    return () => {
+      window.removeEventListener('pagehide', leave);
+      leave();
+    };
+  }, [sendPending]);
 
   // The deck follows the slide pages (docs/specs/007-editor/pages-mode.md "Slides"): each in the deck, a tab's
   // page slides in its page order. An editor saves it; a viewer only sees it, the same deck an editor would store.
@@ -267,6 +297,7 @@ export function useSlideDeck({
     runnable,
     newPageSlide,
     setSlideNoteCards,
+    flushDeckSave,
     adoptImportedSlides,
     followPages,
     toggleSlideHidden,
