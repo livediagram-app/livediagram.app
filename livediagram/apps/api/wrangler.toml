@@ -209,11 +209,9 @@ name = "EMAIL"
 #   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
 #     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
 #     through the router. Wrangler reads it on the next `wrangler dev`.
-#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
-#     each from the GitHub repo secret of the same name and pipes it into
-#     `wrangler secret put` on every deploy, so a value rotates by
-#     editing the GitHub secret. Secrets persist across deploys
-#     independently of this file.
+#   - Production: Cloudflare Worker secrets, set once with `wrangler secret put <NAME>` (docs/ci.md). No
+#     workflow sets them: the deploy only carries CLOUDFLARE_API_TOKEN, so a value rotates by putting it again.
+#     Secrets persist across deploys independently of this file.
 #
 # Guests are liveworkspace's too: the accounts Worker hands each browser a
 # guest token for this API (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"), checked
@@ -245,8 +243,7 @@ name = "EMAIL"
 #
 #   - Local dev: `COMMUNITY_KEY=dev-livediagram-community-key` and
 #     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
-#   - Production and staging: the COMMUNITY_KEY / COMMUNITY_KEY_STAGING GitHub
-#     secrets, synced by the deploy workflow. COMMUNITY_URL comes from hosted-vars.json.
+#   - Production and staging: `wrangler secret put COMMUNITY_KEY` (and `--env staging`). COMMUNITY_URL comes from hosted-vars.json.
 #
 # Unset = no Community: publishing answers 404, and the sync does nothing.
 
@@ -256,8 +253,7 @@ name = "EMAIL"
 #
 #   - Local dev: `MEDIA_KEY=dev-livediagram-media-key` and
 #     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
-#   - Production and staging: the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the
-#     deploy workflow. MEDIA_URL comes from hosted-vars.json.
+#   - Production and staging: `wrangler secret put MEDIA_KEY` (and `--env staging`). MEDIA_URL comes from hosted-vars.json.
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
@@ -389,8 +385,8 @@ name = "EMAIL"
 
 
 # The four ACCOUNTS_* / API_RESOURCE values and
-# TELEMETRY_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. The model key
+# TELEMETRY_KEY are set once on the staging Worker with
+# `wrangler secret put <NAME> --env staging` (docs/ci.md), not by CI. The model key
 # (GOOGLE_AI_STUDIO_API_KEY) is provisioned by hand exactly as it is for production:
 #   cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging
 # Worker secrets are per-environment, so staging's never collide with
