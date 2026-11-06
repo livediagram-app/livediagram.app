@@ -442,7 +442,9 @@ undoes and copies with the text it sits in.
   livedocuments. Markdown writes a reference as `[^3]` and the notes, numbered, after the article's
   last block (`[^3]: The note.`); reading, a `[^label]` with a `[^label]: text` line anywhere in the
   text is a footnote with that text (any label: the article numbers them itself), the definition
-  lines leaving the writing; a `[^label]` with no definition stays text.
+  lines leaving the writing; a `[^label]` with no definition stays text. A footnote on the title or
+  subtitle stays in its front matter line (`title: A study[^1]`), numbered first as the title comes
+  first, its note with the others.
 - **Exports**: PDF, PNG and SVG draw each note at the foot of its page as on screen, the references
   as raised numbers. **Word** writes each as a Word footnote (Word numbers them and places them at
   the foot of their page, as it lays the document out). A Word document's footnotes come in through

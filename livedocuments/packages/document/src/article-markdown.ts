@@ -110,7 +110,7 @@ export function takeFootnoteDefinitions(lines: readonly string[]): {
 
 /** A run's text split at its footnote references (`[^label]` with a definition in `notes`), each one reference run.
  *  Left to right, each `]` looked for once, so a long run of `[^` with no `]` stays linear. */
-function withFootnoteRefs(run: ArticleRun, notes: FootnoteNotes): ArticleRun[] {
+export function withFootnoteRefs(run: ArticleRun, notes: FootnoteNotes): ArticleRun[] {
   const { text } = run;
   const out: ArticleRun[] = [];
   let from = 0;

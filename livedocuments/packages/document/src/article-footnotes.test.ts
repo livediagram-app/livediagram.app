@@ -110,20 +110,22 @@ describe('footnotes in Markdown', () => {
     expect(articleToMarkdown(flow)).toBe(
       [
         '---',
-        'title: Report',
+        // The title's footnote stays in its front matter line, numbered first as the title comes first.
+        'title: Report[^1]',
         '---',
         '',
-        'Sales rose[^1] again.',
+        'Sales rose[^2] again.',
         '',
-        '- An item[^2]',
+        '- An item[^3]',
         '',
         '|  |',
         '| --- |',
-        '| Cell[^3] |',
+        '| Cell[^4] |',
         '',
-        '[^1]: Q3 figures, \\*unaudited\\*.',
-        '[^2]: On a list',
-        '[^3]: In a cell',
+        '[^1]: Title note',
+        '[^2]: Q3 figures, \\*unaudited\\*.',
+        '[^3]: On a list',
+        '[^4]: In a cell',
         '',
       ].join('\n'),
     );
@@ -132,7 +134,7 @@ describe('footnotes in Markdown', () => {
   it('reads them back as footnotes, numbered by the article whatever the labels', () => {
     const back = articleFromMarkdown(articleToMarkdown(flow));
     if (!('blocks' in back)) throw new Error('not read');
-    expect(shape(back.blocks).slice(1, 3)).toEqual(shape(flow.blocks).slice(1, 3));
+    expect(shape(back.blocks).slice(0, 3)).toEqual(shape(flow.blocks).slice(0, 3));
     const table = back.blocks[3]!;
     expect(table.type === 'table' && table.rows[0]!.cells[0]).toEqual([
       { text: 'Cell' },
@@ -154,6 +156,17 @@ describe('footnotes in Markdown', () => {
         ],
       },
       { type: 'code', text: '[^b]: code, not a note' },
+    ]);
+  });
+
+  it('reads a footnote on the title or subtitle from front matter, an undefined one as text', () => {
+    const out = articleFromMarkdown(
+      '---\ntitle: A study[^t]\nsubtitle: Part one[^none]\n---\n\nBody[^b].\n\n[^t]: Funded by X\n[^b]: Body note',
+    );
+    expect('blocks' in out && shape(out.blocks)).toEqual([
+      { type: 'paragraph', style: 'title', runs: [{ text: 'A study' }, ref('Funded by X')] },
+      { type: 'paragraph', style: 'subtitle', runs: [{ text: 'Part one[^none]' }] },
+      { type: 'paragraph', runs: [{ text: 'Body' }, ref('Body note'), { text: '.' }] },
     ]);
   });
 

@@ -19,6 +19,7 @@ import {
   parseMarkdownBlocks,
   spaceWrapped,
   takeFootnoteDefinitions,
+  withFootnoteRefs,
 } from './article-markdown';
 import { articleRunsText } from './article-footnotes';
 import { articleTableText, type ArticleTableBlock } from './article-table';
@@ -95,8 +96,17 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
     return id;
   };
   const blocks: ArticleBlock[] = [];
+  // Footnote definitions may sit anywhere (after the last block, as written): read from the whole text first. A title's
+  // footnote is read from its front matter line too.
+  const { lines, notes } = takeFootnoteDefinitions(body.split('\n'));
   const heading = (style: 'title' | 'subtitle', value: string | undefined) => {
-    if (value) blocks.push({ id: fresh(), type: 'paragraph', style, runs: [{ text: value }] });
+    if (value)
+      blocks.push({
+        id: fresh(),
+        type: 'paragraph',
+        style,
+        runs: withFootnoteRefs({ text: value }, notes),
+      });
   };
   heading('title', title);
   heading('subtitle', subtitle);
@@ -110,8 +120,6 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
   };
   let paragraph = 0;
   const fence = fenceTracker();
-  // Footnote definitions may sit anywhere (after the last block, as written): read from the whole text first.
-  const { lines, notes } = takeFootnoteDefinitions(body.split('\n'));
   for (const line of lines) {
     // A table's rows are cells, not one paragraph: a long table is bounded by the table's own caps.
     paragraph = line.trim() && !isTableRow(line) ? paragraph + line.length + 1 : 0;
@@ -249,11 +257,17 @@ function brokenMarkdown(runs: readonly ArticleRun[], notes: string[], lead = '')
 export function articleToMarkdown(flow: ArticleFlow): string {
   const blocks = [...flow.blocks];
   const front: string[] = [];
+  // The footnotes' texts, numbered as their references are written, the notes after the last block.
+  const notes: string[] = [];
   for (const style of ['title', 'subtitle'] as const) {
     const at = blocks.findIndex((b) => b.type === 'paragraph' && b.style === style);
     if (at < 0) continue;
-    // Front matter is plain text: a footnote on a title is left out of it.
-    const text = articleRunsText((blocks[at] as { runs: ArticleRun[] }).runs);
+    // Front matter is plain text, but for a footnote on a title, written `[^1]` as in the body (it comes first).
+    const text = (blocks[at] as { runs: ArticleRun[] }).runs
+      .map((r) =>
+        r.fn !== undefined ? Array.from(r.text, () => `[^${notes.push(r.fn!)}]`).join('') : r.text,
+      )
+      .join('');
     blocks.splice(at, 1);
     const value = text.replace(/\n/g, ' ').trim();
     if (value) front.push(`${style}: ${frontValue(value)}`);
@@ -264,8 +278,6 @@ export function articleToMarkdown(flow: ArticleFlow): string {
   let opening = !front.length;
   let numbers: number[] = [];
   let prevList = false;
-  // The footnotes' texts, numbered as their references are written, the notes after the last block.
-  const notes: string[] = [];
   for (const b of blocks) {
     const isList = b.type === 'list';
     // A list's items sit together; anything else is a paragraph of its own.
