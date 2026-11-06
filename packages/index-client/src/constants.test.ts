@@ -3,8 +3,11 @@ import {
   APP_DEFAULT_LINK_LEVEL,
   APP_LINK_LEVELS,
   APPS,
+  RETIRED_PLACEMENT_KEYS,
+  foldRetiredDefaults,
   linkLevelOffered,
   placementDefaultKeysFor,
+  retiredKeysClearedWith,
 } from './constants';
 
 describe('placementDefaultKeysFor', () => {
@@ -35,6 +38,54 @@ describe('placementDefaultKeysFor', () => {
       'liveplanner:mode:plan',
       'liveplanner',
     ]);
+  });
+
+  it("tries an app's retired keys after its own, never before", () => {
+    expect(placementDefaultKeysFor('livehuddle', 'workshop:diagram:retrospective')).toEqual([
+      'livehuddle:kind:diagram',
+      'livehuddle',
+      'livehuddle:mode:workshop',
+      'livehuddle:template:retrospective',
+    ]);
+    expect(placementDefaultKeysFor('livehuddle', null)).toEqual([
+      'livehuddle',
+      ...RETIRED_PLACEMENT_KEYS.livehuddle!,
+    ]);
+  });
+});
+
+describe('foldRetiredDefaults', () => {
+  const row = (key: string, folderId: string) => ({ key, folderId });
+
+  it("reads the first retired key held as the app's own, keeping every row", () => {
+    const map = foldRetiredDefaults([
+      row('livehuddle:template:retrospective', 'retros'),
+      row('livehuddle:mode:workshop', 'sessions'),
+      row('liveplanner', 'plans'),
+    ]);
+    expect(map.get('livehuddle')).toBe('sessions');
+    expect(map.get('livehuddle:template:retrospective')).toBe('retros');
+    expect(map.get('liveplanner')).toBe('plans');
+    expect(
+      foldRetiredDefaults([row('livehuddle:template:retrospective', 'retros')]).get('livehuddle'),
+    ).toBe('retros');
+  });
+
+  it("leaves the app's own key when it holds one, and an app with none of them alone", () => {
+    const map = foldRetiredDefaults([
+      row('livehuddle', 'mine'),
+      row('livehuddle:template:retrospective', 'retros'),
+    ]);
+    expect(map.get('livehuddle')).toBe('mine');
+    expect(foldRetiredDefaults([]).size).toBe(0);
+  });
+});
+
+describe('retiredKeysClearedWith', () => {
+  it("is an app's retired keys for its own key, and none for any other", () => {
+    expect(retiredKeysClearedWith('livehuddle')).toEqual(RETIRED_PLACEMENT_KEYS.livehuddle);
+    expect(retiredKeysClearedWith('liveplanner')).toEqual([]);
+    expect(retiredKeysClearedWith('livehuddle:mode:workshop')).toEqual([]);
   });
 });
 
