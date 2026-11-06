@@ -1,4 +1,4 @@
-// Groups keep their lines clear, the reverse of seatByMembers (docs/specs/015-api/mcp-server.md "Groups keep their
+// Groups keep their lines clear, the reverse of seatByMembers (livediagram/docs/specs/015-api/mcp-server.md "Groups keep their
 // lines clear"). A group's members are laid out among themselves and packed, so a row of data stores sat apart from
 // the services that own them: each database's line jogged across the next one's, and across the lines between.
 // Seated by the outside nodes they link to, each sits under its own.

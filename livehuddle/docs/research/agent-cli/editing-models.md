@@ -41,10 +41,10 @@ about livehuddle cite the file they come from. Where a claim is an estimate or a
 
 ### 2.1 The MCP `update_document` ops mode
 
-`apps/mcp/src/tools.ts` (`update_document`, mode `ops`): an ordered list of
+`livediagram/apps/mcp/src/tools.ts` (`update_document`, mode `ops`): an ordered list of
 `{ op: 'add' | 'update' | 'remove', element?, elementId? }`. The tool reads the tab, applies the ops
 to an id map, normalises touched elements, runs `isValidTab`, and `PUT`s the whole tab. No
-auto-layout runs, so positions are kept ([MCP server §4.4](../../specs/015-api/mcp-server.md)).
+auto-layout runs, so positions are kept ([MCP server §4.4](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
 
 What works well and should carry over:
 
@@ -99,11 +99,11 @@ data = ?` (`apps/api/src/db/tabs.ts:422`). `tabs.updated_at` exists for a cheap 
   An agent should never have to choose an anchor.
 - **Frame and lane membership is spatial, not a parent pointer.** A node belongs to the smallest
   frame containing its centre (`mermaid-serialise.ts`); a lane owns what lies fully inside its box
-  (`packages/agent-verbs/src/mcp/schema.ts`). Groups were removed ([web components and no groups](../../specs/009-elements/web-components-and-no-groups.md)).
+  (`livediagram/packages/agent-verbs/src/mcp/schema.ts`). Groups were removed ([web components and no groups](../../specs/009-elements/web-components-and-no-groups.md)).
   Consequence: **any move or resize can silently change membership**, and wrapping a section in a
   frame can silently capture a bystander. draw.io and Miro have an explicit parent (`set-cell-parent`,
   item `parent`); we do not, so the CLI must compute and report membership changes.
-- **The theme owns colour** for every element but a sticky ([MCP server §4.6](../../specs/015-api/mcp-server.md)).
+- **The theme owns colour** for every element but a sticky ([MCP server §4.6](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
   A restyle should name theme slots, not hex values.
 - **A layout engine exists** (`autoLayoutElements`, clustered layout, crossing reduction;
   [Layout cleanup](../../specs/008-canvas/layout-cleanup.md)) and a pure SVG renderer
@@ -613,7 +613,7 @@ When this becomes a spec, the deltas are:
 
 - [API app](../../specs/015-api/api.md): the edits endpoint, the tab ETag, and the room's `/mutation`
   accepting `el` ops; "The persistence boundary" changes because REST element edits reach the room.
-- [MCP server §4.4](../../specs/015-api/mcp-server.md): `update_document` ops mode delegates to the
+- [MCP server §4.4](../../../../livediagram/docs/specs/015-api/mcp-server.md): `update_document` ops mode delegates to the
   shared engine and gains the error codes, changeset and the vocabulary above.
 - [Realtime conflict resolution](../../specs/012-collaboration/realtime-conflict-resolution.md):
   REST writers become sequenced peers; the residual same-element window is restated.
@@ -647,10 +647,10 @@ When this becomes a spec, the deltas are:
 - Penpot MCP: <https://github.com/penpot/penpot-mcp>
 - VS Code `WorkspaceEdit`: <https://code.visualstudio.com/api/references/vscode-api#WorkspaceEdit>
 - Kubernetes declarative management, three-way merge: <https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/>
-- livehuddle: `apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
+- livehuddle: `livediagram/apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `livediagram/packages/agent-verbs/src/mcp/schema.ts`,
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `collab-ledger.ts`, `validate.ts`,
   `mermaid-serialise.ts`, `arrow-rebind.ts`, `anchor-choice.ts`, `graph-authoring.ts`,
   `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/db/tabs.ts`,
-  [API app](../../specs/015-api/api.md), [MCP server](../../specs/015-api/mcp-server.md),
+  [API app](../../specs/015-api/api.md), [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md),
   [Realtime conflict resolution](../../specs/012-collaboration/realtime-conflict-resolution.md),
   [Arrow anchors](../../specs/008-canvas/arrow-anchors.md), [Layout cleanup](../../specs/008-canvas/layout-cleanup.md)

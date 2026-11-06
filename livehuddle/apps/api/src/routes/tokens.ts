@@ -2,8 +2,8 @@
 // tokens"): made, listed and revoked on liveworkspace.app, so the management routes answer 410 with
 // where to go. What stays is the token a request presented:
 //
-//   GET    /api/tokens/current — the token this request presented (the CLI's auth status)
-//   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
+//   GET    /api/tokens/current: the token this request presented (a script asking who it is)
+//   DELETE /api/tokens/current: that token revoking itself
 
 import { bearerTokenOf, type CurrentTokenResponse } from '@livehuddle/api-schema';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
@@ -28,7 +28,7 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
   );
 }
 
-// The token the request presented (docs/specs/015-api/blueprints/cli.md "Token self-service"), as liveworkspace
+// The token the request presented (docs/specs/015-api/public-api-and-tokens.md "A token's view of itself"), as liveworkspace
 // described it when it checked it. Only a token has one: a signed-in session or a guest is refused
 // `403 not_a_token`; a token since revoked never got this far (401).
 async function handleCurrentToken(ctx: RouteContext): Promise<Response> {

@@ -397,39 +397,3 @@ export function CommunitySpaceArt() {
     </Panel>
   );
 }
-
-/** Bring your AI tools: your AI asked for a stand-up pod, and the Space it set up. */
-export function AiSpaceArt() {
-  return (
-    <Panel>
-      <g className="fa-a-in" style={at(0.1)}>
-        <rect x={14} y={14} width={130} height={30} rx={10} className="fill-violet-600" />
-        <text x={24} y={33} fontFamily={FONT} fontSize={9.5} fontWeight={600} fill="#fff">
-          Set up our stand-up pod
-        </text>
-      </g>
-      <g className="fa-a-pop" style={at(0.6)}>
-        <rect
-          x={14}
-          y={52}
-          width={130}
-          height={22}
-          rx={8}
-          className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
-        />
-        <text
-          x={24}
-          y={67}
-          fontFamily={FONT}
-          fontSize={8.5}
-          className="fill-emerald-700 dark:fill-emerald-300"
-        >
-          ✓ livehuddle.create_document
-        </text>
-      </g>
-      <g className="fa-a-pop" style={at(1)}>
-        <Thumb x={158} y={10} w={118} label="Stand-up Pod" />
-      </g>
-    </Panel>
-  );
-}

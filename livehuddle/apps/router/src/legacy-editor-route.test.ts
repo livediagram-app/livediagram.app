@@ -147,8 +147,13 @@ describe('legacyHelpRedirect', () => {
       ['/help/canvas/themes/custom-themes', '/help/canvas/themes'],
       ['/help/explorer/themes-library/', '/help/canvas/themes/'],
       ['/help/explorer/tags/', '/help/explorer/folders/'],
-      ['/help/tools/ai/', '/help/account-and-data/connect-ai-mcp/'],
-      ['/help/tools/ai/ai-tools/', '/help/account-and-data/connect-ai-mcp/'],
+      ['/help/tools/ai/', '/help/account-and-data/api-tokens/'],
+      ['/help/tools/ai/ai-tools/', '/help/account-and-data/api-tokens/'],
+      ['/help/account-and-data/connect-ai-mcp/', '/help/account-and-data/api-tokens/'],
+      ['/help/account-and-data/connect-ai-mcp/ai-clients/', '/help/account-and-data/api-tokens/'],
+      ['/help/developers/cli/', '/help/developers/api-overview/'],
+      ['/help/developers/workbenches/', '/help/developers/api-overview/'],
+      ['/help/developers/workbenches/building-a-workbench/', '/help/developers/api-overview/'],
       // Slide decks, presenting and the Page element left livehuddle (Work Tracker #423): the deck's articles land
       // on Following Someone, and Pages on Write Elements.
       ['/help/selection-modes/slide-deck/', '/help/canvas/follow-along/'],

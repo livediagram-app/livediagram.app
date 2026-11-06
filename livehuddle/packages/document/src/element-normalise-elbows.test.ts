@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { normaliseElements } from './element-normalise';
 import type { ArrowElement, Element } from './index';
 
-// docs/specs/015-api/mcp-server.md "Every element takes the presentation defaults": raw arrows draw as graph input's.
+// livediagram/docs/specs/015-api/mcp-server.md "Every element takes the presentation defaults": raw arrows draw as graph input's.
 
 const box = (id: string, x: number, y: number) =>
   ({ id, type: 'shape', shape: 'square', x, y, width: 120, height: 60, label: id }) as Element;

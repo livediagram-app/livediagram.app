@@ -41,7 +41,7 @@ place. The specs themselves are unnumbered and named by subject.
 - ./012-collaboration/README.md - when working on realtime, the meeting board, Bring Focus, facilitation, comments, actions, proximity audio, or a Collaborate spec marked Leaving livehuddle
 - ./013-workspace/README.md - when gating any feature by share role (Editor, Participant and Viewer in livehuddle), or working on the Explorer, its filters, folders, default folders, teams, favourites, tags, shape libraries, share links, the Trash or the empty document clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
-- ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI
+- ./015-api/README.md - when working on the api worker, its OpenAPI document, or tokens (livehuddle has no MCP server or CLI)
 - ./016-platform/README.md - when registering livehuddle with liveworkspace (sites, accounts, index, telemetry, media, CI, DNS and the 3500 port block), or working on routing, deployment or the staging environment, the new version prompt and stale builds, or web performance (what a page loads up front)
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links

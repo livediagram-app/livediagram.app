@@ -1,4 +1,4 @@
-// Stacked groups line up (docs/specs/015-api/mcp-server.md "Stacked groups line up").
+// Stacked groups line up (livediagram/docs/specs/015-api/mcp-server.md "Stacked groups line up").
 import { describe, expect, it } from 'vitest';
 import { FRAME_PAD, layoutClusteredGraph } from './auto-layout-clusters';
 import { isBoxed, type BoxedElement, type DiagramGraph, type Element } from './index';

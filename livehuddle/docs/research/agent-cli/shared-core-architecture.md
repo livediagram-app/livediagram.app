@@ -2,24 +2,24 @@
 
 Research for the agent-first `livehuddle` CLI. Angle: how one capability core serves the REST API, the MCP server and a CLI without drift, and how the CLI is authenticated, distributed, updated, measured and pointed at other hosts. Measured against the code on `main` at `efaee7d29`.
 
-Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API tokens](../../specs/015-api/public-api-and-tokens.md), [API app](../../specs/015-api/api.md), [Telemetry](../../specs/017-telemetry/telemetry.md).
+Specs read: [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md), [Public API and API tokens](../../specs/015-api/public-api-and-tokens.md), [API app](../../specs/015-api/api.md), [Telemetry](../../specs/017-telemetry/telemetry.md).
 
 ## 1. Recommendation in one screen
 
 - **The server owns meaning.** Everything that decides what gets _stored_ (graph and Mermaid to elements, normalisation, layout choice, template materialisation, element ops, validation) runs in the **api worker**, behind REST. MCP and CLI stop computing writes and become adapters. This is the only placement that survives version skew: an installed CLI from March cannot store elements the way the October server expects, but it can always ask the server to.
 - **Packages own presentation.** Read views (outline, ids, graph, comments, diff) are **pure functions in a new `@livehuddle/document-views` package**, served by the api as `?view=` text **and** bundled in the CLI for local files. Online, the CLI prefers the server's rendering; offline (synced files) it renders locally and says which format version it understood.
 - **Front-ends own transport.** One **operation catalogue** (`@livehuddle/agent-operations`: zod input and output, fact-only descriptions, behaviour preset, handler against a typed api client) is registered by `apps/mcp` as tools and by `apps/cli` as commands. PNG rasterisation stays at the edge (resvg-wasm in both), because it is stateless and presentational.
-- **Auth reuses the token.** `LIVEHUDDLE_TOKEN` for agents and CI; `livehuddle auth login` runs the **existing OAuth 2.1 + PKCE server** in `apps/mcp/src/oauth.ts` with a loopback redirect (needs RFC 8252 port-agnostic loopback matching), with **device code** (RFC 8628) as the headless path. The result is an ordinary `lvd_` token.
+- **Auth reuses the token.** `LIVEHUDDLE_TOKEN` for agents and CI; `livehuddle auth login` runs the **existing OAuth 2.1 + PKCE server** in `livediagram/apps/mcp/src/oauth.ts` with a loopback redirect (needs RFC 8252 port-agnostic loopback matching), with **device code** (RFC 8628) as the headless path. The result is an ordinary `lvd_` token.
 - **Distribution**: an npm package `livehuddle` (name free on npm today, as is `@livehuddle/cli`), bundled to one ESM file plus the resvg wasm and the Inter font, `npx livehuddle@latest` on Node >= 22. Bun-compiled single binaries on GitHub Releases and a Homebrew tap come second.
 - **The largest gap is not the CLI.** A REST tab write is last-writer-wins with no revision check and tells the realtime room nothing (`docs/specs/015-api/api.md`: "a write from any other caller reaches connected peers only when they next load the tab"). A chat agent editing while a person watches the canvas is exactly that case. The `ops` endpoint with `If-Match` and room relay (§9) is the most important API addition, for MCP as much as the CLI.
 
 ## 2. What the code is today (an honest map)
 
-### 2.1 `apps/mcp/src`
+### 2.1 `livediagram/apps/mcp/src`
 
 | File                                                                   | Lines | What it is                                                                                                             | Verdict                                                                                                                                                                                  |
 | ---------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tools.ts`                                                             | 644   | 11 tool handlers: arg juggling, api calls, ops apply, layout, normalise, render                                        | **Split.** The write logic (ops apply, validate, layout, land arrivals) moves server-side; the rest becomes catalogue entries                                                            |
+| `livediagram/apps/mcp/src/tools.ts`                                    | 644   | 11 tool handlers: arg juggling, api calls, ops apply, layout, normalise, render                                        | **Split.** The write logic (ops apply, validate, layout, land arrivals) moves server-side; the rest becomes catalogue entries                                                            |
 | `graph-input.ts`                                                       | 181   | Label cap (`GRAPH_LABEL_MAX` 40), layout style and direction choice, line routing, Mermaid dispatch                    | **Move** to `packages/document` (pure; only imports `@livehuddle/document`). It is authoring policy, not MCP policy, once a CLI shares it                                                |
 | `element-normalise.ts`                                                 | 178   | Factory defaults, table padding, code language coercion, entity height, chart coercion, lanes to front, stroke packing | **Move** to `packages/document` (pure). The api worker should run it on every agent write path                                                                                           |
 | `tab-builders.ts`                                                      | 140   | `applyLayout`, `buildTab` (theme paint), `buildGraphTab`, `buildTemplateTab`, `landMcpArrivals`                        | **Move** to `packages/document` + `packages/templates` (pure; already render-free by design)                                                                                             |
@@ -78,7 +78,7 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 | REST users   | Gain nothing                                                          | Gain nothing                                                                       | **Gain everything** (graph input, ops, views over plain HTTP) | Gain nothing new                                           |
 | Cost         | Cheapest                                                              | Medium; duplicates write-path tests                                                | Medium-high: endpoints + migration of MCP                     | Low code, poor result                                      |
 
-**Decision: C, with the catalogue and views from B.** A is tempting for its zero drift, but it bakes the MCP's coarse granularity and JSON-plus-PNG payloads into the CLI and makes `apps/mcp` mandatory for other deployments. D generates the wrong surface. B is what we would drift into by copying `apps/mcp/src` into `apps/cli`.
+**Decision: C, with the catalogue and views from B.** A is tempting for its zero drift, but it bakes the MCP's coarse granularity and JSON-plus-PNG payloads into the CLI and makes `apps/mcp` mandatory for other deployments. D generates the wrong surface. B is what we would drift into by copying `livediagram/apps/mcp/src` into `apps/cli`.
 
 ### 4.1 Why writes must be server-side (version skew, concretely)
 
@@ -173,7 +173,7 @@ No `--token` flag: it lands in shell history and in agent transcripts.
 
 ### 6.1 `auth login`: loopback + PKCE on the existing server
 
-The OAuth server in `apps/mcp/src/oauth.ts` already implements RFC 8414 discovery, dynamic client registration accepting loopback redirects (`isLoopbackHostname`), PKCE S256, the Clerk-authed consent page in `apps/editor/app/oauth/consent`, the server-read session (`GET /oauth/session/<id>`, anti-phishing), the read-only checkbox and token mint via `/api/oauth/exchange`. The CLI reuses all of it:
+The OAuth server in `livediagram/apps/mcp/src/oauth.ts` already implements RFC 8414 discovery, dynamic client registration accepting loopback redirects (`isLoopbackHostname`), PKCE S256, the Clerk-authed consent page in `livediagram/apps/editor/app/oauth/consent`, the server-read session (`GET /oauth/session/<id>`, anti-phishing), the read-only checkbox and token mint via `/api/oauth/exchange`. The CLI reuses all of it:
 
 1. `GET {host}/api/capabilities` gives `oauthIssuer` (new field; hosted: `https://mcp.livehuddle.app`).
 2. Discovery at `{issuer}/.well-known/oauth-authorization-server`.

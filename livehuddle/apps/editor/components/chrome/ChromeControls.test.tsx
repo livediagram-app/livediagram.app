@@ -26,12 +26,7 @@ const controls = () =>
 function Bar() {
   return (
     <div data-testid="bar">
-      <ChromeControls
-        onOpenSearch={() => {}}
-        onOpenSettings={() => {}}
-        labelled
-        appearance={false}
-      />
+      <ChromeControls onOpenSearch={() => {}} onOpenSettings={() => {}} labelled />
     </div>
   );
 }

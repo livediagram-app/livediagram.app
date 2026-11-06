@@ -377,7 +377,7 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
 
 ### Agents
 
-`packages/agent-verbs/src/mcp/schema.ts`: `finishField = z.enum(FINISHES).optional()` on `create_document` and
+`livediagram/packages/agent-verbs/src/mcp/schema.ts`: `finishField = z.enum(FINISHES).optional()` on `create_document` and
 `add_tab`, passed through like `theme`; `finish` added to the element format allowlists for shape, arrow, text,
 sticky and table.
 

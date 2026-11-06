@@ -1,7 +1,5 @@
 // What a new cloud document is made of (docs/specs/007-editor/new-document-route.md): the template's tab, named after
-// its template; or, for no template, one blank tab in the theme's backdrop. Shared by /new and the workspace frame's
-// New document (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB58), so a document made in either is the
-// same document.
+// its template; or, for no template, one blank tab in the theme's backdrop.
 import type { Tab } from '@livehuddle/document';
 import type { TemplateKind } from '@livehuddle/templates';
 import { buildTemplatedFloorTabs, buildTemplatedTab } from '@/lib/template-builders';

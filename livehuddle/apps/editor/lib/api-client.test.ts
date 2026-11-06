@@ -19,7 +19,7 @@ import {
   setSessionSharePassword,
   setTokenProvider,
 } from './api-client';
-import { apiHeaders, setWorkbenchConfinement } from './api/core';
+import { apiHeaders } from './api/core';
 import { resetDisplayCacheForTests } from '@liveworkspace/workbench/lib/image-display';
 
 // A canvas's grant and the index are their own modules (document-grants.test.ts, the index client's tests): here
@@ -861,20 +861,5 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     const spy = stub404();
     await apiFetchImageBlobUrl('owner', 'img1');
     expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1$/);
-  });
-
-  // Under a workbench session the api reads an image only by its document path
-  // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Route effects under a session").
-  it("always names the session's document under a workbench session", async () => {
-    const spy = stub404();
-    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-wb', ownerId: 'owner' });
-    try {
-      await apiFetchImageBlobUrl('owner', 'img1');
-      await apiFetchImageBlobUrl('owner', 'img1', { documentId: 'other' });
-    } finally {
-      setWorkbenchConfinement(null);
-    }
-    expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
-    expect(String(spy.mock.calls[1]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
   });
 });

@@ -7,7 +7,7 @@ import {
   resolveGraphInput,
 } from './graph-input';
 
-// docs/specs/015-api/mcp-server.md §4.7: labels are headings (capped, overflow into the note), the
+// livediagram/docs/specs/015-api/mcp-server.md §4.7: labels are headings (capped, overflow into the note), the
 // layout is chosen, arrows are routed.
 
 const byId = (els: ReturnType<typeof layoutGraph>, id: string) =>
@@ -141,7 +141,7 @@ describe('resolveGraphInput', () => {
   });
 });
 
-describe('review fixes (docs/specs/015-api/mcp-server.md §4.7)', () => {
+describe('review fixes (livediagram/docs/specs/015-api/mcp-server.md §4.7)', () => {
   it('drops a bracketed aside before anything else', () => {
     expect(capLabel('Web client (React single page application served from the CDN)')).toEqual({
       label: 'Web client',

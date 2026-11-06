@@ -109,7 +109,7 @@ describe('templateCanvasOverrides', () => {
 
   it('leaves the blank template to inherit the theme backdrop', () => {
     // docs/specs/007-editor/editor-modes.md: the meeting board is the one mode, and it lands on every creation path
-    // through here (the template, a new tab, Quick Start, the MCP worker).
+    // through here (the template, a new tab, Quick Start, the api's seeded tabs).
     expect(templateCanvasOverrides('blank-session')).toEqual({ opensIn: 'workshop' });
   });
 });

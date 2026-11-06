@@ -30,9 +30,9 @@ open, from the [Timeline](timeline.md)). The view, its states and its telemetry 
 
 ## Hiding the banner
 
-In the workbench frame the hero can be closed. The close is reported (`UI·Toggled·HomeBannerOff`), then written to
-the synced `homeBanner` preference, so the hero stays hidden for the person on every device until they turn it back
-on in Settings.
+The hero's close belonged to the workbench frame's Explorer, which went with the CLI
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)). The Explorer at
+`/explorer` is liveworkspace's, and its banner is liveworkspace's to show or hide.
 
 ## Opens
 

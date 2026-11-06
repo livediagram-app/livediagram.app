@@ -1,4 +1,4 @@
-import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livehuddle/api-schema';
+import { bearerTokenOf, isApiTokenFormat } from '@livehuddle/api-schema';
 import {
   audiencesFor,
   createPersonVerifier,
@@ -68,7 +68,7 @@ function verifierFor(issuer: string, audience: string | string[]): Verify {
 // The caller from `Authorization: Bearer <token>`: an account or a guest, or null when:
 //   - sign-in isn't configured (ACCOUNTS_URL or API_RESOURCE unset),
 //   - no Bearer was sent (a link visitor with no identity yet),
-//   - the bearer is an API token or a workbench session (their own paths resolve it),
+//   - the bearer is an API token (its own path resolves it),
 //   - the token failed verification (expired, forged, or minted for another app).
 export async function getPersonIdentity(
   env: Env,
@@ -79,7 +79,7 @@ export async function getPersonIdentity(
 
   const token = bearerTokenOf(request.headers.get('Authorization'));
   if (!token) return null;
-  if (isApiTokenFormat(token) || isWorkbenchSessionFormat(token)) return null;
+  if (isApiTokenFormat(token)) return null;
 
   // The Explorer's tabs read takes any app's token (@liveworkspace/auth-client explorer-reads.ts): on
   // another app's address it asks as that app.

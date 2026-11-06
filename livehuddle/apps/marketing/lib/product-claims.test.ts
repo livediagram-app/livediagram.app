@@ -58,7 +58,11 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /AI assistance|AI panel|ask and clean|clean mode|assistant in the editor/i,
-    why: 'the editor has no AI assistant of its own; AI tools connect over MCP (docs/specs/019-marketing/build-with-ai.md)',
+    why: 'the editor has no AI assistant of its own',
+  },
+  {
+    pattern: /\bMCP\b|command[- ]line|\bCLI\b|Build with AI|mcp\.livehuddle/i,
+    why: 'livehuddle has no MCP server, CLI or Build with AI page (docs/specs/002-project-scope/not-in-livehuddle.md)',
   },
 ];
 

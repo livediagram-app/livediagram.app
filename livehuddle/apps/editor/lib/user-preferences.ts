@@ -35,7 +35,6 @@ import {
   rememberServerPreferences,
   savePreferences,
 } from './preferences-sync';
-import { getWorkbenchConfinement } from './api/workbench-confinement';
 import {
   readLocalStorageSafe,
   writeLocalStorageSafe,
@@ -256,11 +255,9 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
-  // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/
-  // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame. Nor under the 'self'
-  // placeholder a document in This Browser opens with before the reader is known
+  // Never under the 'self' placeholder a document in This Browser opens with before the reader is known
   // (docs/specs/006-document/offline-mode.md "Instant open"): that row would be everybody's.
-  if (ownerId && ownerId !== 'self' && !getWorkbenchConfinement()) savePreferences(ownerId, fitted);
+  if (ownerId && ownerId !== 'self') savePreferences(ownerId, fitted);
 }
 
 // A change a caller built on its render's snapshot, moved onto the
@@ -345,7 +342,7 @@ export async function fetchUserPreferences(ownerId: string): Promise<UserPrefere
   }
   if (unsynced) {
     debugLog('[preferences] device copy kept over the server, resending');
-    if (!getWorkbenchConfinement()) savePreferences(ownerId, merged);
+    savePreferences(ownerId, merged);
   }
   return merged;
 }

@@ -41,7 +41,7 @@ async function closeRoomSessions(
 }
 
 // A workbench pairing ended (unpaired, or its token revoked): close the sockets it opened on one document
-// (docs/specs/013-workspace/workbench-embeds.md), with WORKBENCH_ENDED_CLOSE.
+// (livediagram/docs/specs/013-workspace/workbench-embeds.md), with WORKBENCH_ENDED_CLOSE.
 export function closeWorkbenchSessions(
   env: Env,
   documentId: string,

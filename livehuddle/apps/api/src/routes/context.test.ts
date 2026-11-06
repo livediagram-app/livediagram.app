@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import type { ItemGrant } from '../index-service';
-import type { RouteContext, WorkbenchContext } from './context';
+import type { RouteContext } from './context';
 import {
   COMMUNITY_CONTENT,
   deniedOnTab,
@@ -18,8 +18,7 @@ import {
 
 // The gates in routes/context.ts: who may do what to a canvas is the index's grant
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), read here. Levels form a ladder (view < participate
-// < edit), a tab-scoped grant reaches its own tab only, a grant for another document reaches nothing, and a workbench
-// session holds no more than its own level.
+// < edit), a tab-scoped grant reaches its own tab only, a grant for another document reaches nothing.
 
 const grant = (over: Partial<ItemGrant> = {}): ItemGrant => ({
   item: 'd1',
@@ -40,7 +39,6 @@ function makeCtx(
     grant?: ItemGrant | null;
     community?: { code: string; open: boolean } | null;
     token?: { id: string } | null;
-    workbench?: Partial<WorkbenchContext> | null;
     verifiedUserId?: string | null;
     bearer?: string | null;
   } = {},
@@ -58,7 +56,6 @@ function makeCtx(
     accountEmail: null,
     resolveOwner: () => owner,
     token: opts.token ?? null,
-    workbench: (opts.workbench as WorkbenchContext | null) ?? null,
     teams: [{ id: 'team_1', name: 'T', role: 'member' }],
     bearer: opts.bearer ?? null,
     grant: opts.grant === undefined ? grant() : opts.grant,
@@ -95,12 +92,6 @@ describe('the grant gates', () => {
       shareCode: null,
       community: false,
     });
-  });
-
-  it("cap a workbench session's grant at its own level", async () => {
-    const ctx = makeCtx({ workbench: { level: 'view' } });
-    expect(await gateRead(ctx, 'd1')).toBe(true);
-    expect(await gateEdit(ctx, 'd1')).toBe(false);
   });
 
   it('carry the share code a link grant came by', async () => {
