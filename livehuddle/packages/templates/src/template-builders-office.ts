@@ -22,8 +22,9 @@ const HEIGHT = HEAD + ROW_H * 2 + CORRIDOR;
 
 type RoomSpec = Omit<OfficeRoom, 'h'>;
 
-// The Kitchen's units stand with their feet level with the fridge's (24 + 136 = 72 + 88).
-const KITCHEN_UNIT_Y = 72;
+// The Kitchen's units stand with their feet level with the fridge's (36 + 136 = 84 + 88), the fridge's top clear of the
+// room's name band like every tall piece at y 36.
+const KITCHEN_UNIT_Y = 84;
 
 // Every room, its doorway onto the corridor, and what is in it, in room-relative px.
 const ROOMS: RoomSpec[] = [
@@ -88,12 +89,12 @@ const ROOMS: RoomSpec[] = [
       // A kitchenette along the back wall, either side of the door (docs/specs/009-elements/office-amenities.md
       // "Kitchenette"): a fridge and a counter with the microwave and the kettle on it, then the sink and the coffee
       // machine, their feet on one line.
-      { kind: 'fridge', x: 20, y: 24 },
+      { kind: 'fridge', x: 20, y: 36 },
       { kind: 'kitchen-counter', x: 96, y: KITCHEN_UNIT_Y },
       { kind: 'microwave', x: 104, y: counterTopY('microwave', KITCHEN_UNIT_Y) },
       { kind: 'kettle', x: 170, y: counterTopY('kettle', KITCHEN_UNIT_Y) },
       { kind: 'kitchen-sink', x: 312, y: KITCHEN_UNIT_Y },
-      { kind: 'coffee-machine', x: 432, y: 64 },
+      { kind: 'coffee-machine', x: 432, y: 76 },
       { kind: 'water-cooler', x: 440, y: 196 },
       { kind: 'plant', x: 30, y: 230 },
       // Two chairs facing each other an aisle apart.

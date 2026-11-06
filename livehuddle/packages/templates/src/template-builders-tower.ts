@@ -102,7 +102,7 @@ const GROUND_ROOMS: IndoorRoom[] = [
       { kind: 'chair', x: 40, y: 360, facing: 'w' },
       { kind: 'chair', x: 124, y: 360, facing: 'e' },
       { kind: 'water-cooler', x: 440, y: 40 },
-      { kind: 'fridge', x: 516, y: 24 },
+      { kind: 'fridge', x: 516, y: 36 },
       { kind: 'plant', x: 600, y: 44 },
     ],
   },
